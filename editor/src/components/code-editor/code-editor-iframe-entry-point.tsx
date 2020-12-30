@@ -49,6 +49,7 @@ export interface JSONStringifiedCodeEditorProps {
   allTemplatePaths: TemplatePath[]
   focusedPanel: EditorPanel | null
   codeEditorTheme: string
+  fontSize: number
   selectedViewBounds: HighlightBounds[]
   highlightBounds: HighlightBounds[]
   npmDependencies: PossiblyUnversionedNpmDependency[]

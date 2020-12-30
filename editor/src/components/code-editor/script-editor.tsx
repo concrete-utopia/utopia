@@ -162,6 +162,7 @@ export interface ScriptEditorProps {
   allTemplatePaths: TemplatePath[]
   focusedPanel: EditorPanel | null
   codeEditorTheme: string
+  fontSize: number
   selectedViewBounds: HighlightBounds[]
   highlightBounds: HighlightBounds[]
   npmDependencies: PossiblyUnversionedNpmDependency[]
@@ -190,6 +191,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
     allTemplatePaths,
     focusedPanel,
     codeEditorTheme,
+    fontSize,
     selectedViews,
     selectedViewBounds,
     highlightBounds,
@@ -315,6 +317,7 @@ export const ScriptEditor = betterReactMemo('ScriptEditor', (props: ScriptEditor
         }
         canvasConsoleLogs={canvasConsoleLogs}
         codeEditorTheme={codeEditorTheme}
+        fontSize={fontSize}
       />
     )
   }

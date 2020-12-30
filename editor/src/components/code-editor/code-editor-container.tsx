@@ -117,6 +117,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
       allTemplatePaths: store.derived.navigatorTargets,
       focusedPanel: store.editor.focusedPanel,
       codeEditorTheme: store.editor.codeEditorTheme,
+      fontSize: store.editor.currentFontSize,
       selectedViews: store.editor.selectedViews,
     }
   }, 'CodeEditorWrapper')
@@ -160,6 +161,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     allTemplatePaths: selectedProps.allTemplatePaths,
     focusedPanel: selectedProps.focusedPanel,
     codeEditorTheme: selectedProps.codeEditorTheme,
+    fontSize: selectedProps.fontSize,
     selectedViews: selectedProps.selectedViews,
     selectedViewBounds: selectedViewBounds,
     highlightBounds: highlightBounds,

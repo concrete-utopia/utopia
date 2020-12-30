@@ -54,6 +54,7 @@ export interface CodeEditorProps {
   cursorPosition: CursorPosition | null
   canvasConsoleLogs: Array<ConsoleLog>
   codeEditorTheme: CodeEditorTheme
+  fontSize: number
 }
 
 interface CodeEditorState {
@@ -269,6 +270,7 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
                 highlightedViewsBounds={this.props.highlightedViewsBounds}
                 onHover={this.props.onHover}
                 selectedTheme={this.props.codeEditorTheme}
+                fontSize={this.props.fontSize}
               />
             </div>
             <CodeEditorTabPane

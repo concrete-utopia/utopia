@@ -55,6 +55,7 @@ interface MonacoWrapperProps {
   selectedViewsBounds: Array<HighlightBounds>
   highlightedViewsBounds: Array<HighlightBounds>
   selectedTheme: CodeEditorTheme
+  fontSize: number
 }
 
 export function runtimeErrorInfoToErrorMessage(
@@ -162,6 +163,12 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
 
     if (prevProps.selectedTheme !== this.props.selectedTheme) {
       initMonacoStyle(this.props.selectedTheme)
+    }
+
+    if (prevProps.fontSize !== this.props.fontSize) {
+      this.monacoEditor?.updateOptions({
+        fontSize: this.props.fontSize,
+      })
     }
 
     if (prevProps.filename != this.props.filename) {
@@ -517,7 +524,7 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
         language: 'model: null',
         model: this.getOrCreateModel(fileUri),
         fontFamily: `${CodeEditorFont}, Akkurat-Mono Menlo, Monaco, fixed`,
-        fontSize: 14,
+        fontSize: this.props.fontSize,
         wordWrap: 'on',
         smoothScrolling: true,
         autoIndent: 'full',
@@ -788,6 +795,10 @@ export class MonacoWrapper extends React.Component<MonacoWrapperProps, MonacoWra
 function initMonacoStyle(themeName: CodeEditorTheme) {
   monaco.editor.defineTheme(themeName, convertVSThemeToMonacoTheme(getThemeDefinition(themeName)))
   monaco.editor.setTheme(themeName)
+}
+
+function initMonacoFonts(fontSize: number) {
+  monaco.editor.updateOptions
 }
 
 function findModel(uri: string) {
