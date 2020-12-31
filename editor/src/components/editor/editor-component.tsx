@@ -55,7 +55,7 @@ interface NumberSize {
   width: number
   height: number
 }
-
+//test
 export interface EditorProps {
   propertyControlsInfoSupported: boolean
 }
