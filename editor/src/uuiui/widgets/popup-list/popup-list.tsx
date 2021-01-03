@@ -477,6 +477,7 @@ const Input = (props: InputProps) => {
       outline: 0,
       padding: 0,
       color: 'inherit',
+      cursor: 'default',
     }
   }, [props.isHidden])
   return (
