@@ -5,6 +5,7 @@ import { showToast, updateFrameDimensions } from '../../../editor/actions/action
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { getControlStyles } from '../../common/control-status'
 import { betterReactMemo } from '../../../../uuiui-deps'
+import { notice } from '../../../common/notices'
 
 interface ImageDensityControl {
   dispatch: EditorDispatch
@@ -46,10 +47,12 @@ export const ImageDensityControl = betterReactMemo(
           )
           if (!Number.isInteger(newWidth) || !Number.isInteger(newHeight)) {
             actions.push(
-              showToast({
-                message: `Image does not have native @${value}x dimensions: decimals used, and browser will apply rounding.`,
-                level: 'WARNING',
-              }),
+              showToast(
+                notice(
+                  `Image does not have native @${value}x dimensions: decimals used, and browser will apply rounding.`,
+                  'WARNING',
+                ),
+              ),
             )
           }
           dispatch(actions)
