@@ -6,9 +6,7 @@ import { betterReactMemo } from '../../../uuiui-deps'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { pickSelectionEnabled } from './select-mode/select-mode-hooks'
 
-interface DeselectControlProps {}
-
-export const DeselectControl = betterReactMemo<DeselectControlProps>('DeselectControl', (props) => {
+export const DeselectControl = betterReactMemo('DeselectControl', () => {
   const editorStateRef = useRefEditorState((store) => store.editor)
   const dispatch = useEditorState((store) => store.dispatch, 'DeselectControl dispatch')
 
