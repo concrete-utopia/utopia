@@ -32,7 +32,7 @@ import {
   FunctionIcons,
   SectionBodyArea,
 } from '../../uuiui'
-import { notice } from '../common/notices'
+import { notice } from '../common/notice'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch

@@ -30,7 +30,7 @@ import {
 import { useEditorState } from '../editor/store/store-hook'
 import { ScriptEditor, ScriptEditorProps } from './script-editor'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { Notice } from '../common/notices'
+import { Notice } from '../common/notice'
 import { CursorPosition } from './code-editor-utils'
 import { EditorPanel, setFocus } from '../common/actions'
 import { usePossiblyResolvedPackageDependencies } from '../editor/npm-dependency/npm-dependency'

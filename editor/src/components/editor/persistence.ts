@@ -28,7 +28,7 @@ import { getPNGBufferOfElementWithID } from './screenshot-utils'
 import { ProjectImportSuccess } from '../../core/model/project-import'
 import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
 import { DefaultTheme } from '../code-editor/code-editor-themes'
-import { notice } from '../common/notices'
+import { notice } from '../common/notice'
 
 interface NeverSaved {
   type: 'never-saved'

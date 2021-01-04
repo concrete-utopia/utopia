@@ -4,7 +4,8 @@ import { auth0Url } from '../../common/env-vars'
 import { setRedirectUrl } from '../../common/persistence'
 import { useEditorState } from './store/store-hook'
 
-import { NoticeLevel, NotificationBar } from '../common/notices'
+import { NotificationBar } from '../common/notices'
+import { NoticeLevel } from '../common/notice'
 import { betterReactMemo } from '../../uuiui-deps'
 
 export const BrowserInfoBar = betterReactMemo('EditorOfflineBar', () => {

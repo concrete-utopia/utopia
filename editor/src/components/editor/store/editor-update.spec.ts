@@ -61,7 +61,7 @@ import { getContentsTreeFileFromString } from '../../assets'
 import { openFileTab } from './editor-tabs'
 import { forceParseSuccessFromFileOrFail } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { notice } from '../../common/notices'
+import { notice } from '../../common/notice'
 
 const chaiExpect = Chai.expect
 

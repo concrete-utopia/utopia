@@ -22,7 +22,7 @@ import {
 } from './code-editor-utils'
 import { CodeEditorTabPane } from './code-problems'
 import { MonacoWrapper } from './monaco-wrapper'
-import { notice, Notice } from '../common/notices'
+import { notice, Notice } from '../common/notice'
 import { ProjectContentTreeRoot } from '../assets'
 
 const AutoSaveDelay = 300

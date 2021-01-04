@@ -32,7 +32,7 @@ import {
   SimpleFlexRow,
   Button,
 } from '../../uuiui'
-import { notice } from '../common/notices'
+import { notice } from '../common/notice'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean

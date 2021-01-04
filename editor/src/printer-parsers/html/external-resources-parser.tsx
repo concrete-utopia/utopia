@@ -1,7 +1,7 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
-import { notice } from '../../components/common/notices'
+import { notice } from '../../components/common/notice'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { addToast, updateFile } from '../../components/editor/actions/action-creators'
 import { defaultIndexHtmlFilePath, EditorState } from '../../components/editor/store/editor-state'

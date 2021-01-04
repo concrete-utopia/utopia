@@ -5,7 +5,7 @@ import { showToast, updateFrameDimensions } from '../../../editor/actions/action
 import { OptionChainControl } from '../../controls/option-chain-control'
 import { getControlStyles } from '../../common/control-status'
 import { betterReactMemo } from '../../../../uuiui-deps'
-import { notice } from '../../../common/notices'
+import { notice } from '../../../common/notice'
 
 interface ImageDensityControl {
   dispatch: EditorDispatch

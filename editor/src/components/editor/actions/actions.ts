@@ -439,7 +439,7 @@ import {
   RightMenuTab,
 } from '../../canvas/right-menu'
 
-import { notice, Notice } from '../../common/notices'
+import { notice, Notice } from '../../common/notice'
 import { objectMap } from '../../../core/shared/object-utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'

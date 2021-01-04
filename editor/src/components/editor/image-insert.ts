@@ -1,7 +1,7 @@
 import { fileTypeFromFileName } from '../../core/model/project-file-utils'
 import { extractFile, extractImage, FileResult } from '../../core/shared/file-utils'
 import { codeFile } from '../../core/shared/project-file-types'
-import { notice } from '../common/notices'
+import { notice } from '../common/notice'
 import { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/action-creators'
 
