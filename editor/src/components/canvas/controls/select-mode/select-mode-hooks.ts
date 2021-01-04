@@ -356,8 +356,6 @@ export function useSelectModeSelectAndHover(): {
     [dispatch, findValidTarget, startDragState, windowToCanvasCoordinates],
   )
 
-  // TODO deselect control under the canvas
-
   return { onMouseOver, onMouseOut, onMouseDown }
 }
 
