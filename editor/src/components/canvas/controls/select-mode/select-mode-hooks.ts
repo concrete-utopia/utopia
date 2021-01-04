@@ -36,11 +36,11 @@ import { selectElementsThatRespectLayout } from '../new-canvas-controls'
 
 const DRAG_START_TRESHOLD = 2
 
-export function pickIsResizing(dragState: DragState | null): boolean {
+export function isResizing(dragState: DragState | null): boolean {
   return dragState != null && dragState.type === 'RESIZE_DRAG_STATE' && dragState.drag != null
 }
 
-export function pickIsDragging(dragState: DragState | null): boolean {
+export function isDragging(dragState: DragState | null): boolean {
   return dragState != null && dragState.type === 'MOVE_DRAG_STATE' && dragState.drag != null
 }
 
@@ -61,16 +61,16 @@ export function useMaybeHighlightElement(): {
   const stateRef = useRefEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      isResizing: pickIsResizing(store.editor.canvas.dragState),
-      isDragging: pickIsDragging(store.editor.canvas.dragState),
+      resizing: isResizing(store.editor.canvas.dragState),
+      dragging: isDragging(store.editor.canvas.dragState),
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
     }
   })
 
   const maybeHighlightOnHover = React.useCallback(
     (target: TemplatePath): void => {
-      const { dispatch, isDragging, isResizing, selectionEnabled } = stateRef.current
-      if (selectionEnabled && !isDragging && !isResizing) {
+      const { dispatch, dragging, resizing, selectionEnabled } = stateRef.current
+      if (selectionEnabled && !dragging && !resizing) {
         dispatch([setHighlightedView(target)], 'canvas')
       }
     },
@@ -78,8 +78,8 @@ export function useMaybeHighlightElement(): {
   )
 
   const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    const { dispatch, isDragging, isResizing, selectionEnabled } = stateRef.current
-    if (selectionEnabled && !isDragging && !isResizing) {
+    const { dispatch, dragging, resizing, selectionEnabled } = stateRef.current
+    if (selectionEnabled && !dragging && !resizing) {
       dispatch([clearHighlightedViews()], 'canvas')
     }
   }, [stateRef])

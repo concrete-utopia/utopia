@@ -38,8 +38,8 @@ import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils
 import { colorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import {
-  pickIsDragging,
-  pickIsResizing,
+  isDragging,
+  isResizing,
   pickSelectionEnabled,
   useMaybeHighlightElement,
 } from './select-mode/select-mode-hooks'
@@ -222,8 +222,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const componentMetadata = getMetadata(props.editor)
 
-  const isResizing = pickIsResizing(props.editor.canvas.dragState)
-  const isDragging = pickIsDragging(props.editor.canvas.dragState)
+  const resizing = isResizing(props.editor.canvas.dragState)
+  const dragging = isDragging(props.editor.canvas.dragState)
   const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
 
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
@@ -309,8 +309,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             setSelectedViewsLocally={setSelectedViewsLocally}
             keysPressed={props.editor.keysPressed}
             windowToCanvasPosition={props.windowToCanvasPosition}
-            isDragging={isDragging}
-            isResizing={isResizing}
+            isDragging={dragging}
+            isResizing={resizing}
             selectionEnabled={selectionEnabled}
             maybeHighlightOnHover={maybeHighlightOnHover}
             maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
