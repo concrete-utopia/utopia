@@ -78,6 +78,20 @@ export const githubProjects: Array<GitRepoWithRevision> = [
     revision: 'b6ffef5c4a4b89c69299c2b04c9196dde59b3ef4',
     pathsToIgnore: [],
   },
+  {
+    name: 'context-provider-hooks-sample',
+    username: 'maltenuhn',
+    repositoryName: 'context-provider-hooks-sample',
+    revision: 'a9155e332fd9902cc9c122392234dedba8c47d9a',
+    pathsToIgnore: [],
+  },
+  {
+    name: 'constate',
+    username: 'diegohaz',
+    repositoryName: 'constate',
+    revision: '6858b1cb93f398359851af3a48a07ec47c8292a1',
+    pathsToIgnore: [],
+  },
 ]
 
 export async function downloadAndExtractRepo(gitRepo: GitRepoWithRevision): Promise<string> {
