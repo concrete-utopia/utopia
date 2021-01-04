@@ -314,7 +314,7 @@ export function useSelectModeSelectAndHover(): {
 
   const onMouseOver = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const validTemplatePath = findValidTarget(event.target as HTMLDivElement, event.metaKey)
+      const validTemplatePath = findValidTarget(event.target as HTMLElement, event.metaKey)
       if (
         validTemplatePath != null &&
         validTemplatePath.selectionMode === 'singleclick' && // we only show highlights for single-click selectable elements
@@ -332,7 +332,7 @@ export function useSelectModeSelectAndHover(): {
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const foundTarget = findValidTarget(event.target as HTMLDivElement, event.metaKey)
+      const foundTarget = findValidTarget(event.target as HTMLElement, event.metaKey)
       if (foundTarget != null) {
         callbackAfterDragExceedsThreshold(
           event.nativeEvent,
