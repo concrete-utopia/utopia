@@ -296,7 +296,7 @@ import {
   SetPropWithElementPath,
   SetSceneProp,
   SetStoredFontSettings,
-  PushToast,
+  AddToast,
   SetZIndex,
   ShowContextMenu,
   ShowModal,
@@ -331,7 +331,7 @@ import {
   SetSafeMode,
   SaveImageDetails,
   SetSaveError,
-  PopToast,
+  RemoveToast,
   InsertDroppedImage,
   ResetPropToDefault,
   UpdateNodeModulesContents,
@@ -439,7 +439,7 @@ import {
   RightMenuTab,
 } from '../../canvas/right-menu'
 
-import { Notice } from '../../common/notices'
+import { notice, Notice } from '../../common/notice'
 import { objectMap } from '../../../core/shared/object-utils'
 import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
 import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch-packages'
@@ -464,7 +464,7 @@ import {
 } from '../store/store-deep-equality-instances'
 import {
   showToast,
-  popToast,
+  removeToast,
   setPropWithElementPath_UNSAFE,
   clearImageFileBlob,
   updateFile,
@@ -1333,8 +1333,8 @@ function toastOnGeneratedElementsTargeted(
   const generatedElementsTargeted = areGeneratedElementsTargeted(targets, editor)
   let result: EditorState = editor
   if (generatedElementsTargeted) {
-    const showToastAction = showToast({ message: message })
-    result = UPDATE_FNS.PUSH_TOAST(showToastAction, result, dispatch)
+    const showToastAction = showToast(notice(message))
+    result = UPDATE_FNS.ADD_TOAST(showToastAction, result, dispatch)
   }
 
   if (!generatedElementsTargeted || allowActionRegardless) {
@@ -1463,8 +1463,8 @@ export const UPDATE_FNS = {
         const updatedProps = unsetJSXValueAtPath(element.props, action.property)
         const updatedResult = foldEither(
           (failureMessage) => {
-            const toastAction = showToast({ message: failureMessage, level: 'ERROR' })
-            return UPDATE_FNS.PUSH_TOAST(toastAction, editor, dispatch)
+            const toastAction = showToast(notice(failureMessage, 'ERROR'))
+            return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
           },
           (updated) => {
             return modifyOpenJsxElementAtPath(
@@ -1715,11 +1715,8 @@ export const UPDATE_FNS = {
     if (filteredNewlySelectedPaths === newlySelectedPaths) {
       return updatedEditor
     } else {
-      const showToastAction = showToast({
-        message: `Only one scene can be selected`,
-        level: 'WARNING',
-      })
-      return UPDATE_FNS.PUSH_TOAST(showToastAction, updatedEditor, dispatch)
+      const showToastAction = showToast(notice(`Only one scene can be selected`, 'WARNING'))
+      return UPDATE_FNS.ADD_TOAST(showToastAction, updatedEditor, dispatch)
     }
   },
   CLEAR_SELECTION: (editor: EditorModel): EditorModel => {
@@ -1789,18 +1786,20 @@ export const UPDATE_FNS = {
       )
     }
   },
-  PUSH_TOAST: (action: PushToast, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
-    setTimeout(() => dispatch([popToast()], 'everyone'), 5500)
+  ADD_TOAST: (action: AddToast, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+    if (!action.toast.persistent) {
+      setTimeout(() => dispatch([removeToast(action.toast.id)], 'everyone'), 5500)
+    }
 
     return {
       ...editor,
       toasts: [...editor.toasts, action.toast],
     }
   },
-  POP_TOAST: (action: PopToast, editor: EditorModel): EditorModel => {
+  REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      toasts: editor.toasts.slice(1),
+      toasts: editor.toasts.filter((toast) => toast.id !== action.id),
     }
   },
   TOGGLE_HIDDEN: (action: ToggleHidden, editor: EditorModel): EditorModel => {
@@ -2452,11 +2451,10 @@ export const UPDATE_FNS = {
 
       return modifyOpenParseSuccess(pasteToParseSuccess, editor)
     } else {
-      const showToastAction = showToast({
-        message: `Unable to paste into a generated element.`,
-        level: 'WARNING',
-      })
-      return UPDATE_FNS.PUSH_TOAST(showToastAction, editor, dispatch)
+      const showToastAction = showToast(
+        notice(`Unable to paste into a generated element.`, 'WARNING'),
+      )
+      return UPDATE_FNS.ADD_TOAST(showToastAction, editor, dispatch)
     }
   },
   COPY_SELECTION_TO_CLIPBOARD: (
@@ -2576,8 +2574,8 @@ export const UPDATE_FNS = {
 
     const shouldShowToast = targetWidth < hideWidth && priorWidth > minWidth
     const updatedEditor = shouldShowToast
-      ? UPDATE_FNS.PUSH_TOAST(
-          showToast({ message: 'Code editor hidden. Use the menu or resize to get it back.' }),
+      ? UPDATE_FNS.ADD_TOAST(
+          showToast(notice('Code editor hidden. Use the menu or resize to get it back.')),
           editor,
           dispatch,
         )
@@ -2614,8 +2612,8 @@ export const UPDATE_FNS = {
 
     const updatedEditor = codeEditorVisibleAfter
       ? editor
-      : UPDATE_FNS.PUSH_TOAST(
-          showToast({ message: 'Code editor hidden. Use the menu or resize to get it back.' }),
+      : UPDATE_FNS.ADD_TOAST(
+          showToast(notice('Code editor hidden. Use the menu or resize to get it back.')),
           editor,
           dispatch,
         )
@@ -2678,8 +2676,8 @@ export const UPDATE_FNS = {
 
     if (errorMessage != null) {
       console.error(errorMessage)
-      const toastAction = showToast({ message: errorMessage!, level: 'WARNING' })
-      return UPDATE_FNS.PUSH_TOAST(toastAction, updatedEditor, dispatch)
+      const toastAction = showToast(notice(errorMessage!, 'WARNING'))
+      return UPDATE_FNS.ADD_TOAST(toastAction, updatedEditor, dispatch)
     } else {
       return updatedEditor
     }
@@ -2870,22 +2868,16 @@ export const UPDATE_FNS = {
           dispatch(
             [
               ...actionsToRunAfterSave,
-              showToast({ message: `Succesfully uploaded ${assetFilename}`, level: 'INFO' }),
+              showToast(notice(`Succesfully uploaded ${assetFilename}`, 'INFO')),
             ],
             'everyone',
           )
         })
         .catch(() => {
-          dispatch([showToast({ message: `Failed to upload ${assetFilename}`, level: 'ERROR' })])
+          dispatch([showToast(notice(`Failed to upload ${assetFilename}`, 'ERROR'))])
         })
     } else {
-      dispatch([
-        showToast({
-          message: `Please log in to upload assets`,
-          level: 'ERROR',
-          persistent: true,
-        }),
-      ])
+      dispatch([showToast(notice(`Please log in to upload assets`, 'ERROR', true))])
     }
 
     const updatedProjectContents = addFileToProjectContents(
@@ -2984,12 +2976,14 @@ export const UPDATE_FNS = {
           }
         }
         case 'SAVE_IMAGE_REPLACE': {
-          const toastAction = showToast({
-            message: 'Assets replaced. You may need to reload the editor to see changes.',
-            level: 'WARNING',
-            persistent: true,
-          })
-          return UPDATE_FNS.PUSH_TOAST(toastAction, editor, dispatch)
+          const toastAction = showToast(
+            notice(
+              'Assets replaced. You may need to reload the editor to see changes.',
+              'WARNING',
+              true,
+            ),
+          )
+          return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
         }
         case 'SAVE_IMAGE_DO_NOTHING':
           return editor
@@ -3147,12 +3141,8 @@ export const UPDATE_FNS = {
       editor.projectContents,
     )
     if (replaceFilePathResults.type === 'FAILURE') {
-      const toastAction = showToast({
-        message: replaceFilePathResults.errorMessage,
-        level: 'ERROR',
-        persistent: true,
-      })
-      return UPDATE_FNS.PUSH_TOAST(toastAction, editor, dispatch)
+      const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))
+      return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
     } else {
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)

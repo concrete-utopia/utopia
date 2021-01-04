@@ -1,31 +1,10 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import * as EditorActions from '../editor/actions/action-creators'
 import * as React from 'react'
 import { UtopiaStyles, SimpleFlexRow, UtopiaTheme, SimpleFlexColumn } from '../../uuiui'
-
-/**
- *  - _Error_: High visibility
- *  - _Warning_: High visisibility
- *  - _Primary_: Medium high visibility. Use for CTAs, nudges
- *  - _Success_: Medium visibility. Use for async or higher-failure-probability positive outcomes
- *  - _Notice_: Medium visibility. Use for synchronous info, confirmation, or to stand out from background
- *  - _Info_: Low visibility. Use to display information that can blend into background
- *
- * */
-export type NoticeLevel = 'ERROR' | 'WARNING' | 'PRIMARY' | 'SUCCESS' | 'NOTICE' | 'INFO'
-export interface Notice {
-  message: React.ReactChild
-  persistent?: boolean
-  level?: NoticeLevel
-}
-
-export function notice(
-  message: React.ReactChild,
-  persistent: boolean = false,
-  level: NoticeLevel = 'INFO',
-): Notice {
-  return { message: message, persistent: persistent, level: level }
-}
+import { useEditorState } from '../editor/store/store-hook'
+import { Notice, NoticeLevel } from './notice'
 
 interface NoticeProps extends Notice {
   style?: React.CSSProperties
@@ -53,37 +32,76 @@ export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
  * **Layout**: use as flex child with fixed height
  * **Level**: see NoticeLevel jsdoc
  */
-export const Toast: React.FunctionComponent<NoticeProps> = (props) => (
-  <div
-    key={'toast-item'}
-    className={'fadeout'}
-    style={{
-      ...getStylesForLevel(props.level || 'INFO'),
-      boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
-      borderRadius: 3,
-      overflowWrap: 'break-word',
-      wordWrap: 'break-word',
-      hyphens: 'auto',
-      whiteSpace: 'normal',
-      maxWidth: 400,
-      width: 400,
-      padding: 12,
-      fontWeight: 500,
-      letterSpacing: 0.2,
-      margin: '5px',
-    }}
-  >
-    {props.message}
-  </div>
-)
+export const Toast: React.FunctionComponent<NoticeProps> = (props) => {
+  const dispatch = useEditorState((store) => store.dispatch, 'Toast dispatch')
+  const deleteNotice = React.useCallback(() => {
+    dispatch([EditorActions.removeToast(props.id)])
+  }, [dispatch, props.id])
 
+  return (
+    <div
+      key={'toast-item'}
+      style={{
+        ...getStylesForLevel(props.level || 'INFO'),
+        boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
+        borderRadius: 3,
+        width: 270,
+        minHeight: 27,
+        overflow: 'hidden',
+        overflowWrap: 'break-word',
+        wordWrap: 'break-word',
+        hyphens: 'auto',
+        whiteSpace: 'normal',
+        margin: '5px',
+        display: 'flex',
+        alignItems: 'stretch',
+      }}
+    >
+      <div
+        style={{ flexGrow: 1, fontWeight: 500, padding: 8, display: 'flex', alignItems: 'center' }}
+        id='toast-message'
+      >
+        {props.message}
+      </div>
+
+      <div
+        css={{
+          backgroundColor: 'hsl(0,0%,0%,3%)',
+          display: 'flex',
+          flex: '0 0 24px',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 14,
+          cursor: 'pointer',
+          '&:hover': {
+            backgroundColor: 'hsl(0,0%,0%,5%)',
+          },
+          '&:active': {
+            backgroundColor: 'hsl(0,0%,0%,6%)',
+          },
+        }}
+        onClick={deleteNotice}
+        id='toast-button'
+      >
+        ×
+      </div>
+    </div>
+  )
+}
+
+interface NotificationBarProps {
+  message: React.ReactChild
+  level?: NoticeLevel
+  style?: React.CSSProperties
+  onClick?: () => void
+}
 /**
  * Show information atop the editor
  *
  * **Layout**: use as flex child with fixed height
  * **Level**: see NoticeLevel jsdoc
  */
-export const NotificationBar: React.FunctionComponent<NoticeProps> = (props) => (
+export const NotificationBar: React.FunctionComponent<NotificationBarProps> = (props) => (
   <SimpleFlexRow
     style={{
       flexGrow: 0,
@@ -101,13 +119,19 @@ export const NotificationBar: React.FunctionComponent<NoticeProps> = (props) => 
   </SimpleFlexRow>
 )
 
+interface InfoBoxProps {
+  message: React.ReactChild
+  level?: NoticeLevel
+  style?: React.CSSProperties
+  onClick?: () => void
+}
 /**
  * Displays information in color-coded box eg in the inspector or navigator
  *
  * **Layout**: takes full width, sizes itself to height
  * **Level**: see NoticeLevel jsdoc
  */
-export const InfoBox: React.FunctionComponent<NoticeProps> = (props) => (
+export const InfoBox: React.FunctionComponent<InfoBoxProps> = (props) => (
   <SimpleFlexColumn
     style={{
       padding: 8,

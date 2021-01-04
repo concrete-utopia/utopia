@@ -46,7 +46,7 @@ import type { RightMenuTab } from '../../canvas/right-menu'
 import type { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import type { CursorPosition } from '../../code-editor/code-editor-utils'
 import type { EditorPane, EditorPanel } from '../../common/actions'
-import type { Notice } from '../../common/notices'
+import { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
@@ -90,9 +90,9 @@ import type {
   OpenPopup,
   OpenTextEditor,
   PasteJSXElements,
-  PopToast,
   PropertyControlsIFrameReady,
-  PushToast,
+  AddToast,
+  RemoveToast,
   Redo,
   RedrawOldCanvasControls,
   RegenerateThumbnail,
@@ -403,21 +403,22 @@ export function enableInsertModeForScene(name: JSXElementName | 'scene'): Switch
   return switchEditorMode(EditorModes.insertMode(false, SceneInsertionSubject()))
 }
 
-export function pushToast(toastContent: Notice): PushToast {
+export function addToast(toastContent: Notice): AddToast {
   return {
-    action: 'PUSH_TOAST',
+    action: 'ADD_TOAST',
     toast: toastContent,
   }
 }
 
-export function popToast(): PopToast {
+export function removeToast(id: string): RemoveToast {
   return {
-    action: 'POP_TOAST',
+    action: 'REMOVE_TOAST',
+    id: id,
   }
 }
 
-export function showToast(toastContent: Notice): PushToast {
-  return pushToast(toastContent)
+export function showToast(toastContent: Notice): AddToast {
+  return addToast(toastContent)
 }
 
 let selectionControlTimer: any // TODO maybe this should live inside the editormodel

@@ -129,7 +129,7 @@ import {
   toString,
 } from '../../../core/shared/template-path'
 
-import { Notice } from '../../common/notices'
+import { Notice } from '../../common/notice'
 import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
