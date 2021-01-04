@@ -44,6 +44,8 @@ import {
   setSaveError,
   updateNodeModulesContents,
   updatePackageJson,
+  addToast,
+  removeToast,
 } from '../actions/action-creators'
 import * as History from '../history'
 import { EditorState, getOpenUtopiaJSXComponentsFromState, defaultUserState } from './editor-state'
@@ -59,6 +61,7 @@ import { getContentsTreeFileFromString } from '../../assets'
 import { openFileTab } from './editor-tabs'
 import { forceParseSuccessFromFileOrFail } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { notice } from '../../common/notices'
 
 const chaiExpect = Chai.expect
 
@@ -743,86 +746,177 @@ describe('action SET_SAVE_ERROR', () => {
   })
 })
 
-it('action UPDATE_NODE_MODULES incrementally', () => {
-  const { editor, derivedState } = createEditorStates('/src/app.ui.js')
-  const mockDispatch = jest.fn()
-  editor.nodeModules = {
-    skipDeepFreeze: true,
-    files: {
-      '/node_modules/example.js': esCodeFile('nothing to see here', null),
-    },
-    projectFilesBuildResults: {},
-    packageStatus: {},
-  }
+describe('action ADD_TOAST and REMOVE_TOAST', () => {
+  it('ADD_TOAST pushes to existing toasts in state, REMOVE_TOAST removes the toast with the given id', () => {
+    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
 
-  const nodeModules = createNodeModules(fileWithImports.contents)
-  const action = updateNodeModulesContents(nodeModules, 'incremental')
-  const updatedEditor = runLocalEditorAction(
-    editor,
-    derivedState,
-    defaultUserState,
-    workers,
-    action,
-    History.init(editor, derivedState),
-    mockDispatch,
-    emptyUiJsxCanvasContextData(),
-  )
+    const firstToast = notice('toast1')
+    const updatedEditor = runLocalEditorAction(
+      editor,
+      derivedState,
+      defaultUserState,
+      workers,
+      addToast(firstToast),
+      History.init(editor, derivedState),
+      dispatch,
+      emptyUiJsxCanvasContextData(),
+    )
+    expect(updatedEditor.toasts).toHaveLength(1)
+    expect(updatedEditor.toasts[0]).toEqual(firstToast)
 
-  expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeDefined()
-  expect(
-    updatedEditor.nodeModules.files['/node_modules/mypackage/code-using-module-exports.js'],
-  ).toEqual(nodeModules['/node_modules/mypackage/code-using-module-exports.js'])
+    const secondToast = notice('toast2')
+    const updatedEditor2 = runLocalEditorAction(
+      updatedEditor,
+      derivedState,
+      defaultUserState,
+      workers,
+      addToast(secondToast),
+      History.init(editor, derivedState),
+      dispatch,
+      emptyUiJsxCanvasContextData(),
+    )
+    expect(updatedEditor2.toasts).toHaveLength(2)
+    expect(updatedEditor2.toasts[0]).toEqual(firstToast)
+    expect(updatedEditor2.toasts[1]).toEqual(secondToast)
+
+    const thirdToast = notice('toast3')
+    const updatedEditor3 = runLocalEditorAction(
+      updatedEditor2,
+      derivedState,
+      defaultUserState,
+      workers,
+      addToast(thirdToast),
+      History.init(editor, derivedState),
+      dispatch,
+      emptyUiJsxCanvasContextData(),
+    )
+    expect(updatedEditor3.toasts).toHaveLength(3)
+    expect(updatedEditor3.toasts[0]).toEqual(firstToast)
+    expect(updatedEditor3.toasts[1]).toEqual(secondToast)
+    expect(updatedEditor3.toasts[2]).toEqual(thirdToast)
+
+    const updatedEditor4 = runLocalEditorAction(
+      updatedEditor3,
+      derivedState,
+      defaultUserState,
+      workers,
+      removeToast(secondToast.id),
+      History.init(editor, derivedState),
+      dispatch,
+      emptyUiJsxCanvasContextData(),
+    )
+
+    expect(updatedEditor4.toasts).toHaveLength(2)
+    expect(updatedEditor4.toasts[0]).toEqual(firstToast)
+    expect(updatedEditor4.toasts[1]).toEqual(thirdToast)
+  })
+
+  it('ADD_TOAST schedules a REMOVE_TOAST', () => {
+    const { editor, derivedState } = createEditorStates('/src/app.js')
+    const mockDispatch = jest.fn()
+
+    const toast = notice('toast1')
+    runLocalEditorAction(
+      editor,
+      derivedState,
+      defaultUserState,
+      workers,
+      addToast(toast),
+      History.init(editor, derivedState),
+      mockDispatch,
+      emptyUiJsxCanvasContextData(),
+    )
+
+    jest.runAllTimers()
+
+    expect(mockDispatch).toBeCalledTimes(1)
+    expect(mockDispatch).toBeCalledWith([removeToast(toast.id)], 'everyone')
+  })
 })
 
-it('action UPDATE_NODE_MODULES from scratch', () => {
-  const { editor, derivedState } = createEditorStates('/src/app.ui.js')
-  const mockDispatch = jest.fn()
+describe('updating node_modules', () => {
+  it('action UPDATE_NODE_MODULES incrementally', () => {
+    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const mockDispatch = jest.fn()
+    editor.nodeModules = {
+      skipDeepFreeze: true,
+      files: {
+        '/node_modules/example.js': esCodeFile('nothing to see here', null),
+      },
+      projectFilesBuildResults: {},
+      packageStatus: {},
+    }
 
-  const nodeModules = createNodeModules(fileWithImports.contents)
-  const action = updateNodeModulesContents(nodeModules, 'full-build')
-  const updatedEditor = runLocalEditorAction(
-    editor,
-    derivedState,
-    defaultUserState,
-    workers,
-    action,
-    History.init(editor, derivedState),
-    mockDispatch,
-    emptyUiJsxCanvasContextData(),
-  )
+    const nodeModules = createNodeModules(fileWithImports.contents)
+    const action = updateNodeModulesContents(nodeModules, 'incremental')
+    const updatedEditor = runLocalEditorAction(
+      editor,
+      derivedState,
+      defaultUserState,
+      workers,
+      action,
+      History.init(editor, derivedState),
+      mockDispatch,
+      emptyUiJsxCanvasContextData(),
+    )
 
-  expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeUndefined()
-  expect(updatedEditor.nodeModules.files).toEqual(nodeModules)
+    expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeDefined()
+    expect(
+      updatedEditor.nodeModules.files['/node_modules/mypackage/code-using-module-exports.js'],
+    ).toEqual(nodeModules['/node_modules/mypackage/code-using-module-exports.js'])
+  })
+
+  it('action UPDATE_NODE_MODULES from scratch', () => {
+    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const mockDispatch = jest.fn()
+
+    const nodeModules = createNodeModules(fileWithImports.contents)
+    const action = updateNodeModulesContents(nodeModules, 'full-build')
+    const updatedEditor = runLocalEditorAction(
+      editor,
+      derivedState,
+      defaultUserState,
+      workers,
+      action,
+      History.init(editor, derivedState),
+      mockDispatch,
+      emptyUiJsxCanvasContextData(),
+    )
+
+    expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeUndefined()
+    expect(updatedEditor.nodeModules.files).toEqual(nodeModules)
+  })
 })
 
-it('action UPDATE_PACKAGE_JSON', () => {
-  const { editor, derivedState } = createEditorStates('/src/app.ui.js')
-  const mockDispatch = jest.fn()
+describe('updating package.json', () => {
+  it('action UPDATE_PACKAGE_JSON', () => {
+    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const mockDispatch = jest.fn()
 
-  const deps = [
-    requestedNpmDependency('mypackage', '1.0.0'),
-    requestedNpmDependency('smart', '2.3.1'),
-  ]
-  const action = updatePackageJson(deps)
-  const updatedEditor = runLocalEditorAction(
-    editor,
-    derivedState,
-    defaultUserState,
-    workers,
-    action,
-    History.init(editor, derivedState),
-    mockDispatch,
-    emptyUiJsxCanvasContextData(),
-  )
+    const deps = [
+      requestedNpmDependency('mypackage', '1.0.0'),
+      requestedNpmDependency('smart', '2.3.1'),
+    ]
+    const action = updatePackageJson(deps)
+    const updatedEditor = runLocalEditorAction(
+      editor,
+      derivedState,
+      defaultUserState,
+      workers,
+      action,
+      History.init(editor, derivedState),
+      mockDispatch,
+      emptyUiJsxCanvasContextData(),
+    )
 
-  const packageJsonFile = getContentsTreeFileFromString(
-    updatedEditor.projectContents,
-    '/package.json',
-  )
-  if (packageJsonFile == null || packageJsonFile.type != 'TEXT_FILE') {
-    fail('Package.json file should exist and should be a TextFile')
-  } else {
-    expect(packageJsonFile.fileContents).toMatchInlineSnapshot(`
+    const packageJsonFile = getContentsTreeFileFromString(
+      updatedEditor.projectContents,
+      '/package.json',
+    )
+    if (packageJsonFile == null || packageJsonFile.type != 'TEXT_FILE') {
+      fail('Package.json file should exist and should be a TextFile')
+    } else {
+      expect(packageJsonFile.fileContents).toMatchInlineSnapshot(`
         Object {
           "code": "{
           \\"name\\": \\"Utopia Project\\",
@@ -843,5 +937,6 @@ it('action UPDATE_PACKAGE_JSON', () => {
           "revisionsState": "CODE_AHEAD",
         }
       `)
-  }
+    }
+  })
 })
