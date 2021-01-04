@@ -204,6 +204,7 @@ export class InsertModeControlContainer extends React.Component<
 
     return (
       <ComponentAreaControl
+        mouseEnabled={true}
         key={TP.toComponentId(target)}
         componentMetadata={this.props.componentMetadata}
         target={target}
@@ -238,6 +239,7 @@ export class InsertModeControlContainer extends React.Component<
     return (
       <ComponentLabelControl
         key={TP.toComponentId(target)}
+        mouseEnabled={true}
         componentMetadata={this.props.componentMetadata}
         target={target}
         frame={frame}
