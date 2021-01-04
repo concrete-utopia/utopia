@@ -1,10 +1,10 @@
 import { last, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
 import {
+  canvasPoint,
   CanvasVector,
   negate,
   offsetPoint,
-  RawPoint,
   roundPointToNearestHalf,
   scaleVector,
   windowPoint,
@@ -79,11 +79,11 @@ export function windowToCanvasCoordinates(
     const canvasDivCoords = {
       x: screenPoint.x - canvasWrapperRect.left,
       y: screenPoint.y - canvasWrapperRect.top,
-    } as RawPoint
+    } as WindowPoint
     const inverseOffset = negate(canvasOffset)
     const inverseScale = 1 / canvasScale
-    const pagePosition = scaleVector(canvasDivCoords, inverseScale)
-    const canvasPositionRaw = offsetPoint(pagePosition as any, inverseOffset)
+    const pagePosition = canvasPoint(scaleVector(canvasDivCoords, inverseScale))
+    const canvasPositionRaw = offsetPoint(pagePosition, inverseOffset)
     return {
       windowPosition: windowPoint({ x: screenPoint.x, y: screenPoint.y }),
       canvasPositionRaw: canvasPositionRaw,
