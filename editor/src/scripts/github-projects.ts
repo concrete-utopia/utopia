@@ -29,6 +29,55 @@ export const githubProjects: Array<GitRepoWithRevision> = [
     revision: 'd3eeb96536d9e7a78435b967a41d656164535528',
     pathsToIgnore: [],
   },
+  {
+    name: 'ant-design',
+    username: 'utopia-test',
+    repositoryName: 'ant-design',
+    revision: '739f87ed3dcf613214e7504cf712ac9f1c03d315',
+    pathsToIgnore: [],
+  },
+  {
+    name: 'react-select',
+    username: 'JedWatson',
+    repositoryName: 'react-select',
+    revision: 'd1e660c6b261d7fd60a85a6eca2ee9e3e0348ea2',
+    pathsToIgnore: ['__tests__'],
+  },
+  {
+    name: 'react-data-grid',
+    username: 'adazzle',
+    repositoryName: 'react-data-grid',
+    revision: 'd7e2ba8be54931d69b6e58667813c8f8448f00e9',
+    pathsToIgnore: [],
+  },
+  {
+    name: 'react-resizable',
+    username: 'STRML',
+    repositoryName: 'react-resizable',
+    revision: '09fd865c0e1cc570caa8d67e44a2e56172d3d816',
+    pathsToIgnore: [],
+  },
+  {
+    name: 'react-dates',
+    username: 'airbnb',
+    repositoryName: 'react-dates',
+    revision: 'b66dbe4397c7307946abecb10bf37914ebc746f9',
+    pathsToIgnore: [],
+  },
+  {
+    name: 'react-big-calendar',
+    username: 'jquense',
+    repositoryName: 'react-big-calendar',
+    revision: '8ffe39dccce5ec7bcac618f9494c21ae557b3537',
+    pathsToIgnore: [],
+  },
+  {
+    name: 'react-responsive',
+    username: 'contra',
+    repositoryName: 'react-responsive',
+    revision: 'b6ffef5c4a4b89c69299c2b04c9196dde59b3ef4',
+    pathsToIgnore: [],
+  },
 ]
 
 export async function downloadAndExtractRepo(gitRepo: GitRepoWithRevision): Promise<string> {
