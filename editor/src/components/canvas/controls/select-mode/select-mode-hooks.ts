@@ -15,7 +15,7 @@ import * as TP from '../../../../core/shared/template-path'
 import { NO_OP } from '../../../../core/shared/utils'
 import { KeysPressed } from '../../../../utils/keyboard'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
-import utils from '../../../../utils/utils'
+import Utils from '../../../../utils/utils'
 import {
   clearHighlightedViews,
   clearSelection,
@@ -111,7 +111,7 @@ export function getSelectableViews(
     const scenes = MetadataUtils.getAllScenePaths(componentMetadata.components)
     let rootElementsToFilter: TemplatePath[] = []
     let dynamicScenesWithFragmentRootViews: ScenePath[] = []
-    utils.fastForEach(scenes, (path) => {
+    Utils.fastForEach(scenes, (path) => {
       const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata.components, path)
       const rootElements = scene?.rootElements
       if (
@@ -127,8 +127,8 @@ export function getSelectableViews(
       return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
     })
     let siblings: Array<TemplatePath> = []
-    utils.fastForEach(selectedViews, (view) => {
-      utils.fastForEach(TP.allPaths(view), (ancestor) => {
+    Utils.fastForEach(selectedViews, (view) => {
+      Utils.fastForEach(TP.allPaths(view), (ancestor) => {
         const ancestorChildren = MetadataUtils.getImmediateChildren(componentMetadata, ancestor)
 
         siblings.push(...ancestorChildren.map((child) => child.templatePath))
