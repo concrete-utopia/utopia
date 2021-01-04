@@ -12,7 +12,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import { ScenePath, TemplatePath } from '../../../../core/shared/project-file-types'
 import * as TP from '../../../../core/shared/template-path'
-import { NO_OP } from '../../../../core/shared/utils'
+import { fastForEach, NO_OP } from '../../../../core/shared/utils'
 import { KeysPressed } from '../../../../utils/keyboard'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
@@ -130,8 +130,7 @@ export function getSelectableViews(
     Utils.fastForEach(selectedViews, (view) => {
       Utils.fastForEach(TP.allPaths(view), (ancestor) => {
         const ancestorChildren = MetadataUtils.getImmediateChildren(componentMetadata, ancestor)
-
-        siblings.push(...ancestorChildren.map((child) => child.templatePath))
+        fastForEach(ancestorChildren, (child) => siblings.push(child.templatePath))
       })
     })
 
