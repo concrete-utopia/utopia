@@ -202,7 +202,6 @@ export const intrinsicHTMLElementNamesThatSupportChildren: Array<string> = [
   'section',
 ]
 
-// eslint-disable-next-line no-restricted-globals
 export function getDOMAttribute(element: Element, attributeName: string): string | null {
   const attr = element.attributes.getNamedItemNS(null, attributeName)
   if (attr == null) {
@@ -212,7 +211,6 @@ export function getDOMAttribute(element: Element, attributeName: string): string
   }
 }
 
-// eslint-disable-next-line no-restricted-globals
 export function setDOMAttribute(element: Element, attributeName: string, value: string): void {
   const attr = document.createAttributeNS(null, attributeName)
   attr.value = value

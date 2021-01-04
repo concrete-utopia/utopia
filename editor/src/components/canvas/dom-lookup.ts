@@ -14,7 +14,6 @@ import { TemplatePath } from '../../core/shared/project-file-types'
 import * as TP from '../../core/shared/template-path'
 import { CanvasPositions } from './canvas-types'
 
-// eslint-disable-next-line no-restricted-globals
 export function findParentSceneValidPaths(target: Element): Array<string> | null {
   const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
   if (validPaths != null) {
@@ -30,7 +29,6 @@ export function findParentSceneValidPaths(target: Element): Array<string> | null
 
 export function findFirstParentWithValidUID(
   validTemplatePaths: Array<string>,
-  // eslint-disable-next-line no-restricted-globals
   target: Element,
 ): string | null {
   const uid = getDOMAttribute(target, 'data-uid')

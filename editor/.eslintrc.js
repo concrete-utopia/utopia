@@ -39,7 +39,6 @@ module.exports = {
       'confirm',
       'defaultStatus',
       'defaultstatus',
-      'Element',
       'event',
       'external',
       'find',

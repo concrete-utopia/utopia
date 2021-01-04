@@ -156,7 +156,7 @@ export function getSelectableViews(
 }
 
 function useFindValidTarget(): (
-  targetHtmlElement: HTMLElement,
+  targetHtmlElement: Element,
   allElementsDirectlySelectable: boolean,
 ) => {
   templatePath: TemplatePath
@@ -172,7 +172,7 @@ function useFindValidTarget(): (
   })
 
   return React.useCallback(
-    (targetHtmlElement: HTMLElement, allElementsDirectlySelectable: boolean) => {
+    (targetHtmlElement: Element, allElementsDirectlySelectable: boolean) => {
       const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
@@ -182,7 +182,7 @@ function useFindValidTarget(): (
       )
       const validElementMouseOver: string | null = findFirstParentWithValidUID(
         selectableViews.map(TP.toString),
-        targetHtmlElement as HTMLElement,
+        targetHtmlElement,
       )
       const validTemplatePath: TemplatePath | null =
         validElementMouseOver != null ? TP.fromString(validElementMouseOver) : null
@@ -314,7 +314,7 @@ export function useSelectModeSelectAndHover(): {
 
   const onMouseOver = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const validTemplatePath = findValidTarget(event.target as HTMLElement, event.metaKey)
+      const validTemplatePath = findValidTarget(event.target as Element, event.metaKey)
       if (
         validTemplatePath != null &&
         validTemplatePath.selectionMode === 'singleclick' && // we only show highlights for single-click selectable elements
@@ -332,7 +332,7 @@ export function useSelectModeSelectAndHover(): {
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const foundTarget = findValidTarget(event.target as HTMLElement, event.metaKey)
+      const foundTarget = findValidTarget(event.target as Element, event.metaKey)
       if (foundTarget != null) {
         callbackAfterDragExceedsThreshold(
           event.nativeEvent,
