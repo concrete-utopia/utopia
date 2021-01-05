@@ -160,6 +160,7 @@ import type {
   UnsetSceneProp,
   UnwrapGroupOrView,
   UnwrapLayoutable,
+  UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
   UpdateEditorMode,
@@ -1197,5 +1198,13 @@ export function sendLinterRequestMessage(
     action: 'SEND_LINTER_REQUEST_MESSAGE',
     filePath: filePath,
     content: content,
+  }
+}
+
+export function updateChildText(target: InstancePath, text: string): UpdateChildText {
+  return {
+    action: 'UPDATE_CHILD_TEXT',
+    target: target,
+    text: text,
   }
 }

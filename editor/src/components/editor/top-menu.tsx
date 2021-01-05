@@ -18,7 +18,7 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
   }, [dispatch])
 
   return (
-    <SimpleFlexRow>
+    <SimpleFlexRow style={{ flexGrow: 1 }}>
       <Tooltip title={'Navigator'} placement={'bottom'}>
         <span>
           <RightMenuTile

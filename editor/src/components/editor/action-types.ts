@@ -764,6 +764,12 @@ export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
 
+export interface UpdateChildText {
+  action: 'UPDATE_CHILD_TEXT'
+  target: InstancePath
+  text: string
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -891,6 +897,7 @@ export type EditorAction =
   | UpdatePropertyControlsInfo
   | PropertyControlsIFrameReady
   | AddStoryboardFile
+  | UpdateChildText
 
 export type DispatchPriority =
   | 'everyone'
