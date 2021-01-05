@@ -25,6 +25,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           utopiaJSXComponent(
             'App',
             false,
+            'var',
             null,
             [],
             jsxElement('div', {}, []),
@@ -51,6 +52,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           utopiaJSXComponent(
             'App',
             false,
+            'var',
             null,
             [],
             jsxElement('div', {}, []),
@@ -71,6 +73,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           utopiaJSXComponent(
             'App',
             false,
+            'var',
             null,
             [],
             jsxElement('div', {}, []),
@@ -97,6 +100,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           utopiaJSXComponent(
             'App',
             false,
+            'var',
             null,
             [],
             jsxElement('span', {}, []),
@@ -117,6 +121,7 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
           utopiaJSXComponent(
             'App',
             false,
+            'var',
             null,
             [],
             jsxElement('div', {}, []),
@@ -155,6 +160,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               utopiaJSXComponent(
                 'App',
                 false,
+                'var',
                 null,
                 [],
                 jsxElement('div', {}, []),
@@ -194,6 +200,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               utopiaJSXComponent(
                 'App',
                 false,
+                'var',
                 null,
                 [],
                 jsxElement('div', {}, []),
@@ -228,6 +235,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               utopiaJSXComponent(
                 'App',
                 false,
+                'var',
                 null,
                 [],
                 jsxElement('div', {}, []),
@@ -267,6 +275,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               utopiaJSXComponent(
                 'App',
                 false,
+                'var',
                 null,
                 [],
                 jsxElement('div', {}, []),
@@ -301,6 +310,7 @@ describe('DerivedStateKeepDeepEquality', () => {
               utopiaJSXComponent(
                 'App',
                 false,
+                'var',
                 null,
                 [],
                 jsxElement('div', {}, []),

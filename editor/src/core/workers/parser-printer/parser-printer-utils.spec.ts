@@ -18,6 +18,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('aa') }, []),
@@ -34,6 +35,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('root') }, [
@@ -62,6 +64,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeFunctionCall('someFunction', []) }, []),
@@ -84,6 +87,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
@@ -105,6 +109,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
@@ -126,6 +131,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [

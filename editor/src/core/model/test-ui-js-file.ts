@@ -30,20 +30,23 @@ const sampleIncludedElementTypes: Array<string> = [
   'Image',
 ]
 
-export const sampleDefaultImports = {
+export const onlyImportReact: Imports = {
   react: {
     importedWithName: null,
     importedFromWithin: [],
     importedAs: 'React',
     comments: emptyComments,
   },
+}
+
+export const sampleDefaultImports: Imports = mergeImports(onlyImportReact, {
   'utopia-api': {
     importedWithName: null,
     importedFromWithin: [importAlias('UtopiaUtils')],
     importedAs: null,
     comments: emptyComments,
   },
-}
+})
 
 export const sampleImportsForTests: Imports = mergeImports(
   sampleDefaultImports,
@@ -59,6 +62,7 @@ const MainComponentForTestsName = 'Test'
 const mainComponentForTests = utopiaJSXComponent(
   MainComponentForTestsName,
   true,
+  'var',
   defaultPropsParam,
   [],
   jsxElement(
@@ -248,6 +252,7 @@ const mainComponentForTests = utopiaJSXComponent(
 const scene = utopiaJSXComponent(
   'MyComponent',
   true,
+  'var',
   defaultPropsParam,
   [],
   jsxElement(
@@ -285,6 +290,7 @@ const Scene2 = defaultSceneElement(
 const TestStoryboard = utopiaJSXComponent(
   BakedInStoryboardVariableName,
   false,
+  'var',
   null,
   [],
   jsxElement('Storyboard', { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) }, [

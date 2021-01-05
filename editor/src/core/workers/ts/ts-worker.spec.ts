@@ -148,6 +148,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               type: 'UTOPIA_JSX_COMPONENT',
               name: 'App',
               isFunction: true,
+              declarationSyntax: 'var',
               param: {
                 type: 'PARAM',
                 dotDotDotToken: false,

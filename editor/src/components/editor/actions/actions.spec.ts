@@ -84,6 +84,7 @@ describe('SET_PROP', () => {
         utopiaJSXComponent(
           'MyView',
           true,
+          'var',
           defaultPropsParam,
           [],
           jsxElement(
@@ -166,6 +167,7 @@ describe('SET_CANVAS_FRAMES', () => {
     utopiaJSXComponent(
       'MyView',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement(
@@ -275,6 +277,7 @@ describe('moveTemplate', () => {
           utopiaJSXComponent(
             `MyView${index}`,
             true,
+            'var',
             defaultPropsParam,
             [],
             element,
@@ -784,6 +787,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   const firstTopLevelElement = utopiaJSXComponent(
     'App',
     true,
+    'var',
     null,
     [],
     rootElement,

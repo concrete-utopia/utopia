@@ -50,6 +50,8 @@ import {
   singleLineComment,
   multiLineComment,
   WithComments,
+  VarLetOrConst,
+  FunctionDeclarationSyntax,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -461,8 +463,12 @@ function printUtopiaJSXComponent(
   if (TS.isJsxElement(asJSX) || TS.isJsxSelfClosingElement(asJSX) || TS.isJsxFragment(asJSX)) {
     let elementNode: TS.Node
     const modifiers = getModifersForComponent(element, detailOfExports)
+    const nodeFlags =
+      element.declarationSyntax === 'function'
+        ? TS.NodeFlags.None
+        : nodeFlagsForVarLetOrConst(element.declarationSyntax)
     if (element.isFunction) {
-      const arrowParams = maybeToArray(element.param).map(printParam)
+      const functionParams = maybeToArray(element.param).map(printParam)
       let statements: Array<TS.Statement> = []
       if (element.arbitraryJSBlock != null) {
         // I just punched a hole in the space time continuum with this cast to any.
@@ -474,19 +480,34 @@ function printUtopiaJSXComponent(
       addCommentsToNode(returnStatement, element.returnStatementComments)
       statements.push(returnStatement)
       const bodyBlock = TS.createBlock(statements, true)
-      const arrowFunction = TS.createArrowFunction(
-        undefined,
-        undefined,
-        arrowParams,
-        undefined,
-        undefined,
-        bodyBlock,
-      )
-      const varDec = TS.createVariableDeclaration(element.name, undefined, arrowFunction)
-      elementNode = TS.createVariableStatement(modifiers, [varDec])
+      if (element.declarationSyntax === 'function') {
+        elementNode = TS.createFunctionDeclaration(
+          undefined,
+          modifiers,
+          undefined,
+          element.name,
+          undefined,
+          functionParams,
+          undefined,
+          bodyBlock,
+        )
+      } else {
+        const arrowFunction = TS.createArrowFunction(
+          undefined,
+          undefined,
+          functionParams,
+          undefined,
+          undefined,
+          bodyBlock,
+        )
+        const varDec = TS.createVariableDeclaration(element.name, undefined, arrowFunction)
+        const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
+        elementNode = TS.createVariableStatement(modifiers, varDecList)
+      }
     } else {
       const varDec = TS.createVariableDeclaration(element.name, undefined, asJSX)
-      elementNode = TS.createVariableStatement(modifiers, [varDec])
+      const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
+      elementNode = TS.createVariableStatement(modifiers, varDecList)
     }
 
     addCommentsToNode(elementNode, element.comments)
@@ -732,16 +753,19 @@ interface PossibleCanvasContentsExpression {
   type: 'POSSIBLE_CANVAS_CONTENTS_EXPRESSION'
   name: string
   initializer: TS.Expression
+  declarationSyntax: FunctionDeclarationSyntax
 }
 
 function possibleCanvasContentsExpression(
   name: string,
   initializer: TS.Expression,
+  declarationSyntax: FunctionDeclarationSyntax,
 ): PossibleCanvasContentsExpression {
   return {
     type: 'POSSIBLE_CANVAS_CONTENTS_EXPRESSION',
     name: name,
     initializer: initializer,
+    declarationSyntax: declarationSyntax,
   }
 }
 
@@ -750,18 +774,21 @@ interface PossibleCanvasContentsFunction {
   name: string
   parameters: TS.NodeArray<TS.ParameterDeclaration>
   body: TS.ConciseBody
+  declarationSyntax: FunctionDeclarationSyntax
 }
 
 function possibleCanvasContentsFunction(
   name: string,
   parameters: TS.NodeArray<TS.ParameterDeclaration>,
   body: TS.ConciseBody,
+  declarationSyntax: FunctionDeclarationSyntax,
 ): PossibleCanvasContentsFunction {
   return {
     type: 'POSSIBLE_CANVAS_CONTENTS_FUNCTION',
     name: name,
     parameters: parameters,
     body: body,
+    declarationSyntax: declarationSyntax,
   }
 }
 
@@ -771,6 +798,30 @@ function isPossibleCanvasContentsFunction(
   canvasContents: PossibleCanvasContents,
 ): canvasContents is PossibleCanvasContentsFunction {
   return canvasContents.type === 'POSSIBLE_CANVAS_CONTENTS_FUNCTION'
+}
+
+function getVarLetOrConst(declarationList: TS.VariableDeclarationList): VarLetOrConst {
+  if ((declarationList.flags & TS.NodeFlags.Const) === TS.NodeFlags.Const) {
+    return 'const'
+  } else if ((declarationList.flags & TS.NodeFlags.Let) === TS.NodeFlags.Let) {
+    return 'let'
+  } else {
+    return 'var'
+  }
+}
+
+function nodeFlagsForVarLetOrConst(varLetOrConst: VarLetOrConst): TS.NodeFlags {
+  switch (varLetOrConst) {
+    case 'const':
+      return TS.NodeFlags.Const
+    case 'let':
+      return TS.NodeFlags.Let
+    case 'var':
+      return TS.NodeFlags.None
+    default:
+      const _exhaustiveCheck: never = varLetOrConst
+      throw new Error(`Unhandled variable declaration type ${JSON.stringify(varLetOrConst)}`)
+  }
 }
 
 export function looksLikeCanvasElements(
@@ -783,19 +834,27 @@ export function looksLikeCanvasElements(
       if (variableDeclaration.initializer != null) {
         const name = variableDeclaration.name.getText(sourceFile)
         const initializer = variableDeclaration.initializer
+        const varLetOrConst = getVarLetOrConst(node.declarationList)
         if (TS.isArrowFunction(initializer)) {
           return right(
-            possibleCanvasContentsFunction(name, initializer.parameters, initializer.body),
+            possibleCanvasContentsFunction(
+              name,
+              initializer.parameters,
+              initializer.body,
+              varLetOrConst,
+            ),
           )
         } else {
-          return right(possibleCanvasContentsExpression(name, variableDeclaration.initializer))
+          return right(
+            possibleCanvasContentsExpression(name, variableDeclaration.initializer, varLetOrConst),
+          )
         }
       }
     }
   } else if (TS.isFunctionDeclaration(node)) {
     if (node.name != null && node.body != null) {
       const name = node.name.getText(sourceFile)
-      return right(possibleCanvasContentsFunction(name, node.parameters, node.body))
+      return right(possibleCanvasContentsFunction(name, node.parameters, node.body, 'function'))
     }
   }
 
@@ -1141,9 +1200,11 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             if (contents.elements.length === 1) {
               applyAndResetArbitraryNodes()
               const exported = isExported(topLevelElement)
+              // capture var vs let vs const vs function here
               const utopiaComponent = utopiaJSXComponent(
                 name,
                 isFunction,
+                canvasContents.declarationSyntax,
                 foldEither(
                   (_) => null,
                   (param) => param?.value ?? null,
@@ -1217,6 +1278,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           return utopiaJSXComponent(
             topLevelElement.name,
             topLevelElement.isFunction,
+            topLevelElement.declarationSyntax,
             topLevelElement.param,
             topLevelElement.propsUsed,
             topLevelElement.rootElement,

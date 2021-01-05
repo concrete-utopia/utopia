@@ -29,7 +29,7 @@ import {
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports, parseSuccess } from '../common/project-file-utils'
-import { sampleImportsForTests } from '../../model/test-ui-js-file'
+import { onlyImportReact, sampleImportsForTests } from '../../model/test-ui-js-file'
 import {
   isParseSuccess,
   importAlias,
@@ -63,7 +63,7 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model
 import { emptyComments } from './parser-printer-comments'
 
 describe('JSX parser', () => {
-  it('parses the code when it is a const', () => {
+  it('parses the code when it is a var', () => {
     const code = `import * as React from "react";
 import {
   Ellipse,
@@ -97,6 +97,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['leftOfTheCake'],
       view,
@@ -125,7 +126,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('parses the code when it is a const with no params', () => {
+  it('parses the code when it is a var no params', () => {
     const code = `import * as React from "react";
 import {
   Ellipse,
@@ -154,6 +155,7 @@ export var whatever = () => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       null,
       [],
       view,
@@ -220,6 +222,7 @@ export function whatever(props) {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'function',
       defaultPropsParam,
       ['leftOfTheCake'],
       view,
@@ -281,6 +284,7 @@ export function whatever() {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'function',
       null,
       [],
       view,
@@ -347,6 +351,7 @@ export default function whatever(props) {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'function',
       defaultPropsParam,
       ['leftOfTheCake'],
       view,
@@ -408,6 +413,7 @@ export default function whatever() {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'function',
       null,
       [],
       view,
@@ -471,6 +477,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['leftOfTheCake'],
       view,
@@ -555,6 +562,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['leftOfTheCake'],
       view,
@@ -617,6 +625,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       const exported = utopiaJSXComponent(
         'whatever',
         true,
+        'var',
         defaultPropsParam,
         ['leftOfTheCake'],
         view,
@@ -698,6 +707,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       const exported = utopiaJSXComponent(
         'whatever',
         true,
+        'var',
         defaultPropsParam,
         ['leftOfTheCake', 'rightOfTheCake'],
         view,
@@ -766,6 +776,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['leftOfTheCake'],
       view,
@@ -848,6 +859,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -970,6 +982,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['leftOfTheCake'],
       view,
@@ -1058,6 +1071,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['leftOfTheCake'],
       view,
@@ -1152,6 +1166,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['leftOfTheCake'],
       view,
@@ -1237,6 +1252,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1328,6 +1344,7 @@ return { bgs: bgs, bg: bg };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1397,6 +1414,7 @@ return { greys: greys };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1464,6 +1482,7 @@ return { a: a, b: b };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1534,6 +1553,7 @@ return { a: a, b: b, c: c };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1608,6 +1628,7 @@ return { a: a };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1677,6 +1698,7 @@ return { a: a, b: b };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1747,6 +1769,7 @@ return { bg: bg };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1804,6 +1827,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1886,6 +1910,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -1948,6 +1973,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -2021,6 +2047,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['left'],
       view,
@@ -2137,6 +2164,7 @@ return { MyComp: MyComp };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -2224,6 +2252,7 @@ export var whatever = props => (
     const myComp = utopiaJSXComponent(
       'MyComp',
       true,
+      'var',
       defaultPropsParam,
       ['layout'],
       rootDiv,
@@ -2242,6 +2271,7 @@ export var whatever = props => (
     const whatever = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -2372,6 +2402,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['color'],
       view,
@@ -2429,6 +2460,7 @@ export var whatever = <View data-uid={'aaa'}>
     const exported = utopiaJSXComponent(
       'whatever',
       false,
+      'var',
       null,
       [],
       view,
@@ -2479,6 +2511,7 @@ export var App = (props) => <View data-uid={'bbb'}>
     const exported = utopiaJSXComponent(
       'App',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -2532,6 +2565,7 @@ export var App = (props) => <View data-uid={'bbb'}>
     const exported = utopiaJSXComponent(
       'whatever',
       false,
+      'var',
       null,
       [],
       view,
@@ -2590,6 +2624,7 @@ export var App = (props) => <View data-uid={'bbb'}>
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -2697,6 +2732,7 @@ return { getSizing: getSizing, spacing: spacing };`
     const exported = utopiaJSXComponent(
       'whatever',
       false,
+      'var',
       null,
       [],
       view,
@@ -2814,6 +2850,7 @@ export var whatever = props => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -2866,6 +2903,7 @@ export var whatever = props => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -2963,6 +3001,7 @@ export var whatever = props => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       ['color', 'shadowValue', 'there'],
       view,
@@ -3081,6 +3120,7 @@ return { test: test };`
           utopiaJSXComponent(
             'whatever',
             true,
+            'var',
             defaultPropsParam,
             [],
             jsxElement(
@@ -3144,6 +3184,7 @@ return { test: test };`
         utopiaJSXComponent(
           'whatever',
           true,
+          'var',
           defaultPropsParam,
           [],
           jsxElement(
@@ -3192,6 +3233,7 @@ return { test: test };`
         utopiaJSXComponent(
           BakedInStoryboardVariableName,
           false,
+          'var',
           null,
           [],
           jsxElement(
@@ -3247,6 +3289,7 @@ export var App = props => {
     const component = utopiaJSXComponent(
       'App',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement(
@@ -3309,6 +3352,7 @@ export var App = props => {
     const component = utopiaJSXComponent(
       'App',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement(
@@ -3359,6 +3403,7 @@ export var App = props => {
     const component = utopiaJSXComponent(
       'App',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement(
@@ -3411,6 +3456,7 @@ export var App = props => {
     const component = utopiaJSXComponent(
       'App',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement(
@@ -3557,6 +3603,7 @@ export var App = props => {
     const component = utopiaJSXComponent(
       'App',
       true,
+      'var',
       defaultPropsParam,
       ['layout'],
       jsxElement(
@@ -3653,6 +3700,7 @@ export var App = props => {
     const component = utopiaJSXComponent(
       'App',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement(
@@ -3706,6 +3754,7 @@ export var whatever = props => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -3749,6 +3798,7 @@ export var whatever = props => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -3819,6 +3869,7 @@ return {  };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -3901,6 +3952,7 @@ return { result: result };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -3985,6 +4037,7 @@ export var whatever = props => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -4086,6 +4139,7 @@ return { a: a };`,
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -4116,6 +4170,7 @@ export var whatever = props => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,

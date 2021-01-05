@@ -180,6 +180,7 @@ export var whatever = props => (
     const myComp = utopiaJSXComponent(
       'MyComp',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement('div', { 'data-uid': jsxAttributeValue('abc') }, []),
@@ -205,6 +206,7 @@ export var whatever = props => (
     const whatever = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -301,6 +303,7 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -399,6 +402,7 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -498,6 +502,7 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -585,6 +590,7 @@ export var whatever = (props) => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -684,6 +690,7 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -771,6 +778,7 @@ export var whatever = (props) => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,
@@ -870,6 +878,7 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
       defaultPropsParam,
       [],
       view,

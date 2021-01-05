@@ -89,6 +89,7 @@ describe('removeJSXElementChild', () => {
     utopiaJSXComponent(
       'test1',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('aaa'), prop1: jsxAttributeValue(5) }, []),
@@ -100,6 +101,7 @@ describe('removeJSXElementChild', () => {
     utopiaJSXComponent(
       'test2WithChildren',
       true,
+      'var',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('aab'), prop2: jsxAttributeValue(15) }, [

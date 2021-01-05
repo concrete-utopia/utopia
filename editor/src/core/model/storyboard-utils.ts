@@ -319,6 +319,7 @@ function addStoryboardFileForComponent(
   const storyboardComponent = utopiaJSXComponent(
     BakedInStoryboardVariableName,
     false,
+    'var',
     null,
     [],
     storyboardElement,

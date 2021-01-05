@@ -54,6 +54,7 @@ import {
   walkElement,
   getJSXElementNameAsString,
   isJSXElement,
+  FunctionDeclarationSyntax,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -527,28 +528,49 @@ export function arbitraryComments(): Arbitrary<ParsedComments> {
   ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
 }
 
+export function arbitraryDeclarationSyntax(): Arbitrary<FunctionDeclarationSyntax> {
+  return FastCheck.oneof<FunctionDeclarationSyntax>(
+    FastCheck.constant('function'),
+    FastCheck.constant('var'),
+    FastCheck.constant('let'),
+    FastCheck.constant('const'),
+  )
+}
+
 export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
   return FastCheck.tuple(
     lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
     FastCheck.boolean(),
+    arbitraryDeclarationSyntax(),
     jsxElementArbitrary(3),
     arbitraryJSBlockArbitrary(),
     arbitraryComments(),
     arbitraryComments(),
   )
-    .map(([name, isFunction, rootElement, jsBlock, comments, returnStatementComments]) => {
-      return utopiaJSXComponent(
+    .map(
+      ([
         name,
         isFunction,
-        defaultPropsParam,
-        [],
+        declarationSyntax,
         rootElement,
         jsBlock,
-        false,
         comments,
         returnStatementComments,
-      )
-    })
+      ]) => {
+        return utopiaJSXComponent(
+          name,
+          isFunction,
+          declarationSyntax,
+          defaultPropsParam,
+          [],
+          rootElement,
+          jsBlock,
+          false,
+          comments,
+          returnStatementComments,
+        )
+      },
+    )
     .filter((component) => {
       // Prevent creating a component that depends on itself.
       let elementNames: Array<string> = []
