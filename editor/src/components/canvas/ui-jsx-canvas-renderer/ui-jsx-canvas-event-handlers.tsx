@@ -1,0 +1,202 @@
+import { DOMAttributes } from 'react'
+import { MapLike } from 'typescript'
+import { objectMap } from '../../../core/shared/object-utils'
+
+type DOMAttributesKeys = keyof DOMAttributes<any>
+
+const DomAttributesBlockMap: { [key in DOMAttributesKeys]: boolean } = {
+  // properties marked with true will be blocked
+  layout: false,
+  children: false,
+  dangerouslySetInnerHTML: false,
+
+  onCopy: true,
+  onCopyCapture: true,
+  onCut: true,
+  onCutCapture: true,
+  onPaste: true,
+  onPasteCapture: true,
+
+  onCompositionEnd: true,
+  onCompositionEndCapture: true,
+  onCompositionStart: true,
+  onCompositionStartCapture: true,
+  onCompositionUpdate: true,
+  onCompositionUpdateCapture: true,
+
+  onFocus: true,
+  onFocusCapture: true,
+  onBlur: true,
+  onBlurCapture: true,
+
+  onChange: true,
+  onChangeCapture: true,
+  onBeforeInput: true,
+  onBeforeInputCapture: true,
+  onInput: true,
+  onInputCapture: true,
+  onReset: true,
+  onResetCapture: true,
+  onSubmit: true,
+  onSubmitCapture: true,
+  onInvalid: true,
+  onInvalidCapture: true,
+
+  onLoad: true,
+  onLoadCapture: true,
+  onError: true,
+  onErrorCapture: true,
+
+  onKeyDown: true,
+  onKeyDownCapture: true,
+  onKeyPress: true,
+  onKeyPressCapture: true,
+  onKeyUp: true,
+  onKeyUpCapture: true,
+
+  onAbort: true,
+  onAbortCapture: true,
+  onCanPlay: true,
+  onCanPlayCapture: true,
+  onCanPlayThrough: true,
+  onCanPlayThroughCapture: true,
+  onDurationChange: true,
+  onDurationChangeCapture: true,
+  onEmptied: true,
+  onEmptiedCapture: true,
+  onEncrypted: true,
+  onEncryptedCapture: true,
+  onEnded: true,
+  onEndedCapture: true,
+  onLoadedData: true,
+  onLoadedDataCapture: true,
+  onLoadedMetadata: true,
+  onLoadedMetadataCapture: true,
+  onLoadStart: true,
+  onLoadStartCapture: true,
+  onPause: true,
+  onPauseCapture: true,
+  onPlay: true,
+  onPlayCapture: true,
+  onPlaying: true,
+  onPlayingCapture: true,
+  onProgress: true,
+  onProgressCapture: true,
+  onRateChange: true,
+  onRateChangeCapture: true,
+  onSeeked: true,
+  onSeekedCapture: true,
+  onSeeking: true,
+  onSeekingCapture: true,
+  onStalled: true,
+  onStalledCapture: true,
+  onSuspend: true,
+  onSuspendCapture: true,
+  onTimeUpdate: true,
+  onTimeUpdateCapture: true,
+  onVolumeChange: true,
+  onVolumeChangeCapture: true,
+  onWaiting: true,
+  onWaitingCapture: true,
+
+  onAuxClick: true,
+  onAuxClickCapture: true,
+  onClick: true,
+  onClickCapture: true,
+  onContextMenu: true,
+  onContextMenuCapture: true,
+  onDoubleClick: true,
+  onDoubleClickCapture: true,
+  onDrag: true,
+  onDragCapture: true,
+  onDragEnd: true,
+  onDragEndCapture: true,
+  onDragEnter: true,
+  onDragEnterCapture: true,
+  onDragExit: true,
+  onDragExitCapture: true,
+  onDragLeave: true,
+  onDragLeaveCapture: true,
+  onDragOver: true,
+  onDragOverCapture: true,
+  onDragStart: true,
+  onDragStartCapture: true,
+  onDrop: true,
+  onDropCapture: true,
+  onMouseDown: true,
+  onMouseDownCapture: true,
+  onMouseEnter: true,
+  onMouseLeave: true,
+  onMouseMove: true,
+  onMouseMoveCapture: true,
+  onMouseOut: true,
+  onMouseOutCapture: true,
+  onMouseOver: true,
+  onMouseOverCapture: true,
+  onMouseUp: true,
+  onMouseUpCapture: true,
+
+  onSelect: true,
+  onSelectCapture: true,
+
+  onTouchCancel: true,
+  onTouchCancelCapture: true,
+  onTouchEnd: true,
+  onTouchEndCapture: true,
+  onTouchMove: true,
+  onTouchMoveCapture: true,
+  onTouchStart: true,
+  onTouchStartCapture: true,
+
+  onPointerDown: true,
+  onPointerDownCapture: true,
+  onPointerMove: true,
+  onPointerMoveCapture: true,
+  onPointerUp: true,
+  onPointerUpCapture: true,
+  onPointerCancel: true,
+  onPointerCancelCapture: true,
+  onPointerEnter: true,
+  onPointerEnterCapture: true,
+  onPointerLeave: true,
+  onPointerLeaveCapture: true,
+  onPointerOver: true,
+  onPointerOverCapture: true,
+  onPointerOut: true,
+  onPointerOutCapture: true,
+  onGotPointerCapture: true,
+  onGotPointerCaptureCapture: true,
+  onLostPointerCapture: true,
+  onLostPointerCaptureCapture: true,
+
+  onScroll: true,
+  onScrollCapture: true,
+
+  onWheel: true,
+  onWheelCapture: true,
+
+  onAnimationStart: true,
+  onAnimationStartCapture: true,
+  onAnimationEnd: true,
+  onAnimationEndCapture: true,
+  onAnimationIteration: true,
+  onAnimationIterationCapture: true,
+
+  onTransitionEnd: true,
+  onTransitionEndCapture: true,
+}
+
+function shouldBlockDomEvent(eventName: string | number): boolean {
+  // unfortunately the casting to DOMAttributesKeys is necessary
+  return DomAttributesBlockMap[eventName as DOMAttributesKeys] ?? false
+}
+
+export function filterPropsForUserEvents(props: MapLike<any>): MapLike<any> {
+  return objectMap((prop, key) => {
+    if (shouldBlockDomEvent(key)) {
+      return null
+    } else {
+      return prop
+    }
+  }, props)
+}

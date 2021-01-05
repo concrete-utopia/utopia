@@ -43,6 +43,7 @@ export function createComponentRendererComponent(params: {
       RerenderUtopiaContext,
       (c) => c.shouldIncludeCanvasRootInTheSpy,
     )
+    const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
     const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
     const sceneContext = React.useContext(SceneLevelUtopiaContext)
 
@@ -106,6 +107,7 @@ export function createComponentRendererComponent(params: {
           mutableContext.jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,
+          canvasIsLive,
         )
       }
     }

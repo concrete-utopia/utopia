@@ -35,6 +35,7 @@ import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-p
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { filterPropsForUserEvents } from './ui-jsx-canvas-event-handlers'
 
 export function renderCoreElement(
   element: JSXElementChild,
@@ -52,6 +53,7 @@ export function renderCoreElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  canvasIsLive: boolean,
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
@@ -96,6 +98,7 @@ export function renderCoreElement(
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
+        canvasIsLive,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -143,6 +146,7 @@ export function renderCoreElement(
           jsxFactoryFunctionName,
           null,
           shouldIncludeCanvasRootInTheSpy,
+          canvasIsLive,
         )
       }
       const blockScope = {
@@ -174,6 +178,7 @@ export function renderCoreElement(
           jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,
+          canvasIsLive,
         )
         renderedChildren.push(renderResult)
       })
@@ -211,6 +216,7 @@ function renderJSXElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  canvasIsLive: boolean,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, templatePath)) {
@@ -238,6 +244,7 @@ function renderJSXElement(
       jsxFactoryFunctionName,
       codeError,
       shouldIncludeCanvasRootInTheSpy,
+      canvasIsLive,
     )
   }
 
@@ -248,8 +255,7 @@ function renderJSXElement(
   const elementIsIntrinsic = ElementFromScopeOrImport == null && isIntrinsicElement(jsx.name)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : ElementFromScopeOrImport
-  const finalProps =
-    elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
+  const finalProps = filterProps(canvasIsLive, elementIsIntrinsic, elementIsBaseHTML, elementProps)
 
   if (FinalElement != null && TP.containsPath(templatePath, validPaths)) {
     let childrenTemplatePaths: InstancePath[] = []
@@ -285,6 +291,20 @@ function renderJSXElement(
       childrenOrNull,
     )
   }
+}
+
+function filterProps(
+  canvasIsLive: boolean,
+  elementIsIntrinsic: boolean,
+  elementIsBaseHTML: boolean,
+  elementProps: MapLike<any>,
+) {
+  const propsWithoutUserEventListeners = canvasIsLive
+    ? elementProps
+    : filterPropsForUserEvents(elementProps)
+  return elementIsIntrinsic && !elementIsBaseHTML
+    ? filterDataProps(propsWithoutUserEventListeners)
+    : propsWithoutUserEventListeners
 }
 
 function isHidden(hiddenInstances: TemplatePath[], templatePath: TemplatePath): boolean {
