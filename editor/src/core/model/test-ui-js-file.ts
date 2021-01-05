@@ -63,6 +63,7 @@ const mainComponentForTests = utopiaJSXComponent(
   MainComponentForTestsName,
   true,
   'var',
+  'block',
   defaultPropsParam,
   [],
   jsxElement(
@@ -253,6 +254,7 @@ const scene = utopiaJSXComponent(
   'MyComponent',
   true,
   'var',
+  'block',
   defaultPropsParam,
   [],
   jsxElement(
@@ -291,6 +293,7 @@ const TestStoryboard = utopiaJSXComponent(
   BakedInStoryboardVariableName,
   false,
   'var',
+  'block',
   null,
   [],
   jsxElement('Storyboard', { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) }, [

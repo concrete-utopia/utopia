@@ -27,6 +27,7 @@ exports[`JSX parser should parse out dot-notation element names 2`] = `
 Array [
   Object {
     "arbitraryJSBlock": null,
+    "blockOrExpression": "block",
     "comments": Object {
       "leadingComments": Array [],
       "trailingComments": Array [],

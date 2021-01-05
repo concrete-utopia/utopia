@@ -331,6 +331,7 @@ return { otherFn: otherFn };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "block",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -583,6 +584,7 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "expression",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -839,6 +841,7 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "expression",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],

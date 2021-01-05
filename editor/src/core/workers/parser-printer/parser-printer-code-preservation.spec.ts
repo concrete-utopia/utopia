@@ -27,4 +27,62 @@ describe('Parsing and then printing code', () => {
     const parsedThenPrinted = parseThenPrint(code)
     expect(parsedThenPrinted).toEqual(code)
   })
+
+  it('retains a parenthesized expression body on an arrow function component', () => {
+    const code = applyPrettier(
+      `export const whatever = (props) => (
+        <div data-uid={'aaa'} />
+      )`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  it('retains a non-parenthesized expression body on an arrow function component', () => {
+    const code = applyPrettier(`export const whatever = (props) => <div data-uid={'aaa'} />`, false)
+      .formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  it('retains a block expression body on an arrow function component', () => {
+    const code = applyPrettier(
+      `export const whatever = (props) => {
+        return <div data-uid={'aaa'} />
+      }`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  xit('does not surround a literal in braces when it was not previously surrounded in braces', () => {
+    const code = applyPrettier(
+      `export const whatever = (props) => {
+        return <div data-something='something' data-uid={'aaa'} />
+      }`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  xit('does not remove a trailing export default statement', () => {
+    const code = applyPrettier(
+      `const whatever = (props) => {
+        return <div data-something='something' data-uid={'aaa'} />
+      }
+      
+      export default whatever`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
 })

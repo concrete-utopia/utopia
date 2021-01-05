@@ -85,6 +85,7 @@ describe('SET_PROP', () => {
           'MyView',
           true,
           'var',
+          'block',
           defaultPropsParam,
           [],
           jsxElement(
@@ -168,6 +169,7 @@ describe('SET_CANVAS_FRAMES', () => {
       'MyView',
       true,
       'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement(
@@ -278,6 +280,7 @@ describe('moveTemplate', () => {
             `MyView${index}`,
             true,
             'var',
+            'block',
             defaultPropsParam,
             [],
             element,
@@ -788,6 +791,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     'App',
     true,
     'var',
+    'block',
     null,
     [],
     rootElement,

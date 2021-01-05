@@ -4,6 +4,7 @@ exports[`SWITCH_LAYOUT_SYSTEM switches from flex to pins correctly 1`] = `
 Array [
   Object {
     "arbitraryJSBlock": null,
+    "blockOrExpression": "block",
     "comments": Object {
       "leadingComments": Array [],
       "trailingComments": Array [],
@@ -130,6 +131,7 @@ exports[`SWITCH_LAYOUT_SYSTEM switches from pins to flex correctly 1`] = `
 Array [
   Object {
     "arbitraryJSBlock": null,
+    "blockOrExpression": "block",
     "comments": Object {
       "leadingComments": Array [],
       "trailingComments": Array [],

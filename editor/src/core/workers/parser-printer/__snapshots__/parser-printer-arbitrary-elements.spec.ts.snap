@@ -284,6 +284,7 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "block",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -569,6 +570,7 @@ return { b: b };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "parenthesized-expression",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
