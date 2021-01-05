@@ -309,20 +309,22 @@ export const EditorComponentInner = betterReactMemo(
                 </SimpleFlexRow>
               </SimpleFlexColumn>
               {/* insert more columns here */}
-              {leftMenuExpanded ? (
+              {
                 <div
                   className='LeftPaneShell'
                   style={{
+                    transition: 'all .1s linear',
+                    border: '1px solid red',
                     position: 'absolute',
                     height: '100% !important',
-                    width: LeftPaneDefaultWidth,
+                    width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                     overflowX: 'scroll',
                     backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
                   }}
                 >
                   <LeftPaneComponent />
                 </div>
-              ) : null}
+              }
               {previewVisible ? (
                 <ResizableFlexColumn
                   style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
