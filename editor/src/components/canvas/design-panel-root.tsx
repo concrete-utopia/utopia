@@ -17,6 +17,7 @@ import { NavigatorComponent } from '../navigator/navigator'
 import { SimpleFlexRow, UtopiaTheme, UtopiaStyles, SimpleFlexColumn } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { FileTabs } from '../filebrowser/file-tabs'
+import { TopMenu } from '../editor/top-menu'
 
 interface DesignPanelRootProps {
   isUiJsFileOpen: boolean
@@ -212,7 +213,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
                 overflowX: 'hidden',
               }}
             >
-              Hello Topmenu
+              <TopMenu />
             </SimpleFlexRow>
             <CanvasWrapperComponent {...props} />
           </SimpleFlexColumn>
