@@ -300,6 +300,31 @@ function callbackAfterDragExceedsThreshold(
   window.addEventListener('mouseup', onMouseUp)
 }
 
+export function useStartDragStateAfterDragExceedsThreshold(): (
+  nativeEvent: MouseEvent,
+  foundTarget: TemplatePath,
+) => void {
+  const startDragState = useStartDragState()
+  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
+
+  const startDragStateAfterDragExceedsThreshold = React.useCallback(
+    (nativeEvent: MouseEvent, foundTarget: TemplatePath) => {
+      callbackAfterDragExceedsThreshold(
+        nativeEvent,
+        DRAG_START_TRESHOLD,
+        startDragState(
+          foundTarget,
+          windowToCanvasCoordinates(windowPoint(point(nativeEvent.clientX, nativeEvent.clientY)))
+            .canvasPositionRounded,
+        ),
+      )
+    },
+    [startDragState, windowToCanvasCoordinates],
+  )
+
+  return startDragStateAfterDragExceedsThreshold
+}
+
 export function useSelectModeSelectAndHover(): {
   onMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void
   onMouseOut: () => void
@@ -308,8 +333,7 @@ export function useSelectModeSelectAndHover(): {
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
-  const startDragState = useStartDragState()
-  const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
+  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
   const onMouseOver = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -333,15 +357,7 @@ export function useSelectModeSelectAndHover(): {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
       const foundTarget = findValidTarget(event.target as Element, event.metaKey, doubleClick)
       if (foundTarget != null) {
-        callbackAfterDragExceedsThreshold(
-          event.nativeEvent,
-          DRAG_START_TRESHOLD,
-          startDragState(
-            foundTarget.templatePath,
-            windowToCanvasCoordinates(windowPoint(point(event.clientX, event.clientY)))
-              .canvasPositionRounded,
-          ),
-        )
+        startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.templatePath)
 
         if (!foundTarget.isSelected) {
           dispatch([selectComponents([foundTarget.templatePath], event.shiftKey)])
@@ -349,7 +365,7 @@ export function useSelectModeSelectAndHover(): {
         }
       }
     },
-    [dispatch, findValidTarget, startDragState, windowToCanvasCoordinates],
+    [dispatch, findValidTarget, startDragStateAfterDragExceedsThreshold],
   )
 
   return { onMouseOver, onMouseOut, onMouseDown }

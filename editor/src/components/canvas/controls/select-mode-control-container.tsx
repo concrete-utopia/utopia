@@ -45,6 +45,10 @@ function getDistanceGuidelines(
 }
 
 interface SelectModeControlContainerProps extends ControlProps {
+  startDragStateAfterDragExceedsThreshold: (
+    nativeEvent: MouseEvent,
+    foundTarget: TemplatePath,
+  ) => void
   setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
   keysPressed: KeysPressed
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
@@ -135,77 +139,7 @@ export class SelectModeControlContainer extends React.Component<
     start: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
   ) => {
-    // TODO BALAZS Remove this and unify with select-mode-hooks
-    if (
-      // Only on left mouse down.
-      originalEvent.buttons === 1 &&
-      !MetadataUtils.anyUnknownOrGeneratedElements(this.props.rootComponents, selectedViews)
-    ) {
-      const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
-      const moveTargets = selection.filter(
-        (view) =>
-          TP.isScenePath(view) ||
-          this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
-      )
-      // setting original frames
-      if (moveTargets.length > 0) {
-        let originalFrames = getOriginalCanvasFrames(moveTargets, this.props.componentMetadata)
-        originalFrames = originalFrames.filter((f) => f.frame != null)
-        const selectionArea = Utils.boundingRectangleArray(
-          selectedViews.map((view) => {
-            return MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
-          }),
-        )
-
-        const onMouseMove = (event: MouseEvent) => {
-          const cursorPosition = this.props.windowToCanvasPosition(event)
-          if (Utils.distance(start, cursorPosition.canvasPositionRaw) > 2) {
-            // actually start the drag state
-            const duplicate = event.altKey
-            const duplicateNewUIDs = duplicate
-              ? createDuplicationNewUIDs(
-                  this.props.selectedViews,
-                  this.props.componentMetadata,
-                  this.props.rootComponents,
-                )
-              : null
-
-            removeMouseListeners()
-            this.props.dispatch([
-              CanvasActions.createDragState(
-                moveDragState(
-                  start,
-                  null,
-                  null,
-                  originalFrames,
-                  selectionArea,
-                  !event.metaKey,
-                  event.shiftKey,
-                  duplicate,
-                  event.metaKey,
-                  duplicateNewUIDs,
-                  start,
-                  this.props.componentMetadata,
-                  moveTargets,
-                ),
-              ),
-            ])
-          }
-        }
-
-        const onMouseUp = () => {
-          removeMouseListeners()
-        }
-
-        const removeMouseListeners = () => {
-          window.removeEventListener('mousemove', onMouseMove)
-          window.removeEventListener('mouseup', onMouseUp)
-        }
-
-        window.addEventListener('mousemove', onMouseMove)
-        window.addEventListener('mouseup', onMouseUp)
-      }
-    }
+    this.props.startDragStateAfterDragExceedsThreshold(originalEvent.nativeEvent, target)
   }
 
   onContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {

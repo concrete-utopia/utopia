@@ -42,6 +42,7 @@ import {
   isResizing,
   pickSelectionEnabled,
   useMaybeHighlightElement,
+  useStartDragStateAfterDragExceedsThreshold,
 } from './select-mode/select-mode-hooks'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
@@ -205,6 +206,7 @@ export const selectElementsThatRespectLayout = createSelector(
 )
 
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
+  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
   const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
     props.derived.canvas.transientState.selectedViews,
   )
@@ -306,6 +308,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         return (
           <SelectModeControlContainer
             {...controlProps}
+            startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
             setSelectedViewsLocally={setSelectedViewsLocally}
             keysPressed={props.editor.keysPressed}
             windowToCanvasPosition={props.windowToCanvasPosition}
