@@ -284,25 +284,6 @@ export class SelectModeControlContainer extends React.Component<
     )
   }
 
-  renderControl = (target: TemplatePath, index: number, isChild: boolean): JSX.Element | null => {
-    const frame = this.getClippedArea(target)
-    if (frame != null) {
-      return (
-        <ComponentOutlineControl
-          key={`${TP.toComponentId(target)}-${index}-control`}
-          target={target}
-          frame={frame}
-          scale={this.props.scale}
-          selectedComponents={this.props.selectedViews}
-          canvasOffset={this.props.canvasOffset}
-          showAdditionalControls={this.props.showAdditionalControls}
-        />
-      )
-    } else {
-      return null
-    }
-  }
-
   renderLabel = (target: TemplatePath, hoverEnabled: boolean): JSX.Element | null => {
     const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
     if (frame == null) {
@@ -584,17 +565,7 @@ export class SelectModeControlContainer extends React.Component<
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-    let labelDirectlySelectable = true
-    let draggableViews = getSelectableViews(
-      this.props.componentMetadata,
-      this.props.selectedViews,
-      this.props.hiddenInstances,
-      allElementsDirectlySelectable,
-    )
-    if (!this.props.highlightsEnabled) {
-      draggableViews = []
-      labelDirectlySelectable = false
-    }
+    let labelDirectlySelectable = this.props.highlightsEnabled
 
     // TODO future span element should be included here
     let repositionOnly = false
@@ -629,22 +600,6 @@ export class SelectModeControlContainer extends React.Component<
             </React.Fragment>
           )
         })}
-        {this.props.selectionEnabled
-          ? draggableViews.map((draggableView, index) => {
-              if (
-                !allElementsDirectlySelectable &&
-                this.props.selectedViews.some((view) =>
-                  TP.pathsEqual(TP.parentPath(draggableView), view),
-                )
-              ) {
-                // only double clickable to select and drag
-                return this.renderControl(draggableView, index, true)
-              } else {
-                // directly draggable
-                return this.renderControl(draggableView, index, false)
-              }
-            })
-          : null}
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />
