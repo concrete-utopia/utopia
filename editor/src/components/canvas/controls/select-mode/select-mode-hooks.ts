@@ -102,6 +102,7 @@ export function getSelectableViews(
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
   allElementsDirectlySelectable: boolean,
+  childrenSelectable: boolean,
 ): TemplatePath[] {
   let candidateViews: Array<TemplatePath>
 
@@ -128,7 +129,8 @@ export function getSelectableViews(
     })
     let siblings: Array<TemplatePath> = []
     Utils.fastForEach(selectedViews, (view) => {
-      Utils.fastForEach(TP.allPaths(view), (ancestor) => {
+      const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
+      Utils.fastForEach(allPaths, (ancestor) => {
         const ancestorChildren = MetadataUtils.getImmediateChildren(componentMetadata, ancestor)
         fastForEach(ancestorChildren, (child) => siblings.push(child.templatePath))
       })
@@ -158,9 +160,9 @@ export function getSelectableViews(
 function useFindValidTarget(): (
   targetHtmlElement: Element,
   allElementsDirectlySelectable: boolean,
+  childrenSelectable: boolean,
 ) => {
   templatePath: TemplatePath
-  selectionMode: 'singleclick' | 'doubleclick'
   isSelected: boolean
 } | null {
   const storeRef = useRefEditorState((store) => {
@@ -172,13 +174,14 @@ function useFindValidTarget(): (
   })
 
   return React.useCallback(
-    (targetHtmlElement: Element, allElementsDirectlySelectable: boolean) => {
+    (targetHtmlElement: Element, allElementsDirectlySelectable: boolean, childrenSelectable) => {
       const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
         selectedViews,
         hiddenInstances,
         allElementsDirectlySelectable,
+        childrenSelectable,
       )
       const validElementMouseOver: string | null = findFirstParentWithValidUID(
         selectableViews.map(TP.toString),
@@ -190,12 +193,8 @@ function useFindValidTarget(): (
         const isSelected = selectedViews.some((selectedView) =>
           TP.pathsEqual(validTemplatePath, selectedView),
         )
-        const isChild = selectedViews.some((selectedView) =>
-          TP.isChildOf(validTemplatePath, selectedView),
-        )
         return {
           templatePath: validTemplatePath,
-          selectionMode: isChild ? 'doubleclick' : 'singleclick',
           isSelected: isSelected,
         }
       } else {
@@ -314,10 +313,9 @@ export function useSelectModeSelectAndHover(): {
 
   const onMouseOver = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const validTemplatePath = findValidTarget(event.target as Element, event.metaKey)
+      const validTemplatePath = findValidTarget(event.target as Element, event.metaKey, false)
       if (
         validTemplatePath != null &&
-        validTemplatePath.selectionMode === 'singleclick' && // we only show highlights for single-click selectable elements
         !validTemplatePath.isSelected // do not highlight selected elements
       ) {
         maybeHighlightOnHover(validTemplatePath.templatePath)
@@ -332,7 +330,8 @@ export function useSelectModeSelectAndHover(): {
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const foundTarget = findValidTarget(event.target as Element, event.metaKey)
+      const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
+      const foundTarget = findValidTarget(event.target as Element, event.metaKey, doubleClick)
       if (foundTarget != null) {
         callbackAfterDragExceedsThreshold(
           event.nativeEvent,
@@ -345,11 +344,8 @@ export function useSelectModeSelectAndHover(): {
         )
 
         if (!foundTarget.isSelected) {
-          const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
-          if (foundTarget.selectionMode === 'singleclick' || doubleClick) {
-            dispatch([selectComponents([foundTarget.templatePath], event.shiftKey)])
-            // TODO BALAZS repeat the hack from select-mode-control-container which sets the selected views with a priority on the canvas controls first
-          }
+          dispatch([selectComponents([foundTarget.templatePath], event.shiftKey)])
+          // TODO BALAZS repeat the hack from select-mode-control-container which sets the selected views with a priority on the canvas controls first
         }
       }
     },
