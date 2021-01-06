@@ -6,51 +6,83 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
 import * as TP from '../../../core/shared/template-path'
-import { isJSXElement, JSXTextBlock } from '../../../core/shared/element-template'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import {
+  isJSXArbitraryBlock,
+  isJSXElement,
+  isJSXTextBlock,
+} from '../../../core/shared/element-template'
 
 export const FormulaBar = betterReactMemo('FormulaBar', () => {
-  const dispatch = useEditorState((store) => store.dispatch, 'TopMenu dispatch')
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'TopMenu selectedViews',
-  )
-  const componentMetadata = useEditorState(
-    (store) => store.editor.jsxMetadataKILLME,
-    'TopMenu componentMetadata',
-  )
+  const saveTimerRef = React.useRef<any>(null)
+  const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
 
-  let textBlock: JSXTextBlock | null = null
-  let target: TemplatePath | null = null
-  let disabled = false
-  if (selectedViews.length === 1 && TP.isInstancePath(selectedViews[0])) {
-    target = selectedViews[0]
-    const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata.elements, target)
-    if (element != null && isRight(element.element) && isJSXElement(element.element.value)) {
-      if (element.element.value.children.length === 1) {
-        if (element.element.value.children[0].type === 'JSX_TEXT_BLOCK') {
-          textBlock = element.element.value.children[0]
+  const selectedElement = useEditorState((store) => {
+    const metadata = store.editor.jsxMetadataKILLME
+    if (
+      store.editor.selectedViews.length === 1 &&
+      TP.isInstancePath(store.editor.selectedViews[0])
+    ) {
+      return MetadataUtils.getElementByInstancePathMaybe(
+        metadata.elements,
+        store.editor.selectedViews[0],
+      )
+    } else {
+      return null
+    }
+  }, 'Formula Bar selectedElement')
+
+  const [simpleText, setSimpleText] = React.useState('')
+  const [disabled, setDisabled] = React.useState(false)
+
+  React.useEffect(() => {
+    if (saveTimerRef.current != null) {
+      return
+    }
+    let foundText = ''
+    let isDisabled = true
+    if (
+      selectedElement != null &&
+      isRight(selectedElement.element) &&
+      isJSXElement(selectedElement.element.value)
+    ) {
+      if (selectedElement.element.value.children.length === 1) {
+        const childElement = selectedElement.element.value.children[0]
+        if (isJSXTextBlock(childElement)) {
+          foundText = childElement.text
+          isDisabled = false
+        } else if (isJSXArbitraryBlock(childElement)) {
+          foundText = `{${childElement.originalJavascript}}`
+          isDisabled = false
         }
-      }
-      if (element.element.value.children.length > 1) {
-        target = null
-        disabled = true
+      } else if (selectedElement.element.value.children.length === 0) {
+        isDisabled = false
       }
     }
-  } else {
-    disabled = true
-  }
+    setSimpleText(foundText)
+    setDisabled(isDisabled)
+  }, [selectedElement])
 
-  const onChange = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (target != null && TP.isInstancePath(target)) {
-        dispatch([EditorActions.updateChildText(target, event.target.value)], 'canvas')
-      }
+  const dispatchUpdate = React.useCallback(
+    ({ path, text }) => {
+      dispatch([EditorActions.updateChildText(path, text)], 'canvas')
+      saveTimerRef.current = null
     },
-    [dispatch, target],
+    [dispatch],
   )
 
-  const simpleText = (textBlock as any)?.text ?? ''
+  const onInputChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (selectedElement != null && TP.isInstancePath(selectedElement.templatePath)) {
+        clearTimeout(saveTimerRef.current)
+        saveTimerRef.current = setTimeout(dispatchUpdate, 300, {
+          path: selectedElement.templatePath,
+          text: event.target.value,
+        })
+        setSimpleText(event.target.value)
+      }
+    },
+    [saveTimerRef, selectedElement, dispatchUpdate],
+  )
 
   return (
     <SimpleFlexRow
@@ -70,7 +102,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           backgroundColor: colorTheme.canvasBackground.value,
           borderRadius: 5,
         }}
-        onChange={onChange}
+        onChange={onInputChange}
         value={simpleText}
         disabled={disabled}
       />
