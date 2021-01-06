@@ -15,7 +15,7 @@ import { DistanceGuideline } from './distance-guideline'
 import { GuidelineControl } from './guideline-control'
 import { collectParentAndSiblingGuidelines, getSnappedGuidelines } from './guideline-helpers'
 import { ControlProps } from './new-canvas-controls'
-import { ComponentAreaControl, ComponentLabelControl } from './component-area-control'
+import { ComponentLabelControl, ComponentOutlineControl } from './component-area-control'
 import { YogaControls } from './yoga-control'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -288,28 +288,13 @@ export class SelectModeControlContainer extends React.Component<
     const frame = this.getClippedArea(target)
     if (frame != null) {
       return (
-        <ComponentAreaControl
+        <ComponentOutlineControl
           key={`${TP.toComponentId(target)}-${index}-control`}
-          mouseEnabled={false}
-          testID={`component-area-control-${TP.toComponentId(target)}-${index}`}
-          componentMetadata={this.props.componentMetadata}
           target={target}
           frame={frame}
           scale={this.props.scale}
-          highlighted={this.isHighlighted(target)}
           selectedComponents={this.props.selectedViews}
-          dispatch={this.props.dispatch}
           canvasOffset={this.props.canvasOffset}
-          hoverEffectEnabled={!isChild}
-          doubleClickToSelect={isChild}
-          selectComponent={this.selectComponent}
-          onMouseDown={this.onControlMouseDown}
-          onHover={this.onHover}
-          onHoverEnd={this.onHoverEnd}
-          keysPressed={this.props.keysPressed}
-          windowToCanvasPosition={this.props.windowToCanvasPosition}
-          selectedViews={this.props.selectedViews}
-          imports={this.props.imports}
           showAdditionalControls={this.props.showAdditionalControls}
         />
       )
@@ -363,26 +348,13 @@ export class SelectModeControlContainer extends React.Component<
       return null
     }
     return (
-      <ComponentAreaControl
-        mouseEnabled={false}
+      <ComponentOutlineControl
         key={`${TP.toComponentId(target)}-non-selectable`}
-        componentMetadata={this.props.componentMetadata}
         target={target}
         frame={frame}
         scale={this.props.scale}
-        highlighted={this.isHighlighted(target)}
         selectedComponents={this.props.selectedViews}
-        dispatch={this.props.dispatch}
         canvasOffset={this.props.canvasOffset}
-        hoverEffectEnabled={true}
-        doubleClickToSelect={false}
-        onMouseDown={this.clearSelection}
-        onHover={Utils.NO_OP}
-        onHoverEnd={Utils.NO_OP}
-        keysPressed={this.props.keysPressed}
-        windowToCanvasPosition={this.props.windowToCanvasPosition}
-        selectedViews={this.props.selectedViews}
-        imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
       />
     )

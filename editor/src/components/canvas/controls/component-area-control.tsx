@@ -12,6 +12,7 @@ import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { UtopiaTheme, colorTheme } from '../../../uuiui'
+import { betterReactMemo } from '../../../uuiui-deps'
 
 interface ComponentAreaControlProps {
   mouseEnabled: boolean
@@ -25,7 +26,7 @@ interface ComponentAreaControlProps {
   doubleClickToSelect: boolean
   selectedComponents: Array<TemplatePath>
   selectComponent?: (target: TemplatePath, isMultiselect: boolean) => Array<TemplatePath>
-  onMouseDown: (
+  onMouseDown?: (
     views: Array<TemplatePath>,
     target: TemplatePath,
     dragStart: CanvasPoint,
@@ -159,12 +160,18 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     event: React.MouseEvent<HTMLDivElement>,
   ): void {
     const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
-    this.props.onMouseDown(
-      selectedViews,
-      this.props.target,
-      cursorPosition.canvasPositionRaw,
-      event,
-    )
+    if (this.props.mouseEnabled) {
+      if (this.props.onMouseDown == null) {
+        throw new Error('onMouseDown must be provided for mouse enabled controls')
+      }
+
+      this.props.onMouseDown(
+        selectedViews,
+        this.props.target,
+        cursorPosition.canvasPositionRaw,
+        event,
+      )
+    }
   }
 
   getComponentAreaControl = (canShowInvisibleIndicator: boolean) => {
@@ -284,6 +291,45 @@ export class ComponentAreaControl extends ComponentAreaControlInner {
     return this.getComponentAreaControl(isParentSelected || this.props.showAdditionalControls)
   }
 }
+
+type ComponentOutlineControlProps = Pick<
+  ComponentAreaControlProps,
+  'canvasOffset' | 'scale' | 'frame' | 'target' | 'selectedComponents' | 'showAdditionalControls'
+>
+
+export const ComponentOutlineControl = betterReactMemo(
+  'ComponentOutlineControl',
+  (props: ComponentOutlineControlProps) => {
+    const {
+      extraWidth,
+      extraHeight,
+      showingInvisibleElement,
+      borderRadius,
+    } = calculateExtraSizeForZeroSizedElement(props.frame)
+    const isParentSelected = props.selectedComponents.some((tp: TemplatePath) =>
+      TP.pathsEqual(TP.parentPath(props.target), tp),
+    )
+    const canShowInvisibleIndicator = isParentSelected || props.showAdditionalControls
+    const showInvisibleIndicator = canShowInvisibleIndicator && showingInvisibleElement
+    return (
+      <div
+        className='role-component-selection-highlight'
+        style={{
+          pointerEvents: 'none',
+          position: 'absolute',
+          left: props.canvasOffset.x + props.frame.x - extraWidth / 2,
+          top: props.canvasOffset.y + props.frame.y - extraHeight / 2,
+          width: props.frame.width + extraWidth,
+          height: props.frame.height + extraHeight,
+          borderColor: UtopiaTheme.color.primary.o(50).value,
+          borderStyle: showInvisibleIndicator ? 'solid' : undefined,
+          borderWidth: 0.5 / props.scale,
+          borderRadius: showInvisibleIndicator ? borderRadius : 0,
+        }}
+      />
+    )
+  },
+)
 
 export class ComponentLabelControl extends ComponentAreaControlInner {
   render() {
