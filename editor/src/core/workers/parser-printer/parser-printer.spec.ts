@@ -75,8 +75,8 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -139,8 +139,8 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var whatever = () => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={20} right={20} top={-20} />
+export var whatever = () => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={20} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -200,8 +200,8 @@ import {
 import { cake } from 'cake'
 export function whatever(props) {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
     </View>
   )
 }
@@ -268,8 +268,8 @@ import {
 import { cake } from 'cake'
 export function whatever() {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={20} right={20} top={-20} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' style={{backgroundColor: 'red'}} left={20} right={20} top={-20} />
     </View>
   )
 }
@@ -331,8 +331,8 @@ import {
 import { cake } from 'cake'
 export default function whatever(props) {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
     </View>
   )
 }
@@ -399,8 +399,8 @@ import {
 import { cake } from 'cake'
 export default function whatever() {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={20} right={20} top={-20} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' style={{backgroundColor: 'red'}} left={20} right={20} top={-20} />
     </View>
   )
 }
@@ -461,8 +461,8 @@ import {
 } from "utopia-api";
 import cake from 'cake'
 import './style.css'
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -533,9 +533,9 @@ import {
   View
 } from "utopia-api";
 import cake, { cake2 } from 'cake'
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
-  <cake2 data-uid={'aac'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+  <cake2 data-uid='aac' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -611,8 +611,8 @@ import {
   View
 } from "utopia-api";
 import { cake as cake2 } from 'cake'
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake2 data-uid={'aac'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake2 data-uid='aac' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
       const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -675,9 +675,9 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} data-label={'First cake'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
-  <cake data-uid={'111'} data-label={'Second cake'} style={{backgroundColor: 'blue'}} left={props.rightOfTheCake[0].hat} right={10} top={-10} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' data-label='First cake' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+  <cake data-uid='111' data-label='Second cake' style={{backgroundColor: 'blue'}} left={props.rightOfTheCake[0].hat} right={10} top={-10} />
 </View>
 `
       const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -758,8 +758,8 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red' }} left={props.leftOfTheCake[0].hat} right={20} top={-20} nullProp={null} undefinedProp={undefined} trueProp={true} falseProp={false} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red' }} left={props.leftOfTheCake[0].hat} right={20} top={-20} nullProp={null} undefinedProp={undefined} trueProp={true} falseProp={false} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -832,8 +832,8 @@ function getSizing(n) {
   return 100 + n
 }
 var spacing = 20
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={getSizing(spacing)} right={20} top={-20} onClick={function(){console.log('click')}} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={getSizing(spacing)} right={20} top={-20} onClick={function(){console.log('click')}} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -972,8 +972,8 @@ import { cake } from 'cake'
 export default function getSizing(n) {
   return 100 + n
 }
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -1062,8 +1062,8 @@ export function getSizing(n) {
       return 100 + n
   }
 }
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -1158,8 +1158,8 @@ import { cake } from 'cake'
 export default (n) => {
   return 100 + n
 }
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -1241,8 +1241,8 @@ import {
 } from "utopia-api";
 import { cake } from 'cake'
 var spacing = 20
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={spacing} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={spacing} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -1319,7 +1319,7 @@ export var whatever = (props) => {
   const bgs = ['black', 'grey']
   const bg = bgs[0]
   return (
-    <View data-uid={'aaa'} style={{ backgroundColor: bgs[0] }} />
+    <View data-uid='aaa' style={{ backgroundColor: bgs[0] }} />
   )
 }
 `
@@ -1389,7 +1389,7 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const greys = ['lightGrey', 'grey']
   return (
-    <View data-uid={'aaa'} colors={['black', ...greys]}/>
+    <View data-uid='aaa' colors={['black', ...greys]}/>
   )
 }
 `
@@ -1461,7 +1461,7 @@ export var whatever = (props) => {
   const a = 10
   const b = 20
   return (
-    <View data-uid={'aaa'} left={a + b} />
+    <View data-uid='aaa' left={a + b} />
   )
 }
 `
@@ -1531,7 +1531,7 @@ export var whatever = (props) => {
   const b = 10
   const c = 20
   return (
-    <View data-uid={'aaa'} left={a ? b : c} />
+    <View data-uid='aaa' left={a ? b : c} />
   )
 }
 `
@@ -1601,7 +1601,7 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   let a = 10
   return (
-    <View data-uid={'aaa'} left={a++} right={++a} />
+    <View data-uid='aaa' left={a++} right={++a} />
   )
 }
 `
@@ -1678,7 +1678,7 @@ export var whatever = (props) => {
   const a = 10
   const b = { a: a }
   return (
-    <View data-uid={'aaa'} left={b.a} />
+    <View data-uid='aaa' left={b.a} />
   )
 }
 `
@@ -1748,7 +1748,7 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const bg = { backgroundColor: 'grey' }
   return (
-    <View data-uid={'aaa'} style={{...bg}} />
+    <View data-uid='aaa' style={{...bg}} />
   )
 }
 `
@@ -1826,8 +1826,8 @@ import {
 } from "utopia-api";
 import { cake } from 'cake'
 var count = 10
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} text={\`Count \${count}\`} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} text={\`Count \${count}\`} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -1908,8 +1908,8 @@ import {
 } from "utopia-api";
 import { cake } from 'cake'
 var use20 = true
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={use20 ? 20 : 10} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={use20 ? 20 : 10} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -1990,7 +1990,7 @@ import {
   View
 } from "utopia-api";
 var mySet = new Set()
-export var whatever = (props) => <View data-uid={'aaa'}>
+export var whatever = (props) => <View data-uid='aaa'>
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -2047,8 +2047,8 @@ import {
 } from "utopia-api";
 import { cake } from 'cake'
 var spacing = 20
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <cake data-uid={'aab'} style={{backgroundColor: 'red'}} left={props.left + spacing} right={20} top={-20} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.left + spacing} right={20} top={-20} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -2141,8 +2141,8 @@ var MyComp = props => {
     "hello"
   );
 };
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <MyComp data-uid={'aab'} layout={{left: 100}} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <MyComp data-uid='aab' layout={{left: 100}} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -2227,7 +2227,7 @@ import {
 var MyComp = (props) => {
   return (
     <div
-      data-uid={"abc"}
+      data-uid='abc'
       style={{
         position: "absolute",
         left: props.layout.left,
@@ -2240,8 +2240,8 @@ var MyComp = (props) => {
   );
 };
 export var whatever = props => (
-  <View data-uid={'aaa'}>
-    <MyComp data-uid={'aab'} layout={{left: 100}} />
+  <View data-uid='aaa'>
+    <MyComp data-uid='aab' layout={{left: 100}} />
   </View>
 )
 `
@@ -2356,8 +2356,8 @@ export var Whatever = (props) => <View>
     const code = `import * as React from "react";
 import { View } from "utopia-api";
 import { cake } from 'cake'
-export var whatever = (props) => <View data-uid={'aaa'}>
-<cake data-uid={'aab'} left={2 + 2} />
+export var whatever = (props) => <View data-uid='aaa'>
+<cake data-uid='aab' left={2 + 2} />
 </View>
 `
     const actualResult = testParseCode(code)
@@ -2404,8 +2404,8 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var whatever = (props) => <View data-uid={'aaa'}>
-<cake data-uid={'aab'} style={{backgroundColor: 'red', color: [props.color, -200]}} />
+export var whatever = (props) => <View data-uid='aaa'>
+<cake data-uid='aab' style={{backgroundColor: 'red', color: [props.color, -200]}} />
 </View>
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -2474,8 +2474,8 @@ import {
   View
 } from "utopia-api";
 import { cake } from 'cake'
-export var whatever = <View data-uid={'aaa'}>
-<cake data-uid={'aab'} style={{backgroundColor: 'red'}} />
+export var whatever = <View data-uid='aaa'>
+<cake data-uid='aab' style={{backgroundColor: 'red'}} />
 </View>
 `
     const actualResult = testParseCode(code)
@@ -2530,7 +2530,7 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
-export var App = (props) => <View data-uid={'bbb'}>
+export var App = (props) => <View data-uid='bbb'>
   {}
 </View>
 `
@@ -2575,7 +2575,7 @@ import {
   View
 } from "utopia-api";
 const a = "cake"
-export var App = (props) => <View data-uid={'bbb'}>
+export var App = (props) => <View data-uid='bbb'>
   {{a: a}}
 </View>
 `
@@ -2826,8 +2826,8 @@ function otherFn(n) {
 }
 export var whatever = props => {
   return (
-    <View data-uid={"aaa"}>
-      <cake data-uid={"aab"} left={cakeFn(otherFn("b") + 2)} />
+    <View data-uid="aaa">
+      <cake data-uid="aab" left={cakeFn(otherFn("b") + 2)} />
     </View>
   );
 };
@@ -2851,7 +2851,7 @@ import {
 } from 'utopia-api'
 export var whatever = props => {
   return (
-    <View data-uid={"aaa"}>
+    <View data-uid="aaa">
       {}
     </View>
   );
@@ -3075,7 +3075,7 @@ export var whatever = props => {
     const code = applyPrettier(
       `const first = 100
 let second = 'cake'
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInStoryboardUID}'} />
+export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `,
       false,
     ).formatted
@@ -3083,7 +3083,7 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInSt
       `
 const first = 100;
 let second = "cake";
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInStoryboardUID}'} />
+export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `,
       false,
     ).formatted
@@ -3118,8 +3118,8 @@ export var whatever = props => {
     return n * 2
   }
   return (
-    <View data-uid={"aaa"}>
-      <cake data-uid={"aab"} left={test(100)} />
+    <View data-uid="aaa">
+      <cake data-uid="aab" left={test(100)} />
     </View>
   );
 };
@@ -3322,8 +3322,8 @@ import {
 } from "utopia-api";
 export var App = props => {
   return (
-    <View data-uid={'aaa'}>
-      {[1,2,3].map(x=> <View data-uid={'abc'} />)}
+    <View data-uid='aaa'>
+      {[1,2,3].map(x=> <View data-uid='abc' />)}
     </View>
   );
 };`
@@ -3342,8 +3342,8 @@ export var App = props => {
         },
         [
           jsxArbitraryBlock(
-            `[1,2,3].map(x=> <View data-uid={'abc'} />)`,
-            `[1, 2, 3].map(x => <View data-uid={'abc'} />);`,
+            `[1,2,3].map(x=> <View data-uid='abc' />)`,
+            `[1, 2, 3].map(x => <View data-uid='abc' />);`,
             `return [1, 2, 3].map(function (x) {
   return utopiaCanvasJSXLookup("abc", {});
 });`,
@@ -3388,7 +3388,7 @@ import {
 } from "utopia-api";
 export var App = props => {
   return (
-    <View data-uid={'aaa'}>cake</View>
+    <View data-uid='aaa'>cake</View>
   );
 };`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -3436,9 +3436,9 @@ import {
 } from "utopia-api";
 export var App = props => {
   return (
-    <View data-uid={'aaa'}>
+    <View data-uid='aaa'>
       {[1, 2, 3].map(n => (
-        <div data-uid={"abc"} />
+        <div data-uid="abc" />
       ))}
     </View>
   );
@@ -3459,10 +3459,10 @@ export var App = props => {
         [
           jsxArbitraryBlock(
             `[1, 2, 3].map(n => (
-        <div data-uid={"abc"} />
+        <div data-uid="abc" />
       ))`,
             `[1, 2, 3].map((n) =>
-<div data-uid={"abc"} />);`,
+<div data-uid="abc" />);`,
             `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("abc", {});
 });`,
@@ -3513,10 +3513,10 @@ export var App = props => {
         [
           jsxArbitraryBlock(
             `[1, 2, 3].map((n) => (
-      <div data-uid={'abc'} />
+      <div data-uid='abc' />
     ))`,
             `[1, 2, 3].map((n) =>
-<div data-uid={'abc'} />);`,
+<div data-uid='abc' />);`,
             `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("abc", {});
 });`,
@@ -3578,7 +3578,7 @@ import {
 export var App = props => {
   const a = 20;
   const b = 40;
-  const MyCustomCompomnent = props => <View data-uid={"abc"}>{props.children}</View>;
+  const MyCustomCompomnent = props => <View data-uid="abc">{props.children}</View>;
 
   return (
     <View
@@ -3589,24 +3589,24 @@ export var App = props => {
         width: props.layout.width,
         top: props.layout.top
       }}
-      data-uid={"aaa"}
+      data-uid="aaa"
     >
-      <MyCustomCompomnent data-uid={"ddd"}>
+      <MyCustomCompomnent data-uid="ddd">
         <Ellipse
           style={{ backgroundColor: "lightgreen" }}
           layout={{ height: 100, left: 150, width: 100, top: 540 }}
-          data-uid={"bbb"}
+          data-uid="bbb"
         />
         <Rectangle
           style={{ backgroundColor: "orange" }}
           layout={{ height: 100, left: 150, width: 100, top: 540 }}
-          data-uid={"ccc"}
+          data-uid="ccc"
         />
       </MyCustomCompomnent>
       <View
         style={{ backgroundColor: "blue", position: "absolute" }}
         layout={{ height: 200, left: 80, width: 100, top: 145 }}
-        data-uid={"ggg"}
+        data-uid="ggg"
       />
     </View>
   );
@@ -3690,7 +3690,7 @@ export var App = props => {
       arbitraryJSBlock(
         `const a = 20;
 const b = 40;
-const MyCustomCompomnent = props => <View data-uid={"abc"}>{props.children}</View>;`,
+const MyCustomCompomnent = props => <View data-uid="abc">{props.children}</View>;`,
         `var a = 20;
 var b = 40;
 
@@ -3740,7 +3740,7 @@ import {
 } from "utopia-api";
 export var App = props => {
   return (
-    <View data-uid={'aaa'} booleanProperty />
+    <View data-uid='aaa' booleanProperty />
   )
 }`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -3789,7 +3789,7 @@ import {
   View
 } from "utopia-api";
 export var whatever = props => {
-  return <View data-uid={"aaa"} booleanProperty />;
+  return <View data-uid="aaa" booleanProperty />;
 };
 `,
       false,
@@ -3834,7 +3834,7 @@ import {
   View
 } from "utopia-api";
 export var whatever = props => {
-  return <View data-uid={"aaa"} />;
+  return <View data-uid="aaa" />;
 };
 `,
       false,
@@ -3875,7 +3875,7 @@ export var whatever = props => {
   while (true) {
     const a = 1
   }
-  return <div data-uid={'aaa'}></div>
+  return <div data-uid='aaa'></div>
 }`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const arbitraryBlockCode = `for (var n = 0; n != -1; n++) {
@@ -3947,15 +3947,15 @@ export var whatever = props => {
   let result = []
   for (var n = 0; n < 5; n++) {
     const n2 = n * 2;
-    result.push(<div style={{ left: n, top: n2 }} data-uid={'bbb'} />);
+    result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />);
   }
-  return <div data-uid={'aaa'}>{result}</div>
+  return <div data-uid='aaa'>{result}</div>
 }`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const arbitraryBlockCode = `let result = [];
 for (var n = 0; n < 5; n++) {
   const n2 = n * 2;
-  result.push(<div style={{ left: n, top: n2 }} data-uid={'bbb'} />);
+  result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />);
 }`
     const arbitraryBlockTranspiledCode = `var _loopIt = 0;
 var result = [];
@@ -3971,7 +3971,7 @@ for (var n = 0; n < 5; n++) {
       left: n,
       top: n2
     },
-    "data-uid": 'bbb'
+    "data-uid": "bbb"
   }));
 }
 return { result: result };`
@@ -4028,18 +4028,18 @@ return { result: result };`
   it('defined elsewhere values are assigned for elements inside arbitrary blocks', () => {
     const code = `import * as React from "react"
 export var whatever = props => {
-  return <div data-uid={'aaa'}>
+  return <div data-uid='aaa'>
     {[1, 2, 3].map(n => {
-      return <div style={{left: n * 30, top: n * 30}} data-uid={'bbb'} />
+      return <div style={{left: n * 30, top: n * 30}} data-uid='bbb' />
     })}
   </div>
 }`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
-      return <div style={{left: n * 30, top: n * 30}} data-uid={'bbb'} />
+      return <div style={{left: n * 30, top: n * 30}} data-uid='bbb' />
     })`
     const arbitraryBlockCode = `[1, 2, 3].map(n => {
-  return <div style={{ left: n * 30, top: n * 30 }} data-uid={'bbb'} />;
+  return <div style={{ left: n * 30, top: n * 30 }} data-uid='bbb' />;
 });`
     const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("bbb", {
@@ -4115,18 +4115,18 @@ export var whatever = props => {
     const code = `import * as React from "react"
 export var whatever = props => {
   const a = 30
-  return <div data-uid={'aaa'}>
+  return <div data-uid='aaa'>
     {[1, 2, 3].map(n => {
-      return <div style={{left: n * a, top: n * a}} data-uid={'bbb'} />
+      return <div style={{left: n * a, top: n * a}} data-uid='bbb' />
     })}
   </div>
 }`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
-      return <div style={{left: n * a, top: n * a}} data-uid={'bbb'} />
+      return <div style={{left: n * a, top: n * a}} data-uid='bbb' />
     })`
     const arbitraryBlockCode = `[1, 2, 3].map(n => {
-  return <div style={{ left: n * a, top: n * a }} data-uid={'bbb'} />;
+  return <div style={{ left: n * a, top: n * a }} data-uid='bbb' />;
 });`
     const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("bbb", {
@@ -4217,7 +4217,7 @@ return { a: a };`,
   it('svg elements are accepted', () => {
     const code = `import * as React from "react"
 export var whatever = props => {
-  return <svg data-uid={'abc'}/>
+  return <svg data-uid='abc'/>
 }`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const view = jsxElement('svg', { 'data-uid': jsxAttributeValue('abc') }, [])
@@ -4252,7 +4252,7 @@ import {
   View
 } from "utopia-api";
 const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid={'aaa'} />
+export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
@@ -4263,11 +4263,11 @@ const b = (n) => n > 0 ? n : a(10)
 import {
   View
 } from "utopia-api";
-export var whatever = (props) => <View data-uid={'aaa'}>
-  <View data-uid={'aaa'} />
+export var whatever = (props) => <View data-uid='aaa'>
+  <View data-uid='aaa' />
 </View>
-export var whatever2 = (props) => <View data-uid={'aaa'}>
-  <View data-uid={'aaa'} />
+export var whatever2 = (props) => <View data-uid='aaa'>
+  <View data-uid='aaa' />
 </View>
 `
     const actualResult = testParseCode(code)
@@ -4349,7 +4349,7 @@ export var App = props => {
         width: props.layout.width,
         top: props.layout.top,
       }}
-      data-uid={"aaa"}
+      data-uid="aaa"
       arbitrary={console.log('hi')} // line 31, char 26
     >
     </View>
@@ -4467,7 +4467,7 @@ describe('getHighlightBounds', () => {
             width: props.layout.width,
             top: props.layout.top,
           }}
-          data-uid={"aaa"}
+          data-uid="aaa"
           arbitrary={console.log('hi')} // line 34, char 26
         >
         </View>
@@ -4520,7 +4520,7 @@ export var App = (props) => {
       <View
         style={{ ...props.style, backgroundColor: '#FFFFFF' }}
         layout={{ layoutSystem: 'pinSystem' }}
-        data-uid={'aaa'}
+        data-uid='aaa'
       ></View>
     </>
   )
@@ -4531,7 +4531,7 @@ export var App = (props) => {
           <View
             style={{ ...props.style, backgroundColor: '#FFFFFF' }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'aaa'}
+            data-uid='aaa'
           ></View>
         </>
       )
@@ -4577,7 +4577,7 @@ export var App = (props) => {
         'AAcEA;AACDA;AACMC,CAACC,GAAGD,CAACE,GAAGF,CAACG,CAACH,CAACI,CAACC,KAAKC,CAACN,CAACG,CAACI,CAACP,CAACQ,CAACT;AAC7BC,CAACA,CAACS,MAAMT,CAACI,CAACL;AACVC,CAACA,CAACA,CAACA,CAACU,CAACH,CAACR;AACNC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACU,CAACC,IAAIZ;AACXC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACY,KAAKT,CAACK,CAACA,CAACR,CAACa,CAACA,CAACA,CAACT,CAACC,KAAKQ,CAACD,KAAKZ,CAACc,CAACA,CAACd,CAACQ,CAACO,CAACT,CAACU,CAAChB,CAACiB,eAAeC,CAAClB,CAACmB,CAACC,CAACC,MAAMF,CAACnB,CAACe,CAACA,CAAChB;AACtEC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACsB,MAAMnB,CAACK,CAACA,CAACR,CAACuB,YAAYL,CAAClB,CAACmB,CAACK,SAASL,CAACnB,CAACe,CAACA,CAAChB;AAC9CC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACA,CAACyB,IAAIC,CAACC,GAAGxB,CAACK,CAACW,CAACS,GAAGT,CAACJ,CAAChB;AACxBC,CAACA,CAACA,CAACA,CAACA,CAACA,CAACO,CAACG,CAACmB,CAAClB,IAAIJ,CAACR;AACdC,CAACA,CAACA,CAACA,CAACU,CAACmB,CAACtB,CAACR;AACPC,CAACA,CAACM,CAACP;AACHgB',
       file: '/src/app.js',
       sourcesContent: [
-        "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <>\n      <View\n        style={{ ...props.style, backgroundColor: '#FFFFFF' }}\n        layout={{ layoutSystem: 'pinSystem' }}\n        data-uid={'aaa'}\n      ></View>\n    </>\n  )\n}\n",
+        "/** @jsx jsx */\nimport * as React from 'react'\nimport { View, jsx } from 'utopia-api'\n\nexport var canvasMetadata = {\n  scenes: [\n    {\n      component: 'App',\n      frame: { height: 812, left: 0, width: 375, top: 0 },\n      props: { layout: { top: 0, left: 0, bottom: 0, right: 0 } },\n      container: { layoutSystem: 'pinSystem' },\n    },\n  ],\n  elementMetadata: {},\n}\n\nexport var App = (props) => {\n  return (\n    <>\n      <View\n        style={{ ...props.style, backgroundColor: '#FFFFFF' }}\n        layout={{ layoutSystem: 'pinSystem' }}\n        data-uid='aaa'\n      ></View>\n    </>\n  )\n}\n",
       ],
     }
     expect(
