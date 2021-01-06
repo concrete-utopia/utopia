@@ -234,7 +234,9 @@ function useStartDragState(): (
         ? createDuplicationNewUIDs(selectedViews, componentMetadata, rootComponents)
         : null
 
-      const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
+      const isTargetSelected = selectedViews.some((sv) => TP.pathsEqual(sv, target))
+      const selection =
+        isTargetSelected && TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
       const moveTargets = selection.filter(
         (view) =>
           TP.isScenePath(view) ||
