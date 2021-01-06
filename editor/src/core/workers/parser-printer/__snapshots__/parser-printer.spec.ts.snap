@@ -103,7 +103,7 @@ function otherFn(n) {
       "sourcesContent": Array [
         "import { cake } from 'cake'
 import * as React from 'react'
-import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -188,6 +188,10 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
+          "alias": "UtopiaUtils",
+          "name": "UtopiaUtils",
+        },
+        Object {
           "alias": "Ellipse",
           "name": "Ellipse",
         },
@@ -206,10 +210,6 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         Object {
           "alias": "Text",
           "name": "Text",
-        },
-        Object {
-          "alias": "UtopiaUtils",
-          "name": "UtopiaUtils",
         },
         Object {
           "alias": "View",
@@ -250,7 +250,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "sourcesContent": Array [
           "import { cake } from 'cake'
 import * as React from 'react'
-import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -304,7 +304,7 @@ return { cakeFn: cakeFn };",
         "sourcesContent": Array [
           "import { cake } from 'cake'
 import * as React from 'react'
-import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -390,7 +390,7 @@ return { otherFn: otherFn };",
                   "sourcesContent": Array [
                     "import { cake } from 'cake'
 import * as React from 'react'
-import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -704,12 +704,12 @@ Object {
       "sourcesContent": Array [
         "import * as React from \\"react\\";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from \\"utopia-api\\";
 const a = \\"cake\\"
@@ -760,6 +760,10 @@ return { a: a };",
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
+          "alias": "UtopiaUtils",
+          "name": "UtopiaUtils",
+        },
+        Object {
           "alias": "Ellipse",
           "name": "Ellipse",
         },
@@ -778,10 +782,6 @@ return { a: a };",
         Object {
           "alias": "Text",
           "name": "Text",
-        },
-        Object {
-          "alias": "UtopiaUtils",
-          "name": "UtopiaUtils",
         },
         Object {
           "alias": "View",
@@ -818,12 +818,12 @@ return { a: a };",
         "sourcesContent": Array [
           "import * as React from \\"react\\";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from \\"utopia-api\\";
 const a = \\"cake\\"
@@ -880,12 +880,12 @@ return { a: a };",
               "sourcesContent": Array [
                 "import * as React from \\"react\\";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from \\"utopia-api\\";
 const a = \\"cake\\"

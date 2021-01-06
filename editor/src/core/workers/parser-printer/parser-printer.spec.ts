@@ -66,12 +66,12 @@ describe('JSX parser', () => {
   it('parses the code when it is a var', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -130,12 +130,12 @@ export var whatever = (props) => <View data-uid='aaa'>
   it('parses the code when it is a var no params', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -189,12 +189,12 @@ export var whatever = () => <View data-uid='aaa'>
   it('parses the code when it is a function', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -257,12 +257,12 @@ export function whatever(props) {
   it('parses the code when it is a function without any params', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -320,12 +320,12 @@ export function whatever() {
   it('parses the code when it is an export default function', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -388,12 +388,12 @@ export default function whatever(props) {
   it('parses the code when it is an export default function with no params', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -451,12 +451,12 @@ export default function whatever() {
   it('parses the code when it includes a default import', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import cake from 'cake'
@@ -524,12 +524,12 @@ export var whatever = (props) => <View data-uid='aaa'>
   it('parses the code when it includes a mixed import', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import cake, { cake2 } from 'cake'
@@ -602,12 +602,12 @@ export var whatever = (props) => <View data-uid='aaa'>
     it('parses the code when it includes an import with alias', () => {
       const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake as cake2 } from 'cake'
@@ -666,12 +666,12 @@ export var whatever = (props) => <View data-uid='aaa'>
     it('parses the code when it is a function, with metadata', () => {
       const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -749,12 +749,12 @@ export var whatever = (props) => <View data-uid='aaa'>
   it('parses the code when it is a function, with undefined and null as props', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -819,12 +819,12 @@ export var whatever = (props) => <View data-uid='aaa'>
   it('parses the code when it is a function, with some arbitrary JavaScript', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -960,12 +960,12 @@ return { getSizing: getSizing, spacing: spacing };`
   it('parses the code when it has an export default function', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -1045,12 +1045,12 @@ return { getSizing: getSizing };`
   it('parses the code when it has a default keyword elsewhere', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -1146,12 +1146,12 @@ return { getSizing: getSizing };`
   it('parses the code when it has an export default anonymous function', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -1231,12 +1231,12 @@ return {  };`
   it('parses the code when it is a function, with some arbitrary JavaScript (variable declaration)', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -1816,12 +1816,12 @@ return { bg: bg };`
   it('parses the code when it is a function, with some arbitrary JavaScript (string interpolation)', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -1898,12 +1898,12 @@ return { count: count };`
   it('parses the code when it is a function, with a ternary referencing arbitrary JS', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -1981,12 +1981,12 @@ return { use20: use20 };`
   it('parses the code when it is a function, with arbitrary JS with Set constructor', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 var mySet = new Set()
@@ -2037,12 +2037,12 @@ return { mySet: mySet };`
   it('parses the code when it is a function, with some arbitrary JavaScript combined with props', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -2120,12 +2120,12 @@ return { spacing: spacing };`
   it('parses the code when it is a function, with code component', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 var MyComp = props => {
@@ -2216,12 +2216,12 @@ return { MyComp: MyComp };`
   it('parses the code when it is a function, with jsx code component', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 var MyComp = (props) => {
@@ -2327,12 +2327,12 @@ export var whatever = props => (
   it('parses the code when it is a function, component with unknown jsx element is arbitrary js', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var Whatever = (props) => <View>
@@ -2395,12 +2395,12 @@ export var whatever = (props) => <View data-uid='aaa'>
   it('parses the code when it is a function, with a nested object', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -2465,12 +2465,12 @@ export var whatever = (props) => <View data-uid='aaa'>
   it('parses the code when it is a var', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 import { cake } from 'cake'
@@ -2522,12 +2522,12 @@ export var whatever = <View data-uid='aaa'>
   it('parses the code when it has empty brackets {} as jsx child', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var App = (props) => <View data-uid='bbb'>
@@ -2566,12 +2566,12 @@ export var App = (props) => <View data-uid='bbb'>
   it('parses the code when it has a JSX block with an object defined inside', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 const a = "cake"
@@ -2810,12 +2810,12 @@ return { getSizing: getSizing, spacing: spacing };`
       `import { cake } from "cake";
 import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 function cakeFn(n) {
@@ -2841,12 +2841,12 @@ export var whatever = props => {
     const code = applyPrettier(
       `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View,
 } from 'utopia-api'
 export var whatever = props => {
@@ -3105,12 +3105,12 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInSto
     const code = `import { cake } from 'cake'
 import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var whatever = props => {
@@ -3312,12 +3312,12 @@ return { test: test };`
   it('preserve children of an element that is a block of random JavaScript', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var App = props => {
@@ -3378,12 +3378,12 @@ export var App = props => {
     const code = `
 import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var App = props => {
@@ -3426,12 +3426,12 @@ export var App = props => {
   it('captures an expression within a JSX element', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var App = props => {
@@ -3567,12 +3567,12 @@ export var App = props => {
   it('should handle inner components', () => {
     const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var App = props => {
@@ -3730,12 +3730,12 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
     const code = `
 import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var App = props => {
@@ -3780,12 +3780,12 @@ export var App = props => {
     const expectedResult = applyPrettier(
       `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var whatever = props => {
@@ -3825,12 +3825,12 @@ export var whatever = props => {
     const expectedResult = applyPrettier(
       `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 export var whatever = props => {
@@ -4325,12 +4325,12 @@ export var whatever2 = (props) => <View data-uid='aaa'>
 describe('SourceMap', () => {
   const code = `import * as React from "react";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from "utopia-api";
 

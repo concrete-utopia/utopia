@@ -117,7 +117,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 
     const expectedCode = applyPrettier(
       `import * as React from "react";
-import { Scene, Storyboard, View } from 'utopia-api';
+import { View, Storyboard, Scene } from 'utopia-api';
 export var App = props => {
   return (
     <View data-uid="aaa">
