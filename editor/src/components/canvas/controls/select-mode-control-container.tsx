@@ -15,7 +15,7 @@ import { DistanceGuideline } from './distance-guideline'
 import { GuidelineControl } from './guideline-control'
 import { collectParentAndSiblingGuidelines, getSnappedGuidelines } from './guideline-helpers'
 import { ControlProps } from './new-canvas-controls'
-import { ComponentLabelControl, ComponentOutlineControl } from './component-area-control'
+import { ComponentLabelControl } from './component-area-control'
 import { YogaControls } from './yoga-control'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -323,24 +323,6 @@ export class SelectModeControlContainer extends React.Component<
     }
   }
 
-  renderNonSelectableControl = (target: TemplatePath): JSX.Element | null => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
-    if (frame == null) {
-      return null
-    }
-    return (
-      <ComponentOutlineControl
-        key={`${TP.toComponentId(target)}-non-selectable`}
-        target={target}
-        frame={frame}
-        scale={this.props.scale}
-        selectedComponents={this.props.selectedViews}
-        canvasOffset={this.props.canvasOffset}
-        showAdditionalControls={this.props.showAdditionalControls}
-      />
-    )
-  }
-
   getSelectedBoundingBox = (views: TemplatePath[]) => {
     let boundingRectangles: Array<CanvasRectangle> = []
     Utils.fastForEach(views, (view) => {
@@ -596,7 +578,6 @@ export class SelectModeControlContainer extends React.Component<
           return (
             <React.Fragment key={`${TP.toComponentId(root)}}-root-controls`}>
               {this.renderLabel(root, allElementsDirectlySelectable || labelDirectlySelectable)}
-              {this.renderNonSelectableControl(root)}
             </React.Fragment>
           )
         })}
