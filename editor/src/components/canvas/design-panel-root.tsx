@@ -224,7 +224,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           style={{
             position: 'absolute',
             top: 30,
-            height: '100%',
+            height: 'calc(100% - 30px)',
             left: getNavigatorLeft,
             width: LeftPaneDefaultWidth,
           }}
