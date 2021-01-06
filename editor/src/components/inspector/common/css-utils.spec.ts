@@ -63,7 +63,7 @@ import {
   toggleSimple,
   toggleStylePropPath,
 } from './css-utils'
-import {emptyComments} from "../../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 describe('toggleStyleProp', () => {
   const simpleToggleProp = toggleStylePropPath(
@@ -75,9 +75,12 @@ describe('toggleStyleProp', () => {
     const element = jsxTestElement(
       'View',
       {
-        style: jsxAttributeValue({
+        style: jsxAttributeValue(
+          {
             backgroundColor: 'red',
-        }, emptyComments),
+          },
+          emptyComments,
+        ),
       },
       [],
     )
@@ -85,11 +88,14 @@ describe('toggleStyleProp', () => {
     const expectedElement = jsxTestElement(
       'View',
       {
-        style: jsxAttributeNestedObjectSimple({
+        style: jsxAttributeNestedObjectSimple(
+          {
             backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-                jsxAttributeValue('red', emptyComments),
+              jsxAttributeValue('red', emptyComments),
             ]),
-        }, emptyComments),
+          },
+          emptyComments,
+        ),
       },
       [],
     )
@@ -101,11 +107,14 @@ describe('toggleStyleProp', () => {
     const element = jsxTestElement(
       'View',
       {
-        style: jsxAttributeNestedObjectSimple({
+        style: jsxAttributeNestedObjectSimple(
+          {
             backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-                jsxAttributeValue('red', emptyComments),
+              jsxAttributeValue('red', emptyComments),
             ]),
-        }, emptyComments),
+          },
+          emptyComments,
+        ),
       },
       [],
     )
@@ -113,9 +122,12 @@ describe('toggleStyleProp', () => {
     const expectedElement = jsxTestElement(
       'View',
       {
-        style: jsxAttributeNestedObjectSimple({
+        style: jsxAttributeNestedObjectSimple(
+          {
             backgroundColor: jsxAttributeValue('red', emptyComments),
-        }, emptyComments),
+          },
+          emptyComments,
+        ),
       },
       [],
     )
@@ -127,9 +139,12 @@ describe('toggleStyleProp', () => {
     const element = jsxTestElement(
       'View',
       {
-        style: jsxAttributeNestedObjectSimple({
+        style: jsxAttributeNestedObjectSimple(
+          {
             backgroundColor: jsxAttributeValue('red', emptyComments),
-        }, emptyComments),
+          },
+          emptyComments,
+        ),
       },
       [],
     )
@@ -137,11 +152,14 @@ describe('toggleStyleProp', () => {
     const expectedElement = jsxTestElement(
       'View',
       {
-        style: jsxAttributeNestedObjectSimple({
+        style: jsxAttributeNestedObjectSimple(
+          {
             backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-                jsxAttributeValue('red', emptyComments),
+              jsxAttributeValue('red', emptyComments),
             ]),
-        }, emptyComments),
+          },
+          emptyComments,
+        ),
       },
       [],
     )
@@ -170,13 +188,23 @@ describe('toggleSimple', () => {
   })
 
   it('disables a nested object attribute', () => {
-    const attribute = jsxAttributeNestedObjectSimple({
-        aParameter: jsxAttributeFunctionCall('aHelperFunction', [jsxAttributeValue('hello', emptyComments)]),
-    }, emptyComments)
+    const attribute = jsxAttributeNestedObjectSimple(
+      {
+        aParameter: jsxAttributeFunctionCall('aHelperFunction', [
+          jsxAttributeValue('hello', emptyComments),
+        ]),
+      },
+      emptyComments,
+    )
     const expectedAttribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeNestedObjectSimple({
-          aParameter: jsxAttributeFunctionCall('aHelperFunction', [jsxAttributeValue('hello', emptyComments)]),
-      }, emptyComments),
+      jsxAttributeNestedObjectSimple(
+        {
+          aParameter: jsxAttributeFunctionCall('aHelperFunction', [
+            jsxAttributeValue('hello', emptyComments),
+          ]),
+        },
+        emptyComments,
+      ),
     ])
     const result = toggleSimple(attribute)
     expect(result).toEqual(expectedAttribute)
@@ -184,13 +212,23 @@ describe('toggleSimple', () => {
 
   it('enables a nested object attribute', () => {
     const attribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeNestedObjectSimple({
-          aParameter: jsxAttributeFunctionCall('aHelperFunction', [jsxAttributeValue('hello', emptyComments)]),
-      }, emptyComments),
+      jsxAttributeNestedObjectSimple(
+        {
+          aParameter: jsxAttributeFunctionCall('aHelperFunction', [
+            jsxAttributeValue('hello', emptyComments),
+          ]),
+        },
+        emptyComments,
+      ),
     ])
-    const expectedAttribute = jsxAttributeNestedObjectSimple({
-        aParameter: jsxAttributeFunctionCall('aHelperFunction', [jsxAttributeValue('hello', emptyComments)]),
-    }, emptyComments)
+    const expectedAttribute = jsxAttributeNestedObjectSimple(
+      {
+        aParameter: jsxAttributeFunctionCall('aHelperFunction', [
+          jsxAttributeValue('hello', emptyComments),
+        ]),
+      },
+      emptyComments,
+    )
     const result = toggleSimple(attribute)
     expect(result).toEqual(expectedAttribute)
   })
@@ -867,14 +905,26 @@ describe('printBackgroundImage', () => {
     expect(validValues.map((valid) => printBackgroundImage(valid))).toMatchInlineSnapshot(`
       Array [
         Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "radial-gradient(#000 0%, #fff 100%)",
         },
         Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "linear-gradient(90deg, #000 0%, #fff 100%), linear-gradient(#000 0%, #000 100%)",
         },
         Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "linear-gradient(#000 0%, #000 100%), linear-gradient(#000 0%, #fff 100%), /*radial-gradient(#000 0%, #fff 100%)*/ linear-gradient(90deg, #000 0%, #fff 100%), /*linear-gradient(#000 0%, #000 100%)*/ radial-gradient(#000 0%, #fff 100%)",
         },
@@ -1706,6 +1756,10 @@ describe('printBackgroundSize', () => {
     ]
     expect(printBackgroundSize(backgroundSize)).toMatchInlineSnapshot(`
       Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "type": "ATTRIBUTE_VALUE",
         "value": "auto, auto auto, 100px, 100% 100%",
       }

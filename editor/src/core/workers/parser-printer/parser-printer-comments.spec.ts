@@ -7,6 +7,7 @@ import {
   testParseCode,
 } from './parser-printer.test-utils'
 import { applyPrettier } from './prettier-utils'
+import * as R from 'ramda'
 
 describe('parseCode', () => {
   it('should parse a component with comments in front of it', () => {
@@ -34,6 +35,7 @@ describe('parseCode', () => {
       Array [
         Object {
           "comment": " Single-line comment.",
+          "pos": 0,
           "rawText": "// Single-line comment.",
           "trailingNewLine": true,
           "type": "SINGLE_LINE_COMMENT",
@@ -44,6 +46,7 @@ describe('parseCode', () => {
             Line
             Comment.
           ",
+          "pos": 24,
           "rawText": "/*
             Multi
             Line
@@ -93,11 +96,10 @@ describe('Parsing and printing code with comments', () => {
   }
 
   const notYetSupported: Array<keyof typeof comments> = [
-    //'commentAtStartOfJSXAttribute',
-    //'commentAtEndOfJSXAttribute',
-    //'commentAtStartOfJSXExpression',
-    //'commentInsideJSXExpression',
-    //'commentAtEndOfJSXExpression',
+    'commentBeforeObjectKey',
+    'commentAfterObjectKey',
+    'commentBeforeObjectValue',
+    'commentAfterObjectValue',
     'finalLineComment',
   ]
 
@@ -161,6 +163,11 @@ describe('Parsing and printing code with comments', () => {
     const testFn = notYetSupported.includes(commentKey) ? xit : it
     testFn(`should retain the comment '${commentText}'`, () => {
       expect(parsedThenPrinted.includes(commentText)).toBeTruthy()
+      const firstIndex = parsedThenPrinted.indexOf(commentText)
+      const lastIndex = parsedThenPrinted.lastIndexOf(commentText)
+      if (firstIndex !== lastIndex) {
+        fail(`Found more than one instance of ${commentText}`)
+      }
     })
   }, comments)
 })

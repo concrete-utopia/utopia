@@ -38,14 +38,26 @@ Array [
               "uniqueID": "",
             },
             "data-uid": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "ATTRIBUTE_VALUE",
               "value": "scene-1",
             },
             "props": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "ATTRIBUTE_VALUE",
               "value": Object {},
             },
             "style": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "ATTRIBUTE_VALUE",
               "value": Object {
                 "height": 812,
@@ -67,6 +79,10 @@ Array [
       },
       "props": Object {
         "data-uid": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "utopia-storyboard-uid",
         },

@@ -128,8 +128,8 @@ function getJSXAttributeComments(attribute: JSXAttribute): ParsedComments {
     case 'ATTRIBUTE_FUNCTION_CALL':
       return emptyComments
     default:
-        const _exhaustiveCheck: never = attribute
-        throw new Error(`Unhandled prop type ${JSON.stringify(attribute)}`)
+      const _exhaustiveCheck: never = attribute
+      throw new Error(`Unhandled prop type ${JSON.stringify(attribute)}`)
   }
 }
 
@@ -181,8 +181,8 @@ function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
         const createExpressionAsString = creator(attribute.javascript)
         const newExpression = SafeFunction(
           false,
-          { ts: TS, React: React },
-          `return ${createExpressionAsString}.statements[0].expression`,
+          { ts: TS, React: React, addCommentsToNode: addCommentsToNode },
+          `return ${createExpressionAsString}.expression`,
           [],
           (e) => {
             throw e
@@ -377,12 +377,12 @@ function jsxElementToExpression(
           )]
         )`
       } else {
-        createExpressionAsString = creator(element.javascript)
+        createExpressionAsString = creator(element.originalJavascript)
       }
       let newExpression = SafeFunction(
         false,
-        { ts: TS, React: React },
-        `var node = ${createExpressionAsString}.statements[0]; return node.expression || node`,
+        { ts: TS, React: React, addCommentsToNode: addCommentsToNode },
+        `var node = ${createExpressionAsString}; return node.expression || node`,
         [],
         (e) => {
           throw e

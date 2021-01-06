@@ -28,47 +28,95 @@ Array [
           },
           "props": Object {
             "data-uid": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "ATTRIBUTE_VALUE",
               "value": "bbb",
             },
             "style": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "content": Array [
                 Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "key": "left",
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": 0,
                   },
                 },
                 Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "key": "top",
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": 0,
                   },
                 },
                 Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "key": "width",
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": 200,
                   },
                 },
                 Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "key": "height",
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": 300,
                   },
                 },
                 Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "key": "position",
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "absolute",
                   },
@@ -88,27 +136,55 @@ Array [
       },
       "props": Object {
         "data-uid": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "aaa",
         },
         "layout": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": Object {},
         },
         "style": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "content": Array [
             Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "key": "backgroundColor",
               "type": "PROPERTY_ASSIGNMENT",
               "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "#FFFFFF",
               },
             },
             Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "key": "position",
               "type": "PROPERTY_ASSIGNMENT",
               "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "absolute",
               },
@@ -153,31 +229,63 @@ Array [
           },
           "props": Object {
             "data-uid": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "ATTRIBUTE_VALUE",
               "value": "bbb",
             },
             "style": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "content": Array [
                 Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "key": "position",
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "relative",
                   },
                 },
                 Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "key": "flexBasis",
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": 200,
                   },
                 },
                 Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "key": "height",
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": 300,
                   },
@@ -197,27 +305,55 @@ Array [
       },
       "props": Object {
         "data-uid": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "aaa",
         },
         "layout": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": Object {},
         },
         "style": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "content": Array [
             Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "key": "backgroundColor",
               "type": "PROPERTY_ASSIGNMENT",
               "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "#FFFFFF",
               },
             },
             Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "key": "display",
               "type": "PROPERTY_ASSIGNMENT",
               "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "flex",
               },

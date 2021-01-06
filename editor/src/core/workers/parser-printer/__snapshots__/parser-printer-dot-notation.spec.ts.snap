@@ -65,6 +65,10 @@ Array [
               },
               "props": Object {
                 "data-uid": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "bbb",
                 },
@@ -119,6 +123,10 @@ export var storyboard = (props) => {
       },
       "props": Object {
         "data-uid": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "aaa",
         },

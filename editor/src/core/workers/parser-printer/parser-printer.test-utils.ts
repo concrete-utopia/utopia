@@ -94,6 +94,7 @@ export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercas
       comment: text,
       rawText: text,
       trailingNewLine: false,
+      pos: null,
     }
   },
 )
@@ -105,6 +106,7 @@ export const multiLineCommentArbitrary: Arbitrary<MultiLineComment> = lowercaseS
       comment: text,
       rawText: text,
       trailingNewLine: false,
+      pos: null,
     }
   },
 )
@@ -386,7 +388,8 @@ export function jsxArbitraryBlockArbitrary(): Arbitrary<JSXArbitraryBlock> {
 export function jsxAttributeValueArbitrary(): Arbitrary<JSXAttributeValue<any>> {
   return FastCheck.tuple(
     FastCheck.jsonObject(),
-    arbitraryComments()).map(([value, comments]) => jsxAttributeValue(value, comments))
+    arbitraryMultiLineComments(),
+  ).map(([value, comments]) => jsxAttributeValue(value, comments))
 }
 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOtherJavaScript> {
@@ -396,14 +399,14 @@ export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOt
 export function jsxArrayValueArbitrary(depth: number): Arbitrary<JSXArrayValue> {
   return FastCheck.tuple(
     jsxAttributeArbitrary(depth),
-    arbitraryComments()
+    arbitraryMultiLineComments(),
   ).map(([array, comments]) => jsxArrayValue(array, comments))
 }
 
 export function jsxArraySpreadArbitrary(depth: number): Arbitrary<JSXArraySpread> {
   return FastCheck.tuple(
     jsxAttributeArbitrary(depth),
-    arbitraryComments()
+    arbitraryMultiLineComments(),
   ).map(([array, comments]) => jsxArraySpread(array, comments))
 }
 
@@ -419,7 +422,7 @@ export function jsxAttributeNestedArrayArbitrary(
 ): Arbitrary<JSXAttributeNestedArray> {
   return FastCheck.tuple(
     FastCheck.array(jsxArrayElementArbitrary(depth - 1), 3),
-    arbitraryComments()
+    arbitraryMultiLineComments(),
   ).map(([array, comments]) => jsxAttributeNestedArray(array, comments))
 }
 
@@ -434,7 +437,7 @@ export function jsxPropertyAssignmentArbitrary(depth: number): Arbitrary<JSXProp
 export function jsxSpreadAssignmentArbitrary(depth: number): Arbitrary<JSXSpreadAssignment> {
   return FastCheck.tuple(
     jsxAttributeArbitrary(depth),
-    arbitraryComments()
+    arbitraryMultiLineComments(),
   ).map(([spread, comments]) => jsxSpreadAssignment(spread, comments))
 }
 
@@ -450,7 +453,7 @@ export function jsxAttributeNestedObjectArbitrary(
 ): Arbitrary<JSXAttributeNestedObject> {
   return FastCheck.tuple(
     FastCheck.array(jsxPropertyArbitrary(depth - 1), 3),
-    arbitraryComments()
+    arbitraryMultiLineComments(),
   ).map(([values, comments]) => jsxAttributeNestedObject(values, comments))
 }
 
@@ -459,7 +462,7 @@ export function jsxAttributeFunctionCallArbitrary(
 ): Arbitrary<JSXAttributeFunctionCall> {
   return FastCheck.tuple(
     lowercaseStringArbitrary(),
-    FastCheck.array(jsxAttributeArbitrary(depth - 1), 3)
+    FastCheck.array(jsxAttributeArbitrary(depth - 1), 3),
   ).map(([functionName, functionArguments]) => {
     return jsxAttributeFunctionCall(functionName, functionArguments)
   })
@@ -541,6 +544,13 @@ export function arbitraryComments(): Arbitrary<ParsedComments> {
   return FastCheck.tuple(
     FastCheck.array(commentArbitrary),
     FastCheck.array(commentArbitrary),
+  ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
+}
+
+export function arbitraryMultiLineComments(): Arbitrary<ParsedComments> {
+  return FastCheck.tuple(
+    FastCheck.array(multiLineCommentArbitrary),
+    FastCheck.array(multiLineCommentArbitrary),
   ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
 }
 

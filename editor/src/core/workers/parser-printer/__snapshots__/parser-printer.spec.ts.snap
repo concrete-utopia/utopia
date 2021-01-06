@@ -363,6 +363,10 @@ return { otherFn: otherFn };",
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "aab",
               },
@@ -422,6 +426,10 @@ export var whatever = (props) => {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -612,6 +620,10 @@ return { a: a };",
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -905,6 +917,10 @@ export var App = (props) => <View data-uid={'bbb'}>
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },

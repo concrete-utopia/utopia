@@ -11,7 +11,6 @@ import { fastForEach } from '../../shared/utils'
 import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import infiniteLoopPrevention from './transform-prevent-infinite-loops'
 import {
-  prependToSourceString,
   ElementsWithinInPosition,
   JSX_CANVAS_LOOKUP_FUNCTION_NAME,
   CodeWithMap,
@@ -75,6 +74,7 @@ function babelRewriteJSXArbitraryBlockCode(
         }
         newAttributes.push(attribute)
       })
+
       // Don't replace this if it already has a `data-uid` attribute.
       if (!hasDataUID) {
         newAttributes.push(
@@ -118,6 +118,7 @@ function babelRewriteJSXArbitraryBlockCode(
     const foundElementWithin = elementsWithin.find((e) => {
       return e.startLine === pathLocation.line && e.startColumn === pathLocation.column
     })
+
     if (foundElementWithin != null) {
       transformForElementWithin(
         path,

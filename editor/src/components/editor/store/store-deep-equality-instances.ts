@@ -80,6 +80,7 @@ import {
   combine7EqualityCalls,
   combine8EqualityCalls,
   undefinableDeepEquality,
+  combine4EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   TemplatePathArrayKeepDeepEquality,
@@ -148,24 +149,28 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
 }
 
 export function MultiLineCommentKeepDeepEqualityCall(): KeepDeepEqualityCall<MultiLineComment> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (comment) => comment.comment,
     createCallWithTripleEquals(),
     (comment) => comment.rawText,
     createCallWithTripleEquals(),
     (comment) => comment.trailingNewLine,
+    createCallWithTripleEquals(),
+    (comment) => comment.pos,
     createCallWithTripleEquals(),
     multiLineComment,
   )
 }
 
 export function SingleLineCommentKeepDeepEqualityCall(): KeepDeepEqualityCall<SingleLineComment> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (comment) => comment.comment,
     createCallWithTripleEquals(),
     (comment) => comment.rawText,
     createCallWithTripleEquals(),
     (comment) => comment.trailingNewLine,
+    createCallWithTripleEquals(),
+    (comment) => comment.pos,
     createCallWithTripleEquals(),
     singleLineComment,
   )
