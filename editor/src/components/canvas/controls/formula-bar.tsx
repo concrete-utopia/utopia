@@ -57,6 +57,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       style={{
         flexGrow: 1,
         paddingRight: 10,
+        height: 21,
       }}
     >
       <input
@@ -67,6 +68,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           width: '100%',
           height: '100%',
           backgroundColor: colorTheme.canvasBackground.value,
+          borderRadius: 5,
         }}
         onChange={onChange}
         value={simpleText}
