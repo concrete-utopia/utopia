@@ -13,6 +13,7 @@ import {
   getMetadata,
   EditorStore,
   getOpenUIJSFileKey,
+  TransientCanvasState,
 } from '../../editor/store/editor-state'
 import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -20,7 +21,7 @@ import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
 import { TextEditor } from '../../editor/text-editor'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
@@ -34,7 +35,7 @@ import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo } from '../../custom-code/code-file'
-import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { usePropControlledStateV3 } from '../../inspector/common/inspector-utils'
 import { colorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import {
@@ -44,6 +45,7 @@ import {
   useMaybeHighlightElement,
   useStartDragStateAfterDragExceedsThreshold,
 } from './select-mode/select-mode-hooks'
+import { atom, useSetRecoilState } from 'recoil'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -205,13 +207,32 @@ export const selectElementsThatRespectLayout = createSelector(
   },
 )
 
-const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
-  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
-  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
-    props.derived.canvas.transientState.selectedViews,
+/**
+ * these local states are deliberately stored as atoms!
+ * this makes it easier to create a shortcut so we can update the selected views from ui-jsx-canvas
+ * this ONLY works with a single canvas!
+ * overhaul this for multi-canvas support
+ */
+const localSelectedViewsAtom = atom<Array<TemplatePath>>({ key: 'localSelectedViews', default: [] })
+const localHighlightedViewsAtom = atom<Array<TemplatePath>>({
+  key: 'localHighlightedViews',
+  default: [],
+})
+
+function useLocalSelectedHighlightedViews(
+  transientCanvasState: TransientCanvasState,
+): {
+  localSelectedViews: TemplatePath[]
+  localHighlightedViews: TemplatePath[]
+  setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
+} {
+  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV3(
+    localSelectedViewsAtom,
+    transientCanvasState.selectedViews,
   )
-  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
-    props.derived.canvas.transientState.highlightedViews,
+  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV3(
+    localHighlightedViewsAtom,
+    transientCanvasState.highlightedViews,
   )
 
   const setSelectedViewsLocally = React.useCallback(
@@ -221,6 +242,32 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     },
     [setLocalSelectedViews, setLocalHighlightedViews],
   )
+  return { localSelectedViews, localHighlightedViews, setSelectedViewsLocally }
+}
+
+export function useSetCanvasControlsSelectedViewsLocally(): (
+  newSelectedViews: Array<TemplatePath>,
+) => void {
+  const setLocalSelectedViews = useSetRecoilState(localSelectedViewsAtom)
+  const setLocalHighlightedViews = useSetRecoilState(localHighlightedViewsAtom)
+
+  return React.useCallback(
+    (newSelectedViews: Array<TemplatePath>) => {
+      setLocalSelectedViews(newSelectedViews)
+      setLocalHighlightedViews([])
+    },
+    [setLocalSelectedViews, setLocalHighlightedViews],
+  )
+}
+
+const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
+  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
+
+  const {
+    localSelectedViews,
+    localHighlightedViews,
+    setSelectedViewsLocally,
+  } = useLocalSelectedHighlightedViews(props.derived.canvas.transientState)
 
   const componentMetadata = getMetadata(props.editor)
 

@@ -32,7 +32,10 @@ import { DragState, moveDragState } from '../../canvas-types'
 import { createDuplicationNewUIDs, getOriginalCanvasFrames } from '../../canvas-utils'
 import { findFirstParentWithValidUID } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
-import { selectElementsThatRespectLayout } from '../new-canvas-controls'
+import {
+  selectElementsThatRespectLayout,
+  useSetCanvasControlsSelectedViewsLocally,
+} from '../new-canvas-controls'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -333,6 +336,8 @@ export function useSelectModeSelectAndHover(): {
   onMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void
 } {
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const setSelectedViewsForCanvasControlsOnly = useSetCanvasControlsSelectedViewsLocally()
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
@@ -361,13 +366,34 @@ export function useSelectModeSelectAndHover(): {
       if (foundTarget != null) {
         startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.templatePath)
 
+        const isMultiselect = event.shiftKey
+        let updatedSelection: Array<TemplatePath>
+        if (isMultiselect) {
+          updatedSelection = TP.addPathIfMissing(foundTarget.templatePath, selectedViewsRef.current)
+        } else {
+          updatedSelection = [foundTarget.templatePath]
+        }
+
+        // first we only set the selected views for the canvas controls
+        setSelectedViewsForCanvasControlsOnly(updatedSelection)
+
         if (!foundTarget.isSelected) {
-          dispatch([selectComponents([foundTarget.templatePath], event.shiftKey)])
-          // TODO BALAZS repeat the hack from select-mode-control-container which sets the selected views with a priority on the canvas controls first
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              // then we set the selected views for the editor state, 1 frame later
+              dispatch([selectComponents([foundTarget.templatePath], event.shiftKey)])
+            })
+          })
         }
       }
     },
-    [dispatch, findValidTarget, startDragStateAfterDragExceedsThreshold],
+    [
+      dispatch,
+      selectedViewsRef,
+      findValidTarget,
+      startDragStateAfterDragExceedsThreshold,
+      setSelectedViewsForCanvasControlsOnly,
+    ],
   )
 
   return { onMouseOver, onMouseOut, onMouseDown }
