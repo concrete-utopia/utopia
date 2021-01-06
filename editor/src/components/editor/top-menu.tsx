@@ -19,15 +19,13 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
 
   return (
     <SimpleFlexRow style={{ flexGrow: 1 }}>
-      <Tooltip title={'Navigator'} placement={'bottom'}>
-        <span>
-          <RightMenuTile
-            selected={navigatorPosition !== 'hidden'}
-            highlightSelected={false}
-            icon={<MenuIcons.Project />}
-            onClick={onClickNavigateTab}
-          />
-        </span>
+      <Tooltip title={'Toggle outline'} placement={'bottom'}>
+        <RightMenuTile
+          selected={navigatorPosition !== 'hidden'}
+          highlightSelected={false}
+          icon={<MenuIcons.Navigator />}
+          onClick={onClickNavigateTab}
+        />
       </Tooltip>
       <FormulaBar />
     </SimpleFlexRow>
