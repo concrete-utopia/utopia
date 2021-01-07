@@ -153,7 +153,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             const newAttributes = setJSXValueAtPath(
               elementWithin.props,
               PP.create(['style']),
-              jsxAttributeValue({ left: 20, top: 300 }),
+              jsxAttributeValue({ left: 20, top: 300 }, emptyComments),
             )
             forEachRight(newAttributes, (updated) => {
               elementWithin.props = updated
@@ -184,7 +184,7 @@ export var whatever = props => (
       'expression',
       defaultPropsParam,
       [],
-      jsxElement('div', { 'data-uid': jsxAttributeValue('abc') }, []),
+      jsxElement('div', { 'data-uid': jsxAttributeValue('abc', emptyComments) }, []),
       null,
       false,
       emptyComments,
@@ -201,9 +201,11 @@ export var whatever = props => (
         version: 3,
         file: 'code.tsx',
       }),
-      { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab') }, []) },
+      { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab', emptyComments) }, []) },
     )
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [codeBlock])
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+      codeBlock,
+    ])
     const whatever = utopiaJSXComponent(
       'whatever',
       true,
@@ -245,7 +247,7 @@ export var whatever = (props) => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [
         jsxArbitraryBlock(
@@ -267,7 +269,7 @@ export var whatever = (props) => {
             aab: jsxElement(
               'View',
               {
-                'data-uid': jsxAttributeValue('aab'),
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',
@@ -343,7 +345,7 @@ export var whatever = (props) => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [
         jsxArbitraryBlock(
@@ -365,7 +367,7 @@ export var whatever = (props) => {
             aab: jsxElement(
               'View',
               {
-                'data-uid': jsxAttributeValue('aab'),
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',
@@ -453,7 +455,7 @@ export var whatever = (props) => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [
         jsxArbitraryBlock(
@@ -470,7 +472,7 @@ export var whatever = (props) => {
             aab: jsxElement(
               'View',
               {
-                'data-uid': jsxAttributeValue('aab'),
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',
@@ -542,7 +544,7 @@ export var whatever = (props) => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [
         jsxArbitraryBlock(
@@ -563,13 +565,13 @@ export var whatever = (props) => {
             aab: jsxElement(
               'div',
               {
-                'data-uid': jsxAttributeValue('aab'),
+                'data-uid': jsxAttributeValue('aab', emptyComments),
               },
               [
                 jsxElement(
                   'div',
                   {
-                    'data-uid': jsxAttributeValue('aac'),
+                    'data-uid': jsxAttributeValue('aac', emptyComments),
                   },
                   [
                     jsxArbitraryBlock(
@@ -643,7 +645,7 @@ export var whatever = (props) => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [
         jsxArbitraryBlock(
@@ -660,7 +662,7 @@ export var whatever = (props) => {
             aab: jsxElement(
               'View',
               {
-                'data-uid': jsxAttributeValue('aab'),
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',
@@ -732,7 +734,7 @@ export var whatever = (props) => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [
         jsxArbitraryBlock(
@@ -753,13 +755,13 @@ export var whatever = (props) => {
             aab: jsxElement(
               'div',
               {
-                'data-uid': jsxAttributeValue('aab'),
+                'data-uid': jsxAttributeValue('aab', emptyComments),
               },
               [
                 jsxElement(
                   'div',
                   {
-                    'data-uid': jsxAttributeValue('aac'),
+                    'data-uid': jsxAttributeValue('aac', emptyComments),
                   },
                   [
                     jsxArbitraryBlock(
@@ -833,7 +835,7 @@ export var whatever = (props) => {
     const view = jsxElement(
       'View',
       {
-        'data-uid': jsxAttributeValue('aaa'),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [
         jsxArbitraryBlock(
@@ -850,7 +852,7 @@ export var whatever = (props) => {
             aab: jsxElement(
               'View',
               {
-                'data-uid': jsxAttributeValue('aab'),
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',

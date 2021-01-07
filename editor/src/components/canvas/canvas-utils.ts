@@ -169,6 +169,7 @@ import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
 import { openFileTab } from '../editor/store/editor-tabs'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -318,12 +319,15 @@ export function updateFramesOfScenesAndComponents(
               const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
                 {
                   path: PP.create(['style']),
-                  value: jsxAttributeValue({
-                    left: frameAndTarget.frame?.x,
-                    top: frameAndTarget.frame?.y,
-                    width: frameAndTarget.frame?.width,
-                    height: frameAndTarget.frame?.height,
-                  }),
+                  value: jsxAttributeValue(
+                    {
+                      left: frameAndTarget.frame?.x,
+                      top: frameAndTarget.frame?.y,
+                      width: frameAndTarget.frame?.width,
+                      height: frameAndTarget.frame?.height,
+                    },
+                    emptyComments,
+                  ),
                 },
               ])
               return foldEither(
@@ -496,19 +500,19 @@ export function updateFramesOfScenesAndComponents(
                   if (flexBasis != null) {
                     propsToSet.push({
                       path: createLayoutPropertyPath('FlexFlexBasis'),
-                      value: jsxAttributeValue(flexBasis),
+                      value: jsxAttributeValue(flexBasis, emptyComments),
                     })
                   }
                   if (width != null) {
                     propsToSet.push({
                       path: createLayoutPropertyPath('Width'),
-                      value: jsxAttributeValue(width),
+                      value: jsxAttributeValue(width, emptyComments),
                     })
                   }
                   if (height != null) {
                     propsToSet.push({
                       path: createLayoutPropertyPath('Height'),
-                      value: jsxAttributeValue(height),
+                      value: jsxAttributeValue(height, emptyComments),
                     })
                   }
                 })
@@ -619,7 +623,7 @@ export function updateFramesOfScenesAndComponents(
                   }
                   propsToSet.push({
                     path: propPathToUpdate,
-                    value: jsxAttributeValue(valueToUse),
+                    value: jsxAttributeValue(valueToUse, emptyComments),
                   })
                 }
               })
@@ -809,7 +813,7 @@ function updateFrameValueForProp(
     }
     return {
       path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
-      value: jsxAttributeValue(valueToUse),
+      value: jsxAttributeValue(valueToUse, emptyComments),
     }
   }
   return null
@@ -1826,7 +1830,7 @@ export function moveTemplate(
           const updatedPropsResult = setJSXValueAtPath(
             sceneElement.props,
             PathForSceneStyle,
-            jsxAttributeValue(canvasFrameToNormalisedFrame(newFrame)),
+            jsxAttributeValue(canvasFrameToNormalisedFrame(newFrame), emptyComments),
           )
           return foldEither(
             () => sceneElement,
@@ -2004,7 +2008,7 @@ function preventAnimationsOnTargets(
           const styleUpdated = setJSXValuesAtPaths(element.props, [
             {
               path: PP.create(['style', 'transition']),
-              value: jsxAttributeValue('none'),
+              value: jsxAttributeValue('none', emptyComments),
             },
           ])
           return foldEither(
@@ -2339,8 +2343,8 @@ export function duplicate(
               const newSceneLabel = `Scene ${numberOfScenes}`
               const props = {
                 ...jsxElement.props,
-                'data-label': jsxAttributeValue(newSceneLabel),
-                'data-uid': jsxAttributeValue(getUtopiaID(newElement)),
+                'data-label': jsxAttributeValue(newSceneLabel, emptyComments),
+                'data-uid': jsxAttributeValue(getUtopiaID(newElement), emptyComments),
               }
               const newSceneElement = {
                 ...jsxElement,

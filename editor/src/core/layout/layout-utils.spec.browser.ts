@@ -20,6 +20,7 @@ import { generateUidWithExistingComponents } from '../model/element-template-uti
 import { right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 import { BakedInStoryboardUID } from '../model/scene-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const NewUID = 'catdog'
 
@@ -58,13 +59,16 @@ describe('maybeSwitchLayoutProps', () => {
     const elementToPaste = jsxElement(
       'View',
       {
-        style: jsxAttributeNestedObjectSimple({
-          bottom: jsxAttributeValue(50),
-          right: jsxAttributeValue(50),
-          width: jsxAttributeValue(100),
-          height: jsxAttributeValue(100),
-        }),
-        'data-uid': jsxAttributeValue(NewUID),
+        style: jsxAttributeNestedObjectSimple(
+          {
+            bottom: jsxAttributeValue(50, emptyComments),
+            right: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(100, emptyComments),
+            height: jsxAttributeValue(100, emptyComments),
+          },
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue(NewUID, emptyComments),
       },
       [],
     )

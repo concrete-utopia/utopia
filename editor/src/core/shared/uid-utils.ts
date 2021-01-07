@@ -17,6 +17,7 @@ import {
 } from './jsx-attributes'
 import * as PP from './property-path'
 import { objectMap } from './object-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
@@ -119,7 +120,7 @@ export function setUtopiaIDOnJSXElement(element: JSXElement, uid: string): JSXEl
     ...element,
     props: {
       ...element.props,
-      ['data-uid']: jsxAttributeValue(uid),
+      ['data-uid']: jsxAttributeValue(uid, emptyComments),
     },
   }
 }
@@ -166,7 +167,7 @@ export function fixUtopiaElement(
         const fixedProps = setJSXValueAtPath(
           element.props,
           UtopiaIDPropertyPath,
-          jsxAttributeValue(newUID),
+          jsxAttributeValue(newUID, emptyComments),
         )
 
         if (isLeft(fixedProps)) {

@@ -9,6 +9,7 @@ import {
 import createStyles from 'draft-js-custom-styles'
 import * as R from 'ramda'
 import { jsxAttributeValue } from '../core/shared/element-template'
+import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 
 export function createContentState(text: RawDraftContentState | string): ContentState {
   const safeText = R.defaultTo('', text)
@@ -110,9 +111,9 @@ export function createDraftStyles(): { styles: any; customStyleFn: any } {
 export function draftContentToJsxAttributeValue(content: ContentState) {
   const rawContent = convertToRaw(content)
   if (isRawContentFormatted(rawContent)) {
-    return jsxAttributeValue(rawContent)
+    return jsxAttributeValue(rawContent, emptyComments)
   } else {
-    return jsxAttributeValue(content.getPlainText())
+    return jsxAttributeValue(content.getPlainText(), emptyComments)
   }
 }
 

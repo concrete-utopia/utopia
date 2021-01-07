@@ -32,6 +32,7 @@ import {
   TestScenePath as TestScenePathForTestProject,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { createIndexedUid } from '../shared/uid-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const TestScenePath = 'scene-aaa'
 
@@ -312,7 +313,11 @@ describe('getElementLabel', () => {
   const divPath = TP.appendToPath(scenePath, 'div-1')
   const spanPath = TP.appendToPath(divPath, 'span-1')
   const textBlock = jsxTextBlock('test text')
-  const spanElement = jsxElement('span', { 'data-uid': jsxAttributeValue('span-1') }, [textBlock])
+  const spanElement = jsxElement(
+    'span',
+    { 'data-uid': jsxAttributeValue('span-1', emptyComments) },
+    [textBlock],
+  )
   const spanElementMetadata = elementInstanceMetadata(
     spanPath,
     right(spanElement),
@@ -326,7 +331,9 @@ describe('getElementLabel', () => {
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
   )
-  const divElement = jsxElement('div', { 'data-uid': jsxAttributeValue('div-1') }, [spanElement])
+  const divElement = jsxElement('div', { 'data-uid': jsxAttributeValue('div-1', emptyComments) }, [
+    spanElement,
+  ])
   const divElementMetadata = elementInstanceMetadata(
     divPath,
     right(divElement),

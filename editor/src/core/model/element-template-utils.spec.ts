@@ -20,29 +20,29 @@ import { emptyComments } from '../workers/parser-printer/parser-printer-comments
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
     const exampleElements = [
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, []),
     ]
     const fixedElements = guaranteeUniqueUids(exampleElements, [])
 
     const child0UID = Utils.path([0, 'props', 'data-uid'], fixedElements)
-    expect(child0UID).toEqual(jsxAttributeValue('aaa'))
+    expect(child0UID).toEqual(jsxAttributeValue('aaa', emptyComments))
     const child1UID = Utils.path([1, 'props', 'data-uid'], fixedElements)
-    expect(child1UID).not.toEqual(jsxAttributeValue('aaa'))
+    expect(child1UID).not.toEqual(jsxAttributeValue('aaa', emptyComments))
   })
 
   it('if an element has an existing value, it will be replaced', () => {
     const exampleElements = [
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, []),
+      jsxElement('View', { 'data-uid': jsxAttributeValue('aab', emptyComments) }, []),
     ]
     const existingIDs = ['aab', 'bbb']
     const fixedElements = guaranteeUniqueUids(exampleElements, existingIDs)
 
     const child0UID = Utils.path([0, 'props', 'data-uid'], fixedElements)
-    expect(child0UID).toEqual(jsxAttributeValue('aaa'))
+    expect(child0UID).toEqual(jsxAttributeValue('aaa', emptyComments))
     const child1UID = Utils.path([1, 'props', 'data-uid'], fixedElements)
-    expect(child1UID).not.toEqual(jsxAttributeValue('aab'))
+    expect(child1UID).not.toEqual(jsxAttributeValue('aab', emptyComments))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
@@ -64,7 +64,11 @@ describe('guaranteeUniqueUids', () => {
 
 describe('getUtopiaID', () => {
   it('returns an id if there is one', () => {
-    const element = jsxElement('View', { 'data-uid': jsxAttributeValue('hello') }, [])
+    const element = jsxElement(
+      'View',
+      { 'data-uid': jsxAttributeValue('hello', emptyComments) },
+      [],
+    )
     const id = getUtopiaID(element as JSXElement)
     expect(id).toEqual('hello')
   })
@@ -93,7 +97,14 @@ describe('removeJSXElementChild', () => {
       'block',
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aaa'), prop1: jsxAttributeValue(5) }, []),
+      jsxElement(
+        'View',
+        {
+          'data-uid': jsxAttributeValue('aaa', emptyComments),
+          prop1: jsxAttributeValue(5, emptyComments),
+        },
+        [],
+      ),
       null,
       false,
       emptyComments,
@@ -106,15 +117,25 @@ describe('removeJSXElementChild', () => {
       'block',
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aab'), prop2: jsxAttributeValue(15) }, [
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aac') }, []),
-        jsxElement(
-          'View',
-          { 'data-uid': jsxAttributeValue('aad'), prop3: jsxAttributeValue(100) },
-          [],
-        ),
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aae') }, []),
-      ]),
+      jsxElement(
+        'View',
+        {
+          'data-uid': jsxAttributeValue('aab', emptyComments),
+          prop2: jsxAttributeValue(15, emptyComments),
+        },
+        [
+          jsxElement('View', { 'data-uid': jsxAttributeValue('aac', emptyComments) }, []),
+          jsxElement(
+            'View',
+            {
+              'data-uid': jsxAttributeValue('aad', emptyComments),
+              prop3: jsxAttributeValue(100, emptyComments),
+            },
+            [],
+          ),
+          jsxElement('View', { 'data-uid': jsxAttributeValue('aae', emptyComments) }, []),
+        ],
+      ),
       null,
       false,
       emptyComments,

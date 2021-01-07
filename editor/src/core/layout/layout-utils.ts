@@ -51,6 +51,7 @@ import {
 } from './layout-helpers-new'
 import { getLayoutPropertyOr } from './getLayoutProperty'
 import { CSSPosition, layoutEmptyValues } from '../../components/inspector/common/css-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
@@ -314,7 +315,7 @@ export function switchPinnedChildToFlex(
   let propsToAdd: Array<ValueAtPath> = [
     {
       path: createLayoutPropertyPath('position'),
-      value: jsxAttributeValue('relative'),
+      value: jsxAttributeValue('relative', emptyComments),
     },
   ]
 
@@ -333,19 +334,19 @@ export function switchPinnedChildToFlex(
       if (flexBasis != null) {
         propsToAdd.push({
           path: createLayoutPropertyPath('FlexFlexBasis'),
-          value: jsxAttributeValue(flexBasis),
+          value: jsxAttributeValue(flexBasis, emptyComments),
         })
       }
       if (width != null) {
         propsToAdd.push({
           path: createLayoutPropertyPath('Width'),
-          value: jsxAttributeValue(width),
+          value: jsxAttributeValue(width, emptyComments),
         })
       }
       if (height != null) {
         propsToAdd.push({
           path: createLayoutPropertyPath('Height'),
-          value: jsxAttributeValue(height),
+          value: jsxAttributeValue(height, emptyComments),
         })
       }
     })
@@ -689,10 +690,10 @@ function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
   height: string | number,
 ) {
   const propsToAdd: Array<ValueAtPath> = [
-    { path: createLayoutPropertyPath('PinnedLeft'), value: jsxAttributeValue(left) },
-    { path: createLayoutPropertyPath('PinnedTop'), value: jsxAttributeValue(top) },
-    { path: createLayoutPropertyPath('Width'), value: jsxAttributeValue(width) },
-    { path: createLayoutPropertyPath('Height'), value: jsxAttributeValue(height) },
+    { path: createLayoutPropertyPath('PinnedLeft'), value: jsxAttributeValue(left, emptyComments) },
+    { path: createLayoutPropertyPath('PinnedTop'), value: jsxAttributeValue(top, emptyComments) },
+    { path: createLayoutPropertyPath('Width'), value: jsxAttributeValue(width, emptyComments) },
+    { path: createLayoutPropertyPath('Height'), value: jsxAttributeValue(height, emptyComments) },
   ]
 
   const propsToRemove: Array<LayoutProp | StyleLayoutProp> = [
@@ -733,11 +734,14 @@ function removeFlexAndAddPinnedPropsToComponent(
   height: string | number,
 ) {
   const propsToAdd: Array<ValueAtPath> = [
-    { path: createLayoutPropertyPath('PinnedLeft'), value: jsxAttributeValue(left) },
-    { path: createLayoutPropertyPath('PinnedTop'), value: jsxAttributeValue(top) },
-    { path: createLayoutPropertyPath('Width'), value: jsxAttributeValue(width) },
-    { path: createLayoutPropertyPath('Height'), value: jsxAttributeValue(height) },
-    { path: createLayoutPropertyPath('position'), value: jsxAttributeValue('absolute') },
+    { path: createLayoutPropertyPath('PinnedLeft'), value: jsxAttributeValue(left, emptyComments) },
+    { path: createLayoutPropertyPath('PinnedTop'), value: jsxAttributeValue(top, emptyComments) },
+    { path: createLayoutPropertyPath('Width'), value: jsxAttributeValue(width, emptyComments) },
+    { path: createLayoutPropertyPath('Height'), value: jsxAttributeValue(height, emptyComments) },
+    {
+      path: createLayoutPropertyPath('position'),
+      value: jsxAttributeValue('absolute', emptyComments),
+    },
   ]
   const propsToRemove: Array<LayoutProp | StyleLayoutProp> = ['FlexFlexBasis', 'FlexCrossBasis']
 
@@ -770,10 +774,10 @@ function changePinsToDefaultOnComponent(
   height: string | number,
 ) {
   const propsToAdd: Array<ValueAtPath> = [
-    { path: createLayoutPropertyPath('PinnedLeft'), value: jsxAttributeValue(left) },
-    { path: createLayoutPropertyPath('PinnedTop'), value: jsxAttributeValue(top) },
-    { path: createLayoutPropertyPath('Width'), value: jsxAttributeValue(width) },
-    { path: createLayoutPropertyPath('Height'), value: jsxAttributeValue(height) },
+    { path: createLayoutPropertyPath('PinnedLeft'), value: jsxAttributeValue(left, emptyComments) },
+    { path: createLayoutPropertyPath('PinnedTop'), value: jsxAttributeValue(top, emptyComments) },
+    { path: createLayoutPropertyPath('Width'), value: jsxAttributeValue(width, emptyComments) },
+    { path: createLayoutPropertyPath('Height'), value: jsxAttributeValue(height, emptyComments) },
   ]
   const propsToRemove: Array<LayoutProp | StyleLayoutProp> = [
     'PinnedBottom',
@@ -848,7 +852,7 @@ export function roundAttributeLayoutValues(jsxAttributes: JSXAttributes): JSXAtt
               const withValueSet = setJSXValueAtPath(
                 workingAttributes,
                 propertyToRound,
-                jsxAttributeValue(rounded),
+                jsxAttributeValue(rounded, emptyComments),
               )
               // Should we (unexpectedly) be unable to set the value, default the result.
               return defaultEither(workingAttributes, withValueSet)

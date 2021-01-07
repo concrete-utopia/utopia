@@ -121,66 +121,88 @@ function buildPropertyCallingFunction(
   )
 }
 
-function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
+function getJSXAttributeComments(attribute: JSXAttribute): ParsedComments {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
-      const value = attribute.value
-      if (typeof value === 'string') {
-        return TS.createLiteral(value)
-      } else {
-        return jsonToExpression(value)
-      }
     case 'ATTRIBUTE_NESTED_OBJECT':
-      const contents = attribute.content
-      const objectPropertyExpressions: Array<TS.ObjectLiteralElementLike> = contents.map((prop) => {
-        switch (prop.type) {
-          case 'PROPERTY_ASSIGNMENT':
-            return TS.createPropertyAssignment(
-              TS.createStringLiteral(prop.key),
-              jsxAttributeToExpression(prop.value),
-            )
-          case 'SPREAD_ASSIGNMENT':
-            return TS.createSpreadAssignment(jsxAttributeToExpression(prop.value))
-          default:
-            const _exhaustiveCheck: never = prop
-            throw new Error(`Unhandled prop type ${prop}`)
-        }
-      })
-      return TS.createObjectLiteral(objectPropertyExpressions)
     case 'ATTRIBUTE_NESTED_ARRAY':
-      const arrayExpressions: Array<TS.Expression> = attribute.content.map((elem) => {
-        switch (elem.type) {
-          case 'ARRAY_SPREAD':
-            return TS.createSpread(jsxAttributeToExpression(elem.value))
-          case 'ARRAY_VALUE':
-            return jsxAttributeToExpression(elem.value)
-          default:
-            const _exhaustiveCheck: never = elem
-            throw new Error(`Unhandled array element type ${elem}`)
-        }
-      })
-      return TS.createArrayLiteral(arrayExpressions)
+      return attribute.comments
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      // SP: This is quite truly the most spectacular fudge I've ever had to create in my entire career.
-      // Creates a representation of the AST that is code which executes the TS factory functions...
-      // ...Then evals it to produce the AST and drills into the result a little.
-      const createExpressionAsString = creator(attribute.javascript)
-      const newExpression = SafeFunction(
-        false,
-        { ts: TS, React: React },
-        `return ${createExpressionAsString}.statements[0].expression`,
-        [],
-        (e) => {
-          throw e
-        },
-      )()
-      return newExpression
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
+      return emptyComments
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled prop type ${JSON.stringify(attribute)}`)
   }
+}
+
+function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
+  function createExpression(): TS.Expression {
+    switch (attribute.type) {
+      case 'ATTRIBUTE_VALUE':
+        if (typeof attribute.value === 'string') {
+          return TS.createLiteral(attribute.value)
+        } else {
+          return jsonToExpression(attribute.value)
+        }
+      case 'ATTRIBUTE_NESTED_OBJECT':
+        const contents = attribute.content
+        const objectPropertyExpressions: Array<TS.ObjectLiteralElementLike> = contents.map(
+          (prop) => {
+            switch (prop.type) {
+              case 'PROPERTY_ASSIGNMENT':
+                return TS.createPropertyAssignment(
+                  TS.createStringLiteral(prop.key),
+                  jsxAttributeToExpression(prop.value),
+                )
+              case 'SPREAD_ASSIGNMENT':
+                return TS.createSpreadAssignment(jsxAttributeToExpression(prop.value))
+              default:
+                const _exhaustiveCheck: never = prop
+                throw new Error(`Unhandled prop type ${prop}`)
+            }
+          },
+        )
+        return TS.createObjectLiteral(objectPropertyExpressions)
+      case 'ATTRIBUTE_NESTED_ARRAY':
+        const arrayExpressions: Array<TS.Expression> = attribute.content.map((elem) => {
+          switch (elem.type) {
+            case 'ARRAY_SPREAD':
+              return TS.createSpread(jsxAttributeToExpression(elem.value))
+            case 'ARRAY_VALUE':
+              return jsxAttributeToExpression(elem.value)
+            default:
+              const _exhaustiveCheck: never = elem
+              throw new Error(`Unhandled array element type ${elem}`)
+          }
+        })
+        return TS.createArrayLiteral(arrayExpressions)
+      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+        // SP: This is quite truly the most spectacular fudge I've ever had to create in my entire career.
+        // Creates a representation of the AST that is code which executes the TS factory functions...
+        // ...Then evals it to produce the AST and drills into the result a little.
+        const createExpressionAsString = creator(attribute.javascript)
+        const newExpression = SafeFunction(
+          false,
+          { ts: TS, React: React, addCommentsToNode: addCommentsToNode },
+          `return ${createExpressionAsString}.expression`,
+          [],
+          (e) => {
+            throw e
+          },
+        )()
+        return newExpression
+      case 'ATTRIBUTE_FUNCTION_CALL':
+        return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
+      default:
+        const _exhaustiveCheck: never = attribute
+        throw new Error(`Unhandled prop type ${JSON.stringify(attribute)}`)
+    }
+  }
+  // Slide the comments onto the expression.
+  const expression = createExpression()
+  addCommentsToNode(expression, getJSXAttributeComments(attribute))
+  return expression
 }
 
 function withUID<T>(
@@ -359,12 +381,12 @@ function jsxElementToExpression(
           )]
         )`
       } else {
-        createExpressionAsString = creator(element.javascript)
+        createExpressionAsString = creator(element.originalJavascript)
       }
       let newExpression = SafeFunction(
         false,
-        { ts: TS, React: React },
-        `var node = ${createExpressionAsString}.statements[0]; return node.expression || node`,
+        { ts: TS, React: React, addCommentsToNode: addCommentsToNode },
+        `var node = ${createExpressionAsString}; return node.expression || node`,
         [],
         (e) => {
           throw e
@@ -1016,6 +1038,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
       if (filteredArbitraryNodes.length > 0) {
         const nodeParseResult = parseArbitraryNodes(
           sourceFile,
+          sourceText,
           filename,
           filteredArbitraryNodes,
           imports,
@@ -1157,6 +1180,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             const parsedFunctionParams = parseParams(
               parameters,
               sourceFile,
+              sourceText,
               filename,
               imports,
               topLevelNames,
@@ -1186,6 +1210,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
 
               parsedContents = parseOutFunctionContents(
                 sourceFile,
+                sourceText,
                 filename,
                 imports,
                 topLevelNames,
@@ -1201,6 +1226,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
               expressionTypeForExpression(canvasContents.initializer),
               parseOutJSXElements(
                 sourceFile,
+                sourceText,
                 filename,
                 [canvasContents.initializer],
                 imports,
@@ -1276,6 +1302,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     if (allArbitraryNodes.length > 0) {
       const nodeParseResult = parseArbitraryNodes(
         sourceFile,
+        sourceText,
         filename,
         allArbitraryNodes,
         imports,
@@ -1332,6 +1359,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
 function parseParams(
   params: TS.NodeArray<TS.ParameterDeclaration>,
   file: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -1345,6 +1373,7 @@ function parseParams(
     const parseResult = parseParam(
       param,
       file,
+      sourceText,
       filename,
       imports,
       topLevelNames,
@@ -1369,6 +1398,7 @@ function parseParams(
 function parseParam(
   param: TS.ParameterDeclaration | TS.BindingElement,
   file: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -1384,6 +1414,7 @@ function parseParam(
       ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
       : parseAttributeOtherJavaScript(
           file,
+          sourceText,
           filename,
           imports,
           topLevelNames,
@@ -1397,6 +1428,7 @@ function parseParam(
       param.name,
       paramExpression,
       file,
+      sourceText,
       filename,
       imports,
       topLevelNames,
@@ -1420,6 +1452,7 @@ function parseBindingName(
   elem: TS.BindingName,
   expression: WithParserMetadata<JSXAttributeOtherJavaScript | undefined>,
   file: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -1454,6 +1487,7 @@ function parseBindingName(
         const parsedParam = parseParam(
           element,
           file,
+          sourceText,
           filename,
           imports,
           topLevelNames,
@@ -1493,6 +1527,7 @@ function parseBindingName(
         const parsedParam = parseParam(
           element,
           file,
+          sourceText,
           filename,
           imports,
           topLevelNames,

@@ -151,6 +151,7 @@ return { a: a, b: b };",
         "leadingComments": Array [
           Object {
             "comment": "* @jsx jsx ",
+            "pos": 0,
             "rawText": "/** @jsx jsx */",
             "trailingNewLine": true,
             "type": "MULTI_LINE_COMMENT",
@@ -450,16 +451,28 @@ export var storyboard = (
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "layout": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "layoutSystem": "pinSystem",
             },
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#FFFFFF",
@@ -658,14 +671,26 @@ export var storyboard = (
                 "uniqueID": "",
               },
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "ccc",
               },
               "props": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {},
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "height": 812,
@@ -687,10 +712,18 @@ export var storyboard = (
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "layout": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "layoutSystem": "pinSystem",

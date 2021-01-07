@@ -76,10 +76,10 @@ export function mapScene(scene: SceneMetadata): JSXElement {
       [],
       null,
     ),
-    props: jsxAttributeValue(scene.props),
-    style: jsxAttributeValue(scene.frame),
-    'data-uid': jsxAttributeValue(scene.uid),
-    'data-label': jsxAttributeValue(scene.label),
+    props: jsxAttributeValue(scene.props, emptyComments),
+    style: jsxAttributeValue(scene.frame, emptyComments),
+    'data-uid': jsxAttributeValue(scene.uid, emptyComments),
+    'data-label': jsxAttributeValue(scene.label, emptyComments),
   }
   return jsxElement('Scene', sceneProps, [])
 }
@@ -132,7 +132,7 @@ export function convertScenesToUtopiaCanvasComponent(
     [],
     jsxElement(
       'Storyboard',
-      { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) },
+      { 'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments) },
       scenes.map(mapScene),
     ),
     null,
@@ -150,22 +150,25 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
       [componentImportedAs],
       null,
     ),
-    [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
-    props: jsxAttributeValue({}),
-    style: jsxAttributeValue({
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      width: 375,
-      height: 812,
-    }),
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
+    props: jsxAttributeValue({}, emptyComments),
+    style: jsxAttributeValue(
+      {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 375,
+        height: 812,
+      },
+      emptyComments,
+    ),
   }
   return jsxElement('Scene', sceneProps, [])
 }
 
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
   const storyboardProps = {
-    [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
   }
   return jsxElement('Storyboard', storyboardProps, scenes)
 }
