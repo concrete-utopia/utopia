@@ -110,7 +110,7 @@ export async function runTests() {
   const scrollingResult1 = await testScrollingPerformance()
   const scrollingResult2 = await testScrollingPerformance()
 
-  console.info(`::set-output name=perf-result:: "{scrollingResult1}\n${scrollingResult2}"`)
+  console.info(`::set-output name=perf-result:: "${scrollingResult1}\n${scrollingResult2}"`)
 }
 
 function valueOutsideCutoff(frameCutoff: Array<number>) {
