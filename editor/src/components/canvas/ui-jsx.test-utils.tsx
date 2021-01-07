@@ -227,13 +227,13 @@ ${snippet}
   }
   export var ${BakedInStoryboardVariableName} = (props) => {
     return (
-      <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
         <Scene
           style={{ left: 0, top: 0, width: 400, height: 400 }}
           component={App}
           static
           props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-          data-uid={'${TestSceneUID}'}
+          data-uid='${TestSceneUID}'
         />
       </Storyboard>
     )

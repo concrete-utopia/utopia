@@ -124,10 +124,11 @@ function buildPropertyCallingFunction(
 function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
-      if (typeof attribute.value === 'string') {
-        return TS.createLiteral(attribute.value)
+      const value = attribute.value
+      if (typeof value === 'string') {
+        return TS.createLiteral(value)
       } else {
-        return jsonToExpression(attribute.value)
+        return jsonToExpression(value)
       }
     case 'ATTRIBUTE_NESTED_OBJECT':
       const contents = attribute.content
@@ -322,10 +323,11 @@ function jsxElementToExpression(
             // No else case here as a boolean false value means it gets omitted.
           } else {
             const attributeExpression = jsxAttributeToExpression(prop)
-            const initializer: TS.StringLiteral | TS.JsxExpression = TS.createJsxExpression(
-              undefined,
+            const initializer: TS.StringLiteral | TS.JsxExpression = TS.isStringLiteral(
               attributeExpression,
             )
+              ? attributeExpression
+              : TS.createJsxExpression(undefined, attributeExpression)
             attribsArray.push(TS.createJsxAttribute(identifier, initializer))
           }
         }
