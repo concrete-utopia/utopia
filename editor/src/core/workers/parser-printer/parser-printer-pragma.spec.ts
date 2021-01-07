@@ -10,7 +10,7 @@ describe('Parsing JSX Pragma:', () => {
     import * as React from "react";
     import { Ellipse, Image, Rectangle, Text, UtopiaUtils, View } from "utopia-api";
     export var App = props => {
-        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
+        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx" />
     };`
     const parsedPlainCode = testParseCode(code)
     if (isParseSuccess(parsedPlainCode)) {
@@ -26,7 +26,7 @@ describe('Parsing JSX Pragma:', () => {
     import * as React from "react";
     import { Ellipse, Image, Rectangle, Text, UtopiaUtils, View, jsx } from "utopia-api";
     export var App = props => {
-        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
+        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx" />
     };`
     const parsedPlainCode = testParseCode(code)
     if (isParseSuccess(parsedPlainCode)) {
@@ -43,17 +43,17 @@ describe('Parsing JSX Pragma:', () => {
     import * as React from "react";
     import { Ellipse, Image, Rectangle, Scene, Storyboard, Text, UtopiaUtils, View, jsx } from "utopia-api";
     export var App = props => {
-        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
+        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx" />
     };
     export var storyboard = (props) => {
       return (
-        <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+        <Storyboard data-uid='${BakedInStoryboardUID}'>
           <Scene
             style={{ left: 0, top: 0, width: 400, height: 400 }}
             component={App}
             layout={{ layoutSystem: 'pinSystem' }}
             props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-            data-uid={'scene-aaa'}
+            data-uid='scene-aaa'
           />
         </Storyboard>
       )
@@ -70,7 +70,7 @@ describe('Parsing JSX Pragma:', () => {
     import * as React from "react";
     import { Ellipse, Image, Rectangle, Text, UtopiaUtils, View } from "utopia-api";
     export var App = props => {
-        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
+        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx" />
     };`
     const parsedPlainCode = testParseCode(code)
     if (isParseSuccess(parsedPlainCode)) {
@@ -88,7 +88,7 @@ describe('Parsing JSX Pragma:', () => {
     import * as React from "react";
     import { Ellipse, Image, Rectangle, Text, UtopiaUtils, View } from "utopia-api";
     export var App = props => {
-        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
+        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx" />
     };`
     const parsedPlainCode = testParseCode(code)
     if (isParseSuccess(parsedPlainCode)) {

@@ -15,20 +15,20 @@ import * as React from "react";
 import * as Utopia from "utopia-api";
 export var App = props => {
   return (
-    <Utopia.View data-uid={"aaa"}>
-      {<div data-uid={"bbb"} />}
+    <Utopia.View data-uid="aaa">
+      {<div data-uid="bbb" />}
     </Utopia.View>
   )
 }
 export var storyboard = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ left: 0, top: 0, width: 400, height: 400 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
+        data-uid='scene-aaa'
       />
     </Storyboard>
   )
@@ -58,20 +58,20 @@ import * as Utopia from "utopia-api";
 import { Scene, Storyboard, View } from "utopia-api";
 export var App = props => {
   return (
-    <Utopia.View data-uid={"aaa"}>
-      <View data-uid={'bbb'} />
+    <Utopia.View data-uid="aaa">
+      <View data-uid='bbb' />
     </Utopia.View>
   )
 }
 export var storyboard = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ left: 0, top: 0, width: 400, height: 400 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
+        data-uid='scene-aaa'
       />
     </Storyboard>
   )
@@ -81,20 +81,20 @@ import { Scene, Storyboard, View } from 'utopia-api'
 import * as Utopia from 'utopia-api'
 export var App = (props) => {
   return (
-    <Utopia.View data-uid={'aaa'}>
-      <View data-uid={'bbb'} />
+    <Utopia.View data-uid='aaa'>
+      <View data-uid='bbb' />
     </Utopia.View>
   )
 }
 export var storyboard = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ left: 0, top: 0, width: 400, height: 400 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
+        data-uid='scene-aaa'
       />
     </Storyboard>
   )

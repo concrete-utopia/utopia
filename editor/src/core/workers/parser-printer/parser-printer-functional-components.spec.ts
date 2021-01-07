@@ -156,6 +156,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
@@ -204,6 +206,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
@@ -237,6 +241,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
@@ -274,6 +280,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
@@ -319,6 +327,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
@@ -359,6 +369,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
@@ -404,6 +416,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
@@ -445,6 +459,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
@@ -479,6 +495,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
@@ -521,6 +539,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
@@ -561,6 +581,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
@@ -614,6 +636,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       outerDestructuredObject,
       ['arrayPart'],
       view,
@@ -686,6 +710,8 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       outerDestructuredObject,
       ['arrayPart'],
       view,

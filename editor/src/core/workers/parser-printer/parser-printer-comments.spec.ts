@@ -20,7 +20,7 @@ describe('parseCode', () => {
       Comment.
     */
     export var whatever = (props) => {
-      return <div data-uid={'aaa'} />
+      return <div data-uid='aaa' />
     }
 `,
       false,

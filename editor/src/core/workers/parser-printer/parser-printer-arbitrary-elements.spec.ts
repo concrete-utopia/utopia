@@ -46,13 +46,13 @@ export var App = props => {
 }
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ height: 200, left: 59, width: 200, top: 79 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid={'scene-0'}
+        data-uid='scene-0'
       />
     </Storyboard>
   )
@@ -93,20 +93,20 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 import { View, Storyboard, Scene } from 'utopia-api';
 export var App = props => {
   return (
-    <View data-uid={'aaa'}>
-      {<div data-uid={'bbb'} />}
+    <View data-uid='aaa'>
+      {<div data-uid='bbb' />}
     </View>
   )
 }
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ height: 200, left: 59, width: 200, top: 79 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid={'scene-0'}
+        data-uid='scene-0'
       />
     </Storyboard>
   )
@@ -120,20 +120,20 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 import { Scene, Storyboard, View } from 'utopia-api';
 export var App = props => {
   return (
-    <View data-uid={"aaa"}>
-      {<div data-uid={"bbb"} style={{ left: 20, top: 300 }} />}
+    <View data-uid="aaa">
+      {<div data-uid="bbb" style={{ left: 20, top: 300 }} />}
     </View>
   );
 };
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ height: 200, left: 59, width: 200, top: 79 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid={'scene-0'}
+        data-uid='scene-0'
       />
     </Storyboard>
   )
@@ -168,10 +168,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('Supports using top level components inside an arbitrary block', () => {
     const code = `import React from "react";
 import { View } from "utopia-api";
-var MyComp = (props) => <div data-uid={'abc'}/>
+var MyComp = (props) => <div data-uid='abc'/>
 export var whatever = props => (
-<View data-uid={'aaa'}>
-  {<MyComp data-uid={'aab'}/>}
+<View data-uid='aaa'>
+  {<MyComp data-uid='aab'/>}
 </View>
 )
 `
@@ -180,6 +180,8 @@ export var whatever = props => (
     const myComp = utopiaJSXComponent(
       'MyComp',
       true,
+      'var',
+      'expression',
       defaultPropsParam,
       [],
       jsxElement('div', { 'data-uid': jsxAttributeValue('abc', emptyComments) }, []),
@@ -190,8 +192,8 @@ export var whatever = props => (
     )
 
     const codeBlock = jsxArbitraryBlock(
-      `<MyComp data-uid={'aab'}/>`,
-      `<MyComp data-uid={'aab'} />;`,
+      `<MyComp data-uid='aab'/>`,
+      `<MyComp data-uid='aab' />;`,
       `return utopiaCanvasJSXLookup("aab", {});`,
       ['React', 'MyComp', 'utopiaCanvasJSXLookup'],
       expect.objectContaining({
@@ -207,6 +209,8 @@ export var whatever = props => (
     const whatever = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'parenthesized-expression',
       defaultPropsParam,
       [],
       view,
@@ -233,8 +237,8 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ { n: 1 } ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(({ n }) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(({ n }) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
@@ -247,8 +251,8 @@ export var whatever = (props) => {
       },
       [
         jsxArbitraryBlock(
-          `arr.map(({ n }) => <View data-uid={'aab'} thing={n} /> )`,
-          `arr.map(({ n }) => <View data-uid={'aab'} thing={n} />);`,
+          `arr.map(({ n }) => <View data-uid='aab' thing={n} /> )`,
+          `arr.map(({ n }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
   var n = _ref.n;
   return utopiaCanvasJSXLookup("aab", {
@@ -303,6 +307,8 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
@@ -329,8 +335,8 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ { a: { n: 1 } } ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(({ a: { n } }) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
@@ -343,8 +349,8 @@ export var whatever = (props) => {
       },
       [
         jsxArbitraryBlock(
-          `arr.map(({ a: { n } }) => <View data-uid={'aab'} thing={n} /> )`,
-          `arr.map(({ a: { n } }) => <View data-uid={'aab'} thing={n} />);`,
+          `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> )`,
+          `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
   var n = _ref.a.n;
   return utopiaCanvasJSXLookup("aab", {
@@ -401,6 +407,8 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
@@ -427,15 +435,15 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ [ 1 ] ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(([ n ]) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(([ n ]) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const originalMapJsCode = `arr.map(([ n ]) => <View data-uid={'aab'} thing={n} /> )`
-    const mapJsCode = `arr.map(([n]) => <View data-uid={'aab'} thing={n} />);`
+    const originalMapJsCode = `arr.map(([ n ]) => <View data-uid='aab' thing={n} /> )`
+    const mapJsCode = `arr.map(([n]) => <View data-uid='aab' thing={n} />);`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
   var _ref2 = babelHelpers.slicedToArray(_ref, 1),
       n = _ref2[0];
@@ -500,6 +508,8 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
@@ -524,8 +534,8 @@ return { arr: arr };`
 import { View } from "utopia-api";
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      { [1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> ) }
+    <View data-uid='aaa'>
+      { [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) }
     </View>
   )
 }
@@ -538,8 +548,8 @@ export var whatever = (props) => {
       },
       [
         jsxArbitraryBlock(
-          `[1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> )`,
-          `[1].map(n => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div>);`,
+          `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> )`,
+          `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
     n: n
@@ -587,6 +597,8 @@ export var whatever = (props) => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
@@ -613,14 +625,14 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ [ [ 1 ] ] ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const mapJsCode = `arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> )`
+    const mapJsCode = `arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> )`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
   var _ref2 = babelHelpers.slicedToArray(_ref, 1),
       _ref2$ = babelHelpers.slicedToArray(_ref2[0], 1),
@@ -686,6 +698,8 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
@@ -710,8 +724,8 @@ return { arr: arr };`
 import { View } from "utopia-api";
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      { [1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> ) }
+    <View data-uid='aaa'>
+      { [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) }
     </View>
   )
 }
@@ -724,8 +738,8 @@ export var whatever = (props) => {
       },
       [
         jsxArbitraryBlock(
-          `[1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> )`,
-          `[1].map(n => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div>);`,
+          `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> )`,
+          `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
     n: n
@@ -773,6 +787,8 @@ export var whatever = (props) => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
@@ -799,14 +815,14 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ [ [ 1 ] ] ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const mapJsCode = `arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> )`
+    const mapJsCode = `arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> )`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
   var _ref2 = babelHelpers.slicedToArray(_ref, 1),
       _ref2$ = babelHelpers.slicedToArray(_ref2[0], 1),
@@ -872,6 +888,8 @@ return { arr: arr };`
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
@@ -908,7 +926,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -924,9 +942,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}

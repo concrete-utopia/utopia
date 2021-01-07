@@ -57,6 +57,8 @@ import {
   clearAttributesUniqueIDs,
   clearAttributesSourceMaps,
   Comment,
+  WithComments,
+  BlockOrExpression,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -1990,28 +1992,36 @@ export function parseArbitraryNodes(
 
 export interface FunctionContents {
   arbitraryJSBlock: ArbitraryJSBlock | null
+  blockOrExpression: BlockOrExpression
   elements: Array<SuccessfullyParsedElement>
   returnStatementComments: ParsedComments
 }
 
 function functionContents(
   jsBlock: ArbitraryJSBlock | null,
+  blockOrExpression: BlockOrExpression,
   elements: Array<SuccessfullyParsedElement>,
   returnStatementComments: ParsedComments,
 ): FunctionContents {
   return {
     arbitraryJSBlock: jsBlock,
+    blockOrExpression: blockOrExpression,
     elements: elements,
     returnStatementComments: returnStatementComments,
   }
 }
 
+export function expressionTypeForExpression(expression: TS.Expression): BlockOrExpression {
+  return TS.isParenthesizedExpression(expression) ? 'parenthesized-expression' : 'expression'
+}
+
 export function liftParsedElementsIntoFunctionContents(
+  blockOrExpression: BlockOrExpression,
   parsedElements: ParseElementsResult,
 ): Either<string, WithParserMetadata<FunctionContents>> {
   return mapEither((parsed) => {
     return withParserMetadata(
-      functionContents(null, parsed.value, emptyComments),
+      functionContents(null, blockOrExpression, parsed.value, emptyComments),
       parsed.highlightBounds,
       parsed.propsUsed,
       parsed.definedElsewhere,
@@ -2089,7 +2099,7 @@ export function parseOutFunctionContents(
       )
       return mapEither((parsed) => {
         return withParserMetadata(
-          functionContents(jsBlock, parsed.value, returnStatementComments),
+          functionContents(jsBlock, 'block', parsed.value, returnStatementComments),
           parsed.highlightBounds,
           propsUsed.concat(parsed.propsUsed),
           definedElsewhere.concat(parsed.definedElsewhere),
@@ -2108,6 +2118,9 @@ export function parseOutFunctionContents(
       highlightBounds,
       alreadyExistingUIDs,
     )
-    return liftParsedElementsIntoFunctionContents(parsedElements)
+    return liftParsedElementsIntoFunctionContents(
+      expressionTypeForExpression(arrowFunctionBody),
+      parsedElements,
+    )
   }
 }

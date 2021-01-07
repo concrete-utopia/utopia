@@ -93,6 +93,8 @@ describe('removeJSXElementChild', () => {
     utopiaJSXComponent(
       'test1',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement(
@@ -111,6 +113,8 @@ describe('removeJSXElementChild', () => {
     utopiaJSXComponent(
       'test2WithChildren',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement(
