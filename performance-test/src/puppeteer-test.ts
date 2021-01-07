@@ -96,16 +96,19 @@ export const testScrollingPerformance = async function () {
   const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
   const s3FileUrl = await uploadPNGtoAWS(fileURI)
 
-  console.info(
-    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) - Total Frame Times: ${totalFrameTimes.toFixed(
-      1,
-    )}ms – average frame length: ${frameData.frameAvg.toFixed(1)}
+  return `![TestFrameChart](${s3FileUrl}) - Total Frame Times: 
+  ${totalFrameTimes.toFixed(1)}ms – average frame length: ${frameData.frameAvg.toFixed(1)}
       – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
-      frameData.percentile75
-    } – Median: ${frameData.percentile50} – frame times: [${frameTimesarray
-      .sort((a, b) => a - b)
-      .join(',')}]"`,
-  )
+    frameData.percentile75
+  } – Median: ${frameData.percentile50} – frame times: [${frameTimesarray
+    .sort((a, b) => a - b)
+    .join(',')}]`
+}
+
+export async function runTests() {
+  const scrollingResult1 = await testScrollingPerformance()
+  const scrollingResult2 = await testScrollingPerformance()
+  console.info(`::set-output name=perf-result:: "${scrollingResult1}\n${scrollingResult2}"`)
 }
 
 function valueOutsideCutoff(frameCutoff: Array<number>) {
