@@ -34,6 +34,8 @@ interface NumberSize {
   height: number
 }
 
+const TopMenuHeight = 30
+
 export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: DesignPanelRootProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'DesignPanelRoot dispatch')
   const interfaceDesigner = useEditorState(
@@ -155,8 +157,8 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           <SimpleFlexRow
             className='tabRail'
             style={{
-              minHeight: 30,
-              height: 30,
+              minHeight: TopMenuHeight,
+              height: TopMenuHeight,
               borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
               alignItems: 'stretch',
               justifyContent: 'stretch',
@@ -204,8 +206,8 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
             <SimpleFlexRow
               className='topMenu'
               style={{
-                minHeight: 30,
-                height: 30,
+                minHeight: TopMenuHeight,
+                height: TopMenuHeight,
                 borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
                 alignItems: 'stretch',
                 justifyContent: 'stretch',
