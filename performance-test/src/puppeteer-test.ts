@@ -110,7 +110,7 @@ export async function runTests() {
   const scrollingResult1 = await testScrollingPerformance()
   const scrollingResult2 = await testScrollingPerformance()
 
-  console.info(`::set-output name=perf-result:: "${scrollingResult1}\n${scrollingResult2}"`)
+  console.info(`::set-output name=perf-result:: "${scrollingResult1}\nscrollingResult2"`)
 }
 
 function valueOutsideCutoff(frameCutoff: Array<number>) {
@@ -310,8 +310,8 @@ async function createTestPng(
   }
   const imgOpts = {
     format: 'png',
-    width: 300,
-    height: 200,
+    width: 800,
+    height: 700,
   }
   const figure = { data: [trace], layout: layout }
 
