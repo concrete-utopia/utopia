@@ -110,7 +110,7 @@ export async function runTests() {
   const scrollingResult1 = await testScrollingPerformance()
   const scrollingResult2 = await testScrollingPerformance()
 
-  console.info(`::set-output name=perf-result:: "${scrollingResult1}\n${scrollingResult2}"`)
+  console.info(`::set-output name=perf-result:: "${scrollingResult1}\\n${scrollingResult2}"`)
 }
 
 function valueOutsideCutoff(frameCutoff: Array<number>) {
@@ -346,7 +346,7 @@ async function uploadPNGtoAWS(testFile: string) {
 
   let s3 = new AWS.S3({ apiVersion: '2006-03-01' })
   const uploadParams = {
-    Bucket: process.env.AWS_S3_BUCKET,
+    Bucket: 'frame-test-png', //process.env.AWS_S3_BUCKET,
     Key: testFile,
     Body: '',
     ContentType: 'image/png',
