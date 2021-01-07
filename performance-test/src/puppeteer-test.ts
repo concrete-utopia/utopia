@@ -310,8 +310,8 @@ async function createTestPng(
   }
   const imgOpts = {
     format: 'png',
-    width: 800,
-    height: 600,
+    width: 300,
+    height: 200,
   }
   const figure = { data: [trace], layout: layout }
 
