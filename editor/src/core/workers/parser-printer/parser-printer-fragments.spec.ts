@@ -48,31 +48,27 @@ describe('JSX parser', () => {
             <View
               style={{ ...props.style, backgroundColor: '#FFFFFF' }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'aaa'}
+              data-uid='aaa'
             >
               <React.Fragment>
-                <div data-label={'random-div'} style={{ width: 100, height: 100 }} data-uid={'bbb'}>
+                <div data-label='random-div' style={{ width: 100, height: 100 }} data-uid='bbb'>
                   Hello
                   <>
-                    <div
-                      data-label={'some-other-div'}
-                      style={{ width: 100, height: 100 }}
-                      data-uid={'ccc'}
-                    />
+                    <div data-label='some-other-div' style={{ width: 100, height: 100 }} data-uid='ccc' />
                   </>
                 </div>
               </React.Fragment>
-              <div data-uid={'ddd'}>World</div>
+              <div data-uid='ddd'>World</div>
             </View>
           )
         }
         export var storyboard = (
-          <Storyboard data-uid={'eee'}>
+          <Storyboard data-uid='eee'>
             <Scene
               style={{ position: 'absolute', height: 812, left: 0, width: 375, top: 0 }}
               component={App}
               props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'fff'}
+              data-uid='fff'
             />
           </Storyboard>
         )

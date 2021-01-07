@@ -4,10 +4,12 @@ exports[`addStoryboardFileToProject adds storyboard file to project that does no
 Array [
   Object {
     "arbitraryJSBlock": null,
+    "blockOrExpression": "block",
     "comments": Object {
       "leadingComments": Array [],
       "trailingComments": Array [],
     },
+    "declarationSyntax": "var",
     "isFunction": false,
     "name": "storyboard",
     "param": null,

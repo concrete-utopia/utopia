@@ -59,8 +59,6 @@ import {
   isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
   walkElements,
-  isUtopiaJSXComponent,
-  utopiaJSXComponent,
   JSXMetadata,
 } from '../../../core/shared/element-template'
 import {
