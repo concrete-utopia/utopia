@@ -63,6 +63,7 @@ import {
   utopiaJSXComponent,
   JSXMetadata,
   jsxTextBlock,
+  isJSXTextBlock,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -4177,20 +4178,16 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        if (element.children.length === 0 || element.children.length === 1) {
-          if (action.text.trim() === '') {
-            return {
-              ...element,
-              children: [],
-            }
-          } else {
-            return {
-              ...element,
-              children: [jsxTextBlock(action.text)],
-            }
+        if (action.text.trim() === '') {
+          return {
+            ...element,
+            children: [],
           }
         } else {
-          return element
+          return {
+            ...element,
+            children: [jsxTextBlock(action.text)],
+          }
         }
       },
       editor,
