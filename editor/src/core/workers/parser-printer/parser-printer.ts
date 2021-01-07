@@ -73,6 +73,9 @@ import {
   addModifierExportToDetail,
   isExportDetailNamed,
   EmptyExportsDetail,
+  setModifierDefaultExportInDetail,
+  isExportDefaultDetailModifier,
+  isExportDetailModifier,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { fastForEach, NO_OP } from '../../shared/utils'
@@ -458,12 +461,17 @@ function getModifersForComponent(
   let result: Array<TS.Modifier> = []
   let isExportedDirectly: boolean = false
   let isExportedAsDefault: boolean = false
-  if (detailOfExports.defaultExport?.name === element.name) {
+  const defaultExport = detailOfExports.defaultExport
+  if (
+    defaultExport != null &&
+    isExportDefaultDetailModifier(defaultExport) &&
+    defaultExport.name === element.name
+  ) {
     isExportedAsDefault = true
     isExportedDirectly = true
   } else {
     const componentExport = detailOfExports.namedExports[element.name]
-    if (componentExport != null && componentExport.type === 'EXPORT_DETAIL_MODIFIER') {
+    if (componentExport != null && isExportDetailModifier(componentExport)) {
       isExportedDirectly = true
     }
   }
@@ -660,30 +668,46 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
   return result
 }
 
-function produceExportDeclaration(detailOfExports: ExportsDetail) {
+function produceExportStatements(
+  detailOfExports: ExportsDetail,
+): Array<TS.ExportAssignment | TS.ExportDeclaration> {
   let possibleExports: Array<TS.ExportSpecifier> = []
-  for (const componentName of Object.keys(detailOfExports.namedExports)) {
-    const exportForComponent = detailOfExports.namedExports[componentName]
-    if (isExportDetailNamed(exportForComponent)) {
-      if (componentName === exportForComponent.name) {
-        possibleExports.push(
-          TS.createExportSpecifier(undefined, TS.createIdentifier(componentName)),
-        )
+  let exportStatements: Array<TS.ExportAssignment | TS.ExportDeclaration> = []
+  const { defaultExport, namedExports } = detailOfExports
+  if (defaultExport != null) {
+    if (isExportDetailNamed(defaultExport)) {
+      exportStatements.push(
+        TS.createExportAssignment(
+          undefined,
+          undefined,
+          undefined,
+          TS.createIdentifier(defaultExport.name),
+        ),
+      )
+    }
+  }
+  for (const exportName of Object.keys(namedExports)) {
+    const namedExport = namedExports[exportName]
+    if (isExportDetailNamed(namedExport)) {
+      if (exportName === namedExport.name) {
+        possibleExports.push(TS.createExportSpecifier(undefined, TS.createIdentifier(exportName)))
       } else {
         possibleExports.push(
           TS.createExportSpecifier(
-            TS.createIdentifier(exportForComponent.name),
-            TS.createIdentifier(componentName),
+            TS.createIdentifier(namedExport.name),
+            TS.createIdentifier(exportName),
           ),
         )
       }
     }
   }
-  if (possibleExports.length === 0) {
-    return null
-  } else {
-    return TS.createExportDeclaration(undefined, undefined, TS.createNamedExports(possibleExports))
+  if (possibleExports.length > 0) {
+    exportStatements.push(
+      TS.createExportDeclaration(undefined, undefined, TS.createNamedExports(possibleExports)),
+    )
   }
+
+  return exportStatements
 }
 
 function printCodeImpl(
@@ -781,14 +805,12 @@ function printCodeImpl(
     }
   })
 
-  const exportDeclaration: TS.ExportDeclaration | null = produceExportDeclaration(detailOfExports)
+  const exportStatements = produceExportStatements(detailOfExports)
 
   let statementsToPrint: Array<TS.Node> = []
   statementsToPrint.push(...importDeclarations)
   statementsToPrint.push(...topLevelStatements)
-  if (exportDeclaration != null) {
-    statementsToPrint.push(exportDeclaration)
-  }
+  statementsToPrint.push(...exportStatements)
 
   return printStatements(statementsToPrint, printOptions.pretty)
 }
@@ -1271,7 +1293,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
               const defaultExport = isDefaultExport(topLevelElement)
               if (exported) {
                 if (defaultExport) {
-                  detailOfExports = setNamedDefaultExportInDetail(detailOfExports, name)
+                  detailOfExports = setModifierDefaultExportInDetail(detailOfExports, name)
                 } else {
                   detailOfExports = addModifierExportToDetail(detailOfExports, name)
                 }

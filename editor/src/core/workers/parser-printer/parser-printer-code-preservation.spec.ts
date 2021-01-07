@@ -84,12 +84,22 @@ describe('Parsing and then printing code', () => {
     expect(parsedThenPrinted).toEqual(code)
   })
 
-  xit('does not remove a trailing export default statement', () => {
+  it('does not remove a trailing export default statement for a component', () => {
     const code = applyPrettier(
       `const whatever = (props) => {
         return <div data-uid='aaa' />
       }
-      
+      export default whatever`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  it('does not remove a trailing export default statement for anything else', () => {
+    const code = applyPrettier(
+      `const Thing = 1
       export default whatever`,
       false,
     ).formatted

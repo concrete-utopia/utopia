@@ -135,6 +135,18 @@ export function exportDetailNamed(name: string): ExportDetailNamed {
   }
 }
 
+export interface ExportDefaultDetailModifier {
+  type: 'EXPORT_DEFAULT_DETAIL_MODIFIER'
+  name: string
+}
+
+export function exportDefaultDetailModifier(name: string): ExportDefaultDetailModifier {
+  return {
+    type: 'EXPORT_DEFAULT_DETAIL_MODIFIER',
+    name: name,
+  }
+}
+
 export interface ExportDetailModifier {
   type: 'EXPORT_DETAIL_MODIFIER'
 }
@@ -146,8 +158,11 @@ export function exportDetailModifier(): ExportDetailModifier {
 }
 
 export type ExportDetail = ExportDetailNamed | ExportDetailModifier
+export type ExportDefault = ExportDetailNamed | ExportDefaultDetailModifier
 
-export function isExportDetailNamed(detail: ExportDetail): detail is ExportDetailNamed {
+export function isExportDetailNamed(
+  detail: ExportDetail | ExportDefault,
+): detail is ExportDetailNamed {
   return detail.type === 'EXPORT_DETAIL_NAMED'
 }
 
@@ -155,8 +170,14 @@ export function isExportDetailModifier(detail: ExportDetail): detail is ExportDe
   return detail.type === 'EXPORT_DETAIL_MODIFIER'
 }
 
+export function isExportDefaultDetailModifier(
+  detail: ExportDefault,
+): detail is ExportDefaultDetailModifier {
+  return detail.type === 'EXPORT_DEFAULT_DETAIL_MODIFIER'
+}
+
 export interface ExportsDetail {
-  defaultExport: ExportDetailNamed | null
+  defaultExport: ExportDefault | null
   namedExports: Record<string, ExportDetail>
 }
 
@@ -209,6 +230,16 @@ export function addModifierExportToDetail(detail: ExportsDetail, name: string): 
 export function setNamedDefaultExportInDetail(detail: ExportsDetail, name: string): ExportsDetail {
   return {
     defaultExport: exportDetailNamed(name),
+    namedExports: detail.namedExports,
+  }
+}
+
+export function setModifierDefaultExportInDetail(
+  detail: ExportsDetail,
+  name: string,
+): ExportsDetail {
+  return {
+    defaultExport: exportDefaultDetailModifier(name),
     namedExports: detail.namedExports,
   }
 }
