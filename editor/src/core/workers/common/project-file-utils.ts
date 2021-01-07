@@ -70,15 +70,6 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
       importedFromWithin.push(secondWithin)
     }
   })
-  importedFromWithin.sort((i1, i2) => {
-    if (i1.name < i2.name) {
-      return -1
-    }
-    if (i1.name > i2.name) {
-      return 1
-    }
-    return 0
-  })
   const importedWithName = defaultIfNull(second.importedWithName, first.importedWithName)
   const importedAs = defaultIfNull(second.importedAs, first.importedAs)
   return {
@@ -90,13 +81,14 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
 }
 
 export function mergeImports(first: Imports, second: Imports): Imports {
-  let combinedKeys: Set<string> = new Set()
-  fastForEach(Object.keys(first), (f) => combinedKeys.add(f))
-  fastForEach(Object.keys(second), (s) => combinedKeys.add(s))
-  let orderedKeys: Array<string> = Array.from(combinedKeys)
-  orderedKeys.sort()
+  let combinedKeys: Array<string> = Object.keys(first)
+  fastForEach(Object.keys(second), (s) => {
+    if (!combinedKeys.includes(s)) {
+      combinedKeys.push(s)
+    }
+  })
   let imports: Imports = {}
-  orderedKeys.forEach((key) => {
+  combinedKeys.forEach((key) => {
     const firstValue = first[key]
     const secondValue = second[key]
     if (firstValue === undefined) {

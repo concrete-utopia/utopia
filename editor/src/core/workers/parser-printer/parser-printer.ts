@@ -721,7 +721,6 @@ function printCodeImpl(
   const topLevelElements = topLevelElementsIncludingScenes
 
   const importOrigins: Array<string> = Object.keys(imports)
-  importOrigins.sort()
   let importDeclarations: Array<TS.ImportDeclaration> = []
   fastForEach(importOrigins, (importOrigin) => {
     const importForClause = imports[importOrigin]
@@ -1172,7 +1171,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             const importBindings = importClause.namedBindings
             importedAs = importBindings.name.getText(sourceFile)
           }
-          importedFromWithin.sort(compareImportAliasByName)
 
           // this import looks like `import Cat from './src/cats'`
           const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)

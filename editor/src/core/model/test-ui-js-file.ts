@@ -23,11 +23,11 @@ import { emptyComments } from '../workers/parser-printer/parser-printer-comments
 
 const sampleIncludedElementTypes: Array<string> = [
   'Ellipse',
-  'Text',
+  'Image',
   'Rectangle',
   'Storyboard',
+  'Text',
   'View',
-  'Image',
 ]
 
 export const onlyImportReact: Imports = {

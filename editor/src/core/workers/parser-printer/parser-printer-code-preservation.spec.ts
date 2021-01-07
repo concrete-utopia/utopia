@@ -107,4 +107,26 @@ describe('Parsing and then printing code', () => {
     const parsedThenPrinted = parseThenPrint(code)
     expect(parsedThenPrinted).toEqual(code)
   })
+
+  it('preserves import statement order', () => {
+    const code = applyPrettier(
+      `
+      import * as THREE from 'three'
+      import React, { useEffect, useRef } from 'react'
+      import { extend, useThree, useFrame } from 'react-three-fiber'
+      import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
+      import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
+      import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+      import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader'
+      import { WaterPass } from './shaders/WaterPass'
+      import state from '../state'
+      export const whatever = (props) => {
+        return <div data-uid='aaa' />
+      }`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
 })
