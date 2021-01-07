@@ -76,7 +76,7 @@ export const githubProjects: Array<GitRepoWithRevision> = [
     username: 'contra',
     repositoryName: 'react-responsive',
     revision: 'b6ffef5c4a4b89c69299c2b04c9196dde59b3ef4',
-    pathsToIgnore: [],
+    pathsToIgnore: ['/samples/sandbox/dist/sample.js'],
   },
   {
     name: 'context-provider-hooks-sample',
