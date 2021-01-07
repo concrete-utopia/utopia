@@ -32,10 +32,7 @@ import { DragState, moveDragState } from '../../canvas-types'
 import { createDuplicationNewUIDs, getOriginalCanvasFrames } from '../../canvas-utils'
 import { findFirstParentWithValidUID } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
-import {
-  selectElementsThatRespectLayout,
-  useSetCanvasControlsSelectedViewsLocally,
-} from '../new-canvas-controls'
+import { selectElementsThatRespectLayout } from '../new-canvas-controls'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -330,14 +327,15 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   return startDragStateAfterDragExceedsThreshold
 }
 
-export function useSelectModeSelectAndHover(): {
+export function useSelectModeSelectAndHover(
+  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
+): {
   onMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void
   onMouseOut: () => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void
 } {
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const setSelectedViewsForCanvasControlsOnly = useSetCanvasControlsSelectedViewsLocally()
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
@@ -423,13 +421,15 @@ function usePreviewModeSelectAndHover(): {
   })
 }
 
-export function useSelectAndHover(): {
+export function useSelectAndHover(
+  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
+): {
   onMouseOver: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseOut: () => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
-  const selectModeCallbacks = useSelectModeSelectAndHover()
+  const selectModeCallbacks = useSelectModeSelectAndHover(setSelectedViewsForCanvasControlsOnly)
   const insertModeCallbacks = useInsertModeSelectAndHover()
   const previewModeCallbacks = usePreviewModeSelectAndHover()
   if (modeType === 'select') {

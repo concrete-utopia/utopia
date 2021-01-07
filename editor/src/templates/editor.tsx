@@ -91,7 +91,6 @@ import {
   isUpdatePropertyControlsInfo,
 } from '../components/editor/actions/actions'
 import { updateCssVars, UtopiaStyles } from '../uuiui'
-import { RecoilRoot } from 'recoil'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -393,13 +392,11 @@ export const HotRoot: React.FunctionComponent<{
   propertyControlsInfoSupported: boolean
 }> = hot(({ api, useStore, spyCollector, propertyControlsInfoSupported }) => {
   return (
-    <RecoilRoot>
-      <EditorStateContext.Provider value={{ api, useStore }}>
-        <UiJsxCanvasContext.Provider value={spyCollector}>
-          <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
-        </UiJsxCanvasContext.Provider>
-      </EditorStateContext.Provider>
-    </RecoilRoot>
+    <EditorStateContext.Provider value={{ api, useStore }}>
+      <UiJsxCanvasContext.Provider value={spyCollector}>
+        <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
+      </UiJsxCanvasContext.Provider>
+    </EditorStateContext.Provider>
   )
 })
 HotRoot.displayName = 'Utopia Editor Root'

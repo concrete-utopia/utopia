@@ -11,10 +11,12 @@ import { ElementInstanceMetadata } from '../../core/shared/element-template'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { UtopiaRequireFn } from '../custom-code/code-file'
 import { betterReactMemo } from '../../uuiui-deps'
+import { TemplatePath } from '../../core/shared/project-file-types'
 interface CanvasComponentEntryProps extends CanvasReactErrorCallback {
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   canvasConsoleLogs: Array<ConsoleLog>
+  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void
 }
 
 export const CanvasComponentEntry = betterReactMemo(
@@ -27,9 +29,9 @@ export const CanvasComponentEntry = betterReactMemo(
       },
       [dispatch],
     )
-    const { canvasProps } = useEditorState(
-      (store) => ({
-        canvasProps: pickUiJsxCanvasProps(
+    const canvasProps = useEditorState(
+      (store) =>
+        pickUiJsxCanvasProps(
           store.editor,
           store.derived,
           true,
@@ -37,8 +39,8 @@ export const CanvasComponentEntry = betterReactMemo(
           props.clearConsoleLogs,
           props.addToConsoleLogs,
           store.dispatch,
+          props.setSelectedViewsForCanvasControlsOnly,
         ),
-      }),
       'CanvasComponentEntry canvasProps',
     )
 

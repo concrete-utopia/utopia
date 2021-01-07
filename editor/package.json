@@ -165,7 +165,6 @@
     "react-virtualized-auto-sizer": "1.0.2",
     "react-vtree": "2.0.0",
     "react-window": "1.8.5",
-    "recoil": "0.1.2",
     "reselect": "4.0.0",
     "resize-observer-polyfill": "1.5.0",
     "scheduler": "0.17.0",
