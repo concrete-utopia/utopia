@@ -25,7 +25,7 @@ interface ComponentAreaControlProps {
   doubleClickToSelect: boolean
   selectedComponents: Array<TemplatePath>
   selectComponent?: (target: TemplatePath, isMultiselect: boolean) => Array<TemplatePath>
-  onMouseDown: (
+  onMouseDown?: (
     views: Array<TemplatePath>,
     target: TemplatePath,
     dragStart: CanvasPoint,
@@ -159,12 +159,18 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     event: React.MouseEvent<HTMLDivElement>,
   ): void {
     const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
-    this.props.onMouseDown(
-      selectedViews,
-      this.props.target,
-      cursorPosition.canvasPositionRaw,
-      event,
-    )
+    if (this.props.mouseEnabled) {
+      if (this.props.onMouseDown == null) {
+        throw new Error('onMouseDown must be provided for mouse enabled controls')
+      }
+
+      this.props.onMouseDown(
+        selectedViews,
+        this.props.target,
+        cursorPosition.canvasPositionRaw,
+        event,
+      )
+    }
   }
 
   getComponentAreaControl = (canShowInvisibleIndicator: boolean) => {

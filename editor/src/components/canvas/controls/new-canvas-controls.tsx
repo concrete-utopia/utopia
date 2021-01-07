@@ -13,6 +13,7 @@ import {
   getMetadata,
   EditorStore,
   getOpenUIJSFileKey,
+  TransientCanvasState,
 } from '../../editor/store/editor-state'
 import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -20,7 +21,7 @@ import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
 import { TextEditor } from '../../editor/text-editor'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
@@ -34,7 +35,6 @@ import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo } from '../../custom-code/code-file'
-import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 import { colorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import {
@@ -42,6 +42,7 @@ import {
   isResizing,
   pickSelectionEnabled,
   useMaybeHighlightElement,
+  useStartDragStateAfterDragExceedsThreshold,
 } from './select-mode/select-mode-hooks'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
@@ -69,6 +70,9 @@ export interface ControlProps {
 interface NewCanvasControlsProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cursor: CSSCursor
+  localSelectedViews: Array<TemplatePath>
+  localHighlightedViews: Array<TemplatePath>
+  setLocalSelectedViews: (newSelectedViews: TemplatePath[]) => void
 }
 
 export const NewCanvasControls = betterReactMemo(
@@ -145,6 +149,9 @@ export const NewCanvasControls = betterReactMemo(
           >
             <NewCanvasControlsInner
               windowToCanvasPosition={props.windowToCanvasPosition}
+              localSelectedViews={props.localSelectedViews}
+              localHighlightedViews={props.localHighlightedViews}
+              setLocalSelectedViews={props.setLocalSelectedViews}
               {...canvasControlProps}
             />
           </div>
@@ -163,6 +170,9 @@ interface NewCanvasControlsInnerProps {
   canvasOffset: CanvasPoint
   animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
+  localSelectedViews: Array<TemplatePath>
+  localHighlightedViews: Array<TemplatePath>
+  setLocalSelectedViews: (newSelectedViews: TemplatePath[]) => void
 }
 
 export const selectElementsThatRespectLayout = createSelector(
@@ -205,20 +215,9 @@ export const selectElementsThatRespectLayout = createSelector(
 )
 
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
-  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
-    props.derived.canvas.transientState.selectedViews,
-  )
-  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
-    props.derived.canvas.transientState.highlightedViews,
-  )
+  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
-  const setSelectedViewsLocally = React.useCallback(
-    (newSelectedViews: Array<TemplatePath>) => {
-      setLocalSelectedViews(newSelectedViews)
-      setLocalHighlightedViews([])
-    },
-    [setLocalSelectedViews, setLocalHighlightedViews],
-  )
+  const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
 
   const componentMetadata = getMetadata(props.editor)
 
@@ -306,7 +305,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         return (
           <SelectModeControlContainer
             {...controlProps}
-            setSelectedViewsLocally={setSelectedViewsLocally}
+            startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
+            setSelectedViewsLocally={setLocalSelectedViews}
             keysPressed={props.editor.keysPressed}
             windowToCanvasPosition={props.windowToCanvasPosition}
             isDragging={dragging}

@@ -14,6 +14,7 @@ import {
   getOpenUIJSFile,
   getOpenUIJSFileKey,
   parseFailureAsErrorMessages,
+  TransientCanvasState,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
@@ -24,6 +25,32 @@ import Header from '../../third-party/react-error-overlay/components/Header'
 import { openFileTab } from '../editor/store/editor-tabs'
 import { FlexColumn, Button, UtopiaTheme } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
+import { TemplatePath } from '../../core/shared/project-file-types'
+import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
+
+function useLocalSelectedHighlightedViews(
+  transientCanvasState: TransientCanvasState,
+): {
+  localSelectedViews: TemplatePath[]
+  localHighlightedViews: TemplatePath[]
+  setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
+} {
+  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
+    transientCanvasState.selectedViews,
+  )
+  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
+    transientCanvasState.highlightedViews,
+  )
+
+  const setSelectedViewsLocally = React.useCallback(
+    (newSelectedViews: Array<TemplatePath>) => {
+      setLocalSelectedViews(newSelectedViews)
+      setLocalHighlightedViews([])
+    },
+    [setLocalSelectedViews, setLocalHighlightedViews],
+  )
+  return { localSelectedViews, localHighlightedViews, setSelectedViewsLocally }
+}
 
 interface CanvasWrapperComponentProps {
   runtimeErrors: Array<RuntimeErrorInfo>
@@ -45,6 +72,12 @@ export const CanvasWrapperComponent = betterReactMemo(
       }),
       'CanvasWrapperComponent',
     )
+
+    const {
+      localSelectedViews,
+      localHighlightedViews,
+      setSelectedViewsLocally,
+    } = useLocalSelectedHighlightedViews(derivedState.canvas.transientState)
 
     const {
       runtimeErrors,
@@ -98,6 +131,9 @@ export const CanvasWrapperComponent = betterReactMemo(
             canvasConsoleLogs={canvasConsoleLogs}
             clearConsoleLogs={clearConsoleLogs}
             addToConsoleLogs={addToConsoleLogs}
+            localSelectedViews={localSelectedViews}
+            localHighlightedViews={localHighlightedViews}
+            setLocalSelectedViews={setSelectedViewsLocally}
           />
         ) : null}
         {safeMode ? (
