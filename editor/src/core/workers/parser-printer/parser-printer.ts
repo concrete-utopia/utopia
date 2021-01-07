@@ -93,6 +93,7 @@ import {
   withParserMetadata,
   isExported,
   isDefaultExport,
+  expressionTypeForExpression,
 } from './parser-printer-parsing'
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { ParserPrinterResultMessage } from './parser-printer-worker'
@@ -123,10 +124,11 @@ function buildPropertyCallingFunction(
 function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
-      if (typeof attribute.value === 'string') {
-        return TS.createLiteral(attribute.value)
+      const value = attribute.value
+      if (typeof value === 'string') {
+        return TS.createLiteral(value)
       } else {
-        return jsonToExpression(attribute.value)
+        return jsonToExpression(value)
       }
     case 'ATTRIBUTE_NESTED_OBJECT':
       const contents = attribute.content
@@ -321,10 +323,11 @@ function jsxElementToExpression(
             // No else case here as a boolean false value means it gets omitted.
           } else {
             const attributeExpression = jsxAttributeToExpression(prop)
-            const initializer: TS.StringLiteral | TS.JsxExpression = TS.createJsxExpression(
-              undefined,
+            const initializer: TS.StringLiteral | TS.JsxExpression = TS.isStringLiteral(
               attributeExpression,
             )
+              ? attributeExpression
+              : TS.createJsxExpression(undefined, attributeExpression)
             attribsArray.push(TS.createJsxAttribute(identifier, initializer))
           }
         }
@@ -462,6 +465,7 @@ function printUtopiaJSXComponent(
   const asJSX = jsxElementToExpression(element.rootElement, imports, printOptions.stripUIDs)
   if (TS.isJsxElement(asJSX) || TS.isJsxSelfClosingElement(asJSX) || TS.isJsxFragment(asJSX)) {
     let elementNode: TS.Node
+    const jsxElementExpression = asJSX
     const modifiers = getModifersForComponent(element, detailOfExports)
     const nodeFlags =
       element.declarationSyntax === 'function'
@@ -469,17 +473,35 @@ function printUtopiaJSXComponent(
         : nodeFlagsForVarLetOrConst(element.declarationSyntax)
     if (element.isFunction) {
       const functionParams = maybeToArray(element.param).map(printParam)
-      let statements: Array<TS.Statement> = []
-      if (element.arbitraryJSBlock != null) {
-        // I just punched a hole in the space time continuum with this cast to any.
-        // Somehow it works, I assume because it really only cares about Nodes internally and
-        // not Statements but I will deny all knowledge of ever having done this.
-        statements.push(printArbitraryJSBlock(element.arbitraryJSBlock) as any)
+
+      function bodyForFunction(): TS.Block {
+        let statements: Array<TS.Statement> = []
+        let bodyBlock: TS.Block
+        if (element.arbitraryJSBlock != null) {
+          // I just punched a hole in the space time continuum with this cast to any.
+          // Somehow it works, I assume because it really only cares about Nodes internally and
+          // not Statements but I will deny all knowledge of ever having done this.
+          statements.push(printArbitraryJSBlock(element.arbitraryJSBlock) as any)
+        }
+
+        const returnStatement = TS.createReturn(jsxElementExpression)
+        addCommentsToNode(returnStatement, element.returnStatementComments)
+        statements.push(returnStatement)
+        return TS.createBlock(statements, true)
       }
-      const returnStatement = TS.createReturn(asJSX)
-      addCommentsToNode(returnStatement, element.returnStatementComments)
-      statements.push(returnStatement)
-      const bodyBlock = TS.createBlock(statements, true)
+
+      function bodyForArrowFunction(): TS.ConciseBody {
+        if (element.arbitraryJSBlock != null || element.blockOrExpression === 'block') {
+          return bodyForFunction()
+        } else if (element.blockOrExpression === 'parenthesized-expression') {
+          const bodyExpression = TS.factory.createParenthesizedExpression(jsxElementExpression)
+          addCommentsToNode(bodyExpression, element.returnStatementComments)
+          return bodyExpression
+        } else {
+          return jsxElementExpression
+        }
+      }
+
       if (element.declarationSyntax === 'function') {
         elementNode = TS.createFunctionDeclaration(
           undefined,
@@ -489,7 +511,7 @@ function printUtopiaJSXComponent(
           undefined,
           functionParams,
           undefined,
-          bodyBlock,
+          bodyForFunction(),
         )
       } else {
         const arrowFunction = TS.createArrowFunction(
@@ -498,7 +520,7 @@ function printUtopiaJSXComponent(
           functionParams,
           undefined,
           undefined,
-          bodyBlock,
+          bodyForArrowFunction(),
         )
         const varDec = TS.createVariableDeclaration(element.name, undefined, arrowFunction)
         const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
@@ -1176,6 +1198,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           } else {
             // In this case it's likely/hopefully a straight JSX expression attached to the var.
             parsedContents = liftParsedElementsIntoFunctionContents(
+              expressionTypeForExpression(canvasContents.initializer),
               parseOutJSXElements(
                 sourceFile,
                 filename,
@@ -1205,6 +1228,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
                 name,
                 isFunction,
                 canvasContents.declarationSyntax,
+                contents.blockOrExpression,
                 foldEither(
                   (_) => null,
                   (param) => param?.value ?? null,
@@ -1279,6 +1303,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             topLevelElement.name,
             topLevelElement.isFunction,
             topLevelElement.declarationSyntax,
+            topLevelElement.blockOrExpression,
             topLevelElement.param,
             topLevelElement.propsUsed,
             topLevelElement.rootElement,

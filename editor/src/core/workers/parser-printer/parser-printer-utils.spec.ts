@@ -19,6 +19,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       'Output',
       true,
       'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('aa') }, []),
@@ -36,6 +37,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       'Output',
       true,
       'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('root') }, [
@@ -65,6 +67,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       'Output',
       true,
       'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeFunctionCall('someFunction', []) }, []),
@@ -88,6 +91,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       'Output',
       true,
       'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
@@ -110,6 +114,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       'Output',
       true,
       'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
@@ -132,6 +137,7 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       'Output',
       true,
       'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [

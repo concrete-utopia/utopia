@@ -320,6 +320,7 @@ function addStoryboardFileForComponent(
     BakedInStoryboardVariableName,
     false,
     'var',
+    'block',
     null,
     [],
     storyboardElement,

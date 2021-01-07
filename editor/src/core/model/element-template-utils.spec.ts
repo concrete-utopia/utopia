@@ -90,6 +90,7 @@ describe('removeJSXElementChild', () => {
       'test1',
       true,
       'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('aaa'), prop1: jsxAttributeValue(5) }, []),
@@ -102,6 +103,7 @@ describe('removeJSXElementChild', () => {
       'test2WithChildren',
       true,
       'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement('View', { 'data-uid': jsxAttributeValue('aab'), prop2: jsxAttributeValue(15) }, [

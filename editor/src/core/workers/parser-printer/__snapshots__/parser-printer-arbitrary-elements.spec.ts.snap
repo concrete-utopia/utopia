@@ -64,7 +64,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -80,9 +80,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -243,7 +243,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -259,9 +259,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -284,6 +284,7 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "block",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -339,7 +340,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -355,9 +356,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -408,7 +409,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -424,9 +425,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -528,7 +529,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -544,9 +545,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -569,6 +570,7 @@ return { b: b };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "parenthesized-expression",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -623,7 +625,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -639,9 +641,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}

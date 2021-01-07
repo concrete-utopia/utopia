@@ -677,6 +677,7 @@ export function utopiaJSXComponent(
   name: string,
   isFunction: boolean,
   declarationSyntax: FunctionDeclarationSyntax,
+  blockOrExpression: BlockOrExpression,
   param: Param | null,
   propsUsed: Array<string>,
   rootElement: JSXElementChild,
@@ -690,6 +691,7 @@ export function utopiaJSXComponent(
     name: name,
     isFunction: isFunction,
     declarationSyntax: declarationSyntax,
+    blockOrExpression: blockOrExpression,
     param: param,
     propsUsed: propsUsed,
     rootElement: rootElement,
@@ -848,6 +850,7 @@ export function propNamesForParam(param: Param): Array<string> {
 
 export type VarLetOrConst = 'var' | 'let' | 'const'
 export type FunctionDeclarationSyntax = 'function' | VarLetOrConst
+export type BlockOrExpression = 'block' | 'parenthesized-expression' | 'expression'
 
 export interface UtopiaJSXComponent extends WithComments {
   type: 'UTOPIA_JSX_COMPONENT'
@@ -859,6 +862,7 @@ export interface UtopiaJSXComponent extends WithComments {
    */
   isFunction: boolean
   declarationSyntax: FunctionDeclarationSyntax
+  blockOrExpression: BlockOrExpression
   param: Param | null
   propsUsed: Array<string>
   rootElement: JSXElementChild

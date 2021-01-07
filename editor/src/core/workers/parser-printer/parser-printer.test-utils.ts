@@ -55,6 +55,7 @@ import {
   getJSXElementNameAsString,
   isJSXElement,
   FunctionDeclarationSyntax,
+  BlockOrExpression,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -537,11 +538,19 @@ export function arbitraryDeclarationSyntax(): Arbitrary<FunctionDeclarationSynta
   )
 }
 
+export function arbitraryBlockOrExpression(): Arbitrary<BlockOrExpression> {
+  return FastCheck.oneof<BlockOrExpression>(
+    FastCheck.constant('block'),
+    FastCheck.constant('expression'),
+  )
+}
+
 export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
   return FastCheck.tuple(
     lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
     FastCheck.boolean(),
     arbitraryDeclarationSyntax(),
+    arbitraryBlockOrExpression(),
     jsxElementArbitrary(3),
     arbitraryJSBlockArbitrary(),
     arbitraryComments(),
@@ -552,6 +561,7 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
         name,
         isFunction,
         declarationSyntax,
+        blockOrExpression,
         rootElement,
         jsBlock,
         comments,
@@ -561,6 +571,7 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
           name,
           isFunction,
           declarationSyntax,
+          blockOrExpression,
           defaultPropsParam,
           [],
           rootElement,

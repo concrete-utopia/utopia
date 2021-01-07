@@ -12,7 +12,7 @@ Object {
     layout: {
       layoutSystem: 'pinSystem'
     },
-    \\"data-uid\\": 'aaa'
+    \\"data-uid\\": \\"aaa\\"
   }));
 };",
     "sourceMap": Object {
@@ -52,7 +52,7 @@ export var App = (props) => {
       <View
         style={{ ...props.style, backgroundColor: '#FFFFFF' }}
         layout={{ layoutSystem: 'pinSystem' }}
-        data-uid={'aaa'}
+        data-uid='aaa'
       ></View>
     </>
   )
@@ -112,8 +112,8 @@ function otherFn(n) {
 }
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
     </View>
   )
 }
@@ -149,7 +149,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "uid": "aaa",
     },
     "aab": Object {
-      "endCol": 63,
+      "endCol": 61,
       "endLine": 12,
       "startCol": 6,
       "startLine": 12,
@@ -259,8 +259,8 @@ function otherFn(n) {
 }
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
     </View>
   )
 }
@@ -313,8 +313,8 @@ function otherFn(n) {
 }
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
     </View>
   )
 }
@@ -331,6 +331,7 @@ return { otherFn: otherFn };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "block",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -375,7 +376,7 @@ return { otherFn: otherFn };",
                 "javascript": "cakeFn(otherFn('b') + 2)",
                 "sourceMap": Object {
                   "file": "code.tsx",
-                  "mappings": "OAYoCA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
+                  "mappings": "OAYkCA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
                   "names": Array [
                     "cakeFn",
                     "otherFn",
@@ -398,8 +399,8 @@ function otherFn(n) {
 }
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
     </View>
   )
 }
@@ -473,7 +474,7 @@ import {
   View
 } from \\"utopia-api\\";
 const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid={'aaa'} />
+export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 ",
       ],
@@ -500,7 +501,7 @@ return { a: a, b: b };",
   },
   "highlightBounds": Object {
     "aaa": Object {
-      "endCol": 58,
+      "endCol": 56,
       "endLine": 5,
       "startCol": 33,
       "startLine": 5,
@@ -568,7 +569,7 @@ import {
   View
 } from \\"utopia-api\\";
 const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid={'aaa'} />
+export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 ",
         ],
@@ -583,6 +584,7 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "expression",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -657,7 +659,7 @@ import {
   View
 } from \\"utopia-api\\";
 const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid={'aaa'} />
+export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 ",
         ],
@@ -711,7 +713,7 @@ import {
   View
 } from \\"utopia-api\\";
 const a = \\"cake\\"
-export var App = (props) => <View data-uid={'bbb'}>
+export var App = (props) => <View data-uid='bbb'>
   {{a: a}}
 </View>
 ",
@@ -825,7 +827,7 @@ import {
   View
 } from \\"utopia-api\\";
 const a = \\"cake\\"
-export var App = (props) => <View data-uid={'bbb'}>
+export var App = (props) => <View data-uid='bbb'>
   {{a: a}}
 </View>
 ",
@@ -839,6 +841,7 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "expression",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -886,7 +889,7 @@ import {
   View
 } from \\"utopia-api\\";
 const a = \\"cake\\"
-export var App = (props) => <View data-uid={'bbb'}>
+export var App = (props) => <View data-uid='bbb'>
   {{a: a}}
 </View>
 ",

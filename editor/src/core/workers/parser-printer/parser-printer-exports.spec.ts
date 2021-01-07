@@ -8,7 +8,7 @@ describe('parseCode', () => {
     const code = applyPrettier(
       `
     export var whatever = (props) => {
-      return <div data-uid={'aaa'} />
+      return <div data-uid='aaa' />
     }
 `,
       false,
@@ -31,7 +31,7 @@ describe('parseCode', () => {
     const code = applyPrettier(
       `
     var whatever = (props) => {
-      return <div data-uid={'aaa'} />
+      return <div data-uid='aaa' />
     }
     export { whatever }
 `,
@@ -56,7 +56,7 @@ describe('parseCode', () => {
     const code = applyPrettier(
       `
     var whatever = (props) => {
-      return <div data-uid={'aaa'} />
+      return <div data-uid='aaa' />
     }
     export { whatever as otherThing }
 `,
