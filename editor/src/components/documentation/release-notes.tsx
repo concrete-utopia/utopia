@@ -12,20 +12,7 @@ import { GettingStarted } from './getting-started'
 export function ReleaseNotesContent() {
   return (
     <SimpleFlexColumn>
-      <SimpleFlexRow
-        className='tabRail'
-        style={{
-          minHeight: 30,
-          height: 30,
-          borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
-          alignItems: 'stretch',
-          justifyContent: 'stretch',
-          backgroundColor: 'transparent',
-          overflowX: 'hidden',
-        }}
-      >
-        <FileTabs />
-      </SimpleFlexRow>
+      <FileTabs />
       <div
         css={{
           label: 'ReleaseNotesContainer',
