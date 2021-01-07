@@ -44,7 +44,7 @@ import {
 } from './property-path-hooks'
 import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
 import { betterReactMemo } from '../../../utils/react-performance'
-import {emptyComments} from "../../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -226,7 +226,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const [getUpdateCount] = setupReactWhyDidYouRender()
     const propsWithOpacity: JSXAttributes[] = [
       {
-        style: jsxAttributeValue({opacity: cssNumber(0.9)}, emptyComments),
+        style: jsxAttributeValue({ opacity: cssNumber(0.9) }, emptyComments),
       },
     ]
     const spiedProps: Array<{ [key: string]: any }> = [
@@ -268,7 +268,7 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
   it('this hook wont cause rerender if the single selected JSXAttributes stays the same', () => {
     const [getUpdateCount] = setupReactWhyDidYouRender()
     const propsWithOpacity: JSXAttributes = {
-      style: jsxAttributeValue({opacity: 0.9}, emptyComments),
+      style: jsxAttributeValue({ opacity: 0.9 }, emptyComments),
     }
     const spiedProps: Array<{ [key: string]: any }> = [
       {
@@ -312,11 +312,11 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const opacityProp = jsxAttributeValue(0.9, emptyComments)
     const propsWithOpacity: JSXAttributes = {
       // FIXME: This nests `jsxAttributeValue` inside a `jsxAttributeValue`.
-      style: jsxAttributeValue({opacity: opacityProp, otherProp: 'dontcare'}, emptyComments),
+      style: jsxAttributeValue({ opacity: opacityProp, otherProp: 'dontcare' }, emptyComments),
     }
     const propsChangedOpacitySame: JSXAttributes = {
       // FIXME: This nests `jsxAttributeValue` inside a `jsxAttributeValue`.
-      style: jsxAttributeValue({opacity: opacityProp, otherProp: 'imdifferent'}, emptyComments),
+      style: jsxAttributeValue({ opacity: opacityProp, otherProp: 'imdifferent' }, emptyComments),
     }
     const spiedProps: Array<{ [key: string]: any }> = [
       {
@@ -371,10 +371,10 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
     const [getUpdateCount] = setupReactWhyDidYouRender()
     const opacityProp = 0.9
     const propsWithOpacity: JSXAttributes = {
-      style: jsxAttributeValue({opacity: opacityProp, otherProp: 'dontcare'}, emptyComments),
+      style: jsxAttributeValue({ opacity: opacityProp, otherProp: 'dontcare' }, emptyComments),
     }
     const propsWithOpacityChanged: JSXAttributes = {
-      style: jsxAttributeValue({opacity: 0.5, otherProp: 'imdifferent'}, emptyComments),
+      style: jsxAttributeValue({ opacity: 0.5, otherProp: 'imdifferent' }, emptyComments),
     }
     const spiedProps: Array<{ [key: string]: any }> = [
       {

@@ -153,7 +153,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             const newAttributes = setJSXValueAtPath(
               elementWithin.props,
               PP.create(['style']),
-              jsxAttributeValue({left: 20, top: 300}, emptyComments),
+              jsxAttributeValue({ left: 20, top: 300 }, emptyComments),
             )
             forEachRight(newAttributes, (updated) => {
               elementWithin.props = updated
@@ -201,7 +201,9 @@ export var whatever = props => (
       }),
       { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab', emptyComments) }, []) },
     )
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [codeBlock])
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+      codeBlock,
+    ])
     const whatever = utopiaJSXComponent(
       'whatever',
       true,

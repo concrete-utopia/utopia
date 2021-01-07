@@ -150,13 +150,16 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
     ),
     [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
     props: jsxAttributeValue({}, emptyComments),
-    style: jsxAttributeValue({
+    style: jsxAttributeValue(
+      {
         position: 'absolute',
         left: 0,
         top: 0,
         width: 375,
         height: 812,
-    }, emptyComments),
+      },
+      emptyComments,
+    ),
   }
   return jsxElement('Scene', sceneProps, [])
 }

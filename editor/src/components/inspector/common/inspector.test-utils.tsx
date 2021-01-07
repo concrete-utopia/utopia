@@ -23,7 +23,7 @@ import { InspectorContextProvider } from '../inspector'
 import { getControlStyles, PropertyStatus } from './control-status'
 import { InspectorInfo } from './property-path-hooks'
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file'
-import {emptyComments} from "../../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStore) => void) => void

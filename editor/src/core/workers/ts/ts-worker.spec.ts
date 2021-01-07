@@ -214,7 +214,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                         comments: emptyComments,
                       },
                     ],
-                    comments: emptyComments
+                    comments: emptyComments,
                   },
                   layout: {
                     type: 'ATTRIBUTE_VALUE',

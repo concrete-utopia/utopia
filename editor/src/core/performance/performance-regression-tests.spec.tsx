@@ -8,7 +8,7 @@ import { selectComponents, setProp_UNSAFE } from '../../components/editor/action
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'
-import {emptyComments} from "../workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 describe('React Render Count Tests - ', () => {
   it('Clicking on opacity slider', async () => {

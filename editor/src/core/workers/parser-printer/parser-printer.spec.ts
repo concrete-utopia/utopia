@@ -82,7 +82,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -144,7 +144,7 @@ export var whatever = () => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeValue(20, emptyComments),
       right: jsxAttributeValue(20, emptyComments),
       top: jsxAttributeValue(-20, emptyComments),
@@ -205,7 +205,7 @@ export function whatever(props) {
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -271,7 +271,7 @@ export function whatever() {
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeValue(20, emptyComments),
       right: jsxAttributeValue(20, emptyComments),
       top: jsxAttributeValue(-20, emptyComments),
@@ -332,7 +332,7 @@ export default function whatever(props) {
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -398,7 +398,7 @@ export default function whatever() {
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeValue(20, emptyComments),
       right: jsxAttributeValue(20, emptyComments),
       top: jsxAttributeValue(-20, emptyComments),
@@ -456,7 +456,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -527,7 +527,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -539,7 +539,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     }
     const cake2Attributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aac', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -551,7 +551,10 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     }
     const cake = jsxElement('cake', cakeAttributes, [])
     const cake2 = jsxElement('cake2', cake2Attributes, [])
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [cake, cake2])
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+      cake,
+      cake2,
+    ])
     const exported = utopiaJSXComponent(
       'whatever',
       true,
@@ -602,7 +605,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       const actualResult = clearParseResultUniqueIDs(testParseCode(code))
       const cake2Attributes: JSXAttributes = {
         'data-uid': jsxAttributeValue('aac', emptyComments),
-        style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
         left: jsxAttributeOtherJavaScript(
           'props.leftOfTheCake[0].hat',
           'return props.leftOfTheCake[0].hat;',
@@ -613,7 +616,9 @@ export var whatever = (props) => <View data-uid={'aaa'}>
         top: jsxAttributeValue(-20, emptyComments),
       }
       const cake2 = jsxElement('cake2', cake2Attributes, [])
-      const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [cake2])
+      const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+        cake2,
+      ])
       const exported = utopiaJSXComponent(
         'whatever',
         true,
@@ -666,7 +671,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       const firstCakeAttributes: JSXAttributes = {
         'data-uid': jsxAttributeValue('aab', emptyComments),
         'data-label': jsxAttributeValue('First cake', emptyComments),
-        style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
         left: jsxAttributeOtherJavaScript(
           'props.leftOfTheCake[0].hat',
           'return props.leftOfTheCake[0].hat;',
@@ -680,7 +685,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       const secondCakeAttributes: JSXAttributes = {
         'data-uid': jsxAttributeValue('111', emptyComments),
         'data-label': jsxAttributeValue('Second cake', emptyComments),
-        style: jsxAttributeValue({backgroundColor: 'blue'}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'blue' }, emptyComments),
         left: jsxAttributeOtherJavaScript(
           'props.rightOfTheCake[0].hat',
           'return props.rightOfTheCake[0].hat;',
@@ -745,9 +750,12 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({
+      style: jsxAttributeValue(
+        {
           backgroundColor: 'red',
-      }, emptyComments),
+        },
+        emptyComments,
+      ),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -817,7 +825,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'getSizing(spacing)',
         'return getSizing(spacing);',
@@ -955,7 +963,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -1043,7 +1051,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -1137,7 +1145,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
@@ -1218,7 +1226,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'spacing',
         'return spacing;',
@@ -1294,18 +1302,21 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
-      style: jsxAttributeNestedObjectSimple({
+      style: jsxAttributeNestedObjectSimple(
+        {
           backgroundColor: jsxAttributeOtherJavaScript(
-              'bgs[0]',
-              'return bgs[0];',
-              ['bgs'],
-              expect.objectContaining({
-            sources: ['code.tsx'],
-            version: 3,
-            file: 'code.tsx',
-              }),
+            'bgs[0]',
+            'return bgs[0];',
+            ['bgs'],
+            expect.objectContaining({
+              sources: ['code.tsx'],
+              version: 3,
+              file: 'code.tsx',
+            }),
           ),
-      }, emptyComments),
+        },
+        emptyComments,
+      ),
     }
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const bgs = ['black', 'grey'];
@@ -1362,19 +1373,25 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
-      colors: jsxAttributeNestedArray([
+      colors: jsxAttributeNestedArray(
+        [
           jsxArrayValue(jsxAttributeValue('black', emptyComments), emptyComments),
-          jsxArraySpread(jsxAttributeOtherJavaScript(
+          jsxArraySpread(
+            jsxAttributeOtherJavaScript(
               'greys',
               'return greys;',
               ['greys'],
               expect.objectContaining({
-                  sources: ['code.tsx'],
-                  version: 3,
-                  file: 'code.tsx',
+                sources: ['code.tsx'],
+                version: 3,
+                file: 'code.tsx',
               }),
-          ), emptyComments),
-      ], emptyComments),
+            ),
+            emptyComments,
+          ),
+        ],
+        emptyComments,
+      ),
     }
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const greys = ['lightGrey', 'grey'];`
@@ -1709,18 +1726,24 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
-      style: jsxAttributeNestedObject([
-          jsxSpreadAssignment(jsxAttributeOtherJavaScript(
+      style: jsxAttributeNestedObject(
+        [
+          jsxSpreadAssignment(
+            jsxAttributeOtherJavaScript(
               'bg',
               'return bg;',
               ['bg'],
               expect.objectContaining({
-                  sources: ['code.tsx'],
-                  version: 3,
-                  file: 'code.tsx',
+                sources: ['code.tsx'],
+                version: 3,
+                file: 'code.tsx',
               }),
-          ), emptyComments),
-      ], emptyComments),
+            ),
+            emptyComments,
+          ),
+        ],
+        emptyComments,
+      ),
     }
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const bg = { backgroundColor: 'grey' };`
@@ -1783,7 +1806,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       text: jsxAttributeOtherJavaScript(
         '`Count ${count}`',
         'return "Count ".concat(count);',
@@ -1863,7 +1886,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'use20 ? 20 : 10',
         'return use20 ? 20 : 10;',
@@ -1998,7 +2021,7 @@ export var whatever = (props) => <View data-uid={'aaa'}>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'props.left + spacing',
         'return props.left + spacing;',
@@ -2126,10 +2149,12 @@ return { MyComp: MyComp };`
     )
     const myCompAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      layout: jsxAttributeValue({left: 100}, emptyComments),
+      layout: jsxAttributeValue({ left: 100 }, emptyComments),
     }
     const myCompElement = jsxElement('MyComp', myCompAttributes, [])
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [myCompElement])
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+      myCompElement,
+    ])
     const exported = utopiaJSXComponent(
       'whatever',
       true,
@@ -2189,24 +2214,43 @@ export var whatever = props => (
 
     const rootDivAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('abc', emptyComments),
-      style: jsxAttributeNestedObject([
-          jsxPropertyAssignment('position', jsxAttributeValue('absolute', emptyComments), emptyComments),
-          jsxPropertyAssignment('left', jsxAttributeOtherJavaScript(
+      style: jsxAttributeNestedObject(
+        [
+          jsxPropertyAssignment(
+            'position',
+            jsxAttributeValue('absolute', emptyComments),
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'left',
+            jsxAttributeOtherJavaScript(
               'props.layout.left',
               'return props.layout.left;',
               ['props'],
               expect.objectContaining({}),
-          ), emptyComments),
-          jsxPropertyAssignment('top', jsxAttributeOtherJavaScript(
+            ),
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'top',
+            jsxAttributeOtherJavaScript(
               'props.layout.top',
               'return props.layout.top;',
               ['props'],
               expect.objectContaining({}),
-          ), emptyComments),
+            ),
+            emptyComments,
+          ),
           jsxPropertyAssignment('width', jsxAttributeValue(100, emptyComments), emptyComments),
           jsxPropertyAssignment('height', jsxAttributeValue(100, emptyComments), emptyComments),
-          jsxPropertyAssignment('backgroundColor', jsxAttributeValue('hotpink', emptyComments), emptyComments),
-      ], emptyComments),
+          jsxPropertyAssignment(
+            'backgroundColor',
+            jsxAttributeValue('hotpink', emptyComments),
+            emptyComments,
+          ),
+        ],
+        emptyComments,
+      ),
     }
 
     const rootDiv = jsxElement('div', rootDivAttributes, [jsxTextBlock('hello')])
@@ -2225,10 +2269,12 @@ export var whatever = props => (
 
     const myCompAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      layout: jsxAttributeValue({left: 100}, emptyComments),
+      layout: jsxAttributeValue({ left: 100 }, emptyComments),
     }
     const myCompElement = jsxElement('MyComp', myCompAttributes, [])
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [myCompElement])
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+      myCompElement,
+    ])
     const whatever = utopiaJSXComponent(
       'whatever',
       true,
@@ -2343,18 +2389,21 @@ export var whatever = (props) => <View data-uid={'aaa'}>
       'cake',
       {
         'data-uid': jsxAttributeValue('aab', emptyComments),
-        style: jsxAttributeNestedObjectSimple({
+        style: jsxAttributeNestedObjectSimple(
+          {
             backgroundColor: jsxAttributeValue('red', emptyComments),
             color: jsxAttributeNestedArraySimple([
-                jsxAttributeOtherJavaScript(
-                    'props.color',
-                    'return props.color;',
-                    ['props'],
-                    expect.objectContaining({}),
-                ),
-                jsxAttributeValue(-200, emptyComments),
+              jsxAttributeOtherJavaScript(
+                'props.color',
+                'return props.color;',
+                ['props'],
+                expect.objectContaining({}),
+              ),
+              jsxAttributeValue(-200, emptyComments),
             ]),
-        }, emptyComments),
+          },
+          emptyComments,
+        ),
       },
       [],
     )
@@ -2411,7 +2460,7 @@ export var whatever = <View data-uid={'aaa'}>
       'cake',
       {
         'data-uid': jsxAttributeValue('aab', emptyComments),
-        style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       },
       [],
     )
@@ -2465,7 +2514,9 @@ export var App = (props) => <View data-uid={'bbb'}>
       ...jsxArbitraryBlock('', '', 'return undefined', [], null, {}),
       uniqueID: expect.any(String),
     }
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('bbb', emptyComments) }, [emptyBrackets])
+    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('bbb', emptyComments) }, [
+      emptyBrackets,
+    ])
     const exported = utopiaJSXComponent(
       'App',
       true,
@@ -2512,7 +2563,7 @@ export var App = (props) => <View data-uid={'bbb'}>
       'cake',
       {
         'data-uid': jsxAttributeValue('aab', emptyComments),
-        style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
         left: jsxAttributeValue(10, emptyComments),
         name: jsxAttributeValue('test', emptyComments),
       },
@@ -2561,7 +2612,7 @@ export var App = (props) => <View data-uid={'bbb'}>
   it('parses back and forth as a var, with some arbitrary javascript', () => {
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
-      style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       left: jsxAttributeOtherJavaScript(
         'getSizing(spacing)',
         'return getSizing(spacing);',
@@ -2679,7 +2730,7 @@ return { getSizing: getSizing, spacing: spacing };`
       'cake',
       {
         'data-uid': jsxAttributeValue('aab', emptyComments),
-        style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       },
       [],
     )
@@ -2796,7 +2847,7 @@ export var whatever = props => {
       'cake',
       {
         'data-uid': jsxAttributeValue('aaa', emptyComments),
-        style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
       },
       [],
     )
@@ -2844,7 +2895,7 @@ export var whatever = props => {
       'cake',
       {
         'data-uid': jsxAttributeValue('aaa', emptyComments),
-        style: jsxAttributeValue({backgroundColor: 'red'}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
         trueProp: jsxAttributeValue(true, emptyComments),
         falseProp: jsxAttributeValue(false, emptyComments),
         nullProp: jsxAttributeValue(null, emptyComments),
@@ -2916,36 +2967,39 @@ export var whatever = props => {
       'cake',
       {
         'data-uid': jsxAttributeValue('aab', emptyComments),
-        style: jsxAttributeNestedObjectSimple({
+        style: jsxAttributeNestedObjectSimple(
+          {
             backgroundColor: jsxAttributeValue('red', emptyComments),
             color: jsxAttributeNestedArraySimple([
-                jsxAttributeOtherJavaScript(
-                    'props.color',
-                    'return props.color;',
-                    ['props'],
-                    expect.objectContaining({}),
-                ),
-                jsxAttributeValue(-200, emptyComments),
-            ]),
-            boxShadow: jsxAttributeFunctionCall('createShadow', [
-                jsxAttributeValue(15, emptyComments),
-                jsxAttributeOtherJavaScript(
-                    'props.shadowValue',
-                    'return props.shadowValue;',
-                    ['props'],
-                    expect.objectContaining({}),
-                ),
-                jsxAttributeNestedArraySimple([
-                    jsxAttributeValue('hello', emptyComments),
-                    jsxAttributeOtherJavaScript(
-                'props.there',
-                'return props.there;',
+              jsxAttributeOtherJavaScript(
+                'props.color',
+                'return props.color;',
                 ['props'],
                 expect.objectContaining({}),
-                    ),
-                ]),
+              ),
+              jsxAttributeValue(-200, emptyComments),
             ]),
-        }, emptyComments),
+            boxShadow: jsxAttributeFunctionCall('createShadow', [
+              jsxAttributeValue(15, emptyComments),
+              jsxAttributeOtherJavaScript(
+                'props.shadowValue',
+                'return props.shadowValue;',
+                ['props'],
+                expect.objectContaining({}),
+              ),
+              jsxAttributeNestedArraySimple([
+                jsxAttributeValue('hello', emptyComments),
+                jsxAttributeOtherJavaScript(
+                  'props.there',
+                  'return props.there;',
+                  ['props'],
+                  expect.objectContaining({}),
+                ),
+              ]),
+            ]),
+          },
+          emptyComments,
+        ),
       },
       [],
     )
@@ -3257,7 +3311,9 @@ export var App = props => {
               version: 3,
               file: 'code.tsx',
             }),
-            { abc: jsxElement('View', { 'data-uid': jsxAttributeValue('abc', emptyComments) }, []) },
+            {
+              abc: jsxElement('View', { 'data-uid': jsxAttributeValue('abc', emptyComments) }, []),
+            },
           ),
         ],
       ),
@@ -3513,8 +3569,8 @@ export var App = props => {
     const ellipse = jsxElement(
       'Ellipse',
       {
-        style: jsxAttributeValue({backgroundColor: 'lightgreen'}, emptyComments),
-        layout: jsxAttributeValue({height: 100, left: 150, width: 100, top: 540}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'lightgreen' }, emptyComments),
+        layout: jsxAttributeValue({ height: 100, left: 150, width: 100, top: 540 }, emptyComments),
         'data-uid': jsxAttributeValue('bbb', emptyComments),
       },
       [],
@@ -3522,8 +3578,8 @@ export var App = props => {
     const rectangle = jsxElement(
       'Rectangle',
       {
-        style: jsxAttributeValue({backgroundColor: 'orange'}, emptyComments),
-        layout: jsxAttributeValue({height: 100, left: 150, width: 100, top: 540}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'orange' }, emptyComments),
+        layout: jsxAttributeValue({ height: 100, left: 150, width: 100, top: 540 }, emptyComments),
         'data-uid': jsxAttributeValue('ccc', emptyComments),
       },
       [],
@@ -3538,8 +3594,8 @@ export var App = props => {
     const view = jsxElement(
       'View',
       {
-        style: jsxAttributeValue({backgroundColor: 'blue', position: 'absolute'}, emptyComments),
-        layout: jsxAttributeValue({height: 200, left: 80, width: 100, top: 145}, emptyComments),
+        style: jsxAttributeValue({ backgroundColor: 'blue', position: 'absolute' }, emptyComments),
+        layout: jsxAttributeValue({ height: 200, left: 80, width: 100, top: 145 }, emptyComments),
         'data-uid': jsxAttributeValue('ggg', emptyComments),
       },
       [],
@@ -3552,33 +3608,39 @@ export var App = props => {
       jsxElement(
         'View',
         {
-          style: jsxAttributeValue({backgroundColor: 'lightgrey', position: 'absolute'}, emptyComments),
-          layout: jsxAttributeNestedObjectSimple({
+          style: jsxAttributeValue(
+            { backgroundColor: 'lightgrey', position: 'absolute' },
+            emptyComments,
+          ),
+          layout: jsxAttributeNestedObjectSimple(
+            {
               height: jsxAttributeOtherJavaScript(
-                  'props.layout.height',
-                  'return props.layout.height;',
-                  ['props'],
-                  expect.objectContaining({}),
+                'props.layout.height',
+                'return props.layout.height;',
+                ['props'],
+                expect.objectContaining({}),
               ),
               left: jsxAttributeOtherJavaScript(
-                  'props.layout.left',
-                  'return props.layout.left;',
-                  ['props'],
-                  expect.objectContaining({}),
+                'props.layout.left',
+                'return props.layout.left;',
+                ['props'],
+                expect.objectContaining({}),
               ),
               width: jsxAttributeOtherJavaScript(
-                  'props.layout.width',
-                  'return props.layout.width;',
-                  ['props'],
-                  expect.objectContaining({}),
+                'props.layout.width',
+                'return props.layout.width;',
+                ['props'],
+                expect.objectContaining({}),
               ),
               top: jsxAttributeOtherJavaScript(
-                  'props.layout.top',
-                  'return props.layout.top;',
-                  ['props'],
-                  expect.objectContaining({}),
+                'props.layout.top',
+                'return props.layout.top;',
+                ['props'],
+                expect.objectContaining({}),
               ),
-          }, emptyComments),
+            },
+            emptyComments,
+          ),
           'data-uid': jsxAttributeValue('aaa', emptyComments),
         },
         [myCustomCompomnent, view],
@@ -3690,7 +3752,10 @@ export var whatever = props => {
     ).formatted
     const view = jsxElement(
       'View',
-      { 'data-uid': jsxAttributeValue('aaa', emptyComments), booleanProperty: jsxAttributeValue(true, emptyComments) },
+      {
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        booleanProperty: jsxAttributeValue(true, emptyComments),
+      },
       [],
     )
     const exported = utopiaJSXComponent(
@@ -3733,7 +3798,10 @@ export var whatever = props => {
     ).formatted
     const view = jsxElement(
       'View',
-      { 'data-uid': jsxAttributeValue('aaa', emptyComments), booleanProperty: jsxAttributeValue(false, emptyComments) },
+      {
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+        booleanProperty: jsxAttributeValue(false, emptyComments),
+      },
       [],
     )
     const exported = utopiaJSXComponent(
@@ -3887,7 +3955,9 @@ return { result: result };`
       }),
       {},
     )
-    const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [innerBlock])
+    const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+      innerBlock,
+    ])
     const exported = utopiaJSXComponent(
       'whatever',
       true,
@@ -3935,20 +4005,31 @@ export var whatever = props => {
     const innerElement = jsxElement(
       'div',
       {
-        style: jsxAttributeNestedObject([
-            jsxPropertyAssignment('left', jsxAttributeOtherJavaScript(
+        style: jsxAttributeNestedObject(
+          [
+            jsxPropertyAssignment(
+              'left',
+              jsxAttributeOtherJavaScript(
                 `n * 30`,
                 `return n * 30;`,
                 ['n'],
                 expect.objectContaining({}),
-            ), emptyComments),
-            jsxPropertyAssignment('top', jsxAttributeOtherJavaScript(
+              ),
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'top',
+              jsxAttributeOtherJavaScript(
                 `n * 30`,
                 `return n * 30;`,
                 ['n'],
                 expect.objectContaining({}),
-            ), emptyComments),
-        ], emptyComments),
+              ),
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
         ['data-uid']: jsxAttributeValue('bbb', emptyComments),
       },
       [],
@@ -3965,7 +4046,9 @@ export var whatever = props => {
       }),
       { bbb: innerElement },
     )
-    const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [arbitraryBlock])
+    const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+      arbitraryBlock,
+    ])
     const exported = utopiaJSXComponent(
       'whatever',
       true,
@@ -4015,20 +4098,31 @@ export var whatever = props => {
     const innerElement = jsxElement(
       'div',
       {
-        style: jsxAttributeNestedObject([
-            jsxPropertyAssignment('left', jsxAttributeOtherJavaScript(
+        style: jsxAttributeNestedObject(
+          [
+            jsxPropertyAssignment(
+              'left',
+              jsxAttributeOtherJavaScript(
                 `n * a`,
                 `return n * a;`,
                 ['n', 'a'],
                 expect.objectContaining({}),
-            ), emptyComments),
-            jsxPropertyAssignment('top', jsxAttributeOtherJavaScript(
+              ),
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'top',
+              jsxAttributeOtherJavaScript(
                 `n * a`,
                 `return n * a;`,
                 ['n', 'a'],
                 expect.objectContaining({}),
-            ), emptyComments),
-        ], emptyComments),
+              ),
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
         ['data-uid']: jsxAttributeValue('bbb', emptyComments),
       },
       [],
@@ -4060,7 +4154,9 @@ return { a: a };`,
       emptyComments,
     )
 
-    const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [arbitraryBlock])
+    const view = jsxElement('div', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
+      arbitraryBlock,
+    ])
     const exported = utopiaJSXComponent(
       'whatever',
       true,

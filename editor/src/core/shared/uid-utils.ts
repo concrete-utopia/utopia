@@ -17,7 +17,7 @@ import {
 } from './jsx-attributes'
 import * as PP from './property-path'
 import { objectMap } from './object-utils'
-import {emptyComments} from "../workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 

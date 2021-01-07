@@ -407,7 +407,10 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
               const warningMessage = findMissingDefaultsAndGetWarning(detectedProps, defaultProps)
               const insertItemOnMouseDown = () => {
                 const newUID = generateUID(this.props.existingUIDs)
-                let props: JSXAttributes = objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps)
+                let props: JSXAttributes = objectMap(
+                  (value) => jsxAttributeValue(value, emptyComments),
+                  defaultProps,
+                )
                 props['data-uid'] = jsxAttributeValue(newUID, emptyComments)
                 const newElement = jsxElement(jsxElementName(componentName, []), props, [])
                 this.props.editorDispatch(

@@ -34,7 +34,7 @@ import { WarningIcon } from '../../../../uuiui/warning-icon'
 import { ChildWithPercentageSize } from '../../../common/size-warnings'
 import { useWrappedEmptyOrUnknownOnSubmitValue, CheckboxInput } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
-import {emptyComments} from "../../../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../../../core/workers/parser-printer/parser-printer-comments'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 

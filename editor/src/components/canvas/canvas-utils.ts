@@ -169,7 +169,7 @@ import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
 import { openFileTab } from '../editor/store/editor-tabs'
-import {emptyComments} from "../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -319,12 +319,15 @@ export function updateFramesOfScenesAndComponents(
               const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
                 {
                   path: PP.create(['style']),
-                  value: jsxAttributeValue({
+                  value: jsxAttributeValue(
+                    {
                       left: frameAndTarget.frame?.x,
                       top: frameAndTarget.frame?.y,
                       width: frameAndTarget.frame?.width,
                       height: frameAndTarget.frame?.height,
-                  }, emptyComments),
+                    },
+                    emptyComments,
+                  ),
                 },
               ])
               return foldEither(

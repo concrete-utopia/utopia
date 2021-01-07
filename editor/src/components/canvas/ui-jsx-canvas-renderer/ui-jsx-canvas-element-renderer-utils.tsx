@@ -35,7 +35,7 @@ import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-p
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
-import {emptyComments} from "../../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 export function renderCoreElement(
   element: JSXElementChild,
@@ -117,7 +117,11 @@ export function renderCoreElement(
         const generatedUID = createIndexedUid(innerUID, innerIndex)
         const withGeneratedUID = flatMapEither(
           (attrs) =>
-            setJSXValueAtPath(attrs, PP.create(['data-uid']), jsxAttributeValue(generatedUID, emptyComments)),
+            setJSXValueAtPath(
+              attrs,
+              PP.create(['data-uid']),
+              jsxAttributeValue(generatedUID, emptyComments),
+            ),
           withOriginalID,
         )
 

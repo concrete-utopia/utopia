@@ -51,7 +51,7 @@ import {
 } from './layout-helpers-new'
 import { getLayoutPropertyOr } from './getLayoutProperty'
 import { CSSPosition, layoutEmptyValues } from '../../components/inspector/common/css-utils'
-import {emptyComments} from "../workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
@@ -738,7 +738,10 @@ function removeFlexAndAddPinnedPropsToComponent(
     { path: createLayoutPropertyPath('PinnedTop'), value: jsxAttributeValue(top, emptyComments) },
     { path: createLayoutPropertyPath('Width'), value: jsxAttributeValue(width, emptyComments) },
     { path: createLayoutPropertyPath('Height'), value: jsxAttributeValue(height, emptyComments) },
-    { path: createLayoutPropertyPath('position'), value: jsxAttributeValue('absolute', emptyComments) },
+    {
+      path: createLayoutPropertyPath('position'),
+      value: jsxAttributeValue('absolute', emptyComments),
+    },
   ]
   const propsToRemove: Array<LayoutProp | StyleLayoutProp> = ['FlexFlexBasis', 'FlexCrossBasis']
 

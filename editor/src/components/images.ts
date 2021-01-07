@@ -12,7 +12,7 @@ import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/sha
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull } from '../core/shared/optional-utils'
-import {emptyComments} from "../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 
 export function getImageSrc(
   projectId: string | null,
@@ -106,12 +106,15 @@ export function createInsertImageAction(
       {
         alt: jsxAttributeValue('', emptyComments),
         src: srcAttribute,
-        style: jsxAttributeValue({
+        style: jsxAttributeValue(
+          {
             left: frame.x,
             top: frame.y,
             width: frame.width,
             height: frame.height,
-        }, emptyComments),
+          },
+          emptyComments,
+        ),
         'data-uid': jsxAttributeValue(newUID, emptyComments),
       },
       [],

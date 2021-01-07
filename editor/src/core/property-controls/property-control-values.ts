@@ -57,7 +57,7 @@ import { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { fastForEach } from '../shared/utils'
 import { mapToArray } from '../shared/object-utils'
-import {emptyComments} from "../workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 type Printer<T> = (value: T) => JSXAttribute
 
@@ -370,7 +370,9 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
 function printerForArray<T>(control: ControlDescription): Printer<Array<T>> {
   const printContentsValue = printerForPropertyControl(control)
   return (array: Array<T>): JSXAttribute => {
-    const printedContents = array.map((value) => jsxArrayValue(printContentsValue(value), emptyComments))
+    const printedContents = array.map((value) =>
+      jsxArrayValue(printContentsValue(value), emptyComments),
+    )
     return jsxAttributeNestedArray(printedContents, emptyComments)
   }
 }

@@ -95,7 +95,10 @@ describe('SET_PROP', () => {
               jsxElement(
                 jsxElementName('View', []),
                 {
-                  test: jsxAttributeNestedObjectSimple({prop: jsxAttributeValue(5, emptyComments)}, emptyComments),
+                  test: jsxAttributeNestedObjectSimple(
+                    { prop: jsxAttributeValue(5, emptyComments) },
+                    emptyComments,
+                  ),
                   'data-uid': jsxAttributeValue('bbb', emptyComments),
                 },
                 [],
@@ -171,24 +174,30 @@ describe('SET_CANVAS_FRAMES', () => {
       jsxElement(
         jsxElementName('View', []),
         {
-          layout: jsxAttributeNestedObjectSimple({
-            top: jsxAttributeValue(0, emptyComments),
-            left: jsxAttributeValue(0, emptyComments),
-            width: jsxAttributeValue(100, emptyComments),
-            height: jsxAttributeValue(100, emptyComments),
-          }, emptyComments),
+          layout: jsxAttributeNestedObjectSimple(
+            {
+              top: jsxAttributeValue(0, emptyComments),
+              left: jsxAttributeValue(0, emptyComments),
+              width: jsxAttributeValue(100, emptyComments),
+              height: jsxAttributeValue(100, emptyComments),
+            },
+            emptyComments,
+          ),
           'data-uid': jsxAttributeValue('aaa', emptyComments),
         },
         [
           jsxElement(
             jsxElementName('View', []),
             {
-              layout: jsxAttributeNestedObjectSimple({
-                top: jsxAttributeValue(0, emptyComments),
-                left: jsxAttributeValue(0, emptyComments),
-                width: jsxAttributeValue(10, emptyComments),
-                height: jsxAttributeValue(10, emptyComments),
-              }, emptyComments),
+              layout: jsxAttributeNestedObjectSimple(
+                {
+                  top: jsxAttributeValue(0, emptyComments),
+                  left: jsxAttributeValue(0, emptyComments),
+                  width: jsxAttributeValue(10, emptyComments),
+                  height: jsxAttributeValue(10, emptyComments),
+                },
+                emptyComments,
+              ),
               'data-uid': jsxAttributeValue('bbb', emptyComments),
             },
             [],
@@ -304,12 +313,15 @@ describe('moveTemplate', () => {
     return jsxElement(
       jsxElementName(name, []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          left: jsxAttributeValue(x, emptyComments),
-          top: jsxAttributeValue(y, emptyComments),
-          width: jsxAttributeValue(width, emptyComments),
-          height: jsxAttributeValue(height, emptyComments),
-        }, emptyComments),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            left: jsxAttributeValue(x, emptyComments),
+            top: jsxAttributeValue(y, emptyComments),
+            width: jsxAttributeValue(width, emptyComments),
+            height: jsxAttributeValue(height, emptyComments),
+          },
+          emptyComments,
+        ),
         'data-uid': jsxAttributeValue(uid, emptyComments),
       },
       children,
@@ -328,13 +340,16 @@ describe('moveTemplate', () => {
     return jsxElement(
       jsxElementName(name, []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          left: jsxAttributeValue(x, emptyComments),
-          top: jsxAttributeValue(y, emptyComments),
-          width: jsxAttributeValue(width, emptyComments),
-          height: jsxAttributeValue(height, emptyComments),
-          layoutSystem: jsxAttributeValue(LayoutSystem.Group, emptyComments),
-        }, emptyComments),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            left: jsxAttributeValue(x, emptyComments),
+            top: jsxAttributeValue(y, emptyComments),
+            width: jsxAttributeValue(width, emptyComments),
+            height: jsxAttributeValue(height, emptyComments),
+            layoutSystem: jsxAttributeValue(LayoutSystem.Group, emptyComments),
+          },
+          emptyComments,
+        ),
         'data-uid': jsxAttributeValue(uid, emptyComments),
       },
       children,
@@ -616,12 +631,15 @@ describe('moveTemplate', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          bottom: jsxAttributeValue(50, emptyComments),
-          right: jsxAttributeValue(50, emptyComments),
-          width: jsxAttributeValue(100, emptyComments),
-          height: jsxAttributeValue(100, emptyComments),
-        }, emptyComments),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            bottom: jsxAttributeValue(50, emptyComments),
+            right: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(100, emptyComments),
+            height: jsxAttributeValue(100, emptyComments),
+          },
+          emptyComments,
+        ),
         'data-uid': jsxAttributeValue('bbb', emptyComments),
       },
       [],
@@ -668,15 +686,21 @@ describe('moveTemplate', () => {
     const flexView = jsxElement(
       jsxElementName('aaa', []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          left: jsxAttributeValue(50, emptyComments),
-          top: jsxAttributeValue(50, emptyComments),
-          width: jsxAttributeValue(200, emptyComments),
-          height: jsxAttributeValue(200, emptyComments),
-        }, emptyComments),
-        style: jsxAttributeNestedObjectSimple({
-          display: jsxAttributeValue('flex', emptyComments),
-        }, emptyComments),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            left: jsxAttributeValue(50, emptyComments),
+            top: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(200, emptyComments),
+            height: jsxAttributeValue(200, emptyComments),
+          },
+          emptyComments,
+        ),
+        style: jsxAttributeNestedObjectSimple(
+          {
+            display: jsxAttributeValue('flex', emptyComments),
+          },
+          emptyComments,
+        ),
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
@@ -717,12 +741,15 @@ describe('moveTemplate', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          top: jsxAttributeValue(50, emptyComments),
-          left: jsxAttributeValue(50, emptyComments),
-          width: jsxAttributeValue(100, emptyComments),
-          height: jsxAttributeValue(100, emptyComments),
-        }, emptyComments),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            top: jsxAttributeValue(50, emptyComments),
+            left: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(100, emptyComments),
+            height: jsxAttributeValue(100, emptyComments),
+          },
+          emptyComments,
+        ),
         'data-uid': jsxAttributeValue('bbb', emptyComments),
       },
       [],
@@ -763,12 +790,15 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     'View',
     {
       'data-uid': jsxAttributeValue('bbb', emptyComments),
-      style: jsxAttributeValue({
-        left: 5,
-        top: 10,
-        width: 200,
-        height: 300,
-      }, emptyComments),
+      style: jsxAttributeValue(
+        {
+          left: 5,
+          top: 10,
+          width: 200,
+          height: 300,
+        },
+        emptyComments,
+      ),
     },
     [],
   )
@@ -776,8 +806,8 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     'View',
     {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
-      style: jsxAttributeValue({backgroundColor: '#FFFFFF'}, emptyComments),
-      layout: jsxAttributeValue({layoutSystem: 'pinSystem'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }, emptyComments),
+      layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }, emptyComments),
     },
     [childElement],
   )

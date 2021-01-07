@@ -562,7 +562,11 @@ function switchAndUpdateFrames(
         withUpdatedLayoutSystem,
         target,
         (attributes) => {
-          return setJSXValueAtPath(attributes, styleDisplayPath, jsxAttributeValue('flex', emptyComments))
+          return setJSXValueAtPath(
+            attributes,
+            styleDisplayPath,
+            jsxAttributeValue('flex', emptyComments),
+          )
         },
       )
       break
@@ -2917,7 +2921,7 @@ export const UPDATE_FNS = {
             {
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
-              style: jsxAttributeValue({width: width, height: height}, emptyComments),
+              style: jsxAttributeValue({ width: width, height: height }, emptyComments),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
               'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
             },
@@ -2948,12 +2952,15 @@ export const UPDATE_FNS = {
             {
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
-              style: jsxAttributeValue({
+              style: jsxAttributeValue(
+                {
                   left: relativeFrame.x,
                   top: relativeFrame.y,
                   width: relativeFrame.width,
                   height: relativeFrame.height,
-              }, emptyComments),
+                },
+                emptyComments,
+              ),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
               'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
             },
@@ -3008,10 +3015,13 @@ export const UPDATE_FNS = {
         {
           alt: jsxAttributeValue('', emptyComments),
           src: imageSrcAttribute,
-          style: jsxAttributeValue({
+          style: jsxAttributeValue(
+            {
               width: width,
               height: height,
-          }, emptyComments),
+            },
+            emptyComments,
+          ),
           'data-uid': jsxAttributeValue(newUID, emptyComments),
           'data-label': jsxAttributeValue('Image', emptyComments),
           'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
@@ -3935,12 +3945,15 @@ export const UPDATE_FNS = {
         {
           alt: jsxAttributeValue('', emptyComments),
           src: imageAttribute,
-          style: jsxAttributeValue({
+          style: jsxAttributeValue(
+            {
               left: parentShiftX + frame.x,
               top: parentShiftY + frame.y,
               width: frame.width,
               height: frame.height,
-          }, emptyComments),
+            },
+            emptyComments,
+          ),
           'data-uid': jsxAttributeValue(newUID, emptyComments),
           'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
         },
@@ -4008,11 +4021,18 @@ export const UPDATE_FNS = {
 
       if (pathToUpdate != null) {
         return setPropertyOnTarget(editor, target, (props) => {
-          return setJSXValueAtPath(props, pathToUpdate!, jsxAttributeValue(propsForPath, emptyComments))
+          return setJSXValueAtPath(
+            props,
+            pathToUpdate!,
+            jsxAttributeValue(propsForPath, emptyComments),
+          )
         })
       } else {
         return setPropertyOnTarget(editor, target, (props) => {
-          const updatedProps = objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps)
+          const updatedProps = objectMap(
+            (value) => jsxAttributeValue(value, emptyComments),
+            defaultProps,
+          )
           updatedProps['data-uid'] = props['data-uid'] as JSXAttributeValue<string>
           return right(updatedProps)
         })

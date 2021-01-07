@@ -14,7 +14,7 @@ import {
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
 import { isParseSuccess } from '../../shared/project-file-types'
-import {emptyComments} from "./parser-printer-comments";
+import { emptyComments } from './parser-printer-comments'
 
 export function stripUnhelpfulFields(value: any): any {
   switch (typeof value) {
@@ -62,10 +62,13 @@ export var App = props => {
         const topComponent: UtopiaJSXComponent = parsedPlainCode.topLevelElements[0]
         if (isJSXElement(topComponent.rootElement)) {
           const expectedProps: JSXAttributes = {
-            style: jsxAttributeValue({
+            style: jsxAttributeValue(
+              {
                 backgroundColor: 'green',
                 position: 'absolute',
-            }, emptyComments),
+              },
+              emptyComments,
+            ),
             'data-uid': jsxAttributeValue('xxx', emptyComments),
           }
           expect(topComponent.rootElement.props).toEqual(expectedProps)

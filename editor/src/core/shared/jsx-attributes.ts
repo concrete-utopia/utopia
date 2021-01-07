@@ -28,7 +28,7 @@ import { objectMap } from './object-utils'
 import { PropertyPath } from './project-file-types'
 import * as PP from './property-path'
 import { fastForEach } from './utils'
-import {emptyComments} from "../workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 export type AnyMap = { [key: string]: any }
 
@@ -44,13 +44,16 @@ export function dropKeyFromNestedObject(
   nestedObject: JSXAttributeNestedObject,
   key: string,
 ): JSXAttributeNestedObject {
-  return jsxAttributeNestedObject(nestedObject.content.filter((prop) => {
-    if (isPropertyAssignment(prop)) {
-      return prop.key !== key
-    } else {
-      return true
-    }
-  }), emptyComments)
+  return jsxAttributeNestedObject(
+    nestedObject.content.filter((prop) => {
+      if (isPropertyAssignment(prop)) {
+        return prop.key !== key
+      } else {
+        return true
+      }
+    }),
+    emptyComments,
+  )
 }
 
 export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Either<string, any> {
@@ -376,7 +379,10 @@ export function getJSXAttributeAtPathInner(
 export function deeplyCreatedValue(path: PropertyPath, value: JSXAttribute): JSXAttribute {
   const elements = PP.getElements(path)
   return elements.reduceRight((acc: JSXAttribute, propName) => {
-    return jsxAttributeNestedObject([jsxPropertyAssignment(`${propName}`, acc, emptyComments)], emptyComments)
+    return jsxAttributeNestedObject(
+      [jsxPropertyAssignment(`${propName}`, acc, emptyComments)],
+      emptyComments,
+    )
   }, value)
 }
 
@@ -414,7 +420,10 @@ export function setJSXValueInAttributeAtPath(
             } else {
               const existingAttribute = attribute.content[attributeKey]
               if (existingAttribute == null) {
-                newArray[attributeKey] = jsxArrayValue(deeplyCreatedValue(tailPath, newAttrib), emptyComments)
+                newArray[attributeKey] = jsxArrayValue(
+                  deeplyCreatedValue(tailPath, newAttrib),
+                  emptyComments,
+                )
               } else {
                 const updatedNestedAttribute = setJSXValueInAttributeAtPath(
                   existingAttribute.value,
@@ -425,7 +434,10 @@ export function setJSXValueInAttributeAtPath(
                 if (isLeft(updatedNestedAttribute)) {
                   return updatedNestedAttribute
                 } else {
-                  newArray[attributeKey] = jsxArrayValue(updatedNestedAttribute.value, emptyComments)
+                  newArray[attributeKey] = jsxArrayValue(
+                    updatedNestedAttribute.value,
+                    emptyComments,
+                  )
                 }
               }
             }
@@ -450,7 +462,10 @@ export function setJSXValueInAttributeAtPath(
           const newProps = dropKeyFromNestedObject(attribute, key).content
           if (lastPartOfPath) {
             return right(
-              jsxAttributeNestedObject(newProps.concat(jsxPropertyAssignment(key, newAttrib, emptyComments)), emptyComments),
+              jsxAttributeNestedObject(
+                newProps.concat(jsxPropertyAssignment(key, newAttrib, emptyComments)),
+                emptyComments,
+              ),
             )
           } else {
             const existingAttribute = nestedObjectValueForKey(attribute, key)
@@ -461,7 +476,10 @@ export function setJSXValueInAttributeAtPath(
 
             return mapEither(
               (updated) =>
-                jsxAttributeNestedObject(newProps.concat(jsxPropertyAssignment(key, updated, emptyComments)), emptyComments),
+                jsxAttributeNestedObject(
+                  newProps.concat(jsxPropertyAssignment(key, updated, emptyComments)),
+                  emptyComments,
+                ),
               updatedNestedAttribute,
             )
           }
@@ -473,13 +491,25 @@ export function setJSXValueInAttributeAtPath(
             // we are good, the current value is an object, we can insert into it
             if (Array.isArray(currentValue)) {
               // let's turn the found value into an ATTRIBUTE_NESTED_ARRAY
-              const arrayifiedObject = jsxAttributeNestedArray(currentValue.map((value) => jsxArrayValue(jsxAttributeValue(value, emptyComments), emptyComments)), emptyComments)
+              const arrayifiedObject = jsxAttributeNestedArray(
+                currentValue.map((value) =>
+                  jsxArrayValue(jsxAttributeValue(value, emptyComments), emptyComments),
+                ),
+                emptyComments,
+              )
               return setJSXValueInAttributeAtPath(arrayifiedObject, path, newAttrib)
             } else {
               // let's turn the found object into a ATTRIBUTE_NESTED_OBJECT
-              const nestedOject = jsxAttributeNestedObject(Object.keys(currentValue).map((k) =>
-                  jsxPropertyAssignment(k, jsxAttributeValue(currentValue[k], emptyComments), emptyComments),
-              ), emptyComments)
+              const nestedOject = jsxAttributeNestedObject(
+                Object.keys(currentValue).map((k) =>
+                  jsxPropertyAssignment(
+                    k,
+                    jsxAttributeValue(currentValue[k], emptyComments),
+                    emptyComments,
+                  ),
+                ),
+                emptyComments,
+              )
               return setJSXValueInAttributeAtPath(nestedOject, path, newAttrib)
             }
           }
@@ -669,7 +699,11 @@ export function unsetJSXValueInAttributeAtPath(
               )
               return mapEither((updated) => {
                 let newProps: Array<JSXProperty> = [...attribute.content]
-                newProps[existingAttributeIndex] = jsxPropertyAssignment(key, updated, emptyComments)
+                newProps[existingAttributeIndex] = jsxPropertyAssignment(
+                  key,
+                  updated,
+                  emptyComments,
+                )
                 return jsxAttributeNestedObject(newProps, emptyComments)
               }, updatedAttribute)
             }

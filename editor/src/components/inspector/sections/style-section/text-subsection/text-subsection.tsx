@@ -41,7 +41,7 @@ import { OptionControl } from '../../../controls/option-control'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
-import {emptyComments} from "../../../../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
 
 const ObjectPathImmutable: any = OPI
 

@@ -93,7 +93,7 @@ import {
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
 import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme } from '../../uuiui'
-import {emptyComments} from "../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps

@@ -37,7 +37,7 @@ import {
 
 import React = require('react')
 import { usePropControlledRef_DANGEROUS } from './inspector-utils'
-import {emptyComments} from "../../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 const HorizontalPinPreference = [
   FramePoint.Left,

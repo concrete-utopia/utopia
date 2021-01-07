@@ -29,7 +29,7 @@ import {
 import * as PP from '../../core/shared/property-path'
 import { jsxAttributeValue } from '../../core/shared/element-template'
 import { TextSizing } from 'utopia-api'
-import {emptyComments} from "../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export interface TextEditorProps {
   target: InstancePath

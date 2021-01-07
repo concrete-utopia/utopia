@@ -249,7 +249,10 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
             filePathWithoutExtension,
             propertyControlsInfo,
           )
-          let props: JSXAttributes = objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps)
+          let props: JSXAttributes = objectMap(
+            (value) => jsxAttributeValue(value, emptyComments),
+            defaultProps,
+          )
           props['data-uid'] = jsxAttributeValue(newUID, emptyComments)
           const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [])
           dispatch(

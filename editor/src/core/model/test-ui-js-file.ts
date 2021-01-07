@@ -64,36 +64,42 @@ const mainComponentForTests = utopiaJSXComponent(
   jsxElement(
     'View',
     {
-      layout: jsxAttributeNestedObjectSimple({
+      layout: jsxAttributeNestedObjectSimple(
+        {
           left: jsxAttributeOtherJavaScript(
-              `props.${createLayoutPropertyPathString('PinnedLeft')}`,
-              `return props.${createLayoutPropertyPathString('PinnedLeft')}`,
-              ['props'],
-              null,
+            `props.${createLayoutPropertyPathString('PinnedLeft')}`,
+            `return props.${createLayoutPropertyPathString('PinnedLeft')}`,
+            ['props'],
+            null,
           ),
           top: jsxAttributeOtherJavaScript(
-              `props.${createLayoutPropertyPathString('PinnedTop')}`,
-              `return props.${createLayoutPropertyPathString('PinnedTop')}`,
-              ['props'],
-              null,
+            `props.${createLayoutPropertyPathString('PinnedTop')}`,
+            `return props.${createLayoutPropertyPathString('PinnedTop')}`,
+            ['props'],
+            null,
           ),
           width: jsxAttributeOtherJavaScript(
-              `props.${createLayoutPropertyPathString('Width')}`,
-              `return props.${createLayoutPropertyPathString('Width')}`,
-              ['props'],
-              null,
+            `props.${createLayoutPropertyPathString('Width')}`,
+            `return props.${createLayoutPropertyPathString('Width')}`,
+            ['props'],
+            null,
           ),
           height: jsxAttributeOtherJavaScript(
-              `props.${createLayoutPropertyPathString('Height')}`,
-              `return props.${createLayoutPropertyPathString('Height')}`,
-              ['props'],
-              null,
+            `props.${createLayoutPropertyPathString('Height')}`,
+            `return props.${createLayoutPropertyPathString('Height')}`,
+            ['props'],
+            null,
           ),
-      }, emptyComments),
-      style: jsxAttributeValue({
+        },
+        emptyComments,
+      ),
+      style: jsxAttributeValue(
+        {
           position: 'absolute',
           backgroundColor: 'lightgrey',
-      }, emptyComments),
+        },
+        emptyComments,
+      ),
       'data-uid': jsxAttributeValue('aaa', emptyComments),
     },
     [
@@ -102,15 +108,21 @@ const mainComponentForTests = utopiaJSXComponent(
           jsxElement(
             'Ellipse',
             {
-              layout: jsxAttributeValue({
+              layout: jsxAttributeValue(
+                {
                   left: 150,
                   top: 25,
                   width: 100,
                   height: 100,
-              }, emptyComments),
-              style: jsxAttributeNestedObjectSimple({
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                {
                   backgroundColor: jsxAttributeValue('lightgreen', emptyComments),
-              }, emptyComments),
+                },
+                emptyComments,
+              ),
               'data-uid': jsxAttributeValue('bbb', emptyComments),
             },
             [],
@@ -118,15 +130,21 @@ const mainComponentForTests = utopiaJSXComponent(
           jsxElement(
             'Rectangle',
             {
-              layout: jsxAttributeValue({
+              layout: jsxAttributeValue(
+                {
                   left: 25,
                   top: 25,
                   width: 100,
                   height: 100,
-              }, emptyComments),
-              style: jsxAttributeNestedObjectSimple({
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                {
                   backgroundColor: jsxAttributeValue('orange', emptyComments),
-              }, emptyComments),
+                },
+                emptyComments,
+              ),
               'data-uid': jsxAttributeValue('ccc', emptyComments),
             },
             [],
@@ -137,33 +155,45 @@ const mainComponentForTests = utopiaJSXComponent(
       jsxElement(
         'View',
         {
-          layout: jsxAttributeValue({
+          layout: jsxAttributeValue(
+            {
               left: 150,
               top: 150,
               width: 100,
               height: 100,
               layoutSystem: 'group',
-          }, emptyComments),
-          style: jsxAttributeNestedObjectSimple({
+            },
+            emptyComments,
+          ),
+          style: jsxAttributeNestedObjectSimple(
+            {
               position: jsxAttributeValue('absolute', emptyComments),
               backgroundColor: jsxAttributeValue('red', emptyComments),
               boxShadow: jsxAttributeValue('10px 10px 8px #888888', emptyComments),
-          }, emptyComments),
+            },
+            emptyComments,
+          ),
           'data-uid': jsxAttributeValue('ddd', emptyComments),
         },
         [
           jsxElement(
             'Rectangle',
             {
-              layout: jsxAttributeValue({
+              layout: jsxAttributeValue(
+                {
                   left: 220,
                   top: 220,
                   width: 20,
                   height: 20,
-              }, emptyComments),
-              style: jsxAttributeNestedObjectSimple({
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                {
                   backgroundColor: jsxAttributeValue('orange', emptyComments),
-              }, emptyComments),
+                },
+                emptyComments,
+              ),
               'data-uid': jsxAttributeValue('eee', emptyComments),
             },
             [],
@@ -171,15 +201,21 @@ const mainComponentForTests = utopiaJSXComponent(
           jsxElement(
             'Rectangle',
             {
-              layout: jsxAttributeValue({
+              layout: jsxAttributeValue(
+                {
                   left: 90,
                   top: 90,
                   width: 100,
                   height: 100,
-              }, emptyComments),
-              style: jsxAttributeNestedObjectSimple({
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                {
                   backgroundColor: jsxAttributeValue('orange', emptyComments),
-              }, emptyComments),
+                },
+                emptyComments,
+              ),
               'data-uid': jsxAttributeValue('fff', emptyComments),
             },
             [],
@@ -189,16 +225,22 @@ const mainComponentForTests = utopiaJSXComponent(
       jsxElement(
         'View',
         {
-          layout: jsxAttributeNestedObjectSimple({
+          layout: jsxAttributeNestedObjectSimple(
+            {
               left: jsxAttributeValue(50, emptyComments),
               top: jsxAttributeValue(250, emptyComments),
               width: jsxAttributeValue(100, emptyComments),
               height: jsxAttributeValue(200, emptyComments),
-          }, emptyComments),
-          style: jsxAttributeValue({
+            },
+            emptyComments,
+          ),
+          style: jsxAttributeValue(
+            {
               position: 'absolute',
               backgroundColor: 'blue',
-          }, emptyComments),
+            },
+            emptyComments,
+          ),
           'data-uid': jsxAttributeValue('ggg', emptyComments),
         },
         [],
@@ -206,16 +248,22 @@ const mainComponentForTests = utopiaJSXComponent(
       jsxElement(
         'Text',
         {
-          layout: jsxAttributeValue({
+          layout: jsxAttributeValue(
+            {
               left: 200,
               top: 200,
               width: 200,
               height: 100,
-          }, emptyComments),
+            },
+            emptyComments,
+          ),
           text: jsxAttributeValue('TEST', emptyComments),
-          style: jsxAttributeValue({
+          style: jsxAttributeValue(
+            {
               fontSize: 16,
-          }, emptyComments),
+            },
+            emptyComments,
+          ),
           textSizing: jsxAttributeValue('auto', emptyComments),
           'data-uid': jsxAttributeValue('hhh', emptyComments),
         },
@@ -224,19 +272,26 @@ const mainComponentForTests = utopiaJSXComponent(
       jsxElement(
         'Image',
         {
-          layout: jsxAttributeValue({
+          layout: jsxAttributeValue(
+            {
               left: 200,
               top: 300,
               width: 484 / 2,
               height: 426 / 2,
-          }, emptyComments),
+            },
+            emptyComments,
+          ),
           src: jsxAttributeValue(KrazyGeorgeTestUrl, emptyComments),
           fillType: jsxAttributeValue('fill', emptyComments),
           'data-uid': jsxAttributeValue('iii', emptyComments),
         },
         [],
       ),
-      jsxElement('MyComponent', { 'data-uid': jsxAttributeValue('mycomponent', emptyComments) }, []),
+      jsxElement(
+        'MyComponent',
+        { 'data-uid': jsxAttributeValue('mycomponent', emptyComments) },
+        [],
+      ),
     ],
   ),
   null,
@@ -253,7 +308,7 @@ const scene = utopiaJSXComponent(
   jsxElement(
     'View',
     {
-      style: jsxAttributeValue({backgroundColor: 'green'}, emptyComments),
+      style: jsxAttributeValue({ backgroundColor: 'green' }, emptyComments),
       'data-uid': jsxAttributeValue('jjj', emptyComments),
     },
     [],

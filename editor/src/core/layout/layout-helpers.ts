@@ -47,7 +47,7 @@ import { EdgePosition } from '../../components/canvas/canvas-types'
 import { EditorState } from '../../components/editor/store/editor-state'
 import { getPropertyControlsForTarget } from '../property-controls/property-controls-utils'
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
-import {emptyComments} from "../workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 export function targetRespectsLayout(
   target: TemplatePath,

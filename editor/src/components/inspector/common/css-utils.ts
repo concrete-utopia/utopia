@@ -64,7 +64,7 @@ import Utils from '../../../utils/utils'
 import { toggleBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
 import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection/shadow-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
-import {emptyComments} from "../../../core/workers/parser-printer/parser-printer-comments";
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -952,21 +952,24 @@ export const disabledFunctionName = UtopiaUtils.disabled.name
 
 export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<string> {
   const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, boxShadows)
-  return jsxAttributeValue([...boxShadows]
+  return jsxAttributeValue(
+    [...boxShadows]
       .map((boxShadow, i) => {
-      const comma = indexOfLastEnabledLayer > i && boxShadow.enabled
-      const {inset, offsetX, offsetY, blurRadius, spreadRadius, color} = boxShadow
-      const parts = Utils.stripNulls([
+        const comma = indexOfLastEnabledLayer > i && boxShadow.enabled
+        const { inset, offsetX, offsetY, blurRadius, spreadRadius, color } = boxShadow
+        const parts = Utils.stripNulls([
           inset ? 'inset' : null,
           printCSSNumber(offsetX),
           printCSSNumber(offsetY),
           blurRadius.default && spreadRadius.default ? null : printCSSNumber(blurRadius.value),
           spreadRadius.default ? null : printCSSNumber(spreadRadius.value),
           printColor(color),
-      ])
-      return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
+        ])
+        return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
       })
-      .join(' '), emptyComments)
+      .join(' '),
+    emptyComments,
+  )
 }
 
 export function parseBoxShadow(boxShadow: unknown): Either<string, CSSBoxShadows> {
@@ -1753,9 +1756,12 @@ function printTransformOriginComponent(
 }
 
 function printTransformOrigin(transformOrigin: CSSTransformOrigin): JSXAttributeValue<string> {
-  return jsxAttributeValue(`${printTransformOriginComponent(transformOrigin.x)} ${printTransformOriginComponent(
+  return jsxAttributeValue(
+    `${printTransformOriginComponent(transformOrigin.x)} ${printTransformOriginComponent(
       transformOrigin.y,
-  )}`, emptyComments)
+    )}`,
+    emptyComments,
+  )
 }
 
 type CSSOverflow = boolean
@@ -1853,7 +1859,10 @@ export function printBorderRadius(
     return printCSSNumberAsAttributeValue(borderRadius.value)
   } else {
     const { tl, tr, br, bl } = borderRadius.value
-    return jsxAttributeValue(`${printCSSNumber(tl)} ${printCSSNumber(tr)} ${printCSSNumber(br)} ${printCSSNumber(bl)}`, emptyComments)
+    return jsxAttributeValue(
+      `${printCSSNumber(tl)} ${printCSSNumber(tr)} ${printCSSNumber(br)} ${printCSSNumber(bl)}`,
+      emptyComments,
+    )
   }
 }
 
@@ -2089,7 +2098,10 @@ export function parseBackgroundColor(color?: unknown): Either<string, CSSDefault
 }
 
 function printBackgroundColor(value: CSSDefault<CSSSolidColor>): JSXAttributeValue<string> {
-  return jsxAttributeValue(printEnabled(printColor(value.value.color), value.value.enabled), emptyComments)
+  return jsxAttributeValue(
+    printEnabled(printColor(value.value.color), value.value.enabled),
+    emptyComments,
+  )
 }
 
 const matchColorKeyword = combineRegExp(['^', '(', RegExpLibrary.colorKeyword, ')', '$'])
@@ -3243,40 +3255,43 @@ export function printBackgroundImage(
 export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue<string> {
   const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, value)
 
-  return jsxAttributeValue(value
+  return jsxAttributeValue(
+    value
       .map((bgSize, i) => {
-      const comma = indexOfLastEnabledLayer > i && bgSize.enabled
-      switch (bgSize.size.value.type) {
+        const comma = indexOfLastEnabledLayer > i && bgSize.enabled
+        switch (bgSize.size.value.type) {
           case 'keyword': {
-              return printEnabled(
-                  printComma(printCSSKeyword(bgSize.size.value), comma),
-                  bgSize.enabled,
-              )
+            return printEnabled(
+              printComma(printCSSKeyword(bgSize.size.value), comma),
+              bgSize.enabled,
+            )
           }
           case 'parsed-curly-brace': {
-              return printEnabled(
-                  printComma(
-                      bgSize.size.value.value
-                          .map((item) => {
-                              if (isCSSNumber(item)) {
-                                  return printCSSNumber(item)
-                              } else {
-                                  return printCSSKeyword(item)
-                              }
-                          })
-                          .join(' '),
-                      comma,
-                  ),
-                  bgSize.enabled,
-              )
+            return printEnabled(
+              printComma(
+                bgSize.size.value.value
+                  .map((item) => {
+                    if (isCSSNumber(item)) {
+                      return printCSSNumber(item)
+                    } else {
+                      return printCSSKeyword(item)
+                    }
+                  })
+                  .join(' '),
+                comma,
+              ),
+              bgSize.enabled,
+            )
           }
           default: {
-              const _exhaustiveCheck: never = bgSize.size.value
-              throw new Error(`CSSBGSize size ${bgSize.size} is not a keyword or parsed-curly-brace`)
+            const _exhaustiveCheck: never = bgSize.size.value
+            throw new Error(`CSSBGSize size ${bgSize.size} is not a keyword or parsed-curly-brace`)
           }
-      }
+        }
       })
-      .join(' '), emptyComments)
+      .join(' '),
+    emptyComments,
+  )
 }
 
 export type CSSFontFamily = Array<string>
@@ -3390,19 +3405,22 @@ export function parseTextShadow(textShadow: unknown): Either<string, CSSTextShad
 
 function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string> {
   const indexOfLastEnabledLayer = findLastIndex(isLayerEnabled, textShadows)
-  return jsxAttributeValue([...textShadows]
+  return jsxAttributeValue(
+    [...textShadows]
       .map((textShadow, i) => {
-      const comma = indexOfLastEnabledLayer > i && textShadow.enabled
-      const {offsetX, offsetY, blurRadius, color} = textShadow
-      const parts = Utils.stripNulls([
+        const comma = indexOfLastEnabledLayer > i && textShadow.enabled
+        const { offsetX, offsetY, blurRadius, color } = textShadow
+        const parts = Utils.stripNulls([
           printCSSNumber(offsetX),
           printCSSNumber(offsetY),
           blurRadius == null ? null : printCSSNumber(blurRadius.value),
           printColor(color),
-      ])
-      return printEnabled(printComma(`${parts.join(' ')}`, comma), textShadow.enabled)
+        ])
+        return printEnabled(printComma(`${parts.join(' ')}`, comma), textShadow.enabled)
       })
-      .join(' '), emptyComments)
+      .join(' '),
+    emptyComments,
+  )
 }
 
 const quoteMarksRegexp = /['"]+/g
@@ -3548,7 +3566,9 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
   } else {
     const simpleValue = jsxSimpleAttributeToValue(attribute)
     if (isRight(simpleValue)) {
-      return jsxAttributeFunctionCall(disabledFunctionName, [jsxAttributeValue(simpleValue.value, emptyComments)])
+      return jsxAttributeFunctionCall(disabledFunctionName, [
+        jsxAttributeValue(simpleValue.value, emptyComments),
+      ])
     } else if (isRegularJSXAttribute(attribute)) {
       return jsxAttributeFunctionCall(disabledFunctionName, [attribute])
     } else {
@@ -3732,7 +3752,9 @@ function printCSSNumberAsAttributeValue(value: CSSNumber): JSXAttributeValue<str
 function printCSSNumberOrUndefinedAsAttributeValue(
   value: CSSNumber | undefined,
 ): JSXAttributeValue<string | number | undefined> {
-  return value != null ? printCSSNumberAsAttributeValue(value) : jsxAttributeValue(undefined, emptyComments)
+  return value != null
+    ? printCSSNumberAsAttributeValue(value)
+    : jsxAttributeValue(undefined, emptyComments)
 }
 
 function parseString(value: unknown): Either<string, string> {
