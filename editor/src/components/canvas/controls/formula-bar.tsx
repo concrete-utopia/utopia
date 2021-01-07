@@ -29,7 +29,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     } else {
       return null
     }
-  }, 'Formula Bar selectedElement')
+  }, 'FormulaBar selectedElement')
 
   const [simpleText, setSimpleText] = React.useState('')
   const [disabled, setDisabled] = React.useState(false)
