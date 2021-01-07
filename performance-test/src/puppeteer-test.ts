@@ -346,7 +346,7 @@ async function uploadPNGtoAWS(testFile: string) {
 
   let s3 = new AWS.S3({ apiVersion: '2006-03-01' })
   const uploadParams = {
-    Bucket: 'frame-test-png', //process.env.AWS_S3_BUCKET,
+    Bucket: process.env.AWS_S3_BUCKET,
     Key: testFile,
     Body: '',
     ContentType: 'image/png',
