@@ -12,7 +12,7 @@ import { getOpenImportsFromState } from '../../../editor/store/editor-state'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useHighlightCallbacks } from './select-mode-hooks'
 
-function useGethHiglightableViewsForInsertMode() {
+function useGetHiglightableViewsForInsertMode() {
   const storeRef = useRefEditorState((store) => {
     return {
       componentMetadata: store.editor.jsxMetadataKILLME,
@@ -47,8 +47,8 @@ export function useInsertModeSelectAndHover(): {
   onMouseOut: () => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const gethHiglightableViewsForInsertMode = useGethHiglightableViewsForInsertMode()
-  const { onMouseOver, onMouseOut } = useHighlightCallbacks(gethHiglightableViewsForInsertMode)
+  const getHiglightableViewsForInsertMode = useGetHiglightableViewsForInsertMode()
+  const { onMouseOver, onMouseOut } = useHighlightCallbacks(getHiglightableViewsForInsertMode)
 
   return useKeepShallowReferenceEquality({
     onMouseOver: onMouseOver,
