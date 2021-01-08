@@ -16,8 +16,10 @@ import {
   ProjectContentTreeRoot,
 } from '../assets'
 import { EditorTab, isOpenFileTab } from '../editor/store/editor-tabs'
-import { Icn, colorTheme, TabComponent } from '../../uuiui'
+import { Icn, colorTheme, TabComponent, UtopiaTheme, SimpleFlexRow } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
+
+export const TopMenuHeight = 30
 
 function getKeyForEditorTab(editorTab: EditorTab): string {
   switch (editorTab.type) {
@@ -150,7 +152,18 @@ export const FileTabs = betterReactMemo('FileTabs', () => {
     return null
   } else {
     return (
-      <React.Fragment>
+      <SimpleFlexRow
+        className='tabRail'
+        style={{
+          minHeight: TopMenuHeight,
+          height: TopMenuHeight,
+          borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
+          alignItems: 'stretch',
+          justifyContent: 'stretch',
+          backgroundColor: 'transparent',
+          overflowX: 'hidden',
+        }}
+      >
         {openFiles.map((editorTab, index) => {
           return (
             <FileTab
@@ -168,7 +181,7 @@ export const FileTabs = betterReactMemo('FileTabs', () => {
             />
           )
         })}
-      </React.Fragment>
+      </SimpleFlexRow>
     )
   }
 })

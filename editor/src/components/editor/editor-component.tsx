@@ -257,57 +257,18 @@ export const EditorComponentInner = betterReactMemo(
                 borderRight: `1px solid ${UtopiaTheme.color.neutralBorder.value}`,
               }}
             >
-              <SimpleFlexColumn
-                className='EditorSpace'
+              <SimpleFlexRow
+                className='openTabShell'
                 style={{
                   flexGrow: 1,
+                  alignItems: 'stretch',
+                  justifyContent: 'stretch',
+                  overflowX: 'hidden',
                   backgroundColor: UtopiaTheme.color.slightlyEmphasizedBackground.value,
                 }}
               >
-                <SimpleFlexRow
-                  className='tabRail'
-                  style={{
-                    minHeight: 30,
-                    height: 30,
-                    borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
-                    alignItems: 'stretch',
-                    justifyContent: 'stretch',
-                    backgroundColor: 'transparent',
-                    overflowX: 'hidden',
-                  }}
-                >
-                  <SimpleFlexRow style={{ flexGrow: 1, alignItems: 'stretch' }}>
-                    <FileTabs />
-                  </SimpleFlexRow>
-                  <FlexRow
-                    css={{
-                      marginLeft: 8,
-                      marginRight: 8,
-                      '& > :not(:first-of-type):not(:last-of-type)': {
-                        marginRight: 8,
-                      },
-                      '& > :first-of-type': {
-                        marginRight: 8,
-                      },
-                      '& > :last-of-type': {
-                        marginRight: 0,
-                      },
-                    }}
-                  ></FlexRow>
-                </SimpleFlexRow>
-
-                <SimpleFlexRow
-                  className='openTabShell'
-                  style={{
-                    flexGrow: 1,
-                    alignItems: 'stretch',
-                    justifyContent: 'stretch',
-                    overflowX: 'hidden',
-                  }}
-                >
-                  <OpenFileEditor />
-                </SimpleFlexRow>
-              </SimpleFlexColumn>
+                <OpenFileEditor />
+              </SimpleFlexRow>
               {/* insert more columns here */}
               {leftMenuExpanded ? (
                 <div

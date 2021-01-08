@@ -14,8 +14,10 @@ import { InsertMenuPane, LeftPaneDefaultWidth } from '../navigator/left-pane'
 import { RightMenu, RightMenuTab } from './right-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 import { NavigatorComponent } from '../navigator/navigator'
-import { SimpleFlexRow, UtopiaTheme, UtopiaStyles } from '../../uuiui'
+import { SimpleFlexRow, UtopiaTheme, UtopiaStyles, SimpleFlexColumn } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
+import { FileTabs, TopMenuHeight } from '../filebrowser/file-tabs'
+import { TopMenu } from '../editor/top-menu'
 
 interface DesignPanelRootProps {
   isUiJsFileOpen: boolean
@@ -149,42 +151,67 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           borderRight: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
         }}
       >
-        <Resizable
-          defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
-          size={props.isUiJsFileOpen ? undefined : { width: '100%', height: '100%' }} // this hack practically disables the Resizable without having to re-mount the code editor iframe
-          onResizeStop={onResizeStop}
-          onResize={onResize}
-          enable={{
-            top: false,
-            right: props.isUiJsFileOpen,
-            bottom: false,
-            topRight: false,
-            bottomRight: false,
-            bottomLeft: false,
-            topLeft: false,
-          }}
-          className='resizableFlexColumnCanvasCode'
-          style={{
-            ...UtopiaStyles.flexColumn,
-            display: !props.isUiJsFileOpen || interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-            width: interfaceDesigner.codePaneWidth,
-            height: '100%',
-            position: 'relative',
-            overflow: 'hidden',
-            justifyContent: 'stretch',
-            alignItems: 'stretch',
-            borderLeft: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
-          }}
-        >
-          <CodeEditorWrapper />
-        </Resizable>
-        {props.isUiJsFileOpen ? <CanvasWrapperComponent {...props} /> : null}
+        <SimpleFlexColumn style={{ flexGrow: props.isUiJsFileOpen ? undefined : 1 }}>
+          <FileTabs />
+          <Resizable
+            defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
+            size={{
+              width: props.isUiJsFileOpen ? interfaceDesigner.codePaneWidth : '100%',
+              height: '100%',
+            }}
+            onResizeStop={onResizeStop}
+            onResize={onResize}
+            enable={{
+              top: false,
+              right: props.isUiJsFileOpen,
+              bottom: false,
+              topRight: false,
+              bottomRight: false,
+              bottomLeft: false,
+              topLeft: false,
+            }}
+            className='resizableFlexColumnCanvasCode'
+            style={{
+              ...UtopiaStyles.flexColumn,
+              display: !props.isUiJsFileOpen || interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+              width: interfaceDesigner.codePaneWidth,
+              height: '100%',
+              position: 'relative',
+              overflow: 'hidden',
+              justifyContent: 'stretch',
+              alignItems: 'stretch',
+              borderLeft: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
+            }}
+          >
+            <CodeEditorWrapper />
+          </Resizable>
+        </SimpleFlexColumn>
+        {props.isUiJsFileOpen ? (
+          <SimpleFlexColumn style={{ flexGrow: 1 }}>
+            <SimpleFlexRow
+              className='topMenu'
+              style={{
+                minHeight: TopMenuHeight,
+                height: TopMenuHeight,
+                borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
+                alignItems: 'stretch',
+                justifyContent: 'stretch',
+                backgroundColor: 'transparent',
+                overflowX: 'hidden',
+              }}
+            >
+              <TopMenu />
+            </SimpleFlexRow>
+            <CanvasWrapperComponent {...props} />
+          </SimpleFlexColumn>
+        ) : null}
       </SimpleFlexRow>
       {props.isUiJsFileOpen && navigatorPosition !== 'hidden' ? (
         <NavigatorComponent
           style={{
             position: 'absolute',
-            height: '100%',
+            top: 30,
+            height: 'calc(100% - 30px)',
             left: getNavigatorLeft,
             width: LeftPaneDefaultWidth,
           }}

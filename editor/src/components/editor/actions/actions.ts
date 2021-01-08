@@ -60,6 +60,8 @@ import {
   SettableLayoutSystem,
   walkElements,
   JSXMetadata,
+  jsxTextBlock,
+  isJSXTextBlock,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -343,6 +345,7 @@ import {
   PropertyControlsIFrameReady,
   AddStoryboardFile,
   SendLinterRequestMessage,
+  UpdateChildText,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -4178,6 +4181,25 @@ export const UPDATE_FNS = {
       const openTab = openEditorTab(openFileTab(StoryboardFilePath), null)
       return UPDATE_FNS.OPEN_EDITOR_TAB(openTab, updatedEditor)
     }
+  },
+  UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxElementAtPath(
+      action.target,
+      (element) => {
+        if (action.text.trim() === '') {
+          return {
+            ...element,
+            children: [],
+          }
+        } else {
+          return {
+            ...element,
+            children: [jsxTextBlock(action.text)],
+          }
+        }
+      },
+      editor,
+    )
   },
 }
 
