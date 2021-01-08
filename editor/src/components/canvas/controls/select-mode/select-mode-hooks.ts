@@ -159,9 +159,8 @@ export function getSelectableViews(
 }
 
 function useFindValidTarget(): (
+  selectableViews: Array<TemplatePath>,
   targetHtmlElement: Element,
-  allElementsDirectlySelectable: boolean,
-  childrenSelectable: boolean,
 ) => {
   templatePath: TemplatePath
   isSelected: boolean
@@ -175,15 +174,8 @@ function useFindValidTarget(): (
   })
 
   return React.useCallback(
-    (targetHtmlElement: Element, allElementsDirectlySelectable: boolean, childrenSelectable) => {
-      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
-      const selectableViews = getSelectableViews(
-        componentMetadata,
-        selectedViews,
-        hiddenInstances,
-        allElementsDirectlySelectable,
-        childrenSelectable,
-      )
+    (selectableViews: Array<TemplatePath>, targetHtmlElement: Element) => {
+      const { selectedViews } = storeRef.current
       const validElementMouseOver: string | null = findFirstParentWithValidUID(
         selectableViews.map(TP.toString),
         targetHtmlElement,
@@ -328,8 +320,36 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   return startDragStateAfterDragExceedsThreshold
 }
 
+function useGetSelectableViewsForSelectMode() {
+  const storeRef = useRefEditorState((store) => {
+    return {
+      componentMetadata: store.editor.jsxMetadataKILLME,
+      selectedViews: store.editor.selectedViews,
+      hiddenInstances: store.editor.hiddenInstances,
+    }
+  })
+
+  return React.useCallback(
+    (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
+      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
+      const selectableViews = getSelectableViews(
+        componentMetadata,
+        selectedViews,
+        hiddenInstances,
+        allElementsDirectlySelectable,
+        childrenSelectable,
+      )
+      return selectableViews
+    },
+    [storeRef],
+  )
+}
+
 export function useHighlightCallbacks(
-  forceAllElementsDirectlySelectable: boolean,
+  getHighlightableViews: (
+    allElementsDirectlySelectable: boolean,
+    childrenSelectable: boolean,
+  ) => TemplatePath[],
 ): {
   onMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void
   onMouseOut: () => void
@@ -339,11 +359,8 @@ export function useHighlightCallbacks(
 
   const onMouseOver = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const validTemplatePath = findValidTarget(
-        event.target as Element,
-        event.metaKey || forceAllElementsDirectlySelectable,
-        false,
-      )
+      const selectableViews: Array<TemplatePath> = getHighlightableViews(event.metaKey, false)
+      const validTemplatePath = findValidTarget(selectableViews, event.target as Element)
       if (
         validTemplatePath != null &&
         !validTemplatePath.isSelected // do not highlight selected elements
@@ -351,7 +368,7 @@ export function useHighlightCallbacks(
         maybeHighlightOnHover(validTemplatePath.templatePath)
       }
     },
-    [maybeHighlightOnHover, findValidTarget, forceAllElementsDirectlySelectable],
+    [maybeHighlightOnHover, findValidTarget, getHighlightableViews],
   )
 
   const onMouseOut = React.useCallback(() => {
@@ -371,14 +388,16 @@ export function useSelectModeSelectAndHover(
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const findValidTarget = useFindValidTarget()
+  const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
-  const { onMouseOver, onMouseOut } = useHighlightCallbacks(false)
+  const { onMouseOver, onMouseOut } = useHighlightCallbacks(getSelectableViewsForSelectMode)
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
-      const foundTarget = findValidTarget(event.target as Element, event.metaKey, doubleClick)
+      const selectedViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
+      const foundTarget = findValidTarget(selectedViews, event.target as Element)
       if (foundTarget != null) {
         startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.templatePath)
 
@@ -409,6 +428,7 @@ export function useSelectModeSelectAndHover(
       findValidTarget,
       startDragStateAfterDragExceedsThreshold,
       setSelectedViewsForCanvasControlsOnly,
+      getSelectableViewsForSelectMode,
     ],
   )
 

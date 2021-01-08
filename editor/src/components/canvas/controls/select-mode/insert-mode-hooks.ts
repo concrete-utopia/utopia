@@ -1,34 +1,58 @@
 import * as React from 'react'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import * as TP from '../../../../core/shared/template-path'
 import { NO_OP } from '../../../../core/shared/utils'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
+import {
+  insertionSubjectIsDragAndDrop,
+  insertionSubjectIsJSXElement,
+  isInsertMode,
+} from '../../../editor/editor-modes'
+import { getOpenImportsFromState } from '../../../editor/store/editor-state'
+import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useHighlightCallbacks } from './select-mode-hooks'
 
-/**
- * const allPaths = MetadataUtils.getAllPaths(this.props.componentMetadata)
-    const insertTargets = allPaths.filter((path) => {
-      if (TP.isScenePath(path)) {
-        // TODO Scene Implementation
-        return false
-      } else {
-        return (
-          (insertionSubjectIsJSXElement(this.props.mode.subject) ||
-            insertionSubjectIsDragAndDrop(this.props.mode.subject)) &&
-          MetadataUtils.targetSupportsChildren(
-            this.props.imports,
-            this.props.componentMetadata,
-            path,
-          )
-        )
+function useGethHiglightableViewsForInsertMode() {
+  const storeRef = useRefEditorState((store) => {
+    return {
+      componentMetadata: store.editor.jsxMetadataKILLME,
+      mode: store.editor.mode,
+      imports: getOpenImportsFromState(store.editor),
+    }
+  })
+  return React.useCallback(
+    // we don't use allElementsDirectlySelectable and childrenSelectable in insert mode, but they are needed for select mode
+    (_allElementsDirectlySelectable: boolean, _childrenSelectable: boolean) => {
+      const { componentMetadata, mode, imports } = storeRef.current
+      if (!isInsertMode(mode)) {
+        throw new Error('insert highlight callback was called oustide of insert mode')
       }
-    })
- */
+      const allPaths = MetadataUtils.getAllPaths(componentMetadata)
+      const insertTargets = allPaths.filter((path) => {
+        if (TP.isScenePath(path)) {
+          // TODO Scene Implementation
+          return false
+        } else {
+          return (
+            (insertionSubjectIsJSXElement(mode.subject) ||
+              insertionSubjectIsDragAndDrop(mode.subject)) &&
+            MetadataUtils.targetSupportsChildren(imports, componentMetadata, path)
+          )
+        }
+      })
+      return insertTargets
+    },
+    [storeRef],
+  )
+}
 
 export function useInsertModeSelectAndHover(): {
   onMouseOver: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseOut: () => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
-  const { onMouseOver, onMouseOut } = useHighlightCallbacks(true)
+  const gethHiglightableViewsForInsertMode = useGethHiglightableViewsForInsertMode()
+  const { onMouseOver, onMouseOut } = useHighlightCallbacks(gethHiglightableViewsForInsertMode)
 
   return useKeepShallowReferenceEquality({
     onMouseOver: onMouseOver,
