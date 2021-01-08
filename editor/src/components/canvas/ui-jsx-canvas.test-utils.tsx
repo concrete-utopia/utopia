@@ -34,6 +34,9 @@ import {
   UiJsxCanvas,
 } from './ui-jsx-canvas'
 import { CanvasErrorBoundary } from './canvas-component-entry'
+import { EditorStateContext } from '../editor/store/store-hook'
+import { getStoreHook } from '../inspector/common/inspector.test-utils'
+import { NO_OP } from '../../core/shared/utils'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -152,6 +155,7 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+      setSelectedViewsForCanvasControlsOnly: Utils.NO_OP,
     }
   } else {
     canvasProps = {
@@ -172,6 +176,7 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+      setSelectedViewsForCanvasControlsOnly: Utils.NO_OP,
     }
   }
 
@@ -180,20 +185,24 @@ export function renderCanvasReturnResultAndError(
     spyEnabled: false,
   }
 
+  const storeHookForTest = getStoreHook(NO_OP)
+
   let formattedSpyEnabled
   let errorsReportedSpyEnabled = []
   try {
     const flatFormat = ReactDOMServer.renderToStaticMarkup(
-      <UiJsxCanvasContext.Provider value={spyCollector}>
-        <CanvasErrorBoundary
-          fileCode={code}
-          filePath={uiFilePath}
-          reportError={reportError}
-          requireFn={canvasProps.requireFn}
-        >
-          <UiJsxCanvas {...canvasProps} />
-        </CanvasErrorBoundary>
-      </UiJsxCanvasContext.Provider>,
+      <EditorStateContext.Provider value={storeHookForTest}>
+        <UiJsxCanvasContext.Provider value={spyCollector}>
+          <CanvasErrorBoundary
+            fileCode={code}
+            filePath={uiFilePath}
+            reportError={reportError}
+            requireFn={canvasProps.requireFn}
+          >
+            <UiJsxCanvas {...canvasProps} />
+          </CanvasErrorBoundary>
+        </UiJsxCanvasContext.Provider>
+      </EditorStateContext.Provider>,
     )
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })
     errorsReportedSpyEnabled = errorsReported
@@ -207,9 +216,11 @@ export function renderCanvasReturnResultAndError(
 
   try {
     const flatFormatSpyDisabled = ReactDOMServer.renderToStaticMarkup(
-      <UiJsxCanvasContext.Provider value={emptyUiJsxCanvasContextData()}>
-        <UiJsxCanvas {...canvasPropsSpyDisabled} />
-      </UiJsxCanvasContext.Provider>,
+      <EditorStateContext.Provider value={storeHookForTest}>
+        <UiJsxCanvasContext.Provider value={emptyUiJsxCanvasContextData()}>
+          <UiJsxCanvas {...canvasPropsSpyDisabled} />
+        </UiJsxCanvasContext.Provider>
+      </EditorStateContext.Provider>,
     )
     formattedSpyDisabled = Prettier.format(flatFormatSpyDisabled, { parser: 'html' })
     errorsReportedSpyDisabled = errorsReported

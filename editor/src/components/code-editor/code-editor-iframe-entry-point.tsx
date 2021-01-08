@@ -21,7 +21,7 @@ import type {
 } from '../../core/shared/npm-dependency-types'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { ProjectContentTreeRoot } from '../assets'
-import type { Notice } from '../common/notices'
+import { Notice } from '../common/notice'
 
 import {
   BridgeTowardsMainEditor,
@@ -99,7 +99,7 @@ export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
         const withToastAction =
           toast == null
             ? updateFileActions
-            : updateFileActions.concat(EditorActions.pushToast(toast))
+            : updateFileActions.concat(EditorActions.addToast(toast))
 
         const actions = manualSave
           ? withToastAction.concat(EditorActions.saveCurrentFile())

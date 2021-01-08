@@ -24,6 +24,9 @@ export type CanvasPoint = CanvasModifier & PointInner
 export function canvasPoint(p: PointInner): CanvasPoint {
   return p as CanvasPoint
 }
+export function windowPoint(p: PointInner): WindowPoint {
+  return p as WindowPoint
+}
 
 export type LocalPoint = LocalModifier & PointInner
 export type NodeGraphPoint = NodeGraphModifier & PointInner

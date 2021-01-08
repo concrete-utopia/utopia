@@ -13,21 +13,15 @@ import {
   getMetadata,
   EditorStore,
   getOpenUIJSFileKey,
+  TransientCanvasState,
 } from '../../editor/store/editor-state'
 import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
-import { DeselectControl } from './deselect-control'
 import { TextEditor } from '../../editor/text-editor'
-import {
-  setHighlightedView,
-  clearHighlightedViews,
-  insertDroppedImage,
-  switchEditorMode,
-} from '../../editor/actions/action-creators'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
@@ -41,9 +35,15 @@ import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
 import { PropertyControlsInfo } from '../../custom-code/code-file'
-import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 import { colorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
+import {
+  isDragging,
+  isResizing,
+  pickSelectionEnabled,
+  useMaybeHighlightElement,
+  useStartDragStateAfterDragExceedsThreshold,
+} from './select-mode/select-mode-hooks'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -70,6 +70,9 @@ export interface ControlProps {
 interface NewCanvasControlsProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cursor: CSSCursor
+  localSelectedViews: Array<TemplatePath>
+  localHighlightedViews: Array<TemplatePath>
+  setLocalSelectedViews: (newSelectedViews: TemplatePath[]) => void
 }
 
 export const NewCanvasControls = betterReactMemo(
@@ -122,6 +125,7 @@ export const NewCanvasControls = betterReactMemo(
           }
           id='canvas-controls'
           style={{
+            pointerEvents: 'none',
             position: 'absolute',
             top: 0,
             left: 0,
@@ -145,6 +149,9 @@ export const NewCanvasControls = betterReactMemo(
           >
             <NewCanvasControlsInner
               windowToCanvasPosition={props.windowToCanvasPosition}
+              localSelectedViews={props.localSelectedViews}
+              localHighlightedViews={props.localHighlightedViews}
+              setLocalSelectedViews={props.setLocalSelectedViews}
               {...canvasControlProps}
             />
           </div>
@@ -163,9 +170,12 @@ interface NewCanvasControlsInnerProps {
   canvasOffset: CanvasPoint
   animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
+  localSelectedViews: Array<TemplatePath>
+  localHighlightedViews: Array<TemplatePath>
+  setLocalSelectedViews: (newSelectedViews: TemplatePath[]) => void
 }
 
-const selectElementsThatRespectLayout = createSelector(
+export const selectElementsThatRespectLayout = createSelector(
   (store: EditorStore) => store.derived.navigatorTargets,
   (store) => store.editor.propertyControlsInfo,
   (store) => getOpenImportsFromState(store.editor),
@@ -205,50 +215,17 @@ const selectElementsThatRespectLayout = createSelector(
 )
 
 const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
-  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
-    props.derived.canvas.transientState.selectedViews,
-  )
-  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
-    props.derived.canvas.transientState.highlightedViews,
-  )
+  const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
-  const setSelectedViewsLocally = React.useCallback(
-    (newSelectedViews: Array<TemplatePath>) => {
-      setLocalSelectedViews(newSelectedViews)
-      setLocalHighlightedViews([])
-    },
-    [setLocalSelectedViews, setLocalHighlightedViews],
-  )
-
-  const selectionEnabled =
-    props.editor.canvas.selectionControlsVisible &&
-    !props.editor.keysPressed['z'] &&
-    props.editor.canvas.textEditor == null
+  const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
 
   const componentMetadata = getMetadata(props.editor)
-  const { dispatch } = props
-  const isResizing =
-    props.editor.canvas.dragState != null &&
-    props.editor.canvas.dragState.type === 'RESIZE_DRAG_STATE' &&
-    props.editor.canvas.dragState.drag != null
-  const isDragging =
-    props.editor.canvas.dragState != null &&
-    props.editor.canvas.dragState.type === 'MOVE_DRAG_STATE' &&
-    props.editor.canvas.dragState.drag != null
-  const maybeHighlightOnHover = React.useCallback(
-    (target: TemplatePath): void => {
-      if (selectionEnabled && !isDragging && !isResizing) {
-        dispatch([setHighlightedView(target)], 'canvas')
-      }
-    },
-    [dispatch, selectionEnabled, isDragging, isResizing],
-  )
 
-  const maybeClearHighlightsOnHoverEnd = React.useCallback((): void => {
-    if (selectionEnabled && !isDragging && !isResizing) {
-      dispatch([clearHighlightedViews()], 'canvas')
-    }
-  }, [selectionEnabled, isDragging, isResizing, dispatch])
+  const resizing = isResizing(props.editor.canvas.dragState)
+  const dragging = isDragging(props.editor.canvas.dragState)
+  const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
+
+  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
@@ -328,11 +305,12 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         return (
           <SelectModeControlContainer
             {...controlProps}
-            setSelectedViewsLocally={setSelectedViewsLocally}
+            startDragStateAfterDragExceedsThreshold={startDragStateAfterDragExceedsThreshold}
+            setSelectedViewsLocally={setLocalSelectedViews}
             keysPressed={props.editor.keysPressed}
             windowToCanvasPosition={props.windowToCanvasPosition}
-            isDragging={isDragging}
-            isResizing={isResizing}
+            isDragging={dragging}
+            isResizing={resizing}
             selectionEnabled={selectionEnabled}
             maybeHighlightOnHover={maybeHighlightOnHover}
             maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
@@ -460,12 +438,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     }
   }
 
-  const renderDeselectControl = () => {
-    return selectionEnabled ? (
-      <DeselectControl mode={props.editor.mode} dispatch={props.dispatch} />
-    ) : null
-  }
-
   const textEditor =
     props.editor.canvas.textEditor != null
       ? renderTextEditor(props.editor.canvas.textEditor.templatePath)
@@ -480,7 +452,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         height: '100%',
       }}
     >
-      {renderDeselectControl()}
       {renderModeControlContainer()}
       {renderHighlightControls()}
       {textEditor}

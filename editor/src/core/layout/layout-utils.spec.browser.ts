@@ -20,6 +20,7 @@ import { generateUidWithExistingComponents } from '../model/element-template-uti
 import { right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 import { BakedInStoryboardUID } from '../model/scene-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const NewUID = 'catdog'
 
@@ -36,10 +37,10 @@ describe('maybeSwitchLayoutProps', () => {
     //await wait(20000)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
           style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
-          data-uid={'bbb'}
+          data-uid='bbb'
         />
       </View>
       `),
@@ -58,13 +59,16 @@ describe('maybeSwitchLayoutProps', () => {
     const elementToPaste = jsxElement(
       'View',
       {
-        style: jsxAttributeNestedObjectSimple({
-          bottom: jsxAttributeValue(50),
-          right: jsxAttributeValue(50),
-          width: jsxAttributeValue(100),
-          height: jsxAttributeValue(100),
-        }),
-        'data-uid': jsxAttributeValue(NewUID),
+        style: jsxAttributeNestedObjectSimple(
+          {
+            bottom: jsxAttributeValue(50, emptyComments),
+            right: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(100, emptyComments),
+            height: jsxAttributeValue(100, emptyComments),
+          },
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue(NewUID, emptyComments),
       },
       [],
     )
@@ -126,13 +130,13 @@ describe('maybeSwitchLayoutProps', () => {
         `<View
           style={{ ...props.style }}
           layout={{ layoutSystem: 'pinSystem' }}
-          data-uid={'aaa'}
+          data-uid='aaa'
         >
           <View
             style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
-            data-uid={'bbb'}
+            data-uid='bbb'
           >
-            <View style={{ position: 'relative' }} data-uid={'catdog'} />
+            <View style={{ position: 'relative' }} data-uid='catdog' />
           </View>
         </View>`,
       ),

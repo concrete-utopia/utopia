@@ -54,6 +54,8 @@ import {
   walkElement,
   getJSXElementNameAsString,
   isJSXElement,
+  FunctionDeclarationSyntax,
+  BlockOrExpression,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -94,6 +96,7 @@ export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercas
       comment: text,
       rawText: text,
       trailingNewLine: false,
+      pos: null,
     }
   },
 )
@@ -105,6 +108,7 @@ export const multiLineCommentArbitrary: Arbitrary<MultiLineComment> = lowercaseS
       comment: text,
       rawText: text,
       trailingNewLine: false,
+      pos: null,
     }
   },
 )
@@ -384,7 +388,10 @@ export function jsxArbitraryBlockArbitrary(): Arbitrary<JSXArbitraryBlock> {
 }
 
 export function jsxAttributeValueArbitrary(): Arbitrary<JSXAttributeValue<any>> {
-  return FastCheck.jsonObject().map(jsxAttributeValue)
+  return FastCheck.tuple(
+    FastCheck.jsonObject(),
+    arbitraryMultiLineComments(),
+  ).map(([value, comments]) => jsxAttributeValue(value, comments))
 }
 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOtherJavaScript> {
@@ -392,11 +399,17 @@ export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOt
 }
 
 export function jsxArrayValueArbitrary(depth: number): Arbitrary<JSXArrayValue> {
-  return jsxAttributeArbitrary(depth).map(jsxArrayValue)
+  return FastCheck.tuple(
+    jsxAttributeArbitrary(depth),
+    arbitraryMultiLineComments(),
+  ).map(([array, comments]) => jsxArrayValue(array, comments))
 }
 
 export function jsxArraySpreadArbitrary(depth: number): Arbitrary<JSXArraySpread> {
-  return jsxAttributeArbitrary(depth).map(jsxArraySpread)
+  return FastCheck.tuple(
+    jsxAttributeArbitrary(depth),
+    arbitraryMultiLineComments(),
+  ).map(([array, comments]) => jsxArraySpread(array, comments))
 }
 
 export function jsxArrayElementArbitrary(depth: number): Arbitrary<JSXArrayElement> {
@@ -409,19 +422,25 @@ export function jsxArrayElementArbitrary(depth: number): Arbitrary<JSXArrayEleme
 export function jsxAttributeNestedArrayArbitrary(
   depth: number,
 ): Arbitrary<JSXAttributeNestedArray> {
-  return FastCheck.array(jsxArrayElementArbitrary(depth - 1), 3).map(jsxAttributeNestedArray)
+  return FastCheck.tuple(
+    FastCheck.array(jsxArrayElementArbitrary(depth - 1), 3),
+    arbitraryMultiLineComments(),
+  ).map(([array, comments]) => jsxAttributeNestedArray(array, comments))
 }
 
 export function jsxPropertyAssignmentArbitrary(depth: number): Arbitrary<JSXPropertyAssignment> {
   return FastCheck.tuple(lowercaseStringArbitrary(), jsxAttributeArbitrary(depth)).map(
     ([key, attribute]) => {
-      return jsxPropertyAssignment(key, attribute)
+      return jsxPropertyAssignment(key, attribute, emptyComments)
     },
   )
 }
 
 export function jsxSpreadAssignmentArbitrary(depth: number): Arbitrary<JSXSpreadAssignment> {
-  return jsxAttributeArbitrary(depth).map(jsxSpreadAssignment)
+  return FastCheck.tuple(
+    jsxAttributeArbitrary(depth),
+    arbitraryMultiLineComments(),
+  ).map(([spread, comments]) => jsxSpreadAssignment(spread, comments))
 }
 
 export function jsxPropertyArbitrary(depth: number): Arbitrary<JSXProperty> {
@@ -434,7 +453,10 @@ export function jsxPropertyArbitrary(depth: number): Arbitrary<JSXProperty> {
 export function jsxAttributeNestedObjectArbitrary(
   depth: number,
 ): Arbitrary<JSXAttributeNestedObject> {
-  return FastCheck.array(jsxPropertyArbitrary(depth - 1), 3).map(jsxAttributeNestedObject)
+  return FastCheck.tuple(
+    FastCheck.array(jsxPropertyArbitrary(depth - 1), 3),
+    arbitraryMultiLineComments(),
+  ).map(([values, comments]) => jsxAttributeNestedObject(values, comments))
 }
 
 export function jsxAttributeFunctionCallArbitrary(
@@ -527,28 +549,66 @@ export function arbitraryComments(): Arbitrary<ParsedComments> {
   ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
 }
 
+export function arbitraryMultiLineComments(): Arbitrary<ParsedComments> {
+  return FastCheck.tuple(
+    FastCheck.array(multiLineCommentArbitrary),
+    FastCheck.array(multiLineCommentArbitrary),
+  ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
+}
+
+export function arbitraryDeclarationSyntax(): Arbitrary<FunctionDeclarationSyntax> {
+  return FastCheck.oneof<FunctionDeclarationSyntax>(
+    FastCheck.constant('function'),
+    FastCheck.constant('var'),
+    FastCheck.constant('let'),
+    FastCheck.constant('const'),
+  )
+}
+
+export function arbitraryBlockOrExpression(): Arbitrary<BlockOrExpression> {
+  return FastCheck.oneof<BlockOrExpression>(
+    FastCheck.constant('block'),
+    FastCheck.constant('expression'),
+  )
+}
+
 export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
   return FastCheck.tuple(
     lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
     FastCheck.boolean(),
+    arbitraryDeclarationSyntax(),
+    arbitraryBlockOrExpression(),
     jsxElementArbitrary(3),
     arbitraryJSBlockArbitrary(),
     arbitraryComments(),
     arbitraryComments(),
   )
-    .map(([name, isFunction, rootElement, jsBlock, comments, returnStatementComments]) => {
-      return utopiaJSXComponent(
+    .map(
+      ([
         name,
         isFunction,
-        defaultPropsParam,
-        [],
+        declarationSyntax,
+        blockOrExpression,
         rootElement,
         jsBlock,
-        false,
         comments,
         returnStatementComments,
-      )
-    })
+      ]) => {
+        return utopiaJSXComponent(
+          name,
+          isFunction,
+          declarationSyntax,
+          blockOrExpression,
+          defaultPropsParam,
+          [],
+          rootElement,
+          jsBlock,
+          false,
+          comments,
+          returnStatementComments,
+        )
+      },
+    )
     .filter((component) => {
       // Prevent creating a component that depends on itself.
       let elementNames: Array<string> = []

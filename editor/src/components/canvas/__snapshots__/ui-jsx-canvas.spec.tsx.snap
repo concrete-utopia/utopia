@@ -75,10 +75,18 @@ Object {
                 },
                 "props": Object {
                   "data-label": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "Plane",
                   },
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "bbb",
                   },
@@ -144,12 +152,24 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -339,16 +359,32 @@ Object {
         },
         "props": Object {
           "data-label": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "Hat",
           },
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -531,6 +567,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "567",
           },
@@ -700,6 +740,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "aaa",
                   },
@@ -765,6 +809,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "zzz",
           },
@@ -961,6 +1009,10 @@ Object {
                         },
                         "props": Object {
                           "data-uid": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
                             "type": "ATTRIBUTE_VALUE",
                             "value": "bbb",
                           },
@@ -1032,6 +1084,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "aaa",
                   },
@@ -1112,6 +1168,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "zzz",
           },
@@ -1252,6 +1312,10 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "aaa",
               },
@@ -1268,6 +1332,10 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
@@ -1283,6 +1351,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "zzz",
           },
@@ -1356,6 +1428,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -1430,6 +1506,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
@@ -1542,12 +1622,24 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -1744,6 +1836,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "bbb",
                   },
@@ -1859,6 +1955,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -1980,6 +2080,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "bbb",
                   },
@@ -2097,6 +2201,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -2237,6 +2345,10 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "aaa",
               },
@@ -2253,6 +2365,10 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
@@ -2268,6 +2384,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "zzz",
           },
@@ -2341,6 +2461,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -2415,6 +2539,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
@@ -2536,6 +2664,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "aaa",
                   },
@@ -2600,6 +2732,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "zzz",
           },
@@ -2739,10 +2875,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#000000",
@@ -2813,12 +2957,24 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -2874,9 +3030,17 @@ Object {
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "backgroundColor",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "#FFFFFF",
                 },
@@ -2981,10 +3145,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#000000",
@@ -3215,10 +3387,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#000000",
@@ -3289,12 +3469,24 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -3350,9 +3542,17 @@ Object {
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "backgroundColor",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "#FFFFFF",
                 },
@@ -3457,10 +3657,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#000000",
@@ -3684,10 +3892,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#000000",
@@ -3695,8 +3911,16 @@ Object {
                 },
               },
               "titles": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "content": Array [
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ARRAY_VALUE",
                     "value": Object {
                       "definedElsewhere": Array [
@@ -3752,15 +3976,31 @@ Object {
                     },
                   },
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ARRAY_VALUE",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "type": "ATTRIBUTE_VALUE",
                       "value": "ignored",
                     },
                   },
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ARRAY_VALUE",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "type": "ATTRIBUTE_VALUE",
                       "value": Object {
                         "title": "and hello!",
@@ -3782,12 +4022,24 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -3843,9 +4095,17 @@ Object {
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "backgroundColor",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "#FFFFFF",
                 },
@@ -3950,10 +4210,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#000000",
@@ -3961,8 +4229,16 @@ Object {
             },
           },
           "titles": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ARRAY_VALUE",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -4018,15 +4294,31 @@ Object {
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ARRAY_VALUE",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "ignored",
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ARRAY_VALUE",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": Object {
                     "title": "and hello!",
@@ -4207,10 +4499,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#000000",
@@ -4218,8 +4518,16 @@ Object {
                 },
               },
               "titles": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "content": Array [
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ARRAY_VALUE",
                     "value": Object {
                       "definedElsewhere": Array [
@@ -4275,15 +4583,31 @@ Object {
                     },
                   },
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ARRAY_VALUE",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "type": "ATTRIBUTE_VALUE",
                       "value": "ignored",
                     },
                   },
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ARRAY_VALUE",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "type": "ATTRIBUTE_VALUE",
                       "value": Object {
                         "title": "and hello!",
@@ -4305,12 +4629,24 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -4366,9 +4702,17 @@ Object {
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "backgroundColor",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "#FFFFFF",
                 },
@@ -4473,10 +4817,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#000000",
@@ -4484,8 +4836,16 @@ Object {
             },
           },
           "titles": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ARRAY_VALUE",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -4541,15 +4901,31 @@ Object {
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ARRAY_VALUE",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "ignored",
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ARRAY_VALUE",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": Object {
                     "title": "and hello!",
@@ -4699,6 +5075,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
@@ -5162,6 +5542,10 @@ export var storyboard = (props) => {
                         "uniqueID": "",
                       },
                       "data-uid": Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
                         "type": "ATTRIBUTE_VALUE",
                         "value": "834",
                       },
@@ -5180,6 +5564,10 @@ export var storyboard = (props) => {
                         },
                         "props": Object {
                           "data-uid": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
                             "type": "ATTRIBUTE_VALUE",
                             "value": "000",
                           },
@@ -5427,6 +5815,10 @@ export var storyboard = (props) => {
                         "uniqueID": "",
                       },
                       "data-uid": Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
                         "type": "ATTRIBUTE_VALUE",
                         "value": "999",
                       },
@@ -5580,6 +5972,10 @@ export var storyboard = (props) => {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "03a",
               },
@@ -5595,12 +5991,24 @@ export var storyboard = (props) => {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -5720,65 +6128,129 @@ export var storyboard = (props) => {
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "fontSize",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "12px",
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "fontFamily",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "Inter",
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "color",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "#237AFF",
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "left",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": 0,
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "top",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": 0,
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "width",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": 376,
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "height",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": 812,
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "backgroundColor",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "#171111",
                 },
@@ -6131,6 +6603,10 @@ export var storyboard = (props) => {
                     "uniqueID": "",
                   },
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "834",
                   },
@@ -6149,6 +6625,10 @@ export var storyboard = (props) => {
                     },
                     "props": Object {
                       "data-uid": Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
                         "type": "ATTRIBUTE_VALUE",
                         "value": "000",
                       },
@@ -6396,6 +6876,10 @@ export var storyboard = (props) => {
                     "uniqueID": "",
                   },
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "999",
                   },
@@ -6549,6 +7033,10 @@ export var storyboard = (props) => {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "03a",
           },
@@ -6732,10 +7220,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "aaa",
               },
               "name": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "World!",
               },
@@ -6752,10 +7248,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
               "name": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "Dolly!",
               },
@@ -6771,6 +7275,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "zzz",
           },
@@ -6844,10 +7352,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "name": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "World!",
           },
@@ -6923,10 +7439,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "name": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "Dolly!",
           },
@@ -7037,6 +7561,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -7203,6 +7731,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -7257,8 +7789,16 @@ Object {
             "uniqueID": "",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -7474,6 +8014,10 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
@@ -7546,10 +8090,18 @@ export var storyboard = (
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#FFFFFF",
@@ -7632,6 +8184,10 @@ export var storyboard = (
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
@@ -7862,10 +8418,18 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "dd5",
                   },
                   "style": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": Object {
                       "backgroundColor": "#fff",
@@ -7887,10 +8451,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "d59",
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "height": 348,
@@ -7911,10 +8483,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "lightgrey",
@@ -8012,10 +8592,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "dd5",
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#fff",
@@ -8037,10 +8625,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "d59",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "height": 348,
@@ -8146,10 +8742,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "dd5",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#fff",
@@ -8325,10 +8929,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "position": "absolute",
@@ -8346,12 +8958,24 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -8406,9 +9030,17 @@ Object {
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "backgroundColor",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "#FFFFFF",
                 },
@@ -8519,10 +9151,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "position": "absolute",
@@ -8673,6 +9313,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "bbb",
                   },
@@ -8788,6 +9432,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -8909,6 +9557,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "bbb",
                   },
@@ -9025,6 +9677,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -9147,6 +9803,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "bbb",
                   },
@@ -9268,6 +9928,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -9383,6 +10047,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -9462,6 +10130,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
@@ -9590,10 +10262,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "backgroundColor": "#EB1010",
@@ -9615,6 +10295,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -9743,10 +10427,18 @@ export var storyboard = (
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#EB1010",
@@ -10005,10 +10697,18 @@ export var storyboard = (
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#FFFFFF",
@@ -10126,10 +10826,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "BBB",
           },
           "x": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": 5,
           },
@@ -10296,14 +11004,26 @@ Object {
                         },
                         "props": Object {
                           "data-label": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
                             "type": "ATTRIBUTE_VALUE",
                             "value": "some-other-div",
                           },
                           "data-uid": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
                             "type": "ATTRIBUTE_VALUE",
                             "value": "ccc",
                           },
                           "style": Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
                             "type": "ATTRIBUTE_VALUE",
                             "value": Object {
                               "height": 100,
@@ -10327,14 +11047,26 @@ Object {
                 },
                 "props": Object {
                   "data-label": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "random-div",
                   },
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "bbb",
                   },
                   "style": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": Object {
                       "height": 100,
@@ -10371,6 +11103,10 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "ddd",
               },
@@ -10386,18 +11122,34 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "layout": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "layoutSystem": "pinSystem",
             },
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "content": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "SPREAD_ASSIGNMENT",
                 "value": Object {
                   "definedElsewhere": Array [
@@ -10455,9 +11207,17 @@ export var storyboard = (
                 },
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "key": "backgroundColor",
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "ATTRIBUTE_VALUE",
                   "value": "#FFFFFF",
                 },
@@ -10568,6 +11328,10 @@ export var storyboard = (
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "ddd",
           },
@@ -10724,10 +11488,18 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "bbb",
               },
               "src": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
               },
@@ -10743,6 +11515,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -10816,10 +11592,18 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "src": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
           },
@@ -10956,6 +11740,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -11137,6 +11925,10 @@ Object {
                     },
                     "props": Object {
                       "data-uid": Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
                         "type": "ATTRIBUTE_VALUE",
                         "value": "ccc",
                       },
@@ -11152,6 +11944,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "bbb",
                   },
@@ -11224,6 +12020,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -11360,6 +12160,10 @@ Object {
                 },
                 "props": Object {
                   "data-uid": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "type": "ATTRIBUTE_VALUE",
                     "value": "cloned",
                   },
@@ -11375,6 +12179,10 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "cloner",
               },
@@ -11390,6 +12198,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "zzz",
           },
@@ -11486,6 +12298,10 @@ Object {
             },
             "props": Object {
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "cloned",
               },
@@ -11501,6 +12317,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "cloner",
           },
@@ -11581,6 +12401,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "cloned",
           },
@@ -11700,6 +12524,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
@@ -11814,6 +12642,10 @@ Object {
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },

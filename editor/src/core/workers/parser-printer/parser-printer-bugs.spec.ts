@@ -14,6 +14,7 @@ import {
 import { objectMap, omit } from '../../shared/object-utils'
 import { BakedInStoryboardVariableName, BakedInStoryboardUID } from '../../model/scene-utils'
 import { isParseSuccess } from '../../shared/project-file-types'
+import { emptyComments } from './parser-printer-comments'
 
 export function stripUnhelpfulFields(value: any): any {
   switch (typeof value) {
@@ -37,7 +38,7 @@ describe('JSX parser', () => {
     const code = `import * as React from "react";
 import { Ellipse, UtopiaUtils, Image, Rectangle, Text, View } from "utopia-api";
 export var App = props => {
-  return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"}>
+  return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx">
     {[1, 2, 3].map(n => {
       return <div>{n}</div>
     })}
@@ -53,7 +54,7 @@ export var App = props => {
     import * as React from "react";
     import { Ellipse, UtopiaUtils, Image, Rectangle, Text, View } from "utopia-api";
     export var App = props => {
-        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid={"xxx"} />
+        return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx" />
     };`
     const parsedPlainCode = testParseCode(code)
     if (isParseSuccess(parsedPlainCode)) {
@@ -61,11 +62,14 @@ export var App = props => {
         const topComponent: UtopiaJSXComponent = parsedPlainCode.topLevelElements[0]
         if (isJSXElement(topComponent.rootElement)) {
           const expectedProps: JSXAttributes = {
-            style: jsxAttributeValue({
-              backgroundColor: 'green',
-              position: 'absolute',
-            }),
-            'data-uid': jsxAttributeValue('xxx'),
+            style: jsxAttributeValue(
+              {
+                backgroundColor: 'green',
+                position: 'absolute',
+              },
+              emptyComments,
+            ),
+            'data-uid': jsxAttributeValue('xxx', emptyComments),
           }
           expect(topComponent.rootElement.props).toEqual(expectedProps)
         } else {
@@ -86,9 +90,9 @@ describe('JSX printer', () => {
 import { Storyboard, View } from 'utopia-api'
 const myCoolTheme = {}
 export var App = (props) => {
-  return <View data-uid={'xxx'} style={{ ...myCoolTheme, backgroundColor: 'purple' }} />
+  return <View data-uid='xxx' style={{ ...myCoolTheme, backgroundColor: 'purple' }} />
 }
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInStoryboardUID}'} />
+export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `
     testParseThenPrint(code, code)
   })
@@ -96,12 +100,12 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInSt
     const code = `import * as React from 'react'
 import { Storyboard, View } from 'utopia-api'
 export var App = (props) => {
-  return <Widget data-uid={'bbb'} />
+  return <Widget data-uid='bbb' />
 }
 export var Widget = (props) => {
-  return <View data-uid={'aaa'} />
+  return <View data-uid='aaa' />
 }
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInStoryboardUID}'} />
+export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `
     testParseThenPrint(code, code)
   })
@@ -113,12 +117,12 @@ const color = 'white'
 export var App = (props) => {
   return (
     <View
-      data-uid={'aaa'}
+      data-uid='aaa'
       css={{ backgroundColor: 'regular propety, without quotes', '& :hover': { color: color } }}
     />
   )
 }
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInStoryboardUID}'} />
+export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `
     testParseThenPrint(code, code)
   })
@@ -128,13 +132,13 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInSt
 import { Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return (
-    <View data-uid={'aaa'} css={{ backgroundColor: 'red' }}>
-      <View data-uid={'bbb'}>{elements.map((e) => null)}</View>
+    <View data-uid='aaa' css={{ backgroundColor: 'red' }}>
+      <View data-uid='bbb'>{elements.map((e) => null)}</View>
     </View>
   )
 }
 const elements = []
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInStoryboardUID}'} />
+export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `
     testParseThenPrint(code, code)
   })
@@ -147,13 +151,13 @@ import * as React from 'react'
 import { Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return (
-    <View data-uid={'aaa'} css={{ backgroundColor: 'red' }}>
-      <View data-uid={'bbb'}>{elements.map((e) => null)}</View>
+    <View data-uid='aaa' css={{ backgroundColor: 'red' }}>
+      <View data-uid='bbb'>{elements.map((e) => null)}</View>
     </View>
   )
 }
 const elements = []
-export var ${BakedInStoryboardVariableName} = <Storyboard data-uid={'${BakedInStoryboardUID}'} />
+export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `
     testParseThenPrint(code, code)
   })

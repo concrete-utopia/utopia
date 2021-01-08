@@ -14,6 +14,7 @@ import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { UtopiaTheme, colorTheme } from '../../../uuiui'
 
 interface ComponentAreaControlProps {
+  mouseEnabled: boolean
   target: TemplatePath
   frame: CanvasRectangle
   highlighted: boolean
@@ -24,7 +25,7 @@ interface ComponentAreaControlProps {
   doubleClickToSelect: boolean
   selectedComponents: Array<TemplatePath>
   selectComponent?: (target: TemplatePath, isMultiselect: boolean) => Array<TemplatePath>
-  onMouseDown: (
+  onMouseDown?: (
     views: Array<TemplatePath>,
     target: TemplatePath,
     dragStart: CanvasPoint,
@@ -158,12 +159,18 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     event: React.MouseEvent<HTMLDivElement>,
   ): void {
     const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
-    this.props.onMouseDown(
-      selectedViews,
-      this.props.target,
-      cursorPosition.canvasPositionRaw,
-      event,
-    )
+    if (this.props.mouseEnabled) {
+      if (this.props.onMouseDown == null) {
+        throw new Error('onMouseDown must be provided for mouse enabled controls')
+      }
+
+      this.props.onMouseDown(
+        selectedViews,
+        this.props.target,
+        cursorPosition.canvasPositionRaw,
+        event,
+      )
+    }
   }
 
   getComponentAreaControl = (canShowInvisibleIndicator: boolean) => {
@@ -186,6 +193,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
           onDragEnter={this.onDragEnter}
           onDragLeave={this.onDragLeave}
           style={{
+            pointerEvents: this.props.mouseEnabled ? 'initial' : 'none',
             position: 'absolute',
             left: this.props.canvasOffset.x + this.props.frame.x - extraWidth / 2,
             top: this.props.canvasOffset.y + this.props.frame.y - extraHeight / 2,
@@ -196,7 +204,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
             borderWidth: 0.5 / this.props.scale,
             borderRadius: showInvisibleIndicator ? borderRadius : 0,
           }}
-          data-testid={this.props.testID}
+          data-testid={this.props.mouseEnabled ? this.props.testID : undefined}
         />
       </React.Fragment>
     )
@@ -220,8 +228,10 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
           onMouseDown={labelSelectable ? this.onMouseDown : utils.NO_OP}
           onDragEnter={labelSelectable ? this.onDragEnter : utils.NO_OP}
           onDragLeave={labelSelectable ? this.onDragLeave : utils.NO_OP}
+          data-testid={this.props.mouseEnabled && labelSelectable ? this.props.testID : undefined}
           className='roleComponentName'
           style={{
+            pointerEvents: this.props.mouseEnabled ? 'initial' : 'none',
             color: isInternalComponent
               ? colorTheme.component.value
               : colorTheme.subduedForeground.value,

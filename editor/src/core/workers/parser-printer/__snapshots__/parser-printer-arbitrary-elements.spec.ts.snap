@@ -64,7 +64,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -80,9 +80,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -151,6 +151,7 @@ return { a: a, b: b };",
         "leadingComments": Array [
           Object {
             "comment": "* @jsx jsx ",
+            "pos": 0,
             "rawText": "/** @jsx jsx */",
             "trailingNewLine": true,
             "type": "MULTI_LINE_COMMENT",
@@ -243,7 +244,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -259,9 +260,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -284,10 +285,12 @@ return { a: a };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "block",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
       },
+      "declarationSyntax": "var",
       "isFunction": true,
       "name": "App",
       "param": Object {
@@ -338,7 +341,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -354,9 +357,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -407,7 +410,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -423,9 +426,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -448,16 +451,28 @@ export var storyboard = (
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "aaa",
           },
           "layout": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "layoutSystem": "pinSystem",
             },
           },
           "style": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "backgroundColor": "#FFFFFF",
@@ -527,7 +542,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -543,9 +558,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -568,10 +583,12 @@ return { b: b };",
     },
     Object {
       "arbitraryJSBlock": null,
+      "blockOrExpression": "parenthesized-expression",
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
       },
+      "declarationSyntax": "var",
       "isFunction": false,
       "name": "storyboard",
       "param": null,
@@ -621,7 +638,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -637,9 +654,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -654,14 +671,26 @@ export var storyboard = (
                 "uniqueID": "",
               },
               "data-uid": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": "ccc",
               },
               "props": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {},
               },
               "style": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "ATTRIBUTE_VALUE",
                 "value": Object {
                   "height": 812,
@@ -683,10 +712,18 @@ export var storyboard = (
         },
         "props": Object {
           "data-uid": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": "bbb",
           },
           "layout": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {
               "layoutSystem": "pinSystem",

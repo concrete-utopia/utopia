@@ -28,6 +28,7 @@ import { getPNGBufferOfElementWithID } from './screenshot-utils'
 import { ProjectImportSuccess } from '../../core/model/project-import'
 import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
 import { DefaultTheme } from '../code-editor/code-editor-themes'
+import { notice } from '../common/notice'
 
 interface NeverSaved {
   type: 'never-saved'
@@ -376,24 +377,10 @@ async function serverSaveInner(
     maybeTriggerQueuedSave(dispatch, projectId, projectName, _saveState)
 
     if (isFirstSave) {
-      dispatch(
-        [
-          showToast({
-            message: 'Project successfully uploaded!',
-          }),
-        ],
-        'everyone',
-      )
+      dispatch([showToast(notice('Project successfully uploaded!'))], 'everyone')
     }
     if (isFork) {
-      dispatch(
-        [
-          showToast({
-            message: 'Project successfully forked!',
-          }),
-        ],
-        'everyone',
-      )
+      dispatch([showToast(notice('Project successfully forked!'))], 'everyone')
     }
 
     if (isFirstSave || isFork) {
@@ -511,14 +498,7 @@ export async function localSaveInner(
     localforage.setItem(localProjectKey(projectIdToUse), localProject)
     if (isFirstSave) {
       onFirstSaveCompleted(projectIdToUse, name, dispatch)
-      dispatch(
-        [
-          showToast({
-            message: 'Locally cached project. Sign in to share!',
-          }),
-        ],
-        'everyone',
-      )
+      dispatch([showToast(notice('Locally cached project. Sign in to share!'))], 'everyone')
     }
     maybeTriggerQueuedSave(dispatch, projectIdToUse, name, _saveState)
   } catch (e) {

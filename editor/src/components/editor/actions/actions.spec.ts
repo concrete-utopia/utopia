@@ -84,19 +84,24 @@ describe('SET_PROP', () => {
         utopiaJSXComponent(
           'MyView',
           true,
+          'var',
+          'block',
           defaultPropsParam,
           [],
           jsxElement(
             jsxElementName('View', []),
             {
-              'data-uid': jsxAttributeValue('aaa'),
+              'data-uid': jsxAttributeValue('aaa', emptyComments),
             },
             [
               jsxElement(
                 jsxElementName('View', []),
                 {
-                  test: jsxAttributeNestedObjectSimple({ prop: jsxAttributeValue(5) }),
-                  'data-uid': jsxAttributeValue('bbb'),
+                  test: jsxAttributeNestedObjectSimple(
+                    { prop: jsxAttributeValue(5, emptyComments) },
+                    emptyComments,
+                  ),
+                  'data-uid': jsxAttributeValue('bbb', emptyComments),
                 },
                 [],
               ),
@@ -133,7 +138,7 @@ describe('SET_PROP', () => {
     const action = setProp_UNSAFE(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       PP.create(['test', 'prop']),
-      jsxAttributeValue(100),
+      jsxAttributeValue(100, emptyComments),
     )
     const newEditor = UPDATE_FNS.SET_PROP(action, testEditor)
     const newUiJsFile = getContentsTreeFileFromString(
@@ -155,7 +160,7 @@ describe('SET_PROP', () => {
       updatedViewProps,
       PP.create(['test', 'prop']),
     )
-    chaiExpect(updatedTestProp).to.deep.equal(right(jsxAttributeValue(100)))
+    chaiExpect(updatedTestProp).to.deep.equal(right(jsxAttributeValue(100, emptyComments)))
   })
 })
 
@@ -166,30 +171,38 @@ describe('SET_CANVAS_FRAMES', () => {
     utopiaJSXComponent(
       'MyView',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement(
         jsxElementName('View', []),
         {
-          layout: jsxAttributeNestedObjectSimple({
-            top: jsxAttributeValue(0),
-            left: jsxAttributeValue(0),
-            width: jsxAttributeValue(100),
-            height: jsxAttributeValue(100),
-          }),
-          'data-uid': jsxAttributeValue('aaa'),
+          layout: jsxAttributeNestedObjectSimple(
+            {
+              top: jsxAttributeValue(0, emptyComments),
+              left: jsxAttributeValue(0, emptyComments),
+              width: jsxAttributeValue(100, emptyComments),
+              height: jsxAttributeValue(100, emptyComments),
+            },
+            emptyComments,
+          ),
+          'data-uid': jsxAttributeValue('aaa', emptyComments),
         },
         [
           jsxElement(
             jsxElementName('View', []),
             {
-              layout: jsxAttributeNestedObjectSimple({
-                top: jsxAttributeValue(0),
-                left: jsxAttributeValue(0),
-                width: jsxAttributeValue(10),
-                height: jsxAttributeValue(10),
-              }),
-              'data-uid': jsxAttributeValue('bbb'),
+              layout: jsxAttributeNestedObjectSimple(
+                {
+                  top: jsxAttributeValue(0, emptyComments),
+                  left: jsxAttributeValue(0, emptyComments),
+                  width: jsxAttributeValue(10, emptyComments),
+                  height: jsxAttributeValue(10, emptyComments),
+                },
+                emptyComments,
+              ),
+              'data-uid': jsxAttributeValue('bbb', emptyComments),
             },
             [],
           ),
@@ -275,6 +288,8 @@ describe('moveTemplate', () => {
           utopiaJSXComponent(
             `MyView${index}`,
             true,
+            'var',
+            'block',
             defaultPropsParam,
             [],
             element,
@@ -304,13 +319,16 @@ describe('moveTemplate', () => {
     return jsxElement(
       jsxElementName(name, []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          left: jsxAttributeValue(x),
-          top: jsxAttributeValue(y),
-          width: jsxAttributeValue(width),
-          height: jsxAttributeValue(height),
-        }),
-        'data-uid': jsxAttributeValue(uid),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            left: jsxAttributeValue(x, emptyComments),
+            top: jsxAttributeValue(y, emptyComments),
+            width: jsxAttributeValue(width, emptyComments),
+            height: jsxAttributeValue(height, emptyComments),
+          },
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue(uid, emptyComments),
       },
       children,
     )
@@ -328,14 +346,17 @@ describe('moveTemplate', () => {
     return jsxElement(
       jsxElementName(name, []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          left: jsxAttributeValue(x),
-          top: jsxAttributeValue(y),
-          width: jsxAttributeValue(width),
-          height: jsxAttributeValue(height),
-          layoutSystem: jsxAttributeValue(LayoutSystem.Group),
-        }),
-        'data-uid': jsxAttributeValue(uid),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            left: jsxAttributeValue(x, emptyComments),
+            top: jsxAttributeValue(y, emptyComments),
+            width: jsxAttributeValue(width, emptyComments),
+            height: jsxAttributeValue(height, emptyComments),
+            layoutSystem: jsxAttributeValue(LayoutSystem.Group, emptyComments),
+          },
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue(uid, emptyComments),
       },
       children,
     )
@@ -616,13 +637,16 @@ describe('moveTemplate', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          bottom: jsxAttributeValue(50),
-          right: jsxAttributeValue(50),
-          width: jsxAttributeValue(100),
-          height: jsxAttributeValue(100),
-        }),
-        'data-uid': jsxAttributeValue('bbb'),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            bottom: jsxAttributeValue(50, emptyComments),
+            right: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(100, emptyComments),
+            height: jsxAttributeValue(100, emptyComments),
+          },
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue('bbb', emptyComments),
       },
       [],
     )
@@ -668,16 +692,22 @@ describe('moveTemplate', () => {
     const flexView = jsxElement(
       jsxElementName('aaa', []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          left: jsxAttributeValue(50),
-          top: jsxAttributeValue(50),
-          width: jsxAttributeValue(200),
-          height: jsxAttributeValue(200),
-        }),
-        style: jsxAttributeNestedObjectSimple({
-          display: jsxAttributeValue('flex'),
-        }),
-        'data-uid': jsxAttributeValue('aaa'),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            left: jsxAttributeValue(50, emptyComments),
+            top: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(200, emptyComments),
+            height: jsxAttributeValue(200, emptyComments),
+          },
+          emptyComments,
+        ),
+        style: jsxAttributeNestedObjectSimple(
+          {
+            display: jsxAttributeValue('flex', emptyComments),
+          },
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
       },
       [],
     )
@@ -717,13 +747,16 @@ describe('moveTemplate', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
       {
-        layout: jsxAttributeNestedObjectSimple({
-          top: jsxAttributeValue(50),
-          left: jsxAttributeValue(50),
-          width: jsxAttributeValue(100),
-          height: jsxAttributeValue(100),
-        }),
-        'data-uid': jsxAttributeValue('bbb'),
+        layout: jsxAttributeNestedObjectSimple(
+          {
+            top: jsxAttributeValue(50, emptyComments),
+            left: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(100, emptyComments),
+            height: jsxAttributeValue(100, emptyComments),
+          },
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue('bbb', emptyComments),
       },
       [],
     )
@@ -762,28 +795,33 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   const childElement = jsxElement(
     'View',
     {
-      'data-uid': jsxAttributeValue('bbb'),
-      style: jsxAttributeValue({
-        left: 5,
-        top: 10,
-        width: 200,
-        height: 300,
-      }),
+      'data-uid': jsxAttributeValue('bbb', emptyComments),
+      style: jsxAttributeValue(
+        {
+          left: 5,
+          top: 10,
+          width: 200,
+          height: 300,
+        },
+        emptyComments,
+      ),
     },
     [],
   )
   const rootElement = jsxElement(
     'View',
     {
-      'data-uid': jsxAttributeValue('aaa'),
-      style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }),
-      layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
+      style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }, emptyComments),
+      layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }, emptyComments),
     },
     [childElement],
   )
   const firstTopLevelElement = utopiaJSXComponent(
     'App',
     true,
+    'var',
+    'block',
     null,
     [],
     rootElement,

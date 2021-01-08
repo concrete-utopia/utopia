@@ -22,7 +22,7 @@ import {
 } from './code-editor-utils'
 import { CodeEditorTabPane } from './code-problems'
 import { MonacoWrapper } from './monaco-wrapper'
-import { Notice } from '../common/notices'
+import { notice, Notice } from '../common/notice'
 import { ProjectContentTreeRoot } from '../assets'
 
 const AutoSaveDelay = 300
@@ -180,10 +180,7 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
               }
             },
             () => {
-              this.save(this.state.code, true, {
-                message: 'File saved and formatted',
-                level: 'SUCCESS',
-              })
+              this.save(this.state.code, true, notice('File saved and formatted', 'INFO'))
             },
           )
         }

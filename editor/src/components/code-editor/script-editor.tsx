@@ -47,7 +47,7 @@ import { ConsoleLog } from '../editor/store/editor-state'
 import * as TP from '../../core/shared/template-path'
 import { CodeEditor } from './code-editor'
 import { CursorPosition } from './code-editor-utils'
-import { Notice } from '../common/notices'
+import { Notice } from '../common/notice'
 import { getDependencyTypeDefinitions } from '../../core/es-modules/package-manager/package-manager'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
 import {

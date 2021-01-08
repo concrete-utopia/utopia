@@ -508,7 +508,7 @@ const backgroundURLs = {
 
 const noticeStyles = {
   success: { background: backgroundURLs.green, color: 'white' },
-  info: { background: 'white', color: colorTheme.darkPrimary.value },
+  info: { background: '#f1f1f1', color: colorTheme.darkPrimary.value },
   primary: { background: backgroundURLs.blue, color: 'white' },
   notice: { background: backgroundURLs.paleblue, color: 'white' },
   warning: { background: backgroundURLs.red, color: 'white' },

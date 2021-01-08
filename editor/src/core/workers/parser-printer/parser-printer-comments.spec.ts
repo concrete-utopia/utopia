@@ -7,9 +7,10 @@ import {
   testParseCode,
 } from './parser-printer.test-utils'
 import { applyPrettier } from './prettier-utils'
+import * as R from 'ramda'
 
 describe('parseCode', () => {
-  xit('should parse a component with comments in front of it', () => {
+  it('should parse a component with comments in front of it', () => {
     const code = applyPrettier(
       `
     // Single-line comment.
@@ -19,7 +20,7 @@ describe('parseCode', () => {
       Comment.
     */
     export var whatever = (props) => {
-      return <div data-uid={'aaa'} />
+      return <div data-uid='aaa' />
     }
 `,
       false,
@@ -34,6 +35,7 @@ describe('parseCode', () => {
       Array [
         Object {
           "comment": " Single-line comment.",
+          "pos": 0,
           "rawText": "// Single-line comment.",
           "trailingNewLine": true,
           "type": "SINGLE_LINE_COMMENT",
@@ -44,6 +46,7 @@ describe('parseCode', () => {
             Line
             Comment.
           ",
+          "pos": 24,
           "rawText": "/*
             Multi
             Line
@@ -86,14 +89,17 @@ describe('Parsing and printing code with comments', () => {
     commentInsideExports: '// Comment inside exports',
     commentAfterExports: '// Comment after exports',
     finalLineComment: '// Final line comment',
+    commentBeforeObjectKey: '/* Comment before object key */',
+    commentAfterObjectKey: '/* Comment after object key */',
+    commentBeforeObjectValue: '/* Comment before object value */',
+    commentAfterObjectValue: '/* Comment after object value */',
   }
 
-  const notYetSupported = [
-    'commentAtStartOfJSXAttribute',
-    'commentAtEndOfJSXAttribute',
-    'commentAtStartOfJSXExpression',
-    'commentInsideJSXExpression',
-    'commentAtEndOfJSXExpression',
+  const notYetSupported: Array<keyof typeof comments> = [
+    'commentBeforeObjectKey',
+    'commentAfterObjectKey',
+    'commentBeforeObjectValue',
+    'commentAfterObjectValue',
     'finalLineComment',
   ]
 
@@ -124,7 +130,14 @@ describe('Parsing and printing code with comments', () => {
 
       ${comments.commentBeforeReturnStatement}
       return (
-        <div data-uid={'aaa'} someProp={${comments.commentAtStartOfJSXAttribute} 1000 ${comments.commentAtEndOfJSXAttribute}}>
+        <div
+          data-uid={'aaa'}
+          someProp={${comments.commentAtStartOfJSXAttribute} 1000 ${comments.commentAtEndOfJSXAttribute}}
+          someProp2={{
+            ${comments.commentBeforeObjectKey} someKey ${comments.commentAfterObjectKey} : ${comments.commentBeforeObjectValue} 'someValue' ${comments.commentAfterObjectValue},
+            someKey2: 'someValue2'
+          }}
+          >
           {
             ${comments.commentAtStartOfJSXExpression}
             true ${comments.commentInsideJSXExpression}
@@ -150,6 +163,11 @@ describe('Parsing and printing code with comments', () => {
     const testFn = notYetSupported.includes(commentKey) ? xit : it
     testFn(`should retain the comment '${commentText}'`, () => {
       expect(parsedThenPrinted.includes(commentText)).toBeTruthy()
+      const firstIndex = parsedThenPrinted.indexOf(commentText)
+      const lastIndex = parsedThenPrinted.lastIndexOf(commentText)
+      if (firstIndex !== lastIndex) {
+        fail(`Found more than one instance of ${commentText}`)
+      }
     })
   }, comments)
 })

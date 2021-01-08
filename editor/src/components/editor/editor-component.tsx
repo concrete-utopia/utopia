@@ -506,6 +506,7 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
           message={toast.message}
           level={toast.level}
           persistent={toast.persistent}
+          id={toast.id}
         />
       ))}
     </FlexColumn>

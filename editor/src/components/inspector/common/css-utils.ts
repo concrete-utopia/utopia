@@ -64,6 +64,7 @@ import Utils from '../../../utils/utils'
 import { toggleBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
 import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection/shadow-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -921,7 +922,7 @@ function printBorder(value: CSSBorder): JSXAttributeValue<string> {
   })()
   const style: CSSLineStyleKeywordValue | null = value.style?.value.value ?? null
 
-  return jsxAttributeValue(Utils.stripNulls([width, style, color]).join(' '))
+  return jsxAttributeValue(Utils.stripNulls([width, style, color]).join(' '), emptyComments)
 }
 
 export declare type Complete<T> = {
@@ -967,6 +968,7 @@ export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<str
         return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
       })
       .join(' '),
+    emptyComments,
   )
 }
 
@@ -1548,7 +1550,7 @@ function printCSSTransformItem(cssTransform: CSSTransformItem): string {
 }
 
 function printTransform(cssTransforms: CSSTransforms): JSXAttributeValue<Property.Transform> {
-  return jsxAttributeValue(cssTransforms.map(printCSSTransformItem).join(' '))
+  return jsxAttributeValue(cssTransforms.map(printCSSTransformItem).join(' '), emptyComments)
 }
 
 enum CSSTransformOriginStringValueX {
@@ -1758,6 +1760,7 @@ function printTransformOrigin(transformOrigin: CSSTransformOrigin): JSXAttribute
     `${printTransformOriginComponent(transformOrigin.x)} ${printTransformOriginComponent(
       transformOrigin.y,
     )}`,
+    emptyComments,
   )
 }
 
@@ -1772,7 +1775,7 @@ function parseOverflow(overflow: unknown): Either<string, CSSOverflow> {
 }
 
 function printOverflow(overflow: CSSOverflow): JSXAttributeValue<string> {
-  return jsxAttributeValue(overflow ? 'visible' : 'hidden')
+  return jsxAttributeValue(overflow ? 'visible' : 'hidden', emptyComments)
 }
 
 export interface CSSBorderRadiusIndividual {
@@ -1858,6 +1861,7 @@ export function printBorderRadius(
     const { tl, tr, br, bl } = borderRadius.value
     return jsxAttributeValue(
       `${printCSSNumber(tl)} ${printCSSNumber(tr)} ${printCSSNumber(br)} ${printCSSNumber(bl)}`,
+      emptyComments,
     )
   }
 }
@@ -2094,7 +2098,10 @@ export function parseBackgroundColor(color?: unknown): Either<string, CSSDefault
 }
 
 function printBackgroundColor(value: CSSDefault<CSSSolidColor>): JSXAttributeValue<string> {
-  return jsxAttributeValue(printEnabled(printColor(value.value.color), value.value.enabled))
+  return jsxAttributeValue(
+    printEnabled(printColor(value.value.color), value.value.enabled),
+    emptyComments,
+  )
 }
 
 const matchColorKeyword = combineRegExp(['^', '(', RegExpLibrary.colorKeyword, ')', '$'])
@@ -2142,7 +2149,7 @@ export function parseColor(color: unknown): Either<string, CSSColor> {
 }
 
 export function printColorToJsx(color: CSSColor | undefined): JSXAttributeValue<string> {
-  return jsxAttributeValue(color != null ? printColor(color) : '')
+  return jsxAttributeValue(color != null ? printColor(color) : '', emptyComments)
 }
 
 export function cssColor(value: string, defaultColor: CSSColor = { ...defaultCSSColor }): CSSColor {
@@ -2794,7 +2801,7 @@ export function isCSSUnknownFunctionParameters<T>(
 export function cssUnknownFunctionParameters<T>(value: T): CSSUnknownFunctionParameters<T> {
   return {
     type: 'unknown-helper-function-parameters',
-    value: jsxAttributeValue(value),
+    value: jsxAttributeValue(value, emptyComments),
   }
 }
 
@@ -3242,7 +3249,7 @@ export function printBackgroundImage(
       }
     }
   })
-  return jsxAttributeValue(backgroundImageStrings.join(' '))
+  return jsxAttributeValue(backgroundImageStrings.join(' '), emptyComments)
 }
 
 export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue<string> {
@@ -3283,6 +3290,7 @@ export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue
         }
       })
       .join(' '),
+    emptyComments,
   )
 }
 
@@ -3411,6 +3419,7 @@ function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string>
         return printEnabled(printComma(`${parts.join(' ')}`, comma), textShadow.enabled)
       })
       .join(' '),
+    emptyComments,
   )
 }
 
@@ -3428,7 +3437,7 @@ function parseFontFamily(fontFamily: unknown): Either<string, CSSFontFamily> {
 }
 
 function printFontFamily(cssFontFamily: CSSFontFamily): JSXAttributeValue<string> {
-  return jsxAttributeValue(fontFamilyArrayToCSSFontFamilyString(cssFontFamily))
+  return jsxAttributeValue(fontFamilyArrayToCSSFontFamilyString(cssFontFamily), emptyComments)
 }
 
 function parseFontWeight(fontWeight: unknown): Either<string, CSSFontWeight> {
@@ -3446,13 +3455,13 @@ function parseFontWeight(fontWeight: unknown): Either<string, CSSFontWeight> {
 }
 
 function printFontWeight(cssFontFamily: CSSFontWeight): JSXAttributeValue<Property.FontWeight> {
-  return jsxAttributeValue(cssFontFamily)
+  return jsxAttributeValue(cssFontFamily, emptyComments)
 }
 
 const parseFontStyle = isOneOfTheseParser<CSSFontStyle>(['normal', 'italic'])
 
 function printFontStyle(cssFontStyle: CSSFontStyle): JSXAttributeValue<Property.FontStyle> {
-  return jsxAttributeValue(cssFontStyle)
+  return jsxAttributeValue(cssFontStyle, emptyComments)
 }
 
 const parseTextAlign = isOneOfTheseParser<CSSTextAlign>([
@@ -3465,13 +3474,13 @@ const parseTextAlign = isOneOfTheseParser<CSSTextAlign>([
 ])
 
 function printTextAlign(cssTextAlign: CSSTextAlign): JSXAttributeValue<Property.TextAlign> {
-  return jsxAttributeValue(cssTextAlign)
+  return jsxAttributeValue(cssTextAlign, emptyComments)
 }
 
 const parseTextSizing = isOneOfTheseParser<TextSizing>(['auto', 'fixed'])
 
 function printTextSizing(textSizing: TextSizing): JSXAttributeValue<TextSizing> {
-  return jsxAttributeValue(textSizing)
+  return jsxAttributeValue(textSizing, emptyComments)
 }
 
 const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
@@ -3484,7 +3493,7 @@ const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
 function printTextDecorationLine(
   cssTextDecorationLine: CSSTextDecorationLine,
 ): JSXAttributeValue<Property.TextDecorationLine> {
-  return jsxAttributeValue(cssTextDecorationLine)
+  return jsxAttributeValue(cssTextDecorationLine, emptyComments)
 }
 
 const parseTextDecorationStyle = isOneOfTheseParser<CSSTextDecorationStyle>([
@@ -3498,7 +3507,7 @@ const parseTextDecorationStyle = isOneOfTheseParser<CSSTextDecorationStyle>([
 function printTextDecorationStyle(
   cssTextDecorationStyle: CSSTextDecorationStyle,
 ): JSXAttributeValue<Property.TextDecorationStyle> {
-  return jsxAttributeValue(cssTextDecorationStyle)
+  return jsxAttributeValue(cssTextDecorationStyle, emptyComments)
 }
 
 function parseLetterSpacing(letterSpacing: unknown): Either<string, CSSLetterSpacing> {
@@ -3513,7 +3522,7 @@ function printLetterSpacing(
   cssLetterSpacing: CSSLetterSpacing,
 ): JSXAttributeValue<Property.LetterSpacing<string | number>> {
   if (cssLetterSpacing === 'normal') {
-    return jsxAttributeValue(cssLetterSpacing)
+    return jsxAttributeValue(cssLetterSpacing, emptyComments)
   } else {
     return printCSSNumberAsAttributeValue(cssLetterSpacing)
   }
@@ -3531,7 +3540,7 @@ function printLineHeight(
   cssLineHeight: CSSLineHeight,
 ): JSXAttributeValue<Property.LineHeight<string | number>> {
   if (cssLineHeight === 'normal') {
-    return jsxAttributeValue(cssLineHeight)
+    return jsxAttributeValue(cssLineHeight, emptyComments)
   } else {
     return printCSSNumberAsAttributeValue(cssLineHeight)
   }
@@ -3545,7 +3554,7 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
       if (params.length === 1) {
         const originalValueSimple = jsxSimpleAttributeToValue(params[0])
         if (isRight(originalValueSimple)) {
-          return jsxAttributeValue(originalValueSimple.value)
+          return jsxAttributeValue(originalValueSimple.value, emptyComments)
         } else {
           return params[0]
         }
@@ -3557,7 +3566,9 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
   } else {
     const simpleValue = jsxSimpleAttributeToValue(attribute)
     if (isRight(simpleValue)) {
-      return jsxAttributeFunctionCall(disabledFunctionName, [jsxAttributeValue(simpleValue.value)])
+      return jsxAttributeFunctionCall(disabledFunctionName, [
+        jsxAttributeValue(simpleValue.value, emptyComments),
+      ])
     } else if (isRegularJSXAttribute(attribute)) {
       return jsxAttributeFunctionCall(disabledFunctionName, [attribute])
     } else {
@@ -3735,13 +3746,15 @@ export function toggleStylePropPaths(toggleFn: (attribute: JSXAttribute) => JSXA
 }
 
 function printCSSNumberAsAttributeValue(value: CSSNumber): JSXAttributeValue<string | number> {
-  return jsxAttributeValue(printCSSNumber(value))
+  return jsxAttributeValue(printCSSNumber(value), emptyComments)
 }
 
 function printCSSNumberOrUndefinedAsAttributeValue(
   value: CSSNumber | undefined,
 ): JSXAttributeValue<string | number | undefined> {
-  return value != null ? printCSSNumberAsAttributeValue(value) : jsxAttributeValue(undefined)
+  return value != null
+    ? printCSSNumberAsAttributeValue(value)
+    : jsxAttributeValue(undefined, emptyComments)
 }
 
 function parseString(value: unknown): Either<string, string> {
@@ -3749,7 +3762,7 @@ function parseString(value: unknown): Either<string, string> {
 }
 
 function printStringAsAttributeValue(value: string): JSXAttributeValue<string> {
-  return jsxAttributeValue(value)
+  return jsxAttributeValue(value, emptyComments)
 }
 
 type CSSMixBlendMode = 'normal' | 'multiply' | 'screen' | 'darken'
@@ -3762,7 +3775,7 @@ const parseMixBlendMode = isOneOfTheseParser<CSSMixBlendMode>([
 ])
 
 function printMixBlendMode(blendMode: CSSMixBlendMode): JSXAttributeValue<string> {
-  return jsxAttributeValue(blendMode)
+  return jsxAttributeValue(blendMode, emptyComments)
 }
 
 type CSSObjectFit = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
@@ -3779,7 +3792,7 @@ const parseCSSObjectFit = isOneOfTheseParser<CSSObjectFit>([
 type ImageURL = string
 
 function printCSSObjectFit(value: CSSObjectFit): JSXAttributeValue<string> {
-  return jsxAttributeValue(value)
+  return jsxAttributeValue(value, emptyComments)
 }
 
 function parseFramePin(
@@ -4128,6 +4141,8 @@ type CSSPrinters = {
   [key in keyof ParsedCSSProperties]: Printer<ParsedCSSProperties[key]>
 }
 
+const jsxAttributeValueWithNoComments = (value: unknown) => jsxAttributeValue(value, emptyComments)
+
 const cssPrinters: CSSPrinters = {
   backgroundColor: printBackgroundColor,
   backgroundImage: printBackgroundImage,
@@ -4155,18 +4170,18 @@ const cssPrinters: CSSPrinters = {
 
   objectFit: printCSSObjectFit,
 
-  flexWrap: jsxAttributeValue,
-  flexDirection: jsxAttributeValue,
-  alignItems: jsxAttributeValue,
-  alignContent: jsxAttributeValue,
-  justifyContent: jsxAttributeValue,
+  flexWrap: jsxAttributeValueWithNoComments,
+  flexDirection: jsxAttributeValueWithNoComments,
+  alignItems: jsxAttributeValueWithNoComments,
+  alignContent: jsxAttributeValueWithNoComments,
+  justifyContent: jsxAttributeValueWithNoComments,
   paddingTop: printCSSNumberAsAttributeValue,
   paddingRight: printCSSNumberAsAttributeValue,
   paddingBottom: printCSSNumberAsAttributeValue,
   paddingLeft: printCSSNumberAsAttributeValue,
 
-  alignSelf: jsxAttributeValue,
-  position: jsxAttributeValue,
+  alignSelf: jsxAttributeValueWithNoComments,
+  position: jsxAttributeValueWithNoComments,
   left: printCSSNumberOrUndefinedAsAttributeValue,
   top: printCSSNumberOrUndefinedAsAttributeValue,
   right: printCSSNumberOrUndefinedAsAttributeValue,
@@ -4371,7 +4386,7 @@ export interface ParsedElementProperties
 export type ParsedElementPropertiesKeys = keyof ParsedElementProperties
 
 const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, item) => {
-  current[item] = jsxAttributeValue(undefined)
+  current[item] = jsxAttributeValue(undefined, emptyComments)
   return current
 }, {} as DOMEventAttributeProperties)
 
@@ -4471,18 +4486,18 @@ type LayoutPrinters = {
 }
 
 const layoutPrinters: LayoutPrinters = {
-  layoutSystem: jsxAttributeValue,
-  pinLeft: jsxAttributeValue,
-  pinRight: jsxAttributeValue,
-  centerX: jsxAttributeValue,
-  width: jsxAttributeValue,
-  pinTop: jsxAttributeValue,
-  pinBottom: jsxAttributeValue,
-  centerY: jsxAttributeValue,
-  height: jsxAttributeValue,
-  gapMain: jsxAttributeValue,
-  flexBasis: jsxAttributeValue,
-  crossBasis: jsxAttributeValue,
+  layoutSystem: jsxAttributeValueWithNoComments,
+  pinLeft: jsxAttributeValueWithNoComments,
+  pinRight: jsxAttributeValueWithNoComments,
+  centerX: jsxAttributeValueWithNoComments,
+  width: jsxAttributeValueWithNoComments,
+  pinTop: jsxAttributeValueWithNoComments,
+  pinBottom: jsxAttributeValueWithNoComments,
+  centerY: jsxAttributeValueWithNoComments,
+  height: jsxAttributeValueWithNoComments,
+  gapMain: jsxAttributeValueWithNoComments,
+  flexBasis: jsxAttributeValueWithNoComments,
+  crossBasis: jsxAttributeValueWithNoComments,
 }
 
 const layoutEmptyValuesNew: LayoutPropertyTypes = {
@@ -4530,21 +4545,21 @@ type LayoutPrintersNew = {
 }
 
 const layoutPrintersNew: LayoutPrintersNew = {
-  LayoutSystem: jsxAttributeValue,
+  LayoutSystem: jsxAttributeValueWithNoComments,
 
-  Width: jsxAttributeValue,
-  Height: jsxAttributeValue,
+  Width: jsxAttributeValueWithNoComments,
+  Height: jsxAttributeValueWithNoComments,
 
-  FlexGap: jsxAttributeValue,
-  FlexFlexBasis: jsxAttributeValue,
-  FlexCrossBasis: jsxAttributeValue,
+  FlexGap: jsxAttributeValueWithNoComments,
+  FlexFlexBasis: jsxAttributeValueWithNoComments,
+  FlexCrossBasis: jsxAttributeValueWithNoComments,
 
-  PinnedLeft: jsxAttributeValue,
-  PinnedTop: jsxAttributeValue,
-  PinnedRight: jsxAttributeValue,
-  PinnedBottom: jsxAttributeValue,
-  PinnedCenterX: jsxAttributeValue,
-  PinnedCenterY: jsxAttributeValue,
+  PinnedLeft: jsxAttributeValueWithNoComments,
+  PinnedTop: jsxAttributeValueWithNoComments,
+  PinnedRight: jsxAttributeValueWithNoComments,
+  PinnedBottom: jsxAttributeValueWithNoComments,
+  PinnedCenterX: jsxAttributeValueWithNoComments,
+  PinnedCenterY: jsxAttributeValueWithNoComments,
 }
 
 export interface ParsedProperties

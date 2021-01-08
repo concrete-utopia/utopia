@@ -1,9 +1,9 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
-import { notice } from '../../components/common/notices'
+import { notice } from '../../components/common/notice'
 import { EditorDispatch } from '../../components/editor/action-types'
-import { pushToast, updateFile } from '../../components/editor/actions/action-creators'
+import { addToast, updateFile } from '../../components/editor/actions/action-creators'
 import { defaultIndexHtmlFilePath, EditorState } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
 import {
@@ -438,7 +438,7 @@ export function getExternalResourcesInfo(
               ),
             ])
           } else {
-            dispatch([pushToast(notice(updatedTextFileContents.value.description))])
+            dispatch([addToast(notice(updatedTextFileContents.value.description))])
           }
         }
         return right({ externalResources: parsedExternalResources.value, onSubmitValue })

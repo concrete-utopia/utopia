@@ -34,6 +34,7 @@ import { WarningIcon } from '../../../../uuiui/warning-icon'
 import { ChildWithPercentageSize } from '../../../common/size-warnings'
 import { useWrappedEmptyOrUnknownOnSubmitValue, CheckboxInput } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
+import { emptyComments } from '../../../../core/workers/parser-printer/parser-printer-comments'
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
 
@@ -171,7 +172,7 @@ function useSceneType(): InspectorInfo<boolean> {
     (resizesContent: unknown) => {
       const resizesConentBoolean = Boolean(resizesContent ?? false)
       return {
-        [PP.toString(PathForResizeContent)]: jsxAttributeValue(resizesConentBoolean),
+        [PP.toString(PathForResizeContent)]: jsxAttributeValue(resizesConentBoolean, emptyComments),
       }
     },
   )
@@ -238,12 +239,12 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
           setSceneProp(
             selectedScene,
             createLayoutPropertyPath('Width'),
-            jsxAttributeValue(scene.globalFrame?.width),
+            jsxAttributeValue(scene.globalFrame?.width, emptyComments),
           ),
           setSceneProp(
             selectedScene,
             createLayoutPropertyPath('Height'),
-            jsxAttributeValue(scene.globalFrame?.height),
+            jsxAttributeValue(scene.globalFrame?.height, emptyComments),
           ),
         ]
         dispatch(actions, 'inspector')

@@ -32,7 +32,7 @@ export default function create(code: string): string {
     ScriptKind.TSX,
   )
 
-  const factoryFile = transformSourceFile(file)
+  const factoryFile = transformSourceFile(code, file)
   const factoryCode = printer.printFile(factoryFile)
 
   let result = prettier.format(factoryCode, prettierOptions)

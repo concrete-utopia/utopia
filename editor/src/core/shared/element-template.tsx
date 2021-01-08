@@ -20,12 +20,13 @@ import { ModifiableAttribute } from './jsx-attributes'
 import * as TP from './template-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
-import { ParsedComments } from '../workers/parser-printer/parser-printer-comments'
+import { emptyComments, ParsedComments } from '../workers/parser-printer/parser-printer-comments'
 
 interface BaseComment {
   comment: string
   rawText: string
   trailingNewLine: boolean
+  pos: number | null
 }
 
 export interface MultiLineComment extends BaseComment {
@@ -36,12 +37,14 @@ export function multiLineComment(
   comment: string,
   rawText: string,
   trailingNewLine: boolean,
+  pos: number | null,
 ): MultiLineComment {
   return {
     type: 'MULTI_LINE_COMMENT',
     comment: comment,
     rawText: rawText,
     trailingNewLine: trailingNewLine,
+    pos: pos,
   }
 }
 
@@ -53,30 +56,41 @@ export function singleLineComment(
   comment: string,
   rawText: string,
   trailingNewLine: boolean,
+  pos: number | null,
 ): SingleLineComment {
   return {
     type: 'SINGLE_LINE_COMMENT',
     comment: comment,
     rawText: rawText,
     trailingNewLine: trailingNewLine,
+    pos: pos,
   }
 }
 
 export type Comment = MultiLineComment | SingleLineComment
 
+export function isMultiLineComment(comment: Comment): comment is MultiLineComment {
+  return comment.type === 'MULTI_LINE_COMMENT'
+}
+
+export function isSingleLineComment(comment: Comment): comment is SingleLineComment {
+  return comment.type === 'SINGLE_LINE_COMMENT'
+}
+
 export interface WithComments {
   comments: ParsedComments
 }
 
-export interface JSXAttributeValue<T> {
+export interface JSXAttributeValue<T> extends WithComments {
   type: 'ATTRIBUTE_VALUE'
   value: T
 }
 
-export function jsxAttributeValue<T>(value: T): JSXAttributeValue<T> {
+export function jsxAttributeValue<T>(value: T, comments: ParsedComments): JSXAttributeValue<T> {
   return {
     type: 'ATTRIBUTE_VALUE',
     value: value,
+    comments: comments,
   }
 }
 
@@ -138,29 +152,38 @@ export function jsxAttributeOtherJavaScript(
   }
 }
 
-export interface JSXSpreadAssignment {
+export interface JSXSpreadAssignment extends WithComments {
   type: 'SPREAD_ASSIGNMENT'
   value: JSXAttribute
 }
 
-export function jsxSpreadAssignment(value: JSXAttribute): JSXSpreadAssignment {
+export function jsxSpreadAssignment(
+  value: JSXAttribute,
+  comments: ParsedComments,
+): JSXSpreadAssignment {
   return {
     type: 'SPREAD_ASSIGNMENT',
     value: value,
+    comments: comments,
   }
 }
 
-export interface JSXPropertyAssignment {
+export interface JSXPropertyAssignment extends WithComments {
   type: 'PROPERTY_ASSIGNMENT'
   key: string
   value: JSXAttribute
 }
 
-export function jsxPropertyAssignment(key: string, value: JSXAttribute): JSXPropertyAssignment {
+export function jsxPropertyAssignment(
+  key: string,
+  value: JSXAttribute,
+  comments: ParsedComments,
+): JSXPropertyAssignment {
   return {
     type: 'PROPERTY_ASSIGNMENT',
     key: key,
     value: value,
+    comments: comments,
   }
 }
 
@@ -174,46 +197,58 @@ export function isPropertyAssignment(property: JSXProperty): property is JSXProp
   return property.type === 'PROPERTY_ASSIGNMENT'
 }
 
-export interface JSXAttributeNestedObject {
+export interface JSXAttributeNestedObject extends WithComments {
   type: 'ATTRIBUTE_NESTED_OBJECT'
   content: Array<JSXProperty>
 }
 
-export function jsxAttributeNestedObject(content: Array<JSXProperty>): JSXAttributeNestedObject {
+export function jsxAttributeNestedObject(
+  content: Array<JSXProperty>,
+  comments: ParsedComments,
+): JSXAttributeNestedObject {
   return {
     type: 'ATTRIBUTE_NESTED_OBJECT',
     content: content,
+    comments: comments,
   }
 }
 
-export function jsxAttributeNestedObjectSimple(content: JSXAttributes): JSXAttributeNestedObject {
+export function jsxAttributeNestedObjectSimple(
+  content: JSXAttributes,
+  comments: ParsedComments,
+): JSXAttributeNestedObject {
   return {
     type: 'ATTRIBUTE_NESTED_OBJECT',
-    content: Object.keys(content).map((key) => jsxPropertyAssignment(key, content[key])),
+    content: Object.keys(content).map((key) =>
+      jsxPropertyAssignment(key, content[key], emptyComments),
+    ),
+    comments: comments,
   }
 }
 
-export interface JSXArrayValue {
+export interface JSXArrayValue extends WithComments {
   type: 'ARRAY_VALUE'
   value: JSXAttribute
 }
 
-export function jsxArrayValue(value: JSXAttribute): JSXArrayValue {
+export function jsxArrayValue(value: JSXAttribute, comments: ParsedComments): JSXArrayValue {
   return {
     type: 'ARRAY_VALUE',
     value: value,
+    comments: comments,
   }
 }
 
-export interface JSXArraySpread {
+export interface JSXArraySpread extends WithComments {
   type: 'ARRAY_SPREAD'
   value: JSXAttribute
 }
 
-export function jsxArraySpread(value: JSXAttribute): JSXArraySpread {
+export function jsxArraySpread(value: JSXAttribute, comments: ParsedComments): JSXArraySpread {
   return {
     type: 'ARRAY_SPREAD',
     value: value,
+    comments: comments,
   }
 }
 
@@ -227,22 +262,29 @@ export function isArraySpread(elem: JSXArrayElement): elem is JSXArraySpread {
   return elem.type === 'ARRAY_SPREAD'
 }
 
-export interface JSXAttributeNestedArray {
+export interface JSXAttributeNestedArray extends WithComments {
   type: 'ATTRIBUTE_NESTED_ARRAY'
   content: Array<JSXArrayElement>
 }
 
-export function jsxAttributeNestedArray(content: Array<JSXArrayElement>): JSXAttributeNestedArray {
+export function jsxAttributeNestedArray(
+  content: Array<JSXArrayElement>,
+  comments: ParsedComments,
+): JSXAttributeNestedArray {
   return {
     type: 'ATTRIBUTE_NESTED_ARRAY',
     content: content,
+    comments: comments,
   }
 }
 
 export function jsxAttributeNestedArraySimple(
   content: Array<JSXAttribute>,
 ): JSXAttributeNestedArray {
-  return jsxAttributeNestedArray(content.map((value) => jsxArrayValue(value)))
+  return jsxAttributeNestedArray(
+    content.map((value) => jsxArrayValue(value, emptyComments)),
+    emptyComments,
+  )
 }
 
 export interface JSXAttributeFunctionCall {
@@ -289,14 +331,15 @@ export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
         attribute.content.map((elem) => {
           switch (elem.type) {
             case 'ARRAY_SPREAD':
-              return jsxArraySpread(clearAttributeUniqueIDs(elem.value))
+              return jsxArraySpread(clearAttributeUniqueIDs(elem.value), emptyComments)
             case 'ARRAY_VALUE':
-              return jsxArrayValue(clearAttributeUniqueIDs(elem.value))
+              return jsxArrayValue(clearAttributeUniqueIDs(elem.value), emptyComments)
             default:
               const _exhaustiveCheck: never = elem
               throw new Error(`Unhandled array element type ${JSON.stringify(elem)}`)
           }
         }),
+        emptyComments,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsxAttributeFunctionCall(
@@ -308,14 +351,19 @@ export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
         attribute.content.map((prop) => {
           switch (prop.type) {
             case 'SPREAD_ASSIGNMENT':
-              return jsxSpreadAssignment(clearAttributeUniqueIDs(prop.value))
+              return jsxSpreadAssignment(clearAttributeUniqueIDs(prop.value), emptyComments)
             case 'PROPERTY_ASSIGNMENT':
-              return jsxPropertyAssignment(prop.key, clearAttributeUniqueIDs(prop.value))
+              return jsxPropertyAssignment(
+                prop.key,
+                clearAttributeUniqueIDs(prop.value),
+                emptyComments,
+              )
             default:
               const _exhaustiveCheck: never = prop
               throw new Error(`Unhandled property type ${JSON.stringify(prop)}`)
           }
         }),
+        emptyComments,
       )
     default:
       const _exhaustiveCheck: never = attribute
@@ -343,14 +391,15 @@ export function clearAttributeSourceMaps(attribute: JSXAttribute): JSXAttribute 
         attribute.content.map((elem) => {
           switch (elem.type) {
             case 'ARRAY_SPREAD':
-              return jsxArraySpread(clearAttributeSourceMaps(elem.value))
+              return jsxArraySpread(clearAttributeSourceMaps(elem.value), emptyComments)
             case 'ARRAY_VALUE':
-              return jsxArrayValue(clearAttributeSourceMaps(elem.value))
+              return jsxArrayValue(clearAttributeSourceMaps(elem.value), emptyComments)
             default:
               const _exhaustiveCheck: never = elem
               throw new Error(`Unhandled array element type ${JSON.stringify(elem)}`)
           }
         }),
+        emptyComments,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsxAttributeFunctionCall(
@@ -362,14 +411,19 @@ export function clearAttributeSourceMaps(attribute: JSXAttribute): JSXAttribute 
         attribute.content.map((prop) => {
           switch (prop.type) {
             case 'SPREAD_ASSIGNMENT':
-              return jsxSpreadAssignment(clearAttributeSourceMaps(prop.value))
+              return jsxSpreadAssignment(clearAttributeSourceMaps(prop.value), emptyComments)
             case 'PROPERTY_ASSIGNMENT':
-              return jsxPropertyAssignment(prop.key, clearAttributeSourceMaps(prop.value))
+              return jsxPropertyAssignment(
+                prop.key,
+                clearAttributeSourceMaps(prop.value),
+                emptyComments,
+              )
             default:
               const _exhaustiveCheck: never = prop
               throw new Error(`Unhandled property type ${JSON.stringify(prop)}`)
           }
         }),
+        emptyComments,
       )
     default:
       const _exhaustiveCheck: never = attribute
@@ -670,12 +724,14 @@ export function jsxTestElement(
   children: Array<JSXElement>,
   uid: string = 'aaa',
 ): JSXElement {
-  return jsxElement(name, { ...props, 'data-uid': jsxAttributeValue(uid) }, children)
+  return jsxElement(name, { ...props, 'data-uid': jsxAttributeValue(uid, emptyComments) }, children)
 }
 
 export function utopiaJSXComponent(
   name: string,
   isFunction: boolean,
+  declarationSyntax: FunctionDeclarationSyntax,
+  blockOrExpression: BlockOrExpression,
   param: Param | null,
   propsUsed: Array<string>,
   rootElement: JSXElementChild,
@@ -688,6 +744,8 @@ export function utopiaJSXComponent(
     type: 'UTOPIA_JSX_COMPONENT',
     name: name,
     isFunction: isFunction,
+    declarationSyntax: declarationSyntax,
+    blockOrExpression: blockOrExpression,
     param: param,
     propsUsed: propsUsed,
     rootElement: rootElement,
@@ -844,6 +902,10 @@ export function propNamesForParam(param: Param): Array<string> {
   }
 }
 
+export type VarLetOrConst = 'var' | 'let' | 'const'
+export type FunctionDeclarationSyntax = 'function' | VarLetOrConst
+export type BlockOrExpression = 'block' | 'parenthesized-expression' | 'expression'
+
 export interface UtopiaJSXComponent extends WithComments {
   type: 'UTOPIA_JSX_COMPONENT'
   name: string
@@ -853,6 +915,8 @@ export interface UtopiaJSXComponent extends WithComments {
    * (NOT a component, NOT a class component!)
    */
   isFunction: boolean
+  declarationSyntax: FunctionDeclarationSyntax
+  blockOrExpression: BlockOrExpression
   param: Param | null
   propsUsed: Array<string>
   rootElement: JSXElementChild

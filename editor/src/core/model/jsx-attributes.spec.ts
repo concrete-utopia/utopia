@@ -26,6 +26,7 @@ import {
   unsetJSXValueAtPath,
 } from '../shared/jsx-attributes'
 import { NO_OP } from '../shared/utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const sampleParentProps = {
   hello: 'kitty',
@@ -34,44 +35,72 @@ const sampleParentProps = {
 
 function sampleJsxAttributes(): JSXAttributes {
   return deepFreeze({
-    style: jsxAttributeNestedObject([
-      jsxSpreadAssignment(jsxAttributeValue({ first: 1, second: 2 })),
-      jsxPropertyAssignment('backgroundColor', jsxAttributeValue('red')),
-      jsxPropertyAssignment(
-        'shadow',
-        jsxAttributeOtherJavaScript(
-          'props.someShadow',
-          'return props.someShadow;',
-          ['props'],
-          null,
+    style: jsxAttributeNestedObject(
+      [
+        jsxSpreadAssignment(
+          jsxAttributeValue({ first: 1, second: 2 }, emptyComments),
+          emptyComments,
         ),
-      ),
-      jsxPropertyAssignment('border', jsxAttributeValue('1px solid green')),
-      jsxPropertyAssignment('boxShadow', jsxAttributeValue('0 0 0 1px blue')),
-    ]),
-    top: jsxAttributeValue(0),
-    left: jsxAttributeValue(50),
-    height: jsxAttributeValue(150),
-    width: jsxAttributeValue(200),
-    layout: jsxAttributeValue({
-      left: 50,
-      deep: {
-        path: 'hard!',
-      },
-    }),
-    objectWithArray: jsxAttributeNestedObjectSimple({
-      array: jsxAttributeValue([0, 1, 2]),
-    }),
-    doggo: jsxAttributeOtherJavaScript('props.hello', 'return props.hello;', ['props'], null),
-    objectValue: jsxAttributeValue({
-      deep: {
-        object: {
-          path: 'yes',
+        jsxPropertyAssignment(
+          'backgroundColor',
+          jsxAttributeValue('red', emptyComments),
+          emptyComments,
+        ),
+        jsxPropertyAssignment(
+          'shadow',
+          jsxAttributeOtherJavaScript(
+            'props.someShadow',
+            'return props.someShadow;',
+            ['props'],
+            null,
+          ),
+          emptyComments,
+        ),
+        jsxPropertyAssignment(
+          'border',
+          jsxAttributeValue('1px solid green', emptyComments),
+          emptyComments,
+        ),
+        jsxPropertyAssignment(
+          'boxShadow',
+          jsxAttributeValue('0 0 0 1px blue', emptyComments),
+          emptyComments,
+        ),
+      ],
+      emptyComments,
+    ),
+    top: jsxAttributeValue(0, emptyComments),
+    left: jsxAttributeValue(50, emptyComments),
+    height: jsxAttributeValue(150, emptyComments),
+    width: jsxAttributeValue(200, emptyComments),
+    layout: jsxAttributeValue(
+      {
+        left: 50,
+        deep: {
+          path: 'hard!',
         },
       },
-    }),
+      emptyComments,
+    ),
+    objectWithArray: jsxAttributeNestedObjectSimple(
+      {
+        array: jsxAttributeValue([0, 1, 2], emptyComments),
+      },
+      emptyComments,
+    ),
+    doggo: jsxAttributeOtherJavaScript('props.hello', 'return props.hello;', ['props'], null),
+    objectValue: jsxAttributeValue(
+      {
+        deep: {
+          object: {
+            path: 'yes',
+          },
+        },
+      },
+      emptyComments,
+    ),
     otherJs: jsxAttributeOtherJavaScript('true ? 10 : 5', 'return true ? 10 : 5', [], null),
-    'data-uid': jsxAttributeValue('aaa'),
+    'data-uid': jsxAttributeValue('aaa', emptyComments),
   })
 }
 
@@ -112,7 +141,11 @@ const expectedCompiledProps = {
 describe('setJSXValueAtPath', () => {
   it('sets a simple value at a simple path', () => {
     const updatedAttributes = forceRight(
-      setJSXValueAtPath(sampleJsxAttributes(), PP.create(['top']), jsxAttributeValue(55)),
+      setJSXValueAtPath(
+        sampleJsxAttributes(),
+        PP.create(['top']),
+        jsxAttributeValue(55, emptyComments),
+      ),
     )
     const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
     expect(compiledProps.top).toEqual(55)
@@ -123,7 +156,7 @@ describe('setJSXValueAtPath', () => {
       setJSXValueAtPath(
         sampleJsxAttributes(),
         PP.create(['otherJs']),
-        jsxAttributeValue('shadowy'),
+        jsxAttributeValue('shadowy', emptyComments),
       ),
     )
     expect(updatedAttributes.otherJs.type).toEqual('ATTRIBUTE_VALUE')
@@ -134,7 +167,7 @@ describe('setJSXValueAtPath', () => {
       setJSXValueAtPath(
         sampleJsxAttributes(),
         PP.create(['my', 'property', 'path']),
-        jsxAttributeValue('hello'),
+        jsxAttributeValue('hello', emptyComments),
       ),
     )
     const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
@@ -146,7 +179,7 @@ describe('setJSXValueAtPath', () => {
       setJSXValueAtPath(
         sampleJsxAttributes(),
         PP.create(['layout', 'left']),
-        jsxAttributeValue(2000),
+        jsxAttributeValue(2000, emptyComments),
       ),
     )
     const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
@@ -158,7 +191,7 @@ describe('setJSXValueAtPath', () => {
       setJSXValueAtPath(
         sampleJsxAttributes(),
         PP.create(['layout', 'deep', 'path']),
-        jsxAttributeValue('easy!'),
+        jsxAttributeValue('easy!', emptyComments),
       ),
     )
     const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
@@ -170,7 +203,7 @@ describe('setJSXValueAtPath', () => {
       setJSXValueAtPath(
         sampleJsxAttributes(),
         PP.create(['objectWithArray', 'array', 2]),
-        jsxAttributeValue('wee'),
+        jsxAttributeValue('wee', emptyComments),
       ),
     )
     const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
@@ -183,7 +216,7 @@ describe('setJSXValueAtPath', () => {
         setJSXValueAtPath(
           sampleJsxAttributes(),
           PP.create(['style', 'backgroundColor', 'red']),
-          jsxAttributeValue('wee'),
+          jsxAttributeValue('wee', emptyComments),
         ),
       )
       const compiledProps = jsxAttributesToProps(
@@ -199,7 +232,7 @@ describe('setJSXValueAtPath', () => {
       setJSXValueAtPath(
         sampleJsxAttributes(),
         PP.create(['style', 'backgroundColor']),
-        jsxAttributeValue('wee'),
+        jsxAttributeValue('wee', emptyComments),
       ),
     )
     const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
@@ -211,14 +244,14 @@ describe('setJSXValueAtPath', () => {
       setJSXValueAtPath(
         sampleJsxAttributes(),
         PP.create(['my', 'property', 'path']),
-        jsxAttributeValue('hello'),
+        jsxAttributeValue('hello', emptyComments),
       ),
     )
     const updatedAttributes2 = forceRight(
       setJSXValueAtPath(
         updatedAttributes,
         PP.create(['my', 'property', 'other', 'path']),
-        jsxAttributeValue('hola'),
+        jsxAttributeValue('hola', emptyComments),
       ),
     )
     const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes2, {})
@@ -231,7 +264,7 @@ describe('setJSXValueAtPath', () => {
       setJSXValueAtPath(
         sampleJsxAttributes(),
         PP.create(['style', 'backgroundColor']),
-        jsxAttributeValue('blue'),
+        jsxAttributeValue('blue', emptyComments),
       ),
     )
     const compiledProps = jsxAttributesToProps({ props: sampleParentProps }, updatedAttributes, {})
@@ -242,19 +275,19 @@ describe('setJSXValueAtPath', () => {
     const result1 = setJSXValueAtPath(
       sampleJsxAttributes(),
       PP.create(['style', 'shadow', 'left']),
-      jsxAttributeValue('shadowy'),
+      jsxAttributeValue('shadowy', emptyComments),
     )
 
     const result2 = setJSXValueAtPath(
       sampleJsxAttributes(),
       PP.create(['style', 'boxShadow', '0']),
-      jsxAttributeValue('shadowy'),
+      jsxAttributeValue('shadowy', emptyComments),
     )
 
     const result3 = setJSXValueAtPath(
       sampleJsxAttributes(),
       PP.create(['otherJs', 'wrongProp']),
-      jsxAttributeValue('shadowy'),
+      jsxAttributeValue('shadowy', emptyComments),
     )
 
     expect(result1.type).toBe('LEFT')
@@ -342,10 +375,13 @@ describe('getModifiableJSXAttributeAtPath', () => {
 
 describe('jsxSimpleAttributeToValue', () => {
   it('gets the value of a nested object attribute', () => {
-    const attribute = jsxAttributeNestedObjectSimple({
-      top: jsxAttributeValue(50),
-      left: jsxAttributeValue(100),
-    })
+    const attribute = jsxAttributeNestedObjectSimple(
+      {
+        top: jsxAttributeValue(50, emptyComments),
+        left: jsxAttributeValue(100, emptyComments),
+      },
+      emptyComments,
+    )
     const attributeValue = jsxSimpleAttributeToValue(attribute)
     const expectedAttrValue = {
       top: 50,
@@ -359,66 +395,81 @@ describe('jsxSimpleAttributeToValue', () => {
 describe('unsetJSXValueAtPath', () => {
   it('removes an attribute from the root of the attributes', () => {
     const startingValue = {
-      left: jsxAttributeValue(0),
-      top: jsxAttributeValue(0),
-      'data-uid': jsxAttributeValue('aaa'),
+      left: jsxAttributeValue(0, emptyComments),
+      top: jsxAttributeValue(0, emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['left']))
-    const expectedValue = right({ top: jsxAttributeValue(0), 'data-uid': jsxAttributeValue('aaa') })
+    const expectedValue = right({
+      top: jsxAttributeValue(0, emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
+    })
     expect(actualValue).toEqual(expectedValue)
   })
   it('removes an attribute from the root of the attributes that does not exist', () => {
-    const startingValue = { top: jsxAttributeValue(0), 'data-uid': jsxAttributeValue('aaa') }
+    const startingValue = {
+      top: jsxAttributeValue(0, emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
+    }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['left']))
-    const expectedValue = right({ top: jsxAttributeValue(0), 'data-uid': jsxAttributeValue('aaa') })
+    const expectedValue = right({
+      top: jsxAttributeValue(0, emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
+    })
     expect(actualValue).toEqual(expectedValue)
   })
   it('removes an attribute from an attribute object', () => {
     const startingValue = {
-      style: jsxAttributeValue({ left: 0, top: 0 }),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeValue({ left: 0, top: 0 }, emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left']))
     const expectedValue = right({
-      style: jsxAttributeValue({ top: 0 }),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeValue({ top: 0 }, emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
     expect(actualValue).toEqual(expectedValue)
   })
   it('removes an attribute from an attribute object that does not exist', () => {
     const startingValue = {
-      style: jsxAttributeValue({ top: 0 }),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeValue({ top: 0 }, emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left']))
     const expectedValue = right({
-      style: jsxAttributeValue({ top: 0 }),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeValue({ top: 0 }, emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
     expect(actualValue).toEqual(expectedValue)
   })
   it('removes an attribute from an attribute array', () => {
-    const startingValue = { style: jsxAttributeValue([0, 1]), 'data-uid': jsxAttributeValue('aaa') }
+    const startingValue = {
+      style: jsxAttributeValue([0, 1], emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
+    }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
     const expectedValue = right({
-      style: jsxAttributeValue([0]),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeValue([0], emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
     expect(actualValue).toEqual(expectedValue)
   })
   it('removes an attribute from an attribute array that does not exist', () => {
-    const startingValue = { style: jsxAttributeValue([0]), 'data-uid': jsxAttributeValue('aaa') }
+    const startingValue = {
+      style: jsxAttributeValue([0], emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
+    }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
     const expectedValue = right({
-      style: jsxAttributeValue([0]),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeValue([0], emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
     expect(actualValue).toEqual(expectedValue)
   })
   it('fails when attempting to remove a property from an invalid attribute value', () => {
     const startingValue = {
       style: jsxAttributeOtherJavaScript('undefined', 'undefined', [], null),
-      'data-uid': jsxAttributeValue('aaa'),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
     expect(isLeft(actualValue)).toBe(true)
@@ -426,106 +477,139 @@ describe('unsetJSXValueAtPath', () => {
 
   it('removes an attribute from a nested object', () => {
     const startingValue = {
-      style: jsxAttributeNestedObjectSimple({
-        left: jsxAttributeValue({ x: 0, y: 0 }),
-        top: jsxAttributeValue({ x: 1, y: 1 }),
-      }),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedObjectSimple(
+        {
+          left: jsxAttributeValue({ x: 0, y: 0 }, emptyComments),
+          top: jsxAttributeValue({ x: 1, y: 1 }, emptyComments),
+        },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left']))
     const expectedValue = right({
-      style: jsxAttributeNestedObjectSimple({ top: jsxAttributeValue({ x: 1, y: 1 }) }),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedObjectSimple(
+        { top: jsxAttributeValue({ x: 1, y: 1 }, emptyComments) },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
     expect(actualValue).toEqual(expectedValue)
   })
   it('removes an attribute from a object that does not exist', () => {
     const startingValue = {
-      style: jsxAttributeNestedObjectSimple({ top: jsxAttributeValue({ x: 1, y: 1 }) }),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedObjectSimple(
+        { top: jsxAttributeValue({ x: 1, y: 1 }, emptyComments) },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left', 'x']))
     const expectedValue = right({
-      style: jsxAttributeNestedObjectSimple({ top: jsxAttributeValue({ x: 1, y: 1 }) }),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedObjectSimple(
+        { top: jsxAttributeValue({ x: 1, y: 1 }, emptyComments) },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
     expect(actualValue).toEqual(expectedValue)
   })
   it('removes an attribute from a nested array', () => {
     const startingValue = {
-      style: jsxAttributeNestedArraySimple([jsxAttributeValue(0), jsxAttributeValue(1)]),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedArraySimple([
+        jsxAttributeValue(0, emptyComments),
+        jsxAttributeValue(1, emptyComments),
+      ]),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
     const expectedValue = right({
-      style: jsxAttributeNestedArraySimple([jsxAttributeValue(0)]),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedArraySimple([jsxAttributeValue(0, emptyComments)]),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
     expect(actualValue).toEqual(expectedValue)
   })
   it('removes an attribute from a nested array that does not exist', () => {
     const startingValue = {
-      style: jsxAttributeNestedArraySimple([jsxAttributeValue(0)]),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedArraySimple([jsxAttributeValue(0, emptyComments)]),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     }
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
     const expectedValue = right({
-      style: jsxAttributeNestedArraySimple([jsxAttributeValue(0)]),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedArraySimple([jsxAttributeValue(0, emptyComments)]),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
     expect(actualValue).toEqual(expectedValue)
   })
   it('removes a deeply nested value', () => {
     const startingValue = {
-      style: jsxAttributeNestedObjectSimple({
-        left: jsxAttributeNestedArraySimple([
-          jsxAttributeValue('29'),
-          jsxAttributeNestedObjectSimple({
-            stateEnabled: jsxAttributeNestedArraySimple([
-              jsxAttributeValue({
-                lightSide: {
-                  eleven: 11,
-                  ten: 10,
-                },
-                darkSide: {
-                  twelve: 12,
-                  nine: 9,
-                },
-              }),
-            ]),
-          }),
-        ]),
-        top: jsxAttributeValue({ x: 1, y: 1 }),
-      }),
-      backgroundColor: jsxAttributeValue('red'),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedObjectSimple(
+        {
+          left: jsxAttributeNestedArraySimple([
+            jsxAttributeValue('29', emptyComments),
+            jsxAttributeNestedObjectSimple(
+              {
+                stateEnabled: jsxAttributeNestedArraySimple([
+                  jsxAttributeValue(
+                    {
+                      lightSide: {
+                        eleven: 11,
+                        ten: 10,
+                      },
+                      darkSide: {
+                        twelve: 12,
+                        nine: 9,
+                      },
+                    },
+                    emptyComments,
+                  ),
+                ]),
+              },
+              emptyComments,
+            ),
+          ]),
+          top: jsxAttributeValue({ x: 1, y: 1 }, emptyComments),
+        },
+        emptyComments,
+      ),
+      backgroundColor: jsxAttributeValue('red', emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     }
     const actualValue = unsetJSXValueAtPath(
       startingValue,
       PP.create(['style', 'left', 1, 'stateEnabled', 0, 'lightSide', 'eleven']),
     )
     const expectedValue = right({
-      style: jsxAttributeNestedObjectSimple({
-        left: jsxAttributeNestedArraySimple([
-          jsxAttributeValue('29'),
-          jsxAttributeNestedObjectSimple({
-            stateEnabled: jsxAttributeNestedArraySimple([
-              jsxAttributeValue({
-                lightSide: {
-                  ten: 10,
-                },
-                darkSide: {
-                  twelve: 12,
-                  nine: 9,
-                },
-              }),
-            ]),
-          }),
-        ]),
-        top: jsxAttributeValue({ x: 1, y: 1 }),
-      }),
-      backgroundColor: jsxAttributeValue('red'),
-      'data-uid': jsxAttributeValue('aaa'),
+      style: jsxAttributeNestedObjectSimple(
+        {
+          left: jsxAttributeNestedArraySimple([
+            jsxAttributeValue('29', emptyComments),
+            jsxAttributeNestedObjectSimple(
+              {
+                stateEnabled: jsxAttributeNestedArraySimple([
+                  jsxAttributeValue(
+                    {
+                      lightSide: {
+                        ten: 10,
+                      },
+                      darkSide: {
+                        twelve: 12,
+                        nine: 9,
+                      },
+                    },
+                    emptyComments,
+                  ),
+                ]),
+              },
+              emptyComments,
+            ),
+          ]),
+          top: jsxAttributeValue({ x: 1, y: 1 }, emptyComments),
+        },
+        emptyComments,
+      ),
+      backgroundColor: jsxAttributeValue('red', emptyComments),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
     })
     expect(actualValue).toEqual(expectedValue)
   })
@@ -533,13 +617,21 @@ describe('unsetJSXValueAtPath', () => {
 
 describe('dropKeyFromNestedObject', () => {
   it('only removes the pertinent attribute from a nested object', () => {
-    const startingValue = jsxAttributeNestedObject([
-      jsxSpreadAssignment(jsxAttributeValue('theme')),
-      jsxPropertyAssignment('backgroundColor', jsxAttributeValue('red')),
-    ])
-    const expectedValue = jsxAttributeNestedObject([
-      jsxSpreadAssignment(jsxAttributeValue('theme')),
-    ])
+    const startingValue = jsxAttributeNestedObject(
+      [
+        jsxSpreadAssignment(jsxAttributeValue('theme', emptyComments), emptyComments),
+        jsxPropertyAssignment(
+          'backgroundColor',
+          jsxAttributeValue('red', emptyComments),
+          emptyComments,
+        ),
+      ],
+      emptyComments,
+    )
+    const expectedValue = jsxAttributeNestedObject(
+      [jsxSpreadAssignment(jsxAttributeValue('theme', emptyComments), emptyComments)],
+      emptyComments,
+    )
     const actualValue = dropKeyFromNestedObject(startingValue, 'backgroundColor')
     expect(actualValue).toEqual(expectedValue)
   })

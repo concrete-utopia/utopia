@@ -148,6 +148,8 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               type: 'UTOPIA_JSX_COMPONENT',
               name: 'App',
               isFunction: true,
+              declarationSyntax: 'var',
+              blockOrExpression: 'block',
               param: {
                 type: 'PARAM',
                 dotDotDotToken: false,
@@ -189,6 +191,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                           },
                           uniqueID: '00df44d9-e76c-47d8-b832-60ee0fb3a5bc',
                         },
+                        comments: emptyComments,
                       },
                       {
                         type: 'PROPERTY_ASSIGNMENT',
@@ -210,18 +213,22 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                           },
                           uniqueID: '6173f632-5d44-42bc-86a2-dc857c77d767',
                         },
+                        comments: emptyComments,
                       },
                     ],
+                    comments: emptyComments,
                   },
                   layout: {
                     type: 'ATTRIBUTE_VALUE',
                     value: {
                       layoutSystem: LayoutSystem.PinSystem,
                     },
+                    comments: emptyComments,
                   },
                   'data-uid': {
                     type: 'ATTRIBUTE_VALUE',
                     value: 'aaa',
+                    comments: emptyComments,
                   },
                 },
                 children: [],

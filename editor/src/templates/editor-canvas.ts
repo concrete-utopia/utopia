@@ -77,6 +77,7 @@ import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
 import { UtopiaStyles } from '../uuiui'
+import { DeselectControl } from '../components/canvas/controls/deselect-control'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -505,6 +506,9 @@ interface EditorCanvasProps extends CanvasReactErrorCallback {
   canvasConsoleLogs: Array<ConsoleLog>
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
+  localSelectedViews: Array<TemplatePath>
+  localHighlightedViews: Array<TemplatePath>
+  setLocalSelectedViews: (newSelectedViews: TemplatePath[]) => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -658,6 +662,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       windowToCanvasPosition: this.getPosition,
       cursor,
       getPositionFromCoordinates: this.getPositionFromCoordinates,
+      localSelectedViews: this.props.localSelectedViews,
+      localHighlightedViews: this.props.localHighlightedViews,
+      setLocalSelectedViews: this.props.setLocalSelectedViews,
     })
 
     const canvasLiveEditingStyle = canvasIsLive
@@ -669,6 +676,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       {
         id: 'canvas-root',
         key: 'canvas-root',
+        'data-testid': 'canvas-root',
         style: {
           ...canvasLiveEditingStyle,
           transition: 'all .2s linear',
@@ -769,6 +777,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
         },
       },
+      React.createElement(DeselectControl, {}),
       nodeConnectorsDiv,
       React.createElement(CanvasComponentEntry, {
         reportError: this.props.reportError,
@@ -778,6 +787,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         addToConsoleLogs: this.props.addToConsoleLogs,
         getPositionFromCoordinates: this.getPositionFromCoordinates,
         dispatch: this.props.dispatch,
+        setSelectedViewsForCanvasControlsOnly: this.props.setLocalSelectedViews,
       }),
       canvasControls,
     )

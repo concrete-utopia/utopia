@@ -52,6 +52,7 @@ import { RightMenuTab } from '../right-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import { getStoryboardTemplatePath } from '../../../core/model/scene-utils'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -204,6 +205,7 @@ export class InsertModeControlContainer extends React.Component<
 
     return (
       <ComponentAreaControl
+        mouseEnabled={true}
         key={TP.toComponentId(target)}
         componentMetadata={this.props.componentMetadata}
         target={target}
@@ -238,6 +240,7 @@ export class InsertModeControlContainer extends React.Component<
     return (
       <ComponentLabelControl
         key={TP.toComponentId(target)}
+        mouseEnabled={true}
         componentMetadata={this.props.componentMetadata}
         target={target}
         frame={frame}
@@ -366,7 +369,7 @@ export class InsertModeControlContainer extends React.Component<
     const updatedAttributes = forceSetValueAtPath(
       attributes,
       PP.create(['textSizing']),
-      jsxAttributeValue('fixed'),
+      jsxAttributeValue('fixed', emptyComments),
     )
 
     return {
@@ -406,7 +409,7 @@ export class InsertModeControlContainer extends React.Component<
     const updatedAttributes2 = forceSetValueAtPath(
       updatedAttributes.value,
       PP.create(['textSizing']),
-      jsxAttributeValue('auto'),
+      jsxAttributeValue('auto', emptyComments),
     )
 
     return {
@@ -446,7 +449,7 @@ export class InsertModeControlContainer extends React.Component<
               setJSXValueAtPath(
                 element.props,
                 createLayoutPropertyPath('position'),
-                jsxAttributeValue('relative'),
+                jsxAttributeValue('relative', emptyComments),
               ),
             ) ?? element.props,
         }

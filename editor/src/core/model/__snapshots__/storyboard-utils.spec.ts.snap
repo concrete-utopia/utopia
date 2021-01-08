@@ -4,10 +4,12 @@ exports[`addStoryboardFileToProject adds storyboard file to project that does no
 Array [
   Object {
     "arbitraryJSBlock": null,
+    "blockOrExpression": "block",
     "comments": Object {
       "leadingComments": Array [],
       "trailingComments": Array [],
     },
+    "declarationSyntax": "var",
     "isFunction": false,
     "name": "storyboard",
     "param": null,
@@ -38,14 +40,26 @@ Array [
               "uniqueID": "",
             },
             "data-uid": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "ATTRIBUTE_VALUE",
               "value": "scene-1",
             },
             "props": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "ATTRIBUTE_VALUE",
               "value": Object {},
             },
             "style": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "ATTRIBUTE_VALUE",
               "value": Object {
                 "height": 812,
@@ -67,6 +81,10 @@ Array [
       },
       "props": Object {
         "data-uid": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "utopia-storyboard-uid",
         },
