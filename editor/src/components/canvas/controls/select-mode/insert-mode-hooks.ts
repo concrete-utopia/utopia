@@ -20,30 +20,26 @@ function useGethHiglightableViewsForInsertMode() {
       imports: getOpenImportsFromState(store.editor),
     }
   })
-  return React.useCallback(
-    // we don't use allElementsDirectlySelectable and childrenSelectable in insert mode, but they are needed for select mode
-    (_allElementsDirectlySelectable: boolean, _childrenSelectable: boolean) => {
-      const { componentMetadata, mode, imports } = storeRef.current
-      if (!isInsertMode(mode)) {
-        throw new Error('insert highlight callback was called oustide of insert mode')
+  return React.useCallback(() => {
+    const { componentMetadata, mode, imports } = storeRef.current
+    if (!isInsertMode(mode)) {
+      throw new Error('insert highlight callback was called oustide of insert mode')
+    }
+    const allPaths = MetadataUtils.getAllPaths(componentMetadata)
+    const insertTargets = allPaths.filter((path) => {
+      if (TP.isScenePath(path)) {
+        // TODO Scene Implementation
+        return false
+      } else {
+        return (
+          (insertionSubjectIsJSXElement(mode.subject) ||
+            insertionSubjectIsDragAndDrop(mode.subject)) &&
+          MetadataUtils.targetSupportsChildren(imports, componentMetadata, path)
+        )
       }
-      const allPaths = MetadataUtils.getAllPaths(componentMetadata)
-      const insertTargets = allPaths.filter((path) => {
-        if (TP.isScenePath(path)) {
-          // TODO Scene Implementation
-          return false
-        } else {
-          return (
-            (insertionSubjectIsJSXElement(mode.subject) ||
-              insertionSubjectIsDragAndDrop(mode.subject)) &&
-            MetadataUtils.targetSupportsChildren(imports, componentMetadata, path)
-          )
-        }
-      })
-      return insertTargets
-    },
-    [storeRef],
-  )
+    })
+    return insertTargets
+  }, [storeRef])
 }
 
 export function useInsertModeSelectAndHover(): {
