@@ -33,6 +33,7 @@ import { createDuplicationNewUIDs, getOriginalCanvasFrames } from '../../canvas-
 import { findFirstParentWithValidUID } from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { selectElementsThatRespectLayout } from '../new-canvas-controls'
+import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -327,6 +328,39 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   return startDragStateAfterDragExceedsThreshold
 }
 
+export function useHighlightCallbacks(
+  forceAllElementsDirectlySelectable: boolean,
+): {
+  onMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void
+  onMouseOut: () => void
+} {
+  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+  const findValidTarget = useFindValidTarget()
+
+  const onMouseOver = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const validTemplatePath = findValidTarget(
+        event.target as Element,
+        event.metaKey || forceAllElementsDirectlySelectable,
+        false,
+      )
+      if (
+        validTemplatePath != null &&
+        !validTemplatePath.isSelected // do not highlight selected elements
+      ) {
+        maybeHighlightOnHover(validTemplatePath.templatePath)
+      }
+    },
+    [maybeHighlightOnHover, findValidTarget, forceAllElementsDirectlySelectable],
+  )
+
+  const onMouseOut = React.useCallback(() => {
+    maybeClearHighlightsOnHoverEnd()
+  }, [maybeClearHighlightsOnHoverEnd])
+
+  return { onMouseOver, onMouseOut }
+}
+
 export function useSelectModeSelectAndHover(
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
 ): {
@@ -336,26 +370,10 @@ export function useSelectModeSelectAndHover(
 } {
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
-  const onMouseOver = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      const validTemplatePath = findValidTarget(event.target as Element, event.metaKey, false)
-      if (
-        validTemplatePath != null &&
-        !validTemplatePath.isSelected // do not highlight selected elements
-      ) {
-        maybeHighlightOnHover(validTemplatePath.templatePath)
-      }
-    },
-    [maybeHighlightOnHover, findValidTarget],
-  )
-
-  const onMouseOut = React.useCallback(() => {
-    maybeClearHighlightsOnHoverEnd()
-  }, [maybeClearHighlightsOnHoverEnd])
+  const { onMouseOver, onMouseOut } = useHighlightCallbacks(false)
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -395,18 +413,6 @@ export function useSelectModeSelectAndHover(
   )
 
   return { onMouseOver, onMouseOut, onMouseDown }
-}
-
-function useInsertModeSelectAndHover(): {
-  onMouseOver: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onMouseOut: () => void
-  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-} {
-  return useKeepShallowReferenceEquality({
-    onMouseOver: NO_OP,
-    onMouseOut: NO_OP,
-    onMouseDown: NO_OP,
-  })
 }
 
 function usePreviewModeSelectAndHover(): {
