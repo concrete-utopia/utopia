@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-expressions */
 import * as React from 'react'
 import { FramePoint } from 'utopia-api'
 import { LayoutHelpers, TopLeftWidthHeight } from '../../../core/layout/layout-helpers'
@@ -646,16 +645,20 @@ export class InsertModeControlContainer extends React.Component<
 
   componentDidMount() {
     const canvasContainer = document.getElementById(CanvasContainerID)
-    canvasContainer?.addEventListener('mousedown', this.onMouseDown)
-    canvasContainer?.addEventListener('mousemove', this.onMouseMove)
-    canvasContainer?.addEventListener('mouseup', this.onMouseUp)
+    if (canvasContainer != null) {
+      canvasContainer.addEventListener('mousedown', this.onMouseDown)
+      canvasContainer.addEventListener('mousemove', this.onMouseMove)
+      canvasContainer.addEventListener('mouseup', this.onMouseUp)
+    }
   }
 
   componentWillUnmount() {
     const canvasContainer = document.getElementById(CanvasContainerID)
-    canvasContainer?.removeEventListener('mousedown', this.onMouseDown)
-    canvasContainer?.removeEventListener('mousemove', this.onMouseMove)
-    canvasContainer?.removeEventListener('mouseup', this.onMouseUp)
+    if (canvasContainer != null) {
+      canvasContainer.removeEventListener('mousedown', this.onMouseDown)
+      canvasContainer.removeEventListener('mousemove', this.onMouseMove)
+      canvasContainer.removeEventListener('mouseup', this.onMouseUp)
+    }
   }
 
   render() {
