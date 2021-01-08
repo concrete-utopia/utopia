@@ -1975,7 +1975,7 @@ export function parseArbitraryNodes(
         (transpileResult, dataUIDFixResult) => {
           const transpiled = `${transpileResult.code}\n${definedWithCode}`
           return arbitraryJSBlock(
-            dataUIDFixResult.code,
+            code,
             transpiled,
             definedWithin,
             definedElsewhere,

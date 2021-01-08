@@ -72,6 +72,33 @@ describe('Parsing and then printing code', () => {
     expect(parsedThenPrinted).toEqual(code)
   })
 
+  it('does not include data-uid attributes in top level arbitrary blocks', () => {
+    const code = applyPrettier(
+      `
+import { GithubPicker } from "react-color";
+function Picker() {
+  const [color, setColor] = useThemeContext();
+  const [visible, setVisible] = usePickerVisibilityContext();
+  return visible ? (
+    <GithubPicker
+      style={{ position: "absolute" }}
+      triangle="hide"
+      color={color}
+      onChange={(c) => {
+        setColor(c.hex);
+        setVisible(false);
+      }}
+    />
+  ) : null;
+}
+`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
   xit('does not remove the braces surrounding a jsx attribute value', () => {
     const code = applyPrettier(
       `export const whatever = (props) => {

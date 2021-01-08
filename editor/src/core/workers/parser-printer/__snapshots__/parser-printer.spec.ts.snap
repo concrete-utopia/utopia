@@ -78,10 +78,10 @@ Object {
       "otherFn",
     ],
     "javascript": "function cakeFn(n) {
-  return n;
+  return n
 }
 function otherFn(n) {
-  return n;
+  return n
 }",
     "sourceMap": Object {
       "file": "code.tsx",
@@ -231,7 +231,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "cakeFn",
       ],
       "javascript": "function cakeFn(n) {
-  return n;
+  return n
 }",
       "sourceMap": Object {
         "file": "code.tsx",
@@ -285,7 +285,7 @@ return { cakeFn: cakeFn };",
         "otherFn",
       ],
       "javascript": "function otherFn(n) {
-  return n;
+  return n
 }",
       "sourceMap": Object {
         "file": "code.tsx",
@@ -458,8 +458,8 @@ Object {
       "a",
       "b",
     ],
-    "javascript": "const a = n => n > 0 ? n : b(10);
-const b = n => n > 0 ? n : a(10);",
+    "javascript": "const a = (n) => n > 0 ? n : b(10)
+const b = (n) => n > 0 ? n : a(10)",
     "sourceMap": Object {
       "file": "code.tsx",
       "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
@@ -554,7 +554,7 @@ return { a: a, b: b };",
       "definedWithin": Array [
         "a",
       ],
-      "javascript": "const a = n => n > 0 ? n : b(10);",
+      "javascript": "const a = (n) => n > 0 ? n : b(10)",
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
@@ -648,7 +648,7 @@ return { a: a };",
       "definedWithin": Array [
         "b",
       ],
-      "javascript": "const b = n => n > 0 ? n : a(10);",
+      "javascript": "const b = (n) => n > 0 ? n : a(10)",
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAMCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
@@ -700,7 +700,7 @@ Object {
     "definedWithin": Array [
       "a",
     ],
-    "javascript": "const a = \\"cake\\";",
+    "javascript": "const a = \\"cake\\"",
     "sourceMap": Object {
       "file": "code.tsx",
       "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
@@ -814,7 +814,7 @@ return { a: a };",
       "definedWithin": Array [
         "a",
       ],
-      "javascript": "const a = \\"cake\\";",
+      "javascript": "const a = \\"cake\\"",
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
