@@ -39,7 +39,7 @@ import * as TP from '../../../core/shared/template-path'
 import CanvasActions from '../canvas-actions'
 import { CanvasContainerID, InsertDragState, insertDragState } from '../canvas-types'
 import { GuidelineWithSnappingVector } from '../guideline'
-import { ComponentAreaControl, ComponentLabelControl } from './component-area-control'
+import { ComponentLabelControl } from './component-area-control'
 import { GuidelineControl } from './guideline-control'
 import {
   applySnappingToPoint,
