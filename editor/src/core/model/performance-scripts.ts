@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom'
 import CanvasActions from '../../components/canvas/canvas-actions'
 import { DebugDispatch } from '../../components/editor/action-types'
 import { clearSelection, selectComponents } from '../../components/editor/actions/action-creators'
-import { useEditorState } from '../../components/editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../components/editor/store/store-hook'
 import {
   canvasPoint,
   CanvasRectangle,
@@ -51,23 +51,17 @@ export function useTriggerResizePerformanceTest(): () => void {
     (store) => store.dispatch as DebugDispatch,
     'useTriggerResizePerformanceTest dispatch',
   )
-  const metadata = useEditorState(
-    (store) => store.editor.jsxMetadataKILLME,
-    'useTriggerResizePerformanceTest metadata',
-  )
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'useTriggerResizePerformanceTest selectedViews',
-  )
+  const metadata = useRefEditorState((store) => store.editor.jsxMetadataKILLME)
+  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const trigger = React.useCallback(async () => {
-    if (selectedViews.length === 0) {
+    if (selectedViews.current.length === 0) {
       console.info('RESIZE_TEST_MISSING_SELECTEDVIEW')
       return
     }
 
-    const target = selectedViews[0]
+    const target = selectedViews.current[0]
     const targetFrame = MetadataUtils.getElementByInstancePathMaybe(
-      metadata.elements,
+      metadata.current.elements,
       target as InstancePath,
     )?.globalFrame
     const targetStartPoint =
@@ -77,7 +71,7 @@ export function useTriggerResizePerformanceTest(): () => void {
             y: targetFrame.y + targetFrame.height,
           } as CanvasVector)
         : (zeroPoint as CanvasVector)
-    const originalFrames = getOriginalFrames(selectedViews, metadata)
+    const originalFrames = getOriginalFrames(selectedViews.current, metadata.current)
 
     let framesPassed = 0
     async function step() {
@@ -92,7 +86,7 @@ export function useTriggerResizePerformanceTest(): () => void {
         originalFrames,
         { x: 1, y: 1 },
         { x: 1, y: 1 },
-        metadata,
+        metadata.current,
         [target],
         false,
       )
@@ -121,17 +115,14 @@ export function useTriggerSelectionPerformanceTest(): () => void {
     (store) => store.dispatch as DebugDispatch,
     'useTriggerSelectionPerformanceTest dispatch',
   )
-  const allPaths = useEditorState(
-    (store) => store.derived.navigatorTargets,
-    'useTriggerResizePerformanceTest navigatorTargets',
-  )
+  const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const trigger = React.useCallback(async () => {
-    if (allPaths.length === 0) {
+    if (allPaths.current.length === 0) {
       console.info('SELECT_TEST_MISSING_ELEMENTS')
       return
     }
 
-    const targetPath = [...allPaths].sort(
+    const targetPath = [...allPaths.current].sort(
       (a, b) => TP.toString(b).length - TP.toString(a).length,
     )[0]
     let framesPassed = 0
