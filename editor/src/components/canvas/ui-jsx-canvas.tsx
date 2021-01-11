@@ -119,7 +119,6 @@ export interface UiJsxCanvasProps {
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
-  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -146,7 +145,6 @@ export function pickUiJsxCanvasProps(
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
   dispatch: EditorDispatch,
-  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
 ): UiJsxCanvasProps | null {
   const uiFile = getOpenUIJSFile(editor)
   const uiFilePath = getOpenUIJSFileKey(editor)
@@ -217,7 +215,6 @@ export function pickUiJsxCanvasProps(
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
-      setSelectedViewsForCanvasControlsOnly: setSelectedViewsForCanvasControlsOnly,
     }
   }
 }
@@ -372,7 +369,6 @@ export const UiJsxCanvas = betterReactMemo(
                 onDomReport={onDomReport}
                 validRootPaths={rootValidPaths}
                 canvasRootElementTemplatePath={storyboardRootElementPath}
-                setSelectedViewsForCanvasControlsOnly={props.setSelectedViewsForCanvasControlsOnly}
               >
                 <SceneLevelUtopiaContext.Provider
                   value={{ validPaths: rootValidPaths, scenePath: rootScenePath }}
@@ -444,7 +440,6 @@ export interface CanvasContainerProps {
   canvasRootElementTemplatePath: TemplatePath
   validRootPaths: Array<StaticInstancePath>
   mountCount: number
-  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void
 }
 
 const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (

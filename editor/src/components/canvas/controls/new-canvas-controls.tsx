@@ -46,10 +46,35 @@ import {
   useStartDragStateAfterDragExceedsThreshold,
 } from './select-mode/select-mode-hooks'
 import { NO_OP } from '../../../core/shared/utils'
+import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
+
+function useLocalSelectedHighlightedViews(
+  transientCanvasState: TransientCanvasState,
+): {
+  localSelectedViews: TemplatePath[]
+  localHighlightedViews: TemplatePath[]
+  setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
+} {
+  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
+    transientCanvasState.selectedViews,
+  )
+  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
+    transientCanvasState.highlightedViews,
+  )
+
+  const setSelectedViewsLocally = React.useCallback(
+    (newSelectedViews: Array<TemplatePath>) => {
+      setLocalSelectedViews(newSelectedViews)
+      setLocalHighlightedViews([])
+    },
+    [setLocalSelectedViews, setLocalHighlightedViews],
+  )
+  return { localSelectedViews, localHighlightedViews, setSelectedViewsLocally }
+}
 
 export interface ControlProps {
   selectedViews: Array<TemplatePath>
@@ -74,9 +99,6 @@ export interface ControlProps {
 interface NewCanvasControlsProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cursor: CSSCursor
-  localSelectedViews: Array<TemplatePath>
-  localHighlightedViews: Array<TemplatePath>
-  setLocalSelectedViews: (newSelectedViews: TemplatePath[]) => void
 }
 
 export const NewCanvasControls = betterReactMemo(
@@ -95,9 +117,16 @@ export const NewCanvasControls = betterReactMemo(
         controls: store.derived.canvas.controls,
         scale: store.editor.canvas.scale,
         focusedPanel: store.editor.focusedPanel,
+        transientCanvasState: store.derived.canvas.transientState,
       }),
       'NewCanvasControls',
     )
+
+    const {
+      localSelectedViews,
+      localHighlightedViews,
+      setSelectedViewsLocally,
+    } = useLocalSelectedHighlightedViews(canvasControlProps.transientCanvasState)
 
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
@@ -153,9 +182,9 @@ export const NewCanvasControls = betterReactMemo(
           >
             <NewCanvasControlsInner
               windowToCanvasPosition={props.windowToCanvasPosition}
-              localSelectedViews={props.localSelectedViews}
-              localHighlightedViews={props.localHighlightedViews}
-              setLocalSelectedViews={props.setLocalSelectedViews}
+              localSelectedViews={localSelectedViews}
+              localHighlightedViews={localHighlightedViews}
+              setLocalSelectedViews={setSelectedViewsLocally}
               {...canvasControlProps}
             />
           </div>

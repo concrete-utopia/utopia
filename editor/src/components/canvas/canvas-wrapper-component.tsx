@@ -28,30 +28,6 @@ import { betterReactMemo } from '../../uuiui-deps'
 import { TemplatePath } from '../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
 
-function useLocalSelectedHighlightedViews(
-  transientCanvasState: TransientCanvasState,
-): {
-  localSelectedViews: TemplatePath[]
-  localHighlightedViews: TemplatePath[]
-  setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
-} {
-  const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
-    transientCanvasState.selectedViews,
-  )
-  const [localHighlightedViews, setLocalHighlightedViews] = usePropControlledStateV2(
-    transientCanvasState.highlightedViews,
-  )
-
-  const setSelectedViewsLocally = React.useCallback(
-    (newSelectedViews: Array<TemplatePath>) => {
-      setLocalSelectedViews(newSelectedViews)
-      setLocalHighlightedViews([])
-    },
-    [setLocalSelectedViews, setLocalHighlightedViews],
-  )
-  return { localSelectedViews, localHighlightedViews, setSelectedViewsLocally }
-}
-
 interface CanvasWrapperComponentProps {
   runtimeErrors: Array<RuntimeErrorInfo>
   onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
@@ -72,12 +48,6 @@ export const CanvasWrapperComponent = betterReactMemo(
       }),
       'CanvasWrapperComponent',
     )
-
-    const {
-      localSelectedViews,
-      localHighlightedViews,
-      setSelectedViewsLocally,
-    } = useLocalSelectedHighlightedViews(derivedState.canvas.transientState)
 
     const {
       runtimeErrors,
@@ -131,9 +101,6 @@ export const CanvasWrapperComponent = betterReactMemo(
             canvasConsoleLogs={canvasConsoleLogs}
             clearConsoleLogs={clearConsoleLogs}
             addToConsoleLogs={addToConsoleLogs}
-            localSelectedViews={localSelectedViews}
-            localHighlightedViews={localHighlightedViews}
-            setLocalSelectedViews={setSelectedViewsLocally}
           />
         ) : null}
         {safeMode ? (
