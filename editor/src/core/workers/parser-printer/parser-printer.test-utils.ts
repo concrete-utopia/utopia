@@ -629,7 +629,7 @@ export function topLevelElementArbitrary(): Arbitrary<TopLevelElement> {
 export function exportDetailNamedArbitrary(
   possibleNames: Array<string>,
 ): Arbitrary<ExportDetailNamed> {
-  return FastCheck.constantFrom(...possibleNames).map(exportDetailNamed)
+  return FastCheck.constantFrom(...possibleNames).map((name) => exportDetailNamed(name, undefined))
 }
 
 export function exportDetailModifierArbitrary(): Arbitrary<ExportDetailModifier> {

@@ -1387,7 +1387,7 @@ describe('moveTemplate', () => {
     )
   })
 
-  it('inserting a new element', async () => {
+  xit('inserting a new element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>

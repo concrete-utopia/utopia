@@ -72,6 +72,33 @@ describe('Parsing and then printing code', () => {
     expect(parsedThenPrinted).toEqual(code)
   })
 
+  it('does not include data-uid attributes in top level arbitrary blocks', () => {
+    const code = applyPrettier(
+      `
+import { GithubPicker } from "react-color";
+function Picker() {
+  const [color, setColor] = useThemeContext();
+  const [visible, setVisible] = usePickerVisibilityContext();
+  return visible ? (
+    <GithubPicker
+      style={{ position: "absolute" }}
+      triangle="hide"
+      color={color}
+      onChange={(c) => {
+        setColor(c.hex);
+        setVisible(false);
+      }}
+    />
+  ) : null;
+}
+`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
   xit('does not remove the braces surrounding a jsx attribute value', () => {
     const code = applyPrettier(
       `export const whatever = (props) => {
@@ -84,13 +111,44 @@ describe('Parsing and then printing code', () => {
     expect(parsedThenPrinted).toEqual(code)
   })
 
-  xit('does not remove a trailing export default statement', () => {
+  it('does not remove a trailing export default statement for a component', () => {
     const code = applyPrettier(
       `const whatever = (props) => {
         return <div data-uid='aaa' />
       }
-      
       export default whatever`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  it('does not remove a trailing export default statement for anything else', () => {
+    const code = applyPrettier(
+      `const Thing = 1
+      export default Thing`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  it('preserves export statements including those with module specifiers', () => {
+    const code = applyPrettier(
+      `
+      const Thing = 1
+      const OtherThing = 2
+      export { default as Calendar } from './Calendar'
+      export { DateLocalizer } from './localizer'
+      export { Thing, OtherThing as SomethingElse }
+      export { default as momentLocalizer } from './localizers/moment'
+      export { default as globalizeLocalizer } from './localizers/globalize'
+      export { default as dateFnsLocalizer } from './localizers/date-fns'
+      export { default as move } from './utils/move'
+      export { views as Views, navigate as Navigate } from './utils/constants'
+      `,
       false,
     ).formatted
 

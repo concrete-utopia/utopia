@@ -287,7 +287,7 @@ export var whatever = (props) => {
         ),
       ],
     )
-    const jsCode = `const arr = [{ n: 1 }];`
+    const jsCode = `const arr = [ { n: 1 } ]`
     const transpiledJsCode = `var arr = [{
   n: 1
 }];
@@ -385,7 +385,7 @@ export var whatever = (props) => {
         ),
       ],
     )
-    const jsCode = `const arr = [{ a: { n: 1 } }];`
+    const jsCode = `const arr = [ { a: { n: 1 } } ]`
     const transpiledJsCode = `var arr = [{
   a: {
     n: 1
@@ -490,7 +490,7 @@ export var whatever = (props) => {
         ),
       ],
     )
-    const jsCode = `const arr = [[1]];`
+    const jsCode = `const arr = [ [ 1 ] ]`
     const transpiledJsCode = `var arr = [[1]];
 return { arr: arr };`
     const arbitraryBlock = arbitraryJSBlock(
