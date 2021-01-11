@@ -191,4 +191,55 @@ function Picker() {
     const parsedThenPrinted = parseThenPrint(code)
     expect(parsedThenPrinted).toEqual(code)
   })
+
+  it('inserts newlines based on heuristics', () => {
+    const code = applyPrettier(
+      `/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      
+      const { m } = require('./thing')
+      const { n } = require('./thing')
+      const { o } = require('./thing')
+      
+      export function doThing() {
+        return 1
+      }
+      
+      export default function App(props) {
+        return <div data-uid='aaa' />
+      }
+      
+      const a = 1
+      const b = 10
+      const c = 100
+      
+      const thing1 = {
+        a: 10,
+      }
+      
+      const thing2 = {
+        b: 100,
+      }
+      
+      export var storyboard = (
+        <Storyboard data-uid='bbb'>
+          <Scene
+            component={App}
+            props={{}}
+            style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+            data-uid='ccc'
+          />
+        </Storyboard>
+      )
+      
+      export { thing1, thing2 }
+      export { default as p } from './thing'
+      `,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
 })
