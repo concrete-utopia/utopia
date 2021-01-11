@@ -654,6 +654,66 @@ export const printCode = memoize(printCodeImpl, {
   maxSize: 1,
 })
 
+function isVariableDeclaration(line: string): boolean {
+  const withoutExport = line.startsWith('export ') ? line.slice(7) : line
+  return (
+    withoutExport.startsWith('var') ||
+    withoutExport.startsWith('let') ||
+    withoutExport.startsWith('const')
+  )
+}
+
+function isFunctionDeclaration(line: string): boolean {
+  const withoutExport = line.startsWith('export ') ? line.slice(7) : line
+  const withoutDefault = withoutExport.startsWith('default ')
+    ? withoutExport.slice(8)
+    : withoutExport
+  return withoutDefault.startsWith('function')
+}
+
+function createBlanklineTracker() {
+  let lastLineWasImport = false
+  let lastLineWasExport = false
+  let lastLineWasFunction = false
+  let lastLineWasVariable = false
+
+  return (statement: TS.Node, printedCode: string): boolean => {
+    const isUnparsedSource = TS.isUnparsedSource(statement)
+    const isMultiLineUnparsedSource =
+      isUnparsedSource && (printedCode.includes('\n') || printedCode.includes('\r'))
+    const isSingleLineUnparsedSource = isUnparsedSource && !isMultiLineUnparsedSource
+    const nextLineIsImport =
+      TS.isImportDeclaration(statement) ||
+      (isSingleLineUnparsedSource && printedCode.startsWith('import'))
+    const nextLineIsVariable =
+      TS.isVariableStatement(statement) ||
+      (isSingleLineUnparsedSource && isVariableDeclaration(printedCode))
+    const nextLineIsFunction =
+      TS.isFunctionDeclaration(statement) ||
+      (isSingleLineUnparsedSource && isFunctionDeclaration(printedCode))
+    const nextLineIsExport =
+      TS.isExportDeclaration(statement) ||
+      (isSingleLineUnparsedSource &&
+        !nextLineIsVariable &&
+        !nextLineIsFunction &&
+        printedCode.startsWith('export'))
+
+    const shouldPrefixWithBlankLine =
+      (lastLineWasImport && !nextLineIsImport) ||
+      (!lastLineWasExport && nextLineIsExport) ||
+      (!lastLineWasVariable && nextLineIsVariable) ||
+      (!lastLineWasFunction && nextLineIsFunction) ||
+      isMultiLineUnparsedSource
+
+    lastLineWasImport = nextLineIsImport
+    lastLineWasExport = nextLineIsExport
+    lastLineWasFunction = nextLineIsFunction
+    lastLineWasVariable = nextLineIsVariable
+
+    return shouldPrefixWithBlankLine
+  }
+}
+
 function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): string {
   const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
   const resultFile = TS.createSourceFile(
@@ -663,9 +723,21 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
     false,
     TS.ScriptKind.TS,
   )
-  const printedParts = statements.map((statement) => {
-    return printer.printNode(TS.EmitHint.Unspecified, statement, resultFile)
+
+  const checkShouldInsertBlankLineBeforeStatement = createBlanklineTracker()
+  let printedParts: Array<string> = []
+
+  fastForEach(statements, (statement) => {
+    const nextLine = printer.printNode(TS.EmitHint.Unspecified, statement, resultFile).trim()
+    const shouldPrefixWithBlankLine = checkShouldInsertBlankLineBeforeStatement(statement, nextLine)
+
+    if (printedParts.length > 0 && shouldPrefixWithBlankLine) {
+      printedParts.push('\n')
+    }
+
+    printedParts.push(nextLine)
   })
+
   const typescriptPrintedResult = printedParts.join('\n')
   let result: string
   if (shouldPrettify) {

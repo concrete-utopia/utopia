@@ -75,7 +75,10 @@ async function processProjectCode(
       // Handle
       if (dirEntry.isFile() && javascriptFileEndings.some((ending) => fullPath.endsWith(ending))) {
         const fileResult = await processFile(repo, rootProjectPath, fullPath)
-        result.push(fileResult)
+        if (fileResult.split('\n').length > 4) {
+          // Skip empty patches
+          result.push(fileResult)
+        }
       }
     }
   }
