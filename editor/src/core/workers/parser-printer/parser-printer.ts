@@ -341,12 +341,19 @@ function jsxElementToExpression(
           const prop = element.props[propsKey]
           const identifier = TS.createIdentifier(propsKey)
           if (isJSXAttributeValue(prop) && typeof prop.value === 'boolean') {
+            // Use the shorthand style for true values, and the explicit style for false values
             if (prop.value) {
               // The `any` allows our `undefined` to punch through the invalid typing
               // of `createJsxAttribute`.
               attribsArray.push(TS.createJsxAttribute(identifier, undefined as any))
+            } else {
+              attribsArray.push(
+                TS.createJsxAttribute(
+                  identifier,
+                  TS.createJsxExpression(undefined, TS.createFalse()),
+                ),
+              )
             }
-            // No else case here as a boolean false value means it gets omitted.
           } else {
             const attributeExpression = jsxAttributeToExpression(prop)
             const initializer: TS.StringLiteral | TS.JsxExpression = TS.isStringLiteral(

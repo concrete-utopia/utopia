@@ -3009,33 +3009,8 @@ export var whatever = props => {
       detailOfExports,
     )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
-    // As false properties are eliminated from the output,
-    // create a copy of the original and snip that value out.
-    let propsWithoutFalseProp: JSXAttributes = {
-      ...cake.props,
-    }
-    delete propsWithoutFalseProp['falseProp']
-    const withoutFalseProp: UtopiaJSXComponent = {
-      ...exported,
-      rootElement: {
-        ...view,
-        children: [
-          {
-            ...cake,
-            props: propsWithoutFalseProp,
-          },
-        ],
-      },
-    }
     const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [withoutFalseProp],
-        expect.objectContaining({}),
-        null,
-        null,
-        detailOfExports,
-      ),
+      parseSuccess(imports, [exported], expect.objectContaining({}), null, null, detailOfExports),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3877,7 +3852,7 @@ export var whatever = props => {
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('false attributes are omitted completely', () => {
+  it('false attributes are printed as explicit assignments', () => {
     const expectedResult = applyPrettier(
       `import * as React from "react";
 import {
@@ -3890,7 +3865,7 @@ import {
   View
 } from "utopia-api";
 export var whatever = props => {
-  return <View data-uid="aaa" />;
+  return <View data-uid="aaa" booleanProperty={false} />;
 };
 `,
       false,

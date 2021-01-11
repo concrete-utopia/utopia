@@ -177,4 +177,18 @@ function Picker() {
     const parsedThenPrinted = parseThenPrint(code)
     expect(parsedThenPrinted).toEqual(code)
   })
+
+  it('for jsx boolean attributes use shorthand style for true values, and explicit style for false values', () => {
+    const code = applyPrettier(
+      `
+      export const whatever = (props) => {
+        return <div data-uid='aaa' data-trueprop data-falseprop={false} />
+      }
+      `,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
 })
