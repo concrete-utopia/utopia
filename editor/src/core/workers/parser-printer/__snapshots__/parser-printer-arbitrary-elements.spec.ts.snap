@@ -14,16 +14,16 @@ Object {
     ],
     "javascript": "function a(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return b(n - 1);
+    return b(n - 1)
   }
 }
 function b(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return a(n - 1);
+    return a(n - 1)
   }
 }",
     "sourceMap": Object {
@@ -201,9 +201,9 @@ return { a: a, b: b };",
       ],
       "javascript": "function a(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return b(n - 1);
+    return b(n - 1)
   }
 }",
       "sourceMap": Object {
@@ -499,9 +499,9 @@ export var storyboard = (
       ],
       "javascript": "function b(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return a(n - 1);
+    return a(n - 1)
   }
 }",
       "sourceMap": Object {

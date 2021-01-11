@@ -889,7 +889,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
     )
     const jsCode1 = `function getSizing(n) {
-  return 100 + n;
+  return 100 + n
 }`
     const transpiledJsCode1 = `function getSizing(n) {
   return 100 + n;
@@ -907,7 +907,7 @@ return { getSizing: getSizing };`
       }),
       emptyComments,
     )
-    const jsCode2 = `var spacing = 20;`
+    const jsCode2 = `var spacing = 20`
     const transpiledJsCode2 = `var spacing = 20;
 return { spacing: spacing };`
     const arbitraryBlock2 = arbitraryJSBlock(
@@ -923,9 +923,9 @@ return { spacing: spacing };`
       emptyComments,
     )
     const combinedJsCode = `function getSizing(n) {
-  return 100 + n;
+  return 100 + n
 }
-var spacing = 20;`
+var spacing = 20`
     const transpiledcombinedJsCode = `function getSizing(n) {
   return 100 + n;
 }
@@ -1013,7 +1013,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
     )
     const jsCode = `export default function getSizing(n) {
-  return 100 + n;
+  return 100 + n
 }`
     const transpiledJsCode = `function getSizing(n) {
   return 100 + n;
@@ -1105,10 +1105,10 @@ export var whatever = (props) => <View data-uid='aaa'>
     const jsCode = `export function getSizing(n) {
   switch (n) {
     case 100:
-      return 1;
+      return 1
     default:
-      return 100 + n;}
-
+      return 100 + n
+  }
 }`
     const transpiledJsCode = `function getSizing(n) {
   switch (n) {
@@ -1198,9 +1198,9 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
       emptyComments,
     )
-    const jsCode = `export default (n => {
-  return 100 + n;
-});`
+    const jsCode = `export default (n) => {
+  return 100 + n
+}`
     const transpiledJsCode = `(function (n) {
   return 100 + n;
 });
@@ -1288,7 +1288,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const transpiledJSCode = `var spacing = 20;
 return { spacing: spacing };`
     const jsVariable = arbitraryJSBlock(
-      'var spacing = 20;',
+      'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
       [],
@@ -1351,8 +1351,8 @@ export var whatever = (props) => {
       ),
     }
     const view = jsxElement('View', viewAttributes, [])
-    const jsCode = `const bgs = ['black', 'grey'];
-const bg = bgs[0];`
+    const jsCode = `const bgs = ['black', 'grey']
+const bg = bgs[0]`
     const transpiledJsCode = `var bgs = ['black', 'grey'];
 var bg = bgs[0];
 return { bgs: bgs, bg: bg };`
@@ -1428,7 +1428,7 @@ export var whatever = (props) => {
       ),
     }
     const view = jsxElement('View', viewAttributes, [])
-    const jsCode = `const greys = ['lightGrey', 'grey'];`
+    const jsCode = `const greys = ['lightGrey', 'grey']`
     const transpiledJsCode = `var greys = ['lightGrey', 'grey'];
 return { greys: greys };`
     const arbitraryBlock = arbitraryJSBlock(
@@ -1495,8 +1495,8 @@ export var whatever = (props) => {
       ),
     }
     const view = jsxElement('View', viewAttributes, [])
-    const jsCode = `const a = 10;
-const b = 20;`
+    const jsCode = `const a = 10
+const b = 20`
     const transpiledJsCode = `var a = 10;
 var b = 20;
 return { a: a, b: b };`
@@ -1565,9 +1565,9 @@ export var whatever = (props) => {
       ),
     }
     const view = jsxElement('View', viewAttributes, [])
-    const jsCode = `const a = true;
-const b = 10;
-const c = 20;`
+    const jsCode = `const a = true
+const b = 10
+const c = 20`
     const transpiledJsCode = `var a = true;
 var b = 10;
 var c = 20;
@@ -1645,7 +1645,7 @@ export var whatever = (props) => {
       ),
     }
     const view = jsxElement('View', viewAttributes, [])
-    const jsCode = `let a = 10;`
+    const jsCode = `let a = 10`
     const transpiledJsCode = `var a = 10;
 return { a: a };`
     const arbitraryBlock = arbitraryJSBlock(
@@ -1712,8 +1712,8 @@ export var whatever = (props) => {
       ),
     }
     const view = jsxElement('View', viewAttributes, [])
-    const jsCode = `const a = 10;
-const b = { a: a };`
+    const jsCode = `const a = 10
+const b = { a: a }`
     const transpiledJsCode = `var a = 10;
 var b = {
   a: a
@@ -1790,7 +1790,7 @@ export var whatever = (props) => {
       ),
     }
     const view = jsxElement('View', viewAttributes, [])
-    const jsCode = `const bg = { backgroundColor: 'grey' };`
+    const jsCode = `const bg = { backgroundColor: 'grey' }`
     const transpiledJsCode = `var bg = {
   backgroundColor: 'grey'
 };
@@ -1879,7 +1879,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
       emptyComments,
     )
-    const jsCode = `var count = 10;`
+    const jsCode = `var count = 10`
     const transpiledJSCode = `var count = 10;
 return { count: count };`
     const jsVariable = arbitraryJSBlock(
@@ -1966,7 +1966,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const transpiledJSCode = `var use20 = true;
 return { use20: use20 };`
     const jsVariable = arbitraryJSBlock(
-      'var use20 = true;',
+      'var use20 = true',
       transpiledJSCode,
       ['use20'],
       [],
@@ -2030,7 +2030,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const transpiledJSCode = `var mySet = new Set();
 return { mySet: mySet };`
     const jsVariable = arbitraryJSBlock(
-      'var mySet = new Set();',
+      'var mySet = new Set()',
       transpiledJSCode,
       ['mySet'],
       ['Set'],
@@ -2105,7 +2105,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     const transpiledJSCode = `var spacing = 20;
 return { spacing: spacing };`
     const jsVariable = arbitraryJSBlock(
-      'var spacing = 20;',
+      'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
       [],
@@ -2167,16 +2167,16 @@ export var whatever = (props) => <View data-uid='aaa'>
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const jsCode = `var MyComp = props => {
   return React.createElement(
-  "div",
-  {
-    style: {
-      position: "absolute",
-      left: props.layout.left,
-      backgroundColor: "hotpink" } },
-
-
-  "hello");
-
+    "div",
+    {
+      style: {
+        position: "absolute",
+        left: props.layout.left,
+        backgroundColor: "hotpink"
+      }
+    },
+    "hello"
+  );
 };`
     const transpiledJsCode = `var MyComp = function MyComp(props) {
   return React.createElement("div", {
@@ -2710,7 +2710,7 @@ export var App = (props) => <View data-uid='bbb'>
       emptyComments,
     )
     const jsCode1 = `function getSizing(n) {
-  return 100 + n;
+  return 100 + n
 }`
     const transpiledJSCode1 = `function getSizing(n) {
   return 100 + n;
@@ -2728,7 +2728,7 @@ return { getSizing: getSizing };`
       }),
       emptyComments,
     )
-    const jsCode2 = `var spacing = 20;`
+    const jsCode2 = `var spacing = 20`
     const transpiledJSCode2 = `var spacing = 20;
 return { spacing: spacing };`
     const arbitraryBlock2 = arbitraryJSBlock(
@@ -2744,9 +2744,9 @@ return { spacing: spacing };`
       emptyComments,
     )
     const combinedJSCode = `function getSizing(n) {
-  return 100 + n;
+  return 100 + n
 }
-var spacing = 20;`
+var spacing = 20`
     const transpiledcombinedJSCode = `function getSizing(n) {
   return 100 + n;
 }
@@ -3169,8 +3169,8 @@ export var whatever = props => {
 };
 `
     const jsCode = `function test(n) {
-  return n * 2;
-}`
+    return n * 2
+  }`
     const transpiledJSCode = `function test(n) {
   return n * 2;
 }
@@ -3249,8 +3249,8 @@ return { test: test };`
   })
   it('parses arbitrary code in a component back and forth', () => {
     const jsCode = `function test(n) {
-  return n * 2;
-}`
+    return n * 2
+  }`
     const transpiledJSCode = `function test(n) {
   return n * 2;
 }
@@ -3928,7 +3928,7 @@ export var whatever = props => {
     const code = `import * as React from "react"
 export var whatever = props => {
   for (var n = 0; n != -1; n++) {
-    const n2 = n * 2;
+    const n2 = n * 2
   }
   while (true) {
     const a = 1
@@ -3937,11 +3937,11 @@ export var whatever = props => {
 }`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
     const arbitraryBlockCode = `for (var n = 0; n != -1; n++) {
-  const n2 = n * 2;
-}
+    const n2 = n * 2
+  }
 while (true) {
-  const a = 1;
-}`
+    const a = 1
+  }`
     const arbitraryBlockTranspiledCode = `var _loopIt = 0,
     _loopIt2 = 0;
 
@@ -4004,17 +4004,17 @@ return {  };`
 export var whatever = props => {
   let result = []
   for (var n = 0; n < 5; n++) {
-    const n2 = n * 2;
-    result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />);
+    const n2 = n * 2
+    result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />)
   }
   return <div data-uid='aaa'>{result}</div>
 }`
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const arbitraryBlockCode = `let result = [];
+    const arbitraryBlockCode = `let result = []
 for (var n = 0; n < 5; n++) {
-  const n2 = n * 2;
-  result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />);
-}`
+    const n2 = n * 2
+    result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />)
+  }`
     const arbitraryBlockTranspiledCode = `var _loopIt = 0;
 var result = [];
 
@@ -4247,7 +4247,7 @@ export var whatever = props => {
     )
 
     const topLevelArbitraryBlock = arbitraryJSBlock(
-      `const a = 30;`,
+      `const a = 30`,
       `var a = 30;
 return { a: a };`,
       ['a'],
@@ -4438,7 +4438,7 @@ export var App = props => {
 
     if (
       !isArbitraryJSBlock(consoleLogBlock) ||
-      consoleLogBlock.javascript !== `console.log('hello!');`
+      consoleLogBlock.javascript !== `console.log('hello!')`
     ) {
       fail('expected the first topLevelElement to be the console logline')
     }
