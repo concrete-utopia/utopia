@@ -39,6 +39,7 @@ import {
   EmptyExportsDetail,
   setNamedDefaultExportInDetail,
   addModifierExportToDetail,
+  setModifierDefaultExportInDetail,
 } from '../../shared/project-file-types'
 import {
   lintAndParse,
@@ -380,7 +381,7 @@ export default function whatever(props) {
         expect.objectContaining({}),
         null,
         null,
-        setNamedDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
+        setModifierDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
     expect(actualResult).toEqual(expectedResult)
@@ -443,7 +444,7 @@ export default function whatever() {
         expect.objectContaining({}),
         null,
         null,
-        setNamedDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
+        setModifierDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
       ),
     )
     expect(actualResult).toEqual(expectedResult)

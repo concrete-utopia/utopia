@@ -111,13 +111,44 @@ function Picker() {
     expect(parsedThenPrinted).toEqual(code)
   })
 
-  xit('does not remove a trailing export default statement', () => {
+  it('does not remove a trailing export default statement for a component', () => {
     const code = applyPrettier(
       `const whatever = (props) => {
         return <div data-uid='aaa' />
       }
-      
       export default whatever`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  it('does not remove a trailing export default statement for anything else', () => {
+    const code = applyPrettier(
+      `const Thing = 1
+      export default Thing`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  it('preserves export statements including those with module specifiers', () => {
+    const code = applyPrettier(
+      `
+      const Thing = 1
+      const OtherThing = 2
+      export { default as Calendar } from './Calendar'
+      export { DateLocalizer } from './localizer'
+      export { Thing, OtherThing as SomethingElse }
+      export { default as momentLocalizer } from './localizers/moment'
+      export { default as globalizeLocalizer } from './localizers/globalize'
+      export { default as dateFnsLocalizer } from './localizers/date-fns'
+      export { default as move } from './utils/move'
+      export { views as Views, navigate as Navigate } from './utils/constants'
+      `,
       false,
     ).formatted
 

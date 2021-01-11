@@ -45,6 +45,7 @@ describe('parseCode', () => {
         "defaultExport": null,
         "namedExports": Object {
           "whatever": Object {
+            "moduleName": undefined,
             "name": "whatever",
             "type": "EXPORT_DETAIL_NAMED",
           },
@@ -70,6 +71,7 @@ describe('parseCode', () => {
         "defaultExport": null,
         "namedExports": Object {
           "otherThing": Object {
+            "moduleName": undefined,
             "name": "whatever",
             "type": "EXPORT_DETAIL_NAMED",
           },
