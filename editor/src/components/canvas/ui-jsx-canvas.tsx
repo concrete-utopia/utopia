@@ -453,19 +453,12 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
   // eslint-disable-next-line react-hooks/rules-of-hooks
   let containerRef = props.walkDOM ? useDomWalker(props) : React.useRef<HTMLDivElement>(null)
 
-  const { onMouseOver, onMouseOut, onMouseDown } = useSelectAndHover(
-    props.setSelectedViewsForCanvasControlsOnly,
-  )
-
   const { scale, offset } = props
   return (
     <div
       id={CanvasContainerID}
       key={'canvas-container'}
       ref={containerRef}
-      onMouseOver={onMouseOver}
-      onMouseOut={onMouseOut}
-      onMouseDown={onMouseDown}
       style={{
         all: 'initial',
         position: 'absolute',

@@ -42,8 +42,12 @@ import {
   isResizing,
   pickSelectionEnabled,
   useMaybeHighlightElement,
+  useSelectAndHover,
   useStartDragStateAfterDragExceedsThreshold,
 } from './select-mode/select-mode-hooks'
+import { NO_OP } from '../../../core/shared/utils'
+
+export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
@@ -226,6 +230,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const selectionEnabled = pickSelectionEnabled(props.editor.canvas, props.editor.keysPressed)
 
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+
+  const { onMouseMove, onMouseDown } = useSelectAndHover(setLocalSelectedViews)
 
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
@@ -445,12 +451,16 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   return (
     <div
+      id={CanvasControlsContainerID}
       className='new-canvas-controls-container'
       style={{
+        pointerEvents: 'initial',
         position: 'relative',
         width: '100%',
         height: '100%',
       }}
+      onMouseDown={onMouseDown}
+      onMouseMove={onMouseMove}
     >
       {renderModeControlContainer()}
       {renderHighlightControls()}
