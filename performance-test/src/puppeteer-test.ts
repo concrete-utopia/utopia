@@ -9,8 +9,18 @@ const yn = require('yn')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-const EDITOR_URL = `http://localhost:8000/p/f8926f5a-sly-rake/`
-// const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
+// const EDITOR_URL = `http://localhost:8000/p/f8926f5a-sly-rake/`
+const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
+
+type FrameResult = {
+  frameData: {
+    frameAvg: number,
+    percentile25: number | undefined,
+    percentile50: number | undefined,
+    percentile75: number | undefined,
+  },
+  frameTimesFixed: Array<number>,
+}
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -58,24 +68,23 @@ export const testPerformance = async function () {
   const scrollResult = await testScrollingPerformance()
   const resizeResult = await testResizePerformance()
   const selectionResult = await testSelectionPerformance()
-  // console.log('all frameData', scrollResult.frameData, resizeResult.frameData, selectionResult.frameData)
-  // const imageFileName = v4() + '.png'
-  // const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
-  // const s3FileUrl = await uploadPNGtoAWS(fileURI)
 
-  // console.info(
-  //   `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) - Total Frame Times: ${totalFrameTimes.toFixed(
-  //     1,
-  //   )}ms – average frame length: ${frameData.frameAvg.toFixed(1)}
-  //     – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
-  //     frameData.percentile75
-  //   } – Median: ${frameData.percentile50} – frame times: [${frameTimesarray
-  //     .sort((a, b) => a - b)
-  //     .join(',')}]"`,
-  // )
+  const scrollImage = await uploadImage(scrollResult)
+  const resizeImage = await uploadImage(resizeResult)
+  const selectionImage = await uploadImage(selectionResult)
+
+  console.info(
+    `::set-output name=perf-result:: ![ScrollChart](${scrollImage}) - SCROLL TEST Average frame length: ${scrollResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${scrollResult.frameData.percentile25} – Q2: ${scrollResult.frameData.percentile50} – Q3: ${
+      scrollResult.frameData.percentile75
+    } – Median: ${scrollResult.frameData.percentile50} – frame times: [${scrollResult.frameTimesFixed.sort((a, b) => a - b).join(',')}] ![ResizeChart](${resizeImage}) - RESIZE TEST Average frame length: ${resizeResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${resizeResult.frameData.percentile25} – Q2: ${resizeResult.frameData.percentile50} – Q3: ${
+      resizeResult.frameData.percentile75
+    } – Median: ${resizeResult.frameData.percentile50} – frame times: [${resizeResult.frameTimesFixed.sort((a, b) => a - b).join(',')}] ![SelectionChart](${selectionImage}) - RESIZE TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${selectionResult.frameData.percentile25} – Q2: ${selectionResult.frameData.percentile50} – Q3: ${
+      selectionResult.frameData.percentile75
+    } – Median: ${selectionResult.frameData.percentile50} – frame times: [${selectionResult.frameTimesFixed.sort((a, b) => a - b).join(',')}]`,
+  )
 }
 
-export const testScrollingPerformance = async function () {
+export const testScrollingPerformance = async function (): Promise<FrameResult> {
   const { page, browser } = await setupBrowser()
   await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
@@ -98,7 +107,7 @@ export const testScrollingPerformance = async function () {
   return getFrameData(traceJson, 'scroll_step_')
 }
 
-export const testResizePerformance = async function () {
+export const testResizePerformance = async function (): Promise<FrameResult> {
   const { page, browser } = await setupBrowser()
   await page.waitForXPath("//a[contains(., 'P R')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
@@ -123,7 +132,7 @@ export const testResizePerformance = async function () {
   return getFrameData(traceJson, 'resize_step_')
 }
 
-export const testSelectionPerformance = async function () {
+export const testSelectionPerformance = async function (): Promise<FrameResult>  {
   const { page, browser } = await setupBrowser()
   // await page.waitForTimeout(20000)
   await page.waitForXPath("//a[contains(., 'P E')]") // the button with the text 'P E' is the "secret" trigger to start the scrolling performance test
@@ -143,7 +152,7 @@ export const testSelectionPerformance = async function () {
   return getFrameData(traceJson, 'select_step_')
 }
 
-const getFrameData = (traceJson: any, markNamePrefix: string) => {
+const getFrameData = (traceJson: any, markNamePrefix: string): FrameResult => {
   const frameTimeEvents: any[] = traceJson.traceEvents.filter((e: any) =>
     e.name.startsWith(markNamePrefix),
   )
@@ -183,6 +192,13 @@ function valueOutsideCutoff(frameCutoff: Array<number>) {
     }
   }
   return sum
+}
+
+async function uploadImage(result: FrameResult) {
+  const imageFileName = v4() + '.png'
+  const fileURI = await createTestPng(result.frameTimesFixed, imageFileName, result.frameData)
+  const s3FileUrl = await uploadPNGtoAWS(fileURI)
+  return s3FileUrl
 }
 
 async function createTestPng(
