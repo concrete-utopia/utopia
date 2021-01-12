@@ -481,6 +481,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   return (
     <div
       id={CanvasControlsContainerID}
+      data-testid={CanvasControlsContainerID}
       className='new-canvas-controls-container'
       style={{
         pointerEvents: 'initial',

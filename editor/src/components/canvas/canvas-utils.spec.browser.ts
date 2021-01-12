@@ -19,8 +19,13 @@ import {
   EdgePosition,
 } from './canvas-types'
 import { wait } from '../../utils/test-utils'
+import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 
 const NewUID = 'catdog'
+
+// we need to set the Electron window to a larger size so document.elementsUnderPoint works correctly!
+const currentWindow = require('electron').remote.getCurrentWindow()
+currentWindow.setSize(2200, 1000)
 
 describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('a simple TLWH pin change works', async () => {
@@ -1307,8 +1312,10 @@ describe('moveTemplate', () => {
 
     const areaControlBounds = areaControl.getBoundingClientRect()
 
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
     fireEvent(
-      areaControl,
+      canvasControlsLayer,
       new MouseEvent('mousedown', {
         bubbles: true,
         cancelable: true,
@@ -1323,7 +1330,7 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -1341,7 +1348,7 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -1517,8 +1524,10 @@ describe('moveTemplate', () => {
 
     const areaControlBounds = areaControl.getBoundingClientRect()
 
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
     fireEvent(
-      areaControl,
+      canvasControlsLayer,
       new MouseEvent('mousedown', {
         bubbles: true,
         cancelable: true,
@@ -1533,7 +1542,7 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        window,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -1551,7 +1560,7 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        window,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -1632,8 +1641,10 @@ describe('moveTemplate', () => {
     const areaControl = renderResult.renderedDOM.getByTestId('ccc')
     const areaControlBounds = areaControl.getBoundingClientRect()
 
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
     fireEvent(
-      areaControl,
+      canvasControlsLayer,
       new MouseEvent('mousedown', {
         bubbles: true,
         cancelable: true,
@@ -1648,7 +1659,7 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -1666,7 +1677,7 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
