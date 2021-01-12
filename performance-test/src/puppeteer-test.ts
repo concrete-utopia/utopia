@@ -109,7 +109,7 @@ export const testScrollingPerformance = async function (): Promise<FrameResult> 
 
 export const testResizePerformance = async function (): Promise<FrameResult> {
   const { page, browser } = await setupBrowser()
-  await page.waitForXPath("//a[contains(., 'P R')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
+  await page.waitForXPath("//a[contains(., 'P R')]")
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P R')]")
   await button!.click()
@@ -135,7 +135,7 @@ export const testResizePerformance = async function (): Promise<FrameResult> {
 export const testSelectionPerformance = async function (): Promise<FrameResult>  {
   const { page, browser } = await setupBrowser()
   await page.waitForTimeout(20000)
-  await page.waitForXPath("//a[contains(., 'P E')]") // the button with the text 'P E' is the "secret" trigger to start the scrolling performance test
+  await page.waitForXPath("//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P E')]")
   await button!.click()
