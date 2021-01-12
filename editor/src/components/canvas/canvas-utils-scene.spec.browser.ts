@@ -36,6 +36,7 @@ describe('moving a scene/rootview on the canvas', () => {
       /** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
@@ -52,6 +53,7 @@ describe('moving a scene/rootview on the canvas', () => {
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
             <Storyboard data-uid='utopia-storyboard-uid'>
@@ -147,6 +149,7 @@ describe('moving a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
@@ -163,6 +166,7 @@ describe('moving a scene/rootview on the canvas', () => {
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
           <Storyboard data-uid='utopia-storyboard-uid'>
@@ -186,6 +190,7 @@ describe('moving a scene/rootview on the canvas', () => {
       /** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
@@ -201,6 +206,7 @@ describe('moving a scene/rootview on the canvas', () => {
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
             <Storyboard data-uid='utopia-storyboard-uid'>
@@ -293,6 +299,7 @@ describe('moving a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
@@ -308,6 +315,7 @@ describe('moving a scene/rootview on the canvas', () => {
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
           <Storyboard data-uid='utopia-storyboard-uid'>
@@ -437,6 +445,7 @@ describe('moving a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
@@ -452,6 +461,7 @@ describe('moving a scene/rootview on the canvas', () => {
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
             <Storyboard data-uid='utopia-storyboard-uid'>
@@ -543,6 +553,7 @@ describe('moving a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
     import * as React from 'react'
     import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
     export var App = (props) => {
       return (
         <View
@@ -558,6 +569,7 @@ describe('moving a scene/rootview on the canvas', () => {
         </View>
       )
     }
+
     export var storyboard = (props) => {
       return (
         <Storyboard data-uid='utopia-storyboard-uid'>
@@ -582,6 +594,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
@@ -598,6 +611,7 @@ describe('resizing a scene/rootview on the canvas', () => {
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
             <Storyboard data-uid='utopia-storyboard-uid'>
@@ -675,6 +689,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
@@ -691,6 +706,7 @@ describe('resizing a scene/rootview on the canvas', () => {
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
           <Storyboard data-uid='utopia-storyboard-uid'>
@@ -713,6 +729,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
@@ -728,6 +745,7 @@ describe('resizing a scene/rootview on the canvas', () => {
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
             <Storyboard data-uid='utopia-storyboard-uid'>
@@ -802,6 +820,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
@@ -817,6 +836,7 @@ describe('resizing a scene/rootview on the canvas', () => {
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
           <Storyboard data-uid='utopia-storyboard-uid'>
@@ -839,6 +859,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
@@ -854,6 +875,7 @@ describe('resizing a scene/rootview on the canvas', () => {
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
             <Storyboard data-uid='utopia-storyboard-uid'>
@@ -928,6 +950,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
@@ -943,6 +966,7 @@ describe('resizing a scene/rootview on the canvas', () => {
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
           <Storyboard data-uid='utopia-storyboard-uid'>
@@ -965,6 +989,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
@@ -980,6 +1005,7 @@ describe('resizing a scene/rootview on the canvas', () => {
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
             <Storyboard data-uid='utopia-storyboard-uid'>
@@ -1056,6 +1082,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
     import * as React from 'react'
     import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
     export var App = (props) => {
       return (
         <View
@@ -1071,6 +1098,7 @@ describe('resizing a scene/rootview on the canvas', () => {
         </View>
       )
     }
+
     export var storyboard = (props) => {
       return (
         <Storyboard data-uid='utopia-storyboard-uid'>
@@ -1092,6 +1120,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
@@ -1107,6 +1136,7 @@ describe('resizing a scene/rootview on the canvas', () => {
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
           <Storyboard data-uid='utopia-storyboard-uid'>
@@ -1180,6 +1210,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
@@ -1195,6 +1226,7 @@ describe('resizing a scene/rootview on the canvas', () => {
           </View>
         )
       }
+      
       export var storyboard = (props) => {
         return (
           <Storyboard data-uid='utopia-storyboard-uid'>

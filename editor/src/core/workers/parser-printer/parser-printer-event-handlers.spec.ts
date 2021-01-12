@@ -20,11 +20,13 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
+
 export var App = props => {
   return (
     <View data-uid='aaa' onClick={() => {console.log('hat')}}/>
   )
 }
+
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid='${BakedInStoryboardUID}'>
@@ -62,6 +64,7 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
+
 export var App = props => {
   return (
     <View
@@ -72,6 +75,7 @@ export var App = props => {
     />
   );
 };
+
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid='${BakedInStoryboardUID}'>

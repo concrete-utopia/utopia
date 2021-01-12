@@ -6,6 +6,7 @@ describe('Storyboard project files', () => {
     const originalCode = `/** @jsx jsx */
 import * as React from 'react'
 import { Canvas, Scene, View, jsx } from 'utopia-api'
+
 export var App = (props) => {
   return (
     <View
@@ -17,6 +18,7 @@ export var App = (props) => {
     </View>
   )
 }
+
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Canvas data-uid='${BakedInStoryboardUID}'>
