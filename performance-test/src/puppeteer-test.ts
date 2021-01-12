@@ -78,7 +78,7 @@ export const testPerformance = async function () {
       scrollResult.frameData.percentile75
     } – Median: ${scrollResult.frameData.percentile50} ![ResizeChart](${resizeImage}) - RESIZE TEST Average frame length: ${resizeResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${resizeResult.frameData.percentile25} – Q2: ${resizeResult.frameData.percentile50} – Q3: ${
       resizeResult.frameData.percentile75
-    } – Median: ${resizeResult.frameData.percentile50} ![SelectionChart](${selectionImage}) - RESIZE TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${selectionResult.frameData.percentile25} – Q2: ${selectionResult.frameData.percentile50} – Q3: ${
+    } – Median: ${resizeResult.frameData.percentile50} ![SelectionChart](${selectionImage}) - SELECTION TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${selectionResult.frameData.percentile25} – Q2: ${selectionResult.frameData.percentile50} – Q3: ${
       selectionResult.frameData.percentile75
     } – Median: ${selectionResult.frameData.percentile50}`,
   )
