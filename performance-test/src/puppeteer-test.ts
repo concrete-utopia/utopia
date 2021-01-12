@@ -54,9 +54,9 @@ export const setupBrowser = async function () {
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
-  page.on('console', (message) =>
-    console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
-  )
+  // page.on('console', (message) =>
+  //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
+  // )
   await page.goto(EDITOR_URL)
   return {
     browser: browser,
