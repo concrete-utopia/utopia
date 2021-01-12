@@ -113,6 +113,7 @@ import {
   mergeParsedComments,
   ParsedComments,
 } from './parser-printer-comments'
+import { RuleTester } from 'eslint'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -672,6 +673,12 @@ function isFunctionDeclaration(line: string): boolean {
 }
 
 function createBlanklineTracker() {
+  // When inserting blank lines we apply the following series of rules
+  // 1) we shouldn't insert blank lines in amongst import statements or exports declarations (not the modifier keyword)
+  // 2) variable declarations shouldn't insert a blank line unless a single declaration is spread over separate lines
+  // 3) function declarations should always insert a blank line
+  // 4) any other (non-import or export) multiline statement should insert a blank line
+
   let lastLineWasImport = false
   let lastLineWasExport = false
   let lastLineWasFunction = false
@@ -684,18 +691,17 @@ function createBlanklineTracker() {
       printedCode.includes('\n') ||
       printedCode.includes('\r') ||
       (PrettierConfig.printWidth != null && printedCode.length > PrettierConfig.printWidth)
-    const isSingleLineUnparsedSource = isUnparsedSource && !isMultiLineCode
     const isVariable =
       TS.isVariableStatement(statement) ||
-      (isSingleLineUnparsedSource && isVariableDeclaration(printedCode))
+      (isUnparsedSource && !isMultiLineCode && isVariableDeclaration(printedCode))
     const isFunction =
       TS.isFunctionDeclaration(statement) ||
-      (isSingleLineUnparsedSource && isFunctionDeclaration(printedCode))
+      (isUnparsedSource && isFunctionDeclaration(printedCode))
     const isImport =
       TS.isImportDeclaration(statement) || (isUnparsedSource && printedCode.startsWith('import'))
     const isExport =
       TS.isExportDeclaration(statement) ||
-      (isSingleLineUnparsedSource && !isVariable && !isFunction && printedCode.startsWith('export'))
+      (isUnparsedSource && !isVariable && !isFunction && printedCode.startsWith('export'))
 
     const isMultiLineStatement = !(isImport || isExport) && isMultiLineCode
 
