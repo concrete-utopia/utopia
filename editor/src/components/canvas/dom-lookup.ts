@@ -54,17 +54,13 @@ export function getValidTargetAtPoint(
     return null
   }
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
-  return (
-    stripNulls(
-      elementsUnderPoint.map((element) => {
-        const foundValidtemplatePath = findFirstParentWithValidUID(validTemplatePaths, element)
-        if (foundValidtemplatePath != null) {
-          return TP.fromString(foundValidtemplatePath)
-        }
-        return null
-      }),
-    )[0] ?? null
-  )
+  for (const element of elementsUnderPoint) {
+    const foundValidtemplatePath = findFirstParentWithValidUID(validTemplatePaths, element)
+    if (foundValidtemplatePath != null) {
+      return TP.fromString(foundValidtemplatePath)
+    }
+  }
+  return null
 }
 
 export function getAllTargetsAtPoint(point: WindowPoint | null): Array<TemplatePath> {
