@@ -672,7 +672,7 @@ function isFunctionDeclaration(line: string): boolean {
   return withoutDefault.startsWith('function')
 }
 
-function createBlanklineTracker() {
+function createBlanklineTracker(): (statement: TS.Node, printedCode: string) => boolean {
   // When inserting blank lines we apply the following series of rules
   // 1) we shouldn't insert blank lines in amongst import statements or exports declarations (not the modifier keyword)
   // 2) variable declarations shouldn't insert a blank line unless a single declaration is spread over separate lines
