@@ -9,8 +9,8 @@ const yn = require('yn')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/`
-const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
+const EDITOR_URL = `http://localhost:8000/p/f8926f5a-sly-rake/`
+// const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -25,10 +25,10 @@ function defer() {
   return promise
 }
 
-function consoleDoneMessage(page: puppeteer.Page) {
+function consoleDoneMessage(page: puppeteer.Page, expectedConsoleMessage: string) {
   return new Promise<void>((resolve, reject) => {
     page.on('console', (message) => {
-      if (message.text().includes('SCROLL_TEST_FINISHED')) {
+      if (message.text().includes(expectedConsoleMessage)) {
         // the editor will console.info('SCROLL_TEST_FINISHED') when the scrolling test is complete.
         // we wait until we see this console log and then we resolve the Promise
         resolve()
@@ -37,43 +37,121 @@ function consoleDoneMessage(page: puppeteer.Page) {
   })
 }
 
-export const testScrollingPerformance = async function () {
+export const setupBrowser = async function () {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS),
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
-  // page.on('console', (message) =>
-  //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
-  // )
+  page.on('console', (message) =>
+    console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
+  )
   await page.goto(EDITOR_URL)
+  return {
+    browser: browser,
+    page: page,
+  }
+}
+
+export const testPerformance = async function () {
+  const scrollResult = await testScrollingPerformance()
+  const resizeResult = await testResizePerformance()
+  const selectionResult = await testSelectionPerformance()
+  // console.log('all frameData', scrollResult.frameData, resizeResult.frameData, selectionResult.frameData)
+  // const imageFileName = v4() + '.png'
+  // const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
+  // const s3FileUrl = await uploadPNGtoAWS(fileURI)
+
+  // console.info(
+  //   `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) - Total Frame Times: ${totalFrameTimes.toFixed(
+  //     1,
+  //   )}ms – average frame length: ${frameData.frameAvg.toFixed(1)}
+  //     – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
+  //     frameData.percentile75
+  //   } – Median: ${frameData.percentile50} – frame times: [${frameTimesarray
+  //     .sort((a, b) => a - b)
+  //     .join(',')}]"`,
+  // )
+}
+
+export const testScrollingPerformance = async function () {
+  const { page, browser } = await setupBrowser()
   await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P S')]")
   await button!.click()
-  await consoleDoneMessage(page)
+  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
   const [button2] = await page.$x("//a[contains(., 'P S')]")
   await button2!.click()
-  await consoleDoneMessage(page)
+  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
   const [button3] = await page.$x("//a[contains(., 'P S')]")
   await button3!.click()
-  await consoleDoneMessage(page)
+  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
   await page.tracing.stop()
   await browser.close()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
+ 
+  return getFrameData(traceJson, 'scroll_step_')
+}
 
+export const testResizePerformance = async function () {
+  const { page, browser } = await setupBrowser()
+  await page.waitForXPath("//a[contains(., 'P R')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
+  // we run it twice without measurements to warm up the environment
+  const [button] = await page.$x("//a[contains(., 'P R')]")
+  await button!.click()
+
+  // select element using the navigator
+  const navigatorElement = await page.$('[class^="item-label-container"]')
+  await navigatorElement!.click()
+  const [button2] = await page.$x("//a[contains(., 'P R')]")
+  await button2!.click()
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED')
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ path: 'trace.json' })
+  const [button3] = await page.$x("//a[contains(., 'P R')]")
+  await button3!.click()
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED')
+  await page.tracing.stop()
+  await browser.close()
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'resize_step_')
+}
+
+export const testSelectionPerformance = async function () {
+  const { page, browser } = await setupBrowser()
+  // await page.waitForTimeout(20000)
+  await page.waitForXPath("//a[contains(., 'P E')]") // the button with the text 'P E' is the "secret" trigger to start the scrolling performance test
+  // we run it twice without measurements to warm up the environment
+  const [button] = await page.$x("//a[contains(., 'P E')]")
+  await button!.click()
+  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED')
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ path: 'trace.json' })
+  const [button2] = await page.$x("//a[contains(., 'P E')]")
+  await button2!.click()
+  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED')
+  await page.tracing.stop()
+  await browser.close()
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'select_step_')
+}
+
+const getFrameData = (traceJson: any, markNamePrefix: string) => {
   const frameTimeEvents: any[] = traceJson.traceEvents.filter((e: any) =>
-    e.name.startsWith('scroll_step_'),
+    e.name.startsWith(markNamePrefix),
   )
   let frameTimes: Array<number> = []
   let lastFrameTimestamp: number | null = null
   let totalFrameTimes = 0
   frameTimeEvents.forEach((fte) => {
-    const frameID = fte.name.split('scroll_step_')[1] - 1
+    const frameID = fte.name.split(markNamePrefix)[1] - 1
     const frameTimestamp = fte.ts
     if (lastFrameTimestamp != null) {
       const frameDelta = (frameTimestamp - lastFrameTimestamp) / 1000
@@ -83,29 +161,18 @@ export const testScrollingPerformance = async function () {
     lastFrameTimestamp = frameTimestamp
   })
 
-  let frameTimesarray = frameTimes.map((x) => Number(x.toFixed(1)))
+  let frameTimesFixed = frameTimes.map((x) => Number(x.toFixed(1)))
 
   const frameData = {
-    frameAvg: totalFrameTimes / frameTimesarray.length,
-    percentile25: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimesarray.length * 0.25)],
-    percentile50: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimesarray.length * 0.5)],
-    percentile75: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
+    frameAvg: totalFrameTimes / frameTimesFixed.length,
+    percentile25: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.25)],
+    percentile50: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.5)],
+    percentile75: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
   }
-
-  const imageFileName = v4() + '.png'
-  const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
-  const s3FileUrl = await uploadPNGtoAWS(fileURI)
-
-  console.info(
-    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) - Total Frame Times: ${totalFrameTimes.toFixed(
-      1,
-    )}ms – average frame length: ${frameData.frameAvg.toFixed(1)}
-      – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
-      frameData.percentile75
-    } – Median: ${frameData.percentile50} – frame times: [${frameTimesarray
-      .sort((a, b) => a - b)
-      .join(',')}]"`,
-  )
+  return {
+    frameData: frameData,
+    frameTimesFixed: frameTimesFixed,
+  }
 }
 
 function valueOutsideCutoff(frameCutoff: Array<number>) {
