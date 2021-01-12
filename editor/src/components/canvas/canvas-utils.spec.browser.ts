@@ -23,11 +23,18 @@ import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 
 const NewUID = 'catdog'
 
-// we need to set the Electron window to a larger size so document.elementsUnderPoint works correctly!
-const currentWindow = require('electron').remote.getCurrentWindow()
-currentWindow.setSize(2200, 1000)
-
 describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
+  beforeAll((done) => {
+    // we need to set the Electron window to a larger size so document.elementsUnderPoint works correctly!
+    const currentWindow = require('electron').remote.getCurrentWindow()
+    const size = currentWindow.getSize()
+    if (size.width !== 2200) {
+      currentWindow.once('resize', () => {
+        done()
+      })
+      currentWindow.setSize(2200, 1000)
+    }
+  })
   it('a simple TLWH pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
