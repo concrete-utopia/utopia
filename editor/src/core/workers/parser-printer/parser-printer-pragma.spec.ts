@@ -42,9 +42,11 @@ describe('Parsing JSX Pragma:', () => {
     import Button, { LABEL } from "./src/components";
     import * as React from "react";
     import { Ellipse, Image, Rectangle, Scene, Storyboard, Text, UtopiaUtils, View, jsx } from "utopia-api";
+
     export var App = props => {
         return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx" />
     };
+    
     export var storyboard = (props) => {
       return (
         <Storyboard data-uid='${BakedInStoryboardUID}'>

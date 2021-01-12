@@ -102,7 +102,7 @@ import {
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { ParserPrinterResultMessage } from './parser-printer-worker'
 import creator from './ts-creator'
-import { applyPrettier } from './prettier-utils'
+import { applyPrettier, PrettierConfig } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
@@ -113,6 +113,7 @@ import {
   mergeParsedComments,
   ParsedComments,
 } from './parser-printer-comments'
+import { RuleTester } from 'eslint'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -654,6 +655,74 @@ export const printCode = memoize(printCodeImpl, {
   maxSize: 1,
 })
 
+function isVariableDeclaration(line: string): boolean {
+  const withoutExport = line.startsWith('export ') ? line.slice(7) : line
+  return (
+    withoutExport.startsWith('var') ||
+    withoutExport.startsWith('let') ||
+    withoutExport.startsWith('const')
+  )
+}
+
+function isFunctionDeclaration(line: string): boolean {
+  const withoutExport = line.startsWith('export ') ? line.slice(7) : line
+  const withoutDefault = withoutExport.startsWith('default ')
+    ? withoutExport.slice(8)
+    : withoutExport
+  return withoutDefault.startsWith('function')
+}
+
+function createBlanklineTracker(): (statement: TS.Node, printedCode: string) => boolean {
+  // When inserting blank lines we apply the following series of rules
+  // 1) we shouldn't insert blank lines in amongst import statements or exports declarations (not the modifier keyword)
+  // 2) variable declarations shouldn't insert a blank line unless a single declaration is spread over separate lines
+  // 3) function declarations should always insert a blank line
+  // 4) any other (non-import or export) multiline statement should insert a blank line
+
+  let lastLineWasImport = false
+  let lastLineWasExport = false
+  let lastLineWasFunction = false
+  let lastLineWasVariable = false
+  let lastLineWasMultiLineStatement = false
+
+  return (statement: TS.Node, printedCode: string): boolean => {
+    const isUnparsedSource = TS.isUnparsedSource(statement)
+    const isMultiLineCode =
+      printedCode.includes('\n') ||
+      printedCode.includes('\r') ||
+      (PrettierConfig.printWidth != null && printedCode.length > PrettierConfig.printWidth)
+    const isVariable =
+      TS.isVariableStatement(statement) ||
+      (isUnparsedSource && !isMultiLineCode && isVariableDeclaration(printedCode))
+    const isFunction =
+      TS.isFunctionDeclaration(statement) ||
+      (isUnparsedSource && isFunctionDeclaration(printedCode))
+    const isImport =
+      TS.isImportDeclaration(statement) || (isUnparsedSource && printedCode.startsWith('import'))
+    const isExport =
+      TS.isExportDeclaration(statement) ||
+      (isUnparsedSource && !isVariable && !isFunction && printedCode.startsWith('export'))
+
+    const isMultiLineStatement = !(isImport || isExport) && isMultiLineCode
+
+    const shouldPrefixWithBlankLine =
+      (lastLineWasImport && !isImport) ||
+      (!lastLineWasExport && isExport) ||
+      (!lastLineWasVariable && isVariable) ||
+      (!lastLineWasFunction && isFunction) ||
+      lastLineWasMultiLineStatement ||
+      isMultiLineStatement
+
+    lastLineWasImport = isImport
+    lastLineWasExport = isExport
+    lastLineWasFunction = isFunction
+    lastLineWasVariable = isVariable
+    lastLineWasMultiLineStatement = isMultiLineStatement
+
+    return shouldPrefixWithBlankLine
+  }
+}
+
 function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): string {
   const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
   const resultFile = TS.createSourceFile(
@@ -663,9 +732,21 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
     false,
     TS.ScriptKind.TS,
   )
-  const printedParts = statements.map((statement) => {
-    return printer.printNode(TS.EmitHint.Unspecified, statement, resultFile)
+
+  const checkShouldInsertBlankLineBeforeStatement = createBlanklineTracker()
+  let printedParts: Array<string> = []
+
+  fastForEach(statements, (statement) => {
+    const nextLine = printer.printNode(TS.EmitHint.Unspecified, statement, resultFile).trim()
+    const shouldPrefixWithBlankLine = checkShouldInsertBlankLineBeforeStatement(statement, nextLine)
+
+    if (printedParts.length > 0 && shouldPrefixWithBlankLine) {
+      printedParts.push('\n')
+    }
+
+    printedParts.push(nextLine)
   })
+
   const typescriptPrintedResult = printedParts.join('\n')
   let result: string
   if (shouldPrettify) {

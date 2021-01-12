@@ -37,6 +37,7 @@ describe('JSX parser', () => {
   it('adds in data-uid attributes for elements in arbitrary code', () => {
     const code = `import * as React from "react";
 import { Ellipse, UtopiaUtils, Image, Rectangle, Text, View } from "utopia-api";
+
 export var App = props => {
   return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx">
     {[1, 2, 3].map(n => {
@@ -53,6 +54,7 @@ export var App = props => {
     const code = `import Button, { LABEL } from "./src/components";
     import * as React from "react";
     import { Ellipse, UtopiaUtils, Image, Rectangle, Text, View } from "utopia-api";
+
     export var App = props => {
         return <View style={{ "backgroundColor": "green", "position": "absolute" }} data-uid="xxx" />
     };`
@@ -88,10 +90,13 @@ describe('JSX printer', () => {
   it('reprints spread object values correctly', () => {
     const code = `import * as React from 'react'
 import { Storyboard, View } from 'utopia-api'
+
 const myCoolTheme = {}
+
 export var App = (props) => {
   return <View data-uid='xxx' style={{ ...myCoolTheme, backgroundColor: 'purple' }} />
 }
+
 export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `
     testParseThenPrint(code, code)
@@ -99,12 +104,15 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInSto
   it('components are not reordered when printing', () => {
     const code = `import * as React from 'react'
 import { Storyboard, View } from 'utopia-api'
+
 export var App = (props) => {
   return <Widget data-uid='bbb' />
 }
+
 export var Widget = (props) => {
   return <View data-uid='aaa' />
 }
+
 export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `
     testParseThenPrint(code, code)
@@ -113,7 +121,9 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInSto
   it('object property names with special characters should be printed in string quotes', () => {
     const code = `import * as React from 'react'
 import { Storyboard, View } from 'utopia-api'
+
 const color = 'white'
+
 export var App = (props) => {
   return (
     <View
@@ -122,6 +132,7 @@ export var App = (props) => {
     />
   )
 }
+
 export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `
     testParseThenPrint(code, code)
@@ -130,6 +141,7 @@ export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInSto
   it('definedWithin and definedElsewhere are mutually exclusive properties', () => {
     const code = `import * as React from 'react'
 import { Storyboard, View } from 'utopia-api'
+
 export var App = (props) => {
   return (
     <View data-uid='aaa' css={{ backgroundColor: 'red' }}>
@@ -137,6 +149,7 @@ export var App = (props) => {
     </View>
   )
 }
+
 const elements = []
 export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `
@@ -149,6 +162,7 @@ describe('Imports', () => {
     const code = `import './style.css'
 import * as React from 'react'
 import { Storyboard, View } from 'utopia-api'
+
 export var App = (props) => {
   return (
     <View data-uid='aaa' css={{ backgroundColor: 'red' }}>
@@ -156,6 +170,7 @@ export var App = (props) => {
     </View>
   )
 }
+
 const elements = []
 export var ${BakedInStoryboardVariableName} = <Storyboard data-uid='${BakedInStoryboardUID}' />
 `

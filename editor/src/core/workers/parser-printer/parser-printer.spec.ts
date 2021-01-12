@@ -2891,6 +2891,7 @@ import {
   Text,
   View,
 } from 'utopia-api'
+
 export var whatever = props => {
   return (
     <View data-uid="aaa">
@@ -3816,6 +3817,7 @@ import {
   Text,
   View
 } from "utopia-api";
+
 export var whatever = props => {
   return <View data-uid="aaa" booleanProperty />;
 };
@@ -3864,6 +3866,7 @@ import {
   Text,
   View
 } from "utopia-api";
+
 export var whatever = props => {
   return <View data-uid="aaa" booleanProperty={false} />;
 };
