@@ -101,7 +101,7 @@ export function useTriggerResizePerformanceTest(): () => void {
       if (framesPassed < 600) {
         requestAnimationFrame(step)
       } else {
-        await dispatch([CanvasActions.clearDragState(true)]).entireUpdateFinished
+        await dispatch([CanvasActions.clearDragState(false)]).entireUpdateFinished
         console.info('RESIZE_TEST_FINISHED')
       }
     }
