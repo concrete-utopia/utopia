@@ -35,10 +35,10 @@ function defer() {
   return promise
 }
 
-function consoleDoneMessage(page: puppeteer.Page, expectedConsoleMessage: string) {
+function consoleDoneMessage(page: puppeteer.Page, expectedConsoleMessage: string, errorMessage?: string) {
   return new Promise<void>((resolve, reject) => {
     page.on('console', (message) => {
-      if (message.text().includes(expectedConsoleMessage)) {
+      if (message.text().includes(expectedConsoleMessage) || (errorMessage != null && message.text().includes(errorMessage))) {
         // the editor will console.info('SCROLL_TEST_FINISHED') when the scrolling test is complete.
         // we wait until we see this console log and then we resolve the Promise
         resolve()
@@ -76,11 +76,11 @@ export const testPerformance = async function () {
   console.info(
     `::set-output name=perf-result:: ![ScrollChart](${scrollImage}) - SCROLL TEST Average frame length: ${scrollResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${scrollResult.frameData.percentile25} – Q2: ${scrollResult.frameData.percentile50} – Q3: ${
       scrollResult.frameData.percentile75
-    } – Median: ${scrollResult.frameData.percentile50} – frame times: [${scrollResult.frameTimesFixed.sort((a, b) => a - b).join(',')}] ![ResizeChart](${resizeImage}) - RESIZE TEST Average frame length: ${resizeResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${resizeResult.frameData.percentile25} – Q2: ${resizeResult.frameData.percentile50} – Q3: ${
+    } – Median: ${scrollResult.frameData.percentile50} ![ResizeChart](${resizeImage}) - RESIZE TEST Average frame length: ${resizeResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${resizeResult.frameData.percentile25} – Q2: ${resizeResult.frameData.percentile50} – Q3: ${
       resizeResult.frameData.percentile75
-    } – Median: ${resizeResult.frameData.percentile50} – frame times: [${resizeResult.frameTimesFixed.sort((a, b) => a - b).join(',')}] ![SelectionChart](${selectionImage}) - RESIZE TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${selectionResult.frameData.percentile25} – Q2: ${selectionResult.frameData.percentile50} – Q3: ${
+    } – Median: ${resizeResult.frameData.percentile50} ![SelectionChart](${selectionImage}) - RESIZE TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${selectionResult.frameData.percentile25} – Q2: ${selectionResult.frameData.percentile50} – Q3: ${
       selectionResult.frameData.percentile75
-    } – Median: ${selectionResult.frameData.percentile50} – frame times: [${selectionResult.frameTimesFixed.sort((a, b) => a - b).join(',')}]`,
+    } – Median: ${selectionResult.frameData.percentile50}`,
   )
 }
 
@@ -119,12 +119,12 @@ export const testResizePerformance = async function (): Promise<FrameResult> {
   await navigatorElement!.click()
   const [button2] = await page.$x("//a[contains(., 'P R')]")
   await button2!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED')
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
   const [button3] = await page.$x("//a[contains(., 'P R')]")
   await button3!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED')
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
   await page.tracing.stop()
   await browser.close()
   let traceData = fs.readFileSync('trace.json').toString()
@@ -134,17 +134,17 @@ export const testResizePerformance = async function (): Promise<FrameResult> {
 
 export const testSelectionPerformance = async function (): Promise<FrameResult>  {
   const { page, browser } = await setupBrowser()
-  // await page.waitForTimeout(20000)
+  await page.waitForTimeout(20000)
   await page.waitForXPath("//a[contains(., 'P E')]") // the button with the text 'P E' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P E')]")
   await button!.click()
-  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED')
+  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
   const [button2] = await page.$x("//a[contains(., 'P E')]")
   await button2!.click()
-  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED')
+  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
   await page.tracing.stop()
   await browser.close()
   let traceData = fs.readFileSync('trace.json').toString()

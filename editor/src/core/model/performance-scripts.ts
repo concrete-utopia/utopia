@@ -118,7 +118,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const trigger = React.useCallback(async () => {
     if (allPaths.current.length === 0) {
-      console.info('SELECT_TEST_FINISHED EMPTY')
+      console.info('SELECT_TEST_ERROR')
       return
     }
 
