@@ -76,6 +76,7 @@ describe('Parsing and then printing code', () => {
     const code = applyPrettier(
       `
 import { GithubPicker } from "react-color";
+
 function Picker() {
   const [color, setColor] = useThemeContext();
   const [visible, setVisible] = usePickerVisibilityContext();
@@ -116,6 +117,7 @@ function Picker() {
       `const whatever = (props) => {
         return <div data-uid='aaa' />
       }
+
       export default whatever`,
       false,
     ).formatted
@@ -140,6 +142,7 @@ function Picker() {
       `
       const Thing = 1
       const OtherThing = 2
+
       export { default as Calendar } from './Calendar'
       export { DateLocalizer } from './localizer'
       export { Thing, OtherThing as SomethingElse }
@@ -168,6 +171,7 @@ function Picker() {
       import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader'
       import { WaterPass } from './shaders/WaterPass'
       import state from '../state'
+
       export const whatever = (props) => {
         return <div data-uid='aaa' />
       }`,
@@ -196,6 +200,22 @@ function Picker() {
     const code = applyPrettier(
       `/** @jsx jsx */
       import * as React from 'react'
+      import { 
+        Loads,
+        AndLoads,
+        AndMore,
+        Just,
+        So,
+        Many,
+        Different,
+        Things,
+        Enough,
+        To,
+        Force,
+        Onto,
+        Multiple,
+        Lines
+      } from 'some-library'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
       
       const { m } = require('./thing')
@@ -210,6 +230,21 @@ function Picker() {
         return <div data-uid='aaa' />
       }
       
+      export const whatever = (props) => {
+        return <div data-uid='aab' />
+      }
+
+      export var storyboard = (
+        <Storyboard data-uid='bbb'>
+          <Scene
+            component={App}
+            props={{}}
+            style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+            data-uid='ccc'
+          />
+        </Storyboard>
+      )
+      
       const a = 1
       const b = 10
       const c = 100
@@ -221,17 +256,6 @@ function Picker() {
       const thing2 = {
         b: 100,
       }
-      
-      export var storyboard = (
-        <Storyboard data-uid='bbb'>
-          <Scene
-            component={App}
-            props={{}}
-            style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-            data-uid='ccc'
-          />
-        </Storyboard>
-      )
       
       export { thing1, thing2 }
       export { default as p } from './thing'

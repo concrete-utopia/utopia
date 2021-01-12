@@ -220,11 +220,13 @@ export function makeTestProjectCodeWithSnippet(snippet: string): string {
   const code = `/** @jsx jsx */
   import * as React from 'react'
   import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
   export var App = (props) => {
     return (
 ${snippet}
     )
   }
+
   export var ${BakedInStoryboardVariableName} = (props) => {
     return (
       <Storyboard data-uid='${BakedInStoryboardUID}'>

@@ -102,7 +102,7 @@ import {
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { ParserPrinterResultMessage } from './parser-printer-worker'
 import creator from './ts-creator'
-import { applyPrettier } from './prettier-utils'
+import { applyPrettier, PrettierConfig } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
@@ -676,39 +676,42 @@ function createBlanklineTracker() {
   let lastLineWasExport = false
   let lastLineWasFunction = false
   let lastLineWasVariable = false
+  let lastLineWasMultiLineStatement = false
 
   return (statement: TS.Node, printedCode: string): boolean => {
     const isUnparsedSource = TS.isUnparsedSource(statement)
-    const isMultiLineUnparsedSource =
-      isUnparsedSource && (printedCode.includes('\n') || printedCode.includes('\r'))
-    const isSingleLineUnparsedSource = isUnparsedSource && !isMultiLineUnparsedSource
-    const nextLineIsImport =
-      TS.isImportDeclaration(statement) ||
-      (isSingleLineUnparsedSource && printedCode.startsWith('import'))
-    const nextLineIsVariable =
+    const isMultiLineCode =
+      printedCode.includes('\n') ||
+      printedCode.includes('\r') ||
+      (PrettierConfig.printWidth != null && printedCode.length > PrettierConfig.printWidth)
+    const isSingleLineUnparsedSource = isUnparsedSource && !isMultiLineCode
+    const isVariable =
       TS.isVariableStatement(statement) ||
       (isSingleLineUnparsedSource && isVariableDeclaration(printedCode))
-    const nextLineIsFunction =
+    const isFunction =
       TS.isFunctionDeclaration(statement) ||
       (isSingleLineUnparsedSource && isFunctionDeclaration(printedCode))
-    const nextLineIsExport =
+    const isImport =
+      TS.isImportDeclaration(statement) || (isUnparsedSource && printedCode.startsWith('import'))
+    const isExport =
       TS.isExportDeclaration(statement) ||
-      (isSingleLineUnparsedSource &&
-        !nextLineIsVariable &&
-        !nextLineIsFunction &&
-        printedCode.startsWith('export'))
+      (isSingleLineUnparsedSource && !isVariable && !isFunction && printedCode.startsWith('export'))
+
+    const isMultiLineStatement = !(isImport || isExport) && isMultiLineCode
 
     const shouldPrefixWithBlankLine =
-      (lastLineWasImport && !nextLineIsImport) ||
-      (!lastLineWasExport && nextLineIsExport) ||
-      (!lastLineWasVariable && nextLineIsVariable) ||
-      (!lastLineWasFunction && nextLineIsFunction) ||
-      isMultiLineUnparsedSource
+      (lastLineWasImport && !isImport) ||
+      (!lastLineWasExport && isExport) ||
+      (!lastLineWasVariable && isVariable) ||
+      (!lastLineWasFunction && isFunction) ||
+      lastLineWasMultiLineStatement ||
+      isMultiLineStatement
 
-    lastLineWasImport = nextLineIsImport
-    lastLineWasExport = nextLineIsExport
-    lastLineWasFunction = nextLineIsFunction
-    lastLineWasVariable = nextLineIsVariable
+    lastLineWasImport = isImport
+    lastLineWasExport = isExport
+    lastLineWasFunction = isFunction
+    lastLineWasVariable = isVariable
+    lastLineWasMultiLineStatement = isMultiLineStatement
 
     return shouldPrefixWithBlankLine
   }

@@ -13,6 +13,7 @@ describe('JSX parser', () => {
       `
 import * as React from "react";
 import * as Utopia from "utopia-api";
+
 export var App = props => {
   return (
     <Utopia.View data-uid="aaa">
@@ -20,6 +21,7 @@ export var App = props => {
     </Utopia.View>
   )
 }
+
 export var storyboard = (props) => {
   return (
     <Storyboard data-uid='${BakedInStoryboardUID}'>
@@ -56,6 +58,7 @@ export var storyboard = (props) => {
 import * as React from "react";
 import * as Utopia from "utopia-api";
 import { Scene, Storyboard, View } from "utopia-api";
+
 export var App = props => {
   return (
     <Utopia.View data-uid="aaa">
@@ -63,6 +66,7 @@ export var App = props => {
     </Utopia.View>
   )
 }
+
 export var storyboard = (props) => {
   return (
     <Storyboard data-uid='${BakedInStoryboardUID}'>
@@ -79,6 +83,7 @@ export var storyboard = (props) => {
     const printedCode = `import * as React from 'react'
 import { Scene, Storyboard, View } from 'utopia-api'
 import * as Utopia from 'utopia-api'
+
 export var App = (props) => {
   return (
     <Utopia.View data-uid='aaa'>
@@ -86,6 +91,7 @@ export var App = (props) => {
     </Utopia.View>
   )
 }
+
 export var storyboard = (props) => {
   return (
     <Storyboard data-uid='${BakedInStoryboardUID}'>
