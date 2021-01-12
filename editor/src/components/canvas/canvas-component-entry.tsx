@@ -16,7 +16,6 @@ interface CanvasComponentEntryProps extends CanvasReactErrorCallback {
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   canvasConsoleLogs: Array<ConsoleLog>
-  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void
 }
 
 export const CanvasComponentEntry = betterReactMemo(
@@ -39,7 +38,6 @@ export const CanvasComponentEntry = betterReactMemo(
           props.clearConsoleLogs,
           props.addToConsoleLogs,
           store.dispatch,
-          props.setSelectedViewsForCanvasControlsOnly,
         ),
       'CanvasComponentEntry canvasProps',
     )

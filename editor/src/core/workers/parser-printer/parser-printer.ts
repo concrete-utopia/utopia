@@ -393,7 +393,7 @@ function jsxElementToExpression(
           )]
         )`
       } else {
-        createExpressionAsString = creator(element.originalJavascript)
+        createExpressionAsString = creator(element.javascript)
       }
       let newExpression = SafeFunction(
         false,

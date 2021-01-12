@@ -253,7 +253,7 @@ export var whatever = (props) => {
       },
       [
         jsxArbitraryBlock(
-          `arr.map(({ n }) => <View data-uid='aab' thing={n} /> )`,
+          ` arr.map(({ n }) => <View data-uid='aab' thing={n} /> ) `,
           `arr.map(({ n }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
   var n = _ref.n;
@@ -351,7 +351,7 @@ export var whatever = (props) => {
       },
       [
         jsxArbitraryBlock(
-          `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> )`,
+          ` arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> ) `,
           `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
   var n = _ref.a.n;
@@ -444,7 +444,7 @@ export var whatever = (props) => {
 }
 `
     const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const originalMapJsCode = `arr.map(([ n ]) => <View data-uid='aab' thing={n} /> )`
+    const originalMapJsCode = ` arr.map(([ n ]) => <View data-uid='aab' thing={n} /> ) `
     const mapJsCode = `arr.map(([n]) => <View data-uid='aab' thing={n} />);`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
   var _ref2 = babelHelpers.slicedToArray(_ref, 1),
@@ -550,7 +550,7 @@ export var whatever = (props) => {
       },
       [
         jsxArbitraryBlock(
-          `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> )`,
+          ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
           `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
@@ -740,7 +740,7 @@ export var whatever = (props) => {
       },
       [
         jsxArbitraryBlock(
-          `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> )`,
+          ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
           `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {

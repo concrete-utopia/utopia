@@ -158,9 +158,6 @@ import {
   updateSourceFileNode,
   createExpressionStatement,
   JsxText,
-  getSyntheticLeadingComments,
-  setSyntheticLeadingComments,
-  getSyntheticTrailingComments,
   createCall,
   getTrailingCommentRanges,
 } from 'typescript'
@@ -1609,15 +1606,29 @@ function produceNodeFromNode(
 }
 
 export function transformSourceFile(sourceText: string, sourceFile: SourceFile): SourceFile {
-  const updatedStatements = sourceFile.statements.map((statement) => {
-    const lastToken = sourceFile.getLastToken(sourceFile)
-    let additionalTrailingComments: Array<ParserPrinterComment> = []
-    if (lastToken != null && lastToken.kind === SyntaxKind.EndOfFileToken) {
-      // A sneaky way to take comments attached to the EndOfFileToken and put them on the node
-      // that is created. As this code can be run for segments of an actual file, it doesn't
-      // even make sense for there to be a parallel of the EndOfFileToken in what we're handling.
-      const lastTokenComments = getComments(sourceText, lastToken)
-      additionalTrailingComments = lastTokenComments.leadingComments
+  const fileLastToken = sourceFile.getLastToken(sourceFile)
+  let additionalTrailingCommentsForLastStatement: Array<ParserPrinterComment> = []
+  if (fileLastToken != null && fileLastToken.kind === SyntaxKind.EndOfFileToken) {
+    // A sneaky way to take comments attached to the EndOfFileToken and put them on the node
+    // that is created. As this code can be run for segments of an actual file, it doesn't
+    // even make sense for there to be a parallel of the EndOfFileToken in what we're handling.
+    const lastTokenComments = getComments(sourceText, fileLastToken)
+    additionalTrailingCommentsForLastStatement = lastTokenComments.leadingComments
+  }
+
+  const updatedStatements = sourceFile.statements.map((statement, statementIndex) => {
+    const statementLastToken = statement.getLastToken(sourceFile)
+    let additionalTrailingCommentsForStatement: Array<ParserPrinterComment> = []
+    if (statementLastToken != null && statementLastToken.kind === SyntaxKind.SemicolonToken) {
+      const statementLastTokenComments = getComments(sourceText, statementLastToken)
+      additionalTrailingCommentsForStatement = statementLastTokenComments.leadingComments
+    }
+    let additionalTrailingComments = [...additionalTrailingCommentsForStatement]
+    if (statementIndex === sourceFile.statements.length - 1) {
+      additionalTrailingComments = [
+        ...additionalTrailingComments,
+        ...additionalTrailingCommentsForLastStatement,
+      ]
     }
     const updatedStatement = produceNodeFromNode(sourceText, statement, additionalTrailingComments)
     return createExpressionStatement(updatedStatement)

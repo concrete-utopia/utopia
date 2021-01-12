@@ -11960,14 +11960,14 @@ Object {
                <div data-uid={'ccc'}>{n}</div>
              </div>;
 });",
-            "originalJavascript": "[1, 2, 3].map(n => {
+            "originalJavascript": " [1, 2, 3].map(n => {
              return <div data-uid={'bbb'}>
                <div data-uid={'ccc'}>{n}</div>
              </div>
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,aAAI;AACP;AAAA;AAAA;AADb,CAAE,CAAD",
+              "mappings": "OAAG,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,aAAI;AACR;AAAA;AAAA;AADb,CAAG,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",

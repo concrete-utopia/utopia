@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { uniqBy } from '../../../../core/shared/array-utils'
+import { last, uniqBy } from '../../../../core/shared/array-utils'
 import { JSXMetadata } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
@@ -30,9 +30,14 @@ import { useEditorState, useRefEditorState } from '../../../editor/store/store-h
 import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
 import { createDuplicationNewUIDs, getOriginalCanvasFrames } from '../../canvas-utils'
-import { findFirstParentWithValidUID } from '../../dom-lookup'
+import {
+  findFirstParentWithValidUID,
+  getAllTargetsAtPoint,
+  getValidTargetAtPoint,
+} from '../../dom-lookup'
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { selectElementsThatRespectLayout } from '../new-canvas-controls'
+import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -158,9 +163,8 @@ export function getSelectableViews(
 }
 
 function useFindValidTarget(): (
-  targetHtmlElement: Element,
-  allElementsDirectlySelectable: boolean,
-  childrenSelectable: boolean,
+  selectableViews: Array<TemplatePath>,
+  mousePoint: WindowPoint | null,
 ) => {
   templatePath: TemplatePath
   isSelected: boolean
@@ -174,21 +178,14 @@ function useFindValidTarget(): (
   })
 
   return React.useCallback(
-    (targetHtmlElement: Element, allElementsDirectlySelectable: boolean, childrenSelectable) => {
-      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
-      const selectableViews = getSelectableViews(
-        componentMetadata,
-        selectedViews,
-        hiddenInstances,
-        allElementsDirectlySelectable,
-        childrenSelectable,
-      )
-      const validElementMouseOver: string | null = findFirstParentWithValidUID(
+    (selectableViews: Array<TemplatePath>, mousePoint: WindowPoint | null) => {
+      const { selectedViews } = storeRef.current
+      const validElementMouseOver: TemplatePath | null = getValidTargetAtPoint(
         selectableViews.map(TP.toString),
-        targetHtmlElement,
+        mousePoint,
       )
       const validTemplatePath: TemplatePath | null =
-        validElementMouseOver != null ? TP.fromString(validElementMouseOver) : null
+        validElementMouseOver != null ? validElementMouseOver : null
       if (validTemplatePath != null) {
         const isSelected = selectedViews.some((selectedView) =>
           TP.pathsEqual(validTemplatePath, selectedView),
@@ -327,59 +324,121 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
   return startDragStateAfterDragExceedsThreshold
 }
 
+function useGetSelectableViewsForSelectMode() {
+  const storeRef = useRefEditorState((store) => {
+    return {
+      componentMetadata: store.editor.jsxMetadataKILLME,
+      selectedViews: store.editor.selectedViews,
+      hiddenInstances: store.editor.hiddenInstances,
+    }
+  })
+
+  return React.useCallback(
+    (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
+      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
+      const selectableViews = getSelectableViews(
+        componentMetadata,
+        selectedViews,
+        hiddenInstances,
+        allElementsDirectlySelectable,
+        childrenSelectable,
+      )
+      return selectableViews
+    },
+    [storeRef],
+  )
+}
+
+export function useHighlightCallbacks(
+  getHighlightableViews: (
+    allElementsDirectlySelectable: boolean,
+    childrenSelectable: boolean,
+  ) => TemplatePath[],
+): {
+  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+} {
+  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+  const findValidTarget = useFindValidTarget()
+  const previousTargetUnderPoint = React.useRef<TemplatePath | null>(null)
+
+  const onMouseMove = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const selectableViews: Array<TemplatePath> = getHighlightableViews(event.metaKey, false)
+      const validTemplatePath = findValidTarget(
+        selectableViews,
+        windowPoint(point(event.clientX, event.clientY)),
+      )
+      if (validTemplatePath == null) {
+        maybeClearHighlightsOnHoverEnd()
+      } else if (!TP.pathsEqual(validTemplatePath.templatePath, previousTargetUnderPoint.current)) {
+        if (!validTemplatePath.isSelected) {
+          // do not highlight selected view
+          maybeHighlightOnHover(validTemplatePath.templatePath)
+        }
+      }
+      previousTargetUnderPoint.current = validTemplatePath?.templatePath ?? null
+    },
+    [
+      maybeClearHighlightsOnHoverEnd,
+      maybeHighlightOnHover,
+      getHighlightableViews,
+      findValidTarget,
+      previousTargetUnderPoint,
+    ],
+  )
+
+  return { onMouseMove }
+}
+
 export function useSelectModeSelectAndHover(
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
 ): {
-  onMouseOver: (event: React.MouseEvent<HTMLDivElement>) => void
-  onMouseOut: () => void
-  onMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void
+  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const dispatch = useEditorState((store) => store.dispatch, 'useSelectAndHover dispatch')
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
+  const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
-  const onMouseOver = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      const validTemplatePath = findValidTarget(event.target as Element, event.metaKey, false)
-      if (
-        validTemplatePath != null &&
-        !validTemplatePath.isSelected // do not highlight selected elements
-      ) {
-        maybeHighlightOnHover(validTemplatePath.templatePath)
-      }
-    },
-    [maybeHighlightOnHover, findValidTarget],
-  )
-
-  const onMouseOut = React.useCallback(() => {
-    maybeClearHighlightsOnHoverEnd()
-  }, [maybeClearHighlightsOnHoverEnd])
+  const { onMouseMove } = useHighlightCallbacks(getSelectableViewsForSelectMode)
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
-      const foundTarget = findValidTarget(event.target as Element, event.metaKey, doubleClick)
-      if (foundTarget != null) {
-        startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.templatePath)
+      const selectableViews = getSelectableViewsForSelectMode(event.metaKey, doubleClick)
+      const foundTarget = findValidTarget(
+        selectableViews,
+        windowPoint(point(event.clientX, event.clientY)),
+      )
 
-        const isMultiselect = event.shiftKey
+      const isMultiselect = event.shiftKey
+      const isDeselect = foundTarget == null && !isMultiselect
+
+      if (foundTarget != null || isDeselect) {
+        if (foundTarget != null) {
+          startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.templatePath)
+        }
+
         let updatedSelection: Array<TemplatePath>
         if (isMultiselect) {
-          updatedSelection = TP.addPathIfMissing(foundTarget.templatePath, selectedViewsRef.current)
+          updatedSelection = TP.addPathIfMissing(
+            foundTarget!.templatePath,
+            selectedViewsRef.current,
+          )
         } else {
-          updatedSelection = [foundTarget.templatePath]
+          updatedSelection = foundTarget != null ? [foundTarget.templatePath] : []
         }
 
         // first we only set the selected views for the canvas controls
         setSelectedViewsForCanvasControlsOnly(updatedSelection)
 
-        if (!foundTarget.isSelected) {
+        if (!(foundTarget?.isSelected ?? false)) {
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               // then we set the selected views for the editor state, 1 frame later
-              dispatch([selectComponents([foundTarget.templatePath], event.shiftKey)])
+              dispatch([selectComponents(updatedSelection, event.shiftKey)])
             })
           })
         }
@@ -391,32 +450,19 @@ export function useSelectModeSelectAndHover(
       findValidTarget,
       startDragStateAfterDragExceedsThreshold,
       setSelectedViewsForCanvasControlsOnly,
+      getSelectableViewsForSelectMode,
     ],
   )
 
-  return { onMouseOver, onMouseOut, onMouseDown }
-}
-
-function useInsertModeSelectAndHover(): {
-  onMouseOver: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onMouseOut: () => void
-  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-} {
-  return useKeepShallowReferenceEquality({
-    onMouseOver: NO_OP,
-    onMouseOut: NO_OP,
-    onMouseDown: NO_OP,
-  })
+  return { onMouseMove, onMouseDown }
 }
 
 function usePreviewModeSelectAndHover(): {
-  onMouseOver: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onMouseOut: () => void
+  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   return useKeepShallowReferenceEquality({
-    onMouseOver: NO_OP,
-    onMouseOut: NO_OP,
+    onMouseMove: NO_OP,
     onMouseDown: NO_OP,
   })
 }
@@ -424,8 +470,7 @@ function usePreviewModeSelectAndHover(): {
 export function useSelectAndHover(
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
 ): {
-  onMouseOver: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onMouseOut: () => void
+  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')

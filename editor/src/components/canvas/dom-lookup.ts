@@ -46,6 +46,23 @@ export function findFirstParentWithValidUID(
   }
 }
 
+export function getValidTargetAtPoint(
+  validTemplatePaths: Array<string>,
+  point: WindowPoint | null,
+): TemplatePath | null {
+  if (point == null) {
+    return null
+  }
+  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  for (const element of elementsUnderPoint) {
+    const foundValidtemplatePath = findFirstParentWithValidUID(validTemplatePaths, element)
+    if (foundValidtemplatePath != null) {
+      return TP.fromString(foundValidtemplatePath)
+    }
+  }
+  return null
+}
+
 export function getAllTargetsAtPoint(point: WindowPoint | null): Array<TemplatePath> {
   if (point == null) {
     return []
