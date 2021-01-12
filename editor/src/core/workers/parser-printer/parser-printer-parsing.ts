@@ -452,11 +452,32 @@ function turnCodeSnippetIntoSourceMapNodes(
   return new SourceNode(startLine + 1, startChar + 1, fileName, [nodes])
 }
 
+interface ExpressionAndText<E extends TS.Node> {
+  expression: E | undefined
+  text: string
+  fullText: string
+  startPos: number
+}
+
+function createExpressionAndText<E extends TS.Node>(
+  expression: E | undefined,
+  text: string,
+  fullText: string,
+  startPos: number,
+): ExpressionAndText<E> {
+  return {
+    expression: expression,
+    text: text,
+    fullText: fullText,
+    startPos: startPos,
+  }
+}
+
 function parseOtherJavaScript<E extends TS.Node, T>(
   sourceFile: TS.SourceFile,
   sourceText: string,
   filename: string,
-  expressions: Array<E | undefined>,
+  expressionsAndTexts: Array<ExpressionAndText<E>>,
   imports: Imports,
   topLevelNames: Array<string>,
   initialPropsObjectName: string | null,
@@ -470,16 +491,16 @@ function parseOtherJavaScript<E extends TS.Node, T>(
     parsedElementsWithin: ElementsWithinInPosition,
   ) => Either<string, T>,
 ): Either<string, WithParserMetadata<T>> {
-  if (expressions.length === 0) {
+  if (expressionsAndTexts.length === 0) {
     throw new Error('Unable to deal with a collection of zero expressions.')
   } else {
     let startLineShift: number = 0
     let startColumnShift: number = 0
-    fastForEach(expressions, (expression) => {
-      if (expression != null) {
+    fastForEach(expressionsAndTexts, (expressionAndText) => {
+      if (expressionAndText.expression != null) {
         const startPosition = TS.getLineAndCharacterOfPosition(
           sourceFile,
-          expression.getStart(sourceFile, false),
+          expressionAndText.startPos,
         )
         const line = startPosition.line - 1
         const column = startPosition.character - 1
@@ -841,17 +862,18 @@ function parseOtherJavaScript<E extends TS.Node, T>(
 
     let expressionsText: Array<string> = []
     let expressionsNodes: Array<typeof SourceNode> = []
-    for (const expression of expressions) {
+    for (const expressionAndText of expressionsAndTexts) {
+      const expression = expressionAndText.expression
       if (expression != null) {
         addIfDefinedElsewhere([], expression, false)
-        const expressionText = expression.getText(sourceFile)
+        const expressionText = expressionAndText.text
         if (expressionText.length > 0) {
           const { line, character } = TS.getLineAndCharacterOfPosition(sourceFile, expression.pos)
           const expressionNode = turnCodeSnippetIntoSourceMapNodes(
             sourceFile.fileName,
             line,
             character,
-            expression.getFullText(sourceFile),
+            expressionAndText.fullText,
             isExported(expression),
           )
           expressionsNodes.push(expressionNode)
@@ -914,11 +936,17 @@ export function parseAttributeOtherJavaScript(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttributeOtherJavaScript>> {
+  const expressionAndText = createExpressionAndText(
+    expression,
+    expression.getText(sourceFile),
+    expression.getFullText(sourceFile),
+    expression.getStart(sourceFile, false),
+  )
   return parseOtherJavaScript(
     sourceFile,
     sourceText,
     filename,
-    [expression],
+    [expressionAndText],
     imports,
     topLevelNames,
     propsObjectName,
@@ -966,11 +994,21 @@ function parseJSXArbitraryBlock(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXArbitraryBlock>> {
+  const expressionFullText = jsxExpression.getFullText(sourceFile)
+  // Remove the braces around the expression and trim off the whitespace within those.
+  const codeWithComments = expressionFullText.slice(1, -1)
+  const expressionAndText = createExpressionAndText(
+    jsxExpression.expression,
+    codeWithComments,
+    jsxExpression.expression == null ? '' : jsxExpression.expression.getFullText(sourceFile),
+    jsxExpression.getFullStart() + 1,
+  )
+
   return parseOtherJavaScript(
     sourceFile,
     sourceText,
     filename,
-    [jsxExpression.expression],
+    [expressionAndText],
     imports,
     topLevelNames,
     propsObjectName,
@@ -989,11 +1027,8 @@ function parseJSXArbitraryBlock(
           ),
         )
       } else {
-        const expressionFullText = jsxExpression.getFullText(sourceFile)
-        // Remove the braces around the expression and trim off the whitespace within those.
-        const codeWithComments = expressionFullText.slice(1, -1).trim()
         const dataUIDFixed = insertDataUIDsIntoCode(
-          code,
+          codeWithComments,
           parsedElementsWithin,
           true,
           false,
@@ -1943,11 +1978,19 @@ export function parseArbitraryNodes(
   rootLevel: boolean,
   comments: ParsedComments,
 ): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
+  const expressionsAndTexts = arbitraryNodes.map((node) => {
+    return createExpressionAndText(
+      node,
+      node.getText(sourceFile),
+      node.getFullText(sourceFile),
+      node.getStart(sourceFile, false),
+    )
+  })
   return parseOtherJavaScript(
     sourceFile,
     sourceText,
     filename,
-    arbitraryNodes,
+    expressionsAndTexts,
     imports,
     topLevelNames,
     propsObjectName,
