@@ -15,8 +15,21 @@ import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils
 import { createFakeMetadataForParseSuccess, wait } from '../../utils/test-utils'
 import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
+import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 
 describe('moving a scene/rootview on the canvas', () => {
+  beforeAll((done) => {
+    // we need to set the Electron window to a larger size so document.elementsUnderPoint works correctly!
+    const currentWindow = require('electron').remote.getCurrentWindow()
+    const size = currentWindow.getSize()
+    if (size.width !== 2200) {
+      currentWindow.once('resize', () => {
+        done()
+      })
+      currentWindow.setSize(2200, 1000)
+    }
+  })
+
   it('dragging a dynamic scene’s root view sets the scene position', async () => {
     const testCode = Prettier.format(
       `
@@ -64,8 +77,10 @@ describe('moving a scene/rootview on the canvas', () => {
 
     const areaControlBounds = areaControl.getBoundingClientRect()
 
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
     fireEvent(
-      areaControl,
+      canvasControlsLayer,
       new MouseEvent('mousedown', {
         bubbles: true,
         cancelable: true,
@@ -80,7 +95,7 @@ describe('moving a scene/rootview on the canvas', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -98,7 +113,7 @@ describe('moving a scene/rootview on the canvas', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -333,8 +348,10 @@ describe('moving a scene/rootview on the canvas', () => {
 
     const areaControlBounds = areaControl.getBoundingClientRect()
 
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
     fireEvent(
-      areaControl,
+      canvasControlsLayer,
       new MouseEvent('mousedown', {
         bubbles: true,
         cancelable: true,
@@ -349,7 +366,7 @@ describe('moving a scene/rootview on the canvas', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -367,7 +384,7 @@ describe('moving a scene/rootview on the canvas', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,

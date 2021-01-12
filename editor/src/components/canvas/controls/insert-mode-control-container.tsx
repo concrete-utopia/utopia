@@ -46,7 +46,7 @@ import {
   getSnappedGuidelinesForPoint,
 } from './guideline-helpers'
 import { InsertionControls } from './insertion-control'
-import { ControlProps } from './new-canvas-controls'
+import { CanvasControlsContainerID, ControlProps } from './new-canvas-controls'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { RightMenuTab } from '../right-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
@@ -644,7 +644,7 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   componentDidMount() {
-    const canvasContainer = document.getElementById(CanvasContainerID)
+    const canvasContainer = document.getElementById(CanvasControlsContainerID)
     if (canvasContainer != null) {
       canvasContainer.addEventListener('mousedown', this.onMouseDown)
       canvasContainer.addEventListener('mousemove', this.onMouseMove)
@@ -653,7 +653,7 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   componentWillUnmount() {
-    const canvasContainer = document.getElementById(CanvasContainerID)
+    const canvasContainer = document.getElementById(CanvasControlsContainerID)
     if (canvasContainer != null) {
       canvasContainer.removeEventListener('mousedown', this.onMouseDown)
       canvasContainer.removeEventListener('mousemove', this.onMouseMove)

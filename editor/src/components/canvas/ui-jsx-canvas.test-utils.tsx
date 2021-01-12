@@ -155,7 +155,6 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
-      setSelectedViewsForCanvasControlsOnly: Utils.NO_OP,
     }
   } else {
     canvasProps = {
@@ -176,7 +175,6 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
-      setSelectedViewsForCanvasControlsOnly: Utils.NO_OP,
     }
   }
 
