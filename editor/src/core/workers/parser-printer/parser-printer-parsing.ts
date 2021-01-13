@@ -59,6 +59,7 @@ import {
   Comment,
   WithComments,
   BlockOrExpression,
+  simplifyAttributeIfPossible,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -155,11 +156,28 @@ function parseArrayLiteralExpression(
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   let arrayContents: Array<JSXArrayElement> = []
-  let simpleArrayContents: Array<any> = []
   let highlightBounds = existingHighlightBounds
   let propsUsed: Array<string> = []
   let definedElsewhere: Array<string> = []
+
+  // Get comments attached to the square bracket.
+  let openSquareBracketComments: ParsedComments = emptyComments
+  const firstChild = literal.getChildAt(0, sourceFile)
+  if (firstChild != null && firstChild.kind === TS.SyntaxKind.OpenBracketToken) {
+    openSquareBracketComments = getComments(sourceText, firstChild)
+  }
+  let firstProp: boolean = true
+
   for (const literalElement of literal.elements) {
+    // Capture the comments around the entire entry.
+    let elementComments = getComments(sourceText, literalElement)
+    if (firstProp) {
+      elementComments = parsedComments(
+        [...openSquareBracketComments.trailingComments, ...elementComments.leadingComments],
+        elementComments.trailingComments,
+      )
+    }
+
     if (TS.isSpreadElement(literalElement)) {
       const subExpression = parseAttributeExpression(
         sourceFile,
@@ -179,7 +197,7 @@ function parseArrayLiteralExpression(
         highlightBounds = subExpression.value.highlightBounds
         propsUsed.push(...subExpression.value.propsUsed)
         definedElsewhere.push(...subExpression.value.definedElsewhere)
-        arrayContents.push(jsxArraySpread(subExpression.value.value, emptyComments))
+        arrayContents.push(jsxArraySpread(subExpression.value.value, elementComments))
       }
     } else {
       const subExpression = parseAttributeExpression(
@@ -201,33 +219,18 @@ function parseArrayLiteralExpression(
         propsUsed.push(...subExpression.value.propsUsed)
         definedElsewhere.push(...subExpression.value.definedElsewhere)
         const subExpressionValue: JSXAttribute = subExpression.value.value
-        if (isJSXAttributeValue(subExpressionValue)) {
-          simpleArrayContents.push(subExpressionValue.value)
-        }
-        arrayContents.push(jsxArrayValue(subExpressionValue, emptyComments))
+        arrayContents.push(jsxArrayValue(subExpressionValue, elementComments))
       }
     }
   }
-  // If every value is a JSXAttributeValue, we can simplify.
-  if (simpleArrayContents.length === arrayContents.length) {
-    return right(
-      withParserMetadata(
-        jsxAttributeValue(simpleArrayContents, emptyComments),
-        highlightBounds,
-        propsUsed,
-        definedElsewhere,
-      ),
-    )
-  } else {
-    return right(
-      withParserMetadata(
-        jsxAttributeNestedArray(arrayContents, emptyComments),
-        highlightBounds,
-        propsUsed,
-        definedElsewhere,
-      ),
-    )
-  }
+  return right(
+    withParserMetadata(
+      jsxAttributeNestedArray(arrayContents, emptyComments),
+      highlightBounds,
+      propsUsed,
+      definedElsewhere,
+    ),
+  )
 }
 
 function parseObjectLiteralExpression(
@@ -242,10 +245,6 @@ function parseObjectLiteralExpression(
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   let contents: Array<JSXProperty> = []
-  let simpleContents: {
-    [key: string]: any
-  } = {}
-  let simpleContentsCount = 0
   let highlightBounds = existingHighlightBounds
   let propsUsed: Array<string> = []
   let definedElsewhere: Array<string> = []
@@ -259,8 +258,23 @@ function parseObjectLiteralExpression(
   let firstProp: boolean = true
 
   for (const literalProp of literal.properties) {
-    const propComments = getComments(sourceText, literalProp)
+    // Capture the comments around the entire entry.
+    let propComments = getComments(sourceText, literalProp)
+    if (firstProp) {
+      propComments = parsedComments(
+        [...openBraceComments.trailingComments, ...propComments.leadingComments],
+        propComments.trailingComments,
+      )
+    }
+
     if (TS.isPropertyAssignment(literalProp) || TS.isShorthandPropertyAssignment(literalProp)) {
+      // The colon in the middle might have comments attached to it, we should try to grab those.
+      const colonToken = literalProp
+        .getChildren(sourceFile)
+        .find((node) => node.kind === TS.SyntaxKind.ColonToken)
+      const colonTokenComments =
+        colonToken == null ? emptyComments : getComments(sourceText, colonToken)
+
       const initializer = TS.isPropertyAssignment(literalProp)
         ? literalProp.initializer
         : literalProp.name
@@ -274,8 +288,9 @@ function parseObjectLiteralExpression(
         initializer,
         highlightBounds,
         alreadyExistingUIDs,
-        firstProp ? openBraceComments.trailingComments : [],
+        colonTokenComments.trailingComments,
       )
+
       if (isLeft(subExpression)) {
         return subExpression
       } else {
@@ -285,14 +300,11 @@ function parseObjectLiteralExpression(
         } else {
           const key = possibleKey.value
           const subExpressionValue: JSXAttribute = subExpression.value.value
-          contents.push(jsxPropertyAssignment(key, subExpressionValue, emptyComments))
+          const keyComments = getComments(sourceText, literalProp.name)
+          contents.push(jsxPropertyAssignment(key, subExpressionValue, propComments, keyComments))
           highlightBounds = subExpression.value.highlightBounds
           propsUsed.push(...subExpression.value.propsUsed)
           definedElsewhere.push(...subExpression.value.definedElsewhere)
-          if (isJSXAttributeValue(subExpressionValue)) {
-            simpleContents[key] = subExpressionValue.value
-            simpleContentsCount++
-          }
         }
       }
     } else if (TS.isSpreadAssignment(literalProp)) {
@@ -312,7 +324,7 @@ function parseObjectLiteralExpression(
         return subExpression
       } else {
         const subExpressionValue = subExpression.value.value
-        contents.push(jsxSpreadAssignment(subExpressionValue, emptyComments))
+        contents.push(jsxSpreadAssignment(subExpressionValue, propComments))
         highlightBounds = subExpression.value.highlightBounds
         propsUsed.push(...subExpression.value.propsUsed)
         definedElsewhere.push(...subExpression.value.definedElsewhere)
@@ -322,26 +334,15 @@ function parseObjectLiteralExpression(
     // First prop reset after everything has been handled.
     firstProp = false
   }
-  // If every value is a JSXAttributeValue, we can simplify.
-  if (contents.length === simpleContentsCount) {
-    return right(
-      withParserMetadata(
-        jsxAttributeValue(simpleContents, emptyComments),
-        highlightBounds,
-        propsUsed,
-        definedElsewhere,
-      ),
-    )
-  } else {
-    return right(
-      withParserMetadata(
-        jsxAttributeNestedObject(contents, emptyComments),
-        highlightBounds,
-        propsUsed,
-        definedElsewhere,
-      ),
-    )
-  }
+
+  return right(
+    withParserMetadata(
+      jsxAttributeNestedObject(contents, emptyComments),
+      highlightBounds,
+      propsUsed,
+      definedElsewhere,
+    ),
+  )
 }
 
 interface PropertyAccessDescriptor {
@@ -1084,12 +1085,12 @@ function parseAttributeExpression(
   expression: TS.Expression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
-  trailingCommentsFromContainer: Array<Comment>,
+  trailingCommentsFromPriorToken: Array<Comment>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   let comments = getComments(sourceText, expression)
-  if (trailingCommentsFromContainer.length > 0) {
+  if (trailingCommentsFromPriorToken.length > 0) {
     comments = parsedComments(
-      [...trailingCommentsFromContainer, ...comments.leadingComments],
+      [...trailingCommentsFromPriorToken, ...comments.leadingComments],
       comments.trailingComments,
     )
   }
@@ -1364,7 +1365,9 @@ function parseElementProps(
         if (isLeft(attributeResult)) {
           return attributeResult
         } else {
-          result[prop.name.getText(sourceFile)] = attributeResult.value.value
+          result[prop.name.getText(sourceFile)] = simplifyAttributeIfPossible(
+            attributeResult.value.value,
+          )
           highlightBounds = attributeResult.value.highlightBounds
           propsUsed.push(...attributeResult.value.propsUsed)
           definedElsewhere.push(...attributeResult.value.definedElsewhere)

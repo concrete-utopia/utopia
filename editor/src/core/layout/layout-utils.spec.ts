@@ -24,10 +24,30 @@ describe('roundAttributeLayoutValues', () => {
     const expectedResult: JSXAttributes = {
       style: jsxAttributeNestedObject(
         [
-          jsxPropertyAssignment('left', jsxAttributeValue(0, emptyComments), emptyComments),
-          jsxPropertyAssignment('top', jsxAttributeValue('0%', emptyComments), emptyComments),
-          jsxPropertyAssignment('width', jsxAttributeValue(141, emptyComments), emptyComments),
-          jsxPropertyAssignment('height', jsxAttributeValue('65.5%', emptyComments), emptyComments),
+          jsxPropertyAssignment(
+            'left',
+            jsxAttributeValue(0, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'top',
+            jsxAttributeValue('0%', emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'width',
+            jsxAttributeValue(141, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'height',
+            jsxAttributeValue('65.5%', emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
         ],
         emptyComments,
       ),
@@ -38,12 +58,28 @@ describe('roundAttributeLayoutValues', () => {
     const attributes: JSXAttributes = {
       style: jsxAttributeNestedObject(
         [
-          jsxPropertyAssignment('left', jsxAttributeValue(0, emptyComments), emptyComments),
-          jsxPropertyAssignment('top', jsxAttributeValue('0%', emptyComments), emptyComments),
-          jsxPropertyAssignment('width', jsxAttributeValue(140.675, emptyComments), emptyComments),
+          jsxPropertyAssignment(
+            'left',
+            jsxAttributeValue(0, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'top',
+            jsxAttributeValue('0%', emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'width',
+            jsxAttributeValue(140.675, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
           jsxPropertyAssignment(
             'height',
             jsxAttributeValue('65.492%', emptyComments),
+            emptyComments,
             emptyComments,
           ),
         ],
@@ -54,10 +90,30 @@ describe('roundAttributeLayoutValues', () => {
     const expectedResult: JSXAttributes = {
       style: jsxAttributeNestedObject(
         [
-          jsxPropertyAssignment('left', jsxAttributeValue(0, emptyComments), emptyComments),
-          jsxPropertyAssignment('top', jsxAttributeValue('0%', emptyComments), emptyComments),
-          jsxPropertyAssignment('width', jsxAttributeValue(141, emptyComments), emptyComments),
-          jsxPropertyAssignment('height', jsxAttributeValue('65.5%', emptyComments), emptyComments),
+          jsxPropertyAssignment(
+            'left',
+            jsxAttributeValue(0, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'top',
+            jsxAttributeValue('0%', emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'width',
+            jsxAttributeValue(141, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'height',
+            jsxAttributeValue('65.5%', emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
         ],
         emptyComments,
       ),

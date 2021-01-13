@@ -156,10 +156,9 @@ function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
           (prop) => {
             switch (prop.type) {
               case 'PROPERTY_ASSIGNMENT':
-                return TS.createPropertyAssignment(
-                  TS.createStringLiteral(prop.key),
-                  jsxAttributeToExpression(prop.value),
-                )
+                const key = TS.createStringLiteral(prop.key)
+                addCommentsToNode(key, prop.keyComments)
+                return TS.createPropertyAssignment(key, jsxAttributeToExpression(prop.value))
               case 'SPREAD_ASSIGNMENT':
                 return TS.createSpreadAssignment(jsxAttributeToExpression(prop.value))
               default:

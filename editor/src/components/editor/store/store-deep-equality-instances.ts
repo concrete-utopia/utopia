@@ -296,12 +296,14 @@ export function JSXSpreadAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<
 export function JSXPropertyAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<
   JSXPropertyAssignment
 > {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (value) => value.key,
     createCallWithTripleEquals(),
     (value) => value.value,
     JSXAttributeKeepDeepEqualityCall(),
     (value) => value.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
+    (value) => value.keyComments,
     ParsedCommentsKeepDeepEqualityCall(),
     jsxPropertyAssignment,
   )

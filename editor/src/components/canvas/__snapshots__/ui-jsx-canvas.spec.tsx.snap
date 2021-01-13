@@ -3035,6 +3035,10 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "backgroundColor",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -3547,6 +3551,10 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "backgroundColor",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -4100,6 +4108,10 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "backgroundColor",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -4707,6 +4719,10 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "backgroundColor",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -6133,6 +6149,10 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "fontSize",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -6149,6 +6169,10 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "fontFamily",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -6165,6 +6189,10 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "color",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -6181,6 +6209,10 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "left",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -6197,6 +6229,10 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "top",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -6213,6 +6249,10 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "width",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -6229,6 +6269,10 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "height",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -6245,6 +6289,10 @@ export var storyboard = (props) => {
                   "trailingComments": Array [],
                 },
                 "key": "backgroundColor",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -9035,6 +9083,10 @@ Object {
                   "trailingComments": Array [],
                 },
                 "key": "backgroundColor",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {
@@ -11212,6 +11264,10 @@ export var storyboard = (
                   "trailingComments": Array [],
                 },
                 "key": "backgroundColor",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "type": "PROPERTY_ASSIGNMENT",
                 "value": Object {
                   "comments": Object {

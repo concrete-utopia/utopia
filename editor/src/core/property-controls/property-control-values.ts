@@ -385,7 +385,7 @@ function printerForObject(objectControls: {
       const valueControl = objectControls[key]
       const valuePrinter =
         valueControl == null ? printSimple : printerForPropertyControl(valueControl)
-      return jsxPropertyAssignment(key, valuePrinter(value), emptyComments)
+      return jsxPropertyAssignment(key, valuePrinter(value), emptyComments, emptyComments)
     }, objectToPrint)
 
     return jsxAttributeNestedObject(printedContents, emptyComments)
