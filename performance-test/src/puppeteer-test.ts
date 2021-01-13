@@ -9,17 +9,17 @@ const yn = require('yn')
 
 const BRANCH_NAME = process.env.BRANCH_NAME
 const PROJECT_ID = '5596ecdd'
-// const EDITOR_URL = `http://localhost:8000/p/f8926f5a-sly-rake/`
-const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
+const EDITOR_URL =
+  process.env.EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
 
 type FrameResult = {
   frameData: {
-    frameAvg: number,
-    percentile25: number | undefined,
-    percentile50: number | undefined,
-    percentile75: number | undefined,
-  },
-  frameTimesFixed: Array<number>,
+    frameAvg: number
+    percentile25: number | undefined
+    percentile50: number | undefined
+    percentile75: number | undefined
+  }
+  frameTimesFixed: Array<number>
 }
 
 // this is the same as utils.ts@defer
@@ -35,10 +35,17 @@ function defer() {
   return promise
 }
 
-function consoleDoneMessage(page: puppeteer.Page, expectedConsoleMessage: string, errorMessage?: string) {
+function consoleDoneMessage(
+  page: puppeteer.Page,
+  expectedConsoleMessage: string,
+  errorMessage?: string,
+) {
   return new Promise<void>((resolve, reject) => {
     page.on('console', (message) => {
-      if (message.text().includes(expectedConsoleMessage) || (errorMessage != null && message.text().includes(errorMessage))) {
+      if (
+        message.text().includes(expectedConsoleMessage) ||
+        (errorMessage != null && message.text().includes(errorMessage))
+      ) {
         // the editor will console.info('SCROLL_TEST_FINISHED') when the scrolling test is complete.
         // we wait until we see this console log and then we resolve the Promise
         resolve()
@@ -57,6 +64,7 @@ export const setupBrowser = async function () {
   // page.on('console', (message) =>
   //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
   // )
+  console.info('loading editor at URL:', EDITOR_URL)
   await page.goto(EDITOR_URL)
   return {
     browser: browser,
@@ -74,13 +82,25 @@ export const testPerformance = async function () {
   const selectionImage = await uploadImage(selectionResult, true)
 
   console.info(
-    `::set-output name=perf-result:: ![ScrollChart](${scrollImage}) - SCROLL TEST Average frame length: ${scrollResult.frameData.frameAvg.toFixed(1)} – Q1: ${scrollResult.frameData.percentile25} – Q2: ${scrollResult.frameData.percentile50} – Q3: ${
-      scrollResult.frameData.percentile75
-    } – Median: ${scrollResult.frameData.percentile50} ![ResizeChart](${resizeImage}) - RESIZE TEST Average frame length: ${resizeResult.frameData.frameAvg.toFixed(1)} – Q1: ${resizeResult.frameData.percentile25} – Q2: ${resizeResult.frameData.percentile50} – Q3: ${
-      resizeResult.frameData.percentile75
-    } – Median: ${resizeResult.frameData.percentile50} ![SelectionChart](${selectionImage}) - SELECTION TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(1)} – Q1: ${selectionResult.frameData.percentile25} – Q2: ${selectionResult.frameData.percentile50} – Q3: ${
-      selectionResult.frameData.percentile75
-    } – Median: ${selectionResult.frameData.percentile50}`,
+    `::set-output name=perf-result:: ![ScrollChart](${scrollImage}) - SCROLL TEST Average frame length: ${scrollResult.frameData.frameAvg.toFixed(
+      1,
+    )} – Q1: ${scrollResult.frameData.percentile25} – Q2: ${
+      scrollResult.frameData.percentile50
+    } – Q3: ${scrollResult.frameData.percentile75} – Median: ${
+      scrollResult.frameData.percentile50
+    } ![ResizeChart](${resizeImage}) - RESIZE TEST Average frame length: ${resizeResult.frameData.frameAvg.toFixed(
+      1,
+    )} – Q1: ${resizeResult.frameData.percentile25} – Q2: ${
+      resizeResult.frameData.percentile50
+    } – Q3: ${resizeResult.frameData.percentile75} – Median: ${
+      resizeResult.frameData.percentile50
+    } ![SelectionChart](${selectionImage}) - SELECTION TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(
+      1,
+    )} – Q1: ${selectionResult.frameData.percentile25} – Q2: ${
+      selectionResult.frameData.percentile50
+    } – Q3: ${selectionResult.frameData.percentile75} – Median: ${
+      selectionResult.frameData.percentile50
+    }`,
   )
 }
 
@@ -103,7 +123,7 @@ export const testScrollingPerformance = async function (): Promise<FrameResult> 
   await browser.close()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
- 
+
   return getFrameData(traceJson, 'scroll_step_')
 }
 
@@ -132,7 +152,7 @@ export const testResizePerformance = async function (): Promise<FrameResult> {
   return getFrameData(traceJson, 'resize_step_')
 }
 
-export const testSelectionPerformance = async function (): Promise<FrameResult>  {
+export const testSelectionPerformance = async function (): Promise<FrameResult> {
   const { page, browser } = await setupBrowser()
   await page.waitForTimeout(20000)
   await page.waitForXPath("//a[contains(., 'P E')]")
@@ -194,11 +214,20 @@ function valueOutsideCutoff(frameCutoff: Array<number>) {
   return sum
 }
 
-async function uploadImage(result: FrameResult, isSelectionTest = false ) {
+async function uploadImage(result: FrameResult, isSelectionTest = false) {
   const imageFileName = v4() + '.png'
-  const fileURI = await createTestPng(result.frameTimesFixed, imageFileName, result.frameData, isSelectionTest)
-  const s3FileUrl = await uploadPNGtoAWS(fileURI)
-  return s3FileUrl
+  const fileURI = await createTestPng(
+    result.frameTimesFixed,
+    imageFileName,
+    result.frameData,
+    isSelectionTest,
+  )
+  if (fileURI != null) {
+    const s3FileUrl = await uploadPNGtoAWS(fileURI)
+    return s3FileUrl
+  } else {
+    return ''
+  }
 }
 
 async function createTestPng(
@@ -210,8 +239,15 @@ async function createTestPng(
     percentile50: number | undefined
     percentile75: number | undefined
   },
-  isSelectionTest: boolean
-) {
+  isSelectionTest: boolean,
+): Promise<string | null> {
+  if (
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME == null ||
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_API_KEY == null
+  ) {
+    console.info('Plotly graph generation skipped because of missing username or API key')
+    return null
+  }
   const xAxisRange = isSelectionTest ? { min: 100, max: 200 } : { min: 0, max: 134 }
   const plotly = require('plotly')(
     process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME,
