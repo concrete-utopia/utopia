@@ -555,9 +555,7 @@ export const MetadataUtils = {
     return Utils.flatMapArray(getChildrenInner, immediateChildren)
   },
   getAllScenePaths(scenes: ComponentMetadata[]): ScenePath[] {
-    return scenes
-      .map((s) => s.scenePath)
-      .filter((s) => !TP.pathsEqual(s, EmptyScenePathForStoryboard))
+    return scenes.map((s) => s.scenePath)
   },
   getCanvasRootScenesAndElements(
     metadata: JSXMetadata,
