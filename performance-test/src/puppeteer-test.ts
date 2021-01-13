@@ -71,14 +71,14 @@ export const testPerformance = async function () {
 
   const scrollImage = await uploadImage(scrollResult)
   const resizeImage = await uploadImage(resizeResult)
-  const selectionImage = await uploadImage(selectionResult)
+  const selectionImage = await uploadImage(selectionResult, true)
 
   console.info(
-    `::set-output name=perf-result:: ![ScrollChart](${scrollImage}) - SCROLL TEST Average frame length: ${scrollResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${scrollResult.frameData.percentile25} – Q2: ${scrollResult.frameData.percentile50} – Q3: ${
+    `::set-output name=perf-result:: ![ScrollChart](${scrollImage}) - SCROLL TEST Average frame length: ${scrollResult.frameData.frameAvg.toFixed(1)} – Q1: ${scrollResult.frameData.percentile25} – Q2: ${scrollResult.frameData.percentile50} – Q3: ${
       scrollResult.frameData.percentile75
-    } – Median: ${scrollResult.frameData.percentile50} ![ResizeChart](${resizeImage}) - RESIZE TEST Average frame length: ${resizeResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${resizeResult.frameData.percentile25} – Q2: ${resizeResult.frameData.percentile50} – Q3: ${
+    } – Median: ${scrollResult.frameData.percentile50} ![ResizeChart](${resizeImage}) - RESIZE TEST Average frame length: ${resizeResult.frameData.frameAvg.toFixed(1)} – Q1: ${resizeResult.frameData.percentile25} – Q2: ${resizeResult.frameData.percentile50} – Q3: ${
       resizeResult.frameData.percentile75
-    } – Median: ${resizeResult.frameData.percentile50} ![SelectionChart](${selectionImage}) - SELECTION TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(1)} \\n – Q1: ${selectionResult.frameData.percentile25} – Q2: ${selectionResult.frameData.percentile50} – Q3: ${
+    } – Median: ${resizeResult.frameData.percentile50} ![SelectionChart](${selectionImage}) - SELECTION TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(1)} – Q1: ${selectionResult.frameData.percentile25} – Q2: ${selectionResult.frameData.percentile50} – Q3: ${
       selectionResult.frameData.percentile75
     } – Median: ${selectionResult.frameData.percentile50}`,
   )
@@ -194,9 +194,9 @@ function valueOutsideCutoff(frameCutoff: Array<number>) {
   return sum
 }
 
-async function uploadImage(result: FrameResult) {
+async function uploadImage(result: FrameResult, isSelectionTest = false ) {
   const imageFileName = v4() + '.png'
-  const fileURI = await createTestPng(result.frameTimesFixed, imageFileName, result.frameData)
+  const fileURI = await createTestPng(result.frameTimesFixed, imageFileName, result.frameData, isSelectionTest)
   const s3FileUrl = await uploadPNGtoAWS(fileURI)
   return s3FileUrl
 }
@@ -210,7 +210,9 @@ async function createTestPng(
     percentile50: number | undefined
     percentile75: number | undefined
   },
+  isSelectionTest: boolean
 ) {
+  const xAxisRange = isSelectionTest ? { min: 100, max: 200 } : { min: 0, max: 134 }
   const plotly = require('plotly')(
     process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME,
     process.env.PERFORMANCE_GRAPHS_PLOTLY_API_KEY,
@@ -241,7 +243,7 @@ async function createTestPng(
       showgrid: true,
       zeroline: true,
       showline: true,
-      range: [0, 134],
+      range: [xAxisRange.min, xAxisRange.max],
       autotick: false,
       ticks: 'outside',
       tick0: 0,
