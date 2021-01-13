@@ -52,6 +52,7 @@ import {
   WithComments,
   VarLetOrConst,
   FunctionDeclarationSyntax,
+  arbitraryJSBlock,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -98,6 +99,7 @@ import {
   isExported,
   isDefaultExport,
   expressionTypeForExpression,
+  extractPrefixedCode,
 } from './parser-printer-parsing'
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { ParserPrinterResultMessage } from './parser-printer-worker'
@@ -113,7 +115,6 @@ import {
   mergeParsedComments,
   ParsedComments,
 } from './parser-printer-comments'
-import { RuleTester } from 'eslint'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -515,7 +516,6 @@ function printUtopiaJSXComponent(
 
       function bodyForFunction(): TS.Block {
         let statements: Array<TS.Statement> = []
-        let bodyBlock: TS.Block
         if (element.arbitraryJSBlock != null) {
           // I just punched a hole in the space time continuum with this cast to any.
           // Somehow it works, I assume because it really only cares about Nodes internally and
@@ -526,7 +526,7 @@ function printUtopiaJSXComponent(
         const returnStatement = TS.createReturn(jsxElementExpression)
         addCommentsToNode(returnStatement, element.returnStatementComments)
         statements.push(returnStatement)
-        return TS.createBlock(statements, true)
+        return TS.createBlock(statements, false)
       }
 
       function bodyForArrowFunction(): TS.ConciseBody {
@@ -737,17 +737,20 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
   let printedParts: Array<string> = []
 
   fastForEach(statements, (statement) => {
-    const nextLine = printer.printNode(TS.EmitHint.Unspecified, statement, resultFile).trim()
-    const shouldPrefixWithBlankLine = checkShouldInsertBlankLineBeforeStatement(statement, nextLine)
+    const nextLine = printer.printNode(TS.EmitHint.Unspecified, statement, resultFile)
+    const shouldPrefixWithBlankLine = checkShouldInsertBlankLineBeforeStatement(
+      statement,
+      nextLine.trim(),
+    )
 
     if (printedParts.length > 0 && shouldPrefixWithBlankLine) {
-      printedParts.push('\n')
+      // printedParts.push('\n')
     }
 
     printedParts.push(nextLine)
   })
 
-  const typescriptPrintedResult = printedParts.join('\n')
+  const typescriptPrintedResult = printedParts.join('') //('\n')
   let result: string
   if (shouldPrettify) {
     result = applyPrettier(typescriptPrintedResult, false).formatted
@@ -1186,6 +1189,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           alreadyExistingUIDs,
           true,
           arbitraryNodeComments,
+          false,
         )
         topLevelElements.push(
           mapEither((parsed) => {
@@ -1226,10 +1230,17 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
 
     for (const topLevelElement of topLevelNodes) {
       // Capture the comments so we can attach them to the node
-      const comments = getComments(sourceText, topLevelElement)
+      const comments = emptyComments //getComments(sourceText, topLevelElement)
       function pushArbitraryNode(node: TS.Node) {
         arbitraryNodes.push(node)
         arbitraryNodeComments = mergeParsedComments(arbitraryNodeComments, comments)
+      }
+
+      const prefixedText = extractPrefixedCode(topLevelElement, sourceFile)
+      if (prefixedText != null && prefixedText.length > 0) {
+        topLevelElements.push(
+          right(arbitraryJSBlock(prefixedText, prefixedText, [], [], null, emptyComments)),
+        )
       }
 
       // Handle export assignments: `export default App`
@@ -1449,6 +1460,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         alreadyExistingUIDs,
         true,
         emptyComments,
+        false,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
         combinedTopLevelArbitraryBlock = nodeParseSuccess.value

@@ -88,11 +88,8 @@ import {
 } from './parser-printer-utils'
 import * as Hash from 'object-hash'
 import {
-  addCommentsToCode,
   emptyComments,
   getComments,
-  getJSXExpressionLeadingComments,
-  getTrailingComments,
   mergeParsedComments,
   parsedComments,
   ParsedComments,
@@ -485,6 +482,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
   alreadyExistingUIDs: Set<string>,
   create: (
     code: string,
+    fullCode: string,
     definedWithin: Array<string>,
     definedElsewhere: Array<string>,
     fileNode: typeof SourceNode,
@@ -861,13 +859,15 @@ function parseOtherJavaScript<E extends TS.Node, T>(
     }
 
     let expressionsText: Array<string> = []
+    let expressionsFullText: Array<string> = []
     let expressionsNodes: Array<typeof SourceNode> = []
     for (const expressionAndText of expressionsAndTexts) {
       const expression = expressionAndText.expression
       if (expression != null) {
         addIfDefinedElsewhere([], expression, false)
         const expressionText = expressionAndText.text
-        if (expressionText.length > 0) {
+        const expressionFullText = expressionAndText.fullText
+        if (expressionFullText.length > 0) {
           const { line, character } = TS.getLineAndCharacterOfPosition(sourceFile, expression.pos)
           const expressionNode = turnCodeSnippetIntoSourceMapNodes(
             sourceFile.fileName,
@@ -879,6 +879,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
           expressionsNodes.push(expressionNode)
         }
         expressionsText.push(expressionText)
+        expressionsFullText.push(expressionFullText) //removeLeadingNewlineChar(expressionFullText))
         if (TS.isFunctionDeclaration(expression)) {
           if (expression.name != null) {
             pushToDefinedWithinIfNotThere(expression.name.getText(sourceFile))
@@ -900,6 +901,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
     // offset by 1, meaning that if we use them to get the text
     // the string is total nonsense.
     const code = expressionsText.join('\n')
+    const fullCode = expressionsFullText.join('') // ('\n')
 
     const fileNode = new SourceNode(null, null, sourceFile.fileName, expressionsNodes)
     fileNode.setSourceContent(sourceFile.fileName, sourceFile.text)
@@ -920,7 +922,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
 
     return mapEither(
       (created) => withParserMetadata(created, highlightBounds, propsUsed, definedElsewhere),
-      create(code, definedWithin, definedElsewhere, fileNode, parsedElementsWithin),
+      create(code, fullCode, definedWithin, definedElsewhere, fileNode, parsedElementsWithin),
     )
   }
 }
@@ -952,7 +954,7 @@ export function parseAttributeOtherJavaScript(
     propsObjectName,
     existingHighlightBounds,
     alreadyExistingUIDs,
-    (code, _, definedElsewhere, fileSourceNode) => {
+    (_code, fullCode, _definedWithin, definedElsewhere, fileSourceNode, _parsedElementsWithin) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
       const transpileEither = transpileJavascriptFromCode(
@@ -973,7 +975,7 @@ export function parseAttributeOtherJavaScript(
           '',
         )
         return jsxAttributeOtherJavaScript(
-          code,
+          fullCode,
           prependedWithReturn.code,
           definedElsewhere,
           prependedWithReturn.sourceMap,
@@ -1014,11 +1016,11 @@ function parseJSXArbitraryBlock(
     propsObjectName,
     existingHighlightBounds,
     alreadyExistingUIDs,
-    (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin) => {
-      if (code === '') {
+    (_code, fullCode, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin) => {
+      if (fullCode === '') {
         return right(
           jsxArbitraryBlock(
-            code,
+            fullCode,
             '',
             'return undefined',
             definedElsewhere,
@@ -1977,6 +1979,7 @@ export function parseArbitraryNodes(
   alreadyExistingUIDs: Set<string>,
   rootLevel: boolean,
   comments: ParsedComments,
+  useFullCode: boolean,
 ): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
   const expressionsAndTexts = arbitraryNodes.map((node) => {
     return createExpressionAndText(
@@ -1996,7 +1999,8 @@ export function parseArbitraryNodes(
     propsObjectName,
     existingHighlightBounds,
     alreadyExistingUIDs,
-    (code, definedWithin, definedElsewhere, fileSourceNode, parsedElementsWithin) => {
+    (code, fullCode, definedWithin, definedElsewhere, fileSourceNode, parsedElementsWithin) => {
+      const codeToUse = useFullCode ? fullCode : code
       const definedWithinFields = definedWithin.map((within) => `${within}: ${within}`).join(', ')
       const definedWithCode = `return { ${definedWithinFields} };`
 
@@ -2008,7 +2012,7 @@ export function parseArbitraryNodes(
         false,
       )
       const dataUIDFixed = insertDataUIDsIntoCode(
-        code,
+        codeToUse,
         parsedElementsWithin,
         false,
         rootLevel,
@@ -2018,7 +2022,7 @@ export function parseArbitraryNodes(
         (transpileResult, dataUIDFixResult) => {
           const transpiled = `${transpileResult.code}\n${definedWithCode}`
           return arbitraryJSBlock(
-            code,
+            codeToUse,
             transpiled,
             definedWithin,
             definedElsewhere,
@@ -2072,6 +2076,15 @@ export function liftParsedElementsIntoFunctionContents(
   }, parsedElements)
 }
 
+export function extractPrefixedCode(node: TS.Node, sourceFile: TS.SourceFile): string {
+  // Attempt to capture everything between this and the last node
+  const nodeText = node.getText(sourceFile) || ''
+  const nodeFullText = node.getFullText(sourceFile) || ''
+  const fullPrefixedText = nodeFullText.slice(0, nodeFullText.lastIndexOf(nodeText))
+  const prefixedText = fullPrefixedText
+  return prefixedText
+}
+
 export function parseOutFunctionContents(
   sourceFile: TS.SourceFile,
   sourceText: string,
@@ -2088,12 +2101,14 @@ export function parseOutFunctionContents(
     if (arrowFunctionBody.statements.length === 0) {
       return left('No body for component.')
     } else {
-      const possibleBlockExpressions = dropLast(nodeArrayToArray(arrowFunctionBody.statements))
       const possibleElement = arrowFunctionBody.statements[arrowFunctionBody.statements.length - 1]!
       let jsBlock: ArbitraryJSBlock | null = null
       let propsUsed: Array<string> = []
       let definedElsewhere: Array<string> = []
       const returnStatementComments = getComments(sourceText, possibleElement)
+      const returnStatementPrefixText = extractPrefixedCode(possibleElement, sourceFile)
+
+      const possibleBlockExpressions = dropLast(nodeArrayToArray(arrowFunctionBody.statements))
       if (possibleBlockExpressions.length > 0) {
         const comments = possibleBlockExpressions.reduce(
           (working: ParsedComments, next: TS.Statement) =>
@@ -2113,12 +2128,17 @@ export function parseOutFunctionContents(
           alreadyExistingUIDs,
           false,
           comments,
+          true,
         )
         if (isLeft(parseResult)) {
           return parseResult
         } else {
+          let parsedJSBlock = parseResult.value.value
+          parsedJSBlock.javascript = `${parsedJSBlock.javascript}${returnStatementPrefixText}`
+          parsedJSBlock.transpiledJavascript = `${parsedJSBlock.transpiledJavascript}${returnStatementPrefixText}`
+
           highlightBounds = parseResult.value.highlightBounds
-          jsBlock = parseResult.value.value
+          jsBlock = parsedJSBlock
           propsUsed = parseResult.value.propsUsed
           definedElsewhere = parseResult.value.definedElsewhere
         }

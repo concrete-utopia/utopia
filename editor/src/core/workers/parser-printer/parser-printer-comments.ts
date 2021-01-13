@@ -57,7 +57,7 @@ function parseComment(
   }
 }
 
-export function getLeadingComments(sourceText: string, node: TS.Node): Array<Comment> {
+function getLeadingComments(sourceText: string, node: TS.Node): Array<Comment> {
   let result: Array<Comment> = []
   const parseAndPushComment = (
     pos: number,
@@ -72,7 +72,7 @@ export function getLeadingComments(sourceText: string, node: TS.Node): Array<Com
   return result
 }
 
-export function getTrailingComments(sourceText: string, node: TS.Node): Array<Comment> {
+function getTrailingComments(sourceText: string, node: TS.Node): Array<Comment> {
   let result: Array<Comment> = []
   const parseAndPushComment = (
     pos: number,
@@ -88,10 +88,11 @@ export function getTrailingComments(sourceText: string, node: TS.Node): Array<Co
 }
 
 export function getComments(sourceText: string, node: TS.Node): ParsedComments {
-  const leadingComments = getLeadingComments(sourceText, node)
-  const trailingComments = getTrailingComments(sourceText, node)
+  // const leadingComments = getLeadingComments(sourceText, node)
+  // const trailingComments = getTrailingComments(sourceText, node)
 
-  return parsedComments(leadingComments, trailingComments)
+  // return parsedComments(leadingComments, trailingComments)
+  return emptyComments
 }
 
 function createTSComments(comments: Array<Comment>): Array<TS.SynthesizedComment> {
@@ -123,35 +124,17 @@ function createTSComments(comments: Array<Comment>): Array<TS.SynthesizedComment
 
 // Warning: Mutates the node, but also returns it.
 export function addCommentsToNode(node: TS.Node, comments: ParsedComments): TS.Node {
-  const leadingTSComments = createTSComments(comments.leadingComments)
-  const trailingTSComments = createTSComments(comments.trailingComments)
+  // const leadingTSComments = createTSComments(comments.leadingComments)
+  // const trailingTSComments = createTSComments(comments.trailingComments)
 
-  if (leadingTSComments.length > 0) {
-    TS.setSyntheticLeadingComments(node, leadingTSComments)
-  }
-  if (trailingTSComments.length > 0) {
-    TS.setSyntheticTrailingComments(node, trailingTSComments)
-  }
+  // if (leadingTSComments.length > 0) {
+  //   TS.setSyntheticLeadingComments(node, leadingTSComments)
+  // }
+  // if (trailingTSComments.length > 0) {
+  //   TS.setSyntheticTrailingComments(node, trailingTSComments)
+  // }
 
   return node
-}
-
-export function addCommentsToCode(
-  code: string,
-  leadingComments: Array<Comment>,
-  trailingComments: Array<Comment>,
-): string {
-  let result: string = ''
-  function addComment(comment: Comment): void {
-    result += comment.rawText
-    if (comment.trailingNewLine) {
-      result += '\n'
-    }
-  }
-  leadingComments.forEach(addComment)
-  result += code
-  trailingComments.forEach(addComment)
-  return result
 }
 
 // Comments just inside the opening brace of a JSX expression are treated as trailing comments

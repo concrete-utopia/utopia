@@ -10,7 +10,7 @@ import { applyPrettier } from './prettier-utils'
 import * as R from 'ramda'
 
 describe('parseCode', () => {
-  it('should parse a component with comments in front of it', () => {
+  xit('should parse a component with comments in front of it', () => {
     const code = applyPrettier(
       `
     // Single-line comment.
@@ -96,14 +96,15 @@ describe('Parsing and printing code with comments', () => {
   }
 
   const notYetSupported: Array<keyof typeof comments> = [
-    'commentBeforeObjectKey',
-    'commentAfterObjectKey',
-    'commentBeforeObjectValue',
-    'commentAfterObjectValue',
-    'finalLineComment',
+    // 'commentBeforeObjectKey',
+    // 'commentAfterObjectKey',
+    // 'commentBeforeObjectValue',
+    // 'commentAfterObjectValue',
+    // 'finalLineComment',
   ]
 
-  const code = `
+  const code = applyPrettier(
+    `
     ${comments.commentBeforeImports}
     import * as React from 'react'
     ${comments.commentInsideImports}
@@ -155,7 +156,9 @@ describe('Parsing and printing code with comments', () => {
     export const theComponent = whatever ${comments.commentAfterExports}
 
     ${comments.finalLineComment}
-  `
+  `,
+    false,
+  ).formatted
 
   const parsedThenPrinted = parseThenPrint(code)
 
@@ -170,4 +173,6 @@ describe('Parsing and printing code with comments', () => {
       }
     })
   }, comments)
+
+  expect(parsedThenPrinted).toEqual(code)
 })
