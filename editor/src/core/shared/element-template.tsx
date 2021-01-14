@@ -351,7 +351,11 @@ export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribu
             const _exhaustiveCheck: never = elem
             throw new Error(`Unhandled elem ${JSON.stringify(elem)}`)
         }
-        if (isParsedCommentsEmpty(elem.comments) && isJSXAttributeValue(simplifiedAttribute)) {
+        if (
+          isSimpleArray &&
+          isParsedCommentsEmpty(elem.comments) &&
+          isJSXAttributeValue(simplifiedAttribute)
+        ) {
           simpleArray.push(simplifiedAttribute.value)
         } else {
           isSimpleArray = false
@@ -370,28 +374,32 @@ export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribu
         const simplifiedAttribute = simplifyAttributeIfPossible(elem.value)
         switch (elem.type) {
           case 'SPREAD_ASSIGNMENT': {
-            const noComments = isParsedCommentsEmpty(elem.comments)
             notSoSimpleObject.push(jsxSpreadAssignment(simplifiedAttribute, elem.comments))
-            if (isJSXAttributeValue(simplifiedAttribute) && noComments) {
-              simpleObject = {
-                ...simpleObject,
-                ...simplifiedAttribute.value,
+            if (isSimpleObject) {
+              const noComments = isParsedCommentsEmpty(elem.comments)
+              if (isJSXAttributeValue(simplifiedAttribute) && noComments) {
+                simpleObject = {
+                  ...simpleObject,
+                  ...simplifiedAttribute.value,
+                }
+              } else {
+                isSimpleObject = false
               }
-            } else {
-              isSimpleObject = false
             }
             break
           }
           case 'PROPERTY_ASSIGNMENT': {
-            const noComments =
-              isParsedCommentsEmpty(elem.comments) && isParsedCommentsEmpty(elem.keyComments)
             notSoSimpleObject.push(
               jsxPropertyAssignment(elem.key, simplifiedAttribute, elem.comments, elem.keyComments),
             )
-            if (isJSXAttributeValue(simplifiedAttribute) && noComments) {
-              simpleObject[elem.key] = simplifiedAttribute.value
-            } else {
-              isSimpleObject = false
+            if (isSimpleObject) {
+              const noComments =
+                isParsedCommentsEmpty(elem.comments) && isParsedCommentsEmpty(elem.keyComments)
+              if (isJSXAttributeValue(simplifiedAttribute) && noComments) {
+                simpleObject[elem.key] = simplifiedAttribute.value
+              } else {
+                isSimpleObject = false
+              }
             }
             break
           }
