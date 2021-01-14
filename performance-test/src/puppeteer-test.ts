@@ -106,47 +106,56 @@ export const testPerformance = async function () {
 
 export const testScrollingPerformance = async function (): Promise<FrameResult> {
   const { page, browser } = await setupBrowser()
-  await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
-  // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P S')]")
-  await button!.click()
-  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
-  const [button2] = await page.$x("//a[contains(., 'P S')]")
-  await button2!.click()
-  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
-  // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
-  const [button3] = await page.$x("//a[contains(., 'P S')]")
-  await button3!.click()
-  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
-  await page.tracing.stop()
-  await browser.close()
+  try {
+    await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
+    // we run it twice without measurements to warm up the environment
+    const [button] = await page.$x("//a[contains(., 'P S')]")
+    await button!.click()
+    await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+    const [button2] = await page.$x("//a[contains(., 'P S')]")
+    await button2!.click()
+    await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+    // and then we run the test for a third time, this time running tracing
+    await page.tracing.start({ path: 'trace.json' })
+    const [button3] = await page.$x("//a[contains(., 'P S')]")
+    await button3!.click()
+    await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+    await page.tracing.stop()
+  } catch(e) {
+    console.warn(`Error running scrolling performance test ${e}`)
+  } finally {
+    await browser.close()
+  }
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-
   return getFrameData(traceJson, 'scroll_step_')
 }
 
 export const testResizePerformance = async function (): Promise<FrameResult> {
   const { page, browser } = await setupBrowser()
-  await page.waitForXPath("//a[contains(., 'P R')]")
-  // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P R')]")
-  await button!.click()
+  try {
+    await page.waitForXPath("//a[contains(., 'P R')]")
+    // we run it twice without measurements to warm up the environment
+    const [button] = await page.$x("//a[contains(., 'P R')]")
+    await button!.click()
 
-  // select element using the navigator
-  const navigatorElement = await page.$('[class^="item-label-container"]')
-  await navigatorElement!.click()
-  const [button2] = await page.$x("//a[contains(., 'P R')]")
-  await button2!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
-  // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
-  const [button3] = await page.$x("//a[contains(., 'P R')]")
-  await button3!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
-  await page.tracing.stop()
-  await browser.close()
+    // select element using the navigator
+    const navigatorElement = await page.$('[class^="item-label-container"]')
+    await navigatorElement!.click()
+    const [button2] = await page.$x("//a[contains(., 'P R')]")
+    await button2!.click()
+    await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+    // and then we run the test for a third time, this time running tracing
+    await page.tracing.start({ path: 'trace.json' })
+    const [button3] = await page.$x("//a[contains(., 'P R')]")
+    await button3!.click()
+    await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+    await page.tracing.stop()
+  } catch(e) {
+    console.warn(`Error running resize performance test ${e}`)
+  } finally {
+    await browser.close()
+  }
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
   return getFrameData(traceJson, 'resize_step_')
@@ -154,19 +163,24 @@ export const testResizePerformance = async function (): Promise<FrameResult> {
 
 export const testSelectionPerformance = async function (): Promise<FrameResult> {
   const { page, browser } = await setupBrowser()
-  await page.waitForTimeout(20000)
-  await page.waitForXPath("//a[contains(., 'P E')]")
-  // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P E')]")
-  await button!.click()
-  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
-  // and then we run the test for a third time, this time running tracing
-  await page.tracing.start({ path: 'trace.json' })
-  const [button2] = await page.$x("//a[contains(., 'P E')]")
-  await button2!.click()
-  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
-  await page.tracing.stop()
-  await browser.close()
+  try {
+    await page.waitForTimeout(20000)
+    await page.waitForXPath("//a[contains(., 'P E')]")
+    // we run it twice without measurements to warm up the environment
+    const [button] = await page.$x("//a[contains(., 'P E')]")
+    await button!.click()
+    await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+    // and then we run the test for a third time, this time running tracing
+    await page.tracing.start({ path: 'trace.json' })
+    const [button2] = await page.$x("//a[contains(., 'P E')]")
+    await button2!.click()
+    await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+    await page.tracing.stop()
+  } catch(e) {
+    console.warn(`Error running selection performance test ${e}`)
+  } finally {
+    await browser.close()
+  }
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
   return getFrameData(traceJson, 'select_step_')
