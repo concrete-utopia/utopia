@@ -555,6 +555,11 @@ export const MetadataUtils = {
     return Utils.flatMapArray(getChildrenInner, immediateChildren)
   },
   getAllScenePaths(scenes: ComponentMetadata[]): ScenePath[] {
+    return scenes
+      .map((s) => s.scenePath)
+      .filter((s) => !TP.pathsEqual(s, EmptyScenePathForStoryboard))
+  },
+  getAllScenePathsIncludingStoryboardForOrphans(scenes: ComponentMetadata[]): ScenePath[] {
     return scenes.map((s) => s.scenePath)
   },
   getCanvasRootScenesAndElements(
@@ -614,7 +619,7 @@ export const MetadataUtils = {
       fastForEach(element?.children ?? [], recurseElement)
     }
 
-    const scenePaths = this.getAllScenePaths(metadata.components)
+    const scenePaths = this.getAllScenePathsIncludingStoryboardForOrphans(metadata.components)
 
     fastForEach(scenePaths, (scenePath) => {
       const scene = metadata.components.find((s) => TP.pathsEqual(scenePath, s.scenePath))
