@@ -776,6 +776,23 @@ export function arbitraryJSBlock(
   }
 }
 
+export function importStatement(
+  rawText: string,
+  importStarAs: boolean,
+  importWithName: boolean,
+  imports: Array<string>,
+  module: string,
+): ImportStatement {
+  return {
+    type: 'IMPORT_STATEMENT',
+    rawText: rawText,
+    importStarAs: importStarAs,
+    importWithName: importWithName,
+    imports: imports,
+    module: module,
+  }
+}
+
 interface RegularParam {
   type: 'REGULAR_PARAM'
   paramName: string
@@ -935,7 +952,16 @@ export interface ArbitraryJSBlock extends WithComments {
   uniqueID: string
 }
 
-export type TopLevelElement = UtopiaJSXComponent | ArbitraryJSBlock
+export interface ImportStatement {
+  type: 'IMPORT_STATEMENT'
+  rawText: string
+  importStarAs: boolean // Includes `import * as Name from`
+  importWithName: boolean // Includes `import Name from`
+  imports: Array<string> // All other imports inside braces i.e. `import { Name } from`
+  module: string
+}
+
+export type TopLevelElement = UtopiaJSXComponent | ArbitraryJSBlock | ImportStatement
 
 export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
   return {
@@ -1012,6 +1038,8 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
       return updatedComponent
     case 'ARBITRARY_JS_BLOCK':
       return clearArbitraryJSBlockUniqueIDs(element)
+    case 'IMPORT_STATEMENT':
+      return element
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled element ${JSON.stringify(element)}`)
@@ -1028,6 +1056,12 @@ export function isArbitraryJSBlock(
   topLevelElement: TopLevelElement,
 ): topLevelElement is ArbitraryJSBlock {
   return topLevelElement.type === 'ARBITRARY_JS_BLOCK'
+}
+
+export function isImportStatement(
+  topLevelElement: TopLevelElement,
+): topLevelElement is ImportStatement {
+  return topLevelElement.type === 'IMPORT_STATEMENT'
 }
 
 export type ComputedStyle = { [key: string]: string }

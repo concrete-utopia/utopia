@@ -1,6 +1,13 @@
 import * as React from 'react'
 import * as TS from 'typescript'
-import { addUniquely, flatMapArray, uniq, uniqBy, sortBy } from '../../shared/array-utils'
+import {
+  addUniquely,
+  flatMapArray,
+  uniq,
+  uniqBy,
+  sortBy,
+  findLastIndex,
+} from '../../shared/array-utils'
 import { SafeFunction } from '../../shared/code-exec-utils'
 import {
   Either,
@@ -52,6 +59,9 @@ import {
   WithComments,
   VarLetOrConst,
   FunctionDeclarationSyntax,
+  ImportStatement,
+  importStatement,
+  isImportStatement,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -113,7 +123,7 @@ import {
   mergeParsedComments,
   ParsedComments,
 } from './parser-printer-comments'
-import { RuleTester } from 'eslint'
+import { replaceAll } from '../../shared/string-utils'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -685,7 +695,10 @@ function createBlanklineTracker(): (statement: TS.Node, printedCode: string) => 
   let lastLineWasVariable = false
   let lastLineWasMultiLineStatement = false
 
-  return (statement: TS.Node, printedCode: string): boolean => {
+  return (statement: TS.Node, rawPrintedCode: string): boolean => {
+    // Awful hack until we implement #851
+    const printedCode = replaceAll(rawPrintedCode, '/** @jsx jsx */', '').trim()
+
     const isUnparsedSource = TS.isUnparsedSource(statement)
     const isMultiLineCode =
       printedCode.includes('\n') ||
@@ -824,33 +837,62 @@ function produceExportStatements(
   return exportStatements
 }
 
+function containsImport(statement: ImportStatement, importToCheck: string): boolean {
+  return statement.imports.includes(importToCheck)
+}
+
+function printTopLevelElements(
+  printOptions: PrintCodeOptions,
+  imports: Imports,
+  topLevelElements: Array<TopLevelElement>,
+  detailOfExports: ExportsDetail,
+): TS.Node[] {
+  return topLevelElements.map((e) => {
+    switch (e.type) {
+      case 'UTOPIA_JSX_COMPONENT':
+        return printUtopiaJSXComponent(printOptions, imports, e, detailOfExports)
+      case 'ARBITRARY_JS_BLOCK':
+        return printArbitraryJSBlock(e)
+      case 'IMPORT_STATEMENT':
+        return TS.createUnparsedSourceFile(e.rawText)
+      default:
+        const _exhaustiveCheck: never = e
+        throw new Error(`Unhandled element type ${JSON.stringify(e)}`)
+    }
+  })
+}
+
 function printCodeImpl(
   printOptions: PrintCodeOptions,
   imports: Imports,
-  topLevelElementsIncludingScenes: Array<TopLevelElement>,
+  topLevelElements: Array<TopLevelElement>,
   jsxFactoryFunction: string | null,
   detailOfExports: ExportsDetail,
 ): string {
-  // if the project used the old SceneMetadata notation, strip out the Storyboard component here
-  const topLevelElements = topLevelElementsIncludingScenes
-
   const importOrigins: Array<string> = Object.keys(imports)
   let importDeclarations: Array<TS.ImportDeclaration> = []
   fastForEach(importOrigins, (importOrigin) => {
     const importForClause = imports[importOrigin]
+    const matchingTopLevelElements: ImportStatement[] = topLevelElements.filter(
+      (e) => isImportStatement(e) && e.module === importOrigin,
+    ) as ImportStatement[]
+    const { importedWithName, importedFromWithin, importedAs } = importForClause
 
-    if (importForClause.importedWithName != null || importForClause.importedFromWithin.length > 0) {
-      let importedWithName: TS.Identifier | undefined = undefined
-      if (importForClause.importedWithName != null) {
-        importedWithName = TS.createIdentifier(importForClause.importedWithName)
-      }
-      // Importing parts or the whole module by name.
+    const hasImportWithName = matchingTopLevelElements.some((e) => e.importWithName)
+    const missingImportWithName =
+      hasImportWithName || importedWithName == null ? null : importedWithName
+
+    const missingImports = importedFromWithin.filter(
+      (i) => !matchingTopLevelElements.some((e) => containsImport(e, i.name)),
+    )
+
+    if (missingImportWithName != null || missingImports.length > 0) {
       const importClause = TS.createImportClause(
-        importedWithName,
-        importForClause.importedFromWithin.length === 0
+        missingImportWithName == null ? undefined : TS.createIdentifier(missingImportWithName),
+        missingImports.length === 0
           ? undefined
           : TS.createNamedImports(
-              importForClause.importedFromWithin.map((i) => {
+              missingImports.map((i) => {
                 return TS.createImportSpecifier(
                   TS.createIdentifier(i.name),
                   TS.createIdentifier(i.alias),
@@ -865,16 +907,17 @@ function printCodeImpl(
         importClause,
         TS.createStringLiteral(importOrigin),
       )
-
       addCommentsToNode(importDeclaration, importForClause.comments)
       importDeclarations.push(importDeclaration)
     }
 
-    if (importForClause.importedAs != null) {
-      // Wildcard import of the package.
+    const hasImportStarAs = matchingTopLevelElements.some((e) => e.importStarAs)
+    const missingImportStarAs = hasImportStarAs || importedAs == null ? null : importedAs
+
+    if (missingImportStarAs != null) {
       const wildcardClause = TS.createImportClause(
         undefined,
-        TS.createNamespaceImport(TS.createIdentifier(importForClause.importedAs)),
+        TS.createNamespaceImport(TS.createIdentifier(missingImportStarAs)),
       )
 
       const importDeclaration = TS.createImportDeclaration(
@@ -883,47 +926,24 @@ function printCodeImpl(
         wildcardClause,
         TS.createStringLiteral(importOrigin),
       )
-
-      addCommentsToNode(importDeclaration, importForClause.comments)
-      importDeclarations.push(importDeclaration)
-    }
-
-    if (
-      importForClause.importedAs == null &&
-      importForClause.importedWithName == null &&
-      importForClause.importedFromWithin.length === 0
-    ) {
-      // side-effect only import ( `import './style.css'` )
-      const importDeclaration = TS.createImportDeclaration(
-        undefined,
-        undefined,
-        undefined,
-        TS.createStringLiteral(importOrigin),
-      )
-
       addCommentsToNode(importDeclaration, importForClause.comments)
       importDeclarations.push(importDeclaration)
     }
   })
 
-  const topLevelStatements = topLevelElements.map((e) => {
-    switch (e.type) {
-      case 'UTOPIA_JSX_COMPONENT':
-        return printUtopiaJSXComponent(printOptions, imports, e, detailOfExports)
-      case 'ARBITRARY_JS_BLOCK':
-        return printArbitraryJSBlock(e)
-      default:
-        const _exhaustiveCheck: never = e
-        throw new Error(`Unhandled element type ${JSON.stringify(e)}`)
-    }
-  })
+  const lastImportIndex = findLastIndex(isImportStatement, topLevelElements)
+  const upToLastImport = lastImportIndex > 0 ? topLevelElements.slice(0, lastImportIndex + 1) : []
+  const afterLastImport =
+    lastImportIndex > 0 ? topLevelElements.slice(lastImportIndex + 1) : topLevelElements
 
   const exportStatements = produceExportStatements(detailOfExports)
 
-  let statementsToPrint: Array<TS.Node> = []
-  statementsToPrint.push(...importDeclarations)
-  statementsToPrint.push(...topLevelStatements)
-  statementsToPrint.push(...exportStatements)
+  const statementsToPrint: Array<TS.Node> = [
+    ...printTopLevelElements(printOptions, imports, upToLastImport, detailOfExports),
+    ...importDeclarations,
+    ...printTopLevelElements(printOptions, imports, afterLastImport, detailOfExports),
+    ...exportStatements,
+  ]
 
   return printStatements(statementsToPrint, printOptions.pretty)
 }
@@ -1199,6 +1219,11 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
       arbitraryNodeComments = emptyComments
     }
 
+    function pushImportStatement(statement: ImportStatement) {
+      topLevelElements.push(right(statement))
+      arbitraryNodeComments = emptyComments
+    }
+
     const topLevelNodes = flatMapArray(
       (e) => flattenOutAnnoyingContainers(sourceFile, e),
       sourceFile.getChildren(sourceFile),
@@ -1299,6 +1324,14 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             comments,
             imports,
           )
+          const rawImportStatement = importStatement(
+            topLevelElement.getFullText(sourceFile),
+            importedAs != null,
+            importedWithName != null,
+            importedFromWithin.map((i) => i.name),
+            importFrom,
+          )
+          pushImportStatement(rawImportStatement)
         }
       } else {
         const possibleDeclaration = looksLikeCanvasElements(sourceFile, topLevelElement)

@@ -96,6 +96,7 @@ describe('Parsing and printing code with comments', () => {
   }
 
   const notYetSupported: Array<keyof typeof comments> = [
+    'commentAfterImports',
     'commentBeforeObjectKey',
     'commentAfterObjectKey',
     'commentBeforeObjectValue',

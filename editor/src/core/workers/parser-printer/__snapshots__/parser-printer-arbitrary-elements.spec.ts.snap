@@ -189,6 +189,28 @@ return { a: a, b: b };",
   "jsxFactoryFunction": "jsx",
   "topLevelElements": Array [
     Object {
+      "importStarAs": true,
+      "importWithName": false,
+      "imports": Array [],
+      "module": "react",
+      "rawText": "/** @jsx jsx */
+import * as React from 'react'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "Scene",
+        "Storyboard",
+        "jsx",
+      ],
+      "module": "utopia-api",
+      "rawText": "
+import { Scene, Storyboard, jsx } from 'utopia-api'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],

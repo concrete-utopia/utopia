@@ -116,15 +116,13 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
       sampleImportsForTests,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -175,15 +173,13 @@ export var whatever = () => <View data-uid='aaa'>
       emptyComments,
       sampleImportsForTests,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -243,15 +239,13 @@ export function whatever(props) {
       emptyComments,
       sampleImportsForTests,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -306,15 +300,13 @@ export function whatever() {
       emptyComments,
       sampleImportsForTests,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -374,15 +366,13 @@ export default function whatever(props) {
       emptyComments,
       sampleImportsForTests,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        setModifierDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      setModifierDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -437,15 +427,13 @@ export default function whatever() {
       emptyComments,
       sampleImportsForTests,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        setModifierDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      setModifierDefaultExportInDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -510,15 +498,13 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
       importsWithCake,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        importsWithStylecss,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      importsWithStylecss,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -591,15 +577,13 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
       sampleImportsForTests,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   }),
@@ -657,15 +641,13 @@ export var whatever = (props) => <View data-uid='aaa'>
         emptyComments,
         sampleImportsForTests,
       )
-      const expectedResult = clearParseResultUniqueIDs(
-        parseSuccess(
-          imports,
-          [exported],
-          expect.objectContaining({}),
-          null,
-          null,
-          addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-        ),
+      const expectedResult = parseSuccess(
+        imports,
+        expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       )
       expect(actualResult).toEqual(expectedResult)
     }),
@@ -740,15 +722,13 @@ export var whatever = (props) => <View data-uid='aaa'>
         emptyComments,
         sampleImportsForTests,
       )
-      const expectedResult = clearParseResultUniqueIDs(
-        parseSuccess(
-          imports,
-          [exported],
-          expect.objectContaining({}),
-          null,
-          null,
-          addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-        ),
+      const expectedResult = parseSuccess(
+        imports,
+        expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+        expect.objectContaining({}),
+        null,
+        null,
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
       )
       expect(actualResult).toEqual(expectedResult)
     })
@@ -813,15 +793,13 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
       sampleImportsForTests,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -958,7 +936,7 @@ return { getSizing: getSizing, spacing: spacing };`
     )
     const expectedResult = parseSuccess(
       imports,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(combinedArbitraryBlock),
@@ -1043,7 +1021,7 @@ return { getSizing: getSizing };`
     )
     const expectedResult = parseSuccess(
       imports,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
@@ -1144,7 +1122,7 @@ return { getSizing: getSizing };`
     )
     const expectedResult = parseSuccess(
       imports,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
@@ -1229,7 +1207,7 @@ return {  };`
     )
     const expectedResult = parseSuccess(
       imports,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
@@ -1311,7 +1289,7 @@ return { spacing: spacing };`
     )
     const expectedResult = parseSuccess(
       imports,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
@@ -1385,7 +1363,7 @@ return { bgs: bgs, bg: bg };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -1460,7 +1438,7 @@ return { greys: greys };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -1529,7 +1507,7 @@ return { a: a, b: b };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -1601,7 +1579,7 @@ return { a: a, b: b, c: c };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -1677,7 +1655,7 @@ return { a: a };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -1748,7 +1726,7 @@ return { a: a, b: b };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -1824,7 +1802,7 @@ return { bg: bg };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -1906,7 +1884,7 @@ return { count: count };`
     )
     const expectedResult = parseSuccess(
       imports,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
@@ -1989,7 +1967,7 @@ return { use20: use20 };`
     )
     const expectedResult = parseSuccess(
       imports,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
@@ -2045,7 +2023,7 @@ return { mySet: mySet };`
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
@@ -2128,7 +2106,7 @@ return { spacing: spacing };`
     )
     const expectedResult = parseSuccess(
       imports,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(jsVariable),
@@ -2226,7 +2204,7 @@ return { MyComp: MyComp };`
     const topLevelElements = [MyComp, exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(MyComp),
@@ -2348,15 +2326,13 @@ export var whatever = props => (
       emptyComments,
     )
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        sampleImportsForTests,
-        [...topLevelElements],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      sampleImportsForTests,
+      expect.arrayContaining(topLevelElements),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2378,12 +2354,8 @@ export var Whatever = (props) => <View>
 `
     const actualResult = parseCode('code.tsx', code)
     if (isParseSuccess(actualResult)) {
-      if (actualResult.topLevelElements.length === 1) {
-        const result = actualResult.topLevelElements[0]
-        expect(isArbitraryJSBlock(result)).toBeTruthy()
-      } else {
-        fail(`Unexpected number of results returned: ${actualResult.topLevelElements.length}`)
-      }
+      expect(actualResult.topLevelElements.filter(isArbitraryJSBlock).length).toEqual(1)
+      expect(actualResult.topLevelElements.filter(isUtopiaJSXComponent).length).toEqual(0)
     } else {
       fail('Parse result is not a success.')
     }
@@ -2399,34 +2371,27 @@ export var whatever = (props) => <View data-uid='aaa'>
 `
     const actualResult = testParseCode(code)
     if (isParseSuccess(actualResult)) {
-      if (actualResult.topLevelElements.length === 1) {
-        const result = actualResult.topLevelElements[0]
-        if (isUtopiaJSXComponent(result)) {
-          if (isJSXElement(result.rootElement)) {
-            if (result.rootElement.children.length === 1) {
-              const child = result.rootElement.children[0]
-              if (isJSXElement(child)) {
-                const childPropKeys = Object.keys(child.props)
-                expect(childPropKeys).toEqual(['data-uid', 'left'])
-                const leftProp = child.props['left']
-                expect(leftProp.type).toEqual('ATTRIBUTE_OTHER_JAVASCRIPT')
-              } else {
-                fail(`First child is not an element ${child}`)
-              }
-            } else {
-              fail(`Unexpected number of children returned: ${result.rootElement.children.length}`)
-            }
+      expect(actualResult.topLevelElements.filter(isArbitraryJSBlock).length).toEqual(0)
+      expect(actualResult.topLevelElements.filter(isUtopiaJSXComponent).length).toEqual(1)
+
+      const result = actualResult.topLevelElements.find(isUtopiaJSXComponent)!
+      if (isJSXElement(result.rootElement)) {
+        if (result.rootElement.children.length === 1) {
+          const child = result.rootElement.children[0]
+          if (isJSXElement(child)) {
+            const childPropKeys = Object.keys(child.props)
+            expect(childPropKeys).toEqual(['data-uid', 'left'])
+            const leftProp = child.props['left']
+            expect(leftProp.type).toEqual('ATTRIBUTE_OTHER_JAVASCRIPT')
           } else {
-            fail(`Root element is not an element ${result.rootElement}`)
+            fail(`First child is not an element ${child}`)
           }
         } else {
-          fail(`Unexpected top level element ${JSON.stringify(result)}`)
+          fail(`Unexpected number of children returned: ${result.rootElement.children.length}`)
         }
       } else {
-        fail(`Unexpected number of results returned: ${actualResult.topLevelElements.length}`)
+        fail(`Root element is not an element ${result.rootElement}`)
       }
-    } else {
-      fail('Parse result is not a success.')
     }
   })
   it('parses the code when it is a function, with a nested object', () => {
@@ -2490,15 +2455,13 @@ export var whatever = (props) => <View data-uid='aaa'>
       emptyComments,
       sampleImportsForTests,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -2551,7 +2514,7 @@ export var whatever = <View data-uid='aaa'>
     )
     const expectedResult = parseSuccess(
       imports,
-      [exported],
+      expect.arrayContaining([exported]),
       expect.objectContaining({}),
       null,
       null,
@@ -2597,7 +2560,7 @@ export var App = (props) => <View data-uid='bbb'>
     )
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      [exported],
+      expect.arrayContaining([exported]),
       expect.objectContaining({}),
       null,
       null,
@@ -2669,7 +2632,7 @@ export var App = (props) => <View data-uid='bbb'>
     const actualResult = testParseCode(printedCode)
     const expectedResult = parseSuccess(
       imports,
-      [exported],
+      expect.arrayContaining([exported]),
       expect.objectContaining({}),
       null,
       null,
@@ -2788,7 +2751,7 @@ return { getSizing: getSizing, spacing: spacing };`
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       imports,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(combinedArbitraryBlock),
@@ -2838,7 +2801,7 @@ return { getSizing: getSizing, spacing: spacing };`
     const actualResult = testParseCode(printedCode)
     const expectedResult = parseSuccess(
       imports,
-      [exported],
+      expect.arrayContaining([exported]),
       expect.objectContaining({}),
       null,
       null,
@@ -2958,7 +2921,7 @@ export var whatever = props => {
     const actualResult = testParseCode(printedCode)
     const expectedResult = parseSuccess(
       imports,
-      [exported],
+      expect.arrayContaining([exported]),
       expect.objectContaining({}),
       null,
       null,
@@ -3010,8 +2973,13 @@ export var whatever = props => {
       detailOfExports,
     )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null, detailOfExports),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported]),
+      expect.objectContaining({}),
+      null,
+      null,
+      detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3087,8 +3055,13 @@ export var whatever = props => {
       detailOfExports,
     )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, [exported], expect.objectContaining({}), null, null, detailOfExports),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3173,9 +3146,9 @@ return { test: test };`
       }),
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        imports,
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining(
         [
           utopiaJSXComponent(
             'whatever',
@@ -3214,12 +3187,12 @@ return { test: test };`
             emptyComments,
             emptyComments,
           ),
-        ],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        ].map(clearTopLevelElementUniqueIDs),
       ),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
 
     expect(actualResult).toEqual(expectedResult)
@@ -3325,8 +3298,13 @@ return { test: test };`
       detailOfExports,
     )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(imports, components, expect.objectContaining({}), null, null, detailOfExports),
+    const expectedResult = parseSuccess(
+      imports,
+      expect.arrayContaining(components.map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3385,15 +3363,13 @@ export var App = props => {
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        sampleImportsForTests,
-        [component],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'App'),
-      ),
+    const expectedResult = parseSuccess(
+      sampleImportsForTests,
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'App'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3434,15 +3410,13 @@ export var App = props => {
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        sampleImportsForTests,
-        [component],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'App'),
-      ),
+    const expectedResult = parseSuccess(
+      sampleImportsForTests,
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'App'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3504,15 +3478,13 @@ export var App = props => {
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        sampleImportsForTests,
-        [component],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'App'),
-      ),
+    const expectedResult = parseSuccess(
+      sampleImportsForTests,
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'App'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3575,15 +3547,13 @@ export var App = props => {
       detailOfExports,
     )
     const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        sampleImportsForTests,
-        [component],
-        expect.objectContaining({}),
-        null,
-        null,
-        detailOfExports,
-      ),
+    const expectedResult = parseSuccess(
+      sampleImportsForTests,
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      detailOfExports,
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3742,15 +3712,13 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        sampleImportsForTests,
-        [component],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'App'),
-      ),
+    const expectedResult = parseSuccess(
+      sampleImportsForTests,
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'App'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3793,15 +3761,13 @@ export var App = props => {
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        sampleImportsForTests,
-        [component],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'App'),
-      ),
+    const expectedResult = parseSuccess(
+      sampleImportsForTests,
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'App'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -3966,15 +3932,13 @@ return {  };`
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        { react: sampleImportsForTests['react'] },
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      { react: sampleImportsForTests['react'] },
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4052,15 +4016,13 @@ return { result: result };`
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        { react: sampleImportsForTests['react'] },
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      { react: sampleImportsForTests['react'] },
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4145,15 +4107,13 @@ export var whatever = props => {
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        { react: sampleImportsForTests['react'] },
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      { react: sampleImportsForTests['react'] },
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4255,15 +4215,13 @@ return { a: a };`,
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        { react: sampleImportsForTests['react'] },
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      { react: sampleImportsForTests['react'] },
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4287,15 +4245,13 @@ export var whatever = props => {
       emptyComments,
       emptyComments,
     )
-    const expectedResult = clearParseResultUniqueIDs(
-      parseSuccess(
-        { react: sampleImportsForTests['react'] },
-        [exported],
-        expect.objectContaining({}),
-        null,
-        null,
-        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-      ),
+    const expectedResult = parseSuccess(
+      { react: sampleImportsForTests['react'] },
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.objectContaining({}),
+      null,
+      null,
+      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -4413,7 +4369,7 @@ export var App = props => {
     if (!isParseSuccess(parseResult)) {
       fail('expected parseResult to be Right')
     }
-    const consoleLogBlock = parseResult.topLevelElements[0]
+    const consoleLogBlock = parseResult.topLevelElements.find(isArbitraryJSBlock)!
 
     if (
       !isArbitraryJSBlock(consoleLogBlock) ||
@@ -4437,7 +4393,7 @@ export var App = props => {
     if (!isParseSuccess(parseResult)) {
       fail('expected parseResult to be Right')
     }
-    const appComponent = parseResult.topLevelElements[1]
+    const appComponent = parseResult.topLevelElements.find(isUtopiaJSXComponent)!
     if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
       fail('expected the second topLevelElement to be the App component')
     }
@@ -4465,7 +4421,7 @@ export var App = props => {
     if (!isParseSuccess(parseResult)) {
       fail('expected parseResult to be a success')
     }
-    const appComponent = parseResult.topLevelElements[1]
+    const appComponent = parseResult.topLevelElements.find(isUtopiaJSXComponent)!
     if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
       fail('expected the second topLevelElement to be the App component')
     }

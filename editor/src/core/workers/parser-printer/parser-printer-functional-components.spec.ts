@@ -169,7 +169,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -219,7 +219,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -254,7 +254,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -293,7 +293,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -340,7 +340,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -382,7 +382,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -429,7 +429,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -472,7 +472,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -508,7 +508,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -552,7 +552,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -594,7 +594,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -649,7 +649,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -723,7 +723,7 @@ describe('Parsing a function component with props', () => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -761,9 +761,7 @@ describe('Parsing, printing, reparsing a function component with props', () => {
     }
 
     const secondAsParseSuccess = firstParse
-    expect(secondAsParseSuccess.topLevelElements[0]).toEqual(
-      firstAsParseSuccess.topLevelElements[0],
-    )
+    expect(secondAsParseSuccess.topLevelElements).toEqual(firstAsParseSuccess.topLevelElements)
   }
 
   it('Correctly parses back and forth a basic props object', () => {

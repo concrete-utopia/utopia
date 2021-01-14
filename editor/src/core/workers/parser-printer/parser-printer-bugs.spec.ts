@@ -60,8 +60,8 @@ export var App = props => {
     };`
     const parsedPlainCode = testParseCode(code)
     if (isParseSuccess(parsedPlainCode)) {
-      if (isUtopiaJSXComponent(parsedPlainCode.topLevelElements[0])) {
-        const topComponent: UtopiaJSXComponent = parsedPlainCode.topLevelElements[0]
+      const topComponent = parsedPlainCode.topLevelElements.find(isUtopiaJSXComponent)
+      if (topComponent != null) {
         if (isJSXElement(topComponent.rootElement)) {
           const expectedProps: JSXAttributes = {
             style: jsxAttributeValue(

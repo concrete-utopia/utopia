@@ -471,17 +471,12 @@ function getPropsForStyleProp(
     fail('expected parseResult to be Right')
     return null
   }
-  const appComponent = parseResult.topLevelElements[0]
-  if (!isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
-    fail('expected the second topLevelElement to be the App component')
-    return null
-  }
-  if (!isJSXElement(appComponent.rootElement)) {
-    fail(`expected the App component's root element to be a JSXElement`)
-    return null
-  }
+  const appComponent = parseResult.topLevelElements.find(isUtopiaJSXComponent)
+  expect(appComponent).toBeDefined()
+  expect(appComponent?.name).toEqual('App')
+  expect(isJSXElement(appComponent!.rootElement)).toBeTruthy()
 
-  return appComponent.rootElement.props
+  return appComponent!.rootElement.props
 }
 
 const makeInspectorHookContextProvider = (

@@ -56,6 +56,8 @@ import {
   isJSXElement,
   FunctionDeclarationSyntax,
   BlockOrExpression,
+  ImportStatement,
+  importStatement,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -277,6 +279,22 @@ export const JustImportViewAndReact: Imports = {
     comments: emptyComments,
   },
 }
+
+export const ImportViewImportStatement: ImportStatement = importStatement(
+  `import { View } from 'utopia-api'`,
+  false,
+  false,
+  ['View'],
+  'utopia-api',
+)
+
+export const ImportReactImportStatement: ImportStatement = importStatement(
+  `import * as React from 'react'`,
+  true,
+  false,
+  [],
+  'react',
+)
 
 export function clearErrorMessagePassTime(errorMessage: ErrorMessage): ErrorMessage {
   if (errorMessage.passTime == null) {
@@ -797,6 +815,8 @@ function getTopLevelElementVariableName(topLevelElement: TopLevelElement): strin
       return topLevelElement.name
     case 'ARBITRARY_JS_BLOCK':
       return null
+    case 'IMPORT_STATEMENT':
+      return null
     default:
       const _exhaustiveCheck: never = topLevelElement
       throw new Error(`Unhandled type ${JSON.stringify(topLevelElement)}`)
@@ -841,6 +861,8 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
           case 'UTOPIA_JSX_COMPONENT':
             return getAllBaseVariables(topLevelElement.rootElement)
           case 'ARBITRARY_JS_BLOCK':
+            return []
+          case 'IMPORT_STATEMENT':
             return []
           default:
             const _exhaustiveCheck: never = topLevelElement
