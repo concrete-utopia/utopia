@@ -7,10 +7,10 @@ const AWS = require('aws-sdk')
 const moveFile = require('move-file')
 const yn = require('yn')
 
-const BRANCH_NAME = process.env.BRANCH_NAME
+const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
 const PROJECT_ID = '5596ecdd'
 const EDITOR_URL =
-  process.env.EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
+  process.env.EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/${BRANCH_NAME}`
 
 type FrameResult = {
   frameData: {
