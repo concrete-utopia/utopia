@@ -43,6 +43,7 @@ describe('JSX parser', () => {
         "/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
@@ -62,6 +63,7 @@ describe('JSX parser', () => {
             </View>
           )
         }
+
         export var storyboard = (
           <Storyboard data-uid='eee'>
             <Scene

@@ -90,9 +90,11 @@ Array [
             "sourcesContent": Array [
               "import * as React from 'react'
 import * as Utopia from 'utopia-api'
+
 export var App = (props) => {
   return <Utopia.View data-uid='aaa'>{<div data-uid='bbb' />}</Utopia.View>
 }
+
 export var storyboard = (props) => {
   return (
     <Storyboard data-uid='utopia-storyboard-uid'>
@@ -167,7 +169,7 @@ export var storyboard = (props) => {
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAKQA,IAAIC,UAAUC,GAAGC,SAAbF,UAAaE,CAACC,KAADD,EAAWE;AACjCC,SACEC,oBAACC,UAADD;AAAYE,gBAASC;AAArBH,KACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEc,IAAAA,SAASR,EAAES,GAFbf;AAGEgB,IAAAA,MAAMV,EAAER;AAAEmB,MAAAA,YAAYT,EAAEL;AAAhBL,KAHVE;AAIEH,IAAAA,KAAKS,EAAER;AAAEkB,MAAAA,MAAMR,EAAEV;AAAEoB,QAAAA,MAAMV,EAAEC,CAAVX;AAAaS,QAAAA,IAAIC,EAAEC,CAAnBX;AAAsBqB,QAAAA,KAAKX,EAAEC,CAA7BX;AAAgCY,QAAAA,GAAGF,EAAEC;AAArCX;AAAVA,KAJTE;AAKEE,gBAASC;AALXH,IADFA,CADFD;AAWFqB,CAZO3B",
+      "mappings": "AAOQA,IAAIC,UAAUC,GAAGC,SAAbF,UAAaE,CAACC,KAADD,EAAWE;AACjCC,SACEC,oBAACC,UAADD;AAAYE,gBAASC;AAArBH,KACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEc,IAAAA,SAASR,EAAES,GAFbf;AAGEgB,IAAAA,MAAMV,EAAER;AAAEmB,MAAAA,YAAYT,EAAEL;AAAhBL,KAHVE;AAIEH,IAAAA,KAAKS,EAAER;AAAEkB,MAAAA,MAAMR,EAAEV;AAAEoB,QAAAA,MAAMV,EAAEC,CAAVX;AAAaS,QAAAA,IAAIC,EAAEC,CAAnBX;AAAsBqB,QAAAA,KAAKX,EAAEC,CAA7BX;AAAgCY,QAAAA,GAAGF,EAAEC;AAArCX;AAAVA,KAJTE;AAKEE,gBAASC;AALXH,IADFA,CADFD;AAWFqB,CAZO3B",
       "names": Array [
         "var",
         "storyboard",
@@ -204,9 +206,11 @@ export var storyboard = (props) => {
       "sourcesContent": Array [
         "import * as React from 'react'
 import * as Utopia from 'utopia-api'
+
 export var App = (props) => {
   return <Utopia.View data-uid='aaa'>{<div data-uid='bbb' />}</Utopia.View>
 }
+
 export var storyboard = (props) => {
   return (
     <Storyboard data-uid='utopia-storyboard-uid'>

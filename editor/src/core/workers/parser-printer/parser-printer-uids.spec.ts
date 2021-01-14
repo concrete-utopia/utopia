@@ -42,6 +42,7 @@ describe('printCode', () => {
 /** @jsx jsx */
 import * as react from 'react'
 import { scene, storyboard, jsx, view } from 'utopia-api'
+
 export var app = (props) => {
   return (
     <div
@@ -141,6 +142,7 @@ export var app = (props) => {
 /** @jsx jsx */
 import * as react from 'react'
 import { scene, storyboard, jsx, view } from 'utopia-api'
+
 export var app = (props) => {
   return (
     <div

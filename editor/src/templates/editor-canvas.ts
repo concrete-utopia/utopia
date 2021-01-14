@@ -506,9 +506,6 @@ interface EditorCanvasProps extends CanvasReactErrorCallback {
   canvasConsoleLogs: Array<ConsoleLog>
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
-  localSelectedViews: Array<TemplatePath>
-  localHighlightedViews: Array<TemplatePath>
-  setLocalSelectedViews: (newSelectedViews: TemplatePath[]) => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -662,9 +659,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       windowToCanvasPosition: this.getPosition,
       cursor,
       getPositionFromCoordinates: this.getPositionFromCoordinates,
-      localSelectedViews: this.props.localSelectedViews,
-      localHighlightedViews: this.props.localHighlightedViews,
-      setLocalSelectedViews: this.props.setLocalSelectedViews,
     })
 
     const canvasLiveEditingStyle = canvasIsLive
@@ -787,7 +781,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         addToConsoleLogs: this.props.addToConsoleLogs,
         getPositionFromCoordinates: this.getPositionFromCoordinates,
         dispatch: this.props.dispatch,
-        setSelectedViewsForCanvasControlsOnly: this.props.setLocalSelectedViews,
       }),
       canvasControls,
     )

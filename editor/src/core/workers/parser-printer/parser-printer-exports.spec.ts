@@ -33,6 +33,7 @@ describe('parseCode', () => {
     var whatever = (props) => {
       return <div data-uid='aaa' />
     }
+
     export { whatever }
 `,
       false,
@@ -59,6 +60,7 @@ describe('parseCode', () => {
     var whatever = (props) => {
       return <div data-uid='aaa' />
     }
+    
     export { whatever as otherThing }
 `,
       false,
