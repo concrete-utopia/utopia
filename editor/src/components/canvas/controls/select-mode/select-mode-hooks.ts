@@ -431,10 +431,10 @@ export function useSelectModeSelectAndHover(
           updatedSelection = foundTarget != null ? [foundTarget.templatePath] : []
         }
 
-        // first we only set the selected views for the canvas controls
-        setSelectedViewsForCanvasControlsOnly(updatedSelection)
-
         if (!(foundTarget?.isSelected ?? false)) {
+          // first we only set the selected views for the canvas controls
+          setSelectedViewsForCanvasControlsOnly(updatedSelection)
+
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               // then we set the selected views for the editor state, 1 frame later
