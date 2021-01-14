@@ -30,7 +30,7 @@ Array [
     "importWithName": false,
     "imports": Array [],
     "module": "react",
-    "rawText": "import * as React from 'react'",
+    "rawCode": "import * as React from 'react'",
     "type": "IMPORT_STATEMENT",
   },
   Object {
@@ -38,7 +38,7 @@ Array [
     "importWithName": false,
     "imports": Array [],
     "module": "utopia-api",
-    "rawText": "
+    "rawCode": "
 import * as Utopia from 'utopia-api'",
     "type": "IMPORT_STATEMENT",
   },

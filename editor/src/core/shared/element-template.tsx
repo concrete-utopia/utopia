@@ -777,7 +777,7 @@ export function arbitraryJSBlock(
 }
 
 export function importStatement(
-  rawText: string,
+  rawCode: string,
   importStarAs: boolean,
   importWithName: boolean,
   imports: Array<string>,
@@ -785,11 +785,18 @@ export function importStatement(
 ): ImportStatement {
   return {
     type: 'IMPORT_STATEMENT',
-    rawText: rawText,
+    rawCode: rawCode,
     importStarAs: importStarAs,
     importWithName: importWithName,
     imports: imports,
     module: module,
+  }
+}
+
+export function unparsedCode(rawCode: string): UnparsedCode {
+  return {
+    type: 'UNPARSED_CODE',
+    rawCode: rawCode,
   }
 }
 
@@ -954,14 +961,19 @@ export interface ArbitraryJSBlock extends WithComments {
 
 export interface ImportStatement {
   type: 'IMPORT_STATEMENT'
-  rawText: string
+  rawCode: string
   importStarAs: boolean // Includes `import * as Name from`
   importWithName: boolean // Includes `import Name from`
   imports: Array<string> // All other imports inside braces i.e. `import { Name } from`
   module: string
 }
 
-export type TopLevelElement = UtopiaJSXComponent | ArbitraryJSBlock | ImportStatement
+export interface UnparsedCode {
+  type: 'UNPARSED_CODE'
+  rawCode: string
+}
+
+export type TopLevelElement = UtopiaJSXComponent | ArbitraryJSBlock | ImportStatement | UnparsedCode
 
 export function clearArbitraryJSBlockUniqueIDs(block: ArbitraryJSBlock): ArbitraryJSBlock {
   return {
@@ -1039,6 +1051,7 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
     case 'ARBITRARY_JS_BLOCK':
       return clearArbitraryJSBlockUniqueIDs(element)
     case 'IMPORT_STATEMENT':
+    case 'UNPARSED_CODE':
       return element
     default:
       const _exhaustiveCheck: never = element
@@ -1062,6 +1075,10 @@ export function isImportStatement(
   topLevelElement: TopLevelElement,
 ): topLevelElement is ImportStatement {
   return topLevelElement.type === 'IMPORT_STATEMENT'
+}
+
+export function isUnparsedCode(topLevelElement: TopLevelElement): topLevelElement is UnparsedCode {
+  return topLevelElement.type === 'UNPARSED_CODE'
 }
 
 export type ComputedStyle = { [key: string]: string }

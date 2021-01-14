@@ -129,6 +129,7 @@ function Picker() {
   it('does not remove a trailing export default statement for anything else', () => {
     const code = applyPrettier(
       `const Thing = 1
+      
       export default Thing`,
       false,
     ).formatted

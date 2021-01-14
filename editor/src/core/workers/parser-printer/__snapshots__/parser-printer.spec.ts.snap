@@ -228,7 +228,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "cake",
       ],
       "module": "cake",
-      "rawText": "import { cake } from 'cake'",
+      "rawCode": "import { cake } from 'cake'",
       "type": "IMPORT_STATEMENT",
     },
     Object {
@@ -236,7 +236,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "importWithName": false,
       "imports": Array [],
       "module": "react",
-      "rawText": "
+      "rawCode": "
 import * as React from 'react'",
       "type": "IMPORT_STATEMENT",
     },
@@ -253,7 +253,7 @@ import * as React from 'react'",
         "View",
       ],
       "module": "utopia-api",
-      "rawText": "
+      "rawCode": "
 import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'",
       "type": "IMPORT_STATEMENT",
     },
@@ -584,7 +584,7 @@ return { a: a, b: b };",
       "importWithName": false,
       "imports": Array [],
       "module": "react",
-      "rawText": "import * as React from \\"react\\";",
+      "rawCode": "import * as React from \\"react\\";",
       "type": "IMPORT_STATEMENT",
     },
     Object {
@@ -594,7 +594,7 @@ return { a: a, b: b };",
         "View",
       ],
       "module": "utopia-api",
-      "rawText": "
+      "rawCode": "
 import {
   View
 } from \\"utopia-api\\";",
@@ -867,7 +867,7 @@ return { a: a };",
       "importWithName": false,
       "imports": Array [],
       "module": "react",
-      "rawText": "import * as React from \\"react\\";",
+      "rawCode": "import * as React from \\"react\\";",
       "type": "IMPORT_STATEMENT",
     },
     Object {
@@ -883,7 +883,7 @@ return { a: a };",
         "View",
       ],
       "module": "utopia-api",
-      "rawText": "
+      "rawCode": "
 import {
   UtopiaUtils,
   Ellipse,

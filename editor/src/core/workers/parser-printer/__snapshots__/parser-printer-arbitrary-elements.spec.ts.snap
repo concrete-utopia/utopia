@@ -193,7 +193,7 @@ return { a: a, b: b };",
       "importWithName": false,
       "imports": Array [],
       "module": "react",
-      "rawText": "/** @jsx jsx */
+      "rawCode": "/** @jsx jsx */
 import * as React from 'react'",
       "type": "IMPORT_STATEMENT",
     },
@@ -206,7 +206,7 @@ import * as React from 'react'",
         "jsx",
       ],
       "module": "utopia-api",
-      "rawText": "
+      "rawCode": "
 import { Scene, Storyboard, jsx } from 'utopia-api'",
       "type": "IMPORT_STATEMENT",
     },

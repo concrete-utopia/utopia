@@ -62,6 +62,8 @@ import {
   ImportStatement,
   importStatement,
   isImportStatement,
+  UnparsedCode,
+  unparsedCode,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
@@ -770,73 +772,6 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
   return result
 }
 
-function produceExportStatements(
-  detailOfExports: ExportsDetail,
-): Array<TS.ExportAssignment | TS.ExportDeclaration> {
-  let workingExportSpecifiers: Array<TS.ExportSpecifier> = []
-  let lastModuleName: string | undefined = undefined
-  let exportStatements: Array<TS.ExportAssignment | TS.ExportDeclaration> = []
-  const { defaultExport, namedExports } = detailOfExports
-  if (defaultExport != null) {
-    if (isExportDefaultNamed(defaultExport)) {
-      exportStatements.push(
-        TS.createExportAssignment(
-          undefined,
-          undefined,
-          undefined,
-          TS.createIdentifier(defaultExport.name),
-        ),
-      )
-    }
-  }
-
-  function createExportStatementFromWorkingSpecifiers() {
-    const moduleSpecifier =
-      lastModuleName == null ? undefined : TS.createStringLiteral(lastModuleName)
-    exportStatements.push(
-      TS.createExportDeclaration(
-        undefined,
-        undefined,
-        TS.createNamedExports(workingExportSpecifiers),
-        moduleSpecifier,
-      ),
-    )
-    workingExportSpecifiers = []
-  }
-
-  for (const exportName of Object.keys(namedExports)) {
-    const namedExport = namedExports[exportName]
-    if (isExportDetailNamed(namedExport)) {
-      const { name, moduleName } = namedExport
-      if (moduleName != lastModuleName && workingExportSpecifiers.length > 0) {
-        // Create this export statement and move onto the next
-        createExportStatementFromWorkingSpecifiers()
-      }
-
-      lastModuleName = moduleName
-
-      if (exportName === namedExport.name) {
-        workingExportSpecifiers.push(
-          TS.createExportSpecifier(undefined, TS.createIdentifier(exportName)),
-        )
-      } else {
-        workingExportSpecifiers.push(
-          TS.createExportSpecifier(
-            TS.createIdentifier(namedExport.name),
-            TS.createIdentifier(exportName),
-          ),
-        )
-      }
-    }
-  }
-
-  if (workingExportSpecifiers.length > 0) {
-    createExportStatementFromWorkingSpecifiers()
-  }
-
-  return exportStatements
-}
-
 function containsImport(statement: ImportStatement, importToCheck: string): boolean {
   return statement.imports.includes(importToCheck)
 }
@@ -854,7 +789,8 @@ function printTopLevelElements(
       case 'ARBITRARY_JS_BLOCK':
         return printArbitraryJSBlock(e)
       case 'IMPORT_STATEMENT':
-        return TS.createUnparsedSourceFile(e.rawText)
+      case 'UNPARSED_CODE':
+        return TS.createUnparsedSourceFile(e.rawCode)
       default:
         const _exhaustiveCheck: never = e
         throw new Error(`Unhandled element type ${JSON.stringify(e)}`)
@@ -936,13 +872,10 @@ function printCodeImpl(
   const afterLastImport =
     lastImportIndex > 0 ? topLevelElements.slice(lastImportIndex + 1) : topLevelElements
 
-  const exportStatements = produceExportStatements(detailOfExports)
-
   const statementsToPrint: Array<TS.Node> = [
     ...printTopLevelElements(printOptions, imports, upToLastImport, detailOfExports),
     ...importDeclarations,
     ...printTopLevelElements(printOptions, imports, afterLastImport, detailOfExports),
-    ...exportStatements,
   ]
 
   return printStatements(statementsToPrint, printOptions.pretty)
@@ -1221,7 +1154,12 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
 
     function pushImportStatement(statement: ImportStatement) {
       topLevelElements.push(right(statement))
-      arbitraryNodeComments = emptyComments
+      arbitraryNodeComments = emptyComments // Comments up to this point would have been captured in the raw code
+    }
+
+    function pushUnparsedCode(rawCode: string) {
+      topLevelElements.push(right(unparsedCode(rawCode)))
+      arbitraryNodeComments = emptyComments // Comments up to this point would have been captured in the raw code
     }
 
     const topLevelNodes = flatMapArray(
@@ -1263,6 +1201,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromAssignment, (toMerge) => {
           detailOfExports = mergeExportsDetail(detailOfExports, toMerge)
+          pushUnparsedCode(topLevelElement.getFullText(sourceFile))
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromAssignment, (exportDeclaration) => {
@@ -1274,6 +1213,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromDeclaration, (toMerge) => {
           detailOfExports = mergeExportsDetail(detailOfExports, toMerge)
+          pushUnparsedCode(topLevelElement.getFullText(sourceFile))
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromDeclaration, (exportDeclaration) => {

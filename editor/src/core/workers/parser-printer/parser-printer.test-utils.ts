@@ -814,8 +814,8 @@ function getTopLevelElementVariableName(topLevelElement: TopLevelElement): strin
     case 'UTOPIA_JSX_COMPONENT':
       return topLevelElement.name
     case 'ARBITRARY_JS_BLOCK':
-      return null
     case 'IMPORT_STATEMENT':
+    case 'UNPARSED_CODE':
       return null
     default:
       const _exhaustiveCheck: never = topLevelElement
@@ -861,8 +861,8 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
           case 'UTOPIA_JSX_COMPONENT':
             return getAllBaseVariables(topLevelElement.rootElement)
           case 'ARBITRARY_JS_BLOCK':
-            return []
           case 'IMPORT_STATEMENT':
+          case 'UNPARSED_CODE':
             return []
           default:
             const _exhaustiveCheck: never = topLevelElement
