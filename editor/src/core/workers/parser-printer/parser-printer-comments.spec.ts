@@ -1,64 +1,6 @@
-import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx.test-utils'
-import { Utils } from '../../../uuiui-deps'
 import { forEachValue } from '../../shared/object-utils'
-import {
-  clearParseResultUniqueIDs,
-  parseThenPrint,
-  testParseCode,
-} from './parser-printer.test-utils'
+import { parseThenPrint } from './parser-printer.test-utils'
 import { applyPrettier } from './prettier-utils'
-import * as R from 'ramda'
-
-describe('parseCode', () => {
-  it('should parse a component with comments in front of it', () => {
-    const code = applyPrettier(
-      `
-    // Single-line comment.
-    /*
-      Multi
-      Line
-      Comment.
-    */
-    export var whatever = (props) => {
-      return <div data-uid='aaa' />
-    }
-`,
-      false,
-    ).formatted
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    expect(testPrintParsedTextFile(actualResult)).toEqual(code)
-    const leadingComments = Utils.path(
-      ['topLevelElements', 0, 'comments', 'leadingComments'],
-      actualResult,
-    )
-    expect(leadingComments).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "comment": " Single-line comment.",
-          "pos": 0,
-          "rawText": "// Single-line comment.",
-          "trailingNewLine": true,
-          "type": "SINGLE_LINE_COMMENT",
-        },
-        Object {
-          "comment": "
-            Multi
-            Line
-            Comment.
-          ",
-          "pos": 24,
-          "rawText": "/*
-            Multi
-            Line
-            Comment.
-          */",
-          "trailingNewLine": true,
-          "type": "MULTI_LINE_COMMENT",
-        },
-      ]
-    `)
-  })
-})
 
 describe('Parsing and printing code with comments', () => {
   const comments = {
@@ -101,10 +43,10 @@ describe('Parsing and printing code with comments', () => {
     'commentAfterObjectKey',
     'commentBeforeObjectValue',
     'commentAfterObjectValue',
-    'finalLineComment',
   ]
 
-  const code = `
+  const code = applyPrettier(
+    `
     ${comments.commentBeforeImports}
     import * as React from 'react'
     ${comments.commentInsideImports}
@@ -156,7 +98,9 @@ describe('Parsing and printing code with comments', () => {
     export const theComponent = whatever ${comments.commentAfterExports}
 
     ${comments.finalLineComment}
-  `
+  `,
+    false,
+  ).formatted
 
   const parsedThenPrinted = parseThenPrint(code)
 
