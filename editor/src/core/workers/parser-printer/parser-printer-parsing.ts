@@ -455,20 +455,17 @@ function turnCodeSnippetIntoSourceMapNodes(
 interface ExpressionAndText<E extends TS.Node> {
   expression: E | undefined
   text: string
-  fullText: string
   startPos: number
 }
 
 function createExpressionAndText<E extends TS.Node>(
   expression: E | undefined,
   text: string,
-  fullText: string,
   startPos: number,
 ): ExpressionAndText<E> {
   return {
     expression: expression,
     text: text,
-    fullText: fullText,
     startPos: startPos,
   }
 }
@@ -873,7 +870,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
             sourceFile.fileName,
             line,
             character,
-            expressionAndText.fullText,
+            expressionAndText.text,
             isExported(expression),
           )
           expressionsNodes.push(expressionNode)
@@ -899,7 +896,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
     // Helpfully it appears that in JSX elements the start and end are
     // offset by 1, meaning that if we use them to get the text
     // the string is total nonsense.
-    const code = expressionsText.join('\n')
+    const code = expressionsText.join('')
 
     const fileNode = new SourceNode(null, null, sourceFile.fileName, expressionsNodes)
     fileNode.setSourceContent(sourceFile.fileName, sourceFile.text)
@@ -938,7 +935,6 @@ export function parseAttributeOtherJavaScript(
 ): Either<string, WithParserMetadata<JSXAttributeOtherJavaScript>> {
   const expressionAndText = createExpressionAndText(
     expression,
-    expression.getText(sourceFile),
     expression.getFullText(sourceFile),
     expression.getStart(sourceFile, false),
   )
@@ -994,13 +990,11 @@ function parseJSXArbitraryBlock(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXArbitraryBlock>> {
-  const expressionFullText = jsxExpression.getFullText(sourceFile)
-  // Remove the braces around the expression and trim off the whitespace within those.
-  const codeWithComments = expressionFullText.slice(1, -1)
+  // Remove the braces around the expression
+  const expressionFullText = jsxExpression.getFullText(sourceFile).slice(1, -1)
   const expressionAndText = createExpressionAndText(
     jsxExpression.expression,
-    codeWithComments,
-    jsxExpression.expression == null ? '' : jsxExpression.expression.getFullText(sourceFile),
+    expressionFullText,
     jsxExpression.getFullStart() + 1,
   )
 
@@ -1028,7 +1022,7 @@ function parseJSXArbitraryBlock(
         )
       } else {
         const dataUIDFixed = insertDataUIDsIntoCode(
-          codeWithComments,
+          expressionFullText,
           parsedElementsWithin,
           true,
           false,
@@ -1060,7 +1054,7 @@ function parseJSXArbitraryBlock(
               innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
             }
             return jsxArbitraryBlock(
-              codeWithComments,
+              expressionFullText,
               dataUIDFixResult.code,
               returnPrepended.code,
               innerDefinedElsewhere,
@@ -1977,12 +1971,12 @@ export function parseArbitraryNodes(
   alreadyExistingUIDs: Set<string>,
   rootLevel: boolean,
   comments: ParsedComments,
+  useFullText: boolean,
 ): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
   const expressionsAndTexts = arbitraryNodes.map((node) => {
     return createExpressionAndText(
       node,
-      node.getText(sourceFile),
-      node.getFullText(sourceFile),
+      useFullText ? node.getFullText(sourceFile) : node.getText(sourceFile),
       node.getStart(sourceFile, false),
     )
   })
@@ -2095,12 +2089,6 @@ export function parseOutFunctionContents(
       let definedElsewhere: Array<string> = []
       const returnStatementComments = getComments(sourceText, possibleElement)
       if (possibleBlockExpressions.length > 0) {
-        const comments = possibleBlockExpressions.reduce(
-          (working: ParsedComments, next: TS.Statement) =>
-            mergeParsedComments(working, getComments(sourceText, next)),
-          emptyComments,
-        )
-
         const parseResult = parseArbitraryNodes(
           sourceFile,
           sourceText,
@@ -2112,7 +2100,8 @@ export function parseOutFunctionContents(
           highlightBounds,
           alreadyExistingUIDs,
           false,
-          comments,
+          emptyComments,
+          true,
         )
         if (isLeft(parseResult)) {
           return parseResult

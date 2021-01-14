@@ -119,14 +119,7 @@ import { applyPrettier, PrettierConfig } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
-import {
-  addCommentsToNode,
-  emptyComments,
-  getComments,
-  mergeParsedComments,
-  ParsedComments,
-} from './parser-printer-comments'
-import { replaceAll } from '../../shared/string-utils'
+import { addCommentsToNode, emptyComments, ParsedComments } from './parser-printer-comments'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1057,6 +1050,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           alreadyExistingUIDs,
           true,
           emptyComments,
+          false,
         )
         topLevelElements.push(
           mapEither((parsed) => {
@@ -1340,6 +1334,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         alreadyExistingUIDs,
         true,
         emptyComments,
+        false,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
         combinedTopLevelArbitraryBlock = nodeParseSuccess.value
