@@ -170,6 +170,8 @@ import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
 import { openFileTab } from '../editor/store/editor-tabs'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import { getAllTargetsAtPoint } from './dom-lookup'
+import { WindowMousePositionRaw } from '../../templates/editor-canvas'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -1714,13 +1716,7 @@ function getReparentTargetAtPosition(
   editorState: EditorState,
   position: CanvasPoint,
 ): TemplatePath | undefined {
-  const allTargets = Canvas.getAllTargetsAtPoint(
-    editorState,
-    position,
-    [TargetSearchType.All],
-    false,
-    'loose',
-  )
+  const allTargets = getAllTargetsAtPoint(WindowMousePositionRaw)
   // filtering for non-selected views from alltargets
   return R.head(
     allTargets.filter((target) =>
