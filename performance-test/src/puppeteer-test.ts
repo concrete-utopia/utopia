@@ -267,7 +267,7 @@ async function uploadImage(result: FrameResult, isSelectionTest = false): Promis
 
 async function uploadSummaryImage(results: Array<FrameResult>): Promise<string> {
   const imageFileName = v4() + '.png'
-  const fileURI = await createSummaryPng(results, imageFileName)
+  const fileURI = await createSummaryPng(results, imageFileName, results.length)
 
   if (fileURI != null) {
     const s3FileUrl = await uploadPNGtoAWS(fileURI)
@@ -280,6 +280,7 @@ async function uploadSummaryImage(results: Array<FrameResult>): Promise<string> 
 async function createSummaryPng(
   results: Array<FrameResult>,
   testFileName: string,
+  numberOfTests: number,
 ): Promise<string | null> {
   if (
     process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME == null ||
@@ -317,7 +318,7 @@ async function createSummaryPng(
   const layout = {
     title: 'Automated Performance Test (100 runs, fastest counts)',
     showlegend: false,
-    height: 150,
+    height: 60*numberOfTests,
     width: 720,
     yaxis: {
       automargin: true,
