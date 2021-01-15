@@ -205,7 +205,7 @@ const getFrameData = (traceJson: any, markNamePrefix: string, title: string): Fr
 
   const analytics = {
     frameMin: Math.min(...frameTimesFixed),
-    frameAvg: totalFrameTimes / frameTimesFixed.length,
+    frameAvg: Number((totalFrameTimes / frameTimesFixed.length).toFixed()),
     percentile25: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.25)],
     percentile50: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.5)],
     percentile75: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
