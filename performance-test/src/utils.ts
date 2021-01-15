@@ -1,4 +1,8 @@
-export function timeLimitPromise<T>(promise: Promise<T>, limitms: number, message: string): Promise<T> {
+export function timeLimitPromise<T>(
+  promise: Promise<T>,
+  limitms: number,
+  message: string,
+): Promise<T> {
   const timeoutPromise: Promise<any> = new Promise((resolve, reject) => {
     const timeoutID = setTimeout(() => {
       clearTimeout(timeoutID)

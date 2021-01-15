@@ -30,7 +30,7 @@ const EmptyResult: FrameResult = {
     percentile50: undefined,
     percentile75: undefined,
   },
-  frameTimesFixed: []
+  frameTimesFixed: [],
 }
 
 // this is the same as utils.ts@defer
@@ -50,7 +50,7 @@ function consoleDoneMessage(
   page: puppeteer.Page,
   expectedConsoleMessage: string,
   errorMessage?: string,
-) {
+): Promise<void> {
   const consoleDonePromise = new Promise<void>((resolve, reject) => {
     page.on('console', (message) => {
       if (
@@ -63,10 +63,17 @@ function consoleDoneMessage(
       }
     })
   })
-  return timeLimitPromise(consoleDonePromise, 120000, `Missing console message ${expectedConsoleMessage} in test browser.`)
+  return timeLimitPromise(
+    consoleDonePromise,
+    120000,
+    `Missing console message ${expectedConsoleMessage} in test browser.`,
+  )
 }
 
-export const setupBrowser = async function () {
+export const setupBrowser = async (): Promise<{
+  page: puppeteer.Page
+  browser: puppeteer.Browser
+}> => {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS),
@@ -95,7 +102,7 @@ export const testPerformance = async function () {
     resizeResult = await testResizePerformance(page)
     await page.reload()
     scrollResult = await testScrollingPerformance(page)
-  } catch(e) {
+  } catch (e) {
     throw new Error(`Error during measurements ${e}`)
   } finally {
     browser.close()
@@ -127,7 +134,9 @@ export const testPerformance = async function () {
   )
 }
 
-export const testScrollingPerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
+export const testScrollingPerformance = async function (
+  page: puppeteer.Page,
+): Promise<FrameResult> {
   await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P S')]")
@@ -170,7 +179,9 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
   return getFrameData(traceJson, 'resize_step_')
 }
 
-export const testSelectionPerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
+export const testSelectionPerformance = async function (
+  page: puppeteer.Page,
+): Promise<FrameResult> {
   await page.waitForTimeout(20000)
   await page.waitForXPath("//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment
@@ -220,7 +231,7 @@ const getFrameData = (traceJson: any, markNamePrefix: string): FrameResult => {
   }
 }
 
-function valueOutsideCutoff(frameCutoff: Array<number>) {
+function valueOutsideCutoff(frameCutoff: Array<number>): number {
   let sum = 0
   for (let i = 0; i < frameCutoff.length; i++) {
     if (frameCutoff[i]! > 130) {
@@ -230,7 +241,7 @@ function valueOutsideCutoff(frameCutoff: Array<number>) {
   return sum
 }
 
-async function uploadImage(result: FrameResult, isSelectionTest = false) {
+async function uploadImage(result: FrameResult, isSelectionTest = false): Promise<string> {
   const imageFileName = v4() + '.png'
   const fileURI = await createTestPng(
     result.frameTimesFixed,
@@ -469,7 +480,7 @@ async function createTestPng(
   })
 }
 
-async function uploadPNGtoAWS(testFile: string) {
+async function uploadPNGtoAWS(testFile: string): Promise<string> {
   AWS.config.update({
     region: process.env.AWS_REGION,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
