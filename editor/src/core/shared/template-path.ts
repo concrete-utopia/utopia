@@ -149,17 +149,6 @@ export function toString(target: TemplatePath): string {
   }
 }
 
-export function toStringOptional(target: TemplatePath | null | undefined): string | null {
-  if (target == null) {
-    return null
-  }
-  if (isScenePath(target)) {
-    return scenePathToString(target)
-  } else {
-    return instancePathToString(target)
-  }
-}
-
 function newScenePath(elements: StaticElementPath): ScenePath {
   return {
     type: 'scenepath',
