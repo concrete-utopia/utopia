@@ -26,7 +26,7 @@ function createBasicComponent(
       antd: importDetails(null, [importAlias(baseVariable)], null, emptyComments),
       'antd/dist/antd.css': importDetails(null, [], null, emptyComments),
     },
-    jsxElement(jsxElementName(baseVariable, propertyPathParts), {}, []),
+    jsxElement(jsxElementName(baseVariable, propertyPathParts), [], []),
     name,
     { ...StyleObjectProps, ...propertyControls },
   )

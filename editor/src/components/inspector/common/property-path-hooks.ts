@@ -70,6 +70,7 @@ import {
   JSXAttributes,
   UtopiaJSXComponent,
   ComputedStyle,
+  getJSXAttribute,
 } from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
@@ -947,7 +948,7 @@ export function useInspectorWarningStatus(): boolean {
       if (element == null || !isJSXElement(element)) {
         return
       } else {
-        const cssAttribute = element.props.css
+        const cssAttribute = getJSXAttribute(element.props, 'css')
         if (cssAttribute == null) {
           return
         } else {

@@ -28,6 +28,8 @@ import {
   jsxMetadata,
   getJSXElementNameAsString,
   walkElement,
+  getJSXAttribute,
+  getJSXAttributeForced,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
@@ -69,6 +71,7 @@ import { mapArrayToDictionary } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
 import { EditorTab, openFileTab } from '../components/editor/store/editor-tabs'
+import { forceNotNull } from '../core/shared/optional-utils'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -183,11 +186,11 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
 
   const components: ComponentMetadata[] = sceneElements.map((scene, index) => {
     const props = mapArrayToDictionary(
-      Object.keys(scene.props),
-      (key) => key,
-      (key) => {
-        const attr = scene.props[key]
-        const simpleValue = jsxSimpleAttributeToValue(scene.props[key])
+      scene.props,
+      (entry) => entry.key,
+      (entry) => {
+        const attr = entry.value
+        const simpleValue = jsxSimpleAttributeToValue(attr)
         if (isLeft(simpleValue) && attr.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
           return attr.javascript
         } else {

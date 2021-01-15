@@ -8,6 +8,8 @@ import {
   jsxElement,
   jsxElementName,
   JSXAttributes,
+  setJSXAttributesAttribute,
+  jsxAttributesFromMap,
 } from '../../core/shared/element-template'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { generateUID } from '../../core/shared/uid-utils'
@@ -249,11 +251,14 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
             filePathWithoutExtension,
             propertyControlsInfo,
           )
-          let props: JSXAttributes = objectMap(
-            (value) => jsxAttributeValue(value, emptyComments),
-            defaultProps,
+          let props: JSXAttributes = jsxAttributesFromMap(
+            objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
           )
-          props['data-uid'] = jsxAttributeValue(newUID, emptyComments)
+          props = setJSXAttributesAttribute(
+            props,
+            'data-uid',
+            jsxAttributeValue(newUID, emptyComments),
+          )
           const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [])
           dispatch(
             [

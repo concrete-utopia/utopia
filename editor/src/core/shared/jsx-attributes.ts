@@ -22,9 +22,11 @@ import {
   PartOfJSXAttributeValue,
   isPartOfJSXAttributeValue,
   isJSXAttributeNotFound,
+  getJSXAttribute,
+  deleteJSXAttribute,
+  setJSXAttributesAttribute,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
-import { objectMap } from './object-utils'
 import { PropertyPath } from './project-file-types'
 import * as PP from './property-path'
 import { fastForEach } from './utils'
@@ -215,7 +217,11 @@ export function jsxAttributesToProps(
   attributes: JSXAttributes,
   requireResult: MapLike<any>,
 ): any {
-  return objectMap((attrib) => jsxAttributeToValue(inScope, requireResult, attrib), attributes)
+  let result: any = {}
+  for (const entry of attributes) {
+    result[entry.key] = jsxAttributeToValue(inScope, requireResult, entry.value)
+  }
+  return result
 }
 
 export type GetModifiableAttributeResult = Either<string, ModifiableAttribute>
@@ -294,22 +300,27 @@ export function getJSXAttributeAtPath(
   switch (PP.depth(path)) {
     case 0:
       throw new Error(`Cannot get attribute at empty path`)
-    case 1:
+    case 1: {
       const key = PP.firstPart(path)
-      if (key in attributes) {
-        return getJSXAttributeResult(attributes[key])
-      } else {
+      const keyAsString = typeof key === 'string' ? key : `${key}`
+      const attribute = getJSXAttribute(attributes, keyAsString)
+      if (attribute == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
+      } else {
+        return getJSXAttributeResult(attribute)
       }
-    default:
+    }
+    default: {
       const head = PP.firstPart(path)
-      if (head in attributes) {
-        const headAttribute = attributes[head]
-        const tail = PP.tail(path)
-        return getJSXAttributeAtPathInner(headAttribute, tail)
-      } else {
+      const headAsString = typeof head === 'string' ? head : `${head}`
+      const attribute = getJSXAttribute(attributes, headAsString)
+      if (attribute == null) {
         return getJSXAttributeResult(jsxAttributeNotFound())
+      } else {
+        const tail = PP.tail(path)
+        return getJSXAttributeAtPathInner(attribute, tail)
       }
+    }
   }
 }
 
@@ -532,35 +543,32 @@ export function setJSXValueAtPath(
   value: JSXAttribute,
 ): Either<string, JSXAttributes> {
   const attributeKey = PP.firstPart(path)
+  const attributeKeyAsString = typeof attributeKey === 'string' ? attributeKey : `${attributeKey}`
   switch (PP.depth(path)) {
     case 0:
       throw new Error('Attempted to manipulate attributes with an empty path.')
     case 1:
       if (value === undefined) {
-        let updatedAttributes = { ...attributes }
-        delete updatedAttributes[attributeKey]
+        const updatedAttributes = deleteJSXAttribute(attributes, attributeKeyAsString)
         return right(updatedAttributes)
       } else {
-        return right({
-          ...attributes,
-          [attributeKey]: value,
-        })
+        return right(setJSXAttributesAttribute(attributes, attributeKeyAsString, value))
       }
     default:
       const tailPath = PP.tail(path)
-      const existingAttribute = attributes[attributeKey]
+      const existingAttribute = getJSXAttribute(attributes, attributeKeyAsString)
       if (existingAttribute == null) {
-        return right({
-          ...attributes,
-          [attributeKey]: deeplyCreatedValue(tailPath, value),
-        })
+        return right(
+          setJSXAttributesAttribute(
+            attributes,
+            attributeKeyAsString,
+            deeplyCreatedValue(tailPath, value),
+          ),
+        )
       } else {
         const updatedAttribute = setJSXValueInAttributeAtPath(existingAttribute, tailPath, value)
         return mapEither((updated) => {
-          return {
-            ...attributes,
-            [attributeKey]: updated,
-          }
+          return setJSXAttributesAttribute(attributes, attributeKeyAsString, updated)
         }, updatedAttribute)
       }
   }
@@ -731,16 +739,16 @@ export function unsetJSXValueAtPath(
   path: PropertyPath,
 ): Either<string, JSXAttributes> {
   const attributeKey = PP.firstPart(path)
+  const attributeKeyAsString = typeof attributeKey === 'string' ? attributeKey : `${attributeKey}`
   switch (PP.depth(path)) {
     case 0:
       // As this is invalid throw an exception.
       throw new Error('Attempted to unset something from attributes with an empty path.')
     case 1:
-      let updatedAttributes = { ...attributes }
-      delete updatedAttributes[attributeKey]
+      const updatedAttributes = deleteJSXAttribute(attributes, attributeKeyAsString)
       return right(updatedAttributes)
     default:
-      const existingAttribute = attributes[attributeKey]
+      const existingAttribute = getJSXAttribute(attributes, attributeKeyAsString)
       if (existingAttribute == null) {
         return right(attributes)
       } else {
@@ -750,10 +758,7 @@ export function unsetJSXValueAtPath(
           tailPath,
         )
         return mapEither((updated) => {
-          return {
-            ...attributes,
-            [attributeKey]: updated,
-          }
+          return setJSXAttributesAttribute(attributes, attributeKeyAsString, updated)
         }, updatedAttribute)
       }
   }
@@ -790,8 +795,7 @@ export function walkAttributes(
   attributes: JSXAttributes,
   walk: (attribute: JSXAttribute) => void,
 ): void {
-  fastForEach(Object.keys(attributes), (attrKey) => {
-    const attribute = attributes[attrKey]
-    walkAttribute(attribute, walk)
+  fastForEach(attributes, (attr) => {
+    walkAttribute(attr.value, walk)
   })
 }

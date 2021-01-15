@@ -1,6 +1,7 @@
 import { BASE_URL } from '../common/env-vars'
 import {
   ElementInstanceMetadata,
+  jsxAttributesFromMap,
   jsxAttributeValue,
   jsxElement,
   jsxElementName,
@@ -103,7 +104,7 @@ export function createInsertImageAction(
 
     const imageElement = jsxElement(
       jsxElementName('img', []),
-      {
+      jsxAttributesFromMap({
         alt: jsxAttributeValue('', emptyComments),
         src: srcAttribute,
         style: jsxAttributeValue(
@@ -116,7 +117,7 @@ export function createInsertImageAction(
           emptyComments,
         ),
         'data-uid': jsxAttributeValue(newUID, emptyComments),
-      },
+      }),
       [],
     )
     return insertJSXElement(imageElement, parentPath, {})

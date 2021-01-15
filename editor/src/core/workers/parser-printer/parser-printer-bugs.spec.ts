@@ -2,6 +2,7 @@ import {
   isJSXElement,
   isUtopiaJSXComponent,
   JSXAttributes,
+  jsxAttributesFromMap,
   jsxAttributeValue,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
@@ -63,7 +64,7 @@ export var App = props => {
       if (isUtopiaJSXComponent(parsedPlainCode.topLevelElements[0])) {
         const topComponent: UtopiaJSXComponent = parsedPlainCode.topLevelElements[0]
         if (isJSXElement(topComponent.rootElement)) {
-          const expectedProps: JSXAttributes = {
+          const expectedProps: JSXAttributes = jsxAttributesFromMap({
             style: jsxAttributeValue(
               {
                 backgroundColor: 'green',
@@ -72,7 +73,7 @@ export var App = props => {
               emptyComments,
             ),
             'data-uid': jsxAttributeValue('xxx', emptyComments),
-          }
+          })
           expect(topComponent.rootElement.props).toEqual(expectedProps)
         } else {
           fail('Root element not a JSX element.')

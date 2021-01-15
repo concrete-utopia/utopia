@@ -56,6 +56,8 @@ import {
   Comment,
   specialSizeMeasurements,
   SpecialSizeMeasurements,
+  JSXAttributesEntry,
+  jsxAttributesEntry,
 } from '../../../core/shared/element-template'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
 import {
@@ -372,8 +374,20 @@ export function JSXAttributeKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttr
   }
 }
 
+export function JSXAttributesEntryDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributesEntry> {
+  return combine3EqualityCalls(
+    (entry) => entry.key,
+    createCallWithTripleEquals(),
+    (entry) => entry.value,
+    JSXAttributeKeepDeepEqualityCall(),
+    (entry) => entry.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
+    jsxAttributesEntry,
+  )
+}
+
 export function JSXAttributesKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributes> {
-  return objectDeepEquality(JSXAttributeKeepDeepEqualityCall())
+  return arrayDeepEquality(JSXAttributesEntryDeepEqualityCall())
 }
 
 export function JSXElementKeepDeepEquality(): KeepDeepEqualityCall<JSXElement> {

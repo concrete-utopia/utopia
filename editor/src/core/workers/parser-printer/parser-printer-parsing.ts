@@ -60,6 +60,8 @@ import {
   WithComments,
   BlockOrExpression,
   simplifyAttributeIfPossible,
+  jsxAttributesEntry,
+  setJSXAttributesAttribute,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -1341,15 +1343,31 @@ function parseElementProps(
   attributes: TS.JsxAttributes,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  leadingCommentsAgainstClosingToken: Array<Comment>,
 ): Either<string, WithParserMetadata<JSXAttributes>> {
-  let result: JSXAttributes = {}
+  let result: JSXAttributes = []
   let highlightBounds = existingHighlightBounds
   let propsUsed = []
   let definedElsewhere = []
+  // Maintain this so that we can still use early returns.
+  let propIndex: number = 0
   for (const prop of attributes.properties) {
     if (TS.isJsxAttribute(prop)) {
+      let propComments = getComments(sourceText, prop)
+      if (propIndex === attributes.properties.length - 1) {
+        propComments = parsedComments(propComments.leadingComments, [
+          ...propComments.trailingComments,
+          ...leadingCommentsAgainstClosingToken,
+        ])
+      }
       if (prop.initializer == null) {
-        result[prop.name.getText(sourceFile)] = jsxAttributeValue(true, emptyComments)
+        result.push(
+          jsxAttributesEntry(
+            prop.name.getText(sourceFile),
+            jsxAttributeValue(true, emptyComments),
+            propComments,
+          ),
+        )
       } else {
         const attributeResult = getAttributeExpression(
           sourceFile,
@@ -1365,8 +1383,12 @@ function parseElementProps(
         if (isLeft(attributeResult)) {
           return attributeResult
         } else {
-          result[prop.name.getText(sourceFile)] = simplifyAttributeIfPossible(
-            attributeResult.value.value,
+          result.push(
+            jsxAttributesEntry(
+              prop.name.getText(sourceFile),
+              simplifyAttributeIfPossible(attributeResult.value.value),
+              propComments,
+            ),
           )
           highlightBounds = attributeResult.value.highlightBounds
           propsUsed.push(...attributeResult.value.propsUsed)
@@ -1376,6 +1398,8 @@ function parseElementProps(
     } else {
       return left(`Invalid attribute found.`)
     }
+
+    propIndex += 1
   }
   return right(withParserMetadata(result, highlightBounds, propsUsed, definedElsewhere))
 }
@@ -1544,10 +1568,11 @@ function forciblyUpdateDataUID(
   })
   const uid = generateConsistentUID(alreadyExistingUIDs, hash)
   alreadyExistingUIDs.add(uid)
-  const updatedProps = {
-    ...props,
-    ['data-uid']: jsxAttributeValue(uid, emptyComments),
-  }
+  const updatedProps = setJSXAttributesAttribute(
+    props,
+    'data-uid',
+    jsxAttributeValue(uid, emptyComments),
+  )
   return withParserMetadata(
     updatedProps,
     {
@@ -1812,6 +1837,7 @@ export function parseOutJSXElements(
     let attributes: TS.JsxAttributes
     let tagName: TS.JsxTagNameExpression
     let children: Either<string, Array<JSXElementChild>> = right([])
+    let commentsFromAfterAttributes: ParsedComments = emptyComments
     switch (tsElement.kind) {
       case TS.SyntaxKind.JsxElement:
         attributes = tsElement.openingElement.attributes
@@ -1820,10 +1846,22 @@ export function parseOutJSXElements(
         children = mapEither((parsedChildren) => {
           return parsedChildren.map((c) => c.value)
         }, innerParse(nodeArrayToArray(tsElement.children)))
+        // Capture comments against '>' as that should follow the attributes.
+        tsElement.openingElement.getChildren(sourceFile).forEach((child) => {
+          if (child.kind === TS.SyntaxKind.GreaterThanToken) {
+            commentsFromAfterAttributes = getComments(sourceText, child)
+          }
+        })
         break
       case TS.SyntaxKind.JsxSelfClosingElement:
         attributes = tsElement.attributes
         tagName = tsElement.tagName
+        // Capture comments against '/' as that should follow the attributes.
+        tsElement.getChildren(sourceFile).forEach((child) => {
+          if (child.kind === TS.SyntaxKind.SlashToken) {
+            commentsFromAfterAttributes = getComments(sourceText, child)
+          }
+        })
         break
       default:
         const _exhaustiveCheck: never = tsElement
@@ -1841,6 +1879,7 @@ export function parseOutJSXElements(
         attributes,
         highlightBounds,
         alreadyExistingUIDs,
+        commentsFromAfterAttributes.leadingComments,
       )
       // Construct the element.
       return flatMapEither((attrs) => {

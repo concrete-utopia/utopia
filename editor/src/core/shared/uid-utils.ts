@@ -8,6 +8,8 @@ import {
   isJSXElement,
   isJSXAttributeValue,
   isJSXArbitraryBlock,
+  setJSXAttributesAttribute,
+  getJSXAttribute,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -118,10 +120,11 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
 export function setUtopiaIDOnJSXElement(element: JSXElement, uid: string): JSXElement {
   return {
     ...element,
-    props: {
-      ...element.props,
-      ['data-uid']: jsxAttributeValue(uid, emptyComments),
-    },
+    props: setJSXAttributesAttribute(
+      element.props,
+      'data-uid',
+      jsxAttributeValue(uid, emptyComments),
+    ),
   }
 }
 
@@ -158,11 +161,8 @@ export function fixUtopiaElement(
         fixedChildren = element.children
       }
 
-      if (
-        element.props['data-uid'] == null ||
-        !isJSXAttributeValue(element.props['data-uid']) ||
-        uniqueIDs.includes(element.props['data-uid'].value)
-      ) {
+      const uidProp = getJSXAttribute(element.props, 'data-uid')
+      if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDs.includes(uidProp.value)) {
         const newUID = generateUID(uniqueIDs)
         const fixedProps = setJSXValueAtPath(
           element.props,
@@ -182,13 +182,13 @@ export function fixUtopiaElement(
           }
         }
       } else if (element.children !== fixedChildren) {
-        uniqueIDs.push(element.props['data-uid'].value)
+        uniqueIDs.push(uidProp.value)
         return {
           ...element,
           children: fixedChildren,
         }
       } else {
-        uniqueIDs.push(element.props['data-uid'].value)
+        uniqueIDs.push(uidProp.value)
         return element
       }
     } else if (isJSXArbitraryBlock(element)) {

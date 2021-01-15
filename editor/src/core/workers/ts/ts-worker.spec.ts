@@ -12,6 +12,7 @@ import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 import * as SampleTypeDefinitions from './sample-type-definitions.json'
 import { contentsToTree } from '../../../components/assets'
 import { emptyComments } from '../parser-printer/parser-printer-comments'
+import { jsxAttributesFromMap } from '../../shared/element-template'
 
 describe('Typescript worker builds the project', () => {
   it('initializing a new project', (done) => {
@@ -168,7 +169,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                     propertyElements: [],
                   },
                 },
-                props: {
+                props: jsxAttributesFromMap({
                   style: {
                     type: 'ATTRIBUTE_NESTED_OBJECT',
                     content: [
@@ -231,7 +232,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                     value: 'aaa',
                     comments: emptyComments,
                   },
-                },
+                }),
                 children: [],
               },
               arbitraryJSBlock: null,

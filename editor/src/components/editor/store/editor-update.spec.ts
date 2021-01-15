@@ -3,6 +3,7 @@ import { NormalisedFrame } from 'utopia-api'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   isJSXElement,
+  jsxAttributesFromMap,
   jsxAttributeValue,
   jsxElement,
   jsxElementName,
@@ -528,7 +529,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
-      { 'data-uid': jsxAttributeValue('TestView', emptyComments) },
+      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, parentPath, {
@@ -584,7 +585,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
-      { 'data-uid': jsxAttributeValue('TestView', emptyComments) },
+      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, null, {

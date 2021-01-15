@@ -3,13 +3,14 @@ import {
   jsxAttributeValue,
   jsxAttributeNestedObject,
   jsxPropertyAssignment,
+  jsxAttributesFromMap,
 } from '../shared/element-template'
 import { roundAttributeLayoutValues } from './layout-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 describe('roundAttributeLayoutValues', () => {
   it('rounds values within a complex attribute value', () => {
-    const attributes: JSXAttributes = {
+    const attributes: JSXAttributes = jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
           left: 0,
@@ -19,9 +20,9 @@ describe('roundAttributeLayoutValues', () => {
         },
         emptyComments,
       ),
-    }
+    })
     const actualResult = roundAttributeLayoutValues(attributes)
-    const expectedResult: JSXAttributes = {
+    const expectedResult: JSXAttributes = jsxAttributesFromMap({
       style: jsxAttributeNestedObject(
         [
           jsxPropertyAssignment(
@@ -51,11 +52,11 @@ describe('roundAttributeLayoutValues', () => {
         ],
         emptyComments,
       ),
-    }
+    })
     expect(actualResult).toEqual(expectedResult)
   })
   it('rounds values within a nested attribute object', () => {
-    const attributes: JSXAttributes = {
+    const attributes: JSXAttributes = jsxAttributesFromMap({
       style: jsxAttributeNestedObject(
         [
           jsxPropertyAssignment(
@@ -85,9 +86,9 @@ describe('roundAttributeLayoutValues', () => {
         ],
         emptyComments,
       ),
-    }
+    })
     const actualResult = roundAttributeLayoutValues(attributes)
-    const expectedResult: JSXAttributes = {
+    const expectedResult: JSXAttributes = jsxAttributesFromMap({
       style: jsxAttributeNestedObject(
         [
           jsxPropertyAssignment(
@@ -117,21 +118,21 @@ describe('roundAttributeLayoutValues', () => {
         ],
         emptyComments,
       ),
-    }
+    })
     expect(actualResult).toEqual(expectedResult)
   })
   it('does not round irrelevant values', () => {
-    const attributes: JSXAttributes = {
+    const attributes: JSXAttributes = jsxAttributesFromMap({
       sizeOfHat: jsxAttributeValue(123.456, emptyComments),
-    }
+    })
     const actualResult = roundAttributeLayoutValues(attributes)
-    const expectedResult: JSXAttributes = {
+    const expectedResult: JSXAttributes = jsxAttributesFromMap({
       sizeOfHat: jsxAttributeValue(123.456, emptyComments),
-    }
+    })
     expect(actualResult).toEqual(expectedResult)
   })
   it('keeps the same value if no rounding is necessary', () => {
-    const attributes: JSXAttributes = {
+    const attributes: JSXAttributes = jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
           left: 0,
@@ -141,7 +142,7 @@ describe('roundAttributeLayoutValues', () => {
         },
         emptyComments,
       ),
-    }
+    })
     const actualResult = roundAttributeLayoutValues(attributes)
     expect(actualResult).toBe(attributes)
   })

@@ -23,6 +23,7 @@ import {
   SpecialSizeMeasurements,
   emptySpecialSizeMeasurements,
   ComputedStyle,
+  getJSXAttribute,
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
@@ -612,7 +613,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
           if (MetadataUtils.isLayoutWrapperAgainstImports(imports, elementMetadata)) {
             inspectorModel.layoutWrapper = elementName as any
           }
-          const wrappedComponent = jsxElement.props.wrappedComponent
+          const wrappedComponent = getJSXAttribute(jsxElement.props, 'wrappedComponent')
           if (wrappedComponent != null && isJSXAttributeOtherJavaScript(wrappedComponent)) {
             inspectorModel.type = wrappedComponent.javascript
           }
@@ -832,7 +833,7 @@ export const InspectorContextProvider = betterReactMemo<{
         }
 
         const jsxElement = findElementAtPath(path, rootComponents)
-        const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
+        const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : []
         newEditedMultiSelectedProps.push(jsxAttributes)
         newSpiedProps.push(elementMetadata.props)
         newComputedStyles.push(elementMetadata.computedStyle)

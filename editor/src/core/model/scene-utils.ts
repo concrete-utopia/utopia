@@ -20,6 +20,7 @@ import {
   jsxAttributeOtherJavaScript,
   ComponentMetadata,
   JSXMetadata,
+  jsxAttributesFromMap,
 } from '../shared/element-template'
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
@@ -69,7 +70,7 @@ export function createSceneTemplatePath(scenePath: ScenePath): StaticInstancePat
 }
 
 export function mapScene(scene: SceneMetadata): JSXElement {
-  const sceneProps = {
+  const sceneProps = jsxAttributesFromMap({
     component: jsxAttributeOtherJavaScript(
       scene.component ?? 'null',
       `return ${scene.component}`,
@@ -80,7 +81,7 @@ export function mapScene(scene: SceneMetadata): JSXElement {
     style: jsxAttributeValue(scene.frame, emptyComments),
     'data-uid': jsxAttributeValue(scene.uid, emptyComments),
     'data-label': jsxAttributeValue(scene.label, emptyComments),
-  }
+  })
   return jsxElement('Scene', sceneProps, [])
 }
 
@@ -132,7 +133,7 @@ export function convertScenesToUtopiaCanvasComponent(
     [],
     jsxElement(
       'Storyboard',
-      { 'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments) },
+      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments) }),
       scenes.map(mapScene),
     ),
     null,
@@ -143,7 +144,7 @@ export function convertScenesToUtopiaCanvasComponent(
 }
 
 export function createSceneFromComponent(componentImportedAs: string, uid: string): JSXElement {
-  const sceneProps = {
+  const sceneProps = jsxAttributesFromMap({
     component: jsxAttributeOtherJavaScript(
       componentImportedAs,
       `return ${componentImportedAs}`,
@@ -162,14 +163,14 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
       },
       emptyComments,
     ),
-  }
+  })
   return jsxElement('Scene', sceneProps, [])
 }
 
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
-  const storyboardProps = {
+  const storyboardProps = jsxAttributesFromMap({
     [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
-  }
+  })
   return jsxElement('Storyboard', storyboardProps, scenes)
 }
 

@@ -62,6 +62,10 @@ import {
   JSXMetadata,
   jsxTextBlock,
   isJSXTextBlock,
+  getJSXAttribute,
+  jsxAttributesFromMap,
+  deleteJSXAttribute,
+  setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -79,6 +83,7 @@ import {
   unsetJSXValueAtPath,
   getModifiableJSXAttributeAtPath,
   unsetJSXValuesAtPaths,
+  setJSXValuesAtPaths,
 } from '../../../core/shared/jsx-attributes'
 import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import {
@@ -109,6 +114,7 @@ import {
   right,
   eitherToMaybe,
   mapEither,
+  defaultEither,
 } from '../../../core/shared/either'
 import type {
   RequireFn,
@@ -2416,14 +2422,16 @@ export const UPDATE_FNS = {
           if (TP.isScenePath(originalPath)) {
             const numberOfScenes = getNumberOfScenes(editor)
             const newSceneLabel = `Scene ${numberOfScenes}`
-            const props = {
-              ...currentValue.props,
-              'data-label': jsxAttributeValue(newSceneLabel, emptyComments),
-              'data-uid': jsxAttributeValue(newUID, emptyComments),
-            }
+            const props = setJSXValuesAtPaths(currentValue.props, [
+              {
+                path: PP.create(['data-label']),
+                value: jsxAttributeValue(newSceneLabel, emptyComments),
+              },
+              { path: PP.create(['data-uid']), value: jsxAttributeValue(newUID, emptyComments) },
+            ])
             const newSceneElement = {
               ...currentValue,
-              props: props,
+              props: defaultEither(currentValue.props, props),
             }
             return addSceneToJSXComponents(accumulator, newSceneElement)
           } else {
@@ -2833,7 +2841,7 @@ export const UPDATE_FNS = {
         const propertyPath = PP.create(['src'])
         walkElements(components, (element, elementPath) => {
           if (isJSXElement(element)) {
-            const srcAttribute = element.props['src']
+            const srcAttribute = getJSXAttribute(element.props, 'src')
             if (srcAttribute != null && isJSXAttributeValue(srcAttribute)) {
               const srcValue: JSXAttributeValue<any> = srcAttribute
               if (
@@ -2919,13 +2927,13 @@ export const UPDATE_FNS = {
           // TODO make a default image and put it in defaults
           const imageElement = jsxElement(
             jsxElementName('img', []),
-            {
+            jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
               style: jsxAttributeValue({ width: width, height: height }, emptyComments),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
               'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
-            },
+            }),
             [],
           )
           const size = width != null && height != null ? { width: width, height: height } : null
@@ -2950,7 +2958,7 @@ export const UPDATE_FNS = {
 
           const imageElement = jsxElement(
             jsxElementName('img', []),
-            {
+            jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
               style: jsxAttributeValue(
@@ -2964,7 +2972,7 @@ export const UPDATE_FNS = {
               ),
               'data-uid': jsxAttributeValue(newUID, emptyComments),
               'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
-            },
+            }),
             [],
           )
 
@@ -3013,7 +3021,7 @@ export const UPDATE_FNS = {
       const height = Utils.optionalMap((h) => h / 2, possiblyAnImage.height)
       const imageElement = jsxElement(
         jsxElementName('img', []),
-        {
+        jsxAttributesFromMap({
           alt: jsxAttributeValue('', emptyComments),
           src: imageSrcAttribute,
           style: jsxAttributeValue(
@@ -3026,7 +3034,7 @@ export const UPDATE_FNS = {
           'data-uid': jsxAttributeValue(newUID, emptyComments),
           'data-label': jsxAttributeValue('Image', emptyComments),
           'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
-        },
+        }),
         [],
       )
       const size = width != null && height != null ? { width: width, height: height } : null
@@ -3776,9 +3784,8 @@ export const UPDATE_FNS = {
         const component = element.name.baseVariable
         if (component !== action.wrapper) {
           const wrappedComponent =
-            element.props.wrappedComponent == null
-              ? jsxAttributeOtherJavaScript(component, component, [], null)
-              : element.props.wrappedComponent
+            getJSXAttribute(element.props, 'wrappedComponent') ??
+            jsxAttributeOtherJavaScript(component, component, [], null)
           return {
             ...element,
             name: {
@@ -3807,18 +3814,18 @@ export const UPDATE_FNS = {
       action.target,
       (element) => {
         const imports = getOpenImportsFromState(editor)
+        const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
         if (
           MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
-          element.props.wrappedComponent != null
+          wrappedComponent != null
         ) {
-          if (element.props.wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-            const updatedProps = { ...element.props }
-            delete updatedProps['wrappedComponent']
+          if (wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+            const updatedProps = deleteJSXAttribute(element.props, 'wrappedComponent')
             return {
               ...element,
               name: {
                 ...element.name,
-                baseVariable: element.props.wrappedComponent.javascript,
+                baseVariable: wrappedComponent.javascript,
               },
               props: updatedProps,
             }
@@ -3860,11 +3867,12 @@ export const UPDATE_FNS = {
       action.target,
       (element) => {
         const imports = getOpenImportsFromState(editor)
+        const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
         if (
           MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
-          element.props.wrappedComponent != null
+          wrappedComponent != null
         ) {
-          if (element.props.wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+          if (wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
             const nameAsString = getJSXElementNameAsString(action.elementName)
             return {
               ...element,
@@ -3896,7 +3904,7 @@ export const UPDATE_FNS = {
         )
         return {
           ...element,
-          props: updatedProps ?? {},
+          props: updatedProps ?? element.props,
         }
       },
       editor,
@@ -3943,7 +3951,7 @@ export const UPDATE_FNS = {
       }
       const imageElement = jsxElement(
         jsxElementName('img', []),
-        {
+        jsxAttributesFromMap({
           alt: jsxAttributeValue('', emptyComments),
           src: imageAttribute,
           style: jsxAttributeValue(
@@ -3957,7 +3965,7 @@ export const UPDATE_FNS = {
           ),
           'data-uid': jsxAttributeValue(newUID, emptyComments),
           'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
-        },
+        }),
         [],
       )
 
@@ -4020,22 +4028,24 @@ export const UPDATE_FNS = {
         ? createSceneTemplatePath(action.target)
         : action.target
 
-      if (pathToUpdate != null) {
+      if (pathToUpdate == null) {
+        return setPropertyOnTarget(editor, target, (props) => {
+          let updatedProps = jsxAttributesFromMap(
+            objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
+          )
+          const dataUID = getJSXAttribute(props, 'data-uid')
+          if (dataUID != null) {
+            updatedProps = setJSXAttributesAttribute(updatedProps, 'data-uid', dataUID)
+          }
+          return right(updatedProps)
+        })
+      } else {
         return setPropertyOnTarget(editor, target, (props) => {
           return setJSXValueAtPath(
             props,
             pathToUpdate!,
             jsxAttributeValue(propsForPath, emptyComments),
           )
-        })
-      } else {
-        return setPropertyOnTarget(editor, target, (props) => {
-          const updatedProps = objectMap(
-            (value) => jsxAttributeValue(value, emptyComments),
-            defaultProps,
-          )
-          updatedProps['data-uid'] = props['data-uid'] as JSXAttributeValue<string>
-          return right(updatedProps)
         })
       }
     } else {
