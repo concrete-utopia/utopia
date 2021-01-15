@@ -117,7 +117,7 @@ export const testPerformance = async function () {
   const selectionImage = await uploadImage(selectionResult, true)
 
   console.info(
-    `::set-output name=perf-result:: ![SummaryChart](${summaryImage}) ![ScrollChart](${scrollImage}) - SCROLL TEST Average frame length: ${scrollResult.frameData.frameAvg.toFixed(
+    `::set-output name=perf-result:: ![SummaryChart](${summaryImage}) ![ScrollChart](${scrollImage}) - SCROLL TEST Average frame length: ${scrollResult.analytics.frameAvg.toFixed(
       1,
     )} – Q1: ${scrollResult.analytics.percentile25} – Q2: ${
       scrollResult.analytics.percentile50
