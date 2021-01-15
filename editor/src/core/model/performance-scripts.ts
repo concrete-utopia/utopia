@@ -146,7 +146,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       )
 
       framesPassed++
-      if (framesPassed < 50) {
+      if (framesPassed < 25) {
         requestAnimationFrame(step)
       } else {
         console.info('SELECT_TEST_FINISHED')

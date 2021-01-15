@@ -23,6 +23,16 @@ type FrameResult = {
   frameTimesFixed: Array<number>
 }
 
+const EmptyResult: FrameResult = {
+  frameData: {
+    frameAvg: 0,
+    percentile25: undefined,
+    percentile50: undefined,
+    percentile75: undefined,
+  },
+  frameTimesFixed: []
+}
+
 // this is the same as utils.ts@defer
 function defer() {
   var res, rej
@@ -75,10 +85,21 @@ export const setupBrowser = async function () {
 }
 
 export const testPerformance = async function () {
-  const scrollResult = await testScrollingPerformance()
-  const resizeResult = await testResizePerformance()
-  const selectionResult = await testSelectionPerformance()
-
+  let scrollResult = EmptyResult
+  let resizeResult = EmptyResult
+  let selectionResult = EmptyResult
+  const { page, browser } = await setupBrowser()
+  try {
+    selectionResult = await testSelectionPerformance(page)
+    await page.reload()
+    resizeResult = await testResizePerformance(page)
+    await page.reload()
+    scrollResult = await testScrollingPerformance(page)
+  } catch(e) {
+    throw new Error(`Error during measurements ${e}`)
+  } finally {
+    browser.close()
+  }
   const scrollImage = await uploadImage(scrollResult)
   const resizeImage = await uploadImage(resizeResult)
   const selectionImage = await uploadImage(selectionResult, true)
@@ -106,83 +127,62 @@ export const testPerformance = async function () {
   )
 }
 
-export const testScrollingPerformance = async function (): Promise<FrameResult> {
-  const { page, browser } = await setupBrowser()
-  try {
-    await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
-    // we run it twice without measurements to warm up the environment
-    const [button] = await page.$x("//a[contains(., 'P S')]")
-    await button!.click()
-    await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
-    const [button2] = await page.$x("//a[contains(., 'P S')]")
-    await button2!.click()
-    await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
-    // and then we run the test for a third time, this time running tracing
-    await page.tracing.start({ path: 'trace.json' })
-    const [button3] = await page.$x("//a[contains(., 'P S')]")
-    await button3!.click()
-    await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
-    await page.tracing.stop()
-  } catch(e) {
-    console.warn(`Error running scrolling performance test ${e}`)
-  } finally {
-    await browser.close()
-  }
+export const testScrollingPerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
+  await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
+  // we run it twice without measurements to warm up the environment
+  const [button] = await page.$x("//a[contains(., 'P S')]")
+  await button!.click()
+  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+  const [button2] = await page.$x("//a[contains(., 'P S')]")
+  await button2!.click()
+  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ path: 'trace.json' })
+  const [button3] = await page.$x("//a[contains(., 'P S')]")
+  await button3!.click()
+  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+  await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
   return getFrameData(traceJson, 'scroll_step_')
 }
 
-export const testResizePerformance = async function (): Promise<FrameResult> {
-  const { page, browser } = await setupBrowser()
-  try {
-    await page.waitForXPath("//a[contains(., 'P R')]")
-    // we run it twice without measurements to warm up the environment
-    const [button] = await page.$x("//a[contains(., 'P R')]")
-    await button!.click()
+export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
+  await page.waitForXPath("//a[contains(., 'P R')]")
+  // we run it twice without measurements to warm up the environment
+  const [button] = await page.$x("//a[contains(., 'P R')]")
+  await button!.click()
 
-    // select element using the navigator
-    const navigatorElement = await page.$('[class^="item-label-container"]')
-    await navigatorElement!.click()
-    const [button2] = await page.$x("//a[contains(., 'P R')]")
-    await button2!.click()
-    await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
-    // and then we run the test for a third time, this time running tracing
-    await page.tracing.start({ path: 'trace.json' })
-    const [button3] = await page.$x("//a[contains(., 'P R')]")
-    await button3!.click()
-    await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
-    await page.tracing.stop()
-  } catch(e) {
-    console.warn(`Error running resize performance test ${e}`)
-  } finally {
-    await browser.close()
-  }
+  // select element using the navigator
+  const navigatorElement = await page.$('[class^="item-label-container"]')
+  await navigatorElement!.click()
+  const [button2] = await page.$x("//a[contains(., 'P R')]")
+  await button2!.click()
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ path: 'trace.json' })
+  const [button3] = await page.$x("//a[contains(., 'P R')]")
+  await button3!.click()
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+  await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
   return getFrameData(traceJson, 'resize_step_')
 }
 
-export const testSelectionPerformance = async function (): Promise<FrameResult> {
-  const { page, browser } = await setupBrowser()
-  try {
-    await page.waitForTimeout(20000)
-    await page.waitForXPath("//a[contains(., 'P E')]")
-    // we run it twice without measurements to warm up the environment
-    const [button] = await page.$x("//a[contains(., 'P E')]")
-    await button!.click()
-    await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
-    // and then we run the test for a third time, this time running tracing
-    await page.tracing.start({ path: 'trace.json' })
-    const [button2] = await page.$x("//a[contains(., 'P E')]")
-    await button2!.click()
-    await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
-    await page.tracing.stop()
-  } catch(e) {
-    console.warn(`Error running selection performance test ${e}`)
-  } finally {
-    await browser.close()
-  }
+export const testSelectionPerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
+  await page.waitForTimeout(20000)
+  await page.waitForXPath("//a[contains(., 'P E')]")
+  // we run it twice without measurements to warm up the environment
+  const [button] = await page.$x("//a[contains(., 'P E')]")
+  await button!.click()
+  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ path: 'trace.json' })
+  const [button2] = await page.$x("//a[contains(., 'P E')]")
+  await button2!.click()
+  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
   return getFrameData(traceJson, 'select_step_')
