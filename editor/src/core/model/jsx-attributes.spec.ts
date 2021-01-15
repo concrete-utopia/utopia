@@ -6,7 +6,9 @@ import {
   isJSXAttributeNotFound,
   isJSXAttributeValue,
   isPartOfJSXAttributeValue,
+  jsxArrayValue,
   jsxAttributeFunctionCall,
+  jsxAttributeNestedArray,
   jsxAttributeNestedArraySimple,
   jsxAttributeNestedObject,
   jsxAttributeNestedObjectSimple,
@@ -16,6 +18,7 @@ import {
   jsxAttributeValue,
   jsxPropertyAssignment,
   jsxSpreadAssignment,
+  simplifyAttributeIfPossible,
 } from '../shared/element-template'
 import {
   dropKeyFromNestedObject,
@@ -45,6 +48,7 @@ function sampleJsxAttributes(): JSXAttributes {
           'backgroundColor',
           jsxAttributeValue('red', emptyComments),
           emptyComments,
+          emptyComments,
         ),
         jsxPropertyAssignment(
           'shadow',
@@ -55,15 +59,18 @@ function sampleJsxAttributes(): JSXAttributes {
             null,
           ),
           emptyComments,
+          emptyComments,
         ),
         jsxPropertyAssignment(
           'border',
           jsxAttributeValue('1px solid green', emptyComments),
           emptyComments,
+          emptyComments,
         ),
         jsxPropertyAssignment(
           'boxShadow',
           jsxAttributeValue('0 0 0 1px blue', emptyComments),
+          emptyComments,
           emptyComments,
         ),
       ],
@@ -624,6 +631,7 @@ describe('dropKeyFromNestedObject', () => {
           'backgroundColor',
           jsxAttributeValue('red', emptyComments),
           emptyComments,
+          emptyComments,
         ),
       ],
       emptyComments,
@@ -634,5 +642,39 @@ describe('dropKeyFromNestedObject', () => {
     )
     const actualValue = dropKeyFromNestedObject(startingValue, 'backgroundColor')
     expect(actualValue).toEqual(expectedValue)
+  })
+})
+
+describe('simplifyAttributeIfPossible', () => {
+  it('nested array with a nested object in it simplifies down', () => {
+    const array = jsxAttributeNestedArray(
+      [
+        jsxArrayValue(jsxAttributeValue(1, emptyComments), emptyComments),
+        jsxArrayValue(jsxAttributeValue('hat', emptyComments), emptyComments),
+        jsxArrayValue(
+          jsxAttributeNestedObject(
+            [
+              jsxPropertyAssignment(
+                'someKey',
+                jsxAttributeValue('with a value', emptyComments),
+                emptyComments,
+                emptyComments,
+              ),
+            ],
+            emptyComments,
+          ),
+          emptyComments,
+        ),
+      ],
+      emptyComments,
+    )
+    const actualResult = simplifyAttributeIfPossible(array)
+    const expectedResult = jsxAttributeValue([1, 'hat', { someKey: 'with a value' }], emptyComments)
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('simple value returns as is', () => {
+    const expectedValue = jsxAttributeValue('test', emptyComments)
+    const actualValue = simplifyAttributeIfPossible(expectedValue)
+    expect(actualValue).toBe(expectedValue)
   })
 })

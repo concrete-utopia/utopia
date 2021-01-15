@@ -49,6 +49,10 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "left",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
                     "comments": Object {
@@ -65,6 +69,10 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "top",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
                     "comments": Object {
@@ -81,6 +89,10 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "width",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
                     "comments": Object {
@@ -97,6 +109,10 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "height",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
                     "comments": Object {
@@ -113,6 +129,10 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "position",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
                     "comments": Object {
@@ -165,6 +185,10 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "backgroundColor",
+              "keyComments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "PROPERTY_ASSIGNMENT",
               "value": Object {
                 "comments": Object {
@@ -181,6 +205,10 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "position",
+              "keyComments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "PROPERTY_ASSIGNMENT",
               "value": Object {
                 "comments": Object {
@@ -252,6 +280,10 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "position",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
                     "comments": Object {
@@ -268,6 +300,10 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "flexBasis",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
                     "comments": Object {
@@ -284,6 +320,10 @@ Array [
                     "trailingComments": Array [],
                   },
                   "key": "height",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
                     "comments": Object {
@@ -336,6 +376,10 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "backgroundColor",
+              "keyComments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "PROPERTY_ASSIGNMENT",
               "value": Object {
                 "comments": Object {
@@ -352,6 +396,10 @@ Array [
                 "trailingComments": Array [],
               },
               "key": "display",
+              "keyComments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "type": "PROPERTY_ASSIGNMENT",
               "value": Object {
                 "comments": Object {
