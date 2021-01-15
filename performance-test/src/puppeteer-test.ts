@@ -1,6 +1,7 @@
 require('dotenv').config({ path: 'src/.env' })
 import puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
+import { timeLimitPromise } from './utils'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
@@ -40,7 +41,7 @@ function consoleDoneMessage(
   expectedConsoleMessage: string,
   errorMessage?: string,
 ) {
-  return new Promise<void>((resolve, reject) => {
+  const consoleDonePromise = new Promise<void>((resolve, reject) => {
     page.on('console', (message) => {
       if (
         message.text().includes(expectedConsoleMessage) ||
@@ -52,6 +53,7 @@ function consoleDoneMessage(
       }
     })
   })
+  return timeLimitPromise(consoleDonePromise, 120000, `Missing console message ${expectedConsoleMessage} in test browser.`)
 }
 
 export const setupBrowser = async function () {
