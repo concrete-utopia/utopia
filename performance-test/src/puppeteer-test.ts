@@ -13,13 +13,15 @@ const EDITOR_URL =
   process.env.EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
 
 type FrameResult = {
-  frameData: {
+  title: string
+  timeSeries: Array<number>
+  analytics: {
+    frameMin: number
     frameAvg: number
     percentile25: number | undefined
     percentile50: number | undefined
     percentile75: number | undefined
   }
-  frameTimesFixed: Array<number>
 }
 
 // this is the same as utils.ts@defer
@@ -73,35 +75,20 @@ export const setupBrowser = async function () {
 }
 
 export const testPerformance = async function () {
-  const scrollResult = await testScrollingPerformance()
-  const resizeResult = await testResizePerformance()
   const selectionResult = await testSelectionPerformance()
+  console.info('Selection: min', selectionResult.analytics.frameMin)
+  const scrollResult = await testScrollingPerformance()
+  console.info('Scroll: min', scrollResult.analytics.frameMin)
+  const resizeResult = await testResizePerformance()
+  console.info('Resize: min', resizeResult.analytics.frameMin)
 
-  const scrollImage = await uploadImage(scrollResult)
-  const resizeImage = await uploadImage(resizeResult)
-  const selectionImage = await uploadImage(selectionResult, true)
+  console.info('Trying to create summary')
+  const summaryImage = await uploadSummaryImage([selectionResult, scrollResult, resizeResult])
+  console.info('Finished creating summary')
 
-  console.info(
-    `::set-output name=perf-result:: ![ScrollChart](${scrollImage}) - SCROLL TEST Average frame length: ${scrollResult.frameData.frameAvg.toFixed(
-      1,
-    )} – Q1: ${scrollResult.frameData.percentile25} – Q2: ${
-      scrollResult.frameData.percentile50
-    } – Q3: ${scrollResult.frameData.percentile75} – Median: ${
-      scrollResult.frameData.percentile50
-    } ![ResizeChart](${resizeImage}) - RESIZE TEST Average frame length: ${resizeResult.frameData.frameAvg.toFixed(
-      1,
-    )} – Q1: ${resizeResult.frameData.percentile25} – Q2: ${
-      resizeResult.frameData.percentile50
-    } – Q3: ${resizeResult.frameData.percentile75} – Median: ${
-      resizeResult.frameData.percentile50
-    } ![SelectionChart](${selectionImage}) - SELECTION TEST Average frame length: ${selectionResult.frameData.frameAvg.toFixed(
-      1,
-    )} – Q1: ${selectionResult.frameData.percentile25} – Q2: ${
-      selectionResult.frameData.percentile50
-    } – Q3: ${selectionResult.frameData.percentile75} – Median: ${
-      selectionResult.frameData.percentile50
-    }`,
-  )
+  const selectionImage = await uploadImage(selectionResult, 'Selection', true)
+  const scrollImage = await uploadImage(scrollResult, 'Scroll')
+  const resizeImage = await uploadImage(resizeResult, 'Resize')
 }
 
 export const testScrollingPerformance = async function (): Promise<FrameResult> {
@@ -124,7 +111,7 @@ export const testScrollingPerformance = async function (): Promise<FrameResult> 
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
 
-  return getFrameData(traceJson, 'scroll_step_')
+  return getFrameData('Scroll Canvas', traceJson, 'scroll_step_')
 }
 
 export const testResizePerformance = async function (): Promise<FrameResult> {
@@ -149,7 +136,7 @@ export const testResizePerformance = async function (): Promise<FrameResult> {
   await browser.close()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'resize_step_')
+  return getFrameData('Resize', traceJson, 'resize_step_')
 }
 
 export const testSelectionPerformance = async function (): Promise<FrameResult> {
@@ -169,10 +156,10 @@ export const testSelectionPerformance = async function (): Promise<FrameResult> 
   await browser.close()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'select_step_')
+  return getFrameData('Selection', traceJson, 'select_step_')
 }
 
-const getFrameData = (traceJson: any, markNamePrefix: string): FrameResult => {
+const getFrameData = (title: string, traceJson: any, markNamePrefix: string): FrameResult => {
   const frameTimeEvents: any[] = traceJson.traceEvents.filter((e: any) =>
     e.name.startsWith(markNamePrefix),
   )
@@ -192,15 +179,17 @@ const getFrameData = (traceJson: any, markNamePrefix: string): FrameResult => {
 
   let frameTimesFixed = frameTimes.map((x) => Number(x.toFixed(1)))
 
-  const frameData = {
+  const analytics = {
+    frameMin: Math.min(...frameTimesFixed),
     frameAvg: totalFrameTimes / frameTimesFixed.length,
     percentile25: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.25)],
     percentile50: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.5)],
     percentile75: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
   }
   return {
-    frameData: frameData,
-    frameTimesFixed: frameTimesFixed,
+    title: 'random',
+    analytics: analytics,
+    timeSeries: frameTimesFixed,
   }
 }
 
@@ -214,12 +203,13 @@ function valueOutsideCutoff(frameCutoff: Array<number>) {
   return sum
 }
 
-async function uploadImage(result: FrameResult, isSelectionTest = false) {
+async function uploadImage(result: FrameResult, title: string, isSelectionTest = false) {
   const imageFileName = v4() + '.png'
-  const fileURI = await createTestPng(
-    result.frameTimesFixed,
+  const fileURI = await createDetailResultsPng(
+    title,
+    result.timeSeries,
     imageFileName,
-    result.frameData,
+    result.analytics,
     isSelectionTest,
   )
   if (fileURI != null) {
@@ -230,7 +220,125 @@ async function uploadImage(result: FrameResult, isSelectionTest = false) {
   }
 }
 
-async function createTestPng(
+async function uploadSummaryImage(results: Array<FrameResult>) {
+  const imageFileName = v4() + '.png'
+  const fileURI = await createSummaryPng(results, imageFileName)
+
+  if (fileURI != null) {
+    const s3FileUrl = await uploadPNGtoAWS(fileURI)
+    return s3FileUrl
+  } else {
+    return ''
+  }
+}
+
+async function createSummaryPng(
+  results: Array<FrameResult>,
+  testFileName: string,
+): Promise<string | null> {
+  if (
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME == null ||
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_API_KEY == null
+  ) {
+    console.info('Plotly summary generation skipped because of missing username or API key')
+    return null
+  }
+
+  const plotly = require('plotly')(
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME,
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_API_KEY,
+  )
+
+  const boxPlotConfig = (label: string, data: Array<number>) => {
+    return {
+      x: data,
+      y: label,
+      name: label,
+      type: 'box',
+      boxpoints: 'all',
+      whiskerwidth: 0.5,
+      fillcolor: 'cls',
+      marker: {
+        size: 1,
+      },
+      line: {
+        width: 1,
+      },
+    }
+  }
+
+  const processedData = results.map((result) => boxPlotConfig(result.title, result.timeSeries))
+
+  const layout = {
+    title: 'Automated Performance Test (100 runs, fastest counts)',
+    showlegend: false,
+    height: 150,
+    width: 720,
+    yaxis: {
+      automargin: true,
+      zeroline: true,
+    },
+    shapes: [
+      {
+        type: 'rectangle',
+        xref: 'x',
+        yref: 'y',
+        x0: 0.6,
+        x1: 16.6,
+        y0: 0,
+        y1: 3,
+        fillcolor: '#d3d3d3',
+        opacity: 0.1,
+        line: {
+          width: 0,
+        },
+      },
+    ],
+    xaxis: {
+      title: 'ms / frame (16.67 = 60fps)',
+      autorange: true,
+      showgrid: true,
+      zeroline: true,
+      dtick: 16.67,
+      gridcolor: 'rgba(0,0,0,.1)',
+      gridwidth: 1,
+      zerolinecolor: 'rgba(0,0,0,.1)',
+      zerolinewidth: 1,
+      color: '#bbb',
+    },
+  }
+
+  const imgOpts = {
+    format: 'png',
+    width: 800,
+    height: 600,
+  }
+  const figure = { data: processedData, layout: layout }
+
+  return new Promise<string>((resolve, reject) => {
+    plotly.getImage(figure, imgOpts, async function (error: any, imageStream: any) {
+      if (error) return console.log(error)
+
+      var fileStream = await fs.createWriteStream(testFileName)
+
+      const writeStreamPromise = new Promise<void>((resolve, reject) => {
+        imageStream
+          .pipe(fileStream)
+          .on('finish', () => resolve())
+          .on('error', (error: any) => reject(error))
+      })
+
+      await writeStreamPromise
+      const path1 = path.resolve(testFileName)
+      const path2 = path.resolve('frameimages')
+      await moveFile(path1, path2 + '/' + testFileName)
+      resolve(path2 + '/' + testFileName)
+    })
+  })
+}
+
+async function createDetailResultsPng(
+  title: string,
   frameTimesArray: Array<number>,
   testFileName: string,
   frameData: {
@@ -266,11 +374,7 @@ async function createTestPng(
   }
   const layout = {
     title: {
-      text: 'Frame Time Test - percentile: solid lines left to right 25%, 50%, 75%',
-      font: {
-        family: 'Courier New, monospace',
-        size: 10,
-      },
+      text: title,
       xref: 'paper',
       x: 0.05,
     },
