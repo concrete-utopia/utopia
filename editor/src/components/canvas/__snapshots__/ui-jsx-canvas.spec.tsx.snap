@@ -13006,8 +13006,8 @@ Array [
 exports[`UiJsxCanvas runtime errors throws an error! 1`] = `
 Array [
   Object {
-    "columnNumber": 62,
-    "lineNumber": 3,
+    "columnNumber": 2,
+    "lineNumber": 4,
     "message": "a is not defined",
     "name": "ReferenceError",
     "originalCode": Array [
@@ -13023,12 +13023,12 @@ Array [
       },
       ScriptLine {
         "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
-        "highlight": true,
+        "highlight": false,
         "lineNumber": 3,
       },
       ScriptLine {
         "content": "a.a // 16,1 this shall throw an error!",
-        "highlight": false,
+        "highlight": true,
         "lineNumber": 4,
       },
       ScriptLine {
@@ -13040,6 +13040,11 @@ Array [
         "content": "  return (<MyComp data-uid={'aaa'}/>)",
         "highlight": false,
         "lineNumber": 6,
+      },
+      ScriptLine {
+        "content": "}",
+        "highlight": false,
+        "lineNumber": 7,
       },
     ],
   },

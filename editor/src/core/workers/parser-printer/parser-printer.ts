@@ -1350,7 +1350,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         alreadyExistingUIDs,
         true,
         '',
-        false,
+        true,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
         combinedTopLevelArbitraryBlock = nodeParseSuccess.value

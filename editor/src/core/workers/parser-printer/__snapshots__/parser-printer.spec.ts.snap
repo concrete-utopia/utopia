@@ -77,20 +77,24 @@ Object {
       "cakeFn",
       "otherFn",
     ],
-    "javascript": "function cakeFn(n) {
+    "javascript": "
+function cakeFn(n) {
   return n
-}function otherFn(n) {
+}
+function otherFn(n) {
   return n
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAE4FA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AAC5GC,SAAOF,CAAPE;AAEDJ;;AAAAA,SAASK,OAATL,CAAiBE,CAAjBF,EAAoBG;AACnBC,SAAOF,CAAPE;AACFE",
+      "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
       "names": Array [
         "function",
         "cakeFn",
         "n",
         "{",
         "return",
+        "
+",
         "otherFn",
         "}",
       ],
@@ -523,7 +527,58 @@ export var whatever = (props) => {
 
 exports[`JSX parser parses fine with a circular dependency. 1`] = `
 Object {
-  "combinedTopLevelArbitraryBlock": null,
+  "combinedTopLevelArbitraryBlock": Object {
+    "comments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
+    "definedElsewhere": Array [],
+    "definedWithin": Array [
+      "a",
+      "b",
+    ],
+    "javascript": "
+const a = (n) => n > 0 ? n : b(10)
+const b = (n) => n > 0 ? n : a(10)",
+    "sourceMap": Object {
+      "file": "code.tsx",
+      "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+      "names": Array [
+        "const",
+        "a",
+        " ",
+        "(",
+        "n",
+        "0",
+        "b",
+        "10",
+      ],
+      "sources": Array [
+        "code.tsx",
+      ],
+      "sourcesContent": Array [
+        "import * as React from \\"react\\";
+import {
+  View
+} from \\"utopia-api\\";
+const a = (n) => n > 0 ? n : b(10)
+export var whatever = (props) => <View data-uid='aaa' />
+const b = (n) => n > 0 ? n : a(10)
+",
+      ],
+      "version": 3,
+    },
+    "transpiledJavascript": "var a = function a(n) {
+  return n > 0 ? n : b(10);
+};
+
+var b = function b(n) {
+  return n > 0 ? n : a(10);
+};
+return { a: a, b: b };",
+    "type": "ARBITRARY_JS_BLOCK",
+    "uniqueID": "",
+  },
   "exportsDetail": Object {
     "defaultExport": null,
     "namedExports": Object {
@@ -770,10 +825,11 @@ Object {
     "definedWithin": Array [
       "a",
     ],
-    "javascript": "const a = \\"cake\\"",
+    "javascript": "
+const a = \\"cake\\"",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AASqBA,IAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
       "names": Array [
         "const",
         "a",
