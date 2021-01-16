@@ -79,21 +79,18 @@ Object {
     ],
     "javascript": "function cakeFn(n) {
   return n
-}
-function otherFn(n) {
+}function otherFn(n) {
   return n
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+      "mappings": "AAE4FA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AAC5GC,SAAOF,CAAPE;AAEDJ;;AAAAA,SAASK,OAATL,CAAiBE,CAAjBF,EAAoBG;AACnBC,SAAOF,CAAPE;AACFE",
       "names": Array [
         "function",
         "cakeFn",
         "n",
         "{",
         "return",
-        "
-",
         "otherFn",
         "}",
       ],
@@ -232,13 +229,22 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "type": "IMPORT_STATEMENT",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "importStarAs": true,
       "importWithName": false,
       "imports": Array [],
       "module": "react",
-      "rawCode": "
-import * as React from 'react'",
+      "rawCode": "import * as React from 'react'",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "importStarAs": false,
@@ -253,9 +259,13 @@ import * as React from 'react'",
         "View",
       ],
       "module": "utopia-api",
-      "rawCode": "
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'",
+      "rawCode": "import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "comments": Object {
@@ -271,7 +281,7 @@ import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from '
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC",
+        "mappings": "AAE4FA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AAC5GC,SAAOF,CAAPE;AACFC",
         "names": Array [
           "function",
           "cakeFn",
@@ -312,6 +322,11 @@ return { cakeFn: cakeFn };",
       "uniqueID": "",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -325,7 +340,7 @@ return { cakeFn: cakeFn };",
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAMCA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
+        "mappings": "AAKEA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AACnBC,SAAOF,CAAPE;AACFC",
         "names": Array [
           "function",
           "otherFn",
@@ -366,7 +381,26 @@ return { otherFn: otherFn };",
       "uniqueID": "",
     },
     Object {
-      "arbitraryJSBlock": null,
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
+      "arbitraryJSBlock": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "definedElsewhere": Array [],
+        "definedWithin": Array [],
+        "javascript": "
+  ",
+        "sourceMap": null,
+        "transpiledJavascript": "
+  ",
+        "type": "ARBITRARY_JS_BLOCK",
+        "uniqueID": "",
+      },
       "blockOrExpression": "block",
       "comments": Object {
         "leadingComments": Array [],
@@ -477,6 +511,11 @@ export var whatever = (props) => {
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
     },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
   ],
   "type": "PARSE_SUCCESS",
 }
@@ -484,57 +523,7 @@ export var whatever = (props) => {
 
 exports[`JSX parser parses fine with a circular dependency. 1`] = `
 Object {
-  "combinedTopLevelArbitraryBlock": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
-    "definedElsewhere": Array [],
-    "definedWithin": Array [
-      "a",
-      "b",
-    ],
-    "javascript": "const a = (n) => n > 0 ? n : b(10)
-const b = (n) => n > 0 ? n : a(10)",
-    "sourceMap": Object {
-      "file": "code.tsx",
-      "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
-      "names": Array [
-        "const",
-        "a",
-        " ",
-        "(",
-        "n",
-        "0",
-        "b",
-        "10",
-      ],
-      "sources": Array [
-        "code.tsx",
-      ],
-      "sourcesContent": Array [
-        "import * as React from \\"react\\";
-import {
-  View
-} from \\"utopia-api\\";
-const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid='aaa' />
-const b = (n) => n > 0 ? n : a(10)
-",
-      ],
-      "version": 3,
-    },
-    "transpiledJavascript": "var a = function a(n) {
-  return n > 0 ? n : b(10);
-};
-
-var b = function b(n) {
-  return n > 0 ? n : a(10);
-};
-return { a: a, b: b };",
-    "type": "ARBITRARY_JS_BLOCK",
-    "uniqueID": "",
-  },
+  "combinedTopLevelArbitraryBlock": null,
   "exportsDetail": Object {
     "defaultExport": null,
     "namedExports": Object {
@@ -588,17 +577,26 @@ return { a: a, b: b };",
       "type": "IMPORT_STATEMENT",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "importStarAs": false,
       "importWithName": false,
       "imports": Array [
         "View",
       ],
       "module": "utopia-api",
-      "rawCode": "
-import {
+      "rawCode": "import {
   View
 } from \\"utopia-api\\";",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "comments": Object {
@@ -614,7 +612,7 @@ import {
       "javascript": "const a = (n) => n > 0 ? n : b(10)",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+        "mappings": "AAGqBA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
         "names": Array [
           "const",
           "a",
@@ -646,6 +644,11 @@ const b = (n) => n > 0 ? n : a(10)
 return { a: a };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "arbitraryJSBlock": null,
@@ -695,6 +698,11 @@ return { a: a };",
       "usedInReactDOMRender": false,
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -708,7 +716,7 @@ return { a: a };",
       "javascript": "const b = (n) => n > 0 ? n : a(10)",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAMCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+        "mappings": "AAKyDA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
         "names": Array [
           "const",
           "b",
@@ -741,6 +749,11 @@ return { b: b };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
     },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
   ],
   "type": "PARSE_SUCCESS",
 }
@@ -760,7 +773,7 @@ Object {
     "javascript": "const a = \\"cake\\"",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AASqBA,IAAMC,CAACC,GAAGC,MAAVH",
       "names": Array [
         "const",
         "a",
@@ -871,6 +884,11 @@ return { a: a };",
       "type": "IMPORT_STATEMENT",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "importStarAs": false,
       "importWithName": false,
       "imports": Array [
@@ -883,8 +901,7 @@ return { a: a };",
         "View",
       ],
       "module": "utopia-api",
-      "rawCode": "
-import {
+      "rawCode": "import {
   UtopiaUtils,
   Ellipse,
   Image,
@@ -894,6 +911,11 @@ import {
   View
 } from \\"utopia-api\\";",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "comments": Object {
@@ -907,7 +929,7 @@ import {
       "javascript": "const a = \\"cake\\"",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
+        "mappings": "AASqBA,IAAMC,CAACC,GAAGC,MAAVH",
         "names": Array [
           "const",
           "a",
@@ -940,6 +962,11 @@ export var App = (props) => <View data-uid='bbb'>
 return { a: a };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "arbitraryJSBlock": null,
@@ -1025,6 +1052,11 @@ export var App = (props) => <View data-uid='bbb'>
       },
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
   ],
   "type": "PARSE_SUCCESS",

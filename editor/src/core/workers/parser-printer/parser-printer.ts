@@ -114,12 +114,17 @@ import {
 } from './parser-printer-parsing'
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { ParserPrinterResultMessage } from './parser-printer-worker'
-import creator from './ts-creator'
 import { applyPrettier, PrettierConfig } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
-import { addCommentsToNode, emptyComments, ParsedComments } from './parser-printer-comments'
+import {
+  addCommentsToNode,
+  emptyComments,
+  getLeadingComments,
+  parsedComments,
+  ParsedComments,
+} from './parser-printer-comments'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -144,6 +149,24 @@ function getJSXAttributeComments(attribute: JSXAttribute): ParsedComments {
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled prop type ${JSON.stringify(attribute)}`)
+  }
+}
+
+function rawCodeToExpressionStatement(
+  rawCode: string,
+): { statement: TS.ExpressionStatement; sourceFile: TS.SourceFile } {
+  const sourceFile = TS.createSourceFile(
+    'temporary.tsx',
+    rawCode,
+    TS.ScriptTarget.Latest,
+    undefined,
+    TS.ScriptKind.TSX,
+  )
+  const topLevelStatement = sourceFile.statements[0]
+  if (topLevelStatement != null && TS.isExpressionStatement(topLevelStatement)) {
+    return { statement: topLevelStatement, sourceFile: sourceFile }
+  } else {
+    throw new Error(`Failed to find expression when parsing code: ${rawCode}`)
   }
 }
 
@@ -189,20 +212,7 @@ function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
         })
         return TS.createArrayLiteral(arrayExpressions)
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        // SP: This is quite truly the most spectacular fudge I've ever had to create in my entire career.
-        // Creates a representation of the AST that is code which executes the TS factory functions...
-        // ...Then evals it to produce the AST and drills into the result a little.
-        const createExpressionAsString = creator(attribute.javascript)
-        const newExpression = SafeFunction(
-          false,
-          { ts: TS, React: React, addCommentsToNode: addCommentsToNode },
-          `return ${createExpressionAsString}.expression`,
-          [],
-          (e) => {
-            throw e
-          },
-        )()
-        return newExpression
+        return rawCodeToExpressionStatement(attribute.javascript).statement.expression
       case 'ATTRIBUTE_FUNCTION_CALL':
         return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
       default:
@@ -274,9 +284,24 @@ function updateJSXElementsWithin(
 
   function processNode(node: TS.Node): TS.Node {
     if (TS.isJsxElement(node)) {
-      return streamlineInElementsWithin(node.openingElement.attributes, node)
+      const newNode = streamlineInElementsWithin(node.openingElement.attributes, node)
+      if (TS.isJsxElement(newNode)) {
+        return TS.updateJsxElement(
+          node,
+          newNode.openingElement,
+          newNode.children,
+          newNode.closingElement,
+        )
+      } else {
+        return newNode
+      }
     } else if (TS.isJsxSelfClosingElement(node)) {
-      return streamlineInElementsWithin(node.attributes, node)
+      const newNode = streamlineInElementsWithin(node.attributes, node)
+      if (TS.isJsxSelfClosingElement(newNode)) {
+        return TS.updateJsxSelfClosingElement(node, newNode.tagName, undefined, newNode.attributes)
+      } else {
+        return newNode
+      }
     } else {
       return node
     }
@@ -387,36 +412,28 @@ function jsxElementToExpression(
       }
     }
     case 'JSX_ARBITRARY_BLOCK': {
-      let createExpressionAsString: string
+      const { statement, sourceFile } = rawCodeToExpressionStatement(element.javascript)
+      const lastToken = statement.getLastToken(sourceFile)
+      const finalComments =
+        lastToken == null
+          ? emptyComments
+          : parsedComments([], getLeadingComments(element.javascript, lastToken))
 
-      if (element.javascript == '') {
-        // this appears as an empty {} inside the jsx.
-        createExpressionAsString = `ts.updateSourceFileNode(
-          ts.createSourceFile('temporary.tsx', '', ts.ScriptTarget.Latest),
-          [ts.createJsxExpression(
-            undefined,
-            undefined
-          )]
-        )`
-      } else {
-        createExpressionAsString = creator(element.javascript)
-      }
-      let newExpression = SafeFunction(
-        false,
-        { ts: TS, React: React, addCommentsToNode: addCommentsToNode },
-        `var node = ${createExpressionAsString}; return node.expression || node`,
-        [],
-        (e) => {
-          throw e
-        },
-      )()
-      newExpression = updateJSXElementsWithin(
-        newExpression,
+      const updatedStatement = updateJSXElementsWithin(
+        statement.expression,
         element.elementsWithin,
         imports,
         stripUIDs,
       )
-      return TS.createJsxExpression(undefined, newExpression)
+      addCommentsToNode(updatedStatement, finalComments)
+      const rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
+        TS.EmitHint.Unspecified,
+        updatedStatement,
+        sourceFile,
+      )
+
+      // By creating a `JsxText` element containing the raw code surrounded by braces, we can print the code directly
+      return TS.createJsxText(`{${rawCode}}`)
     }
     case 'JSX_FRAGMENT': {
       const children = element.children.map((child) => {
@@ -521,7 +538,6 @@ function printUtopiaJSXComponent(
 
       function bodyForFunction(): TS.Block {
         let statements: Array<TS.Statement> = []
-        let bodyBlock: TS.Block
         if (element.arbitraryJSBlock != null) {
           // I just punched a hole in the space time continuum with this cast to any.
           // Somehow it works, I assume because it really only cares about Nodes internally and
@@ -532,7 +548,7 @@ function printUtopiaJSXComponent(
         const returnStatement = TS.createReturn(jsxElementExpression)
         addCommentsToNode(returnStatement, element.returnStatementComments)
         statements.push(returnStatement)
-        return TS.createBlock(statements, true)
+        return TS.createBlock(statements, false)
       }
 
       function bodyForArrowFunction(): TS.ConciseBody {
@@ -1049,7 +1065,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           highlightBounds,
           alreadyExistingUIDs,
           true,
-          emptyComments,
+          '',
           false,
         )
         topLevelElements.push(
@@ -1333,7 +1349,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         highlightBounds,
         alreadyExistingUIDs,
         true,
-        emptyComments,
+        '',
         false,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {

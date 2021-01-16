@@ -12715,24 +12715,7 @@ exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
   \\"
->
-  <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"utopia-storyboard-uid\\"
-  >
-    hello!
-  </div>
-</div>
+></div>
 "
 `;
 
@@ -13023,8 +13006,8 @@ Array [
 exports[`UiJsxCanvas runtime errors throws an error! 1`] = `
 Array [
   Object {
-    "columnNumber": 2,
-    "lineNumber": 4,
+    "columnNumber": 62,
+    "lineNumber": 3,
     "message": "a is not defined",
     "name": "ReferenceError",
     "originalCode": Array [
@@ -13040,12 +13023,12 @@ Array [
       },
       ScriptLine {
         "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
-        "highlight": false,
+        "highlight": true,
         "lineNumber": 3,
       },
       ScriptLine {
         "content": "a.a // 16,1 this shall throw an error!",
-        "highlight": true,
+        "highlight": false,
         "lineNumber": 4,
       },
       ScriptLine {
@@ -13057,11 +13040,6 @@ Array [
         "content": "  return (<MyComp data-uid={'aaa'}/>)",
         "highlight": false,
         "lineNumber": 6,
-      },
-      ScriptLine {
-        "content": "}",
-        "highlight": false,
-        "lineNumber": 7,
       },
     ],
   },

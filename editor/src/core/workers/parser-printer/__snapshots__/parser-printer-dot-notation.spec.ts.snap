@@ -34,16 +34,40 @@ Array [
     "type": "IMPORT_STATEMENT",
   },
   Object {
+    "rawCode": "
+",
+    "type": "UNPARSED_CODE",
+  },
+  Object {
     "importStarAs": true,
     "importWithName": false,
     "imports": Array [],
     "module": "utopia-api",
-    "rawCode": "
-import * as Utopia from 'utopia-api'",
+    "rawCode": "import * as Utopia from 'utopia-api'",
     "type": "IMPORT_STATEMENT",
   },
   Object {
-    "arbitraryJSBlock": null,
+    "rawCode": "
+
+",
+    "type": "UNPARSED_CODE",
+  },
+  Object {
+    "arbitraryJSBlock": Object {
+      "comments": Object {
+        "leadingComments": Array [],
+        "trailingComments": Array [],
+      },
+      "definedElsewhere": Array [],
+      "definedWithin": Array [],
+      "javascript": "
+  ",
+      "sourceMap": null,
+      "transpiledJavascript": "
+  ",
+      "type": "ARBITRARY_JS_BLOCK",
+      "uniqueID": "",
+    },
     "blockOrExpression": "block",
     "comments": Object {
       "leadingComments": Array [],
@@ -158,6 +182,12 @@ export var storyboard = (props) => {
     "usedInReactDOMRender": false,
   },
   Object {
+    "rawCode": "
+
+",
+    "type": "UNPARSED_CODE",
+  },
+  Object {
     "comments": Object {
       "leadingComments": Array [],
       "trailingComments": Array [],
@@ -186,7 +216,7 @@ export var storyboard = (props) => {
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAOQA,IAAIC,UAAUC,GAAGC,SAAbF,UAAaE,CAACC,KAADD,EAAWE;AACjCC,SACEC,oBAACC,UAADD;AAAYE,gBAASC;AAArBH,KACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEc,IAAAA,SAASR,EAAES,GAFbf;AAGEgB,IAAAA,MAAMV,EAAER;AAAEmB,MAAAA,YAAYT,EAAEL;AAAhBL,KAHVE;AAIEH,IAAAA,KAAKS,EAAER;AAAEkB,MAAAA,MAAMR,EAAEV;AAAEoB,QAAAA,MAAMV,EAAEC,CAAVX;AAAaS,QAAAA,IAAIC,EAAEC,CAAnBX;AAAsBqB,QAAAA,KAAKX,EAAEC,CAA7BX;AAAgCY,QAAAA,GAAGF,EAAEC;AAArCX;AAAVA,KAJTE;AAKEE,gBAASC;AALXH,IADFA,CADFD;AAWFqB,CAZO3B",
+      "mappings": "AAKSA,IAAIC,UAAUC,GAAGC,SAAbF,UAAaE,CAACC,KAADD,EAAWE;AAClCC,SACEC,oBAACC,UAADD;AAAYE,gBAASC;AAArBH,KACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEc,IAAAA,SAASR,EAAES,GAFbf;AAGEgB,IAAAA,MAAMV,EAAER;AAAEmB,MAAAA,YAAYT,EAAEL;AAAhBL,KAHVE;AAIEH,IAAAA,KAAKS,EAAER;AAAEkB,MAAAA,MAAMR,EAAEV;AAAEoB,QAAAA,MAAMV,EAAEC,CAAVX;AAAaS,QAAAA,IAAIC,EAAEC,CAAnBX;AAAsBqB,QAAAA,KAAKX,EAAEC,CAA7BX;AAAgCY,QAAAA,GAAGF,EAAEC;AAArCX;AAAVA,KAJTE;AAKEE,gBAASC;AALXH,IADFA,CADFD;AAWFqB,CAZQ3B",
       "names": Array [
         "var",
         "storyboard",
@@ -273,6 +303,11 @@ export var storyboard = (props) => {
 return { storyboard: storyboard };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
+  },
+  Object {
+    "rawCode": "
+",
+    "type": "UNPARSED_CODE",
   },
 ]
 `;

@@ -18,8 +18,7 @@ Object {
   } else {
     return b(n - 1)
   }
-}
-function b(n) {
+}function b(n) {
   if (n <= 0) {
     return 0
   } else {
@@ -28,7 +27,7 @@ function b(n) {
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAICA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWFA;;AAEDX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
+      "mappings": "AAEoDA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AAC/DC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAaFX;;AAAAA,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACbC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
       "names": Array [
         "function",
         "a",
@@ -148,15 +147,7 @@ return { a: a, b: b };",
   "imports": Object {
     "react": Object {
       "comments": Object {
-        "leadingComments": Array [
-          Object {
-            "comment": "* @jsx jsx ",
-            "pos": 0,
-            "rawText": "/** @jsx jsx */",
-            "trailingNewLine": true,
-            "type": "MULTI_LINE_COMMENT",
-          },
-        ],
+        "leadingComments": Array [],
         "trailingComments": Array [],
       },
       "importedAs": "React",
@@ -189,13 +180,22 @@ return { a: a, b: b };",
   "jsxFactoryFunction": "jsx",
   "topLevelElements": Array [
     Object {
+      "rawCode": "/** @jsx jsx */
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "importStarAs": true,
       "importWithName": false,
       "imports": Array [],
       "module": "react",
-      "rawCode": "/** @jsx jsx */
-import * as React from 'react'",
+      "rawCode": "import * as React from 'react'",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "importStarAs": false,
@@ -206,9 +206,14 @@ import * as React from 'react'",
         "jsx",
       ],
       "module": "utopia-api",
-      "rawCode": "
-import { Scene, Storyboard, jsx } from 'utopia-api'",
+      "rawCode": "import { Scene, Storyboard, jsx } from 'utopia-api'",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "comments": Object {
@@ -230,7 +235,7 @@ import { Scene, Storyboard, jsx } from 'utopia-api'",
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAICA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
+        "mappings": "AAEoDA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AAC/DC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
         "names": Array [
           "function",
           "a",
@@ -306,7 +311,27 @@ return { a: a };",
       "uniqueID": "",
     },
     Object {
-      "arbitraryJSBlock": null,
+      "rawCode": "
+
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
+      "arbitraryJSBlock": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "definedElsewhere": Array [],
+        "definedWithin": Array [],
+        "javascript": "
+  ",
+        "sourceMap": null,
+        "transpiledJavascript": "
+  ",
+        "type": "ARBITRARY_JS_BLOCK",
+        "uniqueID": "",
+      },
       "blockOrExpression": "block",
       "comments": Object {
         "leadingComments": Array [],
@@ -509,6 +534,12 @@ export var storyboard = (
       "usedInReactDOMRender": false,
     },
     Object {
+      "rawCode": "
+
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -528,7 +559,7 @@ export var storyboard = (
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAsBCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
+        "mappings": "AAoBEA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACbC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
         "names": Array [
           "function",
           "b",
@@ -602,6 +633,12 @@ export var storyboard = (
 return { b: b };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
+    },
+    Object {
+      "rawCode": "
+
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "arbitraryJSBlock": null,
