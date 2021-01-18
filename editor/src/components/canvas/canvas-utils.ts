@@ -170,6 +170,8 @@ import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
 import { openFileTab } from '../editor/store/editor-tabs'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import { getAllTargetsAtPoint } from './dom-lookup'
+import { WindowMousePositionRaw } from '../../templates/editor-canvas'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -266,7 +268,11 @@ export function clearDragState(
 ): EditorState {
   let result: EditorState = model
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result, false)
+    const producedTransientCanvasState = produceCanvasTransientState(
+      derived.canvas.transientState.selectedViews,
+      result,
+      false,
+    )
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -1542,6 +1548,7 @@ export function produceResizeSingleSelectCanvasTransientState(
 }
 
 export function produceCanvasTransientState(
+  previousCanvasTransientSelectedViews: Array<TemplatePath>,
   editorState: EditorState,
   preventAnimations: boolean,
 ): TransientCanvasState {
@@ -1615,6 +1622,7 @@ export function produceCanvasTransientState(
               switch (dragState.type) {
                 case 'MOVE_DRAG_STATE':
                   return produceMoveTransientCanvasState(
+                    previousCanvasTransientSelectedViews,
                     editorState,
                     dragState,
                     parseSuccess,
@@ -1711,25 +1719,18 @@ export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<Tem
 }
 
 function getReparentTargetAtPosition(
-  editorState: EditorState,
+  selectedViews: Array<TemplatePath>,
   position: CanvasPoint,
 ): TemplatePath | undefined {
-  const allTargets = Canvas.getAllTargetsAtPoint(
-    editorState,
-    position,
-    [TargetSearchType.All],
-    false,
-    'loose',
-  )
+  const allTargets = getAllTargetsAtPoint(WindowMousePositionRaw)
   // filtering for non-selected views from alltargets
   return R.head(
-    allTargets.filter((target) =>
-      editorState.selectedViews.every((view) => !TP.pathsEqual(view, target)),
-    ),
+    allTargets.filter((target) => selectedViews.every((view) => !TP.pathsEqual(view, target))),
   )
 }
 
 export function getReparentTarget(
+  selectedViews: Array<TemplatePath>,
   editorState: EditorState,
   toReparent: Array<TemplatePath>,
   position: CanvasPoint,
@@ -1737,7 +1738,7 @@ export function getReparentTarget(
   shouldReparent: boolean
   newParent: TemplatePath | null
 } {
-  const result = getReparentTargetAtPosition(editorState, position)
+  const result = getReparentTargetAtPosition(selectedViews, position)
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(
     toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadataKILLME, view)),
@@ -2029,6 +2030,7 @@ function preventAnimationsOnTargets(
 }
 
 function produceMoveTransientCanvasState(
+  previousCanvasTransientSelectedViews: Array<TemplatePath>,
   editorState: EditorState,
   dragState: MoveDragState,
   parseSuccess: ParseSuccess,
@@ -2054,6 +2056,7 @@ function produceMoveTransientCanvasState(
 
   if (dragState.reparent) {
     const reparentTarget = getReparentTarget(
+      previousCanvasTransientSelectedViews,
       editorState,
       elementsToTarget,
       dragState.canvasPosition,
