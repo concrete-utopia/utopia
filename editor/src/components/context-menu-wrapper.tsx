@@ -85,6 +85,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
         disabled={!item.enabled}
         // eslint-disable-next-line react/jsx-no-bind
         onClick={({event}: {event: React.MouseEvent<HTMLElement>}) => {
+          event.stopPropagation()
           item.action(this.props.getData(), this.props.dispatch, event.nativeEvent)
           contextMenu.hideAll()
         }}
