@@ -14,6 +14,8 @@ export interface GitRepoWithRevision {
   pathsToIgnore: Array<string>
 }
 
+export const githubProjectsFileFilters: Array<string> = ['**/__tests__']
+
 export const githubProjects: Array<GitRepoWithRevision> = [
   {
     name: 'react-three-flex-examples',
@@ -34,14 +36,14 @@ export const githubProjects: Array<GitRepoWithRevision> = [
     username: 'utopia-test',
     repositoryName: 'ant-design',
     revision: '739f87ed3dcf613214e7504cf712ac9f1c03d315',
-    pathsToIgnore: [],
+    pathsToIgnore: ['tests'],
   },
   {
     name: 'react-select',
     username: 'JedWatson',
     repositoryName: 'react-select',
     revision: 'd1e660c6b261d7fd60a85a6eca2ee9e3e0348ea2',
-    pathsToIgnore: ['__tests__'],
+    pathsToIgnore: [],
   },
   {
     name: 'react-data-grid',
