@@ -449,7 +449,7 @@ export function jsxAttributeNestedArrayArbitrary(
 export function jsxPropertyAssignmentArbitrary(depth: number): Arbitrary<JSXPropertyAssignment> {
   return FastCheck.tuple(lowercaseStringArbitrary(), jsxAttributeArbitrary(depth)).map(
     ([key, attribute]) => {
-      return jsxPropertyAssignment(key, attribute, emptyComments)
+      return jsxPropertyAssignment(key, attribute, emptyComments, emptyComments)
     },
   )
 }

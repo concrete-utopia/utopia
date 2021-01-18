@@ -20,7 +20,12 @@ import { ModifiableAttribute } from './jsx-attributes'
 import * as TP from './template-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
-import { emptyComments, ParsedComments } from '../workers/parser-printer/parser-printer-comments'
+import {
+  emptyComments,
+  isParsedCommentsEmpty,
+  ParsedComments,
+} from '../workers/parser-printer/parser-printer-comments'
+import { MapLike } from 'typescript'
 
 interface BaseComment {
   comment: string
@@ -172,18 +177,21 @@ export interface JSXPropertyAssignment extends WithComments {
   type: 'PROPERTY_ASSIGNMENT'
   key: string
   value: JSXAttribute
+  keyComments: ParsedComments
 }
 
 export function jsxPropertyAssignment(
   key: string,
   value: JSXAttribute,
   comments: ParsedComments,
+  keyComments: ParsedComments,
 ): JSXPropertyAssignment {
   return {
     type: 'PROPERTY_ASSIGNMENT',
     key: key,
     value: value,
     comments: comments,
+    keyComments: keyComments,
   }
 }
 
@@ -220,7 +228,7 @@ export function jsxAttributeNestedObjectSimple(
   return {
     type: 'ATTRIBUTE_NESTED_OBJECT',
     content: Object.keys(content).map((key) =>
-      jsxPropertyAssignment(key, content[key], emptyComments),
+      jsxPropertyAssignment(key, content[key], emptyComments, emptyComments),
     ),
     comments: comments,
   }
@@ -320,6 +328,97 @@ export function clearJSXAttributeOtherJavaScriptUniqueIDs(
   }
 }
 
+export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribute {
+  switch (attribute.type) {
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return attribute
+    case 'ATTRIBUTE_NESTED_ARRAY':
+      let simpleArray: Array<unknown> = []
+      let notSoSimpleArray: Array<JSXArrayElement> = []
+      let isSimpleArray: boolean = true
+      for (const elem of attribute.content) {
+        const simplifiedAttribute = simplifyAttributeIfPossible(elem.value)
+        switch (elem.type) {
+          case 'ARRAY_SPREAD':
+            notSoSimpleArray.push(jsxArraySpread(simplifiedAttribute, elem.comments))
+            break
+          case 'ARRAY_VALUE':
+            notSoSimpleArray.push(jsxArrayValue(simplifiedAttribute, elem.comments))
+            break
+          default:
+            const _exhaustiveCheck: never = elem
+            throw new Error(`Unhandled elem ${JSON.stringify(elem)}`)
+        }
+        if (
+          isSimpleArray &&
+          isParsedCommentsEmpty(elem.comments) &&
+          isJSXAttributeValue(simplifiedAttribute)
+        ) {
+          simpleArray.push(simplifiedAttribute.value)
+        } else {
+          isSimpleArray = false
+        }
+      }
+      if (isSimpleArray) {
+        return jsxAttributeValue(simpleArray, attribute.comments)
+      } else {
+        return jsxAttributeNestedArray(notSoSimpleArray, attribute.comments)
+      }
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      let simpleObject: MapLike<unknown> = {}
+      let notSoSimpleObject: Array<JSXProperty> = []
+      let isSimpleObject: boolean = true
+      for (const elem of attribute.content) {
+        const simplifiedAttribute = simplifyAttributeIfPossible(elem.value)
+        switch (elem.type) {
+          case 'SPREAD_ASSIGNMENT': {
+            notSoSimpleObject.push(jsxSpreadAssignment(simplifiedAttribute, elem.comments))
+            if (isSimpleObject) {
+              const noComments = isParsedCommentsEmpty(elem.comments)
+              if (isJSXAttributeValue(simplifiedAttribute) && noComments) {
+                simpleObject = {
+                  ...simpleObject,
+                  ...simplifiedAttribute.value,
+                }
+              } else {
+                isSimpleObject = false
+              }
+            }
+            break
+          }
+          case 'PROPERTY_ASSIGNMENT': {
+            notSoSimpleObject.push(
+              jsxPropertyAssignment(elem.key, simplifiedAttribute, elem.comments, elem.keyComments),
+            )
+            if (isSimpleObject) {
+              const noComments =
+                isParsedCommentsEmpty(elem.comments) && isParsedCommentsEmpty(elem.keyComments)
+              if (isJSXAttributeValue(simplifiedAttribute) && noComments) {
+                simpleObject[elem.key] = simplifiedAttribute.value
+              } else {
+                isSimpleObject = false
+              }
+            }
+            break
+          }
+          default:
+            const _exhaustiveCheck: never = elem
+            throw new Error(`Unhandled elem ${JSON.stringify(elem)}`)
+        }
+      }
+      if (isSimpleObject) {
+        return jsxAttributeValue(simpleObject, attribute.comments)
+      } else {
+        return jsxAttributeNestedObject(notSoSimpleObject, attribute.comments)
+      }
+    default:
+      const _exhaustiveCheck: never = attribute
+      throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
+  }
+}
+
 export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
@@ -331,15 +430,15 @@ export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
         attribute.content.map((elem) => {
           switch (elem.type) {
             case 'ARRAY_SPREAD':
-              return jsxArraySpread(clearAttributeUniqueIDs(elem.value), emptyComments)
+              return jsxArraySpread(clearAttributeUniqueIDs(elem.value), elem.comments)
             case 'ARRAY_VALUE':
-              return jsxArrayValue(clearAttributeUniqueIDs(elem.value), emptyComments)
+              return jsxArrayValue(clearAttributeUniqueIDs(elem.value), elem.comments)
             default:
               const _exhaustiveCheck: never = elem
               throw new Error(`Unhandled array element type ${JSON.stringify(elem)}`)
           }
         }),
-        emptyComments,
+        attribute.comments,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsxAttributeFunctionCall(
@@ -351,19 +450,20 @@ export function clearAttributeUniqueIDs(attribute: JSXAttribute): JSXAttribute {
         attribute.content.map((prop) => {
           switch (prop.type) {
             case 'SPREAD_ASSIGNMENT':
-              return jsxSpreadAssignment(clearAttributeUniqueIDs(prop.value), emptyComments)
+              return jsxSpreadAssignment(clearAttributeUniqueIDs(prop.value), prop.comments)
             case 'PROPERTY_ASSIGNMENT':
               return jsxPropertyAssignment(
                 prop.key,
                 clearAttributeUniqueIDs(prop.value),
-                emptyComments,
+                prop.comments,
+                prop.keyComments,
               )
             default:
               const _exhaustiveCheck: never = prop
               throw new Error(`Unhandled property type ${JSON.stringify(prop)}`)
           }
         }),
-        emptyComments,
+        attribute.comments,
       )
     default:
       const _exhaustiveCheck: never = attribute
@@ -416,6 +516,7 @@ export function clearAttributeSourceMaps(attribute: JSXAttribute): JSXAttribute 
               return jsxPropertyAssignment(
                 prop.key,
                 clearAttributeSourceMaps(prop.value),
+                emptyComments,
                 emptyComments,
               )
             default:

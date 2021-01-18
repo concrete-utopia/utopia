@@ -118,6 +118,8 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
         throw new Error('onMouseDown must be provided for mouse enabled controls')
       }
 
+      event.stopPropagation()
+
       this.props.onMouseDown(
         selectedViews,
         this.props.target,

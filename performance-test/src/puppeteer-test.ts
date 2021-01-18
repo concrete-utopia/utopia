@@ -1,16 +1,41 @@
 require('dotenv').config({ path: 'src/.env' })
 import puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
+import { timeLimitPromise } from './utils'
 const fs = require('fs')
 const path = require('path')
 const AWS = require('aws-sdk')
 const moveFile = require('move-file')
 const yn = require('yn')
 
-const BRANCH_NAME = process.env.BRANCH_NAME
+const BRANCH_NAME = process.env.BRANCH_NAME ? `?branch_name=${process.env.BRANCH_NAME}` : ''
 const PROJECT_ID = '5596ecdd'
-// const EDITOR_URL = `http://localhost:8000/p/39c427a7-hypnotic-king/`
-const EDITOR_URL = `https://utopia.pizza/project/${PROJECT_ID}/?branch_name=${BRANCH_NAME}`
+const EDITOR_URL =
+  process.env.EDITOR_URL ?? `https://utopia.pizza/project/${PROJECT_ID}/${BRANCH_NAME}`
+
+type FrameResult = {
+  title: string
+  timeSeries: Array<number>
+  analytics: {
+    frameMin: number
+    frameAvg: number
+    percentile25: number | undefined
+    percentile50: number | undefined
+    percentile75: number | undefined
+  }
+}
+
+const EmptyResult: FrameResult = {
+  title: '',
+  timeSeries: [],
+  analytics: {
+    frameMin: 0,
+    frameAvg: 0,
+    percentile25: undefined,
+    percentile50: undefined,
+    percentile75: undefined,
+  },
+}
 
 // this is the same as utils.ts@defer
 function defer() {
@@ -25,19 +50,34 @@ function defer() {
   return promise
 }
 
-function consoleDoneMessage(page: puppeteer.Page) {
-  return new Promise<void>((resolve, reject) => {
+function consoleDoneMessage(
+  page: puppeteer.Page,
+  expectedConsoleMessage: string,
+  errorMessage?: string,
+): Promise<void> {
+  const consoleDonePromise = new Promise<void>((resolve, reject) => {
     page.on('console', (message) => {
-      if (message.text().includes('SCROLL_TEST_FINISHED')) {
+      if (
+        message.text().includes(expectedConsoleMessage) ||
+        (errorMessage != null && message.text().includes(errorMessage))
+      ) {
         // the editor will console.info('SCROLL_TEST_FINISHED') when the scrolling test is complete.
         // we wait until we see this console log and then we resolve the Promise
         resolve()
       }
     })
   })
+  return timeLimitPromise(
+    consoleDonePromise,
+    120000,
+    `Missing console message ${expectedConsoleMessage} in test browser.`,
+  )
 }
 
-export const testScrollingPerformance = async function () {
+export const setupBrowser = async (): Promise<{
+  page: puppeteer.Page
+  browser: puppeteer.Browser
+}> => {
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS),
@@ -47,33 +87,111 @@ export const testScrollingPerformance = async function () {
   // page.on('console', (message) =>
   //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
   // )
+  console.info('loading editor at URL:', EDITOR_URL)
   await page.goto(EDITOR_URL)
+  return {
+    browser: browser,
+    page: page,
+  }
+}
+
+export const testPerformance = async function () {
+  let scrollResult = EmptyResult
+  let resizeResult = EmptyResult
+  let selectionResult = EmptyResult
+  const { page, browser } = await setupBrowser()
+  try {
+    selectionResult = await testSelectionPerformance(page)
+    await page.reload()
+    resizeResult = await testResizePerformance(page)
+    await page.reload()
+    scrollResult = await testScrollingPerformance(page)
+  } catch (e) {
+    throw new Error(`Error during measurements ${e}`)
+  } finally {
+    browser.close()
+  }
+  const summaryImage = await uploadSummaryImage([selectionResult, scrollResult, resizeResult])
+
+  console.info(
+    `::set-output name=perf-result:: ${scrollResult.title}: fastest ${scrollResult.analytics.frameMin}ms, average ${scrollResult.analytics.frameAvg}ms %0A ${resizeResult.title}: fastest ${resizeResult.analytics.frameMin}ms, average ${resizeResult.analytics.frameAvg}ms %0A ${selectionResult.title}: fastest ${selectionResult.analytics.frameMin}ms, average ${selectionResult.analytics.frameAvg}ms ![SummaryChart](${summaryImage})`,
+  )
+}
+
+export const testScrollingPerformance = async function (
+  page: puppeteer.Page,
+): Promise<FrameResult> {
   await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P S')]")
   await button!.click()
-  await consoleDoneMessage(page)
+  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
   const [button2] = await page.$x("//a[contains(., 'P S')]")
   await button2!.click()
-  await consoleDoneMessage(page)
+  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
   const [button3] = await page.$x("//a[contains(., 'P S')]")
   await button3!.click()
-  await consoleDoneMessage(page)
+  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
   await page.tracing.stop()
-  await browser.close()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'scroll_step_', 'Scroll Canvas')
+}
 
+export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
+  await page.waitForXPath("//a[contains(., 'P R')]")
+  // we run it twice without measurements to warm up the environment
+  const [button] = await page.$x("//a[contains(., 'P R')]")
+  await button!.click()
+
+  // select element using the navigator
+  const navigatorElement = await page.$('[class^="item-label-container"]')
+  await navigatorElement!.click()
+  const [button2] = await page.$x("//a[contains(., 'P R')]")
+  await button2!.click()
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ path: 'trace.json' })
+  const [button3] = await page.$x("//a[contains(., 'P R')]")
+  await button3!.click()
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+  await page.tracing.stop()
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'resize_step_', 'Resize')
+}
+
+export const testSelectionPerformance = async function (
+  page: puppeteer.Page,
+): Promise<FrameResult> {
+  await page.waitForTimeout(20000)
+  await page.waitForXPath("//a[contains(., 'P E')]")
+  // we run it twice without measurements to warm up the environment
+  const [button] = await page.$x("//a[contains(., 'P E')]")
+  await button!.click()
+  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  // and then we run the test for a third time, this time running tracing
+  await page.tracing.start({ path: 'trace.json' })
+  const [button2] = await page.$x("//a[contains(., 'P E')]")
+  await button2!.click()
+  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  await page.tracing.stop()
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'select_step_', 'Selection')
+}
+
+const getFrameData = (traceJson: any, markNamePrefix: string, title: string): FrameResult => {
   const frameTimeEvents: any[] = traceJson.traceEvents.filter((e: any) =>
-    e.name.startsWith('scroll_step_'),
+    e.name.startsWith(markNamePrefix),
   )
   let frameTimes: Array<number> = []
   let lastFrameTimestamp: number | null = null
   let totalFrameTimes = 0
   frameTimeEvents.forEach((fte) => {
-    const frameID = fte.name.split('scroll_step_')[1] - 1
+    const frameID = fte.name.split(markNamePrefix)[1] - 1
     const frameTimestamp = fte.ts
     if (lastFrameTimestamp != null) {
       const frameDelta = (frameTimestamp - lastFrameTimestamp) / 1000
@@ -83,232 +201,117 @@ export const testScrollingPerformance = async function () {
     lastFrameTimestamp = frameTimestamp
   })
 
-  let frameTimesarray = frameTimes.map((x) => Number(x.toFixed(1)))
+  let frameTimesFixed = frameTimes.map((x) => Number(x.toFixed(1)))
 
-  const frameData = {
-    frameAvg: totalFrameTimes / frameTimesarray.length,
-    percentile25: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimesarray.length * 0.25)],
-    percentile50: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimesarray.length * 0.5)],
-    percentile75: frameTimesarray.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
+  const analytics = {
+    frameMin: Math.min(...frameTimesFixed),
+    frameAvg: Number((totalFrameTimes / frameTimesFixed.length).toFixed()),
+    percentile25: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.25)],
+    percentile50: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.5)],
+    percentile75: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
   }
+  return {
+    title: title,
+    analytics: analytics,
+    timeSeries: frameTimesFixed,
+  }
+}
 
+async function uploadSummaryImage(results: Array<FrameResult>): Promise<string> {
   const imageFileName = v4() + '.png'
-  const fileURI = await createTestPng(frameTimesarray, imageFileName, frameData)
-  const s3FileUrl = await uploadPNGtoAWS(fileURI)
+  const fileURI = await createSummaryPng(results, imageFileName, results.length)
 
-  console.info(
-    `::set-output name=perf-result:: "![TestFrameChart](${s3FileUrl}) - Total Frame Times: ${totalFrameTimes.toFixed(
-      1,
-    )}ms – average frame length: ${frameData.frameAvg.toFixed(1)}
-      – Q1: ${frameData.percentile25} – Q2: ${frameData.percentile50} – Q3: ${
-      frameData.percentile75
-    } – Median: ${frameData.percentile50} – frame times: [${frameTimesarray
-      .sort((a, b) => a - b)
-      .join(',')}]"`,
-  )
-}
-
-function valueOutsideCutoff(frameCutoff: Array<number>) {
-  let sum = 0
-  for (let i = 0; i < frameCutoff.length; i++) {
-    if (frameCutoff[i]! > 130) {
-      sum += 1
-    }
+  if (fileURI != null) {
+    const s3FileUrl = await uploadPNGtoAWS(fileURI)
+    return s3FileUrl
+  } else {
+    return ''
   }
-  return sum
 }
 
-async function createTestPng(
-  frameTimesArray: Array<number>,
+async function createSummaryPng(
+  results: Array<FrameResult>,
   testFileName: string,
-  frameData: {
-    frameAvg: number
-    percentile25: number | undefined
-    percentile50: number | undefined
-    percentile75: number | undefined
-  },
-) {
+  numberOfTests: number,
+): Promise<string | null> {
+  if (
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME == null ||
+    process.env.PERFORMANCE_GRAPHS_PLOTLY_API_KEY == null
+  ) {
+    console.info('Plotly summary generation skipped because of missing username or API key')
+    return null
+  }
+
   const plotly = require('plotly')(
     process.env.PERFORMANCE_GRAPHS_PLOTLY_USERNAME,
     process.env.PERFORMANCE_GRAPHS_PLOTLY_API_KEY,
   )
 
-  const n = valueOutsideCutoff(frameTimesArray).toString()
-
-  const trace = {
-    x: frameTimesArray.sort((a, b) => a - b),
-    name: 'Frame Times',
-    type: 'histogram',
-    xbins: {
-      size: 0.4,
-    },
+  const boxPlotConfig = (label: string, data: Array<number>) => {
+    return {
+      x: data,
+      y: label,
+      name: label,
+      type: 'box',
+      boxpoints: 'all',
+      whiskerwidth: 0.5,
+      fillcolor: 'cls',
+      marker: {
+        size: 1,
+      },
+      line: {
+        width: 1,
+      },
+    }
   }
+
+  const processedData = results.map((result) => boxPlotConfig(result.title, result.timeSeries))
+
   const layout = {
-    title: {
-      text: 'Frame Time Test - percentile: solid lines left to right 25%, 50%, 75%',
-      font: {
-        family: 'Courier New, monospace',
-        size: 10,
-      },
-      xref: 'paper',
-      x: 0.05,
-    },
-    xaxis: {
-      type: 'ms',
-      showgrid: true,
+    title: 'Automated Performance Test (100 runs, fastest counts)',
+    showlegend: false,
+    height: 60 * numberOfTests,
+    width: 720,
+    yaxis: {
+      automargin: true,
       zeroline: true,
-      showline: true,
-      range: [0, 134],
-      autotick: false,
-      ticks: 'outside',
-      tick0: 0,
-      dtick: 2,
-      ticklen: 4,
-      tickwidth: 2,
-      tickcolor: '#000',
-      title: {
-        text:
-          'Xaxis: Frame Times (ms) - red:60fps, black:30fps, green:15fps, yellow:7.5fps - Scrolling Test (n=' +
-          n +
-          ' Results not shown)',
-        font: {
-          family: 'Courier New, monospace',
-          size: 8,
-          color: '#7f7f7f',
-        },
-      },
-    }, // Fps lines
+    },
     shapes: [
       {
-        type: 'line',
+        type: 'rectangle',
         xref: 'x',
         yref: 'y',
-        x0: 16.6,
+        x0: 0.6,
         x1: 16.6,
         y0: 0,
-        y1: 100,
+        y1: 3,
+        fillcolor: '#d3d3d3',
+        opacity: 0.1,
         line: {
-          color: 'rgb(245, 66, 66)',
-          width: 1,
-          dash: 'dash',
-        },
-      },
-      {
-        type: 'line',
-        xref: 'x',
-        yref: 'y',
-        x0: 33.33,
-        x1: 33.33,
-        y0: 0,
-        y1: 100,
-        line: {
-          color: 'rgb(168, 50, 149)',
-          width: 1,
-          dash: 'dash',
-        },
-      },
-      {
-        type: 'line',
-        xref: 'x',
-        yref: 'y',
-        x0: 66.6,
-        x1: 66.6,
-        y0: 0,
-        y1: 100,
-        line: {
-          color: 'rgb(26, 255, 0)',
-          width: 1,
-          dash: 'dash',
-        },
-      },
-      {
-        type: 'line',
-        xref: 'x',
-        yref: 'y',
-        x0: 133.3,
-        x1: 133.3,
-        y0: 0,
-        y1: 100,
-        line: {
-          color: 'rgb(255, 239, 0)',
-          width: 1,
-          dash: 'dash',
-        },
-      },
-      {
-        //Quartile25 Line below
-        type: 'line',
-        xref: 'x',
-        yref: 'y',
-        x0: frameData.percentile25,
-        x1: frameData.percentile25,
-        y0: 0,
-        y1: 100,
-        line: {
-          color: 'rgb(0, 0, 0)',
-          width: 1,
-          dash: 'solid',
-        },
-      },
-      {
-        //Quartile50 Line below
-        type: 'line',
-        xref: 'x',
-        yref: 'y',
-        x0: frameData.percentile50,
-        x1: frameData.percentile50,
-        y0: 0,
-        y1: 100,
-        line: {
-          color: 'rgb(0, 0, 0)',
-          width: 1,
-          dash: 'solid',
-        },
-      },
-      {
-        //Quartile75 Lines below
-        type: 'line',
-        xref: 'x',
-        yref: 'y',
-        x0: frameData.percentile75,
-        x1: frameData.percentile75,
-        y0: 0,
-        y1: 100,
-        line: {
-          color: 'rgb(0, 0, 0)',
-          width: 1,
-          dash: 'solid',
+          width: 0,
         },
       },
     ],
-    yaxis: {
+    xaxis: {
+      title: 'ms / frame (16.67 = 60fps)',
+      autorange: true,
       showgrid: true,
       zeroline: true,
-      showline: true,
-      range: [0, 50],
-      autotick: false,
-      ticks: 'outside',
-      tick0: 0,
-      dtick: 5,
-      ticklen: 8,
-      tickwidth: 2,
-      tickcolor: '#000',
-      title: {
-        text: 'Frequency',
-        font: {
-          family: 'Courier New, monospace',
-          size: 10,
-          color: '#7f7f7f',
-        },
-      },
+      dtick: 16.67,
+      gridcolor: 'rgba(0,0,0,.1)',
+      gridwidth: 1,
+      zerolinecolor: 'rgba(0,0,0,.1)',
+      zerolinewidth: 1,
+      color: '#bbb',
     },
   }
+
   const imgOpts = {
     format: 'png',
     width: 800,
     height: 600,
   }
-  const figure = { data: [trace], layout: layout }
+  const figure = { data: processedData, layout: layout }
 
   return new Promise<string>((resolve, reject) => {
     plotly.getImage(figure, imgOpts, async function (error: any, imageStream: any) {
@@ -332,7 +335,7 @@ async function createTestPng(
   })
 }
 
-async function uploadPNGtoAWS(testFile: string) {
+async function uploadPNGtoAWS(testFile: string): Promise<string> {
   AWS.config.update({
     region: process.env.AWS_REGION,
     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,

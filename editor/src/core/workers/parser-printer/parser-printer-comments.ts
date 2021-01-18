@@ -12,6 +12,10 @@ export const emptyComments: ParsedComments = {
   trailingComments: [],
 }
 
+export function isParsedCommentsEmpty(comments: ParsedComments): boolean {
+  return comments.leadingComments.length === 0 && comments.trailingComments.length === 0
+}
+
 export function parsedComments(
   leadingComments: Array<Comment>,
   trailingComments: Array<Comment>,

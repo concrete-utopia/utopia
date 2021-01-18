@@ -7,7 +7,6 @@ import {
   testParseCode,
 } from './parser-printer.test-utils'
 import { applyPrettier } from './prettier-utils'
-import * as R from 'ramda'
 
 describe('parseCode', () => {
   it('should parse a component with comments in front of it', () => {
@@ -93,15 +92,23 @@ describe('Parsing and printing code with comments', () => {
     commentAfterObjectKey: '/* Comment after object key */',
     commentBeforeObjectValue: '/* Comment before object value */',
     commentAfterObjectValue: '/* Comment after object value */',
+    commentAfterObjectSeparator: '/* Comment after object separator */',
+    commentBeforeArrayValue: '/* Comment before array value */',
+    commentAfterArrayValue: '/* Comment after array value */',
+    commentAfterArraySeparator: '/* Comment after array separator */',
+    commentBeforeAllAttributes: '/* Comment before all attributes */',
+    commentInsideAttributes: '/* Comment inside attributes */',
+    commentAfterAllAttributes: '/* Comment after all attributes */',
   }
 
   const notYetSupported: Array<keyof typeof comments> = [
     'commentAfterImports',
-    'commentBeforeObjectKey',
-    'commentAfterObjectKey',
-    'commentBeforeObjectValue',
-    'commentAfterObjectValue',
+    'commentAfterObjectSeparator',
+    'commentAfterArraySeparator',
     'finalLineComment',
+    'commentBeforeAllAttributes',
+    'commentInsideAttributes',
+    'commentAfterAllAttributes',
   ]
 
   const code = `
@@ -132,12 +139,19 @@ describe('Parsing and printing code with comments', () => {
       ${comments.commentBeforeReturnStatement}
       return (
         <div
+          ${comments.commentBeforeAllAttributes}
           data-uid={'aaa'}
+          ${comments.commentInsideAttributes}
           someProp={${comments.commentAtStartOfJSXAttribute} 1000 ${comments.commentAtEndOfJSXAttribute}}
           someProp2={{
-            ${comments.commentBeforeObjectKey} someKey ${comments.commentAfterObjectKey} : ${comments.commentBeforeObjectValue} 'someValue' ${comments.commentAfterObjectValue},
+            ${comments.commentBeforeObjectKey} someKey ${comments.commentAfterObjectKey} : ${comments.commentBeforeObjectValue} 'someValue' ${comments.commentAfterObjectValue}, ${comments.commentAfterObjectSeparator}
             someKey2: 'someValue2'
           }}
+          someProp3={[
+            ${comments.commentBeforeArrayValue} 100 ${comments.commentAfterArrayValue} , ${comments.commentAfterArraySeparator}
+            200
+          ]}
+          ${comments.commentAfterAllAttributes}
           >
           {
             ${comments.commentAtStartOfJSXExpression}
@@ -171,4 +185,62 @@ describe('Parsing and printing code with comments', () => {
       }
     })
   }, comments)
+
+  it('comments are in the expected places', () => {
+    expect(parsedThenPrinted).toMatchInlineSnapshot(`
+      "// Comment before imports
+      import * as React from 'react'
+      // Comment inside imports
+      import { Cat } from './honestly-not-dogs' // Comment after imports
+
+      // Comment before top level JS block
+      function iAmAFunction() {
+        // Comment inside top level JS block
+        return 1
+      } // Comment after top level JS block
+
+      /* Inline comment before first const */ const a = 10 /* Inline comment after first const */
+      /* Inline comment before second const */ const b = 10 /* Inline comment after second const */
+
+      // Comment before component
+      var whatever = (props) => {
+        // Comment in component
+
+        // Comment before inner JS
+        function iAmAnInnerFunction() {
+          // Comment inside inner JS
+          return 2
+        } // Comment after inner JS
+        // Comment before return statement
+        return (
+          <div
+            data-uid='aaa'
+            someProp={/* Comment at start of JSX attribute */ 1000 /* Comment at end of JSX attribute */}
+            someProp2={{
+              /* Comment before object key */ someKey /* Comment after object key */:
+                /* Comment before object value */ 'someValue' /* Comment after object value */,
+              someKey2: 'someValue2',
+            }}
+            someProp3={[/* Comment before array value */ 100 /* Comment after array value */, 200]}
+          >
+            {
+              /* Comment at start of JSX expression */
+              true /* Comment inside JSX expression */ ? (
+                <div data-uid='de3' />
+              ) : (
+                <div data-uid='293' />
+              ) /* Comment at end of JSX expression */
+            }
+          </div>
+        ) // Comment after return statement
+      } // Comment after component
+
+      // Comment before exports
+      export const theFunction = iAmAFunction
+
+      // Comment inside exports
+      export const theComponent = whatever // Comment after exports
+      "
+    `)
+  })
 })

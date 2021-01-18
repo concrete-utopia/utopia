@@ -214,6 +214,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                           uniqueID: '6173f632-5d44-42bc-86a2-dc857c77d767',
                         },
                         comments: emptyComments,
+                        keyComments: emptyComments,
                       },
                     ],
                     comments: emptyComments,

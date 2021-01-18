@@ -101,7 +101,7 @@ export function useTriggerResizePerformanceTest(): () => void {
       if (framesPassed < 600) {
         requestAnimationFrame(step)
       } else {
-        await dispatch([CanvasActions.clearDragState(true)]).entireUpdateFinished
+        await dispatch([CanvasActions.clearDragState(false)]).entireUpdateFinished
         console.info('RESIZE_TEST_FINISHED')
       }
     }
@@ -118,7 +118,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   const allPaths = useRefEditorState((store) => store.derived.navigatorTargets)
   const trigger = React.useCallback(async () => {
     if (allPaths.current.length === 0) {
-      console.info('SELECT_TEST_MISSING_ELEMENTS')
+      console.info('SELECT_TEST_ERROR')
       return
     }
 
@@ -146,7 +146,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       )
 
       framesPassed++
-      if (framesPassed < 5) {
+      if (framesPassed < 25) {
         requestAnimationFrame(step)
       } else {
         console.info('SELECT_TEST_FINISHED')

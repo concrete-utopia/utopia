@@ -372,13 +372,21 @@ describe('ObjectControlDescription', () => {
         simpleValidKey,
         jsxAttributeValue(simpleValidContents, emptyComments),
         emptyComments,
+        emptyComments,
       ),
     ],
     emptyComments,
   )
   const simpleWrappedInvalidValues = [
     jsxAttributeNestedObject(
-      [jsxPropertyAssignment(simpleValidKey, jsxAttributeValue(0, emptyComments), emptyComments)],
+      [
+        jsxPropertyAssignment(
+          simpleValidKey,
+          jsxAttributeValue(0, emptyComments),
+          emptyComments,
+          emptyComments,
+        ),
+      ],
       emptyComments,
     ),
   ]
@@ -416,10 +424,12 @@ describe('ObjectControlDescription', () => {
               simpleValidKey,
               jsxAttributeValue(simpleValidContents, emptyComments),
               emptyComments,
+              emptyComments,
             ),
           ],
           emptyComments,
         ),
+        emptyComments,
         emptyComments,
       ),
     ],
@@ -436,10 +446,12 @@ describe('ObjectControlDescription', () => {
                 simpleValidKey,
                 jsxAttributeValue(0, emptyComments),
                 emptyComments,
+                emptyComments,
               ),
             ],
             emptyComments,
           ),
+          emptyComments,
           emptyComments,
         ),
       ],
