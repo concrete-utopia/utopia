@@ -2,7 +2,7 @@ import { printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from './prettier-utils'
 import {
   testParseCode,
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   elementsStructure,
 } from './parser-printer.test-utils'
 import { AwkwardFragmentsCode } from './parser-printer-fragments.test-utils'
@@ -11,7 +11,7 @@ import { isParseSuccess } from '../../shared/project-file-types'
 describe('JSX parser', () => {
   it('handle some weird nested fragments', () => {
     const code = applyPrettier(AwkwardFragmentsCode, false).formatted
-    const parseResult = clearParseResultUniqueIDs(testParseCode(code))
+    const parseResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(parseResult)) {
       expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
         "UNPARSED_CODE

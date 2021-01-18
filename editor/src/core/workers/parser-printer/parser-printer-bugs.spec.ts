@@ -7,7 +7,7 @@ import {
 } from '../../shared/element-template'
 import { forEachLeft, isRight } from '../../shared/either'
 import {
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   testParseCode,
   testParseThenPrint,
 } from './parser-printer.test-utils'

@@ -51,7 +51,7 @@ import { applyPrettier } from './prettier-utils'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
 import {
   clearParseResultPassTimes,
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   clearTopLevelElementUniqueIDsAndEmptyBlocks,
   ensureElementsHaveUID,
   JustImportViewAndReact,
@@ -80,7 +80,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -142,7 +142,7 @@ export var whatever = () => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={20} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -203,7 +203,7 @@ export function whatever(props) {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -269,7 +269,7 @@ export function whatever() {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -330,7 +330,7 @@ export default function whatever(props) {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -396,7 +396,7 @@ export default function whatever() {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -454,7 +454,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -525,7 +525,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake2 data-uid='aac' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -603,7 +603,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake2 data-uid='aac' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-      const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+      const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
       const cake2Attributes: JSXAttributes = {
         'data-uid': jsxAttributeValue('aac', emptyComments),
         style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -668,7 +668,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='111' data-label='Second cake' style={{backgroundColor: 'blue'}} left={props.rightOfTheCake[0].hat} right={10} top={-10} />
 </View>
 `
-      const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+      const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
       const firstCakeAttributes: JSXAttributes = {
         'data-uid': jsxAttributeValue('aab', emptyComments),
         'data-label': jsxAttributeValue('First cake', emptyComments),
@@ -748,7 +748,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red' }} left={props.leftOfTheCake[0].hat} right={20} top={-20} nullProp={null} undefinedProp={undefined} trueProp={true} falseProp={false} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue(
@@ -823,7 +823,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={getSizing(spacing)} right={20} top={-20} onClick={function(){console.log('click')}} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -963,7 +963,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1055,7 +1055,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1153,7 +1153,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1238,7 +1238,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={spacing} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1316,7 +1316,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       style: jsxAttributeNestedObjectSimple(
@@ -1389,7 +1389,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       colors: jsxAttributeNestedArray(
@@ -1465,7 +1465,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       left: jsxAttributeOtherJavaScript(
@@ -1535,7 +1535,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       left: jsxAttributeOtherJavaScript(
@@ -1605,7 +1605,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       left: jsxAttributeOtherJavaScript(
@@ -1682,7 +1682,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       left: jsxAttributeOtherJavaScript(
@@ -1752,7 +1752,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       style: jsxAttributeNestedObject(
@@ -1834,7 +1834,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} text={\`Count \${count}\`} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1916,7 +1916,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={use20 ? 20 : 10} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1997,7 +1997,7 @@ var mySet = new Set()
 export var whatever = (props) => <View data-uid='aaa'>
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [])
     const exported = utopiaJSXComponent(
       'whatever',
@@ -2055,7 +2055,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.left + spacing} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -2149,7 +2149,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <MyComp data-uid='aab' layout={{left: 100}} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const jsCode = `var MyComp = props => {
   return React.createElement(
     "div",
@@ -2251,7 +2251,7 @@ export var whatever = props => (
   </View>
 )
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
 
     const rootDivAttributes: JSXAttributes = {
       'data-uid': jsxAttributeValue('abc', emptyComments),
@@ -2416,7 +2416,7 @@ export var whatever = (props) => <View data-uid='aaa'>
 <cake data-uid='aab' style={{backgroundColor: 'red', color: [props.color, -200]}} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cake = jsxElement(
       'cake',
       {
@@ -2591,7 +2591,7 @@ export var App = (props) => <View data-uid='bbb'>
 </View>
 `
     const actualResult = testParseCode(code)
-    expect(clearParseResultUniqueIDs(actualResult)).toMatchSnapshot()
+    expect(clearParseResultUniqueIDsAndEmptyBlocks(actualResult)).toMatchSnapshot()
   })
 
   it('parses back and forth as a var', () => {
@@ -2754,7 +2754,7 @@ return { getSizing: getSizing, spacing: spacing };`
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -2846,7 +2846,7 @@ export var whatever = props => {
       false,
     ).formatted
     const parsedCode = testParseCode(code)
-    expect(clearParseResultUniqueIDs(parsedCode)).toMatchSnapshot()
+    expect(clearParseResultUniqueIDsAndEmptyBlocks(parsedCode)).toMatchSnapshot()
   })
   it('parses back and forth as a function, with an empty bracket jsx child {}', () => {
     const code = applyPrettier(
@@ -2978,7 +2978,7 @@ export var whatever = props => {
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported]),
@@ -3060,7 +3060,7 @@ export var whatever = props => {
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -3131,7 +3131,7 @@ export var whatever = props => {
   return n * 2;
 }
 return { test: test };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const imports = addImport(
       'cake',
       null,
@@ -3303,7 +3303,7 @@ return { test: test };`
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(components.map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -3332,7 +3332,7 @@ export var App = props => {
     </View>
   );
 };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -3396,7 +3396,7 @@ export var App = props => {
     <View data-uid='aaa'>cake</View>
   );
 };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -3446,7 +3446,7 @@ export var App = props => {
     </View>
   );
 };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -3552,7 +3552,7 @@ export var App = props => {
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       sampleImportsForTests,
       expect.arrayContaining([component].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
@@ -3610,7 +3610,7 @@ export var App = props => {
     </View>
   );
 };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const ellipse = jsxElement(
       'Ellipse',
       {
@@ -3746,7 +3746,7 @@ export var App = props => {
     <View data-uid='aaa' booleanProperty />
   )
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -3884,7 +3884,7 @@ export var whatever = props => {
   }
   return <div data-uid='aaa'></div>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const arbitraryBlockCode = `for (var n = 0; n != -1; n++) {
     const n2 = n * 2
   }
@@ -3956,7 +3956,7 @@ export var whatever = props => {
   }
   return <div data-uid='aaa'>{result}</div>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const arbitraryBlockCode = `let result = []
   for (var n = 0; n < 5; n++) {
     const n2 = n * 2
@@ -4039,7 +4039,7 @@ export var whatever = props => {
     })}
   </div>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
       return <div style={{left: n * 30, top: n * 30}} data-uid='bbb' />
     })`
@@ -4131,7 +4131,7 @@ export var whatever = props => {
     })}
   </div>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
       return <div style={{left: n * a, top: n * a}} data-uid='bbb' />
     })`
@@ -4234,7 +4234,7 @@ return { a: a };`,
 export var whatever = props => {
   return <svg data-uid='abc'/>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement('svg', { 'data-uid': jsxAttributeValue('abc', emptyComments) }, [])
     const exported = utopiaJSXComponent(
       'whatever',
@@ -4268,7 +4268,7 @@ const a = (n) => n > 0 ? n : b(10)
 export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(clearParseResultPassTimes(actualResult)).toMatchSnapshot()
   })
   it('corrects duplicated data-uid entries', () => {

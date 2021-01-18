@@ -243,7 +243,9 @@ function parseModifyPrint(
   )
 }
 
-export function clearParseResultUniqueIDs(parseResult: ParsedTextFile): ParsedTextFile {
+export function clearParseResultUniqueIDsAndEmptyBlocks(
+  parseResult: ParsedTextFile,
+): ParsedTextFile {
   return mapParsedTextFile((success) => {
     const updatedTopLevelElements = success.topLevelElements.map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -561,7 +563,7 @@ export function jsxElementChildArbitrary(): Arbitrary<JSXElementChild> {
 }
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
-  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2;', [], [], null, emptyComments))
+  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null, emptyComments))
 }
 
 export function arbitraryComments(): Arbitrary<ParsedComments> {

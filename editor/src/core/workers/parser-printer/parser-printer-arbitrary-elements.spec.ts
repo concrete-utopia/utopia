@@ -24,7 +24,7 @@ import {
 import { parseSuccess } from '../common/project-file-utils'
 import { applyPrettier } from './prettier-utils'
 import {
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   JustImportViewAndReact,
   testParseCode,
   testParseModifyPrint,
@@ -179,7 +179,7 @@ export var whatever = props => (
 </View>
 )
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
 
     const myComp = utopiaJSXComponent(
       'MyComp',
@@ -247,7 +247,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
       {
@@ -345,7 +345,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
       {
@@ -445,7 +445,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const originalMapJsCode = ` arr.map(([ n ]) => <View data-uid='aab' thing={n} /> ) `
     const mapJsCode = `arr.map(([n]) => <View data-uid='aab' thing={n} />);`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
@@ -544,7 +544,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
       {
@@ -635,7 +635,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const mapJsCode = `arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> )`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
   var _ref2 = babelHelpers.slicedToArray(_ref, 1),
@@ -734,7 +734,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
       {
@@ -825,7 +825,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const mapJsCode = `arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> )`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
   var _ref2 = babelHelpers.slicedToArray(_ref, 1),
@@ -955,7 +955,7 @@ export var storyboard = (
     />
   </Storyboard>
 )`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(actualResult).toMatchSnapshot()
   })
 })
