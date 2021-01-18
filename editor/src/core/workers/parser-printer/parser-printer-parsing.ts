@@ -1001,7 +1001,7 @@ function parseJSXArbitraryBlock(
   const expressionAndText = createExpressionAndText(
     jsxExpression.expression,
     expressionFullText,
-    jsxExpression.getStart(sourceFile, false),
+    jsxExpression.getFullStart() + 1,
   )
 
   return parseOtherJavaScript(
