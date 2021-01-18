@@ -1337,7 +1337,7 @@ export var whatever = (props) => {
     }
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const bgs = ['black', 'grey']
-const bg = bgs[0]`
+  const bg = bgs[0]`
     const transpiledJsCode = `var bgs = ['black', 'grey'];
 var bg = bgs[0];
 return { bgs: bgs, bg: bg };`
@@ -1481,7 +1481,7 @@ export var whatever = (props) => {
     }
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const a = 10
-const b = 20`
+  const b = 20`
     const transpiledJsCode = `var a = 10;
 var b = 20;
 return { a: a, b: b };`
@@ -1551,8 +1551,8 @@ export var whatever = (props) => {
     }
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const a = true
-const b = 10
-const c = 20`
+  const b = 10
+  const c = 20`
     const transpiledJsCode = `var a = true;
 var b = 10;
 var c = 20;
@@ -1698,7 +1698,7 @@ export var whatever = (props) => {
     }
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const a = 10
-const b = { a: a }`
+  const b = { a: a }`
     const transpiledJsCode = `var a = 10;
 var b = {
   a: a
@@ -2681,7 +2681,7 @@ export var App = (props) => <View data-uid='bbb'>
     )
     const jsCode1 = `function getSizing(n) {
   return 100 + n
-};`
+}`
     const transpiledJSCode1 = `function getSizing(n) {
   return 100 + n;
 }
@@ -2698,7 +2698,7 @@ return { getSizing: getSizing };`
       }),
       emptyComments,
     )
-    const jsCode2 = `var spacing = 20;`
+    const jsCode2 = `var spacing = 20`
     const transpiledJSCode2 = `var spacing = 20;
 return { spacing: spacing };`
     const arbitraryBlock2 = arbitraryJSBlock(
@@ -2715,8 +2715,8 @@ return { spacing: spacing };`
     )
     const combinedJSCode = `function getSizing(n) {
   return 100 + n
-};
-var spacing = 20;`
+}
+var spacing = 20`
     const transpiledcombinedJSCode = `function getSizing(n) {
   return 100 + n;
 }
@@ -2748,7 +2748,7 @@ return { getSizing: getSizing, spacing: spacing };`
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
-      printCodeOptions(false, true, true),
+      printCodeOptions(false, true, true, false, true),
       imports,
       [...topLevelElements],
       null,
@@ -4301,7 +4301,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
   it('inserts data-uid into elements as part of the parse', () => {
     function checkDataUIDsPopulated(printableProjectContent: PrintableProjectContent): boolean {
       const printedCode = printCode(
-        printCodeOptions(false, true, false),
+        printCodeOptions(false, true, false, false, true),
         printableProjectContent.imports,
         printableProjectContent.topLevelElements,
         printableProjectContent.jsxFactoryFunction,
@@ -4347,11 +4347,11 @@ import {
   View
 } from "utopia-api";
 
-console.log('hello!') // line 15 char 9
+console.log('hello!') // line 12 char 9
 
 export var App = props => {
   const a = 20;
-  const b = 40; // line 19 char 9
+  const b = 40; // line 16 char 9
 
   return (
     <View
@@ -4363,7 +4363,7 @@ export var App = props => {
         top: props.layout.top,
       }}
       data-uid="aaa"
-      arbitrary={console.log('hi')} // line 31, char 26
+      arbitrary={console.log('hi')} // line 28, char 26
     >
     </View>
   )
@@ -4415,9 +4415,8 @@ export var App = props => {
 
     const position = consumer.getOriginalPosition(transpiledLine, transpiledCharacter)
 
-    // TODO BALAZS we should test that the code is in col 9, but I just couldn't make it work :(
-    // expect(position).toEqual(expect.objectContaining({ line: 22, column: 9 }))
-    expect(position).toEqual(expect.objectContaining({ line: 16 }))
+    // FIXME This should be line 16 char 9 but I cannot get this to work
+    expect(position).toEqual(expect.objectContaining({ line: 17, column: 10 }))
   })
 
   it('maps a jsxAttributeOtherJavaScript correctly', () => {

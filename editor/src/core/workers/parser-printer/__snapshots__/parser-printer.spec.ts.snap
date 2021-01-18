@@ -77,8 +77,7 @@ Object {
       "cakeFn",
       "otherFn",
     ],
-    "javascript": "
-function cakeFn(n) {
+    "javascript": "function cakeFn(n) {
   return n
 }
 function otherFn(n) {
@@ -86,17 +85,15 @@ function otherFn(n) {
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+      "mappings": "AAICA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC;;AACAL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
       "names": Array [
         "function",
         "cakeFn",
         "n",
         "{",
         "return",
-        "
-",
-        "otherFn",
         "}",
+        "otherFn",
       ],
       "sources": Array [
         "code.tsx",
@@ -285,7 +282,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAE4FA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AAC5GC,SAAOF,CAAPE;AACFC",
+        "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC",
         "names": Array [
           "function",
           "cakeFn",
@@ -344,7 +341,7 @@ return { cakeFn: cakeFn };",
 }",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAKEA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AACnBC,SAAOF,CAAPE;AACFC",
+        "mappings": "AAMCA,SAASC,OAATD,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
         "names": Array [
           "function",
           "otherFn",
@@ -390,21 +387,7 @@ return { otherFn: otherFn };",
       "type": "UNPARSED_CODE",
     },
     Object {
-      "arbitraryJSBlock": Object {
-        "comments": Object {
-          "leadingComments": Array [],
-          "trailingComments": Array [],
-        },
-        "definedElsewhere": Array [],
-        "definedWithin": Array [],
-        "javascript": "
-  ",
-        "sourceMap": null,
-        "transpiledJavascript": "
-  ",
-        "type": "ARBITRARY_JS_BLOCK",
-        "uniqueID": "",
-      },
+      "arbitraryJSBlock": null,
       "blockOrExpression": "block",
       "comments": Object {
         "leadingComments": Array [],
@@ -537,12 +520,11 @@ Object {
       "a",
       "b",
     ],
-    "javascript": "
-const a = (n) => n > 0 ? n : b(10)
+    "javascript": "const a = (n) => n > 0 ? n : b(10)
 const b = (n) => n > 0 ? n : a(10)",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+      "mappings": "AAKCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
       "names": Array [
         "const",
         "a",
@@ -667,7 +649,7 @@ return { a: a, b: b };",
       "javascript": "const a = (n) => n > 0 ? n : b(10)",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAGqBA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+        "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
         "names": Array [
           "const",
           "a",
@@ -771,7 +753,7 @@ return { a: a };",
       "javascript": "const b = (n) => n > 0 ? n : a(10)",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAKyDA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+        "mappings": "AAMCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
         "names": Array [
           "const",
           "b",
@@ -825,11 +807,10 @@ Object {
     "definedWithin": Array [
       "a",
     ],
-    "javascript": "
-const a = \\"cake\\"",
+    "javascript": "const a = \\"cake\\"",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AAWCA,IAAMC,CAACC,GAAGC,MAAVH",
       "names": Array [
         "const",
         "a",
@@ -985,7 +966,7 @@ return { a: a };",
       "javascript": "const a = \\"cake\\"",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AASqBA,IAAMC,CAACC,GAAGC,MAAVH",
+        "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
         "names": Array [
           "const",
           "a",

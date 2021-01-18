@@ -866,7 +866,10 @@ function parseOtherJavaScript<E extends TS.Node, T>(
         addIfDefinedElsewhere([], expression, false)
         const expressionText = expressionAndText.text
         if (expressionText.length > 0) {
-          const { line, character } = TS.getLineAndCharacterOfPosition(sourceFile, expression.pos)
+          const { line, character } = TS.getLineAndCharacterOfPosition(
+            sourceFile,
+            expressionAndText.startPos,
+          )
           const expressionNode = turnCodeSnippetIntoSourceMapNodes(
             sourceFile.fileName,
             line,
@@ -998,7 +1001,7 @@ function parseJSXArbitraryBlock(
   const expressionAndText = createExpressionAndText(
     jsxExpression.expression,
     expressionFullText,
-    jsxExpression.getFullStart() + 1,
+    jsxExpression.getStart(sourceFile, false),
   )
 
   return parseOtherJavaScript(

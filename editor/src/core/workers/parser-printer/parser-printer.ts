@@ -477,6 +477,7 @@ export interface PrintCodeOptions {
   pretty: boolean
   includeElementMetadata: boolean
   stripUIDs: boolean
+  insertLinesBetweenStatements: boolean
 }
 
 export function printCodeOptions(
@@ -484,12 +485,14 @@ export function printCodeOptions(
   pretty: boolean,
   includeElementMetadata: boolean,
   stripUIDs: boolean = false,
+  insertLinesBetweenStatements: boolean = false,
 ): PrintCodeOptions {
   return {
     forPreview: forPreview,
     pretty: pretty,
     includeElementMetadata: includeElementMetadata,
     stripUIDs: stripUIDs,
+    insertLinesBetweenStatements: insertLinesBetweenStatements,
   }
 }
 
@@ -555,7 +558,7 @@ function printUtopiaJSXComponent(
         const returnStatement = TS.createReturn(jsxElementExpression)
         addCommentsToNode(returnStatement, element.returnStatementComments)
         statements.push(returnStatement)
-        return TS.createBlock(statements, false)
+        return TS.createBlock(statements, printOptions.insertLinesBetweenStatements)
       }
 
       function bodyForArrowFunction(): TS.ConciseBody {
@@ -684,7 +687,11 @@ export const printCode = memoize(printCodeImpl, {
   maxSize: 1,
 })
 
-function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): string {
+function printStatements(
+  statements: Array<TS.Node>,
+  shouldPrettify: boolean,
+  insertLinesBetweenStatements: boolean,
+): string {
   const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
   const resultFile = TS.createSourceFile(
     'print.ts',
@@ -697,7 +704,7 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
   const printedParts: Array<string> = statements.map((statement) =>
     printer.printNode(TS.EmitHint.Unspecified, statement, resultFile),
   )
-  const typescriptPrintedResult = printedParts.join('')
+  const typescriptPrintedResult = printedParts.join(insertLinesBetweenStatements ? '\n' : '')
   let result: string
   if (shouldPrettify) {
     result = applyPrettier(typescriptPrintedResult, false).formatted
@@ -741,7 +748,13 @@ function printCodeImpl(
   detailOfExports: ExportsDetail,
 ): string {
   const importOrigins: Array<string> = Object.keys(imports)
-  let importDeclarations: Array<TS.ImportDeclaration> = []
+  let importDeclarations: Array<TS.Node> = []
+  function pushImportDeclaration(importDeclaration: TS.ImportDeclaration) {
+    // We have to explicitly insert a newline between declarations
+    importDeclarations.push(TS.createUnparsedSourceFile('\n'))
+    importDeclarations.push(importDeclaration)
+  }
+
   fastForEach(importOrigins, (importOrigin) => {
     const importForClause = imports[importOrigin]
     const matchingTopLevelElements: ImportStatement[] = topLevelElements.filter(
@@ -779,7 +792,7 @@ function printCodeImpl(
         TS.createStringLiteral(importOrigin),
       )
       addCommentsToNode(importDeclaration, importForClause.comments)
-      importDeclarations.push(importDeclaration)
+      pushImportDeclaration(importDeclaration)
     }
 
     const hasImportStarAs = matchingTopLevelElements.some((e) => e.importStarAs)
@@ -798,7 +811,7 @@ function printCodeImpl(
         TS.createStringLiteral(importOrigin),
       )
       addCommentsToNode(importDeclaration, importForClause.comments)
-      importDeclarations.push(importDeclaration)
+      pushImportDeclaration(importDeclaration)
     }
   })
 
@@ -813,7 +826,11 @@ function printCodeImpl(
     ...printTopLevelElements(printOptions, imports, afterLastImport, detailOfExports),
   ]
 
-  return printStatements(statementsToPrint, printOptions.pretty)
+  return printStatements(
+    statementsToPrint,
+    printOptions.pretty,
+    printOptions.insertLinesBetweenStatements,
+  )
 }
 
 interface PossibleCanvasContentsExpression {
@@ -1048,24 +1065,18 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     const alreadyExistingUIDs: Set<string> = emptySet() // collatedUIDs(sourceFile)
     let highlightBounds: HighlightBoundsForUids = {}
 
-    // As we hit chunks of arbitrary code, shove them here so we can
-    // handle them as a block of code.
-    let arbitraryNodes: Array<TS.Node> = []
     let allArbitraryNodes: Array<TS.Node> = []
 
     // Account for exported components.
     let detailOfExports: ExportsDetail = EmptyExportsDetail
 
-    function applyAndResetArbitraryNodes(): void {
-      const filteredArbitraryNodes = arbitraryNodes.filter(
-        (n) => n.kind !== TS.SyntaxKind.EndOfFileToken,
-      )
-      if (filteredArbitraryNodes.length > 0) {
+    function pushArbitraryNode(node: TS.Node) {
+      if (node.kind !== TS.SyntaxKind.EndOfFileToken) {
         const nodeParseResult = parseArbitraryNodes(
           sourceFile,
           sourceText,
           filename,
-          filteredArbitraryNodes,
+          [node],
           imports,
           topLevelNames,
           null,
@@ -1081,13 +1092,8 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             return parsed.value
           }, nodeParseResult),
         )
-        allArbitraryNodes = [...allArbitraryNodes, ...filteredArbitraryNodes]
+        allArbitraryNodes = [...allArbitraryNodes, node]
       }
-      arbitraryNodes = []
-    }
-
-    function pushArbitraryNode(node: TS.Node) {
-      arbitraryNodes.push(node)
     }
 
     function pushImportStatement(statement: ImportStatement) {
@@ -1284,7 +1290,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           }
           if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
             pushArbitraryNode(topLevelElement)
-            applyAndResetArbitraryNodes() // TODO Should we be doing this every time we push an arbitrary node?
           } else {
             highlightBounds = parsedContents.value.highlightBounds
             const contents = parsedContents.value.value
@@ -1292,7 +1297,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             // use that. Otherwise, we have to use the list retrieved during parsing
             propsUsed = propsUsed.length > 0 ? propsUsed : uniq(parsedContents.value.propsUsed)
             if (contents.elements.length === 1) {
-              applyAndResetArbitraryNodes()
               const exported = isExported(topLevelElement)
               // capture var vs let vs const vs function here
               const utopiaComponent = utopiaJSXComponent(
@@ -1332,8 +1336,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         }
       }
     }
-
-    applyAndResetArbitraryNodes()
 
     const sequencedTopLevelElements = sequenceEither(topLevelElements)
     if (isLeft(sequencedTopLevelElements)) {

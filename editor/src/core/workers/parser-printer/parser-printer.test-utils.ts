@@ -248,13 +248,14 @@ export function clearParseResultUniqueIDs(parseResult: ParsedTextFile): ParsedTe
     const updatedTopLevelElements = success.topLevelElements.map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
+    const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = optionalMap<
+      ArbitraryJSBlock,
+      ArbitraryJSBlock
+    >(clearTopLevelElementUniqueIDsAndEmptyBlocks, success.combinedTopLevelArbitraryBlock)
     return {
       ...success,
       topLevelElements: updatedTopLevelElements,
-      combinedTopLevelArbitraryBlock: optionalMap(
-        clearArbitraryJSBlockUniqueIDs,
-        success.combinedTopLevelArbitraryBlock,
-      ),
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   }, parseResult)
 }
@@ -928,6 +929,15 @@ export function forceParseSuccessFromFileOrFail(
   }
 }
 
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: UtopiaJSXComponent,
+): UtopiaJSXComponent
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: ArbitraryJSBlock,
+): ArbitraryJSBlock
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: TopLevelElement,
+): TopLevelElement
 export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
   element: TopLevelElement,
 ): TopLevelElement {
