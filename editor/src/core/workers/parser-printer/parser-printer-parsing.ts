@@ -937,7 +937,7 @@ export function parseAttributeOtherJavaScript(
 ): Either<string, WithParserMetadata<JSXAttributeOtherJavaScript>> {
   const expressionAndText = createExpressionAndText(
     expression,
-    expression.getFullText(sourceFile),
+    expression.getText(sourceFile),
     expression.getStart(sourceFile, false),
   )
   return parseOtherJavaScript(

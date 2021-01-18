@@ -154,7 +154,7 @@ function getJSXAttributeComments(attribute: JSXAttribute): ParsedComments {
 
 function rawCodeToExpressionStatement(
   rawCode: string,
-): { statement: TS.ExpressionStatement; sourceFile: TS.SourceFile } {
+): { statement: TS.ExpressionStatement; sourceFile: TS.SourceFile } | null {
   const sourceFile = TS.createSourceFile(
     'temporary.tsx',
     rawCode,
@@ -166,7 +166,7 @@ function rawCodeToExpressionStatement(
   if (topLevelStatement != null && TS.isExpressionStatement(topLevelStatement)) {
     return { statement: topLevelStatement, sourceFile: sourceFile }
   } else {
-    throw new Error(`Failed to find expression when parsing code: ${rawCode}`)
+    return null
   }
 }
 
@@ -212,7 +212,10 @@ function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
         })
         return TS.createArrayLiteral(arrayExpressions)
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        return rawCodeToExpressionStatement(attribute.javascript).statement.expression
+        const maybeExpressionStatement = rawCodeToExpressionStatement(attribute.javascript)
+        return maybeExpressionStatement == null
+          ? TS.createNull()
+          : maybeExpressionStatement.statement.expression
       case 'ATTRIBUTE_FUNCTION_CALL':
         return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
       default:
@@ -412,25 +415,29 @@ function jsxElementToExpression(
       }
     }
     case 'JSX_ARBITRARY_BLOCK': {
-      const { statement, sourceFile } = rawCodeToExpressionStatement(element.javascript)
-      const lastToken = statement.getLastToken(sourceFile)
-      const finalComments =
-        lastToken == null
-          ? emptyComments
-          : parsedComments([], getLeadingComments(element.javascript, lastToken))
+      const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
+      let rawCode: string = ''
+      if (maybeExpressionStatement != null) {
+        const { statement, sourceFile } = maybeExpressionStatement
+        const lastToken = statement.getLastToken(sourceFile)
+        const finalComments =
+          lastToken == null
+            ? emptyComments
+            : parsedComments([], getLeadingComments(element.javascript, lastToken))
 
-      const updatedStatement = updateJSXElementsWithin(
-        statement.expression,
-        element.elementsWithin,
-        imports,
-        stripUIDs,
-      )
-      addCommentsToNode(updatedStatement, finalComments)
-      const rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
-        TS.EmitHint.Unspecified,
-        updatedStatement,
-        sourceFile,
-      )
+        const updatedStatement = updateJSXElementsWithin(
+          statement.expression,
+          element.elementsWithin,
+          imports,
+          stripUIDs,
+        )
+        addCommentsToNode(updatedStatement, finalComments)
+        rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
+          TS.EmitHint.Unspecified,
+          updatedStatement,
+          sourceFile,
+        )
+      }
 
       // By creating a `JsxText` element containing the raw code surrounded by braces, we can print the code directly
       return TS.createJsxText(`{${rawCode}}`)
