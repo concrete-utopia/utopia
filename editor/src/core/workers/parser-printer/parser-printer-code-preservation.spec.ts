@@ -129,6 +129,7 @@ function Picker() {
   it('does not remove a trailing export default statement for anything else', () => {
     const code = applyPrettier(
       `const Thing = 1
+
       export default Thing`,
       false,
     ).formatted
@@ -175,6 +176,38 @@ function Picker() {
       export const whatever = (props) => {
         return <div data-uid='aaa' />
       }`,
+      false,
+    ).formatted
+
+    const parsedThenPrinted = parseThenPrint(code)
+    expect(parsedThenPrinted).toEqual(code)
+  })
+
+  it(`preserves arbitrary code around import and export statements`, () => {
+    const code = applyPrettier(
+      `
+      const a = 1
+      /** @jsx jsx */
+      import React, { useEffect, useRef } from 'react'
+      
+      const b = 2
+      import { extend, useThree, useFrame } from 'react-three-fiber'
+
+      const c = 3
+
+      export const whatever = (props) => {
+        return <div data-uid='aaa' />
+      }
+      
+      const d = 4
+
+      export { d }
+      
+      const e = 5
+      
+      export { e as SomethingElse }
+
+      const f = 6`,
       false,
     ).formatted
 

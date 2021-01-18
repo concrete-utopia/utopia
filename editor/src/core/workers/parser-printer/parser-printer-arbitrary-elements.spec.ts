@@ -63,8 +63,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     foldParsedTextFile(
       (failure) => fail(failure),
       (success) => {
-        const firstComponent = success.topLevelElements[0]
-        if (isUtopiaJSXComponent(firstComponent)) {
+        const firstComponent = success.topLevelElements.find(isUtopiaJSXComponent)
+        if (firstComponent != null) {
           const view = firstComponent.rootElement
           if (isJSXElement(view)) {
             expect(view.props['data-uid']).not.toBeNull()
@@ -145,8 +145,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     ).formatted
 
     testParseModifyPrint(code, expectedCode, (success: ParseSuccess) => {
-      const firstComponent = success.topLevelElements[0]
-      if (isUtopiaJSXComponent(firstComponent)) {
+      const firstComponent = success.topLevelElements.find(isUtopiaJSXComponent)
+      if (firstComponent != null) {
         const view = firstComponent.rootElement
         if (isJSXElement(view)) {
           const firstChild = view.children[0]
@@ -224,7 +224,7 @@ export var whatever = props => (
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -322,7 +322,7 @@ return { arr: arr };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -422,7 +422,7 @@ return { arr: arr };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -523,7 +523,7 @@ return { arr: arr };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -612,7 +612,7 @@ export var whatever = (props) => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -713,7 +713,7 @@ return { arr: arr };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -802,7 +802,7 @@ export var whatever = (props) => {
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -903,7 +903,7 @@ return { arr: arr };`
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
