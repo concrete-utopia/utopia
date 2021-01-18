@@ -196,7 +196,7 @@ interface MenuProviderProps {
 }
 
 export const MenuProvider: React.FunctionComponent<MenuProviderProps> = (props) => {
-  const { show } = useContextMenu({ id: props.id });
+  const { show } = useContextMenu({ id: props.id })
   const onContextMenu = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     show(event)
   }, [show])
