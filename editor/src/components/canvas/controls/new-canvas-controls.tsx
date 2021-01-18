@@ -158,7 +158,7 @@ export const NewCanvasControls = betterReactMemo(
           }
           id='canvas-controls'
           style={{
-            pointerEvents: 'none',
+            pointerEvents: 'initial',
             position: 'absolute',
             top: 0,
             left: 0,

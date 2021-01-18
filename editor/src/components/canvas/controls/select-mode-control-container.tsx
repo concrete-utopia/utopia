@@ -499,7 +499,7 @@ export class SelectModeControlContainer extends React.Component<
       <div
         data-testid='select-mode-control-container-root'
         style={{
-          pointerEvents: 'none',
+          pointerEvents: 'initial',
           position: 'absolute',
           left: 0,
           top: 0,
