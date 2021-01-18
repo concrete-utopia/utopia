@@ -1,10 +1,12 @@
 import * as React from 'react'
 import { Component as ReactComponent } from 'react'
-import { Menu, MenuProvider, Item, Submenu as SubmenuComponent, contextMenu } from 'react-contexify'
+import { Menu, Item, Submenu as SubmenuComponent, contextMenu, useContextMenu } from 'react-contexify'
 import RU from '../utils/react-utils'
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import * as fastDeepEquals from 'fast-deep-equal'
+import { useRefEditorState } from './editor/store/store-hook'
+import { showContextMenu } from './editor/actions/action-creators'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -19,10 +21,6 @@ export interface ContextMenuWrapperProps<T> {
 }
 
 export function openMenu(id: string, nativeEvent: MouseEvent) {
-  // this function directly opens the react-contexify menu, without going through the prescribed route of
-  // letting react-contexify open itself. in order to have symmetric functionality,
-  // we preventDefault() here, replicataing what happens inside 'react-contexify' as well
-  nativeEvent.preventDefault()
   contextMenu.show({
     id: id,
     event: nativeEvent,
@@ -86,16 +84,8 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
         key={`context-menu-${index}-item`}
         disabled={!item.enabled}
         // eslint-disable-next-line react/jsx-no-bind
-        onClick={({
-          event,
-          clickEvent,
-        }: {
-          event: MouseEvent
-          clickEvent: React.MouseEvent<HTMLDivElement>
-        }) => {
-          clickEvent.stopPropagation()
-          event.stopPropagation()
-          item.action(this.props.getData(), this.props.dispatch, event)
+        onClick={({event}: {event: React.MouseEvent<HTMLElement>}) => {
+          item.action(this.props.getData(), this.props.dispatch, event.nativeEvent)
           contextMenu.hideAll()
         }}
       >
@@ -109,7 +99,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
     const { id } = this.props
     const items = this.splitItemsForSubmenu(this.props.items)
     return (
-      <Menu key={id} id={id}>
+      <Menu key={id} id={id} animation={false}>
         {items.map((item: Submenu<T> | SimpleItem<T>, index: number) => {
           if (item.type === 'submenu') {
             return (
@@ -139,16 +129,11 @@ export class ContextMenuWrapper<T> extends ReactComponent<
         key={name}
         className={name + ' ' + (this.props.className || '')}
         style={this.props.style}
-        onContextMenu={(e) => {
-          e.stopPropagation()
-          e.preventDefault()
-        }}
       >
         <MenuProvider
           key={`${this.props.id}-provider`}
           id={this.props.id}
           style={this.props.providerStyle}
-          storeRef={false}
         >
           {this.props.children}
         </MenuProvider>
@@ -176,10 +161,6 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
           width: '100%',
           ...this.props.style,
         }}
-        onContextMenu={(e) => {
-          e.stopPropagation()
-          e.preventDefault()
-        }}
       >
         {this.props.items.length > 0 ? (
           <>
@@ -190,7 +171,6 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
                 width: '100%',
                 height: '100%',
               }}
-              storeRef={false}
             >
               {this.props.children}
             </MenuProvider>
@@ -207,4 +187,25 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
       </div>
     )
   }
+}
+
+interface MenuProviderProps {
+  id: string
+  style?: React.CSSProperties
+}
+
+export const MenuProvider: React.FunctionComponent<MenuProviderProps> = (props) => {
+  const { show } = useContextMenu({ id: props.id });
+  const onContextMenu = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    show(event)
+  }, [show])
+
+  return (
+    <div
+      style={props.style}
+      onContextMenu={onContextMenu}
+    >
+      {props.children}
+    </div>
+  )
 }
