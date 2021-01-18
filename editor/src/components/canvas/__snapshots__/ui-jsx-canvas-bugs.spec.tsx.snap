@@ -9,6 +9,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
   \\"
+  data-utopia-valid-paths=\\":32d :32d/0f1\\"
 >
   <div
     data-utopia-scene-id=\\"32d/0f1\\"

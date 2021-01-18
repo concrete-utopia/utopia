@@ -380,7 +380,7 @@ export function deeplyCreatedValue(path: PropertyPath, value: JSXAttribute): JSX
   const elements = PP.getElements(path)
   return elements.reduceRight((acc: JSXAttribute, propName) => {
     return jsxAttributeNestedObject(
-      [jsxPropertyAssignment(`${propName}`, acc, emptyComments)],
+      [jsxPropertyAssignment(`${propName}`, acc, emptyComments, emptyComments)],
       emptyComments,
     )
   }, value)
@@ -446,7 +446,7 @@ export function setJSXValueInAttributeAtPath(
           } else {
             // Convert the array to an object, which seems a little dubious.
             const newProps = attribute.content.map((attr, index) =>
-              jsxPropertyAssignment(`${index}`, attr.value, emptyComments),
+              jsxPropertyAssignment(`${index}`, attr.value, emptyComments, emptyComments),
             )
             return setJSXValueInAttributeAtPath(
               jsxAttributeNestedObject(newProps, emptyComments),
@@ -463,7 +463,9 @@ export function setJSXValueInAttributeAtPath(
           if (lastPartOfPath) {
             return right(
               jsxAttributeNestedObject(
-                newProps.concat(jsxPropertyAssignment(key, newAttrib, emptyComments)),
+                newProps.concat(
+                  jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments),
+                ),
                 emptyComments,
               ),
             )
@@ -477,7 +479,9 @@ export function setJSXValueInAttributeAtPath(
             return mapEither(
               (updated) =>
                 jsxAttributeNestedObject(
-                  newProps.concat(jsxPropertyAssignment(key, updated, emptyComments)),
+                  newProps.concat(
+                    jsxPropertyAssignment(key, updated, emptyComments, emptyComments),
+                  ),
                   emptyComments,
                 ),
               updatedNestedAttribute,
@@ -505,6 +509,7 @@ export function setJSXValueInAttributeAtPath(
                   jsxPropertyAssignment(
                     k,
                     jsxAttributeValue(currentValue[k], emptyComments),
+                    emptyComments,
                     emptyComments,
                   ),
                 ),
@@ -702,6 +707,7 @@ export function unsetJSXValueInAttributeAtPath(
                 newProps[existingAttributeIndex] = jsxPropertyAssignment(
                   key,
                   updated,
+                  emptyComments,
                   emptyComments,
                 )
                 return jsxAttributeNestedObject(newProps, emptyComments)

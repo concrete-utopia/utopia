@@ -350,6 +350,7 @@ function useGetSelectableViewsForSelectMode() {
 }
 
 export function useHighlightCallbacks(
+  allowHoverOnSelectedView: boolean,
   getHighlightableViews: (
     allElementsDirectlySelectable: boolean,
     childrenSelectable: boolean,
@@ -368,17 +369,18 @@ export function useHighlightCallbacks(
         selectableViews,
         windowPoint(point(event.clientX, event.clientY)),
       )
-      if (validTemplatePath == null) {
+      if (
+        validTemplatePath == null ||
+        (!allowHoverOnSelectedView && validTemplatePath.isSelected) // we remove highlights if the hovered element is selected
+      ) {
         maybeClearHighlightsOnHoverEnd()
       } else if (!TP.pathsEqual(validTemplatePath.templatePath, previousTargetUnderPoint.current)) {
-        if (!validTemplatePath.isSelected) {
-          // do not highlight selected view
-          maybeHighlightOnHover(validTemplatePath.templatePath)
-        }
+        maybeHighlightOnHover(validTemplatePath.templatePath)
       }
       previousTargetUnderPoint.current = validTemplatePath?.templatePath ?? null
     },
     [
+      allowHoverOnSelectedView,
       maybeClearHighlightsOnHoverEnd,
       maybeHighlightOnHover,
       getHighlightableViews,
@@ -402,7 +404,7 @@ export function useSelectModeSelectAndHover(
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
-  const { onMouseMove } = useHighlightCallbacks(getSelectableViewsForSelectMode)
+  const { onMouseMove } = useHighlightCallbacks(false, getSelectableViewsForSelectMode)
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -431,10 +433,10 @@ export function useSelectModeSelectAndHover(
           updatedSelection = foundTarget != null ? [foundTarget.templatePath] : []
         }
 
-        // first we only set the selected views for the canvas controls
-        setSelectedViewsForCanvasControlsOnly(updatedSelection)
-
         if (!(foundTarget?.isSelected ?? false)) {
+          // first we only set the selected views for the canvas controls
+          setSelectedViewsForCanvasControlsOnly(updatedSelection)
+
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               // then we set the selected views for the editor state, 1 frame later

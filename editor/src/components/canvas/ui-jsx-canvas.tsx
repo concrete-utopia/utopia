@@ -461,6 +461,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
         transform:
           (scale < 1 ? `scale(${scale})` : '') + ` translate3d(${offset.x}px, ${offset.y}px, 0)`,
       }}
+      data-utopia-valid-paths={props.validRootPaths.map(TP.toString).join(' ')}
     >
       {props.children}
     </div>

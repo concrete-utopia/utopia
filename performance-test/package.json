@@ -6,6 +6,17 @@
   "scripts": {
     "start": "ts-node src/index.ts"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -23,6 +34,9 @@
     "yn": "^4.0.0"
   },
   "devDependencies": {
-    "@types/puppeteer": "5.4.1"
+    "@types/puppeteer": "5.4.1",
+    "husky": "3.1.0",
+    "lint-staged": "8.1.7",
+    "prettier": "^2.2.1"
   }
 }
