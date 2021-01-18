@@ -1122,6 +1122,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           zoom: 100%;
           transform: translate3d(0px, 0px, 0);
         \\"
+        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
       >
         <div
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
@@ -1211,6 +1212,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           zoom: 100%;
           transform: translate3d(0px, 0px, 0);
         \\"
+        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
       >
         <div
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
@@ -1275,6 +1277,7 @@ export var storyboard = (
           zoom: 100%;
           transform: translate3d(0px, 0px, 0);
         \\"
+        data-utopia-valid-paths=\\":storyboard :storyboard/scene\\"
       >
         <div
           data-utopia-scene-id=\\"storyboard/scene\\"
