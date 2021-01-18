@@ -1719,10 +1719,21 @@ export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<Tem
 }
 
 function getReparentTargetAtPosition(
+  componentMeta: JSXMetadata,
   selectedViews: Array<TemplatePath>,
-  position: CanvasPoint,
+  hiddenInstances: Array<TemplatePath>,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
 ): TemplatePath | undefined {
-  const allTargets = getAllTargetsAtPoint(WindowMousePositionRaw)
+  const allTargets = getAllTargetsAtPoint(
+    componentMeta,
+    selectedViews,
+    hiddenInstances,
+    'no-filter',
+    WindowMousePositionRaw,
+    canvasScale,
+    canvasOffset,
+  )
   // filtering for non-selected views from alltargets
   return R.head(
     allTargets.filter((target) => selectedViews.every((view) => !TP.pathsEqual(view, target))),
@@ -1738,7 +1749,13 @@ export function getReparentTarget(
   shouldReparent: boolean
   newParent: TemplatePath | null
 } {
-  const result = getReparentTargetAtPosition(selectedViews, position)
+  const result = getReparentTargetAtPosition(
+    editorState.jsxMetadataKILLME,
+    selectedViews,
+    editorState.hiddenInstances,
+    editorState.canvas.scale,
+    editorState.canvas.realCanvasOffset,
+  )
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(
     toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadataKILLME, view)),
