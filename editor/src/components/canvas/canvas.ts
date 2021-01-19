@@ -27,6 +27,7 @@ import {
   CanvasRectangle,
   rectangleIntersection,
   canvasRectangle,
+  CanvasVector,
 } from '../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -92,7 +93,6 @@ const Canvas = {
       component: ElementInstanceMetadata,
     ): { boundingRect: CanvasRectangle | null; frames: Array<FrameWithPath> } {
       const componentFrame = component.localFrame
-
       if (componentFrame == null) {
         return {
           boundingRect: null,
@@ -131,16 +131,10 @@ const Canvas = {
     }
 
     return Utils.flatMapArray((rootComponent) => {
-      if (rootComponent.globalFrame == null) {
-        return []
-      } else {
-        const nonNullGlobalFrame = rootComponent.globalFrame
-        const rootElements = MetadataUtils.getImmediateChildren(metadata, rootComponent.scenePath)
-        return flatMapArray(
-          (root) => recurseChildren(nonNullGlobalFrame, root).frames,
-          rootElements,
-        )
-      }
+      const nonNullGlobalOffset: CanvasVector =
+        rootComponent.globalFrame ?? ({ x: 0, y: 0 } as CanvasVector)
+      const rootElements = MetadataUtils.getImmediateChildren(metadata, rootComponent.scenePath)
+      return flatMapArray((root) => recurseChildren(nonNullGlobalOffset, root).frames, rootElements)
     }, metadata.components)
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {

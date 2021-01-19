@@ -98,7 +98,7 @@ export function getAllTargetsAtPoint(
     hiddenInstances,
     pointOnCanvas.canvasPositionRaw,
     [TargetSearchType.All],
-    false,
+    true,
     'loose',
   )
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)

@@ -19,6 +19,7 @@ import {
   CanvasPoint,
   CanvasRectangle,
   LocalPoint,
+  LocalRectangle,
   localRectangle,
   roundToNearestHalf,
 } from '../../core/shared/math-utils'
@@ -436,8 +437,8 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             canvasRootPath as InstancePath,
             left('Storyboard'),
             {},
-            null,
-            null,
+            { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
+            { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
             rootElements,
             false,
             emptySpecialSizeMeasurements,
