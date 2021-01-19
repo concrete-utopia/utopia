@@ -2,7 +2,6 @@ import * as FastCheck from 'fast-check'
 import { getSourceMapConsumer } from '../../../third-party/react-error-overlay/utils/getSourceMap'
 import {
   arbitraryJSBlock,
-  clearTopLevelElementUniqueIDs,
   isArbitraryJSBlock,
   isJSXAttributeOtherJavaScript,
   isJSXElement,
@@ -54,7 +53,8 @@ import { applyPrettier } from './prettier-utils'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
 import {
   clearParseResultPassTimes,
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
+  clearTopLevelElementUniqueIDsAndEmptyBlocks,
   ensureElementsHaveUID,
   JustImportViewAndReact,
   PrintableProjectContent,
@@ -83,7 +83,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -125,7 +125,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -149,7 +149,7 @@ export var whatever = () => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={20} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -186,7 +186,7 @@ export var whatever = () => <View data-uid='aaa'>
     )
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -214,7 +214,7 @@ export function whatever(props) {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -256,7 +256,7 @@ export function whatever(props) {
     )
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -284,7 +284,7 @@ export function whatever() {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -321,7 +321,7 @@ export function whatever() {
     )
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -349,7 +349,7 @@ export default function whatever(props) {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -391,7 +391,7 @@ export default function whatever(props) {
     )
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -419,7 +419,7 @@ export default function whatever() {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -456,7 +456,7 @@ export default function whatever() {
     )
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -481,7 +481,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -531,7 +531,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const expectedResult = parseSuccess(
       importsWithStylecss,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -556,7 +556,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake2 data-uid='aac' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -611,7 +611,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -635,7 +635,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake2 data-uid='aac' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-      const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+      const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
       const cake2Attributes: JSXAttributes = jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aac', emptyComments),
         style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -677,7 +677,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       )
       const expectedResult = parseSuccess(
         imports,
-        expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+        expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
         expect.objectContaining({}),
         null,
         null,
@@ -702,7 +702,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='111' data-label='Second cake' style={{backgroundColor: 'blue'}} left={props.rightOfTheCake[0].hat} right={10} top={-10} />
 </View>
 `
-      const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+      const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
       const firstCakeAttributes: JSXAttributes = jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aab', emptyComments),
         'data-label': jsxAttributeValue('First cake', emptyComments),
@@ -759,7 +759,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       )
       const expectedResult = parseSuccess(
         imports,
-        expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+        expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
         expect.objectContaining({}),
         null,
         null,
@@ -783,7 +783,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red' }} left={props.leftOfTheCake[0].hat} right={20} top={-20} nullProp={null} undefinedProp={undefined} trueProp={true} falseProp={false} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue(
@@ -834,7 +834,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -862,7 +862,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={getSizing(spacing)} right={20} top={-20} onClick={function(){console.log('click')}} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -967,7 +967,7 @@ return { getSizing: getSizing, spacing: spacing };`
       emptyComments,
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
-      clearTopLevelElementUniqueIDs,
+      clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
     const imports = addImport(
       'cake',
@@ -1006,7 +1006,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1057,7 +1057,9 @@ return { getSizing: getSizing };`
       }),
       emptyComments,
     )
-    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [arbitraryBlock, exported].map(
+      clearTopLevelElementUniqueIDsAndEmptyBlocks,
+    )
     const imports = addImport(
       'cake',
       null,
@@ -1100,7 +1102,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1162,7 +1164,9 @@ return { getSizing: getSizing };`
       }),
       emptyComments,
     )
-    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [arbitraryBlock, exported].map(
+      clearTopLevelElementUniqueIDsAndEmptyBlocks,
+    )
     const imports = addImport(
       'cake',
       null,
@@ -1200,7 +1204,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.leftOfTheCake[0].hat} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1251,7 +1255,9 @@ return {  };`
       }),
       emptyComments,
     )
-    const topLevelElements = [arbitraryBlock, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [arbitraryBlock, exported].map(
+      clearTopLevelElementUniqueIDsAndEmptyBlocks,
+    )
     const imports = addImport(
       'cake',
       null,
@@ -1287,7 +1293,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={spacing} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1337,7 +1343,7 @@ return { spacing: spacing };`
       }),
       emptyComments,
     )
-    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport(
       'cake',
       null,
@@ -1369,7 +1375,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       style: jsxAttributeNestedObjectSimple(
@@ -1390,7 +1396,7 @@ export var whatever = (props) => {
     })
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const bgs = ['black', 'grey']
-const bg = bgs[0]`
+  const bg = bgs[0]`
     const transpiledJsCode = `var bgs = ['black', 'grey'];
 var bg = bgs[0];
 return { bgs: bgs, bg: bg };`
@@ -1419,7 +1425,7 @@ return { bgs: bgs, bg: bg };`
       emptyComments,
       emptyComments,
     )
-    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
       expect.arrayContaining(topLevelElements),
@@ -1442,7 +1448,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       colors: jsxAttributeNestedArray(
@@ -1494,7 +1500,7 @@ return { greys: greys };`
       emptyComments,
       emptyComments,
     )
-    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
       expect.arrayContaining(topLevelElements),
@@ -1518,7 +1524,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       left: jsxAttributeOtherJavaScript(
@@ -1534,7 +1540,7 @@ export var whatever = (props) => {
     })
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const a = 10
-const b = 20`
+  const b = 20`
     const transpiledJsCode = `var a = 10;
 var b = 20;
 return { a: a, b: b };`
@@ -1563,7 +1569,7 @@ return { a: a, b: b };`
       emptyComments,
       emptyComments,
     )
-    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
       expect.arrayContaining(topLevelElements),
@@ -1588,7 +1594,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       left: jsxAttributeOtherJavaScript(
@@ -1604,8 +1610,8 @@ export var whatever = (props) => {
     })
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const a = true
-const b = 10
-const c = 20`
+  const b = 10
+  const c = 20`
     const transpiledJsCode = `var a = true;
 var b = 10;
 var c = 20;
@@ -1635,7 +1641,7 @@ return { a: a, b: b, c: c };`
       emptyComments,
       emptyComments,
     )
-    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
       expect.arrayContaining(topLevelElements),
@@ -1658,7 +1664,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       left: jsxAttributeOtherJavaScript(
@@ -1711,7 +1717,7 @@ return { a: a };`
       emptyComments,
       emptyComments,
     )
-    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
       expect.arrayContaining(topLevelElements),
@@ -1735,7 +1741,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       left: jsxAttributeOtherJavaScript(
@@ -1751,7 +1757,7 @@ export var whatever = (props) => {
     })
     const view = jsxElement('View', viewAttributes, [])
     const jsCode = `const a = 10
-const b = { a: a }`
+  const b = { a: a }`
     const transpiledJsCode = `var a = 10;
 var b = {
   a: a
@@ -1782,7 +1788,7 @@ return { a: a, b: b };`
       emptyComments,
       emptyComments,
     )
-    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
       expect.arrayContaining(topLevelElements),
@@ -1805,7 +1811,7 @@ export var whatever = (props) => {
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const viewAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       style: jsxAttributeNestedObject(
@@ -1858,7 +1864,7 @@ return { bg: bg };`
       emptyComments,
       emptyComments,
     )
-    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
       expect.arrayContaining(topLevelElements),
@@ -1887,7 +1893,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} text={\`Count \${count}\`} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -1936,7 +1942,7 @@ return { count: count };`
       }),
       emptyComments,
     )
-    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport(
       'cake',
       null,
@@ -1973,7 +1979,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={use20 ? 20 : 10} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -2023,7 +2029,7 @@ return { use20: use20 };`
       }),
       emptyComments,
     )
-    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport(
       'cake',
       null,
@@ -2058,7 +2064,7 @@ var mySet = new Set()
 export var whatever = (props) => <View data-uid='aaa'>
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
       jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
@@ -2091,7 +2097,7 @@ return { mySet: mySet };`
       }),
       emptyComments,
     )
-    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       sampleImportsForTests,
       expect.arrayContaining(topLevelElements),
@@ -2120,7 +2126,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <cake data-uid='aab' style={{backgroundColor: 'red'}} left={props.left + spacing} right={20} top={-20} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cakeAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
       style: jsxAttributeValue({ backgroundColor: 'red' }, emptyComments),
@@ -2170,7 +2176,7 @@ return { spacing: spacing };`
       }),
       emptyComments,
     )
-    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport(
       'cake',
       null,
@@ -2218,7 +2224,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   <MyComp data-uid='aab' layout={{left: 100}} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const jsCode = `var MyComp = props => {
   return React.createElement(
     "div",
@@ -2278,7 +2284,7 @@ return { MyComp: MyComp };`
       emptyComments,
       emptyComments,
     )
-    const topLevelElements = [MyComp, exported].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [MyComp, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       sampleImportsForTests,
       expect.arrayContaining(topLevelElements),
@@ -2322,7 +2328,7 @@ export var whatever = props => (
   </View>
 )
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
 
     const rootDivAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('abc', emptyComments),
@@ -2418,7 +2424,7 @@ export var whatever = props => (
       emptyComments,
       emptyComments,
     )
-    const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
+    const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
       sampleImportsForTests,
       expect.arrayContaining(topLevelElements),
@@ -2503,7 +2509,7 @@ export var whatever = (props) => <View data-uid='aaa'>
 <cake data-uid='aab' style={{backgroundColor: 'red', color: [props.color, -200]}} />
 </View>
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const cake = jsxElement(
       'cake',
       jsxAttributesFromMap({
@@ -2554,7 +2560,7 @@ export var whatever = (props) => <View data-uid='aaa'>
     )
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -2688,7 +2694,7 @@ export var App = (props) => <View data-uid='bbb'>
 </View>
 `
     const actualResult = testParseCode(code)
-    expect(clearParseResultUniqueIDs(actualResult)).toMatchSnapshot()
+    expect(clearParseResultUniqueIDsAndEmptyBlocks(actualResult)).toMatchSnapshot()
   })
 
   it('parses back and forth as a var', () => {
@@ -2841,7 +2847,7 @@ return { getSizing: getSizing, spacing: spacing };`
       emptyComments,
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
-      clearTopLevelElementUniqueIDs,
+      clearTopLevelElementUniqueIDsAndEmptyBlocks,
     )
     const imports = addImport(
       'cake',
@@ -2853,13 +2859,13 @@ return { getSizing: getSizing, spacing: spacing };`
     )
     const detailOfExports = addModifierExportToDetail(EmptyExportsDetail, 'whatever')
     const printedCode = printCode(
-      printCodeOptions(false, true, true),
+      printCodeOptions(false, true, true, false, true),
       imports,
       [...topLevelElements],
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining(topLevelElements),
@@ -2955,7 +2961,7 @@ export var whatever = props => {
       false,
     ).formatted
     const parsedCode = testParseCode(code)
-    expect(clearParseResultUniqueIDs(parsedCode)).toMatchSnapshot()
+    expect(clearParseResultUniqueIDsAndEmptyBlocks(parsedCode)).toMatchSnapshot()
   })
   it('parses back and forth as a function, with an empty bracket jsx child {}', () => {
     const code = applyPrettier(
@@ -3095,7 +3101,7 @@ export var whatever = props => {
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       imports,
       expect.arrayContaining([exported]),
@@ -3181,10 +3187,10 @@ export var whatever = props => {
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -3252,7 +3258,7 @@ export var whatever = props => {
   return n * 2;
 }
 return { test: test };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const imports = addImport(
       'cake',
       null,
@@ -3314,7 +3320,7 @@ return { test: test };`
             emptyComments,
             emptyComments,
           ),
-        ].map(clearTopLevelElementUniqueIDs),
+        ].map(clearTopLevelElementUniqueIDsAndEmptyBlocks),
       ),
       expect.objectContaining({}),
       null,
@@ -3341,7 +3347,7 @@ return { test: test };`
       sampleImportsForTests,
     )
     const components = [
-      clearTopLevelElementUniqueIDs(
+      clearTopLevelElementUniqueIDsAndEmptyBlocks(
         utopiaJSXComponent(
           'whatever',
           true,
@@ -3391,7 +3397,7 @@ return { test: test };`
           emptyComments,
         ),
       ),
-      clearTopLevelElementUniqueIDs(
+      clearTopLevelElementUniqueIDsAndEmptyBlocks(
         utopiaJSXComponent(
           BakedInStoryboardVariableName,
           false,
@@ -3424,10 +3430,10 @@ return { test: test };`
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       imports,
-      expect.arrayContaining(components.map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining(components.map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -3453,7 +3459,7 @@ export var App = props => {
     </View>
   );
 };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -3496,7 +3502,7 @@ export var App = props => {
     )
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -3521,7 +3527,7 @@ export var App = props => {
     <View data-uid='aaa'>cake</View>
   );
 };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -3543,7 +3549,7 @@ export var App = props => {
     )
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -3571,7 +3577,7 @@ export var App = props => {
     </View>
   );
 };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -3617,7 +3623,7 @@ export var App = props => {
     )
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -3683,10 +3689,10 @@ export var App = props => {
       null,
       detailOfExports,
     )
-    const actualResult = clearParseResultUniqueIDs(testParseCode(printedCode))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printedCode))
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -3741,7 +3747,7 @@ export var App = props => {
     </View>
   );
 };`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const ellipse = jsxElement(
       'Ellipse',
       jsxAttributesFromMap({
@@ -3825,8 +3831,8 @@ export var App = props => {
       ),
       arbitraryJSBlock(
         `const a = 20;
-const b = 40;
-const MyCustomCompomnent = props => <View data-uid="abc">{props.children}</View>;`,
+  const b = 40;
+  const MyCustomCompomnent = props => <View data-uid="abc">{props.children}</View>;`,
         `var a = 20;
 var b = 40;
 
@@ -3851,7 +3857,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
     )
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -3877,7 +3883,7 @@ export var App = props => {
     <View data-uid='aaa' booleanProperty />
   )
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const component = utopiaJSXComponent(
       'App',
       true,
@@ -3900,7 +3906,7 @@ export var App = props => {
     )
     const expectedResult = parseSuccess(
       sampleImportsForTests,
-      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([component].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -3920,7 +3926,6 @@ import {
   Text,
   View
 } from "utopia-api";
-
 export var whatever = props => {
   return <View data-uid="aaa" booleanProperty />;
 };
@@ -3969,7 +3974,6 @@ import {
   Text,
   View
 } from "utopia-api";
-
 export var whatever = props => {
   return <View data-uid="aaa" booleanProperty={false} />;
 };
@@ -4017,11 +4021,11 @@ export var whatever = props => {
   }
   return <div data-uid='aaa'></div>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const arbitraryBlockCode = `for (var n = 0; n != -1; n++) {
     const n2 = n * 2
   }
-while (true) {
+  while (true) {
     const a = 1
   }`
     const arbitraryBlockTranspiledCode = `var _loopIt = 0,
@@ -4075,7 +4079,7 @@ return {  };`
     )
     const expectedResult = parseSuccess(
       { react: sampleImportsForTests['react'] },
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -4093,9 +4097,9 @@ export var whatever = props => {
   }
   return <div data-uid='aaa'>{result}</div>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const arbitraryBlockCode = `let result = []
-for (var n = 0; n < 5; n++) {
+  for (var n = 0; n < 5; n++) {
     const n2 = n * 2
     result.push(<div style={{ left: n, top: n2 }} data-uid='bbb' />)
   }`
@@ -4161,7 +4165,7 @@ return { result: result };`
     )
     const expectedResult = parseSuccess(
       { react: sampleImportsForTests['react'] },
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -4178,7 +4182,7 @@ export var whatever = props => {
     })}
   </div>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
       return <div style={{left: n * 30, top: n * 30}} data-uid='bbb' />
     })`
@@ -4256,7 +4260,7 @@ export var whatever = props => {
     )
     const expectedResult = parseSuccess(
       { react: sampleImportsForTests['react'] },
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -4274,7 +4278,7 @@ export var whatever = props => {
     })}
   </div>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const arbitraryBlockOriginalCode = `[1, 2, 3].map(n => {
       return <div style={{left: n * a, top: n * a}} data-uid='bbb' />
     })`
@@ -4368,7 +4372,7 @@ return { a: a };`,
     )
     const expectedResult = parseSuccess(
       { react: sampleImportsForTests['react'] },
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -4381,7 +4385,7 @@ return { a: a };`,
 export var whatever = props => {
   return <svg data-uid='abc'/>
 }`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'svg',
       jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('abc', emptyComments) }),
@@ -4402,7 +4406,7 @@ export var whatever = props => {
     )
     const expectedResult = parseSuccess(
       { react: sampleImportsForTests['react'] },
-      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDs)),
+      expect.arrayContaining([exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)),
       expect.objectContaining({}),
       null,
       null,
@@ -4419,7 +4423,7 @@ const a = (n) => n > 0 ? n : b(10)
 export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(clearParseResultPassTimes(actualResult)).toMatchSnapshot()
   })
   it('corrects duplicated data-uid entries', () => {
@@ -4452,7 +4456,7 @@ export var whatever2 = (props) => <View data-uid='aaa'>
   it('inserts data-uid into elements as part of the parse', () => {
     function checkDataUIDsPopulated(printableProjectContent: PrintableProjectContent): boolean {
       const printedCode = printCode(
-        printCodeOptions(false, true, false),
+        printCodeOptions(false, true, false, false, true),
         printableProjectContent.imports,
         printableProjectContent.topLevelElements,
         printableProjectContent.jsxFactoryFunction,
@@ -4498,11 +4502,11 @@ import {
   View
 } from "utopia-api";
 
-console.log('hello!') // line 15 char 9
+console.log('hello!') // line 12 char 9
 
 export var App = props => {
   const a = 20;
-  const b = 40; // line 19 char 9
+  const b = 40; // line 16 char 9
 
   return (
     <View
@@ -4514,7 +4518,7 @@ export var App = props => {
         top: props.layout.top,
       }}
       data-uid="aaa"
-      arbitrary={console.log('hi')} // line 31, char 26
+      arbitrary={console.log('hi')} // line 28, char 26
     >
     </View>
   )
@@ -4566,9 +4570,8 @@ export var App = props => {
 
     const position = consumer.getOriginalPosition(transpiledLine, transpiledCharacter)
 
-    // TODO BALAZS we should test that the code is in col 9, but I just couldn't make it work :(
-    // expect(position).toEqual(expect.objectContaining({ line: 22, column: 9 }))
-    expect(position).toEqual(expect.objectContaining({ line: 16 }))
+    // FIXME This should be line 16 char 9 but I cannot get this to work
+    expect(position).toEqual(expect.objectContaining({ line: 17, column: 10 }))
   })
 
   it('maps a jsxAttributeOtherJavaScript correctly', () => {

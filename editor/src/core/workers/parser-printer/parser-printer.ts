@@ -111,10 +111,10 @@ import {
   isExported,
   isDefaultExport,
   expressionTypeForExpression,
+  extractPrefixedCode,
 } from './parser-printer-parsing'
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { ParserPrinterResultMessage } from './parser-printer-worker'
-import creator from './ts-creator'
 import { applyPrettier, PrettierConfig } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
@@ -122,8 +122,8 @@ import { emptySet } from '../../shared/set-utils'
 import {
   addCommentsToNode,
   emptyComments,
-  getComments,
-  mergeParsedComments,
+  getLeadingComments,
+  parsedComments,
   ParsedComments,
 } from './parser-printer-comments'
 import { replaceAll } from '../../shared/string-utils'
@@ -151,6 +151,24 @@ function getJSXAttributeComments(attribute: JSXAttribute): ParsedComments {
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled prop type ${JSON.stringify(attribute)}`)
+  }
+}
+
+function rawCodeToExpressionStatement(
+  rawCode: string,
+): { statement: TS.ExpressionStatement; sourceFile: TS.SourceFile } | null {
+  const sourceFile = TS.createSourceFile(
+    'temporary.tsx',
+    rawCode,
+    TS.ScriptTarget.Latest,
+    undefined,
+    TS.ScriptKind.TSX,
+  )
+  const topLevelStatement = sourceFile.statements[0]
+  if (topLevelStatement != null && TS.isExpressionStatement(topLevelStatement)) {
+    return { statement: topLevelStatement, sourceFile: sourceFile }
+  } else {
+    return null
   }
 }
 
@@ -195,20 +213,10 @@ function jsxAttributeToExpression(attribute: JSXAttribute): TS.Expression {
         })
         return TS.createArrayLiteral(arrayExpressions)
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        // SP: This is quite truly the most spectacular fudge I've ever had to create in my entire career.
-        // Creates a representation of the AST that is code which executes the TS factory functions...
-        // ...Then evals it to produce the AST and drills into the result a little.
-        const createExpressionAsString = creator(attribute.javascript)
-        const newExpression = SafeFunction(
-          false,
-          { ts: TS, React: React, addCommentsToNode: addCommentsToNode },
-          `return ${createExpressionAsString}.expression`,
-          [],
-          (e) => {
-            throw e
-          },
-        )()
-        return newExpression
+        const maybeExpressionStatement = rawCodeToExpressionStatement(attribute.javascript)
+        return maybeExpressionStatement == null
+          ? TS.createNull()
+          : maybeExpressionStatement.statement.expression
       case 'ATTRIBUTE_FUNCTION_CALL':
         return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
       default:
@@ -280,9 +288,24 @@ function updateJSXElementsWithin(
 
   function processNode(node: TS.Node): TS.Node {
     if (TS.isJsxElement(node)) {
-      return streamlineInElementsWithin(node.openingElement.attributes, node)
+      const newNode = streamlineInElementsWithin(node.openingElement.attributes, node)
+      if (TS.isJsxElement(newNode)) {
+        return TS.updateJsxElement(
+          node,
+          newNode.openingElement,
+          newNode.children,
+          newNode.closingElement,
+        )
+      } else {
+        return newNode
+      }
     } else if (TS.isJsxSelfClosingElement(node)) {
-      return streamlineInElementsWithin(node.attributes, node)
+      const newNode = streamlineInElementsWithin(node.attributes, node)
+      if (TS.isJsxSelfClosingElement(newNode)) {
+        return TS.updateJsxSelfClosingElement(node, newNode.tagName, undefined, newNode.attributes)
+      } else {
+        return newNode
+      }
     } else {
       return node
     }
@@ -394,36 +417,32 @@ function jsxElementToExpression(
       }
     }
     case 'JSX_ARBITRARY_BLOCK': {
-      let createExpressionAsString: string
+      const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
+      let rawCode: string = ''
+      if (maybeExpressionStatement != null) {
+        const { statement, sourceFile } = maybeExpressionStatement
+        const lastToken = statement.getLastToken(sourceFile)
+        const finalComments =
+          lastToken == null
+            ? emptyComments
+            : parsedComments([], getLeadingComments(element.javascript, lastToken))
 
-      if (element.javascript == '') {
-        // this appears as an empty {} inside the jsx.
-        createExpressionAsString = `ts.updateSourceFileNode(
-          ts.createSourceFile('temporary.tsx', '', ts.ScriptTarget.Latest),
-          [ts.createJsxExpression(
-            undefined,
-            undefined
-          )]
-        )`
-      } else {
-        createExpressionAsString = creator(element.javascript)
+        const updatedStatement = updateJSXElementsWithin(
+          statement.expression,
+          element.elementsWithin,
+          imports,
+          stripUIDs,
+        )
+        addCommentsToNode(updatedStatement, finalComments)
+        rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
+          TS.EmitHint.Unspecified,
+          updatedStatement,
+          sourceFile,
+        )
       }
-      let newExpression = SafeFunction(
-        false,
-        { ts: TS, React: React, addCommentsToNode: addCommentsToNode },
-        `var node = ${createExpressionAsString}; return node.expression || node`,
-        [],
-        (e) => {
-          throw e
-        },
-      )()
-      newExpression = updateJSXElementsWithin(
-        newExpression,
-        element.elementsWithin,
-        imports,
-        stripUIDs,
-      )
-      return TS.createJsxExpression(undefined, newExpression)
+
+      // By creating a `JsxText` element containing the raw code surrounded by braces, we can print the code directly
+      return TS.createJsxText(`{${rawCode}}`)
     }
     case 'JSX_FRAGMENT': {
       const children = element.children.map((child) => {
@@ -460,6 +479,7 @@ export interface PrintCodeOptions {
   pretty: boolean
   includeElementMetadata: boolean
   stripUIDs: boolean
+  insertLinesBetweenStatements: boolean
 }
 
 export function printCodeOptions(
@@ -467,12 +487,14 @@ export function printCodeOptions(
   pretty: boolean,
   includeElementMetadata: boolean,
   stripUIDs: boolean = false,
+  insertLinesBetweenStatements: boolean = false,
 ): PrintCodeOptions {
   return {
     forPreview: forPreview,
     pretty: pretty,
     includeElementMetadata: includeElementMetadata,
     stripUIDs: stripUIDs,
+    insertLinesBetweenStatements: insertLinesBetweenStatements,
   }
 }
 
@@ -528,7 +550,6 @@ function printUtopiaJSXComponent(
 
       function bodyForFunction(): TS.Block {
         let statements: Array<TS.Statement> = []
-        let bodyBlock: TS.Block
         if (element.arbitraryJSBlock != null) {
           // I just punched a hole in the space time continuum with this cast to any.
           // Somehow it works, I assume because it really only cares about Nodes internally and
@@ -539,7 +560,7 @@ function printUtopiaJSXComponent(
         const returnStatement = TS.createReturn(jsxElementExpression)
         addCommentsToNode(returnStatement, element.returnStatementComments)
         statements.push(returnStatement)
-        return TS.createBlock(statements, true)
+        return TS.createBlock(statements, printOptions.insertLinesBetweenStatements)
       }
 
       function bodyForArrowFunction(): TS.ConciseBody {
@@ -668,78 +689,11 @@ export const printCode = memoize(printCodeImpl, {
   maxSize: 1,
 })
 
-function isVariableDeclaration(line: string): boolean {
-  const withoutExport = line.startsWith('export ') ? line.slice(7) : line
-  return (
-    withoutExport.startsWith('var') ||
-    withoutExport.startsWith('let') ||
-    withoutExport.startsWith('const')
-  )
-}
-
-function isFunctionDeclaration(line: string): boolean {
-  const withoutExport = line.startsWith('export ') ? line.slice(7) : line
-  const withoutDefault = withoutExport.startsWith('default ')
-    ? withoutExport.slice(8)
-    : withoutExport
-  return withoutDefault.startsWith('function')
-}
-
-function createBlanklineTracker(): (statement: TS.Node, printedCode: string) => boolean {
-  // When inserting blank lines we apply the following series of rules
-  // 1) we shouldn't insert blank lines in amongst import statements or exports declarations (not the modifier keyword)
-  // 2) variable declarations shouldn't insert a blank line unless a single declaration is spread over separate lines
-  // 3) function declarations should always insert a blank line
-  // 4) any other (non-import or export) multiline statement should insert a blank line
-
-  let lastLineWasImport = false
-  let lastLineWasExport = false
-  let lastLineWasFunction = false
-  let lastLineWasVariable = false
-  let lastLineWasMultiLineStatement = false
-
-  return (statement: TS.Node, rawPrintedCode: string): boolean => {
-    // Awful hack until we implement #851
-    const printedCode = replaceAll(rawPrintedCode, '/** @jsx jsx */', '').trim()
-
-    const isUnparsedSource = TS.isUnparsedSource(statement)
-    const isMultiLineCode =
-      printedCode.includes('\n') ||
-      printedCode.includes('\r') ||
-      (PrettierConfig.printWidth != null && printedCode.length > PrettierConfig.printWidth)
-    const isVariable =
-      TS.isVariableStatement(statement) ||
-      (isUnparsedSource && !isMultiLineCode && isVariableDeclaration(printedCode))
-    const isFunction =
-      TS.isFunctionDeclaration(statement) ||
-      (isUnparsedSource && isFunctionDeclaration(printedCode))
-    const isImport =
-      TS.isImportDeclaration(statement) || (isUnparsedSource && printedCode.startsWith('import'))
-    const isExport =
-      TS.isExportDeclaration(statement) ||
-      (isUnparsedSource && !isVariable && !isFunction && printedCode.startsWith('export'))
-
-    const isMultiLineStatement = !(isImport || isExport) && isMultiLineCode
-
-    const shouldPrefixWithBlankLine =
-      (lastLineWasImport && !isImport) ||
-      (!lastLineWasExport && isExport) ||
-      (!lastLineWasVariable && isVariable) ||
-      (!lastLineWasFunction && isFunction) ||
-      lastLineWasMultiLineStatement ||
-      isMultiLineStatement
-
-    lastLineWasImport = isImport
-    lastLineWasExport = isExport
-    lastLineWasFunction = isFunction
-    lastLineWasVariable = isVariable
-    lastLineWasMultiLineStatement = isMultiLineStatement
-
-    return shouldPrefixWithBlankLine
-  }
-}
-
-function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): string {
+function printStatements(
+  statements: Array<TS.Node>,
+  shouldPrettify: boolean,
+  insertLinesBetweenStatements: boolean,
+): string {
   const printer = TS.createPrinter({ newLine: TS.NewLineKind.LineFeed })
   const resultFile = TS.createSourceFile(
     'print.ts',
@@ -749,21 +703,10 @@ function printStatements(statements: Array<TS.Node>, shouldPrettify: boolean): s
     TS.ScriptKind.TS,
   )
 
-  const checkShouldInsertBlankLineBeforeStatement = createBlanklineTracker()
-  let printedParts: Array<string> = []
-
-  fastForEach(statements, (statement) => {
-    const nextLine = printer.printNode(TS.EmitHint.Unspecified, statement, resultFile).trim()
-    const shouldPrefixWithBlankLine = checkShouldInsertBlankLineBeforeStatement(statement, nextLine)
-
-    if (printedParts.length > 0 && shouldPrefixWithBlankLine) {
-      printedParts.push('\n')
-    }
-
-    printedParts.push(nextLine)
-  })
-
-  const typescriptPrintedResult = printedParts.join('\n')
+  const printedParts: Array<string> = statements.map((statement) =>
+    printer.printNode(TS.EmitHint.Unspecified, statement, resultFile),
+  )
+  const typescriptPrintedResult = printedParts.join(insertLinesBetweenStatements ? '\n' : '')
   let result: string
   if (shouldPrettify) {
     result = applyPrettier(typescriptPrintedResult, false).formatted
@@ -807,7 +750,13 @@ function printCodeImpl(
   detailOfExports: ExportsDetail,
 ): string {
   const importOrigins: Array<string> = Object.keys(imports)
-  let importDeclarations: Array<TS.ImportDeclaration> = []
+  let importDeclarations: Array<TS.Node> = []
+  function pushImportDeclaration(importDeclaration: TS.ImportDeclaration) {
+    // We have to explicitly insert a newline between declarations
+    importDeclarations.push(TS.createUnparsedSourceFile('\n'))
+    importDeclarations.push(importDeclaration)
+  }
+
   fastForEach(importOrigins, (importOrigin) => {
     const importForClause = imports[importOrigin]
     const matchingTopLevelElements: ImportStatement[] = topLevelElements.filter(
@@ -845,7 +794,7 @@ function printCodeImpl(
         TS.createStringLiteral(importOrigin),
       )
       addCommentsToNode(importDeclaration, importForClause.comments)
-      importDeclarations.push(importDeclaration)
+      pushImportDeclaration(importDeclaration)
     }
 
     const hasImportStarAs = matchingTopLevelElements.some((e) => e.importStarAs)
@@ -864,7 +813,7 @@ function printCodeImpl(
         TS.createStringLiteral(importOrigin),
       )
       addCommentsToNode(importDeclaration, importForClause.comments)
-      importDeclarations.push(importDeclaration)
+      pushImportDeclaration(importDeclaration)
     }
   })
 
@@ -879,7 +828,11 @@ function printCodeImpl(
     ...printTopLevelElements(printOptions, imports, afterLastImport, detailOfExports),
   ]
 
-  return printStatements(statementsToPrint, printOptions.pretty)
+  return printStatements(
+    statementsToPrint,
+    printOptions.pretty,
+    printOptions.insertLinesBetweenStatements,
+  )
 }
 
 interface PossibleCanvasContentsExpression {
@@ -1114,32 +1067,26 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     const alreadyExistingUIDs: Set<string> = emptySet() // collatedUIDs(sourceFile)
     let highlightBounds: HighlightBoundsForUids = {}
 
-    // As we hit chunks of arbitrary code, shove them here so we can
-    // handle them as a block of code.
-    let arbitraryNodes: Array<TS.Node> = []
     let allArbitraryNodes: Array<TS.Node> = []
-    let arbitraryNodeComments: ParsedComments = emptyComments
 
     // Account for exported components.
     let detailOfExports: ExportsDetail = EmptyExportsDetail
 
-    function applyAndResetArbitraryNodes(): void {
-      const filteredArbitraryNodes = arbitraryNodes.filter(
-        (n) => n.kind !== TS.SyntaxKind.EndOfFileToken,
-      )
-      if (filteredArbitraryNodes.length > 0) {
+    function pushArbitraryNode(node: TS.Node) {
+      if (node.kind !== TS.SyntaxKind.EndOfFileToken) {
         const nodeParseResult = parseArbitraryNodes(
           sourceFile,
           sourceText,
           filename,
-          filteredArbitraryNodes,
+          [node],
           imports,
           topLevelNames,
           null,
           highlightBounds,
           alreadyExistingUIDs,
           true,
-          arbitraryNodeComments,
+          '',
+          false,
         )
         topLevelElements.push(
           mapEither((parsed) => {
@@ -1147,20 +1094,16 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             return parsed.value
           }, nodeParseResult),
         )
-        allArbitraryNodes = [...allArbitraryNodes, ...filteredArbitraryNodes]
+        allArbitraryNodes = [...allArbitraryNodes, node]
       }
-      arbitraryNodes = []
-      arbitraryNodeComments = emptyComments
     }
 
     function pushImportStatement(statement: ImportStatement) {
       topLevelElements.push(right(statement))
-      arbitraryNodeComments = emptyComments // Comments up to this point would have been captured in the raw code
     }
 
     function pushUnparsedCode(rawCode: string) {
       topLevelElements.push(right(unparsedCode(rawCode)))
-      arbitraryNodeComments = emptyComments // Comments up to this point would have been captured in the raw code
     }
 
     const topLevelNodes = flatMapArray(
@@ -1189,11 +1132,10 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
     }, topLevelNodes)
 
     for (const topLevelElement of topLevelNodes) {
-      // Capture the comments so we can attach them to the node
-      const comments = getComments(sourceText, topLevelElement)
-      function pushArbitraryNode(node: TS.Node) {
-        arbitraryNodes.push(node)
-        arbitraryNodeComments = mergeParsedComments(arbitraryNodeComments, comments)
+      // Capture anything before this node as unparsed code
+      const prefixedCode = extractPrefixedCode(topLevelElement, sourceFile)
+      if (prefixedCode.length > 0) {
+        pushUnparsedCode(prefixedCode)
       }
 
       // Handle export assignments: `export default App`
@@ -1202,7 +1144,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromAssignment, (toMerge) => {
           detailOfExports = mergeExportsDetail(detailOfExports, toMerge)
-          pushUnparsedCode(topLevelElement.getFullText(sourceFile))
+          pushUnparsedCode(topLevelElement.getText(sourceFile))
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromAssignment, (exportDeclaration) => {
@@ -1214,7 +1156,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         // Parsed it fully, so it can be incorporated.
         forEachRight(fromDeclaration, (toMerge) => {
           detailOfExports = mergeExportsDetail(detailOfExports, toMerge)
-          pushUnparsedCode(topLevelElement.getFullText(sourceFile))
+          pushUnparsedCode(topLevelElement.getText(sourceFile))
         })
         // Unable to parse it so treat it as an arbitrary node.
         forEachLeft(fromDeclaration, (exportDeclaration) => {
@@ -1262,11 +1204,11 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             importedWithName,
             importedFromWithin,
             importedAs,
-            comments,
+            emptyComments,
             imports,
           )
           const rawImportStatement = importStatement(
-            topLevelElement.getFullText(sourceFile),
+            topLevelElement.getText(sourceFile),
             importedAs != null,
             importedWithName != null,
             importedFromWithin.map((i) => i.name),
@@ -1350,7 +1292,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
           }
           if (isLeft(parsedContents) || (isFunction && isLeft(parsedFunctionParam))) {
             pushArbitraryNode(topLevelElement)
-            applyAndResetArbitraryNodes() // TODO Should we be doing this every time we push an arbitrary node?
           } else {
             highlightBounds = parsedContents.value.highlightBounds
             const contents = parsedContents.value.value
@@ -1358,7 +1299,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             // use that. Otherwise, we have to use the list retrieved during parsing
             propsUsed = propsUsed.length > 0 ? propsUsed : uniq(parsedContents.value.propsUsed)
             if (contents.elements.length === 1) {
-              applyAndResetArbitraryNodes()
               const exported = isExported(topLevelElement)
               // capture var vs let vs const vs function here
               const utopiaComponent = utopiaJSXComponent(
@@ -1375,7 +1315,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
                 contents.elements[0].value,
                 contents.arbitraryJSBlock,
                 false,
-                comments,
+                emptyComments,
                 contents.returnStatementComments,
               )
 
@@ -1399,8 +1339,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
       }
     }
 
-    applyAndResetArbitraryNodes()
-
     const sequencedTopLevelElements = sequenceEither(topLevelElements)
     if (isLeft(sequencedTopLevelElements)) {
       return parseFailure(null, null, sequencedTopLevelElements.value, [])
@@ -1422,7 +1360,8 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
         highlightBounds,
         alreadyExistingUIDs,
         true,
-        emptyComments,
+        '',
+        true,
       )
       forEachRight(nodeParseResult, (nodeParseSuccess) => {
         combinedTopLevelArbitraryBlock = nodeParseSuccess.value

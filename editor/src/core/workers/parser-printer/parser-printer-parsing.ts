@@ -458,20 +458,17 @@ function turnCodeSnippetIntoSourceMapNodes(
 interface ExpressionAndText<E extends TS.Node> {
   expression: E | undefined
   text: string
-  fullText: string
   startPos: number
 }
 
 function createExpressionAndText<E extends TS.Node>(
   expression: E | undefined,
   text: string,
-  fullText: string,
   startPos: number,
 ): ExpressionAndText<E> {
   return {
     expression: expression,
     text: text,
-    fullText: fullText,
     startPos: startPos,
   }
 }
@@ -486,6 +483,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
   initialPropsObjectName: string | null,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  trailingCode: string,
   create: (
     code: string,
     definedWithin: Array<string>,
@@ -871,12 +869,15 @@ function parseOtherJavaScript<E extends TS.Node, T>(
         addIfDefinedElsewhere([], expression, false)
         const expressionText = expressionAndText.text
         if (expressionText.length > 0) {
-          const { line, character } = TS.getLineAndCharacterOfPosition(sourceFile, expression.pos)
+          const { line, character } = TS.getLineAndCharacterOfPosition(
+            sourceFile,
+            expressionAndText.startPos,
+          )
           const expressionNode = turnCodeSnippetIntoSourceMapNodes(
             sourceFile.fileName,
             line,
             character,
-            expressionAndText.fullText,
+            expressionAndText.text,
             isExported(expression),
           )
           expressionsNodes.push(expressionNode)
@@ -898,11 +899,12 @@ function parseOtherJavaScript<E extends TS.Node, T>(
         TS.transform(expression, [transformer(definedWithin)])
       }
     }
+    expressionsText.push(trailingCode)
 
     // Helpfully it appears that in JSX elements the start and end are
     // offset by 1, meaning that if we use them to get the text
     // the string is total nonsense.
-    const code = expressionsText.join('\n')
+    const code = expressionsText.join('')
 
     const fileNode = new SourceNode(null, null, sourceFile.fileName, expressionsNodes)
     fileNode.setSourceContent(sourceFile.fileName, sourceFile.text)
@@ -942,7 +944,6 @@ export function parseAttributeOtherJavaScript(
   const expressionAndText = createExpressionAndText(
     expression,
     expression.getText(sourceFile),
-    expression.getFullText(sourceFile),
     expression.getStart(sourceFile, false),
   )
   return parseOtherJavaScript(
@@ -955,6 +956,7 @@ export function parseAttributeOtherJavaScript(
     propsObjectName,
     existingHighlightBounds,
     alreadyExistingUIDs,
+    '',
     (code, _, definedElsewhere, fileSourceNode) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
@@ -997,13 +999,11 @@ function parseJSXArbitraryBlock(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXArbitraryBlock>> {
-  const expressionFullText = jsxExpression.getFullText(sourceFile)
-  // Remove the braces around the expression and trim off the whitespace within those.
-  const codeWithComments = expressionFullText.slice(1, -1)
+  // Remove the braces around the expression
+  const expressionFullText = jsxExpression.getFullText(sourceFile).slice(1, -1)
   const expressionAndText = createExpressionAndText(
     jsxExpression.expression,
-    codeWithComments,
-    jsxExpression.expression == null ? '' : jsxExpression.expression.getFullText(sourceFile),
+    expressionFullText,
     jsxExpression.getFullStart() + 1,
   )
 
@@ -1017,6 +1017,7 @@ function parseJSXArbitraryBlock(
     propsObjectName,
     existingHighlightBounds,
     alreadyExistingUIDs,
+    '',
     (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin) => {
       if (code === '') {
         return right(
@@ -1031,7 +1032,7 @@ function parseJSXArbitraryBlock(
         )
       } else {
         const dataUIDFixed = insertDataUIDsIntoCode(
-          codeWithComments,
+          expressionFullText,
           parsedElementsWithin,
           true,
           false,
@@ -1063,7 +1064,7 @@ function parseJSXArbitraryBlock(
               innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
             }
             return jsxArbitraryBlock(
-              codeWithComments,
+              expressionFullText,
               dataUIDFixResult.code,
               returnPrepended.code,
               innerDefinedElsewhere,
@@ -2018,13 +2019,13 @@ export function parseArbitraryNodes(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
   rootLevel: boolean,
-  comments: ParsedComments,
+  trailingCode: string,
+  useFullText: boolean,
 ): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
   const expressionsAndTexts = arbitraryNodes.map((node) => {
     return createExpressionAndText(
       node,
-      node.getText(sourceFile),
-      node.getFullText(sourceFile),
+      useFullText ? node.getFullText(sourceFile) : node.getText(sourceFile),
       node.getStart(sourceFile, false),
     )
   })
@@ -2038,6 +2039,7 @@ export function parseArbitraryNodes(
     propsObjectName,
     existingHighlightBounds,
     alreadyExistingUIDs,
+    trailingCode,
     (code, definedWithin, definedElsewhere, fileSourceNode, parsedElementsWithin) => {
       const definedWithinFields = definedWithin.map((within) => `${within}: ${within}`).join(', ')
       const definedWithCode = `return { ${definedWithinFields} };`
@@ -2065,7 +2067,7 @@ export function parseArbitraryNodes(
             definedWithin,
             definedElsewhere,
             transpileResult.sourceMap,
-            comments,
+            emptyComments,
           )
         },
         transpileEither,
@@ -2130,19 +2132,20 @@ export function parseOutFunctionContents(
     if (arrowFunctionBody.statements.length === 0) {
       return left('No body for component.')
     } else {
-      const possibleBlockExpressions = dropLast(nodeArrayToArray(arrowFunctionBody.statements))
+      const possibleBlockExpressions: TS.Node[] = dropLast(
+        nodeArrayToArray(arrowFunctionBody.statements),
+      )
       const possibleElement = arrowFunctionBody.statements[arrowFunctionBody.statements.length - 1]!
-      let jsBlock: ArbitraryJSBlock | null = null
+      let jsBlock: ArbitraryJSBlock
       let propsUsed: Array<string> = []
       let definedElsewhere: Array<string> = []
-      const returnStatementComments = getComments(sourceText, possibleElement)
-      if (possibleBlockExpressions.length > 0) {
-        const comments = possibleBlockExpressions.reduce(
-          (working: ParsedComments, next: TS.Statement) =>
-            mergeParsedComments(working, getComments(sourceText, next)),
-          emptyComments,
-        )
 
+      const returnStatementComments = parsedComments(
+        [],
+        getTrailingComments(sourceText, possibleElement),
+      )
+      const returnStatementPrefixCode = extractPrefixedCode(possibleElement, sourceFile)
+      if (possibleBlockExpressions.length > 0) {
         const parseResult = parseArbitraryNodes(
           sourceFile,
           sourceText,
@@ -2154,7 +2157,8 @@ export function parseOutFunctionContents(
           highlightBounds,
           alreadyExistingUIDs,
           false,
-          comments,
+          returnStatementPrefixCode,
+          true,
         )
         if (isLeft(parseResult)) {
           return parseResult
@@ -2164,6 +2168,15 @@ export function parseOutFunctionContents(
           propsUsed = parseResult.value.propsUsed
           definedElsewhere = parseResult.value.definedElsewhere
         }
+      } else {
+        jsBlock = arbitraryJSBlock(
+          returnStatementPrefixCode,
+          returnStatementPrefixCode,
+          [],
+          [],
+          null,
+          emptyComments,
+        )
       }
 
       let declared: Array<string> = [...topLevelNames]
@@ -2208,4 +2221,12 @@ export function parseOutFunctionContents(
       parsedElements,
     )
   }
+}
+
+export function extractPrefixedCode(node: TS.Node, sourceFile: TS.SourceFile): string {
+  // Attempt to capture everything between this and the last node
+  const nodeText = node.getText(sourceFile) || ''
+  const nodeFullText = node.getFullText(sourceFile) || ''
+  const prefixedText = nodeFullText.slice(0, nodeFullText.lastIndexOf(nodeText))
+  return prefixedText
 }

@@ -1,63 +1,6 @@
-import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx.test-utils'
-import { Utils } from '../../../uuiui-deps'
 import { forEachValue } from '../../shared/object-utils'
-import {
-  clearParseResultUniqueIDs,
-  parseThenPrint,
-  testParseCode,
-} from './parser-printer.test-utils'
+import { parseThenPrint } from './parser-printer.test-utils'
 import { applyPrettier } from './prettier-utils'
-
-describe('parseCode', () => {
-  it('should parse a component with comments in front of it', () => {
-    const code = applyPrettier(
-      `
-    // Single-line comment.
-    /*
-      Multi
-      Line
-      Comment.
-    */
-    export var whatever = (props) => {
-      return <div data-uid='aaa' />
-    }
-`,
-      false,
-    ).formatted
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    expect(testPrintParsedTextFile(actualResult)).toEqual(code)
-    const leadingComments = Utils.path(
-      ['topLevelElements', 0, 'comments', 'leadingComments'],
-      actualResult,
-    )
-    expect(leadingComments).toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "comment": " Single-line comment.",
-          "pos": 0,
-          "rawText": "// Single-line comment.",
-          "trailingNewLine": true,
-          "type": "SINGLE_LINE_COMMENT",
-        },
-        Object {
-          "comment": "
-            Multi
-            Line
-            Comment.
-          ",
-          "pos": 24,
-          "rawText": "/*
-            Multi
-            Line
-            Comment.
-          */",
-          "trailingNewLine": true,
-          "type": "MULTI_LINE_COMMENT",
-        },
-      ]
-    `)
-  })
-})
 
 describe('Parsing and printing code with comments', () => {
   const comments = {
@@ -101,14 +44,10 @@ describe('Parsing and printing code with comments', () => {
     commentAfterAllAttributes: '/* Comment after all attributes */',
   }
 
-  const notYetSupported: Array<keyof typeof comments> = [
-    'commentAfterImports',
-    'commentAfterObjectSeparator',
-    'commentAfterArraySeparator',
-    'finalLineComment',
-  ]
+  const notYetSupported: Array<keyof typeof comments> = []
 
-  const code = `
+  const code = applyPrettier(
+    `
     ${comments.commentBeforeImports}
     import * as React from 'react'
     ${comments.commentInsideImports}
@@ -167,7 +106,9 @@ describe('Parsing and printing code with comments', () => {
     export const theComponent = whatever ${comments.commentAfterExports}
 
     ${comments.finalLineComment}
-  `
+  `,
+    false,
+  ).formatted
 
   const parsedThenPrinted = parseThenPrint(code)
 
@@ -187,9 +128,8 @@ describe('Parsing and printing code with comments', () => {
     expect(parsedThenPrinted).toMatchInlineSnapshot(`
       "// Comment before imports
       import * as React from 'react'
-
       // Comment inside imports
-      import { Cat } from './honestly-not-dogs'
+      import { Cat } from './honestly-not-dogs' // Comment after imports
 
       // Comment before top level JS block
       function iAmAFunction() {
@@ -209,6 +149,7 @@ describe('Parsing and printing code with comments', () => {
           // Comment inside inner JS
           return 2
         } // Comment after inner JS
+
         // Comment before return statement
         return (
           <div /* Comment before all attributes */
@@ -216,11 +157,11 @@ describe('Parsing and printing code with comments', () => {
             someProp={/* Comment at start of JSX attribute */ 1000 /* Comment at end of JSX attribute */}
             someProp2={{
               /* Comment before object key */ someKey /* Comment after object key */:
-                /* Comment before object value */ 'someValue' /* Comment after object value */,
+                /* Comment before object value */ 'someValue' /* Comment after object separator */ /* Comment after object value */,
               someKey2: 'someValue2',
             }}
             someProp3={[
-              /* Comment before array value */ 100 /* Comment after array value */,
+              /* Comment before array value */ 100 /* Comment after array separator */ /* Comment after array value */,
               200,
             ]} /* Comment after all attributes */
           >
@@ -238,9 +179,10 @@ describe('Parsing and printing code with comments', () => {
 
       // Comment before exports
       export const theFunction = iAmAFunction
-
       // Comment inside exports
       export const theComponent = whatever // Comment after exports
+
+      // Final line comment
       "
     `)
   })

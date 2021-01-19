@@ -14181,15 +14181,10 @@ exports[`UiJsxCanvas runtime errors arbitrary at the top of a component has corr
 Array [
   Object {
     "columnNumber": 10,
-    "lineNumber": 7,
+    "lineNumber": 8,
     "message": "a is not defined",
     "name": "ReferenceError",
     "originalCode": Array [
-      ScriptLine {
-        "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
-        "highlight": false,
-        "lineNumber": 4,
-      },
       ScriptLine {
         "content": "",
         "highlight": false,
@@ -14202,12 +14197,12 @@ Array [
       },
       ScriptLine {
         "content": "  '5' + a.a // 18,9",
-        "highlight": true,
+        "highlight": false,
         "lineNumber": 7,
       },
       ScriptLine {
         "content": "  return (",
-        "highlight": false,
+        "highlight": true,
         "lineNumber": 8,
       },
       ScriptLine {
@@ -14220,6 +14215,11 @@ Array [
         "highlight": false,
         "lineNumber": 10,
       },
+      ScriptLine {
+        "content": "    </MyComp>",
+        "highlight": false,
+        "lineNumber": 11,
+      },
     ],
   },
 ]
@@ -14229,15 +14229,10 @@ exports[`UiJsxCanvas runtime errors arbitrary at the top of a component has corr
 Array [
   Object {
     "columnNumber": 4,
-    "lineNumber": 7,
+    "lineNumber": 8,
     "message": "a is not defined",
     "name": "ReferenceError",
     "originalCode": Array [
-      ScriptLine {
-        "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
-        "highlight": false,
-        "lineNumber": 4,
-      },
       ScriptLine {
         "content": "",
         "highlight": false,
@@ -14250,12 +14245,12 @@ Array [
       },
       ScriptLine {
         "content": "  a.a // 18,3",
-        "highlight": true,
+        "highlight": false,
         "lineNumber": 7,
       },
       ScriptLine {
         "content": "  return (",
-        "highlight": false,
+        "highlight": true,
         "lineNumber": 8,
       },
       ScriptLine {
@@ -14267,6 +14262,11 @@ Array [
         "content": "      hello!",
         "highlight": false,
         "lineNumber": 10,
+      },
+      ScriptLine {
+        "content": "    </MyComp>",
+        "highlight": false,
+        "lineNumber": 11,
       },
     ],
   },
@@ -14301,15 +14301,10 @@ exports[`UiJsxCanvas runtime errors throws an error! 1`] = `
 Array [
   Object {
     "columnNumber": 2,
-    "lineNumber": 4,
+    "lineNumber": 5,
     "message": "a is not defined",
     "name": "ReferenceError",
     "originalCode": Array [
-      ScriptLine {
-        "content": "import * as React from \\"react\\"",
-        "highlight": false,
-        "lineNumber": 1,
-      },
       ScriptLine {
         "content": "import { View, jsx, Storyboard, Scene } from 'utopia-api'",
         "highlight": false,
@@ -14322,12 +14317,12 @@ Array [
       },
       ScriptLine {
         "content": "a.a // 16,1 this shall throw an error!",
-        "highlight": true,
+        "highlight": false,
         "lineNumber": 4,
       },
       ScriptLine {
         "content": "export var App = (props) => {",
-        "highlight": false,
+        "highlight": true,
         "lineNumber": 5,
       },
       ScriptLine {
@@ -14339,6 +14334,11 @@ Array [
         "content": "}",
         "highlight": false,
         "lineNumber": 7,
+      },
+      ScriptLine {
+        "content": "export var storyboard = (props) => {",
+        "highlight": false,
+        "lineNumber": 8,
       },
     ],
   },

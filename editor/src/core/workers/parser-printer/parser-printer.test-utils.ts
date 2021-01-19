@@ -91,6 +91,7 @@ import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
 import { getUtopiaID } from '../../model/element-template-utils'
 import { emptyComments, parsedComments, ParsedComments } from './parser-printer-comments'
+import { node } from 'prop-types'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(
   (text) => {
@@ -243,16 +244,21 @@ function parseModifyPrint(
   )
 }
 
-export function clearParseResultUniqueIDs(parseResult: ParsedTextFile): ParsedTextFile {
+export function clearParseResultUniqueIDsAndEmptyBlocks(
+  parseResult: ParsedTextFile,
+): ParsedTextFile {
   return mapParsedTextFile((success) => {
-    const updatedTopLevelElements = success.topLevelElements.map(clearTopLevelElementUniqueIDs)
+    const updatedTopLevelElements = success.topLevelElements.map(
+      clearTopLevelElementUniqueIDsAndEmptyBlocks,
+    )
+    const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = optionalMap<
+      ArbitraryJSBlock,
+      ArbitraryJSBlock
+    >(clearTopLevelElementUniqueIDsAndEmptyBlocks, success.combinedTopLevelArbitraryBlock)
     return {
       ...success,
       topLevelElements: updatedTopLevelElements,
-      combinedTopLevelArbitraryBlock: optionalMap(
-        clearArbitraryJSBlockUniqueIDs,
-        success.combinedTopLevelArbitraryBlock,
-      ),
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   }, parseResult)
 }
@@ -761,9 +767,9 @@ function babelCheckForDataUID(): { visitor: BabelTraverse.Visitor } {
   return {
     visitor: {
       JSXElement(path) {
-        const node = path.node
+        const pathNode = path.node
         let hasValidUID: boolean = false
-        for (const attribute of node.openingElement.attributes) {
+        for (const attribute of pathNode.openingElement.attributes) {
           if (BabelTypes.isJSXAttribute(attribute)) {
             if (BabelTypes.isJSXIdentifier(attribute.name)) {
               if (attribute.name.name === 'data-uid') {
@@ -925,5 +931,49 @@ export function forceParseSuccessFromFileOrFail(
     }
   } else {
     fail(`Not a text file ${file}`)
+  }
+}
+
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: UtopiaJSXComponent,
+): UtopiaJSXComponent
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: ArbitraryJSBlock,
+): ArbitraryJSBlock
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: TopLevelElement,
+): TopLevelElement
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: TopLevelElement,
+): TopLevelElement {
+  const withoutUID = clearTopLevelElementUniqueIDs(element)
+  switch (withoutUID.type) {
+    case 'UTOPIA_JSX_COMPONENT': {
+      const blockCode = (withoutUID.arbitraryJSBlock?.javascript || '').trim()
+      const blockIsEmpty = blockCode.length === 0
+      return {
+        ...withoutUID,
+        arbitraryJSBlock:
+          blockIsEmpty || withoutUID.arbitraryJSBlock == null
+            ? null
+            : {
+                ...withoutUID.arbitraryJSBlock,
+                javascript: blockCode,
+              },
+      }
+    }
+    case 'ARBITRARY_JS_BLOCK': {
+      const blockCode = (withoutUID.javascript || '').trim()
+      return {
+        ...withoutUID,
+        javascript: blockCode,
+      }
+    }
+    case 'IMPORT_STATEMENT':
+    case 'UNPARSED_CODE':
+      return withoutUID
+    default:
+      const _exhaustiveCheck: never = withoutUID
+      throw new Error(`Unhandled element ${JSON.stringify(withoutUID)}`)
   }
 }

@@ -2,7 +2,7 @@ import { printCode, printCodeOptions } from './parser-printer'
 import { applyPrettier } from './prettier-utils'
 import {
   testParseCode,
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   elementsStructure,
 } from './parser-printer.test-utils'
 import { AwkwardFragmentsCode } from './parser-printer-fragments.test-utils'
@@ -11,11 +11,14 @@ import { isParseSuccess } from '../../shared/project-file-types'
 describe('JSX parser', () => {
   it('handle some weird nested fragments', () => {
     const code = applyPrettier(AwkwardFragmentsCode, false).formatted
-    const parseResult = clearParseResultUniqueIDs(testParseCode(code))
+    const parseResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(parseResult)) {
       expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-        "IMPORT_STATEMENT
+        "UNPARSED_CODE
         IMPORT_STATEMENT
+        UNPARSED_CODE
+        IMPORT_STATEMENT
+        UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - View - aaa
             JSX_TEXT_BLOCK
@@ -28,9 +31,11 @@ describe('JSX parser', () => {
             JSX_TEXT_BLOCK
             JSX_ELEMENT - div - ddd
               JSX_TEXT_BLOCK
+        UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
-            JSX_ELEMENT - Scene - fff"
+            JSX_ELEMENT - Scene - fff
+        UNPARSED_CODE"
       `)
 
       const printedCode = printCode(
@@ -45,7 +50,6 @@ describe('JSX parser', () => {
         "/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
         export var App = (props) => {
           return (
             <View
@@ -65,7 +69,6 @@ describe('JSX parser', () => {
             </View>
           )
         }
-
         export var storyboard = (
           <Storyboard data-uid='eee'>
             <Scene
