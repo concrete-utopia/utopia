@@ -222,6 +222,42 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
   "jsxFactoryFunction": null,
   "topLevelElements": Array [
     Object {
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "cake",
+      ],
+      "module": "cake",
+      "rawCode": "import { cake } from 'cake'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "importStarAs": true,
+      "importWithName": false,
+      "imports": Array [],
+      "module": "react",
+      "rawCode": "
+import * as React from 'react'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "UtopiaUtils",
+        "Ellipse",
+        "Image",
+        "Rectangle",
+        "Storyboard",
+        "Text",
+        "View",
+      ],
+      "module": "utopia-api",
+      "rawCode": "
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -565,6 +601,27 @@ return { a: a, b: b };",
   "jsxFactoryFunction": null,
   "topLevelElements": Array [
     Object {
+      "importStarAs": true,
+      "importWithName": false,
+      "imports": Array [],
+      "module": "react",
+      "rawCode": "import * as React from \\"react\\";",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "View",
+      ],
+      "module": "utopia-api",
+      "rawCode": "
+import {
+  View
+} from \\"utopia-api\\";",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -833,6 +890,39 @@ return { a: a };",
   },
   "jsxFactoryFunction": null,
   "topLevelElements": Array [
+    Object {
+      "importStarAs": true,
+      "importWithName": false,
+      "imports": Array [],
+      "module": "react",
+      "rawCode": "import * as React from \\"react\\";",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "UtopiaUtils",
+        "Ellipse",
+        "Image",
+        "Rectangle",
+        "Storyboard",
+        "Text",
+        "View",
+      ],
+      "module": "utopia-api",
+      "rawCode": "
+import {
+  UtopiaUtils,
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  View
+} from \\"utopia-api\\";",
+      "type": "IMPORT_STATEMENT",
+    },
     Object {
       "comments": Object {
         "leadingComments": Array [],

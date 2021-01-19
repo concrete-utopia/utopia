@@ -102,6 +102,7 @@ describe('Parsing and printing code with comments', () => {
   }
 
   const notYetSupported: Array<keyof typeof comments> = [
+    'commentAfterImports',
     'commentAfterObjectSeparator',
     'commentAfterArraySeparator',
     'finalLineComment',
@@ -186,8 +187,9 @@ describe('Parsing and printing code with comments', () => {
     expect(parsedThenPrinted).toMatchInlineSnapshot(`
       "// Comment before imports
       import * as React from 'react'
+
       // Comment inside imports
-      import { Cat } from './honestly-not-dogs' // Comment after imports
+      import { Cat } from './honestly-not-dogs'
 
       // Comment before top level JS block
       function iAmAFunction() {

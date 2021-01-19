@@ -26,6 +26,23 @@ Object {
 exports[`JSX parser should parse out dot-notation element names 2`] = `
 Array [
   Object {
+    "importStarAs": true,
+    "importWithName": false,
+    "imports": Array [],
+    "module": "react",
+    "rawCode": "import * as React from 'react'",
+    "type": "IMPORT_STATEMENT",
+  },
+  Object {
+    "importStarAs": true,
+    "importWithName": false,
+    "imports": Array [],
+    "module": "utopia-api",
+    "rawCode": "
+import * as Utopia from 'utopia-api'",
+    "type": "IMPORT_STATEMENT",
+  },
+  Object {
     "arbitraryJSBlock": null,
     "blockOrExpression": "block",
     "comments": Object {

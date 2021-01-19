@@ -14,7 +14,9 @@ describe('JSX parser', () => {
     const parseResult = clearParseResultUniqueIDs(testParseCode(code))
     if (isParseSuccess(parseResult)) {
       expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-        "UTOPIA_JSX_COMPONENT - App
+        "IMPORT_STATEMENT
+        IMPORT_STATEMENT
+        UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - View - aaa
             JSX_TEXT_BLOCK
             JSX_FRAGMENT

@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import { last, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
 import {
@@ -28,11 +29,13 @@ export function findParentSceneValidPaths(target: Element): Array<string> | null
 }
 
 export function findFirstParentWithValidUID(
-  validTemplatePaths: Array<string>,
+  validTemplatePathsForLookup: Array<string>,
   target: Element,
 ): string | null {
   const uid = getDOMAttribute(target, 'data-uid')
   const originalUid = getDOMAttribute(target, 'data-utopia-original-uid')
+  const validTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
+  const validTemplatePaths = R.intersection(validTemplatePathsForLookup, validTemplatePathsForScene)
   if (originalUid != null && validTemplatePaths.find((tp) => tp.endsWith(originalUid))) {
     return last(validTemplatePaths.filter((tp) => tp.endsWith(originalUid))) ?? null
   } else if (uid != null && validTemplatePaths.find((tp) => tp.endsWith(uid))) {

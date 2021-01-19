@@ -1020,7 +1020,11 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
-      transientState: produceCanvasTransientState(history.current.editor, true),
+      transientState: produceCanvasTransientState(
+        poppedDerived.canvas.transientState.selectedViews,
+        history.current.editor,
+        true,
+      ),
     },
     elementWarnings: poppedDerived.elementWarnings,
   }
