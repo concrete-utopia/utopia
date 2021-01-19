@@ -7,8 +7,8 @@ module Utopia.Web.Packager.NPM where
 import           Control.Monad
 import           Data.Aeson
 import           Data.List                 (isSuffixOf, stripPrefix)
-import qualified Data.Text.IO              as T
 import           Protolude
+import           RIO                       (readFileUtf8)
 import           System.Directory.PathWalk
 import           System.FilePath
 import           System.IO.Temp
@@ -67,5 +67,5 @@ getModuleAndDependenciesFiles projectPath = do
       let relevant = isRelevantFilename file
       let entryFilename = strippedDir </> file
       let fullFilename = projectPath </> dir </> file
-      fileContent <- if relevant then fmap FileContent $ T.readFile fullFilename else pure Placeholder
+      fileContent <- if relevant then fmap FileContent $ readFileUtf8 fullFilename else pure Placeholder
       return $ Map.singleton (toS entryFilename) fileContent
