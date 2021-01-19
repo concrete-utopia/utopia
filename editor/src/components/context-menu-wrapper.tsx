@@ -1,12 +1,11 @@
 import * as React from 'react'
 import { Component as ReactComponent } from 'react'
 import { Menu, Item, Submenu as SubmenuComponent, contextMenu, useContextMenu } from 'react-contexify'
-import RU from '../utils/react-utils'
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import * as fastDeepEquals from 'fast-deep-equal'
-import { useRefEditorState } from './editor/store/store-hook'
-import { showContextMenu } from './editor/actions/action-creators'
+import { TemplatePath } from '../core/shared/project-file-types'
+import * as TP from '../core/shared/template-path'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -20,10 +19,15 @@ export interface ContextMenuWrapperProps<T> {
   providerStyle?: React.CSSProperties
 }
 
-export function openMenu(id: string, nativeEvent: MouseEvent) {
+export interface ContextMenuInnerProps {
+  elementsUnderCursor: Array<TemplatePath>
+}
+
+export function openMenu(id: string, nativeEvent: MouseEvent, props?: ContextMenuInnerProps) {
   contextMenu.show({
     id: id,
     event: nativeEvent,
+    props: props,
   })
 }
 
@@ -78,6 +82,16 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
     return splitItems
   }
 
+  isHidden = (item: ContextMenuItem<T>): ({ props }: {props: ContextMenuInnerProps}) => boolean => {
+    return (({ props }: {props: ContextMenuInnerProps}) => {
+      if (item.details != null && item.details.path != null && props.elementsUnderCursor != null) {
+        return !props.elementsUnderCursor.some(path => TP.pathsEqual(path, item.details!.path))
+      } else {
+        return false
+      }
+    })
+  }
+
   renderItem(item: ContextMenuItem<T>, index: number) {
     return (
       <Item
@@ -89,6 +103,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
           item.action(this.props.getData(), this.props.dispatch, event.nativeEvent)
           contextMenu.hideAll()
         }}
+        hidden={this.isHidden(item)}
       >
         <span className='react-contexify-span'>{item.name}</span>
         <span className='shortcut'>{item.shortcut}</span>

@@ -20,11 +20,13 @@ import {
   ContextMenuItem,
   CanvasData,
 } from './context-menu-items'
-import { MomentumContextMenu } from './context-menu-wrapper'
+import { ContextMenuInnerProps, MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { filterScenes } from '../core/shared/template-path'
-import { betterReactMemo } from '../uuiui-deps'
+import { betterReactMemo, Utils } from '../uuiui-deps'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
+import { MetadataUtils } from '../core/model/element-metadata-utils'
+import { getOpenUtopiaJSXComponentsFromState } from './editor/store/editor-state'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -82,6 +84,27 @@ export const ElementContextMenu = betterReactMemo(
       }
     }, [editorSliceRef])
 
+    let contextMenuItems = ElementContextMenuItems
+    if (contextMenuInstance === 'context-menu-canvas') {
+      const allPaths = useEditorState((store) => store.derived.navigatorTargets, 'ElementContextMenu allPaths')
+      const metadata = useEditorState((store) => store.editor.jsxMetadataKILLME, 'ElementContextMenu metadata')
+      const components = useEditorState((store) => getOpenUtopiaJSXComponentsFromState(store.editor), 'ElementContextMenu components')
+      
+      const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = allPaths.map(path => {
+        const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
+        return {
+          name: elementName?.baseVariable || '',
+          details: {
+            path: path,
+          },
+          submenuName: 'Elements',
+          enabled: true,
+          action: Utils.NO_OP,
+        }
+      })
+      contextMenuItems.push(...elementListSubmenu)
+    }
+
     const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
     if (portalTarget == null) {
       return null
@@ -90,7 +113,7 @@ export const ElementContextMenu = betterReactMemo(
         <MomentumContextMenu
           id={contextMenuInstance}
           key='element-context-menu'
-          items={ElementContextMenuItems}
+          items={contextMenuItems}
           dispatch={dispatch}
           getData={getData}
         />
