@@ -12,8 +12,8 @@
   },
   "scripts": {
     "clean": "rm -rf lib/",
-    "check": "tsc --noEmit && npm run lint && npm run check-dependency-cruiser && npm run test",
-    "check-ci": "tsc --noEmit && npm run lint && npm run check-dependency-cruiser && npm run test-ci",
+    "check": "tsc --noEmit && npm run lint && npm run check-dependency-cruiser && npm run prettier-check && npm run test",
+    "check-ci": "tsc --noEmit && npm run lint && npm run check-dependency-cruiser && npm run prettier-check && npm run test-ci",
     "lint": "npx eslint \"src/**/*.{js,ts,tsx}\" --quiet",
     "lint-loud": "npx eslint \"src/**/*.{js,ts,tsx}\"",
     "check-dependency-cruiser": "depcruise --config .dependency-cruiser.js src",
@@ -31,6 +31,7 @@
     "preinstall": "npm run install-utopia-api",
     "postinstall": "patch-package",
     "eslint-check": "eslint --quiet --config .eslintrc.js --ext .ts --ext .tsx src ../utopia-api/src ../website/src",
+    "prettier-check": "prettier --check src/**",
     "parse-print-analysis": "npx -s sh ts-node --require ignore-styles --transpile-only ./src/scripts/parse-print-analysis.ts",
     "parse-debug": "npx -s sh ts-node --pretty --require ignore-styles --transpile-only ./src/scripts/parse-debug.ts"
   },
