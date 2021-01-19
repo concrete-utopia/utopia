@@ -11,7 +11,8 @@
 }
 .react-contexify .react-contexify__submenu {
   position: absolute;
-  top: 0;
+  /* negate padding */
+  top: -4px;
   pointer-events: none;
   transition: opacity 0.275s;
 }
@@ -24,7 +25,6 @@
 }
 
 .react-contexify__separator {
-  float: left;
   width: 100%;
   height: 1px;
   cursor: default;
@@ -36,6 +36,7 @@
   font-size: 10px;
   font-weight: 500; /* medium */
   cursor: default;
+  position: relative;
 }
 .react-contexify__item:not(.react-contexify__item--disabled):hover
   > .react-contexify__item__content {
@@ -63,73 +64,53 @@
   margin-right: 6px;
 }
 
-@keyframes react-contexify__popIn {
-  0% {
-    transform: scale(0);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-@keyframes react-contexify__popOut {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(0);
-  }
-}
-.react-contexify__will-enter--pop {
-  animation: react-contexify__popIn 0.3s cubic-bezier(0.51, 0.92, 0.24, 1.2);
-}
 
-.react-contexify__will-leave--pop {
-  animation: react-contexify__popOut 0.3s cubic-bezier(0.51, 0.92, 0.24, 1.2);
-}
-
-@keyframes react-contexify__zoomIn {
+@keyframes react-contexify__scaleIn {
   from {
-    opacity: 0;
-    transform: scale3d(0.3, 0.3, 0.3);
-  }
-  50% {
-    opacity: 1;
-  }
-}
-@keyframes react-contexify__zoomOut {
-  from {
-    opacity: 1;
-  }
-  50% {
     opacity: 0;
     transform: scale3d(0.3, 0.3, 0.3);
   }
   to {
-    opacity: 0;
+    opacity: 1;
   }
 }
-.react-contexify__will-enter--zoom {
-  animation: react-contexify__zoomIn 0.4s;
+@keyframes react-contexify__scaleOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+}
+.react-contexify__will-enter--scale {
+  transform-origin: top left;
+  animation: react-contexify__scaleIn 0.3s;
 }
 
-.react-contexify__will-leave--zoom {
-  animation: react-contexify__zoomOut 0.4s;
+.react-contexify__will-leave--scale {
+  transform-origin: top left;
+  animation: react-contexify__scaleOut 0.3s;
 }
 
 @keyframes react-contexify__fadeIn {
   from {
     opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 @keyframes react-contexify__fadeOut {
   from {
     opacity: 1;
+    transform: translateY(0);
   }
   to {
     opacity: 0;
+    transform: translateY(10px);
   }
 }
 .react-contexify__will-enter--fade {
@@ -142,42 +123,71 @@
 
 @keyframes react-contexify__flipInX {
   from {
-    transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
-    animation-timing-function: ease-in;
-  }
-  40% {
-    transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
-    animation-timing-function: ease-in;
-  }
-  60% {
-    transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
-  }
-  80% {
-    transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
+    transform: perspective(800px) rotate3d(1, 0, 0, 45deg);
   }
   to {
-    transform: perspective(400px);
+    transform: perspective(800px);
   }
 }
 @keyframes react-contexify__flipOutX {
   from {
-    transform: perspective(400px);
-  }
-  30% {
-    transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
-    opacity: 1;
+    transform: perspective(800px);
   }
   to {
-    transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+    transform: perspective(800px) rotate3d(1, 0, 0, 45deg);
     opacity: 0;
   }
 }
 .react-contexify__will-enter--flip {
-  backface-visibility: visible !important;
-  animation: react-contexify__flipInX 0.65s;
+  -webkit-backface-visibility: visible !important;
+          backface-visibility: visible !important;
+  transform-origin: top center;
+  animation: react-contexify__flipInX 0.3s;
 }
 
 .react-contexify__will-leave--flip {
-  animation: react-contexify__flipOutX 0.65s;
-  backface-visibility: visible !important;
+  transform-origin: top center;
+  animation: react-contexify__flipOutX 0.3s;
+  -webkit-backface-visibility: visible !important;
+          backface-visibility: visible !important;
+}
+
+@keyframes swing-in-top-fwd {
+  0% {
+    transform: rotateX(-100deg);
+    transform-origin: top;
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg);
+    transform-origin: top;
+    opacity: 1;
+  }
+}
+@keyframes react-contexify__slideIn {
+  from {
+    opacity: 0;
+    transform: scale3d(1, 0.3, 1);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes react-contexify__slideOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: scale3d(1, 0.3, 1);
+  }
+}
+.react-contexify__will-enter--slide {
+  transform-origin: top center;
+  animation: react-contexify__slideIn 0.3s;
+}
+
+.react-contexify__will-leave--slide {
+  transform-origin: top center;
+  animation: react-contexify__slideOut 0.3s;
 }
