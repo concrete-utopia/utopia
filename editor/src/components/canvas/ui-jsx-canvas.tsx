@@ -417,7 +417,7 @@ function useGetStoryboardRoot(
     component: BakedInStoryboardVariableName,
     sceneResizesContent: false,
     scenePath: EmptyScenePathForStoryboard,
-    templatePath: TP.instancePath([], []),
+    templatePath: TP.instancePath([], []), // TODO use the real storyboardRootElementPath path here instead of this baked in empty path, so we can remove the hack from https://github.com/concrete-utopia/utopia/blob/264d96276f832ac0213cf3f142ac2c246d588448/editor/src/components/canvas/canvas.ts#L135
     globalFrame: null,
     label: 'Storyboard',
     style: {},
