@@ -265,7 +265,7 @@ const Canvas = {
     })
   },
   getAllTargetsAtPoint(
-    componentMeta: JSXMetadata,
+    componentMetadata: JSXMetadata,
     selectedViews: Array<TemplatePath>,
     hiddenInstances: Array<TemplatePath>,
     canvasPosition: CanvasPoint,
@@ -275,7 +275,7 @@ const Canvas = {
   ): Array<{ templatePath: TemplatePath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5
     const targetFilters = Canvas.targetFilter(selectedViews, searchTypes)
-    const framesWithPaths = Canvas.getFramesInCanvasContext(componentMeta, useBoundingFrames)
+    const framesWithPaths = Canvas.getFramesInCanvasContext(componentMetadata, useBoundingFrames)
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
       const shouldUseLooseTargeting =
         looseTargetingForZeroSizedElements &&
