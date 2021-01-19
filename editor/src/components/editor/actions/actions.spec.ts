@@ -111,7 +111,6 @@ describe('SET_PROP', () => {
           null,
           false,
           emptyComments,
-          emptyComments,
         ),
       ],
       {},
@@ -212,7 +211,6 @@ describe('SET_CANVAS_FRAMES', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     ),
   ]
 
@@ -296,7 +294,6 @@ describe('moveTemplate', () => {
             element,
             null,
             false,
-            emptyComments,
             emptyComments,
           ),
         ),
@@ -828,7 +825,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     rootElement,
     null,
     false,
-    emptyComments,
     emptyComments,
   )
   const fileForUI = textFile(

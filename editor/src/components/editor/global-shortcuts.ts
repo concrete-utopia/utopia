@@ -606,7 +606,7 @@ export function handleKeyDown(
               defaultRectangleElement(newUID),
               newUID,
               {
-                'utopia-api': importDetails(null, [importAlias('Rectangle')], null, emptyComments),
+                'utopia-api': importDetails(null, [importAlias('Rectangle')], null),
               },
               null,
             ),
@@ -623,7 +623,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null, emptyComments) },
+              { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
           ]
@@ -650,7 +650,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultTextElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Text')], null, emptyComments) },
+              { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
             ),
           ]
@@ -666,7 +666,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('View')], null, emptyComments) },
+              { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
           ]

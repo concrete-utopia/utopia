@@ -48,7 +48,6 @@ export function addUtopiaUtilsImportIfUsed(editorState: EditorState): EditorStat
           null,
           [importAlias('UtopiaUtils')],
           null,
-          emptyComments,
           parseSuccess.imports,
         )
 

@@ -3,10 +3,6 @@
 exports[`JSX parser circularly referenced arbitrary blocks parse and produce a combined block 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "definedElsewhere": Array [],
     "definedWithin": Array [
       "a",
@@ -148,19 +144,11 @@ return { a: a, b: b };",
   },
   "imports": Object {
     "react": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": "React",
       "importedFromWithin": Array [],
       "importedWithName": null,
     },
     "utopia-api": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
@@ -218,10 +206,6 @@ return { a: a, b: b };",
       "type": "UNPARSED_CODE",
     },
     Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "definedElsewhere": Array [
         "b",
       ],
@@ -321,10 +305,6 @@ return { a: a };",
     Object {
       "arbitraryJSBlock": null,
       "blockOrExpression": "block",
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "declarationSyntax": "var",
       "isFunction": true,
       "name": "App",
@@ -549,10 +529,6 @@ export var storyboard = (
       "type": "UNPARSED_CODE",
     },
     Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "definedElsewhere": Array [
         "a",
       ],
@@ -652,10 +628,6 @@ return { b: b };",
     Object {
       "arbitraryJSBlock": null,
       "blockOrExpression": "parenthesized-expression",
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "declarationSyntax": "var",
       "isFunction": false,
       "name": "storyboard",
