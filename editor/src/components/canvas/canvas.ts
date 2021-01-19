@@ -271,24 +271,27 @@ const Canvas = {
     })
   },
   getAllTargetsAtPoint(
-    componentMeta: JSXMetadata,
-    selectedViews: Array<TemplatePath>,
-    hiddenInstances: Array<TemplatePath>,
+    editor: EditorState,
     canvasPosition: CanvasPoint,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
     looseTargetingForZeroSizedElements: 'strict' | 'loose',
-  ): Array<{ templatePath: TemplatePath; canBeFilteredOut: boolean }> {
+  ): Array<TemplatePath> {
     const looseReparentThreshold = 5
-    const targetFilters = Canvas.targetFilter(selectedViews, searchTypes)
-    const framesWithPaths = Canvas.getFramesInCanvasContext(componentMeta, useBoundingFrames)
+    const targetFilters = Canvas.targetFilter(editor.selectedViews, searchTypes)
+    const framesWithPaths = Canvas.getFramesInCanvasContext(
+      editor.jsxMetadataKILLME,
+      useBoundingFrames,
+    )
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
       const shouldUseLooseTargeting =
         looseTargetingForZeroSizedElements &&
         (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
 
       return targetFilters.some((filter) => filter(frameWithPath.path)) &&
-        !hiddenInstances.some((hidden) => TP.isAncestorOf(frameWithPath.path, hidden, true)) &&
+        !editor.hiddenInstances.some((hidden) =>
+          TP.isAncestorOf(frameWithPath.path, hidden, true),
+        ) &&
         shouldUseLooseTargeting
         ? rectangleIntersection(
             canvasRectangle({
@@ -308,13 +311,7 @@ const Canvas = {
     })
     filteredFrames.reverse()
 
-    const targets = filteredFrames.map((filteredFrame) => {
-      const zeroSized = filteredFrame.frame.width === 0 || filteredFrame.frame.height === 0
-      return {
-        templatePath: filteredFrame.path,
-        canBeFilteredOut: !zeroSized,
-      }
-    })
+    const targets = filteredFrames.map((filteredFrame) => filteredFrame.path)
     return targets
   },
   getNextTarget(
