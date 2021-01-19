@@ -3159,7 +3159,7 @@ export const UPDATE_FNS = {
         editor.canvas.realCanvasOffset,
       )
       openMenu(action.menuName, action.event, {
-        elementsUnderCursor: elementsUnderCursor
+        elementsUnderCursor: elementsUnderCursor,
       })
     } else {
       openMenu(action.menuName, action.event)

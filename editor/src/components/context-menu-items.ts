@@ -26,7 +26,7 @@ export interface ContextMenuItem<T> {
   submenuName?: string | null
   shortcut?: string
   isSeparator?: boolean
-  details?: {[key: string]: any}
+  details?: { [key: string]: any }
   action: (data: T, dispatch?: EditorDispatch, event?: MouseEvent) => void
 }
 

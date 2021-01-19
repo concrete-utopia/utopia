@@ -16,7 +16,14 @@ import Utils, { IndexPosition } from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
 import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
 import { LayoutProp } from '../layout/layout-helpers-new'
-import { flattenArray, mapDropNulls, pluck, stripNulls, flatMapArray, uniqBy } from '../shared/array-utils'
+import {
+  flattenArray,
+  mapDropNulls,
+  pluck,
+  stripNulls,
+  flatMapArray,
+  uniqBy,
+} from '../shared/array-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
   alternativeEither,

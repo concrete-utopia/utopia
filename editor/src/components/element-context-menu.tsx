@@ -62,12 +62,23 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   toggleShadowItem,
 ]
 
-function useCanvasContextMenuItems(contextMenuInstance: ElementContextMenuInstance, dispatch: EditorDispatch): Array<ContextMenuItem<CanvasData>> {
-  const metadata = useEditorState((store) => store.editor.jsxMetadataKILLME, 'ElementContextMenu metadata')
-  const components = useEditorState((store) => getOpenUtopiaJSXComponentsFromState(store.editor), 'ElementContextMenu components')
+function useCanvasContextMenuItems(
+  contextMenuInstance: ElementContextMenuInstance,
+  dispatch: EditorDispatch,
+): Array<ContextMenuItem<CanvasData>> {
+  const metadata = useEditorState(
+    (store) => store.editor.jsxMetadataKILLME,
+    'ElementContextMenu metadata',
+  )
+  const components = useEditorState(
+    (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
+    'ElementContextMenu components',
+  )
 
   if (contextMenuInstance === 'context-menu-canvas') {
-    const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = MetadataUtils.getAllPaths(metadata).map(path => {
+    const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = MetadataUtils.getAllPaths(
+      metadata,
+    ).map((path) => {
       const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
       return {
         name: elementName?.baseVariable || '',
@@ -115,15 +126,16 @@ export const ElementContextMenu = betterReactMemo(
     if (portalTarget == null) {
       return null
     } else {
-      return ReactDOM.createPortal((
+      return ReactDOM.createPortal(
         <MomentumContextMenu
           id={contextMenuInstance}
           key='element-context-menu'
           items={contextMenuItems}
           dispatch={dispatch}
           getData={getData}
-        />
-      ), portalTarget)
+        />,
+        portalTarget,
+      )
     }
   },
 )
