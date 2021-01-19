@@ -27,6 +27,7 @@ import { betterReactMemo, Utils } from '../uuiui-deps'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { getOpenUtopiaJSXComponentsFromState } from './editor/store/editor-state'
+import { useKeepReferenceEqualityIfPossible } from '../utils/react-performance'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -60,6 +61,29 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   toggleShadowItem,
 ]
 
+function useCanvasContextMenuItems(contextMenuInstance: ElementContextMenuInstance): Array<ContextMenuItem<CanvasData>> {
+  const metadata = useEditorState((store) => store.editor.jsxMetadataKILLME, 'ElementContextMenu metadata')
+  const components = useEditorState((store) => getOpenUtopiaJSXComponentsFromState(store.editor), 'ElementContextMenu components')
+
+  if (contextMenuInstance === 'context-menu-canvas') {
+    const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = MetadataUtils.getAllPaths(metadata).map(path => {
+      const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
+      return {
+        name: elementName?.baseVariable || '',
+        details: {
+          path: path,
+        },
+        submenuName: 'Elements',
+        enabled: true,
+        action: Utils.NO_OP,
+      }
+    })
+    return [...ElementContextMenuItems, ...elementListSubmenu]
+  } else {
+    return ElementContextMenuItems
+  }
+}
+
 // TODO Scene Implementation - seems we should have a different context menu for scenes
 export const ElementContextMenu = betterReactMemo(
   'ElementContextMenu',
@@ -84,26 +108,7 @@ export const ElementContextMenu = betterReactMemo(
       }
     }, [editorSliceRef])
 
-    let contextMenuItems = ElementContextMenuItems
-    if (contextMenuInstance === 'context-menu-canvas') {
-      const allPaths = useEditorState((store) => store.derived.navigatorTargets, 'ElementContextMenu allPaths')
-      const metadata = useEditorState((store) => store.editor.jsxMetadataKILLME, 'ElementContextMenu metadata')
-      const components = useEditorState((store) => getOpenUtopiaJSXComponentsFromState(store.editor), 'ElementContextMenu components')
-      
-      const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = allPaths.map(path => {
-        const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
-        return {
-          name: elementName?.baseVariable || '',
-          details: {
-            path: path,
-          },
-          submenuName: 'Elements',
-          enabled: true,
-          action: Utils.NO_OP,
-        }
-      })
-      contextMenuItems.push(...elementListSubmenu)
-    }
+    const contextMenuItems = useKeepReferenceEqualityIfPossible(useCanvasContextMenuItems(contextMenuInstance))
 
     const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
     if (portalTarget == null) {
