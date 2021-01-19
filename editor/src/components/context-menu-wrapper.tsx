@@ -1,6 +1,12 @@
 import * as React from 'react'
 import { Component as ReactComponent } from 'react'
-import { Menu, Item, Submenu as SubmenuComponent, contextMenu, useContextMenu } from 'react-contexify'
+import {
+  Menu,
+  Item,
+  Submenu as SubmenuComponent,
+  contextMenu,
+  useContextMenu,
+} from 'react-contexify'
 import RU from '../utils/react-utils'
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
@@ -84,7 +90,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
         key={`context-menu-${index}-item`}
         disabled={!item.enabled}
         // eslint-disable-next-line react/jsx-no-bind
-        onClick={({event}: {event: React.MouseEvent<HTMLElement>}) => {
+        onClick={({ event }: { event: React.MouseEvent<HTMLElement> }) => {
           event.stopPropagation()
           item.action(this.props.getData(), this.props.dispatch, event.nativeEvent)
           contextMenu.hideAll()
@@ -197,15 +203,15 @@ interface MenuProviderProps {
 
 export const MenuProvider: React.FunctionComponent<MenuProviderProps> = (props) => {
   const { show } = useContextMenu({ id: props.id })
-  const onContextMenu = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    show(event)
-  }, [show])
+  const onContextMenu = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      show(event)
+    },
+    [show],
+  )
 
   return (
-    <div
-      style={props.style}
-      onContextMenu={onContextMenu}
-    >
+    <div style={props.style} onContextMenu={onContextMenu}>
       {props.children}
     </div>
   )

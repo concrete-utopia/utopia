@@ -86,15 +86,16 @@ export const ElementContextMenu = betterReactMemo(
     if (portalTarget == null) {
       return null
     } else {
-      return ReactDOM.createPortal((
+      return ReactDOM.createPortal(
         <MomentumContextMenu
           id={contextMenuInstance}
           key='element-context-menu'
           items={ElementContextMenuItems}
           dispatch={dispatch}
           getData={getData}
-        />
-      ), portalTarget)
+        />,
+        portalTarget,
+      )
     }
   },
 )
