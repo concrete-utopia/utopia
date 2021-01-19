@@ -39,6 +39,8 @@ import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { selectElementsThatRespectLayout } from '../new-canvas-controls'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 
+export const PreventHighlightsForThisEvent = 'utopiaPreventHighlights'
+
 const DRAG_START_TRESHOLD = 2
 
 export function isResizing(dragState: DragState | null): boolean {
@@ -364,6 +366,11 @@ export function useHighlightCallbacks(
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      if (PreventHighlightsForThisEvent in event) {
+        maybeClearHighlightsOnHoverEnd()
+        previousTargetUnderPoint.current = null
+        return
+      }
       const selectableViews: Array<TemplatePath> = getHighlightableViews(event.metaKey, false)
       const validTemplatePath = findValidTarget(
         selectableViews,

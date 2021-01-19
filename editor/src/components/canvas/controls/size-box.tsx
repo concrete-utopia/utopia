@@ -26,6 +26,7 @@ import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { SizeBoxLabel } from './size-box-label'
 import { colorTheme } from '../../../uuiui'
+import { PreventHighlightsForThisEvent } from './select-mode/select-mode-hooks'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -78,6 +79,10 @@ class ResizeControl extends React.Component<ResizeControlProps> {
     }
   }
 
+  onMouseMove = (event: React.MouseEvent<any>) => {
+    Object.defineProperty(event, PreventHighlightsForThisEvent, { value: true })
+  }
+
   render() {
     const currentSize = this.props.visualSize
     const top =
@@ -99,7 +104,9 @@ class ResizeControl extends React.Component<ResizeControlProps> {
     return (
       <React.Fragment>
         {this.props.resizeStatus === 'enabled' ? (
-          <div onMouseDown={this.onMouseDown}>{this.props.children}</div>
+          <div onMouseDown={this.onMouseDown} onMouseMove={this.onMouseMove}>
+            {this.props.children}
+          </div>
         ) : (
           this.props.children
         )}
