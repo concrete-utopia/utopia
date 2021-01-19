@@ -3148,14 +3148,7 @@ export const UPDATE_FNS = {
   },
   SHOW_CONTEXT_MENU: (action: ShowContextMenu, editor: EditorModel): EditorModel => {
     // side effect!
-    if (action.menuName === 'context-menu-canvas') {
-      const elementsUnderCursor = getAllTargetsAtPoint(WindowMousePositionRaw)
-      openMenu(action.menuName, action.event, {
-        elementsUnderCursor: elementsUnderCursor,
-      })
-    } else {
-      openMenu(action.menuName, action.event)
-    }
+    openMenu(action.menuName, action.event, action.props)
     return editor
   },
   SEND_PREVIEW_MODEL: (action: SendPreviewModel, editor: EditorModel): EditorModel => {

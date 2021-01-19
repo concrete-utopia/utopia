@@ -29,6 +29,8 @@ import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
 import { getSelectableViews } from './select-mode/select-mode-hooks'
+import { getAllTargetsAtPoint } from '../dom-lookup'
+import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 
 export const SnappingThreshold = 5
 
@@ -145,8 +147,9 @@ export class SelectModeControlContainer extends React.Component<
   onContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation()
     event.preventDefault()
+    const elementsUnderCursor = getAllTargetsAtPoint(WindowMousePositionRaw)
     this.props.dispatch(
-      [EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent)],
+      [EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent, { elementsUnderCursor })],
       'canvas',
     )
   }
