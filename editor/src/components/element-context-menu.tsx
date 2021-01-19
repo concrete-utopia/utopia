@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as ReactDOM from 'react-dom'
 import {
   bringForward,
   bringToFront,
@@ -23,6 +24,7 @@ import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { filterScenes } from '../core/shared/template-path'
 import { betterReactMemo } from '../uuiui-deps'
+import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -80,14 +82,19 @@ export const ElementContextMenu = betterReactMemo(
       }
     }, [editorSliceRef])
 
-    return (
-      <MomentumContextMenu
-        id={contextMenuInstance}
-        key='element-context-menu'
-        items={ElementContextMenuItems}
-        dispatch={dispatch}
-        getData={getData}
-      />
-    )
+    const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
+    if (portalTarget == null) {
+      return null
+    } else {
+      return ReactDOM.createPortal((
+        <MomentumContextMenu
+          id={contextMenuInstance}
+          key='element-context-menu'
+          items={ElementContextMenuItems}
+          dispatch={dispatch}
+          getData={getData}
+        />
+      ), portalTarget)
+    }
   },
 )

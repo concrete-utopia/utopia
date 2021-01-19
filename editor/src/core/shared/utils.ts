@@ -5,6 +5,7 @@ import urljoin = require('url-join')
 // This file shouldn't import anything as it is for exporting simple shared utility functions between various projects
 export const EditorID = 'editor'
 export const PortalTargetID = 'portal-target'
+export const CanvasContextMenuPortalTargetID = 'canvas-contextmenu-portal-target'
 
 export const RETURN_TO_PREPEND = 'return '
 
