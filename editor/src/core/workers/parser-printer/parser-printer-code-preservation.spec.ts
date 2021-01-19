@@ -189,10 +189,8 @@ function Picker() {
       const a = 1
       /** @jsx jsx */
       import React, { useEffect, useRef } from 'react'
-      
       const b = 2
       import { extend, useThree, useFrame } from 'react-three-fiber'
-
       const c = 3
 
       export const whatever = (props) => {
@@ -200,13 +198,9 @@ function Picker() {
       }
       
       const d = 4
-
       export { d }
-      
       const e = 5
-      
       export { e as SomethingElse }
-
       const f = 6`,
       false,
     ).formatted
@@ -229,7 +223,7 @@ function Picker() {
     expect(parsedThenPrinted).toEqual(code)
   })
 
-  it('inserts newlines based on heuristics', () => {
+  it('retains empty lines in the code', () => {
     const code = applyPrettier(
       `/** @jsx jsx */
       import * as React from 'react'

@@ -85,17 +85,15 @@ function otherFn(n) {
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+      "mappings": "AAICA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC;;AACAL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
       "names": Array [
         "function",
         "cakeFn",
         "n",
         "{",
         "return",
-        "
-",
-        "otherFn",
         "}",
+        "otherFn",
       ],
       "sources": Array [
         "code.tsx",
@@ -232,13 +230,22 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "type": "IMPORT_STATEMENT",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "importStarAs": true,
       "importWithName": false,
       "imports": Array [],
       "module": "react",
-      "rawCode": "
-import * as React from 'react'",
+      "rawCode": "import * as React from 'react'",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "importStarAs": false,
@@ -253,9 +260,13 @@ import * as React from 'react'",
         "View",
       ],
       "module": "utopia-api",
-      "rawCode": "
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'",
+      "rawCode": "import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "comments": Object {
@@ -312,6 +323,11 @@ return { cakeFn: cakeFn };",
       "uniqueID": "",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -364,6 +380,11 @@ export var whatever = (props) => {
 return { otherFn: otherFn };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "arbitraryJSBlock": null,
@@ -498,6 +519,11 @@ export var whatever = (props) => {
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
     },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
   ],
   "type": "PARSE_SUCCESS",
 }
@@ -519,7 +545,7 @@ Object {
 const b = (n) => n > 0 ? n : a(10)",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+      "mappings": "AAKCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
       "names": Array [
         "const",
         "a",
@@ -609,17 +635,26 @@ return { a: a, b: b };",
       "type": "IMPORT_STATEMENT",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "importStarAs": false,
       "importWithName": false,
       "imports": Array [
         "View",
       ],
       "module": "utopia-api",
-      "rawCode": "
-import {
+      "rawCode": "import {
   View
 } from \\"utopia-api\\";",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "comments": Object {
@@ -667,6 +702,11 @@ const b = (n) => n > 0 ? n : a(10)
 return { a: a };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "arbitraryJSBlock": null,
@@ -723,6 +763,11 @@ return { a: a };",
       "usedInReactDOMRender": false,
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "comments": Object {
         "leadingComments": Array [],
         "trailingComments": Array [],
@@ -769,6 +814,11 @@ return { b: b };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
     },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
   ],
   "type": "PARSE_SUCCESS",
 }
@@ -788,7 +838,7 @@ Object {
     "javascript": "const a = \\"cake\\"",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AAWCA,IAAMC,CAACC,GAAGC,MAAVH",
       "names": Array [
         "const",
         "a",
@@ -899,6 +949,11 @@ return { a: a };",
       "type": "IMPORT_STATEMENT",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "importStarAs": false,
       "importWithName": false,
       "imports": Array [
@@ -911,8 +966,7 @@ return { a: a };",
         "View",
       ],
       "module": "utopia-api",
-      "rawCode": "
-import {
+      "rawCode": "import {
   UtopiaUtils,
   Ellipse,
   Image,
@@ -922,6 +976,11 @@ import {
   View
 } from \\"utopia-api\\";",
       "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "comments": Object {
@@ -968,6 +1027,11 @@ export var App = (props) => <View data-uid='bbb'>
 return { a: a };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
     Object {
       "arbitraryJSBlock": null,
@@ -1060,6 +1124,11 @@ export var App = (props) => <View data-uid='bbb'>
       },
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
   ],
   "type": "PARSE_SUCCESS",

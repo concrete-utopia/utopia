@@ -34,13 +34,23 @@ Array [
     "type": "IMPORT_STATEMENT",
   },
   Object {
+    "rawCode": "
+",
+    "type": "UNPARSED_CODE",
+  },
+  Object {
     "importStarAs": true,
     "importWithName": false,
     "imports": Array [],
     "module": "utopia-api",
-    "rawCode": "
-import * as Utopia from 'utopia-api'",
+    "rawCode": "import * as Utopia from 'utopia-api'",
     "type": "IMPORT_STATEMENT",
+  },
+  Object {
+    "rawCode": "
+
+",
+    "type": "UNPARSED_CODE",
   },
   Object {
     "arbitraryJSBlock": null,
@@ -172,6 +182,12 @@ export var storyboard = (props) => {
     "usedInReactDOMRender": false,
   },
   Object {
+    "rawCode": "
+
+",
+    "type": "UNPARSED_CODE",
+  },
+  Object {
     "comments": Object {
       "leadingComments": Array [],
       "trailingComments": Array [],
@@ -287,6 +303,11 @@ export var storyboard = (props) => {
 return { storyboard: storyboard };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
+  },
+  Object {
+    "rawCode": "
+",
+    "type": "UNPARSED_CODE",
   },
 ]
 `;

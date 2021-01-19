@@ -1,4 +1,4 @@
-import { clearParseResultUniqueIDs, testParseCode } from './parser-printer.test-utils'
+import { clearParseResultUniqueIDsAndEmptyBlocks, testParseCode } from './parser-printer.test-utils'
 import Utils from '../../../utils/utils'
 import { applyPrettier } from './prettier-utils'
 import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx.test-utils'
@@ -13,7 +13,7 @@ describe('parseCode', () => {
 `,
       false,
     ).formatted
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(testPrintParsedTextFile(actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`
@@ -38,7 +38,7 @@ describe('parseCode', () => {
 `,
       false,
     ).formatted
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(testPrintParsedTextFile(actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`
@@ -65,7 +65,7 @@ describe('parseCode', () => {
 `,
       false,
     ).formatted
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(testPrintParsedTextFile(actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`

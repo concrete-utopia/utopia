@@ -1210,6 +1210,9 @@ export function clearParamUniqueIDs(param: Param): Param {
 }
 
 // FIXME: Should only really be in test code.
+export function clearTopLevelElementUniqueIDs(element: UtopiaJSXComponent): UtopiaJSXComponent
+export function clearTopLevelElementUniqueIDs(element: ArbitraryJSBlock): ArbitraryJSBlock
+export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLevelElement
 export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLevelElement {
   switch (element.type) {
     case 'UTOPIA_JSX_COMPONENT':

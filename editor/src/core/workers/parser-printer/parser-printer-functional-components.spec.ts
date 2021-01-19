@@ -1,5 +1,5 @@
 import {
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   testParseCode,
   JustImportViewAndReact,
 } from './parser-printer.test-utils'
@@ -146,7 +146,9 @@ export var whatever = ({arrayPart: [prop1 = 5, ,{ prop2: renamedProp2 = {thing: 
 
 describe('Parsing a function component with props', () => {
   it('Correctly parses a basic props object', () => {
-    const actualResult = clearParseResultUniqueIDs(testParseCode(codeWithBasicPropsObject))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithBasicPropsObject),
+    )
     const view = jsxElement(
       'View',
       jsxAttributesFromMap({
@@ -180,7 +182,7 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a basic props object with default', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithBasicPropsObjectWithDefault),
     )
     const view = jsxElement(
@@ -230,7 +232,9 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a basic props object with a different name', () => {
-    const actualResult = clearParseResultUniqueIDs(testParseCode(codeWithRenamedBasicPropsObject))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithRenamedBasicPropsObject),
+    )
     const view = jsxElement(
       'View',
       jsxAttributesFromMap({
@@ -265,7 +269,9 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object', () => {
-    const actualResult = clearParseResultUniqueIDs(testParseCode(codeWithDestructuredPropsObject))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithDestructuredPropsObject),
+    )
     const view = jsxElement(
       'View',
       jsxAttributesFromMap({
@@ -304,7 +310,7 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object with a default', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredPropsObjectWithDefault),
     )
     const view = jsxElement(
@@ -352,7 +358,7 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object that renames the param', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredPropsObjectWithRenamedParam),
     )
     const view = jsxElement(
@@ -393,7 +399,7 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object that renames the param with a default', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredPropsObjectWithRenamedParamAndDefault),
     )
     const view = jsxElement(
@@ -440,7 +446,7 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object that uses a rest param', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredPropsObjectWithRestParam),
     )
     const view = jsxElement(
@@ -483,7 +489,9 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props array', () => {
-    const actualResult = clearParseResultUniqueIDs(testParseCode(codeWithDestructuredArray))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithDestructuredArray),
+    )
     const view = jsxElement(
       'View',
       jsxAttributesFromMap({
@@ -519,7 +527,7 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props array with a default', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredArrayWithDefault),
     )
     const view = jsxElement(
@@ -563,7 +571,7 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props array with an omitted param', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredArrayWithOmittedParam),
     )
     const view = jsxElement(
@@ -605,7 +613,7 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a nested destructured props mess', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithNestedDestructuredPropsMess),
     )
     const view = jsxElement(
@@ -660,7 +668,7 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a nested destructured props mess with defaults', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithNestedDestructuredPropsMessWithDefaults),
     )
     const view = jsxElement(
@@ -739,7 +747,7 @@ describe('Parsing, printing, reparsing a function component with props', () => {
   // due to the above tests
 
   function testParsePrintParse(code: string) {
-    const firstParse = clearParseResultUniqueIDs(testParseCode(code))
+    const firstParse = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
 
     if (!isParseSuccess(firstParse)) {
       fail(firstParse)
@@ -755,7 +763,7 @@ describe('Parsing, printing, reparsing a function component with props', () => {
       firstAsParseSuccess.exportsDetail,
     )
 
-    const secondParse = clearParseResultUniqueIDs(testParseCode(printed))
+    const secondParse = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printed))
 
     if (!isParseSuccess(secondParse)) {
       fail(secondParse)

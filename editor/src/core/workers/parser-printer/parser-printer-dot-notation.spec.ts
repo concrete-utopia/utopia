@@ -1,6 +1,6 @@
 import { applyPrettier } from './prettier-utils'
 import {
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   testParseCode,
   testParseThenPrint,
 } from './parser-printer.test-utils'
@@ -38,7 +38,7 @@ export var storyboard = (props) => {
 `,
       false,
     ).formatted
-    const parseResult = clearParseResultUniqueIDs(testParseCode(code))
+    const parseResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     foldParsedTextFile(
       (failure) => {
         fail(failure)
