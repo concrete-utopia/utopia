@@ -3149,15 +3149,7 @@ export const UPDATE_FNS = {
   SHOW_CONTEXT_MENU: (action: ShowContextMenu, editor: EditorModel): EditorModel => {
     // side effect!
     if (action.menuName === 'context-menu-canvas') {
-      const elementsUnderCursor = getAllTargetsAtPoint(
-        editor.jsxMetadataKILLME,
-        editor.selectedViews,
-        editor.hiddenInstances,
-        'no-filter',
-        WindowMousePositionRaw,
-        editor.canvas.scale,
-        editor.canvas.realCanvasOffset,
-      )
+      const elementsUnderCursor = getAllTargetsAtPoint(WindowMousePositionRaw)
       openMenu(action.menuName, action.event, {
         elementsUnderCursor: elementsUnderCursor,
       })
