@@ -7,6 +7,7 @@ import {
   isJSXElement,
   isUtopiaJSXComponent,
   jsxArbitraryBlock,
+  jsxAttributesFromMap,
   jsxAttributeValue,
   jsxElement,
   utopiaJSXComponent,
@@ -76,7 +77,7 @@ export var app = (props) => {
               if (isJSXArbitraryBlock(firstChild)) {
                 const firstKey = Object.keys(firstChild.elementsWithin)[0]
                 const firstElementWithin = firstChild.elementsWithin[firstKey]
-                const updatedAttributes = {
+                const updatedAttributes = jsxAttributesFromMap({
                   style: jsxAttributeValue(
                     {
                       backgroundColor: 'red',
@@ -88,7 +89,7 @@ export var app = (props) => {
                     },
                     emptyComments,
                   ),
-                }
+                })
                 const updatedElementsWithin = {
                   [firstKey]: jsxElement(
                     firstElementWithin.name,

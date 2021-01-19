@@ -15,6 +15,7 @@ import {
   emptyComputedStyle,
   ElementInstanceMetadataMap,
   jsxMetadata,
+  jsxAttributesFromMap,
 } from '../shared/element-template'
 import { generateUidWithExistingComponents } from '../model/element-template-utils'
 import { right } from '../shared/either'
@@ -58,18 +59,18 @@ describe('maybeSwitchLayoutProps', () => {
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
     const elementToPaste = jsxElement(
       'View',
-      {
+      jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
-          {
+          jsxAttributesFromMap({
             bottom: jsxAttributeValue(50, emptyComments),
             right: jsxAttributeValue(50, emptyComments),
             width: jsxAttributeValue(100, emptyComments),
             height: jsxAttributeValue(100, emptyComments),
-          },
+          }),
           emptyComments,
         ),
         'data-uid': jsxAttributeValue(NewUID, emptyComments),
-      },
+      }),
       [],
     )
     const elementPath = TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID])

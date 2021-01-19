@@ -56,6 +56,7 @@ import {
   isJSXElement,
   FunctionDeclarationSyntax,
   BlockOrExpression,
+  jsxAttributesFromMap,
   ImportStatement,
   importStatement,
 } from '../../shared/element-template'
@@ -528,7 +529,9 @@ export function flatObjectArbitrary<V>(
 }
 
 export function jsxAttributesArbitrary(): Arbitrary<JSXAttributes> {
-  return flatObjectArbitrary(lowercaseStringArbitrary(), jsxAttributeArbitrary(3))
+  return flatObjectArbitrary(lowercaseStringArbitrary(), jsxAttributeArbitrary(3)).map(
+    jsxAttributesFromMap,
+  )
 }
 
 export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {

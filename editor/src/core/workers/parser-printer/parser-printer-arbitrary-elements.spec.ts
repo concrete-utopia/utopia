@@ -11,6 +11,8 @@ import {
   jsxElement,
   utopiaJSXComponent,
   defaultPropsParam,
+  getJSXAttribute,
+  jsxAttributesFromMap,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
@@ -67,12 +69,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         if (firstComponent != null) {
           const view = firstComponent.rootElement
           if (isJSXElement(view)) {
-            expect(view.props['data-uid']).not.toBeNull()
+            expect(getJSXAttribute(view.props, 'data-uid')).not.toBeNull()
             const firstChild = view.children[0]
             if (isJSXArbitraryBlock(firstChild)) {
               const elementWithin =
                 firstChild.elementsWithin[Object.keys(firstChild.elementsWithin)[0]]
-              expect(elementWithin.props['data-uid']).not.toBeNull()
+              expect(getJSXAttribute(elementWithin.props, 'data-uid')).not.toBeNull()
             } else {
               fail('First child is not an arbitrary block of code.')
             }
@@ -188,7 +190,11 @@ export var whatever = props => (
       'expression',
       defaultPropsParam,
       [],
-      jsxElement('div', { 'data-uid': jsxAttributeValue('abc', emptyComments) }, []),
+      jsxElement(
+        'div',
+        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('abc', emptyComments) }),
+        [],
+      ),
       null,
       false,
       emptyComments,
@@ -205,11 +211,19 @@ export var whatever = props => (
         version: 3,
         file: 'code.tsx',
       }),
-      { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab', emptyComments) }, []) },
+      {
+        aab: jsxElement(
+          'MyComp',
+          jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aab', emptyComments) }),
+          [],
+        ),
+      },
     )
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa', emptyComments) }, [
-      codeBlock,
-    ])
+    const view = jsxElement(
+      'View',
+      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+      [codeBlock],
+    )
     const whatever = utopiaJSXComponent(
       'whatever',
       true,
@@ -250,9 +264,9 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
-      {
+      jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
-      },
+      }),
       [
         jsxArbitraryBlock(
           ` arr.map(({ n }) => <View data-uid='aab' thing={n} /> ) `,
@@ -272,7 +286,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
+              jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
@@ -284,7 +298,7 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },
@@ -348,9 +362,9 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
-      {
+      jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
-      },
+      }),
       [
         jsxArbitraryBlock(
           ` arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> ) `,
@@ -370,7 +384,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
+              jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
@@ -382,7 +396,7 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },
@@ -458,9 +472,9 @@ export var whatever = (props) => {
 });`
     const view = jsxElement(
       'View',
-      {
+      jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
-      },
+      }),
       [
         jsxArbitraryBlock(
           originalMapJsCode,
@@ -475,7 +489,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
+              jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
@@ -487,7 +501,7 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },
@@ -547,9 +561,9 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
-      {
+      jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
-      },
+      }),
       [
         jsxArbitraryBlock(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
@@ -568,15 +582,15 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'div',
-              {
+              jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
-              },
+              }),
               [
                 jsxElement(
                   'div',
-                  {
+                  jsxAttributesFromMap({
                     'data-uid': jsxAttributeValue('aac', emptyComments),
-                  },
+                  }),
                   [
                     jsxArbitraryBlock(
                       `n`,
@@ -648,9 +662,9 @@ export var whatever = (props) => {
 });`
     const view = jsxElement(
       'View',
-      {
+      jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
-      },
+      }),
       [
         jsxArbitraryBlock(
           mapJsCode,
@@ -665,7 +679,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
+              jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
@@ -677,7 +691,7 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },
@@ -737,9 +751,9 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
-      {
+      jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
-      },
+      }),
       [
         jsxArbitraryBlock(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
@@ -758,15 +772,15 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'div',
-              {
+              jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
-              },
+              }),
               [
                 jsxElement(
                   'div',
-                  {
+                  jsxAttributesFromMap({
                     'data-uid': jsxAttributeValue('aac', emptyComments),
-                  },
+                  }),
                   [
                     jsxArbitraryBlock(
                       `n`,
@@ -838,9 +852,9 @@ export var whatever = (props) => {
 });`
     const view = jsxElement(
       'View',
-      {
+      jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
-      },
+      }),
       [
         jsxArbitraryBlock(
           mapJsCode,
@@ -855,7 +869,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
+              jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
@@ -867,7 +881,7 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },

@@ -43,6 +43,7 @@ import {
   UtopiaJSXComponent,
   ElementInstanceMetadata,
   JSXMetadata,
+  setJSXAttributesAttribute,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -61,6 +62,7 @@ import {
   setJSXValueAtPath,
   jsxAttributesToProps,
   jsxSimpleAttributeToValue,
+  getJSXAttributeAtPath,
 } from '../../core/shared/jsx-attributes'
 import {
   Imports,
@@ -356,7 +358,9 @@ export function updateFramesOfScenesAndComponents(
             workingComponentsResult,
             sceneStaticpath,
             (sceneElement) => {
-              const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
+              const styleProps = jsxSimpleAttributeToValue(
+                getJSXAttributeAtPath(sceneElement.props, PP.create(['style'])).attribute,
+              )
               if (isRight(styleProps)) {
                 let frameProps: { [k: string]: string | number | undefined } = {}
                 Utils.fastForEach(['PinnedLeft', 'PinnedTop'] as LayoutPinnedProp[], (p) => {
@@ -396,7 +400,9 @@ export function updateFramesOfScenesAndComponents(
             workingComponentsResult,
             sceneStaticpath,
             (sceneElement) => {
-              const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
+              const styleProps = jsxSimpleAttributeToValue(
+                getJSXAttributeAtPath(sceneElement.props, PP.create(['style'])).attribute,
+              )
               if (isRight(styleProps)) {
                 let frameProps: { [k: string]: string | number | undefined } = {}
                 Utils.fastForEach(
@@ -2344,11 +2350,17 @@ export function duplicate(
             if (TP.isScenePath(path) && isJSXElement(jsxElement)) {
               const numberOfScenes = getNumberOfScenes(editor)
               const newSceneLabel = `Scene ${numberOfScenes}`
-              const props = {
-                ...jsxElement.props,
-                'data-label': jsxAttributeValue(newSceneLabel, emptyComments),
-                'data-uid': jsxAttributeValue(getUtopiaID(newElement), emptyComments),
-              }
+              let props = setJSXAttributesAttribute(
+                jsxElement.props,
+                'data-label',
+                jsxAttributeValue(newSceneLabel, emptyComments),
+              )
+              props = setJSXAttributesAttribute(
+                props,
+                'data-uid',
+                jsxAttributeValue(getUtopiaID(newElement), emptyComments),
+              )
+
               const newSceneElement = {
                 ...jsxElement,
                 props: props,

@@ -47,9 +47,6 @@ describe('Parsing and printing code with comments', () => {
   const notYetSupported: Array<keyof typeof comments> = [
     'commentAfterObjectSeparator',
     'commentAfterArraySeparator',
-    'commentBeforeAllAttributes',
-    'commentInsideAttributes',
-    'commentAfterAllAttributes',
   ]
 
   const code = applyPrettier(
@@ -158,8 +155,8 @@ describe('Parsing and printing code with comments', () => {
 
         // Comment before return statement
         return (
-          <div
-            data-uid='aaa'
+          <div /* Comment before all attributes */
+            data-uid='aaa' /* Comment inside attributes */
             someProp={/* Comment at start of JSX attribute */ 1000 /* Comment at end of JSX attribute */}
             someProp2={{
               /* Comment before object key */ someKey /* Comment after object key */:
@@ -169,14 +166,14 @@ describe('Parsing and printing code with comments', () => {
             someProp3={[
               /* Comment before array value */ 100 /* Comment after array separator */ /* Comment after array value */,
               200,
-            ]}
+            ]} /* Comment after all attributes */
           >
             {
               /* Comment at start of JSX expression */
               true /* Comment inside JSX expression */ ? (
-                <div data-uid='de3' />
+                <div data-uid='fa7' />
               ) : (
-                <div data-uid='293' />
+                <div data-uid='36e' />
               ) /* Comment at end of JSX expression */
             }
           </div>
