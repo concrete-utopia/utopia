@@ -9,6 +9,8 @@ import {
   jsxAttributeValue,
   jsxElement,
   JSXAttributes,
+  setJSXAttributesAttribute,
+  jsxAttributesFromMap,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -407,11 +409,14 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
               const warningMessage = findMissingDefaultsAndGetWarning(detectedProps, defaultProps)
               const insertItemOnMouseDown = () => {
                 const newUID = generateUID(this.props.existingUIDs)
-                let props: JSXAttributes = objectMap(
-                  (value) => jsxAttributeValue(value, emptyComments),
-                  defaultProps,
+                let props: JSXAttributes = jsxAttributesFromMap(
+                  objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
                 )
-                props['data-uid'] = jsxAttributeValue(newUID, emptyComments)
+                props = setJSXAttributesAttribute(
+                  props,
+                  'data-uid',
+                  jsxAttributeValue(newUID, emptyComments),
+                )
                 const newElement = jsxElement(jsxElementName(componentName, []), props, [])
                 this.props.editorDispatch(
                   [enableInsertModeForJSXElement(newElement, newUID, {}, null)],
@@ -458,10 +463,11 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                       const newUID = generateUID(this.props.existingUIDs)
                       const newElement = {
                         ...component.element,
-                        props: {
-                          ...component.element.props,
-                          ['data-uid']: jsxAttributeValue(newUID, emptyComments),
-                        },
+                        props: setJSXAttributesAttribute(
+                          component.element.props,
+                          'data-uid',
+                          jsxAttributeValue(newUID, emptyComments),
+                        ),
                       }
                       this.props.editorDispatch(
                         [

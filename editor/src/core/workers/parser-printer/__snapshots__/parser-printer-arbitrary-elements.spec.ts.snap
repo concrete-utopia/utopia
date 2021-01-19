@@ -471,38 +471,59 @@ export var storyboard = (
             "propertyElements": Array [],
           },
         },
-        "props": Object {
-          "data-uid": Object {
+        "props": Array [
+          Object {
             "comments": Object {
               "leadingComments": Array [],
               "trailingComments": Array [],
             },
-            "type": "ATTRIBUTE_VALUE",
-            "value": "aaa",
-          },
-          "layout": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
+            "key": "data-uid",
             "value": Object {
-              "layoutSystem": "pinSystem",
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
             },
           },
-          "style": Object {
+          Object {
             "comments": Object {
               "leadingComments": Array [],
               "trailingComments": Array [],
             },
-            "type": "ATTRIBUTE_VALUE",
+            "key": "style",
             "value": Object {
-              "backgroundColor": "#FFFFFF",
-              "height": "100%",
-              "width": "100%",
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "backgroundColor": "#FFFFFF",
+                "height": "100%",
+                "width": "100%",
+              },
             },
           },
-        },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "layout",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "layoutSystem": "pinSystem",
+              },
+            },
+          },
+        ],
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
@@ -629,23 +650,44 @@ return { b: b };",
                 "propertyElements": Array [],
               },
             },
-            "props": Object {
-              "component": Object {
-                "definedElsewhere": Array [
-                  "App",
-                ],
-                "javascript": "App",
-                "sourceMap": Object {
-                  "file": "code.tsx",
-                  "mappings": "OAkCkBA",
-                  "names": Array [
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "ccc",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "component",
+                "value": Object {
+                  "definedElsewhere": Array [
                     "App",
                   ],
-                  "sources": Array [
-                    "code.tsx",
-                  ],
-                  "sourcesContent": Array [
-                    "/** @jsx jsx */
+                  "javascript": "App",
+                  "sourceMap": Object {
+                    "file": "code.tsx",
+                    "mappings": "OAkCkBA",
+                    "names": Array [
+                      "App",
+                    ],
+                    "sources": Array [
+                      "code.tsx",
+                    ],
+                    "sourcesContent": Array [
+                      "/** @jsx jsx */
 import * as React from 'react'
 import { Scene, Storyboard, jsx } from 'utopia-api'
 
@@ -685,44 +727,51 @@ export var storyboard = (
     />
   </Storyboard>
 )",
-                  ],
-                  "version": 3,
+                    ],
+                    "version": 3,
+                  },
+                  "transpiledJavascript": "return App;",
+                  "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                  "uniqueID": "",
                 },
-                "transpiledJavascript": "return App;",
-                "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-                "uniqueID": "",
               },
-              "data-uid": Object {
+              Object {
                 "comments": Object {
                   "leadingComments": Array [],
                   "trailingComments": Array [],
                 },
-                "type": "ATTRIBUTE_VALUE",
-                "value": "ccc",
-              },
-              "props": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {},
-              },
-              "style": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
+                "key": "props",
                 "value": Object {
-                  "height": 812,
-                  "left": 0,
-                  "position": "absolute",
-                  "top": 0,
-                  "width": 375,
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": Object {},
                 },
               },
-            },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "style",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": Object {
+                    "height": 812,
+                    "left": 0,
+                    "position": "absolute",
+                    "top": 0,
+                    "width": 375,
+                  },
+                },
+              },
+            ],
             "type": "JSX_ELEMENT",
           },
         ],
@@ -732,26 +781,40 @@ export var storyboard = (
             "propertyElements": Array [],
           },
         },
-        "props": Object {
-          "data-uid": Object {
+        "props": Array [
+          Object {
             "comments": Object {
               "leadingComments": Array [],
               "trailingComments": Array [],
             },
-            "type": "ATTRIBUTE_VALUE",
-            "value": "bbb",
-          },
-          "layout": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
+            "key": "data-uid",
             "value": Object {
-              "layoutSystem": "pinSystem",
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "bbb",
             },
           },
-        },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "layout",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "layoutSystem": "pinSystem",
+              },
+            },
+          },
+        ],
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",

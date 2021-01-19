@@ -26,6 +26,7 @@ import {
   ParsedComments,
 } from '../workers/parser-printer/parser-printer-comments'
 import { MapLike } from 'typescript'
+import { forceNotNull } from './optional-utils'
 
 interface BaseComment {
   comment: string
@@ -227,8 +228,8 @@ export function jsxAttributeNestedObjectSimple(
 ): JSXAttributeNestedObject {
   return {
     type: 'ATTRIBUTE_NESTED_OBJECT',
-    content: Object.keys(content).map((key) =>
-      jsxPropertyAssignment(key, content[key], emptyComments, emptyComments),
+    content: content.map((elem) =>
+      jsxPropertyAssignment(elem.key, elem.value, emptyComments, emptyComments),
     ),
     comments: comments,
   }
@@ -580,7 +581,67 @@ export function isRegularJSXAttribute(
   )
 }
 
-export type JSXAttributes = { [key: string]: JSXAttribute }
+export interface JSXAttributesEntry extends WithComments {
+  key: string
+  value: JSXAttribute
+}
+
+export function jsxAttributesEntry(
+  key: string,
+  value: JSXAttribute,
+  comments: ParsedComments,
+): JSXAttributesEntry {
+  return {
+    key: key,
+    value: value,
+    comments: comments,
+  }
+}
+
+export type JSXAttributes = Array<JSXAttributesEntry>
+
+export function jsxAttributesFromMap(map: MapLike<JSXAttribute>): JSXAttributes {
+  return Object.keys(map).map((objectKey) => {
+    return jsxAttributesEntry(objectKey, map[objectKey], emptyComments)
+  })
+}
+
+export function getJSXAttribute(attributes: JSXAttributes, key: string): JSXAttribute | null {
+  const entry = attributes.find((attr) => attr.key === key)
+  if (entry == null) {
+    return null
+  } else {
+    return entry.value
+  }
+}
+
+export function getJSXAttributeForced(attributes: JSXAttributes, key: string): JSXAttribute {
+  return forceNotNull('Should not be null.', getJSXAttribute(attributes, key))
+}
+
+export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXAttributes {
+  return attributes.filter((a) => a.key !== key)
+}
+
+export function setJSXAttributesAttribute(
+  attributes: JSXAttributes,
+  key: string,
+  value: JSXAttribute,
+): JSXAttributes {
+  let updatedExistingField: boolean = false
+  let result: JSXAttributes = attributes.map((attr) => {
+    if (attr.key === key) {
+      updatedExistingField = true
+      return jsxAttributesEntry(key, value, attr.comments)
+    } else {
+      return attr
+    }
+  })
+  if (!updatedExistingField) {
+    result.push(jsxAttributesEntry(key, value, emptyComments))
+  }
+  return result
+}
 
 export function getDefinedElsewhereFromAttribute(attribute: JSXAttribute): Array<string> {
   if (isJSXAttributeOtherJavaScript(attribute)) {
@@ -599,8 +660,8 @@ export function getDefinedElsewhereFromAttribute(attribute: JSXAttribute): Array
 }
 
 export function getDefinedElsewhereFromAttributes(attributes: JSXAttributes): Array<string> {
-  return Object.keys(attributes).reduce<Array<string>>((working, attributeKey) => {
-    return addAllUniquely(working, getDefinedElsewhereFromAttribute(attributes[attributeKey]))
+  return attributes.reduce<Array<string>>((working, entry) => {
+    return addAllUniquely(working, getDefinedElsewhereFromAttribute(entry.value))
   }, [])
 }
 
@@ -618,11 +679,23 @@ export function getDefinedElsewhereFromElement(element: JSXElement): Array<strin
 }
 
 export function clearAttributesUniqueIDs(attributes: JSXAttributes): JSXAttributes {
-  return objectMap(clearAttributeUniqueIDs, attributes)
+  return attributes.map((attribute) => {
+    return jsxAttributesEntry(
+      attribute.key,
+      clearAttributeUniqueIDs(attribute.value),
+      attribute.comments,
+    )
+  })
 }
 
 export function clearAttributesSourceMaps(attributes: JSXAttributes): JSXAttributes {
-  return objectMap(clearAttributeSourceMaps, attributes)
+  return attributes.map((attribute) => {
+    return jsxAttributesEntry(
+      attribute.key,
+      clearAttributeSourceMaps(attribute.value),
+      attribute.comments,
+    )
+  })
 }
 
 export interface JSXElementName {
@@ -825,7 +898,11 @@ export function jsxTestElement(
   children: Array<JSXElement>,
   uid: string = 'aaa',
 ): JSXElement {
-  return jsxElement(name, { ...props, 'data-uid': jsxAttributeValue(uid, emptyComments) }, children)
+  return jsxElement(
+    name,
+    setJSXAttributesAttribute(props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
+    children,
+  )
 }
 
 export function utopiaJSXComponent(
@@ -1360,8 +1437,8 @@ export function walkElement(
 ): void {
   switch (element.type) {
     case 'JSX_ELEMENT':
-      const uidAttr = element.props['data-uid']
-      if (isJSXAttributeValue(uidAttr) && typeof uidAttr.value === 'string') {
+      const uidAttr = getJSXAttribute(element.props, 'data-uid')
+      if (uidAttr != null && isJSXAttributeValue(uidAttr) && typeof uidAttr.value === 'string') {
         const path = TP.appendToElementPath(parentPath, uidAttr.value)
         forEach(element, path, depth)
         fastForEach(element.children, (child) => walkElement(child, path, depth + 1, forEach))
@@ -1405,7 +1482,7 @@ export function getElementsByUIDFromTopLevelElements(
 
   walkElements(elements, (element: JSXElementChild) => {
     if (isJSXElement(element)) {
-      const possibleUIDAttribute = element.props['data-uid']
+      const possibleUIDAttribute = getJSXAttribute(element.props, 'data-uid')
       if (
         possibleUIDAttribute != null &&
         isJSXAttributeValue(possibleUIDAttribute) &&

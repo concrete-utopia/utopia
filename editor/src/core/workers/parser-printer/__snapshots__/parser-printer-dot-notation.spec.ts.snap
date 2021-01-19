@@ -82,16 +82,23 @@ import * as Utopia from 'utopia-api'",
                   "propertyElements": Array [],
                 },
               },
-              "props": Object {
-                "data-uid": Object {
+              "props": Array [
+                Object {
                   "comments": Object {
                     "leadingComments": Array [],
                     "trailingComments": Array [],
                   },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "bbb",
+                  "key": "data-uid",
+                  "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "bbb",
+                  },
                 },
-              },
+              ],
               "type": "JSX_ELEMENT",
             },
           },
@@ -142,16 +149,23 @@ export var storyboard = (props) => {
           ],
         },
       },
-      "props": Object {
-        "data-uid": Object {
+      "props": Array [
+        Object {
           "comments": Object {
             "leadingComments": Array [],
             "trailingComments": Array [],
           },
-          "type": "ATTRIBUTE_VALUE",
-          "value": "aaa",
+          "key": "data-uid",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": "aaa",
+          },
         },
-      },
+      ],
       "type": "JSX_ELEMENT",
     },
     "type": "UTOPIA_JSX_COMPONENT",

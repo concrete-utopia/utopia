@@ -59,6 +59,7 @@ import {
   WithComments,
   VarLetOrConst,
   FunctionDeclarationSyntax,
+  getJSXAttributeForced,
   ImportStatement,
   importStatement,
   isImportStatement,
@@ -347,23 +348,22 @@ function jsxElementToExpression(
   switch (element.type) {
     case 'JSX_ELEMENT': {
       let attribsArray: Array<TS.JsxAttributeLike> = []
-      fastForEach(Object.keys(element.props), (propsKey) => {
-        const skip = stripUIDs && propsKey === 'data-uid'
+      fastForEach(element.props, (propEntry) => {
+        const skip = stripUIDs && propEntry.key === 'data-uid'
         if (!skip) {
-          const prop = element.props[propsKey]
-          const identifier = TS.createIdentifier(propsKey)
+          const prop = propEntry.value
+          const identifier = TS.createIdentifier(propEntry.key)
+          let attributeToAdd: TS.JsxAttribute
           if (isJSXAttributeValue(prop) && typeof prop.value === 'boolean') {
             // Use the shorthand style for true values, and the explicit style for false values
             if (prop.value) {
               // The `any` allows our `undefined` to punch through the invalid typing
               // of `createJsxAttribute`.
-              attribsArray.push(TS.createJsxAttribute(identifier, undefined as any))
+              attributeToAdd = TS.createJsxAttribute(identifier, undefined as any)
             } else {
-              attribsArray.push(
-                TS.createJsxAttribute(
-                  identifier,
-                  TS.createJsxExpression(undefined, TS.createFalse()),
-                ),
+              attributeToAdd = TS.createJsxAttribute(
+                identifier,
+                TS.createJsxExpression(undefined, TS.createFalse()),
               )
             }
           } else {
@@ -373,8 +373,10 @@ function jsxElementToExpression(
             )
               ? attributeExpression
               : TS.createJsxExpression(undefined, attributeExpression)
-            attribsArray.push(TS.createJsxAttribute(identifier, initializer))
+            attributeToAdd = TS.createJsxAttribute(identifier, initializer)
           }
+          addCommentsToNode(attributeToAdd, propEntry.comments)
+          attribsArray.push(attributeToAdd)
         }
       })
       const attribs = TS.createJsxAttributes(attribsArray)

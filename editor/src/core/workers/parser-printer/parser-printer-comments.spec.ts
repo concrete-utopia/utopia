@@ -106,9 +106,6 @@ describe('Parsing and printing code with comments', () => {
     'commentAfterObjectSeparator',
     'commentAfterArraySeparator',
     'finalLineComment',
-    'commentBeforeAllAttributes',
-    'commentInsideAttributes',
-    'commentAfterAllAttributes',
   ]
 
   const code = `
@@ -214,22 +211,25 @@ describe('Parsing and printing code with comments', () => {
         } // Comment after inner JS
         // Comment before return statement
         return (
-          <div
-            data-uid='aaa'
+          <div /* Comment before all attributes */
+            data-uid='aaa' /* Comment inside attributes */
             someProp={/* Comment at start of JSX attribute */ 1000 /* Comment at end of JSX attribute */}
             someProp2={{
               /* Comment before object key */ someKey /* Comment after object key */:
                 /* Comment before object value */ 'someValue' /* Comment after object value */,
               someKey2: 'someValue2',
             }}
-            someProp3={[/* Comment before array value */ 100 /* Comment after array value */, 200]}
+            someProp3={[
+              /* Comment before array value */ 100 /* Comment after array value */,
+              200,
+            ]} /* Comment after all attributes */
           >
             {
               /* Comment at start of JSX expression */
               true /* Comment inside JSX expression */ ? (
-                <div data-uid='de3' />
+                <div data-uid='fa7' />
               ) : (
-                <div data-uid='293' />
+                <div data-uid='36e' />
               ) /* Comment at end of JSX expression */
             }
           </div>
