@@ -20,14 +20,15 @@ import {
   ContextMenuItem,
   CanvasData,
 } from './context-menu-items'
-import { ContextMenuInnerProps, MomentumContextMenu } from './context-menu-wrapper'
+import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { filterScenes } from '../core/shared/template-path'
 import { betterReactMemo, Utils } from '../uuiui-deps'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { getOpenUtopiaJSXComponentsFromState } from './editor/store/editor-state'
-import { useKeepReferenceEqualityIfPossible } from '../utils/react-performance'
+import { EditorDispatch } from './editor/action-types'
+import { selectComponents } from './editor/actions/action-creators'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -61,7 +62,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   toggleShadowItem,
 ]
 
-function useCanvasContextMenuItems(contextMenuInstance: ElementContextMenuInstance): Array<ContextMenuItem<CanvasData>> {
+function useCanvasContextMenuItems(contextMenuInstance: ElementContextMenuInstance, dispatch: EditorDispatch): Array<ContextMenuItem<CanvasData>> {
   const metadata = useEditorState((store) => store.editor.jsxMetadataKILLME, 'ElementContextMenu metadata')
   const components = useEditorState((store) => getOpenUtopiaJSXComponentsFromState(store.editor), 'ElementContextMenu components')
 
@@ -75,7 +76,7 @@ function useCanvasContextMenuItems(contextMenuInstance: ElementContextMenuInstan
         },
         submenuName: 'Elements',
         enabled: true,
-        action: Utils.NO_OP,
+        action: () => dispatch([selectComponents([path], false)], 'canvas'),
       }
     })
     return [...ElementContextMenuItems, ...elementListSubmenu]
@@ -108,7 +109,7 @@ export const ElementContextMenu = betterReactMemo(
       }
     }, [editorSliceRef])
 
-    const contextMenuItems = useKeepReferenceEqualityIfPossible(useCanvasContextMenuItems(contextMenuInstance))
+    const contextMenuItems = useCanvasContextMenuItems(contextMenuInstance, dispatch)
 
     const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)
     if (portalTarget == null) {
