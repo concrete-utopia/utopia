@@ -11,7 +11,6 @@ import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import * as fastDeepEquals from 'fast-deep-equal'
 import { TemplatePath } from '../core/shared/project-file-types'
-import * as TP from '../core/shared/template-path'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -29,7 +28,7 @@ export interface ContextMenuInnerProps {
   elementsUnderCursor: Array<TemplatePath>
 }
 
-export function openMenu(id: string, nativeEvent: MouseEvent, props?: ContextMenuInnerProps) {
+export function openMenu(id: string, nativeEvent: MouseEvent, props: ContextMenuInnerProps | null) {
   contextMenu.show({
     id: id,
     event: nativeEvent,
@@ -88,17 +87,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
     return splitItems
   }
 
-  isHidden = (
-    item: ContextMenuItem<T>,
-  ): (({ props }: { props: ContextMenuInnerProps }) => boolean) => {
-    return ({ props }: { props: ContextMenuInnerProps }) => {
-      if (item.details != null && item.details.path != null && props.elementsUnderCursor != null) {
-        return !props.elementsUnderCursor.some((path) => TP.pathsEqual(path, item.details!.path))
-      } else {
-        return false
-      }
-    }
-  }
+  isHidden = (): boolean => false
 
   renderItem(item: ContextMenuItem<T>, index: number) {
     return (
@@ -111,7 +100,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
           item.action(this.props.getData(), this.props.dispatch, event.nativeEvent)
           contextMenu.hideAll()
         }}
-        hidden={this.isHidden(item)}
+        hidden={item.isHidden ?? this.isHidden}
       >
         <span className='react-contexify-span'>{item.name}</span>
         <span className='shortcut'>{item.shortcut}</span>

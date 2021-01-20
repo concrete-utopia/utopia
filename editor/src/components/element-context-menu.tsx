@@ -20,15 +20,17 @@ import {
   ContextMenuItem,
   CanvasData,
 } from './context-menu-items'
-import { MomentumContextMenu } from './context-menu-wrapper'
+import { ContextMenuInnerProps, MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { filterScenes } from '../core/shared/template-path'
-import { betterReactMemo, Utils } from '../uuiui-deps'
+import { betterReactMemo } from '../uuiui-deps'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { getOpenUtopiaJSXComponentsFromState } from './editor/store/editor-state'
 import { EditorDispatch } from './editor/action-types'
 import { selectComponents } from './editor/actions/action-creators'
+import * as TP from '../core/shared/template-path'
+import { TemplatePath } from '../core/shared/project-file-types'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -88,6 +90,13 @@ function useCanvasContextMenuItems(
         submenuName: 'Elements',
         enabled: true,
         action: () => dispatch([selectComponents([path], false)], 'canvas'),
+        isHidden: ({props}: {props: ContextMenuInnerProps}) => {
+          if (props.elementsUnderCursor != null && Array.isArray(props.elementsUnderCursor)) {
+            return !props.elementsUnderCursor.some((underCursor: TemplatePath) => TP.pathsEqual(underCursor, path))
+          } else {
+            return true
+          }
+        }
       }
     })
     return [...ElementContextMenuItems, ...elementListSubmenu]
