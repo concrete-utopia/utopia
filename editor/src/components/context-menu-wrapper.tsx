@@ -1,12 +1,16 @@
 import * as React from 'react'
 import { Component as ReactComponent } from 'react'
-import { Menu, Item, Submenu as SubmenuComponent, contextMenu, useContextMenu } from 'react-contexify'
-import RU from '../utils/react-utils'
+import {
+  Menu,
+  Item,
+  Submenu as SubmenuComponent,
+  contextMenu,
+  useContextMenu,
+} from 'react-contexify'
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import * as fastDeepEquals from 'fast-deep-equal'
-import { useRefEditorState } from './editor/store/store-hook'
-import { showContextMenu } from './editor/actions/action-creators'
+import { TemplatePath } from '../core/shared/project-file-types'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -20,10 +24,15 @@ export interface ContextMenuWrapperProps<T> {
   providerStyle?: React.CSSProperties
 }
 
-export function openMenu(id: string, nativeEvent: MouseEvent) {
+export interface ContextMenuInnerProps {
+  elementsUnderCursor: Array<TemplatePath>
+}
+
+export function openMenu(id: string, nativeEvent: MouseEvent, props: ContextMenuInnerProps | null) {
   contextMenu.show({
     id: id,
     event: nativeEvent,
+    props: props,
   })
 }
 
@@ -78,17 +87,20 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
     return splitItems
   }
 
+  isHidden = (): boolean => false
+
   renderItem(item: ContextMenuItem<T>, index: number) {
     return (
       <Item
         key={`context-menu-${index}-item`}
         disabled={!item.enabled}
         // eslint-disable-next-line react/jsx-no-bind
-        onClick={({event}: {event: React.MouseEvent<HTMLElement>}) => {
+        onClick={({ event }: { event: React.MouseEvent<HTMLElement> }) => {
           event.stopPropagation()
           item.action(this.props.getData(), this.props.dispatch, event.nativeEvent)
           contextMenu.hideAll()
         }}
+        hidden={item.isHidden ?? this.isHidden}
       >
         <span className='react-contexify-span'>{item.name}</span>
         <span className='shortcut'>{item.shortcut}</span>
@@ -197,15 +209,15 @@ interface MenuProviderProps {
 
 export const MenuProvider: React.FunctionComponent<MenuProviderProps> = (props) => {
   const { show } = useContextMenu({ id: props.id })
-  const onContextMenu = React.useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    show(event)
-  }, [show])
+  const onContextMenu = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      show(event)
+    },
+    [show],
+  )
 
   return (
-    <div
-      style={props.style}
-      onContextMenu={onContextMenu}
-    >
+    <div style={props.style} onContextMenu={onContextMenu}>
       {props.children}
     </div>
   )

@@ -1,4 +1,5 @@
 import * as R from 'ramda'
+import { TriggerEvent } from 'react-contexify'
 import { CanvasPoint } from '../core/shared/math-utils'
 import { InstancePath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
@@ -26,6 +27,7 @@ export interface ContextMenuItem<T> {
   submenuName?: string | null
   shortcut?: string
   isSeparator?: boolean
+  isHidden?: ({props, data, triggerEvent}: {props: any, data: T, triggerEvent: TriggerEvent}) => boolean
   action: (data: T, dispatch?: EditorDispatch, event?: MouseEvent) => void
 }
 
