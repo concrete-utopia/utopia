@@ -503,7 +503,7 @@ export const ComponentSectionInner = betterReactMemo(
     const onResetClicked = React.useCallback(
       (event: React.MouseEvent<HTMLElement>) => {
         dispatch(
-          [showContextMenu('context-menu-instance-inspector', event.nativeEvent), null],
+          [showContextMenu('context-menu-instance-inspector', event.nativeEvent, null)],
           'everyone',
         )
       },
