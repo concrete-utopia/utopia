@@ -418,7 +418,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       )
     }
   }
-  //first commit
+  //first
   return (
     <div
       id='inspector'
