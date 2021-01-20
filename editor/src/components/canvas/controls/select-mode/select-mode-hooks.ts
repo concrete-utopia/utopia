@@ -39,8 +39,6 @@ import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { selectElementsThatRespectLayout } from '../new-canvas-controls'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
 
-export const PreventHighlightsForThisEvent = 'utopiaPreventHighlights'
-
 const DRAG_START_TRESHOLD = 2
 
 export function isResizing(dragState: DragState | null): boolean {
@@ -362,15 +360,9 @@ export function useHighlightCallbacks(
 } {
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
-  const previousTargetUnderPoint = React.useRef<TemplatePath | null>(null)
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      if (PreventHighlightsForThisEvent in event) {
-        maybeClearHighlightsOnHoverEnd()
-        previousTargetUnderPoint.current = null
-        return
-      }
       const selectableViews: Array<TemplatePath> = getHighlightableViews(event.metaKey, false)
       const validTemplatePath = findValidTarget(
         selectableViews,
@@ -381,10 +373,9 @@ export function useHighlightCallbacks(
         (!allowHoverOnSelectedView && validTemplatePath.isSelected) // we remove highlights if the hovered element is selected
       ) {
         maybeClearHighlightsOnHoverEnd()
-      } else if (!TP.pathsEqual(validTemplatePath.templatePath, previousTargetUnderPoint.current)) {
+      } else {
         maybeHighlightOnHover(validTemplatePath.templatePath)
       }
-      previousTargetUnderPoint.current = validTemplatePath?.templatePath ?? null
     },
     [
       allowHoverOnSelectedView,
@@ -392,7 +383,6 @@ export function useHighlightCallbacks(
       maybeHighlightOnHover,
       getHighlightableViews,
       findValidTarget,
-      previousTargetUnderPoint,
     ],
   )
 

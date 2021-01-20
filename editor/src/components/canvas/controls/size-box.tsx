@@ -26,7 +26,6 @@ import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { SizeBoxLabel } from './size-box-label'
 import { colorTheme } from '../../../uuiui'
-import { PreventHighlightsForThisEvent } from './select-mode/select-mode-hooks'
 
 interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
@@ -80,7 +79,8 @@ class ResizeControl extends React.Component<ResizeControlProps> {
   }
 
   onMouseMove = (event: React.MouseEvent<any>) => {
-    Object.defineProperty(event, PreventHighlightsForThisEvent, { value: true })
+    this.props.maybeClearHighlightsOnHoverEnd()
+    event.stopPropagation()
   }
 
   render() {
@@ -398,6 +398,7 @@ interface ResizeRectangleProps {
   metadata: JSXMetadata
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
+  maybeClearHighlightsOnHoverEnd: () => void
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {

@@ -1135,7 +1135,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     window.addEventListener('keyup', this.handleKeyUp)
     window.addEventListener('mousedown', this.handleMouseDown)
     window.addEventListener('mouseup', this.handleMouseUp)
-    window.addEventListener('mousemove', this.handleMouseMove)
+    window.addEventListener('mousemove', this.handleMouseMove, { capture: true }) // we use this event in the capture phase because size-box.ts calls stopPropagation() on mouseMove
     window.addEventListener('mouseleave', this.handleMouseLeave)
     window.addEventListener('click', this.handleClick)
     window.addEventListener('dblclick', this.handleDoubleClick)
