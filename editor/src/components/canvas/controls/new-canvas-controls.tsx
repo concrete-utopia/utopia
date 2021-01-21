@@ -94,6 +94,7 @@ export interface ControlProps {
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
   elementsThatRespectLayout: Array<TemplatePath>
+  maybeClearHighlightsOnHoverEnd: () => void
 }
 
 interface NewCanvasControlsProps {
@@ -332,6 +333,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
       elementsThatRespectLayout: elementsThatRespectLayout,
+      maybeClearHighlightsOnHoverEnd: maybeClearHighlightsOnHoverEnd,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

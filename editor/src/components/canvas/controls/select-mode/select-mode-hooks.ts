@@ -378,7 +378,6 @@ export function useHighlightCallbacks(
 } {
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
-  const previousTargetUnderPoint = React.useRef<TemplatePath | null>(null)
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -392,10 +391,9 @@ export function useHighlightCallbacks(
         (!allowHoverOnSelectedView && validTemplatePath.isSelected) // we remove highlights if the hovered element is selected
       ) {
         maybeClearHighlightsOnHoverEnd()
-      } else if (!TP.pathsEqual(validTemplatePath.templatePath, previousTargetUnderPoint.current)) {
+      } else {
         maybeHighlightOnHover(validTemplatePath.templatePath)
       }
-      previousTargetUnderPoint.current = validTemplatePath?.templatePath ?? null
     },
     [
       allowHoverOnSelectedView,
@@ -403,7 +401,6 @@ export function useHighlightCallbacks(
       maybeHighlightOnHover,
       getHighlightableViews,
       findValidTarget,
-      previousTargetUnderPoint,
     ],
   )
 
