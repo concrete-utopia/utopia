@@ -49,6 +49,10 @@ export function isDragging(dragState: DragState | null): boolean {
   return dragState != null && dragState.type === 'MOVE_DRAG_STATE' && dragState.drag != null
 }
 
+export function isInserting(dragState: DragState | null): boolean {
+  return dragState != null && dragState.type === 'INSERT_DRAG_STATE' && dragState.drag != null
+}
+
 export function pickSelectionEnabled(
   canvas: EditorState['canvas'],
   keysPressed: KeysPressed,
@@ -69,13 +73,14 @@ export function useMaybeHighlightElement(): {
       resizing: isResizing(store.editor.canvas.dragState),
       dragging: isDragging(store.editor.canvas.dragState),
       selectionEnabled: pickSelectionEnabled(store.editor.canvas, store.editor.keysPressed),
+      inserting: isInserting(store.editor.canvas.dragState),
     }
   })
 
   const maybeHighlightOnHover = React.useCallback(
     (target: TemplatePath): void => {
-      const { dispatch, dragging, resizing, selectionEnabled } = stateRef.current
-      if (selectionEnabled && !dragging && !resizing) {
+      const { dispatch, dragging, resizing, selectionEnabled, inserting } = stateRef.current
+      if (selectionEnabled && !dragging && !resizing && !inserting) {
         dispatch([setHighlightedView(target)], 'canvas')
       }
     },
