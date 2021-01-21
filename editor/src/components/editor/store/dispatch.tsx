@@ -528,7 +528,6 @@ function editorDispatchInner(
     getAllUniqueUids(getOpenUtopiaJSXComponentsFromState(frozenEditorState), actionNames)
 
     if (!PRODUCTION_ENV) {
-
       if (typeof window.performance.mark === 'function') {
         window.performance.mark('dispatch_end')
         window.performance.measure(
