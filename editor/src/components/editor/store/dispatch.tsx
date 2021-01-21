@@ -524,9 +524,10 @@ function editorDispatchInner(
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 
+    const actionNames = dispatchedActions.map((action) => action.action).join(',')
+    getAllUniqueUids(getOpenUtopiaJSXComponentsFromState(frozenEditorState), actionNames)
+
     if (!PRODUCTION_ENV) {
-      const actionNames = dispatchedActions.map((action) => action.action).join(',')
-      getAllUniqueUids(getOpenUtopiaJSXComponentsFromState(frozenEditorState), actionNames)
 
       if (typeof window.performance.mark === 'function') {
         window.performance.mark('dispatch_end')
