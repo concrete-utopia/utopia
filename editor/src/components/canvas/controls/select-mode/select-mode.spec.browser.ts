@@ -123,37 +123,9 @@ describe('Select Mode Selection', () => {
     })
     await waitForAnimationFrame()
 
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 2,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-    await waitForAnimationFrame()
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a']),
+    ])
 
     await act(async () => {
       const domFinished = renderResult.getDomReportDispatched()
@@ -187,37 +159,9 @@ describe('Select Mode Selection', () => {
     })
     await waitForAnimationFrame()
 
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 2,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-    await waitForAnimationFrame()
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a', 'b']),
+    ])
 
     await act(async () => {
       const domFinished = renderResult.getDomReportDispatched()
@@ -250,6 +194,82 @@ describe('Select Mode Selection', () => {
       await dispatchDone
     })
     await waitForAnimationFrame()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a', 'b', 'c']),
+    ])
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a', 'b', 'c', 'd']),
+    ])
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a', 'b', 'c', 'd', 'e']),
+    ])
 
     await act(async () => {
       const domFinished = renderResult.getDomReportDispatched()
