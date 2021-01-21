@@ -297,7 +297,9 @@ function waitForAnimationFrame(): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        resolve()
+        requestAnimationFrame(() => {
+          resolve()
+        })
       })
     })
   })
