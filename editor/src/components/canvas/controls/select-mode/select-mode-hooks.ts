@@ -13,6 +13,7 @@ import {
 import { ScenePath, TemplatePath } from '../../../../core/shared/project-file-types'
 import * as TP from '../../../../core/shared/template-path'
 import { fastForEach, NO_OP } from '../../../../core/shared/utils'
+import { WindowMousePositionRaw } from '../../../../templates/editor-canvas'
 import { KeysPressed } from '../../../../utils/keyboard'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
@@ -368,6 +369,8 @@ function useGetSelectableViewsForSelectMode() {
 }
 
 export function useHighlightCallbacks(
+  active: boolean,
+  cmdPressed: boolean,
   allowHoverOnSelectedView: boolean,
   getHighlightableViews: (
     allElementsDirectlySelectable: boolean,
@@ -379,13 +382,10 @@ export function useHighlightCallbacks(
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
   const findValidTarget = useFindValidTarget()
 
-  const onMouseMove = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => {
-      const selectableViews: Array<TemplatePath> = getHighlightableViews(event.metaKey, false)
-      const validTemplatePath = findValidTarget(
-        selectableViews,
-        windowPoint(point(event.clientX, event.clientY)),
-      )
+  const calculateHighlightedViews = React.useCallback(
+    (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
+      const selectableViews: Array<TemplatePath> = getHighlightableViews(eventCmdPressed, false)
+      const validTemplatePath = findValidTarget(selectableViews, targetPoint)
       if (
         validTemplatePath == null ||
         (!allowHoverOnSelectedView && validTemplatePath.isSelected) // we remove highlights if the hovered element is selected
@@ -404,10 +404,30 @@ export function useHighlightCallbacks(
     ],
   )
 
+  const onMouseMove = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      return calculateHighlightedViews(
+        windowPoint(point(event.clientX, event.clientY)),
+        event.metaKey,
+      )
+    },
+    [calculateHighlightedViews],
+  )
+
+  React.useEffect(() => {
+    if (active && WindowMousePositionRaw != null) {
+      // this useEffect will re-calculate (and update) the highlighted views if the user presses or releases 'cmd' without moving the mouse,
+      // or if the user enters a new mode (the `active` flag will change for the modes), this is important when entering insert mode
+      calculateHighlightedViews(WindowMousePositionRaw, cmdPressed)
+    }
+  }, [calculateHighlightedViews, active, cmdPressed])
+
   return { onMouseMove }
 }
 
 export function useSelectModeSelectAndHover(
+  active: boolean,
+  cmdPressed: boolean,
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
 ): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
@@ -419,7 +439,12 @@ export function useSelectModeSelectAndHover(
   const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
-  const { onMouseMove } = useHighlightCallbacks(false, getSelectableViewsForSelectMode)
+  const { onMouseMove } = useHighlightCallbacks(
+    active,
+    cmdPressed,
+    false,
+    getSelectableViewsForSelectMode,
+  )
 
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
@@ -485,14 +510,19 @@ function usePreviewModeSelectAndHover(): {
 }
 
 export function useSelectAndHover(
+  cmdPressed: boolean,
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
 ): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const modeType = useEditorState((store) => store.editor.mode.type, 'useSelectAndHover mode')
-  const selectModeCallbacks = useSelectModeSelectAndHover(setSelectedViewsForCanvasControlsOnly)
-  const insertModeCallbacks = useInsertModeSelectAndHover()
+  const selectModeCallbacks = useSelectModeSelectAndHover(
+    modeType === 'select',
+    cmdPressed,
+    setSelectedViewsForCanvasControlsOnly,
+  )
+  const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
   const previewModeCallbacks = usePreviewModeSelectAndHover()
   if (modeType === 'select') {
     return selectModeCallbacks

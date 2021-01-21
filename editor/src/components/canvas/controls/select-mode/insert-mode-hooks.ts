@@ -42,12 +42,20 @@ function useGetHiglightableViewsForInsertMode() {
   }, [storeRef])
 }
 
-export function useInsertModeSelectAndHover(): {
+export function useInsertModeSelectAndHover(
+  active: boolean,
+  cmdPressed: boolean,
+): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
   const getHiglightableViewsForInsertMode = useGetHiglightableViewsForInsertMode()
-  const { onMouseMove } = useHighlightCallbacks(true, getHiglightableViewsForInsertMode)
+  const { onMouseMove } = useHighlightCallbacks(
+    active,
+    cmdPressed,
+    true,
+    getHiglightableViewsForInsertMode,
+  )
 
   return useKeepShallowReferenceEquality({
     onMouseMove: onMouseMove,
