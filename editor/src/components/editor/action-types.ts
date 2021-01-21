@@ -51,6 +51,7 @@ import {
 import { Notice } from '../common/notice'
 import { BuildType } from '../../core/workers/ts/ts-worker'
 import type { EditorTab } from './store/editor-tabs'
+import { ContextMenuInnerProps } from '../../uuiui-deps'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {
@@ -513,6 +514,7 @@ export interface ShowContextMenu {
   action: 'SHOW_CONTEXT_MENU'
   menuName: ElementContextMenuInstance
   event: MouseEvent
+  props: ContextMenuInnerProps | null
 }
 
 export interface SetCursorOverlay {

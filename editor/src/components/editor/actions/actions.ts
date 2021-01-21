@@ -485,6 +485,8 @@ import {
 } from './action-creators'
 import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
+import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -3146,7 +3148,7 @@ export const UPDATE_FNS = {
   },
   SHOW_CONTEXT_MENU: (action: ShowContextMenu, editor: EditorModel): EditorModel => {
     // side effect!
-    openMenu(action.menuName, action.event)
+    openMenu(action.menuName, action.event, action.props)
     return editor
   },
   SEND_PREVIEW_MODEL: (action: SendPreviewModel, editor: EditorModel): EditorModel => {

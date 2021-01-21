@@ -78,6 +78,11 @@ class ResizeControl extends React.Component<ResizeControlProps> {
     }
   }
 
+  onMouseMove = (event: React.MouseEvent<any>) => {
+    this.props.maybeClearHighlightsOnHoverEnd()
+    event.stopPropagation()
+  }
+
   render() {
     const currentSize = this.props.visualSize
     const top =
@@ -99,7 +104,9 @@ class ResizeControl extends React.Component<ResizeControlProps> {
     return (
       <React.Fragment>
         {this.props.resizeStatus === 'enabled' ? (
-          <div onMouseDown={this.onMouseDown}>{this.props.children}</div>
+          <div onMouseDown={this.onMouseDown} onMouseMove={this.onMouseMove}>
+            {this.props.children}
+          </div>
         ) : (
           this.props.children
         )}
@@ -391,6 +398,7 @@ interface ResizeRectangleProps {
   metadata: JSXMetadata
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
+  maybeClearHighlightsOnHoverEnd: () => void
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
