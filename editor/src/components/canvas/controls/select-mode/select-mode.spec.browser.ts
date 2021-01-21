@@ -100,7 +100,7 @@ describe('Select Mode Selection', () => {
           detail: 0,
           bubbles: true,
           cancelable: true,
-          metaKey: true,
+          metaKey: false,
           clientX: areaControlBounds.left + 20,
           clientY: areaControlBounds.top + 20,
           buttons: 1,
@@ -112,7 +112,7 @@ describe('Select Mode Selection', () => {
           detail: 1,
           bubbles: true,
           cancelable: true,
-          metaKey: true,
+          metaKey: false,
           clientX: areaControlBounds.left + 20,
           clientY: areaControlBounds.top + 20,
           buttons: 1,
@@ -121,6 +121,167 @@ describe('Select Mode Selection', () => {
       await domFinished
       await dispatchDone
     })
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: areaControlBounds.left + 20,
+          clientY: areaControlBounds.top + 20,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
 
     // after 5 "double clicks", the `targetdiv` div should be selected
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
@@ -131,3 +292,13 @@ describe('Select Mode Selection', () => {
     ])
   })
 })
+
+function waitForAnimationFrame(): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resolve()
+      })
+    })
+  })
+}
