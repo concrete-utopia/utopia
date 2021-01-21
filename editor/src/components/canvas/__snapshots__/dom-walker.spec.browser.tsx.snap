@@ -186,7 +186,12 @@ Object {
         "x": 0,
         "y": 0,
       },
-      "localFrame": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
       "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
@@ -814,7 +819,12 @@ Object {
         "x": 0,
         "y": 0,
       },
-      "localFrame": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
       "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
@@ -1163,7 +1173,12 @@ Object {
         "x": 0,
         "y": 0,
       },
-      "localFrame": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
       "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
@@ -1750,7 +1765,12 @@ Object {
         "x": 0,
         "y": 0,
       },
-      "localFrame": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
       "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
@@ -2338,7 +2358,12 @@ Object {
         "x": 0,
         "y": 0,
       },
-      "localFrame": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
       "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
