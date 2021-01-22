@@ -1776,7 +1776,7 @@ describe('moveTemplate', () => {
           bubbles: true,
           cancelable: true,
           clientX: areaControlBounds.left + 25,
-          clientY: areaControlBounds.top + 65,
+          clientY: areaControlBounds.top + 25,
         }),
       )
     })
@@ -1788,7 +1788,7 @@ describe('moveTemplate', () => {
           bubbles: true,
           cancelable: true,
           clientX: areaControlBounds.left + 25,
-          clientY: areaControlBounds.top + 65,
+          clientY: areaControlBounds.top + 25,
           buttons: 1,
         }),
       )
@@ -1833,7 +1833,7 @@ describe('moveTemplate', () => {
           >
             <div data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
             <View
-              style={{ backgroundColor: '#0091FFAA', position: 'relative', flexBasis: 74, height: 34 }}
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', flexBasis: 74, height: 74 }}
               data-uid='${NewUID}'
             />
           </div>
