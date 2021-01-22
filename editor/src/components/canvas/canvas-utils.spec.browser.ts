@@ -1758,7 +1758,7 @@ describe('moveTemplate', () => {
     currentWindow.show()
     currentWindow.setPosition(500, 200)
     currentWindow.setSize(2200, 1000)
-    currentWindow.openDevTools()
+    // currentWindow.openDevTools()
     // This is necessary because the test code races against the Electron process
     // opening the window it would appear.
     await wait(6000)
@@ -1774,7 +1774,9 @@ describe('moveTemplate', () => {
     const canvasControlContainer = renderResult.renderedDOM.getByTestId(
       'new-canvas-controls-container',
     )
-    const areaControlBounds = canvasControlContainer.getBoundingClientRect()
+
+    const insertionArea = renderResult.renderedDOM.getByTestId('bbb')
+    const areaControlBounds = insertionArea.getBoundingClientRect()
 
     await act(async () => {
       fireEvent(
