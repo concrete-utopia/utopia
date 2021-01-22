@@ -38,7 +38,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       currentWindow.setSize(2200, 1000)
     }
   })
-  xit('a simple TLWH pin change works', async () => {
+  it('a simple TLWH pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -71,7 +71,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
   })
 
-  xit('a simple TLWH pin change works with old CanvasMetadata format as well', async () => {
+  it('a simple TLWH pin change works with old CanvasMetadata format as well', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -104,7 +104,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
   })
 
-  xit('TLWH, but W and H are percentage works', async () => {
+  it('TLWH, but W and H are percentage works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -137,7 +137,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
   })
 
-  xit('TLW, missing H pin change works', async () => {
+  it('TLW, missing H pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -170,7 +170,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
   })
 
-  xit('TLWHBR, too many frame points work', async () => {
+  it('TLWHBR, too many frame points work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -204,7 +204,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
   })
 
-  xit('TLRB pin change works', async () => {
+  it('TLRB pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -237,7 +237,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
   })
 
-  xit('TLCxCy pin change works', async () => {
+  it('TLCxCy pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -270,7 +270,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
   })
 
-  xit('no layout prop on child', async () => {
+  it('no layout prop on child', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -304,7 +304,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
-  xit('only TL pins work', async () => {
+  it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -337,7 +337,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('only TL pins work with old CanvasMetadata as well', async () => {
+  it('only TL pins work with old CanvasMetadata as well', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -370,7 +370,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('only RB pins work', async () => {
+  it('only RB pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -403,7 +403,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('just R pin gets turned into T,R', async () => {
+  it('just R pin gets turned into T,R', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -436,7 +436,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('just B pin gets turned into L,B', async () => {
+  it('just B pin gets turned into L,B', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -469,7 +469,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('just B pin doesn`t turn into L,B with deltaX=0', async () => {
+  it('just B pin doesn`t turn into L,B with deltaX=0', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -502,7 +502,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('TLWH, but W and H are left alone', async () => {
+  it('TLWH, but W and H are left alone', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -535,7 +535,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('TLWH, but W and H are left alone, T, L are % values', async () => {
+  it('TLWH, but W and H are left alone, T, L are % values', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -568,7 +568,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('TLRB pin change works', async () => {
+  it('TLRB pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -601,7 +601,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('TLRB pin change works, with % values', async () => {
+  it('TLRB pin change works, with % values', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -640,7 +640,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('TLCxCy pin change works', async () => {
+  it('TLCxCy pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -673,7 +673,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('RBCxCy pin change works', async () => {
+  it('RBCxCy pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -706,7 +706,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('TLWHBR, too many frame points work', async () => {
+  it('TLWHBR, too many frame points work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -753,7 +753,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
     )
   })
 
-  xit('TLR, no B pin change?', async () => {
+  it('TLR, no B pin change?', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -788,7 +788,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
-  xit('only TL pins work', async () => {
+  it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -822,7 +822,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
     )
   })
 
-  xit('only TW pins work', async () => {
+  it('only TW pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -858,7 +858,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
     )
   })
 
-  xit('TLRB pins work', async () => {
+  it('TLRB pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -894,7 +894,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
-  xit('TLWH, but W and H are percentage works', async () => {
+  it('TLWH, but W and H are percentage works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -927,7 +927,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       ),
     )
   })
-  xit('no layout prop on child', async () => {
+  it('no layout prop on child', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -962,7 +962,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 })
 
 describe('moveTemplate', () => {
-  xit('wraps in 1 element', async () => {
+  it('wraps in 1 element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
@@ -995,7 +995,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  xit('wraps multiselected elements', async () => {
+  it('wraps multiselected elements', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style, width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
@@ -1065,7 +1065,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  xit('wraps in multiselected element and children, moves only the element, keeps children', async () => {
+  it('wraps in multiselected element and children, moves only the element, keeps children', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
@@ -1111,7 +1111,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  xit('reparents multiselected elements', async () => {
+  it('reparents multiselected elements', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
@@ -1165,7 +1165,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  xit('reparents multiselected element and children, moves only the element, keeps children', async () => {
+  it('reparents multiselected element and children, moves only the element, keeps children', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
@@ -1211,7 +1211,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  xit('reparents multiselected element and descendant which are not direct children, moves both of the elements', async () => {
+  it('reparents multiselected element and descendant which are not direct children, moves both of the elements', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
@@ -1258,7 +1258,7 @@ describe('moveTemplate', () => {
     )
   })
 
-  xit('reparents a pinned element to flex', async () => {
+  it('reparents a pinned element to flex', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
@@ -1298,7 +1298,7 @@ describe('moveTemplate', () => {
     )
   })
 
-  xit('reparents a pinned element to flex using magic?', async () => {
+  it('reparents a pinned element to flex using magic?', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -1404,7 +1404,7 @@ describe('moveTemplate', () => {
     )
   })
 
-  xit('reparents an orphan from the canvas', async () => {
+  it('reparents an orphan from the canvas', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
         `/** @jsx jsx */
@@ -1568,7 +1568,7 @@ describe('moveTemplate', () => {
     )
   })
 
-  xit('reparenting to the canvas creates an orphan', async () => {
+  it('reparenting to the canvas creates an orphan', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
         `/** @jsx jsx */
@@ -1842,7 +1842,7 @@ describe('moveTemplate', () => {
     )
   })
 
-  xit('inserting a new element as an orphan', async () => {
+  it('inserting a new element as an orphan', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
         `/** @jsx jsx */
@@ -1981,7 +1981,7 @@ describe('moveTemplate', () => {
     )
   })
 
-  xit('reparents an element while dragging', async () => {
+  it('reparents an element while dragging', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -2097,7 +2097,7 @@ describe('moveTemplate', () => {
       `),
     )
   })
-  xit('canvas select a sibling and drag immediately', async () => {
+  it('canvas select a sibling and drag immediately', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ width: '100%', height: '100%' }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
