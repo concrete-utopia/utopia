@@ -121,7 +121,7 @@ export function getAllTargetsAtPoint(
       if (!foundElement.canBeFilteredOut) {
         return true
       } else {
-        return elementsFromDOM.includes(foundElement.templatePath)
+        return elementsFromDOM.some((e) => TP.pathsEqual(e, foundElement.templatePath))
       }
     })
     .map((e) => e.templatePath)
