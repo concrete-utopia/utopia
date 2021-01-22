@@ -1753,6 +1753,16 @@ describe('moveTemplate', () => {
       false,
     )
 
+    // Code kept commented for any future person who needs it.
+    const currentWindow = require('electron').remote.getCurrentWindow()
+    currentWindow.show()
+    currentWindow.setPosition(500, 200)
+    currentWindow.setSize(2200, 1000)
+    currentWindow.openDevTools()
+    // This is necessary because the test code races against the Electron process
+    // opening the window it would appear.
+    await wait(6000)
+
     const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
     await act(async () => {
@@ -1819,6 +1829,8 @@ describe('moveTemplate', () => {
       await domFinished
       await dispatchDone
     })
+
+    await wait(20000)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
