@@ -1886,7 +1886,7 @@ describe('moveTemplate', () => {
     await act(async () => {
       fireEvent(
         canvasControlContainer,
-        new MouseEvent('mouseover', {
+        new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
           clientX: areaControlBounds.left + 120,
