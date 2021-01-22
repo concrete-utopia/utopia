@@ -420,11 +420,6 @@ export class InsertModeControlContainer extends React.Component<
             ) ?? element.props,
         }
       }
-      console.log(
-        'this.props.highlightedViews down',
-        this.props.highlightedViews,
-        insertionSubject.parent,
-      )
       this.props.dispatch(
         [
           EditorActions.updateEditorMode(
@@ -478,11 +473,6 @@ export class InsertModeControlContainer extends React.Component<
       const parentPath =
         safeIndex(this.props.highlightedViews, 0) ??
         getStoryboardTemplatePath(this.props.rootComponents)
-      console.log(
-        'this.props.highlightedViews up',
-        this.props.highlightedViews,
-        insertionSubject.parent,
-      )
       let extraActions: EditorAction[] = []
 
       if (
@@ -577,11 +567,6 @@ export class InsertModeControlContainer extends React.Component<
           closestGuidelines,
         )
         const dragVector = Utils.vectorFromPoints(this.props.dragState.start, snappedMousePoint)
-        console.log(
-          'this.props.highlightedViews move',
-          this.props.highlightedViews,
-          insertionSubject.parent,
-        )
         this.props.dispatch(
           [
             EditorActions.updateEditorMode(
