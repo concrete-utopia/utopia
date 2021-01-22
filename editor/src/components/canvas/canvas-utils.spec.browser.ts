@@ -1754,16 +1754,6 @@ describe('moveTemplate', () => {
       false,
     )
 
-    // Code kept commented for any future person who needs it.
-    const currentWindow = require('electron').remote.getCurrentWindow()
-    currentWindow.show()
-    currentWindow.setPosition(500, 200)
-    currentWindow.setSize(2200, 1000)
-    // currentWindow.openDevTools()
-    // This is necessary because the test code races against the Electron process
-    // opening the window it would appear.
-    await wait(6000)
-
     const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
     await act(async () => {
@@ -1833,8 +1823,6 @@ describe('moveTemplate', () => {
       await dispatchDone
     })
 
-    await wait(20000)
-
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
         <div style={{ position: 'relative', width: '100%', height: '100%' }} data-uid='aaa'>
@@ -1843,8 +1831,8 @@ describe('moveTemplate', () => {
             data-uid='bbb'
           >
             <div data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
-            <div
-              style={{ backgroundColor: '#0091FFAA', position: 'relative', flexBasis: 75, height: 75 }}
+            <View
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', flexBasis: 74, height: 34 }}
               data-uid='${NewUID}'
             />
           </div>
