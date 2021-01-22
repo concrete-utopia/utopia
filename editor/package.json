@@ -185,6 +185,9 @@
   },
   "devDependencies": {
     "@babel/cli": "7.8.4",
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@babel/preset-typescript": "^7.12.7",
     "@hot-loader/react-dom": "16.13.0",
     "@jest-runner/electron": "3.0.0",
     "@testing-library/react": "9.1.4",
@@ -236,6 +239,7 @@
     "@typescript-eslint/eslint-plugin": "4.1.1",
     "@typescript-eslint/parser": "4.1.1",
     "@welldone-software/why-did-you-render": "5.0.0-rc.1",
+    "babel-jest": "^26.6.3",
     "babel-loader": "8.1.0",
     "browserify": "13.1.0",
     "chai": "4.1.2",
