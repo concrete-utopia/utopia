@@ -57,6 +57,7 @@ import * as TP from '../../core/shared/template-path'
 import CanvasActions from './canvas-actions'
 import { adjustAllSelectedFrames } from './controls/select-mode/move-utils'
 import { flatMapArray } from '../../core/shared/array-utils'
+import { EmptyScenePathForStoryboard } from '../../core/model/scene-utils'
 
 export const enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -130,12 +131,21 @@ const Canvas = {
       }
     }
 
-    return Utils.flatMapArray((rootComponent) => {
-      const nonNullGlobalOffset: CanvasVector =
-        rootComponent.globalFrame ?? ({ x: 0, y: 0 } as CanvasVector)
-      const rootElements = MetadataUtils.getImmediateChildren(metadata, rootComponent.scenePath)
-      return flatMapArray((root) => recurseChildren(nonNullGlobalOffset, root).frames, rootElements)
-    }, metadata.components)
+    const storyboardComponent = metadata.components.find((c) =>
+      TP.pathsEqual(c.scenePath, EmptyScenePathForStoryboard),
+    )
+
+    if (storyboardComponent != null) {
+      const storyboardEntryPoint = MetadataUtils.getImmediateChildren(
+        metadata,
+        storyboardComponent.scenePath,
+      )
+      return storyboardEntryPoint.flatMap((storyboardRoot) => {
+        return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardRoot).frames
+      })
+    } else {
+      return []
+    }
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
     switch (selectedViews.length) {
