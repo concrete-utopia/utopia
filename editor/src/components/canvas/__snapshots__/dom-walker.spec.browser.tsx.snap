@@ -245,7 +245,7 @@ Object {
         Object {
           "element": Array [
             "aaa",
-            "bbb-1",
+            "bbb~~~1",
           ],
           "scene": Object {
             "sceneElementPath": Array [
@@ -258,7 +258,7 @@ Object {
         Object {
           "element": Array [
             "aaa",
-            "bbb-2",
+            "bbb~~~2",
           ],
           "scene": Object {
             "sceneElementPath": Array [
@@ -271,7 +271,7 @@ Object {
         Object {
           "element": Array [
             "aaa",
-            "bbb-3",
+            "bbb~~~3",
           ],
           "scene": Object {
             "sceneElementPath": Array [
@@ -384,7 +384,7 @@ Object {
         },
       },
     },
-    "utopia-storyboard-uid/scene-aaa:aaa/bbb-1": Object {
+    "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1": Object {
       "children": Array [],
       "componentInstance": false,
       "computedStyle": null,
@@ -406,7 +406,7 @@ Object {
       },
       "props": Object {
         "data-label": "Plane",
-        "data-uid": "bbb-1",
+        "data-uid": "bbb~~~1",
         "data-utopia-original-uid": "bbb",
       },
       "specialSizeMeasurements": Object {
@@ -453,7 +453,7 @@ Object {
       "templatePath": Object {
         "element": Array [
           "aaa",
-          "bbb-1",
+          "bbb~~~1",
         ],
         "scene": Object {
           "sceneElementPath": Array [
@@ -464,7 +464,7 @@ Object {
         },
       },
     },
-    "utopia-storyboard-uid/scene-aaa:aaa/bbb-2": Object {
+    "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2": Object {
       "children": Array [],
       "componentInstance": false,
       "computedStyle": null,
@@ -486,7 +486,7 @@ Object {
       },
       "props": Object {
         "data-label": "Plane",
-        "data-uid": "bbb-2",
+        "data-uid": "bbb~~~2",
         "data-utopia-original-uid": "bbb",
       },
       "specialSizeMeasurements": Object {
@@ -533,7 +533,7 @@ Object {
       "templatePath": Object {
         "element": Array [
           "aaa",
-          "bbb-2",
+          "bbb~~~2",
         ],
         "scene": Object {
           "sceneElementPath": Array [
@@ -544,7 +544,7 @@ Object {
         },
       },
     },
-    "utopia-storyboard-uid/scene-aaa:aaa/bbb-3": Object {
+    "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3": Object {
       "children": Array [],
       "componentInstance": false,
       "computedStyle": null,
@@ -566,7 +566,7 @@ Object {
       },
       "props": Object {
         "data-label": "Plane",
-        "data-uid": "bbb-3",
+        "data-uid": "bbb~~~3",
         "data-utopia-original-uid": "bbb",
       },
       "specialSizeMeasurements": Object {
@@ -613,7 +613,7 @@ Object {
       "templatePath": Object {
         "element": Array [
           "aaa",
-          "bbb-3",
+          "bbb~~~3",
         ],
         "scene": Object {
           "sceneElementPath": Array [
