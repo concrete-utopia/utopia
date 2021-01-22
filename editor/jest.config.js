@@ -86,6 +86,7 @@ module.exports = {
     '../utopia-api',
     {
       testEnvironment: 'jest-environment-jsdom-global',
+      transform: { '\\.[jt]sx?$': 'babel-jest' },
       testPathIgnorePatterns: ['/lib/', '/node_modules/', '/.github-test-projects/'],
       testRegex: 'src/.*\\.spec\\.(jsx?|tsx?)$',
       moduleDirectories: ['src', 'node_modules', '<rootDir>/node_modules'],
@@ -101,6 +102,7 @@ module.exports = {
     },
     {
       testEnvironment: '@jest-runner/electron/environment',
+      transform: { '\\.[jt]sx?$': 'babel-jest' },
       runner: '@jest-runner/electron',
       testPathIgnorePatterns: ['/lib/', '/node_modules/', '/.github-test-projects/'],
       testRegex: 'src/.*\\.spec\\.browser\\.(jsx?|tsx?)$',
