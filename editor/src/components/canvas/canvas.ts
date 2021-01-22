@@ -58,7 +58,7 @@ import CanvasActions from './canvas-actions'
 import { adjustAllSelectedFrames } from './controls/select-mode/move-utils'
 import { flatMapArray } from '../../core/shared/array-utils'
 
-export const enum TargetSearchType {
+export enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
   SiblingsOfSelected = 'SiblingsOfSelected',
   ChildrenOfSelected = 'ChildrenOfSelected',

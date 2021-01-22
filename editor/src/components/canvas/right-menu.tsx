@@ -18,7 +18,7 @@ import {
 } from '../../uuiui'
 import { betterReactMemo, Utils } from '../../uuiui-deps'
 
-export const enum RightMenuTab {
+export enum RightMenuTab {
   Insert = 'insert',
   Inspector = 'inspector',
 }

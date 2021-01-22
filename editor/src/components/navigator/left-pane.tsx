@@ -51,7 +51,7 @@ export interface LeftPaneProps {
   loginState: LoginState
 }
 
-export const enum LeftMenuTab {
+export enum LeftMenuTab {
   UIInsert = 'ui-insert',
   ProjectStructure = 'project-structure',
   ProjectSettings = 'project-settings',
