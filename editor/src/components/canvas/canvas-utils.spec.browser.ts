@@ -20,6 +20,9 @@ import {
 } from './canvas-types'
 import { wait } from '../../utils/test-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
+import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
+import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
+import * as Prettier from 'prettier'
 
 const NewUID = 'catdog'
 
@@ -1401,6 +1404,314 @@ describe('moveTemplate', () => {
     )
   })
 
+  it('reparents an orphan from the canvas', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      Prettier.format(`/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div style={{ position: 'relative', width: '100%', height: '100%'}} data-uid='aaa' />
+        )
+      }
+    
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              props={{}}
+              data-uid='scene-aaa'
+            />
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                width: 100,
+                height: 100,
+                left: 350,
+                top: 0,
+              }}
+              data-uid='orphan-bbb'
+              data-testid='orphan-bbb'
+            />
+          </Storyboard>
+        )
+      }`, PrettierConfig)
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TP.scenePath([]), [BakedInStoryboardUID, 'orphan-bbb'])], false)],
+      false,
+    )
+
+    const areaControl = renderResult.renderedDOM.getByTestId('orphan-bbb')
+
+    const areaControlBounds = areaControl.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: true,
+        clientX: areaControlBounds.left + 5,
+        clientY: areaControlBounds.top + 5,
+        buttons: 1,
+      }),
+    )
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left - 5,
+          clientY: areaControlBounds.top + 5,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left - 5,
+          clientY: areaControlBounds.top + 5,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        window,
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left - 5,
+          clientY: areaControlBounds.top + 5,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(`/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div style={{ position: 'relative', width: '100%', height: '100%'}} data-uid='aaa'>
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                width: 100,
+                height: 100,
+                top: 0,
+                left: 340,
+              }}
+              data-uid='orphan-bbb'
+              data-testid='orphan-bbb'
+            />
+          </div>
+        )
+      }
+    
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              props={{}}
+              data-uid='scene-aaa'
+            />
+          </Storyboard>
+        )
+      }`, PrettierConfig)
+    )
+  })
+
+  it('reparenting to the canvas creates an orphan', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      Prettier.format(`/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div style={{ position: 'relative', width: '100%', height: '100%'}} data-uid='aaa'>
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                width: 100,
+                height: 100,
+                left: 0,
+                top: 0,
+              }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </div>
+        )
+      }
+    
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              static
+              props={{}}
+              data-uid='scene-aaa'
+            />
+          </Storyboard>
+        )
+      }`, PrettierConfig)
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-aaa']), ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const areaControl = renderResult.renderedDOM.getByTestId('bbb')
+
+    const areaControlBounds = areaControl.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    fireEvent(
+      canvasControlsLayer,
+      new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        metaKey: true,
+        clientX: areaControlBounds.left + 5,
+        clientY: areaControlBounds.top + 5,
+        buttons: 1,
+      }),
+    )
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        window,
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+          metaKey: true,
+          clientX: areaControlBounds.left + 5,
+          clientY: areaControlBounds.top - 25,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(`/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div style={{ position: 'relative', width: '100%', height: '100%'}} data-uid='aaa' />
+        )
+      }
+    
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              static
+              props={{}}
+              data-uid='scene-aaa'
+            />
+            <div
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                width: 100,
+                height: 100,
+                left: 0,
+                top: -30,
+              }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </Storyboard>
+        )
+      }`, PrettierConfig)
+    )
+  })
+
   xit('inserting a new element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1503,6 +1814,139 @@ describe('moveTemplate', () => {
           </View>
         </View>
       `),
+    )
+  })
+
+  it('inserting a new element as an orphan', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      Prettier.format(`/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div style={{ position: 'relative', width: '100%', height: '100%'}} data-uid='aaa' />
+        )
+      }
+    
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='storyboard'>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 100, height: 100 }}
+              component={App}
+              static
+              props={{}}
+              data-uid='scene-aaa'
+            />
+          </Storyboard>
+        )
+      }`, PrettierConfig)
+    )
+    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+
+    const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent.keyDown(canvasRoot, { key: 'v', keyCode: 86 })
+      await dispatchDone
+    })
+
+    const canvasControlContainer = renderResult.renderedDOM.getByTestId(
+      'new-canvas-controls-container',
+    )
+    const areaControlBounds = canvasControlContainer.getBoundingClientRect()
+
+    await act(async () => {
+      fireEvent(
+        canvasControlContainer,
+        new MouseEvent('mouseover', {
+          bubbles: true,
+          cancelable: true,
+          clientX: areaControlBounds.left + 120,
+          clientY: areaControlBounds.top + 0,
+        }),
+      )
+    })
+
+    await act(async () => {
+      fireEvent(
+        canvasControlContainer,
+        new MouseEvent('mousedown', {
+          bubbles: true,
+          cancelable: true,
+          clientX: areaControlBounds.left + 120,
+          clientY: areaControlBounds.top + 0,
+          buttons: 1,
+        }),
+      )
+    })
+
+    await act(async () => {
+      fireEvent(
+        canvasControlContainer,
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          cancelable: true,
+          clientX: areaControlBounds.left + 180,
+          clientY: areaControlBounds.top + 50,
+          buttons: 1,
+        }),
+      )
+    })
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlContainer,
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          cancelable: true,
+          clientX: areaControlBounds.left + 180,
+          clientY: areaControlBounds.top + 50,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(`/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div style={{ position: 'relative', width: '100%', height: '100%'}} data-uid='aaa' />
+        )
+      }
+    
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='storyboard'>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 100, height: 100 }}
+              component={App}
+              static
+              props={{}}
+              data-uid='scene-aaa'
+            />
+            <View
+              style={{
+                backgroundColor: '#0091FFAA',
+                position: 'absolute',
+                left: 100,
+                top: -60,
+                width: 60,
+                height: 50,
+              }}
+              data-uid='${NewUID}'
+            />
+          </Storyboard>
+        )
+      }`, PrettierConfig)
     )
   })
 
