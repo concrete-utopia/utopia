@@ -11,7 +11,7 @@ import { imageFile, isImageFile } from '../../core/model/project-file-utils'
 import { ImageFile } from '../../core/shared/project-file-types'
 import { PersistentModel, UserConfiguration, emptyUserConfiguration } from './store/editor-state'
 import { LoginState } from '../../uuiui-deps'
-import urljoin = require('url-join')
+const urljoin = require('url-join')
 import * as JSZip from 'jszip'
 import { addFileToProjectContents, walkContentsTree } from '../assets'
 

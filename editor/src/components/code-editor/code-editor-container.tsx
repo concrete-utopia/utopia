@@ -48,7 +48,7 @@ import {
   useBridgeTowardsIframe,
 } from './code-editor-bridge'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
-import urljoin = require('url-join')
+const urljoin = require('url-join')
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   CodeEditorEntryPoint,

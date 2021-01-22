@@ -30,7 +30,7 @@ import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import { UserConfiguration } from '../user-configuration'
-import urljoin = require('url-join')
+const urljoin = require('url-join')
 import { PROPERTY_CONTROLS_INFO_BASE_URL } from '../../common/env-vars'
 import {
   PropertyControlsInfoIFrameID,

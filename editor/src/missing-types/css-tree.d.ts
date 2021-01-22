@@ -1,4 +1,4 @@
-export namespace Syntax {
+export declare namespace Syntax {
   export interface AtKeyword {
     type: 'AtKeyword'
     name: string

@@ -15,7 +15,7 @@ import { checkerboardBackground } from '../common/inspector-utils'
 import { inspectorEdgePadding } from '../sections/style-section/background-subsection/background-picker'
 import { InspectorModal } from '../widgets/inspector-modal'
 import { StringControl } from './string-control'
-import React = require('react')
+import * as React from 'react'
 import { colorTheme, SimpleNumberInput, SimplePercentInput } from '../../../uuiui'
 
 export interface ColorPickerProps extends ColorPickerInnerProps {

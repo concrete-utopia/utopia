@@ -1,4 +1,4 @@
-import React = require('react')
+import * as React from 'react'
 import * as R from 'ramda'
 import { isRight } from '../../../core/shared/either'
 import { ColorPicker } from './color-picker'

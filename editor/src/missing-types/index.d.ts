@@ -20,11 +20,6 @@ declare module 'babel-plugin-syntax-jsx'
 declare module '@babel/standalone'
 declare module '@babel/plugin-transform-modules-commonjs'
 
-declare module 'lodash.clamp' {
-  export const clamp = (number: number, lower: number, upper: number) => number
-  export const clamp = (number: number, upper: number) => number
-}
-
 declare module 'draft-js-custom-styles'
 declare module 'draft-js-export-html'
 
@@ -65,7 +60,7 @@ declare module 'use-context-selector' {
   export const useContextSelector: <T, S>(
     context: ContextWithListeners<T>,
     selector: (value: T) => S,
-    equalityCheck: (a: S, b: S) => boolean = Object.is,
+    equalityCheck?: (a: S, b: S) => boolean,
   ) => S
 
   export const useContext: <T>(context: ContextWithListeners<T>) => T
