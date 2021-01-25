@@ -1,8 +1,8 @@
 import * as React from 'react'
 import * as PubSub from 'pubsub-js'
 import type { ConsoleLog } from '../../components/editor/store/editor-state'
-import Utils from '../../utils/utils'
 import type { FancyError, RuntimeErrorInfo } from './code-exec-utils'
+import { defaultIfNull } from './optional-utils'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
 
@@ -13,12 +13,22 @@ const runtimeErrorsAtom: React.MutableRefObject<Array<RuntimeErrorInfo>> = { cur
 const RuntimeErrorsPubSub = 'runtimeErrorsPubSub'
 
 function usePubSub<T>(topic: string, referentiallyStableCallback: (newData: T) => void): void {
+  const pubsubCallback = React.useCallback(
+    (
+      message: string,
+      data: any, // TODO once eslint for hooks is updated, replace data: any with data: T
+    ) => {
+      referentiallyStableCallback(data)
+    },
+    [referentiallyStableCallback],
+  )
+
   React.useEffect(() => {
-    const token = PubSub.subscribe(topic, referentiallyStableCallback)
+    const token = PubSub.subscribe(topic, pubsubCallback)
     return function cleanup() {
       PubSub.unsubscribe(token)
     }
-  }, [topic, referentiallyStableCallback])
+  }, [topic, pubsubCallback])
 }
 
 export function useUpdateOnRuntimeErrors(
@@ -48,15 +58,17 @@ export function useWriteOnlyRuntimeErrors(): {
         {
           editedFile: editedFile,
           error: error,
-          errorInfo: Utils.defaultIfNull(null, errorInfo),
+          errorInfo: defaultIfNull(null, errorInfo),
         },
       ]
+      PubSub.publish(RuntimeErrorsPubSub, runtimeErrorsAtom.current)
     },
     [],
   )
 
   const clearRuntimeErrors = React.useCallback(() => {
     runtimeErrorsAtom.current = EmptyArray
+    PubSub.publish(RuntimeErrorsPubSub, runtimeErrorsAtom.current)
   }, [])
 
   return {
@@ -92,6 +104,7 @@ export function useWriteOnlyConsoleLogs(): {
   const modifyLogs = React.useCallback(
     (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
       consoleLogsAtom.current = updateLogs(consoleLogsAtom.current)
+      PubSub.publish(ConsoleLogsPubSub, consoleLogsAtom.current)
     },
     [],
   )
