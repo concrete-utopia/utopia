@@ -213,6 +213,21 @@ export function getPrintedUiJsCode(store: EditorStore): string {
   }
 }
 
+export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
+  const file = getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js')
+  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    return printCode(
+      printCodeOptions(false, true, false, true),
+      file.fileContents.parsed.imports,
+      file.fileContents.parsed.topLevelElements,
+      file.fileContents.parsed.jsxFactoryFunction,
+      file.fileContents.parsed.exportsDetail,
+    )
+  } else {
+    fail('File is not a text file.')
+  }
+}
+
 const TestSceneUID = 'scene-aaa'
 export const TestScenePath = scenePath([BakedInStoryboardUID, TestSceneUID])
 
