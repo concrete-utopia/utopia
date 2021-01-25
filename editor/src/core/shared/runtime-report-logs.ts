@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { atom, useRecoilValue, useSetRecoilState } from 'recoil'
+import * as PubSub from 'pubsub-js'
 import type { ConsoleLog } from '../../components/editor/store/editor-state'
 import Utils from '../../utils/utils'
 import type { FancyError, RuntimeErrorInfo } from './code-exec-utils'
@@ -9,34 +9,55 @@ const EmptyArray: Array<RuntimeErrorInfo> = []
 const ConsoleLogSizeLimit = 100
 const EmptyConsoleLogs: Array<ConsoleLog> = []
 
-const runtimeErrorsAtom = atom<Array<RuntimeErrorInfo>>({ key: 'runtimeErrorsAtom', default: [] })
+const runtimeErrorsAtom: React.MutableRefObject<Array<RuntimeErrorInfo>> = { current: [] }
+const RuntimeErrorsPubSub = 'runtimeErrorsPubSub'
+
+function usePubSub<T>(topic: string, referentiallyStableCallback: (newData: T) => void): void {
+  React.useEffect(() => {
+    const token = PubSub.subscribe(topic, referentiallyStableCallback)
+    return function cleanup() {
+      PubSub.unsubscribe(token)
+    }
+  }, [topic, referentiallyStableCallback])
+}
+
+export function useUpdateOnRuntimeErrors(
+  referentiallyStableCallback: (newRuntimeErrors: Array<RuntimeErrorInfo>) => void,
+): void {
+  usePubSub(RuntimeErrorsPubSub, referentiallyStableCallback)
+}
 
 export function useReadOnlyRuntimeErrors(): Array<RuntimeErrorInfo> {
-  return useRecoilValue(runtimeErrorsAtom)
+  const [, forceUpdate] = React.useReducer((c) => c + 1, 0)
+  useUpdateOnRuntimeErrors(
+    React.useCallback((newRuntimeErrors) => {
+      runtimeErrorsAtom.current = newRuntimeErrors
+      forceUpdate()
+    }, []),
+  )
+  return runtimeErrorsAtom.current
 }
 
 export function useWriteOnlyRuntimeErrors(): {
   onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
   clearRuntimeErrors: () => void
 } {
-  const setRuntimeErrors = useSetRecoilState(runtimeErrorsAtom)
-
   const onRuntimeError = React.useCallback(
     (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
-      setRuntimeErrors([
+      runtimeErrorsAtom.current = [
         {
           editedFile: editedFile,
           error: error,
           errorInfo: Utils.defaultIfNull(null, errorInfo),
         },
-      ])
+      ]
     },
-    [setRuntimeErrors],
+    [],
   )
 
   const clearRuntimeErrors = React.useCallback(() => {
-    setRuntimeErrors(EmptyArray)
-  }, [setRuntimeErrors])
+    runtimeErrorsAtom.current = EmptyArray
+  }, [])
 
   return {
     onRuntimeError: onRuntimeError,
@@ -44,23 +65,35 @@ export function useWriteOnlyRuntimeErrors(): {
   }
 }
 
-const consoleLogsAtom = atom<Array<ConsoleLog>>({ key: 'consoleLogsAtom', default: [] })
+const consoleLogsAtom: React.MutableRefObject<Array<ConsoleLog>> = { current: [] }
+const ConsoleLogsPubSub = 'consoleLogsPubSub'
+
+export function useUpdateOnConsoleLogs(
+  referentiallyStableCallback: (newConsoleLogs: Array<ConsoleLog>) => void,
+): void {
+  usePubSub(ConsoleLogsPubSub, referentiallyStableCallback)
+}
 
 export function useReadOnlyConsoleLogs(): Array<ConsoleLog> {
-  return useRecoilValue(consoleLogsAtom)
+  const [, forceUpdate] = React.useReducer((c) => c + 1, 0)
+  useUpdateOnConsoleLogs(
+    React.useCallback((newRuntimeErrors) => {
+      consoleLogsAtom.current = newRuntimeErrors
+      forceUpdate()
+    }, []),
+  )
+  return consoleLogsAtom.current
 }
 
 export function useWriteOnlyConsoleLogs(): {
   addToConsoleLogs: (log: ConsoleLog) => void
   clearConsoleLogs: () => void
 } {
-  const setConsoleLogs = useSetRecoilState(consoleLogsAtom)
-
   const modifyLogs = React.useCallback(
     (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
-      setConsoleLogs(updateLogs)
+      consoleLogsAtom.current = updateLogs(consoleLogsAtom.current)
     },
-    [setConsoleLogs],
+    [],
   )
 
   const clearConsoleLogs = React.useCallback(() => {
