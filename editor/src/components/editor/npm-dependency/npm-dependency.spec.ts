@@ -130,12 +130,7 @@ describe('Importing from a resolved module', () => {
   it('Handles all forms of imports for an es module', () => {
     // import cake, { icing as doIWantIcing } from './cake'
     // import * as cakeStuff from './cake'
-    const imports = importDetails(
-      'cake',
-      [importAlias('icing', 'doIWantIcing')],
-      'cakeStuff',
-      emptyComments,
-    )
+    const imports = importDetails('cake', [importAlias('icing', 'doIWantIcing')], 'cakeStuff')
 
     const defaultExport = 'A fully fledged cake'
     const icingExport = 'ooooh yes please, but only the decent stuff'
@@ -159,12 +154,7 @@ describe('Importing from a resolved module', () => {
   it('Handles all forms of imports for a common js module with a default export', () => {
     // import cake, { icing as doIWantIcing } from './cake'
     // import * as cakeStuff from './cake'
-    const imports = importDetails(
-      'cake',
-      [importAlias('icing', 'doIWantIcing')],
-      'cakeStuff',
-      emptyComments,
-    )
+    const imports = importDetails('cake', [importAlias('icing', 'doIWantIcing')], 'cakeStuff')
 
     const defaultExport = 'A fully fledged cake'
 
@@ -184,12 +174,7 @@ describe('Importing from a resolved module', () => {
   it('Handles all forms of imports for a common js module with named exports', () => {
     // import cake, { icing as doIWantIcing } from './cake'
     // import * as cakeStuff from './cake'
-    const imports = importDetails(
-      'cake',
-      [importAlias('icing', 'doIWantIcing')],
-      'cakeStuff',
-      emptyComments,
-    )
+    const imports = importDetails('cake', [importAlias('icing', 'doIWantIcing')], 'cakeStuff')
 
     const icingExport = 'ooooh yes please, but only the decent stuff'
 

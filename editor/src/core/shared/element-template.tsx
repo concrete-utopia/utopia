@@ -915,7 +915,6 @@ export function utopiaJSXComponent(
   rootElement: JSXElementChild,
   jsBlock: ArbitraryJSBlock | null,
   usedInReactDOMRender: boolean,
-  comments: ParsedComments,
   returnStatementComments: ParsedComments,
 ): UtopiaJSXComponent {
   return {
@@ -929,7 +928,6 @@ export function utopiaJSXComponent(
     rootElement: rootElement,
     arbitraryJSBlock: jsBlock,
     usedInReactDOMRender: usedInReactDOMRender,
-    comments: comments,
     returnStatementComments: returnStatementComments,
   }
 }
@@ -940,7 +938,6 @@ export function arbitraryJSBlock(
   definedWithin: Array<string>,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
-  comments: ParsedComments,
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
@@ -950,7 +947,6 @@ export function arbitraryJSBlock(
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uniqueID: UUID(),
-    comments: comments,
   }
 }
 
@@ -1108,7 +1104,7 @@ export type VarLetOrConst = 'var' | 'let' | 'const'
 export type FunctionDeclarationSyntax = 'function' | VarLetOrConst
 export type BlockOrExpression = 'block' | 'parenthesized-expression' | 'expression'
 
-export interface UtopiaJSXComponent extends WithComments {
+export interface UtopiaJSXComponent {
   type: 'UTOPIA_JSX_COMPONENT'
   name: string
   /**
@@ -1127,7 +1123,7 @@ export interface UtopiaJSXComponent extends WithComments {
   returnStatementComments: ParsedComments
 }
 
-export interface ArbitraryJSBlock extends WithComments {
+export interface ArbitraryJSBlock {
   type: 'ARBITRARY_JS_BLOCK'
   javascript: string
   transpiledJavascript: string
