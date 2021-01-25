@@ -90,13 +90,15 @@ function useCanvasContextMenuItems(
         submenuName: 'Elements',
         enabled: true,
         action: () => dispatch([selectComponents([path], false)], 'canvas'),
-        isHidden: ({props}: {props: ContextMenuInnerProps}) => {
+        isHidden: ({ props }: { props: ContextMenuInnerProps }) => {
           if (props.elementsUnderCursor != null && Array.isArray(props.elementsUnderCursor)) {
-            return !props.elementsUnderCursor.some((underCursor: TemplatePath) => TP.pathsEqual(underCursor, path))
+            return !props.elementsUnderCursor.some((underCursor: TemplatePath) =>
+              TP.pathsEqual(underCursor, path),
+            )
           } else {
             return true
           }
-        }
+        },
       }
     })
     return [...ElementContextMenuItems, ...elementListSubmenu]

@@ -16,6 +16,7 @@ import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/share
 import { applicative4Either, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import {
+  canvasPoint,
   CanvasPoint,
   CanvasRectangle,
   LocalPoint,
@@ -397,7 +398,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
               const sceneMetadata = collectMetadata(
                 scene,
                 TP.instancePath([], TP.elementPathForPath(scenePath)),
-                null,
+                canvasPoint({ x: 0, y: 0 }),
                 rootElements,
               )
               rootMetadata.push(sceneMetadata)
@@ -570,14 +571,11 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       function collectMetadata(
         element: HTMLElement,
         instancePath: InstancePath,
-        parentPoint: CanvasPoint | null,
+        parentPoint: CanvasPoint,
         children: InstancePath[],
       ): ElementInstanceMetadata {
         const globalFrame = globalFrameForElement(element)
-        const localFrame =
-          parentPoint != null
-            ? localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
-            : null
+        const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
         const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
         const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)

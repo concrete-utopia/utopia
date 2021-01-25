@@ -30,17 +30,17 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
       data-uid=\\"aaa\\"
     >
       <div
-        data-uid=\\"bbb-1\\"
+        data-uid=\\"bbb~~~1\\"
         data-label=\\"Plane\\"
         data-utopia-original-uid=\\"bbb\\"
       ></div>
       <div
-        data-uid=\\"bbb-2\\"
+        data-uid=\\"bbb~~~2\\"
         data-label=\\"Plane\\"
         data-utopia-original-uid=\\"bbb\\"
       ></div>
       <div
-        data-uid=\\"bbb-3\\"
+        data-uid=\\"bbb~~~3\\"
         data-label=\\"Plane\\"
         data-utopia-original-uid=\\"bbb\\"
       ></div>
@@ -716,9 +716,9 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
-      <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">1</div>
-      <div data-uid=\\"aaa-2\\" data-utopia-original-uid=\\"aaa\\">2</div>
-      <div data-uid=\\"aaa-3\\" data-utopia-original-uid=\\"aaa\\">3</div>
+      <div data-uid=\\"aaa~~~1\\" data-utopia-original-uid=\\"aaa\\">1</div>
+      <div data-uid=\\"aaa~~~2\\" data-utopia-original-uid=\\"aaa\\">2</div>
+      <div data-uid=\\"aaa~~~3\\" data-utopia-original-uid=\\"aaa\\">3</div>
     </div>
   </div>
 </div>
@@ -973,20 +973,20 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
-      <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">
-        <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">4</div>
-        <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">5</div>
-        <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">6</div>
+      <div data-uid=\\"aaa~~~1\\" data-utopia-original-uid=\\"aaa\\">
+        <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">4</div>
+        <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">5</div>
+        <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">6</div>
       </div>
-      <div data-uid=\\"aaa-2\\" data-utopia-original-uid=\\"aaa\\">
-        <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">8</div>
-        <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">10</div>
-        <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">12</div>
+      <div data-uid=\\"aaa~~~2\\" data-utopia-original-uid=\\"aaa\\">
+        <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">8</div>
+        <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">10</div>
+        <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">12</div>
       </div>
-      <div data-uid=\\"aaa-3\\" data-utopia-original-uid=\\"aaa\\">
-        <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">12</div>
-        <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">15</div>
-        <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">18</div>
+      <div data-uid=\\"aaa~~~3\\" data-utopia-original-uid=\\"aaa\\">
+        <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">12</div>
+        <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">15</div>
+        <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">18</div>
       </div>
     </div>
   </div>
@@ -1948,9 +1948,9 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -2214,9 +2214,9 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -2857,8 +2857,8 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
-      <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
-      <div data-uid=\\"aaa-2\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
+      <div data-uid=\\"aaa~~~1\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
+      <div data-uid=\\"aaa~~~2\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
     </div>
   </div>
 </div>
@@ -5682,70 +5682,82 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
         \\"
         data-uid=\\"03a\\"
       >
-        <div data-uid=\\"834-1\\" data-label=\\"Copy\\" data-utopia-original-uid=\\"834\\">
+        <div
+          data-uid=\\"834~~~1\\"
+          data-label=\\"Copy\\"
+          data-utopia-original-uid=\\"834\\"
+        >
           Copy
         </div>
-        <div data-uid=\\"999-2\\" data-label=\\"⌘,⎇,C\\" data-utopia-original-uid=\\"999\\">
+        <div
+          data-uid=\\"999~~~2\\"
+          data-label=\\"⌘,⎇,C\\"
+          data-utopia-original-uid=\\"999\\"
+        >
           <span data-uid=\\"000\\"
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-1\\"
+              data-uid=\\"726~~~1\\"
               data-utopia-original-uid=\\"726\\"
               >⌘</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-2\\"
+              data-uid=\\"726~~~2\\"
               data-utopia-original-uid=\\"726\\"
               >⎇</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-3\\"
+              data-uid=\\"726~~~3\\"
               data-utopia-original-uid=\\"726\\"
               >C</span
             ></span
           >
         </div>
-        <div data-uid=\\"834-3\\" data-label=\\"Paste\\" data-utopia-original-uid=\\"834\\">
+        <div
+          data-uid=\\"834~~~3\\"
+          data-label=\\"Paste\\"
+          data-utopia-original-uid=\\"834\\"
+        >
           Paste
         </div>
-        <div data-uid=\\"999-4\\" data-label=\\"⌘⎇V\\" data-utopia-original-uid=\\"999\\">
+        <div data-uid=\\"999~~~4\\" data-label=\\"⌘⎇V\\" data-utopia-original-uid=\\"999\\">
           <span data-uid=\\"000\\"
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-1\\"
+              data-uid=\\"726~~~1\\"
               data-utopia-original-uid=\\"726\\"
               >⌘</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-2\\"
+              data-uid=\\"726~~~2\\"
               data-utopia-original-uid=\\"726\\"
               >⎇</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-3\\"
+              data-uid=\\"726~~~3\\"
               data-utopia-original-uid=\\"726\\"
               >V</span
             ></span
           >
         </div>
-        <div data-uid=\\"834-5\\" data-label=\\"Cut\\" data-utopia-original-uid=\\"834\\">
+        <div data-uid=\\"834~~~5\\" data-label=\\"Cut\\" data-utopia-original-uid=\\"834\\">
           Cut
         </div>
-        <div data-uid=\\"999-6\\" data-label=\\"⌘⎇C\\" data-utopia-original-uid=\\"999\\">
+        <div data-uid=\\"999~~~6\\" data-label=\\"⌘⎇C\\" data-utopia-original-uid=\\"999\\">
           <span data-uid=\\"000\\"
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-1\\"
+              data-uid=\\"726~~~1\\"
               data-utopia-original-uid=\\"726\\"
               >⌘</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-2\\"
+              data-uid=\\"726~~~2\\"
               data-utopia-original-uid=\\"726\\"
               >⎇</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-3\\"
+              data-uid=\\"726~~~3\\"
               data-utopia-original-uid=\\"726\\"
               >C</span
             ></span
@@ -10193,9 +10205,9 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -10459,9 +10471,9 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -10726,9 +10738,9 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -13026,13 +13038,13 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">
         <div data-uid=\\"ccc\\">1</div>
       </div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">
         <div data-uid=\\"ccc\\">2</div>
       </div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">
         <div data-uid=\\"ccc\\">3</div>
       </div>
     </div>

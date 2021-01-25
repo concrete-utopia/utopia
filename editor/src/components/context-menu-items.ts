@@ -27,7 +27,15 @@ export interface ContextMenuItem<T> {
   submenuName?: string | null
   shortcut?: string
   isSeparator?: boolean
-  isHidden?: ({props, data, triggerEvent}: {props: any, data: T, triggerEvent: TriggerEvent}) => boolean
+  isHidden?: ({
+    props,
+    data,
+    triggerEvent,
+  }: {
+    props: any
+    data: T
+    triggerEvent: TriggerEvent
+  }) => boolean
   action: (data: T, dispatch?: EditorDispatch, event?: MouseEvent) => void
 }
 

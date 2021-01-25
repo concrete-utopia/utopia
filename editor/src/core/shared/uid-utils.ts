@@ -103,7 +103,7 @@ export function generateUID(existingIDs: Array<string> | Set<string>): string {
   return generateUID(existingIDs)
 }
 
-export const GeneratedUIDSeparator = `-`
+export const GeneratedUIDSeparator = `~~~`
 export function createIndexedUid(originalUid: string, index: string | number): string {
   return `${originalUid}${GeneratedUIDSeparator}${index}`
 }
