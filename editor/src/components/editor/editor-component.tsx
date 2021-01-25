@@ -50,6 +50,7 @@ import {
   FlexColumn,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
+import { atom, useRecoilValue, useSetRecoilState } from 'recoil'
 
 interface NumberSize {
   width: number
@@ -351,12 +352,17 @@ export function EditorComponent(props: EditorProps) {
   )
 }
 
-function useRuntimeErrors(): {
-  runtimeErrors: Array<RuntimeErrorInfo>
+const runtimeErrorsAtom = atom<Array<RuntimeErrorInfo>>({ key: 'runtimeErrorsAtom', default: [] })
+
+export function useReadOnlyRuntimeErrors(): Array<RuntimeErrorInfo> {
+  return useRecoilValue(runtimeErrorsAtom)
+}
+
+function useWriteOnlyRuntimeErrors(): {
   onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
   clearRuntimeErrors: () => void
 } {
-  const [runtimeErrors, setRuntimeErrors] = React.useState<Array<RuntimeErrorInfo>>(EmptyArray)
+  const setRuntimeErrors = useSetRecoilState(runtimeErrorsAtom)
 
   const onRuntimeError = React.useCallback(
     (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
@@ -368,26 +374,30 @@ function useRuntimeErrors(): {
         },
       ])
     },
-    [],
+    [setRuntimeErrors],
   )
 
   const clearRuntimeErrors = React.useCallback(() => {
     setRuntimeErrors(EmptyArray)
-  }, [])
+  }, [setRuntimeErrors])
 
   return {
-    runtimeErrors: runtimeErrors,
     onRuntimeError: onRuntimeError,
     clearRuntimeErrors: clearRuntimeErrors,
   }
 }
 
-function useConsoleLogs(): {
-  consoleLogs: Array<ConsoleLog>
+const consoleLogsAtom = atom<Array<ConsoleLog>>({ key: 'consoleLogsAtom', default: [] })
+
+export function useReadOnlyConsoleLogs(): Array<ConsoleLog> {
+  return useRecoilValue(consoleLogsAtom)
+}
+
+function useWriteOnlyConsoleLogs(): {
   addToConsoleLogs: (log: ConsoleLog) => void
   clearConsoleLogs: () => void
 } {
-  const [consoleLogs, setConsoleLogs] = React.useState<Array<ConsoleLog>>(EmptyConsoleLogs)
+  const setConsoleLogs = useSetRecoilState(consoleLogsAtom)
 
   const modifyLogs = React.useCallback(
     (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
@@ -414,7 +424,6 @@ function useConsoleLogs(): {
   )
 
   return {
-    consoleLogs: consoleLogs,
     addToConsoleLogs: addToConsoleLogs,
     clearConsoleLogs: clearConsoleLogs,
   }
@@ -441,8 +450,8 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     }
   }, 'OpenFileEditor')
 
-  const { runtimeErrors, onRuntimeError, clearRuntimeErrors } = useRuntimeErrors()
-  const { consoleLogs, addToConsoleLogs, clearConsoleLogs } = useConsoleLogs()
+  const { onRuntimeError, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
+  const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
 
   if (noFileOpen) {
     return <Subdued>No file open</Subdued>
@@ -454,10 +463,8 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     return (
       <DesignPanelRoot
         isUiJsFileOpen={isUiJsFileOpen}
-        runtimeErrors={runtimeErrors}
         onRuntimeError={onRuntimeError}
         clearRuntimeErrors={clearRuntimeErrors}
-        canvasConsoleLogs={consoleLogs}
         clearConsoleLogs={clearConsoleLogs}
         addToConsoleLogs={addToConsoleLogs}
       />

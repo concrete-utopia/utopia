@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+import { RecoilRoot } from 'recoil'
 import { hot } from 'react-hot-loader/root'
 import { unstable_trace as trace } from 'scheduler/tracing'
 import create from 'zustand'
@@ -394,7 +395,9 @@ export const HotRoot: React.FunctionComponent<{
   return (
     <EditorStateContext.Provider value={{ api, useStore }}>
       <UiJsxCanvasContext.Provider value={spyCollector}>
-        <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
+        <RecoilRoot>
+          <EditorComponent propertyControlsInfoSupported={propertyControlsInfoSupported} />
+        </RecoilRoot>
       </UiJsxCanvasContext.Provider>
     </EditorStateContext.Provider>
   )

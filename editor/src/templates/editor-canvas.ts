@@ -503,7 +503,6 @@ interface EditorCanvasProps extends CanvasReactErrorCallback {
   model: CanvasModel
   editor: EditorState
   dispatch: EditorDispatch
-  canvasConsoleLogs: Array<ConsoleLog>
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
 }
@@ -776,7 +775,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       React.createElement(CanvasComponentEntry, {
         reportError: this.props.reportError,
         clearErrors: this.props.clearErrors,
-        canvasConsoleLogs: this.props.canvasConsoleLogs,
         clearConsoleLogs: this.props.clearConsoleLogs,
         addToConsoleLogs: this.props.addToConsoleLogs,
         getPositionFromCoordinates: this.getPositionFromCoordinates,

@@ -28,9 +28,15 @@ const rules = [
     level: 'error',
   },
   {
-    match: /^Warning: Cannot update a component \(`OpenFileEditor`\) while rendering a different component \(`UiJsxCanvas`\)./,
+    match: /^Warning: FIXME: Cannot update a component \(`OpenFileEditor`\) while rendering a different component \(`UiJsxCanvas`\)./,
     group:
       'Warning: FIXME: Cannot update a component (`OpenFileEditor`) while rendering a different component (`UiJsxCanvas`). We should actually fix this!',
+    level: 'error',
+  },
+  {
+    match: /^Warning: FIXME: Cannot update a component .* while rendering a different component .*./,
+    group:
+      'Warning: FIXME: Cannot update a component **** while rendering a different component ****. We should actually fix this!',
     level: 'error',
   },
   {

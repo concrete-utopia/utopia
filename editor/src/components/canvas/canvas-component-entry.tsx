@@ -15,7 +15,6 @@ import { TemplatePath } from '../../core/shared/project-file-types'
 interface CanvasComponentEntryProps extends CanvasReactErrorCallback {
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
-  canvasConsoleLogs: Array<ConsoleLog>
 }
 
 export const CanvasComponentEntry = betterReactMemo(

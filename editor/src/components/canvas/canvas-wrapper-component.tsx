@@ -27,12 +27,11 @@ import { FlexColumn, Button, UtopiaTheme } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { TemplatePath } from '../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
+import { useReadOnlyRuntimeErrors } from '../editor/editor-component'
 
 interface CanvasWrapperComponentProps {
-  runtimeErrors: Array<RuntimeErrorInfo>
   onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
   clearRuntimeErrors: () => void
-  canvasConsoleLogs: Array<ConsoleLog>
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
 }
@@ -49,27 +48,7 @@ export const CanvasWrapperComponent = betterReactMemo(
       'CanvasWrapperComponent',
     )
 
-    const {
-      runtimeErrors,
-      onRuntimeError,
-      clearRuntimeErrors,
-      canvasConsoleLogs,
-      clearConsoleLogs,
-      addToConsoleLogs,
-    } = props
-
-    const overlayErrors = React.useMemo(() => {
-      return runtimeErrors.map((runtimeError) => {
-        const stackFrames =
-          runtimeError.error.stackFrames != null ? runtimeError.error.stackFrames : []
-        return {
-          error: runtimeError.error,
-          unhandledRejection: false,
-          contextSize: 3, // magic number from react-error-overlay
-          stackFrames: stackFrames,
-        }
-      })
-    }, [runtimeErrors])
+    const { onRuntimeError, clearRuntimeErrors, clearConsoleLogs, addToConsoleLogs } = props
 
     const fatalErrors = React.useMemo(() => {
       return getAllCodeEditorErrors(editorState, true, true)
@@ -98,24 +77,17 @@ export const CanvasWrapperComponent = betterReactMemo(
             dispatch={dispatch}
             reportError={onRuntimeError}
             clearErrors={clearRuntimeErrors}
-            canvasConsoleLogs={canvasConsoleLogs}
             clearConsoleLogs={clearConsoleLogs}
             addToConsoleLogs={addToConsoleLogs}
           />
         ) : null}
-        {safeMode ? (
-          <SafeModeErrorOverlay />
-        ) : (
-          <ErrorOverlayComponent canvasRuntimeErrors={overlayErrors} />
-        )}
+        {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
       </FlexColumn>
     )
   },
 )
 
-interface ErrorOverlayComponentProps {
-  canvasRuntimeErrors: Array<ErrorRecord>
-}
+interface ErrorOverlayComponentProps {}
 
 const ErrorOverlayComponent = betterReactMemo(
   'ErrorOverlayComponent',
@@ -131,6 +103,21 @@ const ErrorOverlayComponent = betterReactMemo(
       return getAllCodeEditorErrors(store.editor, true, true)
     }, 'ErrorOverlayComponent fatalCodeEditorErrors')
 
+    const runtimeErrors = useReadOnlyRuntimeErrors()
+
+    const overlayErrors = React.useMemo(() => {
+      return runtimeErrors.map((runtimeError) => {
+        const stackFrames =
+          runtimeError.error.stackFrames != null ? runtimeError.error.stackFrames : []
+        return {
+          error: runtimeError.error,
+          unhandledRejection: false,
+          contextSize: 3, // magic number from react-error-overlay
+          stackFrames: stackFrames,
+        }
+      })
+    }, [runtimeErrors])
+
     const lintErrors = fatalCodeEditorErrors.filter((e) => e.source === 'eslint')
     // we start with the lint errors, since those show up the fastest. any subsequent error will go below in the error screen
     const errorRecords = filterOldPasses([...lintErrors, ...utopiaParserErrors])
@@ -145,7 +132,7 @@ const ErrorOverlayComponent = betterReactMemo(
     return (
       <ReactErrorOverlay
         currentBuildErrorRecords={errorRecords}
-        currentRuntimeErrorRecords={props.canvasRuntimeErrors}
+        currentRuntimeErrorRecords={overlayErrors}
         onOpenFile={onOpenFile}
       />
     )

@@ -56,6 +56,7 @@ import {
 } from './code-editor-iframe-entry-point'
 import { isOpenFileTab } from '../editor/store/editor-tabs'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import { useReadOnlyConsoleLogs, useReadOnlyRuntimeErrors } from '../editor/editor-component'
 
 const CodeEditorIframeID = 'code-editor-iframe'
 
@@ -90,8 +91,8 @@ const CodeEditorIframeContainer = betterReactMemo<{ propsToSend: JSONStringified
 )
 
 export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) => {
-  const runtimeErrors: RuntimeErrorInfo[] = []
-  const canvasConsoleLogs: ConsoleLog[] = []
+  const runtimeErrors: RuntimeErrorInfo[] = useReadOnlyRuntimeErrors()
+  const canvasConsoleLogs: ConsoleLog[] = useReadOnlyConsoleLogs()
 
   const selectedProps = useEditorState((store) => {
     const openEditorTab = getOpenEditorTab(store.editor)
