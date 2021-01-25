@@ -2,6 +2,9 @@ import * as React from 'react'
 import * as fastDeepEquals from 'fast-deep-equal'
 import { fastForEach } from '../../core/shared/utils'
 import { SetFocus } from '../common/actions'
+
+// Please try to have as few real imports here as possible, because this code runs in an iFrame
+
 import type {
   OpenEditorTab,
   AddToast,
@@ -15,6 +18,8 @@ import type {
 } from '../editor/action-types'
 import { useEditorState } from '../editor/store/store-hook'
 import type { JSONStringifiedCodeEditorProps } from './code-editor-iframe-entry-point'
+import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
+import type { ConsoleLog } from '../editor/store/editor-state'
 
 export type CodeEditorAction =
   | SelectComponents
@@ -165,9 +170,30 @@ function useSendPropUpdates(
 export function useBridgeTowardsIframe(
   props: JSONStringifiedCodeEditorProps,
   ref: React.RefObject<HTMLIFrameElement>,
-): void {
+): {
+  sendRuntimeErrors: (value: Array<RuntimeErrorInfo>) => void
+  sendCanvasConsoleLogs: (value: Array<ConsoleLog>) => void
+} {
   useListenToCodeEditorMessages()
   useSendPropUpdates(props, ref)
+
+  const sendRuntimeErrors = React.useCallback(
+    (value: Array<RuntimeErrorInfo>) => {
+      // eslint-disable-next-line no-unused-expressions
+      ref.current?.contentWindow?.postMessage(sendRuntimeErrorsMessage(value), '*')
+    },
+    [ref],
+  )
+
+  const sendCanvasConsoleLogs = React.useCallback(
+    (value: Array<ConsoleLog>) => {
+      // eslint-disable-next-line no-unused-expressions
+      ref.current?.contentWindow?.postMessage(sendCanvasConsoleLogsMessage(value), '*')
+    },
+    [ref],
+  )
+
+  return { sendRuntimeErrors: sendRuntimeErrors, sendCanvasConsoleLogs: sendCanvasConsoleLogs }
 }
 
 interface SendMonacoFullPropsMessage {
@@ -216,16 +242,66 @@ function isSendMonacoPartialPropsMessage(
   )
 }
 
+interface SendRuntimeErrorsMessage {
+  type: 'SEND_RUNTIME_ERRORS'
+  runtimeErrors: Array<RuntimeErrorInfo>
+}
+
+function sendRuntimeErrorsMessage(
+  runtimeErrors: Array<RuntimeErrorInfo>,
+): SendRuntimeErrorsMessage {
+  return {
+    type: 'SEND_RUNTIME_ERRORS',
+    runtimeErrors: runtimeErrors,
+  }
+}
+
+function isSendRuntimeErrorsMessage(message: unknown): message is SendRuntimeErrorsMessage {
+  return (
+    message != null &&
+    (message as SendRuntimeErrorsMessage)?.type === 'SEND_RUNTIME_ERRORS' &&
+    Array.isArray((message as SendRuntimeErrorsMessage)?.runtimeErrors)
+  )
+}
+
+interface SendCanvasConsoleLogsMessage {
+  type: 'SEND_CANVAS_CONSOLE_LOGS'
+  canvasConsoleLogs: Array<ConsoleLog>
+}
+
+function sendCanvasConsoleLogsMessage(
+  canvasConsoleLogs: Array<ConsoleLog>,
+): SendCanvasConsoleLogsMessage {
+  return {
+    type: 'SEND_CANVAS_CONSOLE_LOGS',
+    canvasConsoleLogs: canvasConsoleLogs,
+  }
+}
+
+function isSendCanvasConsoleLogsMessage(message: unknown): message is SendCanvasConsoleLogsMessage {
+  return (
+    message != null &&
+    (message as SendCanvasConsoleLogsMessage)?.type === 'SEND_CANVAS_CONSOLE_LOGS' &&
+    Array.isArray((message as SendCanvasConsoleLogsMessage)?.canvasConsoleLogs)
+  )
+}
+
 function useAskForFullUpdateOnMount() {
   return React.useEffect(() => {
     window.parent.postMessage(requestFullUpdateMessage, '*')
   }, [])
 }
 
-function usePropsFromMainEditor(): JSONStringifiedCodeEditorProps | null {
+function usePropsFromMainEditor(): {
+  propsFromMainEditor: JSONStringifiedCodeEditorProps | null
+  runtimeErrors: Array<RuntimeErrorInfo>
+  canvasConsoleLogs: Array<ConsoleLog>
+} {
   const [, forceUpdate] = React.useReducer((c) => c + 1, 0) as [never, () => void]
 
   const propsRef = React.useRef<JSONStringifiedCodeEditorProps | null>(null)
+  const runtimeErrorsRef = React.useRef<Array<RuntimeErrorInfo>>([])
+  const canvasConsoleLogsRef = React.useRef<Array<ConsoleLog>>([])
 
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -235,6 +311,12 @@ function usePropsFromMainEditor(): JSONStringifiedCodeEditorProps | null {
       } else if (isSendMonacoPartialPropsMessage(event.data) && propsRef.current != null) {
         propsRef.current = { ...propsRef.current, ...event.data.partialProps }
         forceUpdate()
+      } else if (isSendRuntimeErrorsMessage(event.data)) {
+        runtimeErrorsRef.current = event.data.runtimeErrors
+        forceUpdate()
+      } else if (isSendCanvasConsoleLogsMessage(event.data)) {
+        canvasConsoleLogsRef.current = event.data.canvasConsoleLogs
+        forceUpdate()
       }
     }
     window.addEventListener('message', handleMessage)
@@ -243,10 +325,18 @@ function usePropsFromMainEditor(): JSONStringifiedCodeEditorProps | null {
     }
   }, [forceUpdate])
 
-  return propsRef.current
+  return {
+    propsFromMainEditor: propsRef.current,
+    runtimeErrors: runtimeErrorsRef.current,
+    canvasConsoleLogs: canvasConsoleLogsRef.current,
+  }
 }
 
-export function useBridgeFromMainEditor(): JSONStringifiedCodeEditorProps | null {
+export function useBridgeFromMainEditor(): {
+  propsFromMainEditor: JSONStringifiedCodeEditorProps | null
+  runtimeErrors: Array<RuntimeErrorInfo>
+  canvasConsoleLogs: Array<ConsoleLog>
+} {
   useAskForFullUpdateOnMount()
   return usePropsFromMainEditor()
 }

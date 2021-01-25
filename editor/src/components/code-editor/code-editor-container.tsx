@@ -51,14 +51,14 @@ import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import urljoin = require('url-join')
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
-  CodeEditorEntryPoint,
+  CodeEditorNonIframeEntryPoint,
   JSONStringifiedCodeEditorProps,
 } from './code-editor-iframe-entry-point'
 import { isOpenFileTab } from '../editor/store/editor-tabs'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import {
-  useReadOnlyConsoleLogs,
-  useReadOnlyRuntimeErrors,
+  useUpdateOnConsoleLogs,
+  useUpdateOnRuntimeErrors,
 } from '../../core/shared/runtime-report-logs'
 
 const CodeEditorIframeID = 'code-editor-iframe'
@@ -68,7 +68,12 @@ const CodeEditorIframeContainer = betterReactMemo<{ propsToSend: JSONStringified
   (props) => {
     const ref = React.useRef<HTMLIFrameElement>(null)
     // set up communications with the iframe
-    useBridgeTowardsIframe(props.propsToSend, ref)
+    const { sendRuntimeErrors, sendCanvasConsoleLogs } = useBridgeTowardsIframe(
+      props.propsToSend,
+      ref,
+    )
+    useUpdateOnRuntimeErrors(sendRuntimeErrors)
+    useUpdateOnConsoleLogs(sendCanvasConsoleLogs)
 
     const iframeSrc = urljoin(MONACO_EDITOR_IFRAME_BASE_URL, 'editor', 'monaco-editor-iframe.html')
 
@@ -94,9 +99,6 @@ const CodeEditorIframeContainer = betterReactMemo<{ propsToSend: JSONStringified
 )
 
 export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) => {
-  const runtimeErrors: RuntimeErrorInfo[] = useReadOnlyRuntimeErrors()
-  const canvasConsoleLogs: ConsoleLog[] = useReadOnlyConsoleLogs()
-
   const selectedProps = useEditorState((store) => {
     const openEditorTab = getOpenEditorTab(store.editor)
     const openFilePath =
@@ -151,8 +153,6 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
 
   const propsToSend: JSONStringifiedCodeEditorProps = {
     relevantPanel: 'uicodeeditor',
-    runtimeErrors: runtimeErrors,
-    canvasConsoleLogs: canvasConsoleLogs,
     filePath: selectedProps.filePath,
     openFile: selectedProps.openFile,
     cursorPositionFromOpenFile: selectedProps.cursorPositionFromOpenFile,
@@ -173,7 +173,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
   if (isFeatureEnabled('iFrame Code Editor')) {
     return <CodeEditorIframeContainer propsToSend={propsToSend} />
   } else {
-    return <CodeEditorEntryPoint propsFromMainEditor={propsToSend} dispatch={dispatch} />
+    return <CodeEditorNonIframeEntryPoint propsFromMainEditor={propsToSend} dispatch={dispatch} />
   }
 })
 
