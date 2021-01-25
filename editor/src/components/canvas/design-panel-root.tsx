@@ -21,10 +21,6 @@ import { TopMenu } from '../editor/top-menu'
 
 interface DesignPanelRootProps {
   isUiJsFileOpen: boolean
-  onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
-  clearRuntimeErrors: () => void
-  clearConsoleLogs: () => void
-  addToConsoleLogs: (log: ConsoleLog) => void
 }
 
 interface NumberSize {

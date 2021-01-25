@@ -56,7 +56,10 @@ import {
 } from './code-editor-iframe-entry-point'
 import { isOpenFileTab } from '../editor/store/editor-tabs'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
-import { useReadOnlyConsoleLogs, useReadOnlyRuntimeErrors } from '../editor/editor-component'
+import {
+  useReadOnlyConsoleLogs,
+  useReadOnlyRuntimeErrors,
+} from '../../core/shared/runtime-report-logs'
 
 const CodeEditorIframeID = 'code-editor-iframe'
 

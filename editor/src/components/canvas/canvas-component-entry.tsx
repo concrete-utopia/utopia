@@ -12,10 +12,11 @@ import { ConsoleLog } from '../editor/store/editor-state'
 import { UtopiaRequireFn } from '../custom-code/code-file'
 import { betterReactMemo } from '../../uuiui-deps'
 import { TemplatePath } from '../../core/shared/project-file-types'
-interface CanvasComponentEntryProps extends CanvasReactErrorCallback {
-  clearConsoleLogs: () => void
-  addToConsoleLogs: (log: ConsoleLog) => void
-}
+import {
+  useWriteOnlyConsoleLogs,
+  useWriteOnlyRuntimeErrors,
+} from '../../core/shared/runtime-report-logs'
+interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = betterReactMemo(
   'CanvasComponentEntry',
@@ -27,6 +28,9 @@ export const CanvasComponentEntry = betterReactMemo(
       },
       [dispatch],
     )
+    const { onRuntimeError, clearRuntimeErrors } = useWriteOnlyRuntimeErrors()
+    const { addToConsoleLogs, clearConsoleLogs } = useWriteOnlyConsoleLogs()
+
     const canvasProps = useEditorState(
       (store) =>
         pickUiJsxCanvasProps(
@@ -34,8 +38,8 @@ export const CanvasComponentEntry = betterReactMemo(
           store.derived,
           true,
           onDomReport,
-          props.clearConsoleLogs,
-          props.addToConsoleLogs,
+          clearConsoleLogs,
+          addToConsoleLogs,
           store.dispatch,
         ),
       'CanvasComponentEntry canvasProps',
@@ -48,11 +52,11 @@ export const CanvasComponentEntry = betterReactMemo(
         <CanvasErrorBoundary
           fileCode={canvasProps.uiFileCode}
           filePath={canvasProps.uiFilePath}
-          reportError={props.reportError}
+          reportError={onRuntimeError}
           requireFn={canvasProps.requireFn}
           key={`canvas-error-boundary-${canvasProps.mountCount}`}
         >
-          <UiJsxCanvas {...canvasProps} clearErrors={props.clearErrors} />
+          <UiJsxCanvas {...canvasProps} clearErrors={clearRuntimeErrors} />
         </CanvasErrorBoundary>
       )
     }

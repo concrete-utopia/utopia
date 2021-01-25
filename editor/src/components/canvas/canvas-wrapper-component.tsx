@@ -27,14 +27,9 @@ import { FlexColumn, Button, UtopiaTheme } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { TemplatePath } from '../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
-import { useReadOnlyRuntimeErrors } from '../editor/editor-component'
+import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
 
-interface CanvasWrapperComponentProps {
-  onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
-  clearRuntimeErrors: () => void
-  clearConsoleLogs: () => void
-  addToConsoleLogs: (log: ConsoleLog) => void
-}
+interface CanvasWrapperComponentProps {}
 
 export const CanvasWrapperComponent = betterReactMemo(
   'CanvasWrapperComponent',
@@ -47,8 +42,6 @@ export const CanvasWrapperComponent = betterReactMemo(
       }),
       'CanvasWrapperComponent',
     )
-
-    const { onRuntimeError, clearRuntimeErrors, clearConsoleLogs, addToConsoleLogs } = props
 
     const fatalErrors = React.useMemo(() => {
       return getAllCodeEditorErrors(editorState, true, true)
@@ -75,10 +68,6 @@ export const CanvasWrapperComponent = betterReactMemo(
             editor={editorState}
             model={createCanvasModelKILLME(editorState, derivedState)}
             dispatch={dispatch}
-            reportError={onRuntimeError}
-            clearErrors={clearRuntimeErrors}
-            clearConsoleLogs={clearConsoleLogs}
-            addToConsoleLogs={addToConsoleLogs}
           />
         ) : null}
         {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
