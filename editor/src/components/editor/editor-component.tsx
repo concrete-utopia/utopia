@@ -50,7 +50,6 @@ import {
   FlexColumn,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { atom, useRecoilValue, useSetRecoilState } from 'recoil'
 
 interface NumberSize {
   width: number
