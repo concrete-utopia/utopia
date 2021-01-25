@@ -2331,14 +2331,23 @@ export function duplicate(
             const duplicateNewUID: DuplicateNewUID | undefined = duplicateNewUIDs.find((entry) =>
               TP.pathsEqual(entry.originalPath, path),
             )
+            const existingIDs = getAllUniqueUids(utopiaComponents)
             if (duplicateNewUID === undefined) {
-              const existingIDs = getAllUniqueUids(utopiaComponents)
               newElement = guaranteeUniqueUids([jsxElement], existingIDs)[0]
               uid = getUtopiaID(newElement)
             } else {
               // Helps to keep the model consistent because otherwise the dom walker
               // goes into a frenzy.
               newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
+              if (isJSXElement(newElement)) {
+                newElement = {
+                  ...newElement,
+                  children: guaranteeUniqueUids(newElement.children, [
+                    ...existingIDs,
+                    duplicateNewUID.newUID,
+                  ]),
+                }
+              }
               uid = duplicateNewUID.newUID
             }
             let newPath: TemplatePath
