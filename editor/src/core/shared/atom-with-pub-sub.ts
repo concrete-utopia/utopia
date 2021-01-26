@@ -61,8 +61,10 @@ export function usePubSubAtomWriteOnly<T>(
       } else {
         newValue = newValueOrUpdater
       }
-      atom.currentValue = newValue
-      PubSub.publish(atom.key, newValue)
+      if (atom.currentValue !== newValue) {
+        atom.currentValue = newValue
+        PubSub.publish(atom.key, newValue)
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [atom.key],
