@@ -218,7 +218,7 @@
     "@types/path-parse": "1.0.19",
     "@types/prettier": "2.0.1",
     "@types/prop-types": "15.5.6",
-    "@types/pubsub-js": "^1.8.2",
+    "@types/pubsub-js": "1.8.2",
     "@types/ramda": "github:types/npm-ramda#dist",
     "@types/rc-slider": "8.2.2",
     "@types/react": "16.9.49",
