@@ -1734,21 +1734,21 @@ describe('moveTemplate', () => {
     )
   })
 
-  xit('inserting a new element', async () => {
+  it('inserting a new element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...props.style }} data-uid='aaa'>
-          <View
+        <div style={{ position: 'relative', width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
             style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex', position: 'absolute' }}
             data-uid='bbb'
+            data-testid='bbb'
           >
-            <View data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
-          </View>
-        </View>
+            <div data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
+          </div>
+        </div>
       `),
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
-
     await renderResult.dispatch(
       [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
@@ -1762,15 +1762,17 @@ describe('moveTemplate', () => {
       await dispatchDone
     })
 
-    const insertModeMouseCatcher = renderResult.renderedDOM.getByTestId(
-      'insert-target-utopia-storyboard-uid/scene-aaa:aaa/bbb',
+    const canvasControlContainer = renderResult.renderedDOM.getByTestId(
+      'new-canvas-controls-container',
     )
-    const areaControlBounds = insertModeMouseCatcher.getBoundingClientRect()
+
+    const insertionArea = renderResult.renderedDOM.getByTestId('bbb')
+    const areaControlBounds = insertionArea.getBoundingClientRect()
 
     await act(async () => {
       fireEvent(
-        insertModeMouseCatcher,
-        new MouseEvent('mouseover', {
+        canvasControlContainer,
+        new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
           clientX: areaControlBounds.left + 25,
@@ -1781,7 +1783,7 @@ describe('moveTemplate', () => {
 
     await act(async () => {
       fireEvent(
-        insertModeMouseCatcher,
+        canvasControlContainer,
         new MouseEvent('mousedown', {
           bubbles: true,
           cancelable: true,
@@ -1794,7 +1796,7 @@ describe('moveTemplate', () => {
 
     await act(async () => {
       fireEvent(
-        insertModeMouseCatcher,
+        canvasControlContainer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -1809,7 +1811,7 @@ describe('moveTemplate', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        insertModeMouseCatcher,
+        canvasControlContainer,
         new MouseEvent('mouseup', {
           bubbles: true,
           cancelable: true,
@@ -1823,18 +1825,19 @@ describe('moveTemplate', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...props.style }} data-uid='aaa'>
-          <View
+        <div style={{ position: 'relative', width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
             style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex', position: 'absolute' }}
             data-uid='bbb'
+            data-testid='bbb'
           >
-            <View data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
+            <div data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
             <View
-              style={{ backgroundColor: '#0091FFAA', position: 'relative', flexBasis: 75, height: 75 }}
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', flexBasis: 74, height: 74 }}
               data-uid='${NewUID}'
             />
-          </View>
-        </View>
+          </div>
+        </div>
       `),
     )
   })
