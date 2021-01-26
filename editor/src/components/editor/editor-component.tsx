@@ -60,11 +60,6 @@ export interface EditorProps {
   propertyControlsInfoSupported: boolean
 }
 
-const EmptyArray: Array<RuntimeErrorInfo> = []
-
-const ConsoleLogSizeLimit = 100
-const EmptyConsoleLogs: Array<ConsoleLog> = []
-
 export const EditorComponentInner = betterReactMemo(
   'EditorComponentInner',
   (props: EditorProps) => {
@@ -351,75 +346,6 @@ export function EditorComponent(props: EditorProps) {
   )
 }
 
-function useRuntimeErrors(): {
-  runtimeErrors: Array<RuntimeErrorInfo>
-  onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
-  clearRuntimeErrors: () => void
-} {
-  const [runtimeErrors, setRuntimeErrors] = React.useState<Array<RuntimeErrorInfo>>(EmptyArray)
-
-  const onRuntimeError = React.useCallback(
-    (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
-      setRuntimeErrors([
-        {
-          editedFile: editedFile,
-          error: error,
-          errorInfo: Utils.defaultIfNull(null, errorInfo),
-        },
-      ])
-    },
-    [],
-  )
-
-  const clearRuntimeErrors = React.useCallback(() => {
-    setRuntimeErrors(EmptyArray)
-  }, [])
-
-  return {
-    runtimeErrors: runtimeErrors,
-    onRuntimeError: onRuntimeError,
-    clearRuntimeErrors: clearRuntimeErrors,
-  }
-}
-
-function useConsoleLogs(): {
-  consoleLogs: Array<ConsoleLog>
-  addToConsoleLogs: (log: ConsoleLog) => void
-  clearConsoleLogs: () => void
-} {
-  const [consoleLogs, setConsoleLogs] = React.useState<Array<ConsoleLog>>(EmptyConsoleLogs)
-
-  const modifyLogs = React.useCallback(
-    (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
-      setConsoleLogs(updateLogs)
-    },
-    [setConsoleLogs],
-  )
-
-  const clearConsoleLogs = React.useCallback(() => {
-    modifyLogs((_) => EmptyConsoleLogs)
-  }, [modifyLogs])
-
-  const addToConsoleLogs = React.useCallback(
-    (log: ConsoleLog) => {
-      modifyLogs((logs) => {
-        let result = [...logs, log]
-        while (result.length > ConsoleLogSizeLimit) {
-          result.shift()
-        }
-        return result
-      })
-    },
-    [modifyLogs],
-  )
-
-  return {
-    consoleLogs: consoleLogs,
-    addToConsoleLogs: addToConsoleLogs,
-    clearConsoleLogs: clearConsoleLogs,
-  }
-}
-
 const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   const {
     noFileOpen,
@@ -441,9 +367,6 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     }
   }, 'OpenFileEditor')
 
-  const { runtimeErrors, onRuntimeError, clearRuntimeErrors } = useRuntimeErrors()
-  const { consoleLogs, addToConsoleLogs, clearConsoleLogs } = useConsoleLogs()
-
   if (noFileOpen) {
     return <Subdued>No file open</Subdued>
   } else if (areReleaseNotesOpen) {
@@ -451,17 +374,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   } else if (isUserConfigurationOpen) {
     return <UserConfiguration />
   } else {
-    return (
-      <DesignPanelRoot
-        isUiJsFileOpen={isUiJsFileOpen}
-        runtimeErrors={runtimeErrors}
-        onRuntimeError={onRuntimeError}
-        clearRuntimeErrors={clearRuntimeErrors}
-        canvasConsoleLogs={consoleLogs}
-        clearConsoleLogs={clearConsoleLogs}
-        addToConsoleLogs={addToConsoleLogs}
-      />
-    )
+    return <DesignPanelRoot isUiJsFileOpen={isUiJsFileOpen} />
   }
 })
 OpenFileEditor.displayName = 'OpenFileEditor'

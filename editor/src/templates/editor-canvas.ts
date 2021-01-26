@@ -499,13 +499,10 @@ function createNodeConnectorsDiv(offset: CanvasPoint, scale: number) {
   })
 }
 
-interface EditorCanvasProps extends CanvasReactErrorCallback {
+interface EditorCanvasProps {
   model: CanvasModel
   editor: EditorState
   dispatch: EditorDispatch
-  canvasConsoleLogs: Array<ConsoleLog>
-  clearConsoleLogs: () => void
-  addToConsoleLogs: (log: ConsoleLog) => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -774,11 +771,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       React.createElement(DeselectControl, {}),
       nodeConnectorsDiv,
       React.createElement(CanvasComponentEntry, {
-        reportError: this.props.reportError,
-        clearErrors: this.props.clearErrors,
-        canvasConsoleLogs: this.props.canvasConsoleLogs,
-        clearConsoleLogs: this.props.clearConsoleLogs,
-        addToConsoleLogs: this.props.addToConsoleLogs,
         getPositionFromCoordinates: this.getPositionFromCoordinates,
         dispatch: this.props.dispatch,
       }),
