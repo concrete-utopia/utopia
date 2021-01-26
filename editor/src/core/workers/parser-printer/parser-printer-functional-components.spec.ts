@@ -167,7 +167,6 @@ describe('Parsing a function component with props', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -217,7 +216,6 @@ describe('Parsing a function component with props', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -253,7 +251,6 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -294,7 +291,6 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -342,7 +338,6 @@ describe('Parsing a function component with props', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -383,7 +378,6 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -431,7 +425,6 @@ describe('Parsing a function component with props', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -474,7 +467,6 @@ describe('Parsing a function component with props', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -511,7 +503,6 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -556,7 +547,6 @@ describe('Parsing a function component with props', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
@@ -597,7 +587,6 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -652,7 +641,6 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
@@ -726,7 +714,6 @@ describe('Parsing a function component with props', () => {
       view,
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)

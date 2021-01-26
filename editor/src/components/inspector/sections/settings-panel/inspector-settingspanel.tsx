@@ -72,6 +72,8 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
     'SettingsPanel interfaceDesigner',
   )
 
+  const entireStateRef = useRefEditorState((store) => store)
+
   const openUiJsFile = useRefEditorState((store) => {
     return getOpenUIJSFile(store.editor)
   })
@@ -87,6 +89,10 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
   const toggleAdditionalControls = React.useCallback(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
   }, [dispatch])
+
+  const printEditorState = React.useCallback(() => {
+    console.info('Current Editor State:', entireStateRef.current)
+  }, [entireStateRef])
 
   const printOpenUiJsFileModel = React.useCallback(() => {
     console.info('Open UIJSFile:', openUiJsFile.current)
@@ -125,6 +131,9 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
         <label htmlFor='toggleInterfaceDesignerAdditionalCanvasControls'>Additional controls</label>
       </StyledFlexRow>
       <br />
+      <Button outline spotlight onClick={printEditorState}>
+        Print Current Editor State to Console
+      </Button>
       <Button outline spotlight onClick={printOpenUiJsFileModel}>
         Print Current Model to Console
       </Button>

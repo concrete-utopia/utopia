@@ -36,7 +36,6 @@ export const onlyImportReact: Imports = {
     importedWithName: null,
     importedFromWithin: [],
     importedAs: 'React',
-    comments: emptyComments,
   },
 }
 
@@ -45,7 +44,6 @@ export const sampleDefaultImports: Imports = mergeImports(onlyImportReact, {
     importedWithName: null,
     importedFromWithin: [importAlias('UtopiaUtils')],
     importedAs: null,
-    comments: emptyComments,
   },
 })
 
@@ -53,7 +51,7 @@ export const sampleImportsForTests: Imports = mergeImports(
   sampleDefaultImports,
   sampleIncludedElementTypes.reduce<Imports>(
     (working, elementType) =>
-      addImport('utopia-api', null, [importAlias(elementType)], null, emptyComments, working),
+      addImport('utopia-api', null, [importAlias(elementType)], null, working),
     emptyImports(),
   ),
 )
@@ -303,7 +301,6 @@ const mainComponentForTests = utopiaJSXComponent(
   null,
   false,
   emptyComments,
-  emptyComments,
 )
 
 const scene = utopiaJSXComponent(
@@ -323,7 +320,6 @@ const scene = utopiaJSXComponent(
   ),
   null,
   false,
-  emptyComments,
   emptyComments,
 )
 
@@ -359,7 +355,6 @@ const TestStoryboard = utopiaJSXComponent(
   ),
   null,
   false,
-  emptyComments,
   emptyComments,
 )
 
