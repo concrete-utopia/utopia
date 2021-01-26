@@ -12,7 +12,6 @@ import {
   UtopiaTheme,
   UNSAFE_getIconURL,
   Section,
-  InspectorSubsectionHeader,
   InspectorSectionHeader,
 } from '../../../../../uuiui'
 import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
@@ -240,10 +239,8 @@ export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => 
   const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 
   return (
-    <Section>
-      <InspectorSectionHeader style={{ ...headerStyle, height: 22 }}>
-        Class names
-      </InspectorSectionHeader>
+    <React.Fragment>
+      <InspectorSectionHeader>Class names</InspectorSectionHeader>
       <GridRow padded type='<-------------1fr------------->' style={{ height: undefined }}>
         <ClassNameControl
           values={values}
@@ -252,6 +249,6 @@ export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => 
           onUnsetValues={onUnsetValues}
         />
       </GridRow>
-    </Section>
+    </React.Fragment>
   )
 })

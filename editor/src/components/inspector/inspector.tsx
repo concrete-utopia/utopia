@@ -93,8 +93,9 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme } from '../../uuiui'
+import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import { GridRow } from './widgets/grid-row'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -377,9 +378,9 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     } else {
       return (
         <React.Fragment>
+          <AlignmentButtons numberOfTargets={instancePaths.length} />
           <ClassNameSubsection />
           <StyleSection />
-          <AlignmentButtons numberOfTargets={instancePaths.length} />
           <WarningSubsection />
 
           <RenderedLayoutSection

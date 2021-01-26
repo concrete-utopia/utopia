@@ -8,7 +8,14 @@ import { ShadowSubsection } from './shadow-subsection/shadow-subsection'
 import { TextShadowSubsection } from './text-subsection/text-shadow-subsection'
 import { AutosizingTextSubsection } from './text-subsection/text-subsection'
 import { TransformSubsection } from './transform-subsection/transform-subsection'
-import { InspectorSectionHeader } from '../../../../uuiui'
+import {
+  FlexRow,
+  InspectorSectionHeader,
+  InspectorSubsectionHeader,
+  Section,
+} from '../../../../uuiui'
+import { GridRow } from '../../widgets/grid-row'
+import { InspectorContextMenuWrapper } from '../../../../uuiui-deps'
 
 export enum StyleSubsection {
   Layer = 'Layer',
@@ -26,7 +33,7 @@ export interface StyleSectionProps extends InspectorPartProps<React.CSSPropertie
 
 export const StyleSection = betterReactMemo('StyleSection', () => {
   return (
-    <InspectorSectionHeader>
+    <React.Fragment>
       <ContainerSubsection />
       <AutosizingTextSubsection />
       <TransformSubsection />
@@ -34,7 +41,7 @@ export const StyleSection = betterReactMemo('StyleSection', () => {
       <BorderSubsection />
       <ShadowSubsection />
       <TextShadowSubsection />
-    </InspectorSectionHeader>
+    </React.Fragment>
   )
 })
 StyleSection.displayName = 'StyleSection'
