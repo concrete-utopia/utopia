@@ -30,7 +30,6 @@ import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import { UserConfiguration } from '../user-configuration'
-import urljoin = require('url-join')
 import { PROPERTY_CONTROLS_INFO_BASE_URL } from '../../common/env-vars'
 import {
   PropertyControlsInfoIFrameID,
@@ -50,6 +49,7 @@ import {
   FlexColumn,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
+import { createIframeUrl } from '../../core/shared/utils'
 
 interface NumberSize {
   width: number
@@ -427,11 +427,7 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
 })
 
 const PropertyControlsInfoComponent = betterReactMemo('PropertyControlsInfoComponent', () => {
-  const iframeSrc = urljoin(
-    PROPERTY_CONTROLS_INFO_BASE_URL,
-    'editor',
-    'property-controls-info.html',
-  )
+  const iframeSrc = createIframeUrl(PROPERTY_CONTROLS_INFO_BASE_URL, 'property-controls-info.html')
 
   return (
     <iframe

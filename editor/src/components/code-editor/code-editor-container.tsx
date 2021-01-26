@@ -48,7 +48,6 @@ import {
   useBridgeTowardsIframe,
 } from './code-editor-bridge'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
-import urljoin = require('url-join')
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   CodeEditorNonIframeEntryPoint,
@@ -60,6 +59,7 @@ import {
   useUpdateOnConsoleLogs,
   useUpdateOnRuntimeErrors,
 } from '../../core/shared/runtime-report-logs'
+import { createIframeUrl } from '../../core/shared/utils'
 
 const CodeEditorIframeID = 'code-editor-iframe'
 
@@ -75,7 +75,7 @@ const CodeEditorIframeContainer = betterReactMemo<{ propsToSend: JSONStringified
     useUpdateOnRuntimeErrors(sendRuntimeErrors)
     useUpdateOnConsoleLogs(sendCanvasConsoleLogs)
 
-    const iframeSrc = urljoin(MONACO_EDITOR_IFRAME_BASE_URL, 'editor', 'monaco-editor-iframe.html')
+    const iframeSrc = createIframeUrl(MONACO_EDITOR_IFRAME_BASE_URL, 'monaco-editor-iframe.html')
 
     return (
       <iframe
