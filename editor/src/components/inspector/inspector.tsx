@@ -378,8 +378,8 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       return (
         <React.Fragment>
           <ClassNameSubsection />
-          <AlignmentButtons numberOfTargets={instancePaths.length} />
           <StyleSection />
+          <AlignmentButtons numberOfTargets={instancePaths.length} />
           <WarningSubsection />
 
           <RenderedLayoutSection

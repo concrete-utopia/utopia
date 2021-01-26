@@ -13,6 +13,7 @@ import {
   UNSAFE_getIconURL,
   Section,
   InspectorSubsectionHeader,
+  InspectorSectionHeader,
 } from '../../../../../uuiui'
 import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
 
@@ -240,9 +241,9 @@ export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => 
 
   return (
     <Section>
-      <InspectorSubsectionHeader style={{ ...headerStyle, height: 22 }}>
+      <InspectorSectionHeader style={{ ...headerStyle, height: 22 }}>
         Class names
-      </InspectorSubsectionHeader>
+      </InspectorSectionHeader>
       <GridRow padded type='<-------------1fr------------->' style={{ height: undefined }}>
         <ClassNameControl
           values={values}
