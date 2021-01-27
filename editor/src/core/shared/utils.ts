@@ -1,6 +1,7 @@
 import { MapLike } from 'typescript'
 import { replaceAll } from './string-utils'
 import urljoin = require('url-join')
+import { appendHash } from './dom-utils'
 
 // This file shouldn't import anything as it is for exporting simple shared utility functions between various projects
 export const EditorID = 'editor'
@@ -136,4 +137,8 @@ export function unknownObjectProperty(o: unknown, key: string): any {
     }
   }
   return undefined
+}
+
+export function createIframeUrl(base: string, assetName: string): string {
+  return appendHash(urljoin(base, 'editor', assetName))
 }

@@ -118,7 +118,6 @@ export var app = (props) => {
                   updatedRootElement,
                   tle.arbitraryJSBlock,
                   tle.usedInReactDOMRender,
-                  tle.comments,
                   tle.returnStatementComments,
                 )
                 return updatedComponent

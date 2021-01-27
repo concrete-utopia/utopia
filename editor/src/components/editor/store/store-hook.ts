@@ -1,8 +1,8 @@
 import * as React from 'react'
 import type { EditorStore } from './editor-state'
 import { UseStore, StoreApi, EqualityChecker } from 'zustand'
-import utils from '../../../utils/utils'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 type StateSelector<T, U> = (state: T) => U
 
@@ -19,7 +19,7 @@ type StateSelector<T, U> = (state: T) => U
 export const useEditorState = <U>(
   selector: StateSelector<EditorStore, U>,
   selectorName: string,
-  equalityFn: (oldSlice: U, newSlice: U) => boolean = utils.shallowEqual,
+  equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
 ): U => {
   const context = React.useContext(EditorStateContext)
 
@@ -105,7 +105,7 @@ export const useRefEditorState = <U>(
         }
       },
       (store: EditorStore) => selectorRef.current(store),
-      utils.shallowEqual,
+      shallowEqual,
     )
     return function cleanup() {
       if (explainMe) {
@@ -131,7 +131,7 @@ EditorStateContext.displayName = 'EditorStateContext'
 export function useSelectorWithCallback<U>(
   selector: StateSelector<EditorStore, U>,
   callback: (newValue: U) => void,
-  equalityFn: (oldSlice: U, newSlice: U) => boolean = utils.shallowEqual,
+  equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
   explainMe: boolean = false,
 ): void {
   const context = React.useContext(EditorStateContext)

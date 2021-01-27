@@ -34,7 +34,6 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     const rootElementProps = Utils.path<JSXAttributes>(['rootElement', 'props'], fixedComponent)
@@ -68,7 +67,6 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     const child0 = Utils.path<JSXElement>(['rootElement', 'children', 0], fixedComponent)
@@ -94,7 +92,6 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ),
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -135,7 +132,6 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
     expect(
@@ -165,7 +161,6 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ),
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -207,7 +202,6 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
       ),
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]

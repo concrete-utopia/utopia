@@ -3,19 +3,11 @@
 exports[`JSX parser should parse out dot-notation element names 1`] = `
 Object {
   "react": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "importedAs": "React",
     "importedFromWithin": Array [],
     "importedWithName": null,
   },
   "utopia-api": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "importedAs": "Utopia",
     "importedFromWithin": Array [],
     "importedWithName": null,
@@ -55,10 +47,6 @@ Array [
   Object {
     "arbitraryJSBlock": null,
     "blockOrExpression": "block",
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "declarationSyntax": "var",
     "isFunction": true,
     "name": "App",
@@ -188,10 +176,6 @@ export var storyboard = (props) => {
     "type": "UNPARSED_CODE",
   },
   Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "definedElsewhere": Array [
       "React",
       "Storyboard",

@@ -272,7 +272,6 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
                         null,
                         [importAlias(exportVarName)],
                         null,
-                        emptyComments,
                       ),
                     },
                 null,
