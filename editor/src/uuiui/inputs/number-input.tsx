@@ -148,6 +148,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
   ({
     value: propsValue,
     style,
+    testId,
     inputProps = {},
     id,
     className,
@@ -604,6 +605,8 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             {...inputProps}
             chained={chained}
             controlStyles={controlStyles}
+            controlStatus={controlStatus}
+            testId={testId}
             focused={isFocused}
             labelInner={labelInner}
             roundCorners={roundCorners}

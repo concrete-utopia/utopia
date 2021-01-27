@@ -266,6 +266,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onSubmitValue: onBorderRadiusTLSubmitValue,
                   onTransientSubmitValue: onBorderRadiusTLTransientSubmitValue,
                   controlStatus: controlStatus,
+                  testId: 'border-radius-tl',
                 },
                 {
                   numberType: 'LengthPercent',
@@ -273,6 +274,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onSubmitValue: onBorderRadiusTRSubmitValue,
                   onTransientSubmitValue: onBorderRadiusTRTransientSubmitValue,
                   controlStatus: controlStatus,
+                  testId: 'border-radius-tr',
                 },
                 {
                   numberType: 'LengthPercent',
@@ -280,6 +282,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onSubmitValue: onBorderRadiusBLSubmitValue,
                   onTransientSubmitValue: onBorderRadiusBLTransientSubmitValue,
                   controlStatus: controlStatus,
+                  testId: 'border-radius-bl',
                 },
                 {
                   numberType: 'LengthPercent',
@@ -287,6 +290,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onSubmitValue: onBorderRadiusBRSubmitValue,
                   onTransientSubmitValue: onBorderRadiusBRTransientSubmitValue,
                   controlStatus: controlStatus,
+                  testId: 'border-radius-br',
                 },
               ]}
             />
@@ -296,6 +300,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
             <SliderControl
               id='radius-all-slider'
               key='radius-all-slider'
+              testId='radius-all-slider'
               value={borderRadiusValue.value.value}
               DEPRECATED_controlOptions={{
                 minimum: 0,
@@ -310,6 +315,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
             <NumberInput
               value={borderRadiusValue.value}
               id='radius-all-number-input'
+              testId='radius-all-number-input'
               onSubmitValue={wrappedOnSubmitValue}
               onTransientSubmitValue={wrappedOnTransientSubmitValue}
               controlStatus={controlStatus}

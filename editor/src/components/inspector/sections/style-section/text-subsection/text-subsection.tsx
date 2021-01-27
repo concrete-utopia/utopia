@@ -225,6 +225,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
         >
           <NumberInput
             id='fontSize'
+            testId='fontSize'
             value={fontSizeMetadata.value}
             controlStatus={fontSizeMetadata.controlStatus}
             onSubmitValue={wrappedFontSizeOnSubmitValue}
@@ -243,6 +244,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           <ColorControl
             id='color-control'
             key='color-control'
+            testId='text-subsection-color-control'
             value={colorMetadata.value}
             onSubmitValue={colorMetadata.onSubmitValue}
             onTransientSubmitValue={colorMetadata.onTransientSubmitValue}
@@ -262,6 +264,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           <OptionChainControl
             id='textAutoSizing'
             key='textAutoSizing'
+            testId='textAutoSizing'
             controlStatus={textSizingMetadata.controlStatus}
             controlStyles={textSizingMetadata.controlStyles}
             onSubmitValue={textSizingMetadata.onSubmitValue}
@@ -303,6 +306,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           <OptionChainControl
             id='textAlign'
             key='textAlign'
+            testId='textAlign'
             value={textAlignMetadata.value}
             onSubmitValue={textAlignMetadata.onSubmitValue}
             controlStatus={textAlignMetadata.controlStatus}
@@ -363,6 +367,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             <OptionControl
               id='italic'
               key='italic'
+              testId='italic'
               value={fontStyleMetadata.value === 'italic'}
               onSubmitValue={onItalicSubmitValue}
               controlStatus={fontStyleMetadata.controlStatus}
@@ -387,6 +392,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             <OptionControl
               id='underlined'
               key='underlined'
+              testId='underlined'
               value={textDecorationLineMetadata.value === 'underline'}
               onSubmitValue={onUnderlinedSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
@@ -413,6 +419,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             <NumberInput
               key='letterSpacing'
               id='letterSpacing'
+              testId='letterSpacing'
               value={
                 letterSpacingMetadata.value === 'normal'
                   ? normalLetterSpacingAsCSSNumber
@@ -436,6 +443,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             <NumberInput
               key='lineHeight'
               id='lineHeight'
+              testId='lineHeight'
               value={
                 lineHeightMetadata.value === 'normal'
                   ? normalLineHeightAsCSSNumber

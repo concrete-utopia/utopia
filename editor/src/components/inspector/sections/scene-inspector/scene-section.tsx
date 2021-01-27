@@ -183,6 +183,7 @@ const PositionWidget = betterReactMemo(
             value={inspectorInfo.value as any} // I will delete this code once the scenes are merged to components
             labelInner={label}
             id={`scene-frame-${pinnedProp}-number-input`}
+            testId={`scene-frame-${pinnedProp}-number-input`}
             onSubmitValue={wrappedOnSubmitValue}
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
             onForcedSubmitValue={wrappedOnSubmitValue}
@@ -220,6 +221,7 @@ const PositionWidgetForCSSNumber = betterReactMemo(
             value={inspectorInfo.value}
             labelInner={label}
             id={`scene-frame-${pinnedProp}-number-input`}
+            testId={`scene-frame-${pinnedProp}-number-input`}
             onSubmitValue={wrappedOnSubmitValue}
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
           />

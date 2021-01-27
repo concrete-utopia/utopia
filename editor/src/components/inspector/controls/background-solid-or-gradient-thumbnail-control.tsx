@@ -26,6 +26,7 @@ import { betterReactMemo } from '../../../uuiui-deps'
 export interface BackgroundThumbnailControlProps {
   value: CSSBackgroundLayer
   id: string
+  testId: string
   key: string
   controlStatus: ControlStatus
   controlStyles: ControlStyles
@@ -124,6 +125,7 @@ export const BackgroundSolidOrGradientThumbnailControl = betterReactMemo(
     const picker = !props.popupOpen ? null : (
       <BackgroundPicker
         id={props.id}
+        testId={'background-solid-or-gradient-control-background-picker'}
         offsetX={pickerOffset.x}
         offsetY={pickerOffset.y}
         closePopup={closePopup}
@@ -141,6 +143,7 @@ export const BackgroundSolidOrGradientThumbnailControl = betterReactMemo(
         <StringControl
           id={`string-${props.id}`}
           key={'color-string'}
+          testId={'background-solid-or-gradient-control-string-control'}
           value={cssColorToChromaColorOrDefault(props.value.color).hex().toUpperCase()}
           readOnly={props.controlStyles.interactive}
           onSubmitValue={props.onSubmitSolidStringValue}
@@ -215,6 +218,7 @@ export const StringBackgroundColorControl = betterReactMemo(
       <StringControl
         id={`string-${props.id}`}
         key={'color-string'}
+        testId={'background-color-control-string-control'}
         style={props.style}
         value={cssColorToChromaColorOrDefault(value.color).hex().toUpperCase()}
         readOnly={props.controlStyles.interactive}

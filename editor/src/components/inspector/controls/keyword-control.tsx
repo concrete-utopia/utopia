@@ -37,6 +37,7 @@ export const KeywordControl = betterReactMemo<KeywordControlProps>(
   ({
     value,
     id,
+    testId,
     style,
     className,
     onSubmitValue,
@@ -82,6 +83,7 @@ export const KeywordControl = betterReactMemo<KeywordControlProps>(
     return (
       <StringInput
         id={id}
+        testId={testId}
         ref={ref}
         disabled={!controlStyles.interactive}
         className={inputClassName}

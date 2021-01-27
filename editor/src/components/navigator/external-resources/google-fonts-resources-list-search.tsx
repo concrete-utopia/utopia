@@ -211,7 +211,12 @@ export const GoogleFontsResourcesListSearch = betterReactMemo<GoogleFontsResourc
 
     return (
       <div>
-        <StringInput placeholder='Search for fonts…' value={searchTerm} onChange={onChange} />
+        <StringInput
+          testId='google-fonts-list-search'
+          placeholder='Search for fonts…'
+          value={searchTerm}
+          onChange={onChange}
+        />
         <FixedSizeTree
           width={227}
           height={300}

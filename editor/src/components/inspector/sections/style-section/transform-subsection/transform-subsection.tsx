@@ -319,6 +319,7 @@ const SingleLengthItem = betterReactMemo<SingleLengthItemProps>('SingleLengthIte
         style={{ gridColumn: '1 / span 1' }}
         id={`transform-${props.index}-${props.value.type}-enable-disable`}
         key={`transform-${props.index}-${props.value.type}-enable-disable`}
+        testId={`transform-${props.index}-${props.value.type}-enable-disable`}
         value={props.value.enabled}
         onSubmitValue={enabledSubmitValue}
         controlStatus={props.controlStatus}
@@ -329,6 +330,7 @@ const SingleLengthItem = betterReactMemo<SingleLengthItemProps>('SingleLengthIte
         <LightSelectControl
           id={`transform-${props.index}-transform-type`}
           key={`transform-${props.index}-transform-type`}
+          testId={`transform-${props.index}-transform-type`}
           value={props.value.type}
           options={transformSelectOptions}
           onSubmitValue={onTransformTypeSubmitValue}
@@ -342,6 +344,7 @@ const SingleLengthItem = betterReactMemo<SingleLengthItemProps>('SingleLengthIte
           width: '100%',
         }}
         id={`transforms.${props.value.type}`}
+        testId={`transforms.${props.value.type}`}
         key={`transforms.${props.value.type}`}
         value={props.value.value}
         stepSize={controlMetadata.stepSize}
@@ -445,6 +448,7 @@ const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthIte
         style={{ gridColumn: '1 / span 1' }}
         id={`transform-${props.index}-rotateZ-enable-disable`}
         key={`transform-${props.index}-rotateZ-enable-disable`}
+        testId={`transform-${props.index}-rotateZ-enable-disable`}
         value={props.value.enabled}
         onSubmitValue={enabledSubmitValue}
         controlStatus={props.controlStatus}
@@ -455,6 +459,7 @@ const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthIte
         <LightSelectControl
           id={`transform-${props.index}-transform-type`}
           key={`transform-${props.index}-transform-type`}
+          testId={`transform-${props.index}-transform-type`}
           value={props.value.type}
           options={transformSelectOptions}
           onSubmitValue={onTransformTypeSubmitValue}
@@ -468,6 +473,7 @@ const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthIte
           width: '100%',
         }}
         id={`transform-${props.value.type}-0th-value`}
+        testId={`transform-${props.value.type}-0th-value`}
         key={`transform-${props.value.type}-0th-value`}
         value={props.value.values[0]}
         stepSize={controlMetadata.stepSize}
@@ -488,6 +494,7 @@ const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthIte
           width: '100%',
         }}
         id={`transform-${props.value.type}-1st-value`}
+        testId={`transform-${props.value.type}-1st-value`}
         key={`transform-${props.value.type}-1st-value`}
         value={props.value.values[1].value}
         stepSize={controlMetadata.stepSize}

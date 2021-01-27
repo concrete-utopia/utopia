@@ -60,6 +60,7 @@ export const NumberOrKeywordControl = betterReactMemo<NumberOrKeywordControlProp
     onTransientSubmitValue,
     style,
     id,
+    testId,
     className,
     controlStatus,
     DEPRECATED_labelBelow,
@@ -82,6 +83,7 @@ export const NumberOrKeywordControl = betterReactMemo<NumberOrKeywordControlProp
           style={style}
           className={className}
           id={id}
+          testId={testId}
           value={value}
           onSubmitValue={onSubmitValue}
           onTransientSubmitValue={onTransientSubmitValue}
@@ -96,6 +98,7 @@ export const NumberOrKeywordControl = betterReactMemo<NumberOrKeywordControlProp
           style={style}
           className={className}
           id={id}
+          testId={testId}
           value={value}
           onSubmitValue={onSubmitValue}
           controlStatus={controlStatus}

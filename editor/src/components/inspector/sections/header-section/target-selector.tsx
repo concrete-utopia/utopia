@@ -355,6 +355,7 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
       >
         {fixedItemIndex === itemBeingRenamedId ? (
           <StringInput
+            testId={`target-list-item-${fixedItemIndex}`}
             className='w100pct'
             onKeyDown={onRenameKeydown}
             onChange={onRenameChange}
@@ -469,6 +470,7 @@ const AddingRow = betterReactMemo('AddingRow', (props: AddingRowProps) => {
     >
       <OnClickOutsideHOC onClickOutside={finishAdding}>
         <StringInput
+          testId='target-selector-adding-row'
           style={{ flexGrow: 1 }}
           autoFocus
           onKeyDown={onAddKeydown}
