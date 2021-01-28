@@ -89,6 +89,7 @@ export const URLBackgroundLayer = betterReactMemo<URLBackgroundLayerProps>(
             <ImageThumbnailControl
               id={`image-thumbnail-control-${props.index}`}
               key={`image-thumbnail-control-${props.index}-${props.value.url}`}
+              testId={`image-thumbnail-control-${props.index}-${props.value.url}`}
               value={props.value}
               backgroundIndex={props.index}
               controlStatus={props.controlStatus}
@@ -110,6 +111,7 @@ export const URLBackgroundLayer = betterReactMemo<URLBackgroundLayerProps>(
             <StringControl
               id={`background-layer-image-${props.index}`}
               key={`background-layer-image-${props.index}`}
+              testId={`background-layer-image-${props.index}`}
               value={props.value.url}
               onSubmitValue={onURLSubmitValue}
               controlStatus={props.controlStatus}

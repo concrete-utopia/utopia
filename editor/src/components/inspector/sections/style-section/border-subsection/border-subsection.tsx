@@ -144,6 +144,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
       <StringColorControl
         id='border-color'
         key='border-color'
+        testId='border-color'
         value={borderColor}
         onSubmitValue={borderColorSubmitValue}
         onTransientSubmitValue={borderColorTransientSubmitValue}
@@ -154,6 +155,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
       />
       <NumberInput
         id='border-width'
+        testId='border-width'
         value={borderWidth}
         DEPRECATED_labelBelow='width'
         minimum={0}
@@ -216,6 +218,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
               <ColorControl
                 id='border-color'
                 key='border-color'
+                testId='border-color'
                 value={borderColor}
                 onSubmitValue={borderColorSubmitValue}
                 onTransientSubmitValue={borderColorTransientSubmitValue}

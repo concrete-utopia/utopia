@@ -20,6 +20,7 @@ export const PositionControl = betterReactMemo('PositionControl', () => {
       <OptionChainControl
         id='flex.element.position.position'
         key='flex.element.position.position'
+        testId='flex.element.position.position'
         value={position.value}
         options={
           [
@@ -70,6 +71,7 @@ export const AlignSelfControl = betterReactMemo('AlignSelfControl', () => {
       <SelectControl
         id='flex.element.alignSelf'
         key='flex.element.alignSelf'
+        testId='flex.element.alignSelf'
         options={
           [
             {
@@ -153,6 +155,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           onSubmitValue: wrappedMarginTopOnSubmitValue,
           onTransientSubmitValue: wrappedMarginTopOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
+          testId: 'margin-T',
         },
         {
           value: marginRight.value,
@@ -161,6 +164,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           onSubmitValue: wrappedMarginRightOnSubmitValue,
           onTransientSubmitValue: wrappedMarginRightOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
+          testId: 'margin-R',
         },
         {
           value: marginBottom.value,
@@ -169,6 +173,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           onSubmitValue: wrappedMarginBottomOnSubmitValue,
           onTransientSubmitValue: wrappedMarginBottomOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
+          testId: 'margin-B',
         },
         {
           value: marginLeft.value,
@@ -177,6 +182,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           onSubmitValue: wrappedMarginLeftOnSubmitValue,
           onTransientSubmitValue: wrappedMarginLeftOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
+          testId: 'margin-L',
         },
       ]}
     />

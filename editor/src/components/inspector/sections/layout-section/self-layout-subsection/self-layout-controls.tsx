@@ -43,6 +43,7 @@ export const LayoutTypePicker = betterReactMemo(
       <OptionChainControl
         id='layoutSystem'
         key='layoutSystem'
+        testId='layoutSystem'
         onSubmitValue={changeSelectedType}
         value={value}
         options={layoutSystemOptions}

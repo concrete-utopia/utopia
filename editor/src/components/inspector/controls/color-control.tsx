@@ -13,6 +13,7 @@ export interface ColorControlProps {
   onSubmitValue: (value: CSSColor) => void
   onTransientSubmitValue: (value: CSSColor) => void
   id: string
+  testId: string
   key: string
   controlStatus: ControlStatus
   controlStyles: ControlStyles
@@ -45,6 +46,7 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
       <StringControl
         id={`string-${props.id}`}
         key={'color-string'}
+        testId={'color-control-string-control'}
         value={cssColorToChromaColorOrDefault(props.value).hex('rgba').toUpperCase()}
         readOnly={props.controlStyles.interactive}
         onSubmitValue={props.onSubmitSolidStringValue}
@@ -73,6 +75,7 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
   const picker = !popupOpen ? null : (
     <ColorPicker
       id={props.id}
+      testId={`${props.testId}-color-picker`}
       offsetX={pickerOffset.x}
       offsetY={pickerOffset.y}
       closePopup={closePopup}
@@ -141,6 +144,7 @@ export const StringColorControl = betterReactMemo(
     return (
       <StringControl
         id={`string-${props.id}`}
+        testId={`color-picker-string-control-${props.testId}`}
         key={'color-string'}
         style={props.style}
         value={cssColorToChromaColorOrDefault(color).hex('rgba').toUpperCase()}

@@ -89,6 +89,7 @@ export function UnknownArrayItem<T>(props: UnknownArrayItemProps<T>) {
           <StringControl
             style={{ height: 22 }}
             id={`unknown-${props.index}`}
+            testId={`unknown-${props.index}`}
             key={`unknown-${props.index}-${props.value.value}`}
             value={props.value.value}
             onSubmitValue={onSubmitValue}

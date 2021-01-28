@@ -45,6 +45,7 @@ export const ImageThumbnailControl = betterReactMemo<ImageThumbnailControlProps>
         {props.popupOpen ? (
           <BackgroundPicker
             id={props.id}
+            testId={props.testId}
             offsetX={modalOffset.x}
             offsetY={modalOffset.y}
             closePopup={closePopup}

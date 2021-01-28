@@ -52,6 +52,7 @@ export const ControlForBooleanProp = betterReactMemo(
       <BooleanControl
         key={controlId}
         id={controlId}
+        testId={controlId}
         value={value}
         onSubmitValue={propMetadata.onSubmitValue}
         controlStatus={propMetadata.controlStatus}
@@ -87,6 +88,7 @@ export const ControlForColorProp = betterReactMemo(
           <ColorControl
             key={controlId}
             id={controlId}
+            testId={controlId}
             value={validColor}
             controlStatus={propMetadata.controlStatus}
             controlStyles={propMetadata.controlStyles}
@@ -118,6 +120,7 @@ export const ControlForComponentInstanceProp = betterReactMemo(
       <StringControl
         key={controlId}
         id={controlId}
+        testId={controlId}
         value={value ?? ''}
         onSubmitValue={
           propMetadata.controlStatus === 'controlled' ? NO_OP : propMetadata.onSubmitValue
@@ -158,6 +161,7 @@ export const ControlForEnumProp = betterReactMemo(
         }}
         key={controlId}
         id={controlId}
+        testId={controlId}
         value={value}
         onSubmitValue={propMetadata.onSubmitValue}
         controlStatus={propMetadata.controlStatus}
@@ -199,6 +203,7 @@ export const ControlForImageProp = betterReactMemo(
       <StringControl
         key={controlId}
         id={controlId}
+        testId={controlId}
         value={value ?? ''}
         onSubmitValue={
           propMetadata.controlStatus === 'controlled' ? NO_OP : propMetadata.onSubmitValue
@@ -232,6 +237,7 @@ export const ControlForNumberProp = betterReactMemo(
     return (
       <SimpleNumberInput
         id={controlId}
+        testId={controlId}
         value={value}
         onSubmitValue={wrappedOnSubmit}
         onTransientSubmitValue={wrappedOnTransientSubmit}
@@ -261,6 +267,7 @@ export const ControlForOptionsProp = betterReactMemo(
       <OptionChainControl
         key={controlId}
         id={controlId}
+        testId={controlId}
         value={value}
         controlStatus={propMetadata.controlStatus}
         controlStyles={propMetadata.controlStyles}
@@ -319,6 +326,7 @@ export const ControlForSliderProp = betterReactMemo(
       <SliderControl
         key={controlId}
         id={controlId}
+        testId={controlId}
         value={value}
         onTransientSubmitValue={propMetadata.onTransientSubmitValue}
         onForcedSubmitValue={propMetadata.onSubmitValue}
@@ -345,6 +353,7 @@ export const ControlForStringProp = betterReactMemo(
       <StringControl
         key={propName}
         id={controlId}
+        testId={controlId}
         value={value ?? ''}
         onSubmitValue={propMetadata.onSubmitValue}
         controlStatus={propMetadata.controlStatus}

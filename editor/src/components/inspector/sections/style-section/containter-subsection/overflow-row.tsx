@@ -51,6 +51,7 @@ export const OverflowRow = betterReactMemo('OverflowRow', () => {
         <OptionChainControl
           id={'overflow-control'}
           key={'overflow-control'}
+          testId={'overflow-control'}
           onSubmitValue={onSubmitValue}
           value={value}
           options={OverflowControlOptions}

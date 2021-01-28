@@ -47,6 +47,7 @@ export const URLBackgroundLayerMetadataControls: React.FunctionComponent<URLBack
       <StringControl
         id='metadata-editor-modal-background-url-value'
         key='metadata-editor-modal-background-url-value'
+        testId='metadata-editor-modal-background-url-value'
         value={props.value.url}
         onSubmitValue={onSubmitValue}
         controlStatus={props.controlStatus}

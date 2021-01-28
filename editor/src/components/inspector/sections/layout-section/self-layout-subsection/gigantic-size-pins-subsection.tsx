@@ -79,6 +79,7 @@ export const PinsLayoutNumberControl = betterReactMemo(
         <NumberInput
           value={asCSSNumber}
           id={`position-${props.prop}-number-input`}
+          testId={`position-${props.prop}-number-input`}
           labelInner={props.label}
           onSubmitValue={wrappedOnSubmit}
           onTransientSubmitValue={wrappedOnTransientSubmit}
@@ -136,6 +137,7 @@ export const FlexStyleNumberControl = betterReactMemo(
       >
         <NumberInput
           id={`position-${props.styleProp}-number-input`}
+          testId={`position-${props.styleProp}-number-input`}
           value={layoutPropInfo.value}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
@@ -181,6 +183,7 @@ export const FlexLayoutNumberControl = betterReactMemo(
       >
         <NumberInput
           id={`position-${props.layoutProp}-number-input`}
+          testId={`position-${props.layoutProp}-number-input`}
           value={asCSSNumber}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}

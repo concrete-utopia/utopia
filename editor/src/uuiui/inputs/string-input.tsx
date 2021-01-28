@@ -21,6 +21,7 @@ interface StringInputOptions {
 export interface StringInputProps
   extends StringInputOptions,
     React.InputHTMLAttributes<HTMLInputElement> {
+  testId: string
   placeholder?: string
   onSubmitValue?: OnSubmitValue<string>
   style?: React.CSSProperties
@@ -131,6 +132,8 @@ export const StringInput = betterReactMemo(
         <form autoComplete='off' style={style} onMouseDown={stopPropagation}>
           <InspectorInput
             {...inputProps}
+            testId={inputProps.testId}
+            controlStatus={controlStatus}
             controlStyles={controlStyles}
             focused={focused}
             value={inputProps.value}
