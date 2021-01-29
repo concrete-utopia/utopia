@@ -1,21 +1,12 @@
 import { act, fireEvent } from '@testing-library/react'
 import * as TP from '../../../../core/shared/template-path'
+import { setElectronWindow } from '../../../../core/shared/test-setup.test-utils'
 import { wait } from '../../../../utils/test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 
 describe('Select Mode Selection', () => {
-  beforeAll((done) => {
-    // we need to set the Electron window to a larger size so document.elementsUnderPoint works correctly!
-    const currentWindow = require('electron').remote.getCurrentWindow()
-    const size = currentWindow.getSize()
-    if (size.width !== 2200) {
-      currentWindow.once('resize', () => {
-        done()
-      })
-      currentWindow.setSize(2200, 1000)
-    }
-  })
+  beforeAll(setElectronWindow)
 
   it('keep double clicking on a children eventually selects it – even if it is out of bounds of the parents', async () => {
     const renderResult = await renderTestEditorWithCode(
