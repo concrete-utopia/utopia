@@ -97,7 +97,7 @@ describe('Select Mode Selection', () => {
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousedown', {
-          detail: 0,
+          detail: 1,
           bubbles: true,
           cancelable: true,
           metaKey: false,
@@ -109,7 +109,7 @@ describe('Select Mode Selection', () => {
       fireEvent(
         canvasControlsLayer,
         new MouseEvent('mousedown', {
-          detail: 1,
+          detail: 2,
           bubbles: true,
           cancelable: true,
           metaKey: false,
