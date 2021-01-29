@@ -17,7 +17,7 @@ describe('Select Mode Selection', () => {
     }
   })
 
-  it('keep clicking on an children eventually selects it – even if it is out of bounds of the parents', async () => {
+  it('keep double clicking on a children eventually selects it – even if it is out of bounds of the parents', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
           <div data-uid='a' style={{ ...props.style }}>
