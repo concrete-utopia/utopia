@@ -3799,13 +3799,15 @@ function parseFramePin(
   simpleValue: unknown | null,
   _: ModifiableAttribute | null,
 ): Either<string, FramePin> {
-  if (
-    typeof simpleValue === 'number' ||
-    (typeof simpleValue === 'string' && isPercentPin(simpleValue))
-  ) {
-    return right(simpleValue)
+  const parsedValue = parseCSSNumber(simpleValue, 'Length')
+  if (isRight(parsedValue)) {
+    if (parsedValue.value.unit === 'px') {
+      return right(parsedValue.value.value)
+    } else {
+      return right(`${parsedValue.value.value}${parsedValue.value.unit}`)
+    }
   } else {
-    return left('Value is not a valid frame pin.')
+    return parsedValue
   }
 }
 
