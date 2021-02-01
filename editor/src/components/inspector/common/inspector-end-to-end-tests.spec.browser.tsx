@@ -10,5 +10,7 @@ import {
 import { selectComponents } from '../../editor/actions/action-creators'
 
 describe('inspector tests with real metadata', () => {
-  // the tests will come here
+  it('placeholder', () => {
+    // the tests will come here
+  })
 })
