@@ -279,6 +279,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             onTransientSubmitValue={wrappedOnTransientSubmit}
             onForcedSubmitValue={wrappedOnSubmit}
             controlStatus={props.controlStatus}
+            defaultUnitToHide={'px'}
           />
         </InspectorContextMenuWrapper>
       </GridRow>

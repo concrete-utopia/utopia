@@ -159,6 +159,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
               maximum={1}
               stepSize={0.01}
               inputProps={{ onMouseDown: stopPropagation }}
+              defaultUnitToHide={null}
             />
           </GridRow>
         </GridRow>

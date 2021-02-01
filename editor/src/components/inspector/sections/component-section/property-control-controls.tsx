@@ -248,6 +248,7 @@ export const ControlForNumberProp = betterReactMemo(
         minimum={controlDescription.min}
         maximum={controlDescription.max}
         labelInner={controlDescription.unit}
+        defaultUnitToHide={'px'}
       />
     )
   },

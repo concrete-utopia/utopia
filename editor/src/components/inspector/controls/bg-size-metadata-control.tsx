@@ -232,7 +232,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<BGSizeMetadataContro
             id='bgSize-width-component'
             testId='bgSize-width-component'
             value={widthValue}
-            numberInputOptions={{ numberType: 'LengthPercent' }}
+            numberInputOptions={{ numberType: 'LengthPercent', defaultUnitToHide: null }}
             keywordControlOptions={{ validKeywords: validDimensionComponentKeywords }}
             onSubmitValue={onSubmitWidthValue}
             onTransientSubmitValue={onTransientSubmitWidthValue}
@@ -244,7 +244,7 @@ export const BGSizeMetadataControl: React.FunctionComponent<BGSizeMetadataContro
             id='bgSize-height-component'
             testId='bgSize-height-component'
             value={heightValue}
-            numberInputOptions={{ numberType: 'LengthPercent' }}
+            numberInputOptions={{ numberType: 'LengthPercent', defaultUnitToHide: null }}
             keywordControlOptions={{ validKeywords: validDimensionComponentKeywords }}
             onSubmitValue={onSubmitHeightValue}
             onTransientSubmitValue={onTransientSubmitHeightValue}

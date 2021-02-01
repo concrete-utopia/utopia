@@ -85,6 +85,7 @@ export const PinsLayoutNumberControl = betterReactMemo(
           onTransientSubmitValue={wrappedOnTransientSubmit}
           controlStatus={pointInfo.controlStatus}
           numberType={'UnitlessPercent'}
+          defaultUnitToHide={'px'}
         />
       </InspectorContextMenuWrapper>
     )
@@ -144,6 +145,7 @@ export const FlexStyleNumberControl = betterReactMemo(
           controlStatus={layoutPropInfo.controlStatus}
           numberType={'UnitlessPercent'}
           labelInner={props.label}
+          defaultUnitToHide={'px'}
         />
       </InspectorContextMenuWrapper>
     )
@@ -190,6 +192,7 @@ export const FlexLayoutNumberControl = betterReactMemo(
           controlStatus={layoutPropInfo.controlStatus}
           numberType={'UnitlessPercent'}
           labelInner={props.label}
+          defaultUnitToHide={'px'}
         />
       </InspectorContextMenuWrapper>
     )
