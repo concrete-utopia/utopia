@@ -49,11 +49,7 @@ export const PinsLayoutNumberControl = betterReactMemo(
   (props: PinsLayoutNumberControlProps) => {
     const framePoint = framePointForPinnedProp(props.prop)
     const pointInfo = useInspectorLayoutInfo(props.prop)
-    const fullFrame = Utils.defaultIfNull(
-      {} as FullFrame,
-      Utils.optionalMap(getFullFrame, props.frame),
-    )
-    const framePinToUse = Utils.defaultIfNull(fullFrame[framePoint], pointInfo.value)
+    const framePinToUse = pointInfo.value
     const asCSSNumber = framePinToCSSNumber(framePinToUse)
     const [onSubmitValue, onTransientSubmitValue] = pointInfo.useSubmitValueFactory(
       (newValue: CSSNumber) => {
