@@ -116,7 +116,7 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
                   controlStatus: props.controlStatus,
                   numberType: 'LengthPercent' as const,
                   testId: 'background-layer-gradient-center-x',
-                  defaultUnitToHide: 'px',
+                  defaultUnitToHide: null,
                 },
                 {
                   value: props.value.center.y.value,
@@ -126,7 +126,7 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
                   controlStatus: props.controlStatus,
                   numberType: 'LengthPercent' as const,
                   testId: 'background-layer-gradient-center-y',
-                  defaultUnitToHide: 'px',
+                  defaultUnitToHide: null,
                 },
               ]}
             />
