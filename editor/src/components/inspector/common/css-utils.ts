@@ -3801,7 +3801,7 @@ function parseFramePin(
 ): Either<string, FramePin> {
   const parsedValue = parseCSSNumber(simpleValue, 'Length')
   if (isRight(parsedValue)) {
-    if (parsedValue.value.unit === 'px') {
+    if (parsedValue.value.unit === 'px' || parsedValue.value.unit == null) {
       return right(parsedValue.value.value)
     } else {
       return right(`${parsedValue.value.value}${parsedValue.value.unit}`)
