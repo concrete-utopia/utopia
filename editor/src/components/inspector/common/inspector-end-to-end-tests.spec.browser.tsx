@@ -10,7 +10,7 @@ import {
 import { selectComponents } from '../../editor/actions/action-creators'
 
 describe('inspector tests with real metadata', () => {
-  it('element with TLWH', async () => {
+  it('flexPadding controls', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <div
