@@ -16,19 +16,10 @@ import { createFakeMetadataForParseSuccess, wait } from '../../utils/test-utils'
 import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
+import { setElectronWindow } from '../../core/shared/test-setup.test-utils'
 
 describe('moving a scene/rootview on the canvas', () => {
-  beforeAll((done) => {
-    // we need to set the Electron window to a larger size so document.elementsUnderPoint works correctly!
-    const currentWindow = require('electron').remote.getCurrentWindow()
-    const size = currentWindow.getSize()
-    if (size.width !== 2200) {
-      currentWindow.once('resize', () => {
-        done()
-      })
-      currentWindow.setSize(2200, 1000)
-    }
-  })
+  beforeAll(setElectronWindow)
 
   it('dragging a dynamic scene’s root view sets the scene position', async () => {
     const testCode = Prettier.format(
