@@ -89,17 +89,24 @@ export const useRefEditorState = <U>(
   // https://github.com/pmndrs/zustand/blob/d82e103cc6702ed10a404a587163e42fc3ac1338/src/index.ts#L161
   sliceRef.current = selector(api.getState()) // ensure that callers of this always have the latest data
   if (explainMe) {
-    console.info('reading useEditorState', sliceRef.current)
+    console.info('useRefEditorState: reading editor state', sliceRef.current)
   }
   React.useEffect(() => {
+    sliceRef.current = selectorRef.current(api.getState()) // the state might have changed between the render and this Effect being called
     if (explainMe) {
-      console.info('subscribing to the api')
+      console.info(
+        'useRefEditorState: re-reading editor state in useEffect, just in case it changed since the hook was called',
+        sliceRef.current,
+      )
+    }
+    if (explainMe) {
+      console.info('useRefEditorState: subscribing to the zustand api')
     }
     const unsubscribe = api.subscribe(
       (newSlice) => {
         if (newSlice) {
           if (explainMe) {
-            console.info('new slice arrived', newSlice)
+            console.info('useRefEditorState: new state slice arrived', newSlice)
           }
           sliceRef.current = newSlice
         }
@@ -109,7 +116,7 @@ export const useRefEditorState = <U>(
     )
     return function cleanup() {
       if (explainMe) {
-        console.info('unsubscribing from the api')
+        console.info('useRefEditorState: unsubscribing from the zustand api')
       }
       unsubscribe()
     }
