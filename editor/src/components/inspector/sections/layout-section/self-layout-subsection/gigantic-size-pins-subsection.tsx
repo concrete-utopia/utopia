@@ -30,7 +30,6 @@ import { betterReactMemo } from '../../../../../uuiui-deps'
 interface PinsLayoutNumberControlProps {
   label: string
   prop: LayoutPinnedProp
-  frame: LocalRectangle | null
 }
 
 export const pinLabels: { [key in LayoutPinnedProp]: string } = {
@@ -218,8 +217,8 @@ const PinControls = betterReactMemo('PinControls', (props: PinControlsProps) => 
   )
 })
 
-function pinsLayoutNumberControl(frame: LocalRectangle | null, prop: LayoutPinnedProp) {
-  return <PinsLayoutNumberControl label={pinLabels[prop]} prop={prop} frame={frame} />
+function pinsLayoutNumberControl(prop: LayoutPinnedProp) {
+  return <PinsLayoutNumberControl label={pinLabels[prop]} prop={prop} />
 }
 
 function flexLayoutNumberControl(label: string, layoutProp: LayoutFlexElementNumericProp) {
@@ -270,8 +269,8 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
         break
     }
   } else {
-    widthControl = pinsLayoutNumberControl(frame, 'Width')
-    heightControl = pinsLayoutNumberControl(frame, 'Height')
+    widthControl = pinsLayoutNumberControl('Width')
+    heightControl = pinsLayoutNumberControl('Height')
   }
 
   const toggleWidth = React.useCallback(() => {
@@ -401,8 +400,8 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
   // const topInfo = useInspectorLayoutInfo('PinnedTop')
   // if (centerXInfo.value == null) {
   // No CenterX value, just show top and bottom.
-  firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedTop')
-  secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedBottom')
+  firstXAxisControl = pinsLayoutNumberControl('PinnedTop')
+  secondXAxisControl = pinsLayoutNumberControl('PinnedBottom')
   // } else {
   //   // We have a CenterX value, so put that first and then top or bottom after it.
   //   firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterX')
@@ -418,8 +417,8 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
   // const leftInfo = useInspectorLayoutInfo('PinnedLeft')
   // if (centerYInfo.value == null) {
   // No CenterY value, just show left and right.
-  firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedLeft')
-  secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedRight')
+  firstYAxisControl = pinsLayoutNumberControl('PinnedLeft')
+  secondYAxisControl = pinsLayoutNumberControl('PinnedRight')
   // } else {
   //   // We have a CenterY value, so put that first and then left or right after it.
   //   firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterY')
