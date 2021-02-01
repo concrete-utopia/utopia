@@ -215,6 +215,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onTransientSubmitValue: flexPaddingTopOnTransientSubmitValue,
           controlStatus: flexPaddingTop.controlStatus,
           numberType: 'UnitlessPercent',
+          defaultUnitToHide: 'px',
           testId: 'flexPadding-T',
         },
         {
@@ -225,6 +226,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onTransientSubmitValue: flexPaddingRightOnTransientSubmitValue,
           controlStatus: flexPaddingRight.controlStatus,
           numberType: 'UnitlessPercent',
+          defaultUnitToHide: 'px',
           testId: 'flexPadding-R',
         },
         {
@@ -235,6 +237,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onTransientSubmitValue: flexPaddingBottomOnTransientSubmitValue,
           controlStatus: flexPaddingBottom.controlStatus,
           numberType: 'UnitlessPercent',
+          defaultUnitToHide: 'px',
           testId: 'flexPadding-B',
         },
         {
@@ -245,6 +248,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onTransientSubmitValue: flexPaddingLeftOnTransientSubmitValue,
           controlStatus: flexPaddingLeft.controlStatus,
           numberType: 'UnitlessPercent',
+          defaultUnitToHide: 'px',
           testId: 'flexPadding-L',
         },
       ]}
