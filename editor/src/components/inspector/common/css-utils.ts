@@ -3799,14 +3799,14 @@ function parseFramePin(
   simpleValue: unknown | null,
   _: ModifiableAttribute | null,
 ): Either<string, FramePin> {
-  if (
-    typeof simpleValue === 'number' ||
-    (typeof simpleValue === 'string' && isPercentPin(simpleValue))
-  ) {
-    return right(simpleValue)
-  } else {
-    return left('Value is not a valid frame pin.')
-  }
+  const parsedValue = parseCSSNumber(simpleValue, 'Length')
+  return mapEither((value: CSSNumber) => {
+    if (value.unit === 'px' || value.unit == null) {
+      return value.value
+    } else {
+      return `${value.value}${value.unit}`
+    }
+  }, parsedValue)
 }
 
 function isOneOfTheseParser<T extends PrimitiveType>(values: Array<T>): Parser<T> {
