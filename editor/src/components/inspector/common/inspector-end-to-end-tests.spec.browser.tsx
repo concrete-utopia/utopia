@@ -265,4 +265,265 @@ describe('inspector tests with real metadata', () => {
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
   })
+  it('Style props strings using px', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: '25px',
+              left: '14px',
+              width: '203px',
+              height: '102px',
+              padding: '4px',
+              paddingRight: '8px',
+              borderRadius: '2px',
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Width-number-input',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Height-number-input',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedTop-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedLeft-number-input',
+    )) as HTMLInputElement
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-L',
+    )) as HTMLInputElement
+    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-R',
+    )) as HTMLInputElement
+    const radiusControl = (await renderResult.renderedDOM.findByTestId(
+      'radius-all-number-input',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toMatchInlineSnapshot(`"203"`)
+    expect(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(heightControl.value).toMatchInlineSnapshot(`"102"`)
+    expect(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(topControl.value).toMatchInlineSnapshot(`"25"`)
+    expect(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(leftControl.value).toMatchInlineSnapshot(`"14"`)
+    expect(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4px"`)
+    expect(
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"8px"`)
+    expect(
+      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(radiusControl.value).toMatchInlineSnapshot(`"2px"`)
+    expect(
+      radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+  })
+  it('Style props in %', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: '25%',
+              left: '10%',
+              width: '80%',
+              height: '65%',
+              padding: '4%',
+              paddingRight: '8%',
+              borderRadius: '50%',
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Width-number-input',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Height-number-input',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedTop-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedLeft-number-input',
+    )) as HTMLInputElement
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-L',
+    )) as HTMLInputElement
+    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-R',
+    )) as HTMLInputElement
+    const radiusControl = (await renderResult.renderedDOM.findByTestId(
+      'radius-all-number-input',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toMatchInlineSnapshot(`"320"`)
+    expect(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(heightControl.value).toMatchInlineSnapshot(`"260"`)
+    expect(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(topControl.value).toMatchInlineSnapshot(`"100"`)
+    expect(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(leftControl.value).toMatchInlineSnapshot(`"40"`)
+    expect(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16px"`)
+    expect(
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"32px"`)
+    expect(
+      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(radiusControl.value).toMatchInlineSnapshot(`"50%"`)
+    expect(
+      radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+  })
+  it('Style props using css calc()', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: 'calc(50% + 20px)',
+              left: '100',
+              width: '150',
+              height: 'calc(10% + 30px)',
+              padding: 'calc(10% + 4px)',
+              paddingRight: 'calc(10% + 2px)',
+              borderRadius: 'calc(10% + 5%)',
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Width-number-input',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Height-number-input',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedTop-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedLeft-number-input',
+    )) as HTMLInputElement
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-L',
+    )) as HTMLInputElement
+    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-R',
+    )) as HTMLInputElement
+    const radiusControl = (await renderResult.renderedDOM.findByTestId(
+      'radius-all-number-input',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toMatchInlineSnapshot(`"150"`)
+    expect(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(heightControl.value).toMatchInlineSnapshot(`"70"`)
+    expect(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(topControl.value).toMatchInlineSnapshot(`"220"`)
+    expect(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(leftControl.value).toMatchInlineSnapshot(`"100"`)
+    expect(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"44px"`)
+    expect(
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"42px"`)
+    expect(
+      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(radiusControl.value).toMatchInlineSnapshot(`"15%"`)
+    expect(
+      radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+  })
 })
