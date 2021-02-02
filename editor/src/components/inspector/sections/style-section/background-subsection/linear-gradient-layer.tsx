@@ -130,6 +130,7 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
               DEPRECATED_labelBelow='angle'
               inputProps={{ onMouseDown: stopPropagation }}
               numberType='AnglePercent'
+              defaultUnitToHide={null}
             />
           </GridRow>
         </GridRow>

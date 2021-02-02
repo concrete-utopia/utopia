@@ -211,7 +211,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
         controlStatus={props.controlStatus}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='Length'
-        defaultUnitToHide='px'
+        defaultUnitToHide={'px'}
       />
       <NumberInput
         style={{ gridColumn: '4 / span 1' }}
@@ -224,7 +224,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
         controlStatus={props.controlStatus}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='Length'
-        defaultUnitToHide='px'
+        defaultUnitToHide={'px'}
       />
       <NumberInput
         style={{ gridColumn: '5 / span 1' }}
@@ -237,7 +237,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
         controlStatus={props.controlStatus}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='Length'
-        defaultUnitToHide='px'
+        defaultUnitToHide={'px'}
       />
       <SquareButton highlight onMouseDown={removeShadow} style={{ marginTop: 1 }}>
         <Icn category='semantic' type='minus' color='darkgray' width={16} height={16} />
