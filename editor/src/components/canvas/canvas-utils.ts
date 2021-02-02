@@ -2511,7 +2511,12 @@ export function cullSpyCollector(
     if (
       !scenePaths.has(scenePath) &&
       !elementPaths.has(
-        TP.toString(TP.instancePath([], (TP.fromString(scenePath) as ScenePath).sceneElementPath)),
+        TP.toString(
+          TP.instancePath(
+            [],
+            spyCollector.current.spyValues.scenes[scenePath].scenePath.sceneElementPath,
+          ),
+        ),
       ) // this is needed because empty scenes are stored in metadata with an instancepath
     ) {
       delete spyCollector.current.spyValues.scenes[scenePath]
