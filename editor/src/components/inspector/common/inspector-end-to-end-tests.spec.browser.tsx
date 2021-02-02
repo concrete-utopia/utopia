@@ -389,17 +389,17 @@ describe('inspector tests with real metadata', () => {
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4px"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"detected"`)
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"8px"`)
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"8"`)
     expect(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(radiusControl.value).toMatchInlineSnapshot(`"2px"`)
+    expect(radiusControl.value).toMatchInlineSnapshot(`"2"`)
     expect(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
@@ -476,12 +476,12 @@ describe('inspector tests with real metadata', () => {
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple-unknown-css"`)
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16px"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"detected"`)
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"32px"`)
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"32"`)
     expect(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple-unknown-css"`)
@@ -563,12 +563,12 @@ describe('inspector tests with real metadata', () => {
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"44px"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"44"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"detected"`)
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"42px"`)
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"42"`)
     expect(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple-unknown-css"`)
