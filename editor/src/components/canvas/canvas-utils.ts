@@ -77,6 +77,7 @@ import {
   foldParsedTextFile,
   textFile,
   textFileContents,
+  ScenePath,
 } from '../../core/shared/project-file-types'
 import {
   getOrDefaultScenes,
@@ -2507,7 +2508,17 @@ export function cullSpyCollector(
   })
   // Eliminate the scene paths which are invalid.
   fastForEach(Object.keys(spyCollector.current.spyValues.scenes), (scenePath) => {
-    if (!scenePaths.has(scenePath)) {
+    if (
+      !scenePaths.has(scenePath) &&
+      !elementPaths.has(
+        TP.toString(
+          TP.instancePath(
+            [],
+            spyCollector.current.spyValues.scenes[scenePath].scenePath.sceneElementPath,
+          ),
+        ),
+      ) // this is needed because empty scenes are stored in metadata with an instancepath
+    ) {
       delete spyCollector.current.spyValues.scenes[scenePath]
     }
   })
