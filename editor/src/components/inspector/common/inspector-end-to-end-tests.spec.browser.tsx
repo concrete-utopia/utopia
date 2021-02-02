@@ -503,8 +503,8 @@ describe('inspector tests with real metadata', () => {
               position: 'absolute',
               backgroundColor: '#DDDDDD',
               top: 'calc(50% + 20px)',
-              left: '100',
-              width: '150',
+              left: 'calc(50px + 50px)',
+              width: 'calc(150px)',
               height: 'calc(10% + 30px)',
               padding: 'calc(10% + 4px)',
               paddingRight: 'calc(10% + 2px)',
@@ -546,7 +546,7 @@ describe('inspector tests with real metadata', () => {
     expect(widthControl.value).toMatchInlineSnapshot(`"150"`)
     expect(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
 
     expect(heightControl.value).toMatchInlineSnapshot(`"70"`)
     expect(
@@ -561,7 +561,7 @@ describe('inspector tests with real metadata', () => {
     expect(leftControl.value).toMatchInlineSnapshot(`"100"`)
     expect(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple"`)
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
 
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"44"`)
     expect(
@@ -577,5 +577,92 @@ describe('inspector tests with real metadata', () => {
     expect(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+  })
+  it('Style props using a simple expression', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: 10+23,
+              left: 50+24,
+              width: 100+50,
+              height: 30+100,
+              padding: 2+2,
+              paddingRight: 1+4,
+              borderRadius: 5+2,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Width-number-input',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Height-number-input',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedTop-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedLeft-number-input',
+    )) as HTMLInputElement
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-L',
+    )) as HTMLInputElement
+    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-R',
+    )) as HTMLInputElement
+    const radiusControl = (await renderResult.renderedDOM.findByTestId(
+      'radius-all-number-input',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toMatchInlineSnapshot(`"150"`)
+    expect(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
+
+    expect(heightControl.value).toMatchInlineSnapshot(`"130"`)
+    expect(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
+
+    expect(topControl.value).toMatchInlineSnapshot(`"33"`)
+    expect(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
+
+    expect(leftControl.value).toMatchInlineSnapshot(`"74"`)
+    expect(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
+
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4"`)
+    expect(
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"5"`)
+    expect(
+      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
+
+    expect(radiusControl.value).toMatchInlineSnapshot(`"7"`)
+    expect(
+      radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
   })
 })
