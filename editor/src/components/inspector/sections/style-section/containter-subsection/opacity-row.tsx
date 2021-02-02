@@ -88,6 +88,7 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
             controlStatus={opacityMetadata.controlStatus}
             numberType='UnitlessPercent'
+            defaultUnitToHide={null}
           />
         </GridRow>
       </GridRow>

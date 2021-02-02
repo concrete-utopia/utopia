@@ -157,6 +157,7 @@ const LinearGradientControls: React.FunctionComponent<LinearGradientControlsProp
         DEPRECATED_labelBelow='angle'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
+        defaultUnitToHide={null}
       />
     </div>
   )
@@ -246,6 +247,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         DEPRECATED_labelBelow='center x'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{
@@ -260,6 +262,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         DEPRECATED_labelBelow='center y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{
@@ -274,6 +277,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         DEPRECATED_labelBelow='width'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{
@@ -288,6 +292,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         DEPRECATED_labelBelow='height'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
     </div>
   )
@@ -349,6 +354,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
         DEPRECATED_labelBelow='x'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{ gridColumn: '3 / span 1' }}
@@ -361,6 +367,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
         DEPRECATED_labelBelow='y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{ gridColumn: '5 / span 1' }}
@@ -373,6 +380,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
         DEPRECATED_labelBelow='angle'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
+        defaultUnitToHide={null}
       />
     </div>
   )

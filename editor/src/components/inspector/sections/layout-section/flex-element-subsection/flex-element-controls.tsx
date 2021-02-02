@@ -156,6 +156,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           onTransientSubmitValue: wrappedMarginTopOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
           testId: 'margin-T',
+          defaultUnitToHide: 'px',
         },
         {
           value: marginRight.value,
@@ -165,6 +166,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           onTransientSubmitValue: wrappedMarginRightOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
           testId: 'margin-R',
+          defaultUnitToHide: 'px',
         },
         {
           value: marginBottom.value,
@@ -174,6 +176,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           onTransientSubmitValue: wrappedMarginBottomOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
           testId: 'margin-B',
+          defaultUnitToHide: 'px',
         },
         {
           value: marginLeft.value,
@@ -183,6 +186,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           onTransientSubmitValue: wrappedMarginLeftOnTransientSubmitValue,
           numberType: 'UnitlessPercent',
           testId: 'margin-L',
+          defaultUnitToHide: 'px',
         },
       ]}
     />

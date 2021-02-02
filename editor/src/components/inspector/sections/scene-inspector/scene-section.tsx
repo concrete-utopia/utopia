@@ -187,6 +187,7 @@ const PositionWidget = betterReactMemo(
             onSubmitValue={wrappedOnSubmitValue}
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
             onForcedSubmitValue={wrappedOnSubmitValue}
+            defaultUnitToHide={'px'}
           />
         </div>
       </div>
@@ -224,6 +225,7 @@ const PositionWidgetForCSSNumber = betterReactMemo(
             testId={`scene-frame-${pinnedProp}-number-input`}
             onSubmitValue={wrappedOnSubmitValue}
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
+            defaultUnitToHide={'px'}
           />
         </div>
       </div>

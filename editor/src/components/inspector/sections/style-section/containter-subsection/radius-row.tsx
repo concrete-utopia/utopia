@@ -267,6 +267,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onTransientSubmitValue: onBorderRadiusTLTransientSubmitValue,
                   controlStatus: controlStatus,
                   testId: 'border-radius-tl',
+                  defaultUnitToHide: 'px',
                 },
                 {
                   numberType: 'LengthPercent',
@@ -275,6 +276,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onTransientSubmitValue: onBorderRadiusTRTransientSubmitValue,
                   controlStatus: controlStatus,
                   testId: 'border-radius-tr',
+                  defaultUnitToHide: 'px',
                 },
                 {
                   numberType: 'LengthPercent',
@@ -283,6 +285,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onTransientSubmitValue: onBorderRadiusBLTransientSubmitValue,
                   controlStatus: controlStatus,
                   testId: 'border-radius-bl',
+                  defaultUnitToHide: 'px',
                 },
                 {
                   numberType: 'LengthPercent',
@@ -291,6 +294,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onTransientSubmitValue: onBorderRadiusBRTransientSubmitValue,
                   controlStatus: controlStatus,
                   testId: 'border-radius-br',
+                  defaultUnitToHide: 'px',
                 },
               ]}
             />
@@ -320,7 +324,8 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
               onTransientSubmitValue={wrappedOnTransientSubmitValue}
               controlStatus={controlStatus}
               minimum={0}
-              numberType='UnitlessPercent'
+              numberType='Length'
+              defaultUnitToHide={'px'}
             />
           </GridRow>
         )}

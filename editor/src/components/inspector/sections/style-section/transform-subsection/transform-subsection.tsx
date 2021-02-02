@@ -101,7 +101,7 @@ interface TransformItemControlMetadata {
   stepSize?: number
   labelBelow?: [string, string?]
   numberType: CSSNumberType
-  defaultUnitToHide?: CSSNumberUnit
+  defaultUnitToHide: CSSNumberUnit | null
 }
 
 const transformItemControlMetadatas: {
@@ -137,24 +137,28 @@ const transformItemControlMetadatas: {
     numberType: 'Unitless',
     labelBelow: ['x', 'y'],
     emptyValue: defaultTransformScale,
+    defaultUnitToHide: null,
   },
   scaleX: {
     prettyName: 'Scale X',
     stepSize: 0.01,
     numberType: 'Unitless',
     emptyValue: defaultTransformScaleX,
+    defaultUnitToHide: null,
   },
   scaleY: {
     prettyName: 'Scale Y',
     stepSize: 0.01,
     numberType: 'Unitless',
     emptyValue: defaultTransformScaleY,
+    defaultUnitToHide: null,
   },
   scaleZ: {
     prettyName: 'Scale Z',
     stepSize: 0.01,
     numberType: 'Unitless',
     emptyValue: defaultTransformScaleZ,
+    defaultUnitToHide: null,
   },
   skew: {
     prettyName: 'Skew',
@@ -204,6 +208,7 @@ const transformItemControlMetadatas: {
     prettyName: 'Unknown',
     numberType: 'AnyValid',
     emptyValue: cssUnknownArrayItem(''),
+    defaultUnitToHide: null,
   },
 }
 

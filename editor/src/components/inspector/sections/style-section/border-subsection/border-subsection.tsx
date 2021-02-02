@@ -163,6 +163,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
         onTransientSubmitValue={borderWidthTransientSubmitValue}
         controlStatus={controlStatus}
         numberType='Length'
+        defaultUnitToHide={'px'}
       />
     </GridRow>
   )

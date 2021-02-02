@@ -124,7 +124,7 @@ export interface NumberInputOptions {
   height?: number
   roundCorners?: BoxCorners
   numberType: CSSNumberType
-  defaultUnitToHide?: CSSNumberUnit
+  defaultUnitToHide: CSSNumberUnit | null
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -167,7 +167,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     controlStatus = 'simple',
     focusOnMount = false,
     numberType,
-    defaultUnitToHide = null,
+    defaultUnitToHide,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)

@@ -3800,15 +3800,13 @@ function parseFramePin(
   _: ModifiableAttribute | null,
 ): Either<string, FramePin> {
   const parsedValue = parseCSSNumber(simpleValue, 'Length')
-  if (isRight(parsedValue)) {
-    if (parsedValue.value.unit === 'px' || parsedValue.value.unit == null) {
-      return right(parsedValue.value.value)
+  return mapEither((value: CSSNumber) => {
+    if (value.unit === 'px' || value.unit == null) {
+      return value.value
     } else {
-      return right(`${parsedValue.value.value}${parsedValue.value.unit}`)
+      return `${value.value}${value.unit}`
     }
-  } else {
-    return parsedValue
-  }
+  }, parsedValue)
 }
 
 function isOneOfTheseParser<T extends PrimitiveType>(values: Array<T>): Parser<T> {

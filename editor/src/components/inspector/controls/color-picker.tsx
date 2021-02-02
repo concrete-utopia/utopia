@@ -594,6 +594,7 @@ export class ColorPickerInner extends React.Component<
               width: 10,
               height: 10,
             }}
+            defaultUnitToHide={null}
           />
           <SimplePercentInput
             value={Number(this.state.normalisedSaturationPosition.toFixed(2))}
@@ -607,6 +608,7 @@ export class ColorPickerInner extends React.Component<
             maximum={1}
             stepSize={0.01}
             DEPRECATED_labelBelow='S'
+            defaultUnitToHide={null}
           />
           <SimplePercentInput
             value={Number(this.state.normalisedValuePosition.toFixed(2))}
@@ -620,6 +622,7 @@ export class ColorPickerInner extends React.Component<
             maximum={1}
             stepSize={0.01}
             DEPRECATED_labelBelow='V'
+            defaultUnitToHide={null}
           />
           <SimplePercentInput
             value={this.state.normalisedAlphaPosition}
@@ -633,6 +636,7 @@ export class ColorPickerInner extends React.Component<
             maximum={1}
             stepSize={0.01}
             DEPRECATED_labelBelow='A'
+            defaultUnitToHide={null}
           />
         </div>
       </div>

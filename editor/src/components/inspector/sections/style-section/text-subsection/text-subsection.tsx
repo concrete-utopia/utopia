@@ -232,7 +232,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             onTransientSubmitValue={wrappedFontSizeOnTransientSubmitValue}
             minimum={0}
             numberType='Length'
-            defaultUnitToHide='px'
+            defaultUnitToHide={'px'}
           />
         </InspectorContextMenuWrapper>
         <InspectorContextMenuWrapper
@@ -431,7 +431,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               DEPRECATED_labelBelow='letter'
               stepSize={0.01}
               numberType='Length'
-              defaultUnitToHide='px'
+              defaultUnitToHide={'px'}
             />
           </InspectorContextMenuWrapper>
           <InspectorContextMenuWrapper
@@ -455,6 +455,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               DEPRECATED_labelBelow='line'
               stepSize={0.01}
               numberType='Length'
+              defaultUnitToHide={'em'}
             />
           </InspectorContextMenuWrapper>
         </PropertyRow>

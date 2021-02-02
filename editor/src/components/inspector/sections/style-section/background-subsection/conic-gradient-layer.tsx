@@ -116,6 +116,7 @@ export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgro
                   controlStatus: props.controlStatus,
                   numberType: 'LengthPercent' as const,
                   testId: 'background-layer-gradient-center-x',
+                  defaultUnitToHide: null,
                 },
                 {
                   value: props.value.center.y.value,
@@ -125,6 +126,7 @@ export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgro
                   controlStatus: props.controlStatus,
                   numberType: 'LengthPercent' as const,
                   testId: 'background-layer-gradient-center-y',
+                  defaultUnitToHide: null,
                 },
               ]}
             />
