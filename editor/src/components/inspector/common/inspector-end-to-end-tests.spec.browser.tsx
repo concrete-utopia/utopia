@@ -87,15 +87,15 @@ describe('inspector tests with real metadata', () => {
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(bottomControl.value).toMatchInlineSnapshot(`""`)
+    expect(bottomControl.value).toMatchInlineSnapshot(`"178"`)
     expect(
       bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"detected"`)
 
-    expect(rightControl.value).toMatchInlineSnapshot(`""`)
+    expect(rightControl.value).toMatchInlineSnapshot(`"79"`)
     expect(
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"detected"`)
   })
   it('TLBR layout controls', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -147,15 +147,15 @@ describe('inspector tests with real metadata', () => {
       'position-PinnedRight-number-input',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`""`)
+    expect(widthControl.value).toMatchInlineSnapshot(`"335"`)
     expect(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"detected"`)
 
-    expect(heightControl.value).toMatchInlineSnapshot(`""`)
+    expect(heightControl.value).toMatchInlineSnapshot(`"102"`)
     expect(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"detected"`)
 
     expect(metadata.computedStyle?.['top']).toMatchInlineSnapshot(`"98px"`)
     expect(topControl.value).toMatchInlineSnapshot(`"98"`)
@@ -243,15 +243,15 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(topControl.value).toMatchInlineSnapshot(`""`)
+    expect(topControl.value).toMatchInlineSnapshot(`"98"`)
     expect(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"detected"`)
 
-    expect(leftControl.value).toMatchInlineSnapshot(`""`)
+    expect(leftControl.value).toMatchInlineSnapshot(`"187"`)
     expect(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"detected"`)
 
     expect(metadata.computedStyle?.['bottom']).toMatchInlineSnapshot(`"200px"`)
     expect(bottomControl.value).toMatchInlineSnapshot(`"200"`)
