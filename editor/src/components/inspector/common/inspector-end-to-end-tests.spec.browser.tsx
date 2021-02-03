@@ -416,6 +416,8 @@ describe('inspector tests with real metadata', () => {
               paddingRight: 0,
               borderRadius: 0,
               opacity: 1,
+              minWidth: 0,
+              maxWidth: 'none',
             }}
             data-uid={'bbb'}
           ></div>
@@ -427,6 +429,9 @@ describe('inspector tests with real metadata', () => {
       [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
+    ]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -451,6 +456,12 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-control',
+    )) as HTMLInputElement
+    const minWidthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Width-number-input',
+    )) as HTMLInputElement
+    const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Height-number-input',
     )) as HTMLInputElement
 
     expect(widthControl.value).toMatchInlineSnapshot(`"0"`)
@@ -492,6 +503,18 @@ describe('inspector tests with real metadata', () => {
     expect(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(metadata.computedStyle?.['minWidth']).toMatchInlineSnapshot(`"0px"`)
+    expect(minWidthControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(metadata.computedStyle?.['maxWidth']).toMatchInlineSnapshot(`"none"`)
+    expect(maxWidthControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
   })
   it('Style props strings using px', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1227,6 +1250,110 @@ describe('inspector tests with real metadata', () => {
 
     expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"0.3"`)
     expect(opacityControl.value).toMatchInlineSnapshot(`"0.3"`)
+    expect(
+      opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+  })
+  it('Style is using css className, with default values', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      Prettier.format(
+        `/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div
+            style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid={'aaa'}
+          >
+            <StyleDiv />
+            <div
+              style={{ position: 'absolute' }}
+              className='customClassName'
+              data-uid={'bbb'}
+            ></div>
+          </div>
+        )
+      }
+    
+      export var StyleDiv = (props) => {
+        const styleContent = ".customClassName {min-width: 0, max-width: 'none', padding: 0px; border-radius: 0; opacity: 1;}"
+        return (
+          <div>
+            <style>{styleContent}</style>
+          </div>
+        )
+      }
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <Scene
+              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              static
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
+              data-uid='scene-aaa'
+            />
+          </Storyboard>
+        )
+      }`,
+        PrettierConfig,
+      ),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
+    ]
+
+    const minWidthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Width-number-input',
+    )) as HTMLInputElement
+    const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Height-number-input',
+    )) as HTMLInputElement
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-L',
+    )) as HTMLInputElement
+    const radiusControl = (await renderResult.renderedDOM.findByTestId(
+      'radius-all-number-input',
+    )) as HTMLInputElement
+    const opacityControl = (await renderResult.renderedDOM.findByTestId(
+      'opacity-number-control',
+    )) as HTMLInputElement
+
+    expect(metadata.computedStyle?.['minWidth']).toMatchInlineSnapshot(`"0px"`)
+    expect(minWidthControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(metadata.computedStyle?.['maxWidth']).toMatchInlineSnapshot(`"none"`)
+    expect(maxWidthControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(metadata.computedStyle?.['borderRadius']).toMatchInlineSnapshot(`"0px"`)
+    expect(radiusControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"1"`)
+    expect(opacityControl.value).toMatchInlineSnapshot(`"1"`)
     expect(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"detected"`)
