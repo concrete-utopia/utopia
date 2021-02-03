@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { render } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/react'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
@@ -13,6 +13,7 @@ import {
 import { selectComponents } from '../../editor/actions/action-creators'
 import { PrettierConfig } from '../../../core/workers/parser-printer/prettier-utils'
 import * as Prettier from 'prettier'
+import { act } from 'react-test-renderer'
 
 describe('inspector tests with real metadata', () => {
   it('padding controls', async () => {
@@ -1024,6 +1025,14 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
+    await act(async () => {
+      await screen.findByTestId('target-selector-style')
+      fireEvent.click(screen.getByTestId('target-selector'))
+      await screen.findByTestId('target-list-item-css')
+      fireEvent.mouseDown(screen.getByTestId('target-list-item-css'))
+      await screen.findByTestId('target-selector-css')
+    })
+
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
@@ -1069,7 +1078,7 @@ describe('inspector tests with real metadata', () => {
     expect(opacityControl.value).toMatchInlineSnapshot(`"0.5"`)
     expect(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
   })
   it('CSS using default values set inline', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1101,6 +1110,14 @@ describe('inspector tests with real metadata', () => {
       [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
+
+    await act(async () => {
+      await screen.findByTestId('target-selector-style')
+      fireEvent.click(screen.getByTestId('target-selector'))
+      await screen.findByTestId('target-list-item-css')
+      fireEvent.mouseDown(screen.getByTestId('target-list-item-css'))
+      await screen.findByTestId('target-selector-css')
+    })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -1144,12 +1161,12 @@ describe('inspector tests with real metadata', () => {
     expect(radiusControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(opacityControl.value).toMatchInlineSnapshot(`"1"`)
     expect(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
   })
   it('Style is using css className', async () => {
     const renderResult = await renderTestEditorWithCode(
