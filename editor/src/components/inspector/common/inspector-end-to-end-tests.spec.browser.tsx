@@ -1358,4 +1358,41 @@ describe('inspector tests with real metadata', () => {
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"detected"`)
   })
+  it('Style properties inherited from parent', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            ...props.style,
+            position: 'absolute',
+            backgroundColor: '#FFFFFF',
+            color: '#ff00ff',
+            fontSize: '24px',
+          }}
+          data-uid={'aaa'}
+        >
+          <div data-uid={'bbb'}>hello</div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
+    ]
+
+    const fontSizeControl = (await renderResult.renderedDOM.findByTestId(
+      'fontSize',
+    )) as HTMLInputElement
+
+    expect(metadata.computedStyle?.['fontSize']).toMatchInlineSnapshot(`"24px"`)
+    expect(fontSizeControl.value).toMatchInlineSnapshot(`"24"`)
+    expect(
+      fontSizeControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+  })
 })
