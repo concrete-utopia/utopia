@@ -1,6 +1,9 @@
 import * as React from 'react'
 import { render } from '@testing-library/react'
-import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../core/model/scene-utils'
 import * as TP from '../../../core/shared/template-path'
 import {
   makeTestProjectCodeWithSnippet,
@@ -8,6 +11,8 @@ import {
   TestScenePath,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
+import { PrettierConfig } from '../../../core/workers/parser-printer/prettier-utils'
+import * as Prettier from 'prettier'
 
 describe('inspector tests with real metadata', () => {
   it('padding controls', async () => {
@@ -315,6 +320,102 @@ describe('inspector tests with real metadata', () => {
     expect(rightControl.value).toMatchInlineSnapshot(`"10"`)
     expect(
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+  })
+  it('Style props default value set inline', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: 'auto',
+              left: 'auto',
+              width: 'auto',
+              height: 'auto',
+              padding: 0,
+              paddingRight: 0,
+              borderRadius: 0,
+              opacity: 1,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Width-number-input',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Height-number-input',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedTop-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedLeft-number-input',
+    )) as HTMLInputElement
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-L',
+    )) as HTMLInputElement
+    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-R',
+    )) as HTMLInputElement
+    const radiusControl = (await renderResult.renderedDOM.findByTestId(
+      'radius-all-number-input',
+    )) as HTMLInputElement
+    const opacityControl = (await renderResult.renderedDOM.findByTestId(
+      'opacity-number-control',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(heightControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(topControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(leftControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(radiusControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(opacityControl.value).toMatchInlineSnapshot(`"1"`)
+    expect(
+      opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
   })
   it('Style props strings using px', async () => {
@@ -663,6 +764,138 @@ describe('inspector tests with real metadata', () => {
     expect(radiusControl.value).toMatchInlineSnapshot(`"7"`)
     expect(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
+  })
+  it('Style using react props', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      Prettier.format(
+        `/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div
+            style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid={'aaa'}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                backgroundColor: '#DDDDDD',
+                top: 100,
+                left: props.left,
+                width: 100,
+                height: 50,
+                padding: props.padding,
+                paddingRight: props.paddingRight,
+                borderRadius: props.border,
+                opacity: props.opacity,
+              }}
+              data-uid={'bbb'}
+            ></div>
+          </div>
+        )
+      }
+    
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <Scene
+              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              static
+              props={{ 
+                style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 },
+                padding: 5,
+                paddingRight: 10,
+                opacity: 0.5,
+                left: 30,
+                border: '50%',
+              }}
+              data-uid='scene-aaa'
+            />
+          </Storyboard>
+        )
+      }`,
+        PrettierConfig,
+      ),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
+    ]
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Width-number-input',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Height-number-input',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedTop-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedLeft-number-input',
+    )) as HTMLInputElement
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-L',
+    )) as HTMLInputElement
+    const paddingRightControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-R',
+    )) as HTMLInputElement
+    const radiusControl = (await renderResult.renderedDOM.findByTestId(
+      'radius-all-number-input',
+    )) as HTMLInputElement
+    const opacityControl = (await renderResult.renderedDOM.findByTestId(
+      'opacity-number-control',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toMatchInlineSnapshot(`"100"`)
+    expect(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(heightControl.value).toMatchInlineSnapshot(`"50"`)
+    expect(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(topControl.value).toMatchInlineSnapshot(`"100"`)
+    expect(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(leftControl.value).toMatchInlineSnapshot(`"30"`)
+    expect(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
+
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"5"`)
+    expect(
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
+
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"10"`)
+    expect(
+      paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
+
+    expect(metadata.computedStyle?.['borderRadius']).toMatchInlineSnapshot(`"50%"`)
+    expect(radiusControl.value).toMatchInlineSnapshot(`"50%"`)
+    expect(
+      radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"controlled"`)
+
+    expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"0.5"`)
+    expect(opacityControl.value).toMatchInlineSnapshot(`"0.5"`)
+    expect(
+      opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"controlled"`)
   })
 })
