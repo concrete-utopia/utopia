@@ -140,20 +140,24 @@ function lazyValue<T>(getter: () => T) {
 function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
   let appliedAttributes = new Set<string>()
   const sheets = document.styleSheets
-  for (var i in sheets) {
-    var rules = sheets[i].rules || sheets[i].cssRules
-    for (const r in rules) {
-      const rule = rules[r] as CSSStyleRule
-      if (element.matches(rule.selectorText)) {
-        const style = rule.style
-        for (const attributeName in style) {
-          const attributeExists = style.getPropertyValue(attributeName) !== ''
-          if (attributeExists) {
-            appliedAttributes.add(attributeName)
+  try {
+    for (var i in sheets) {
+      var rules = sheets[i].rules || sheets[i].cssRules
+      for (const r in rules) {
+        const rule = rules[r] as CSSStyleRule
+        if (element.matches(rule.selectorText)) {
+          const style = rule.style
+          for (const attributeName in style) {
+            const attributeExists = style.getPropertyValue(attributeName) !== ''
+            if (attributeExists) {
+              appliedAttributes.add(attributeName)
+            }
           }
         }
       }
     }
+  } catch (e) {
+    // ignore error, probably JSDOM unit test related
   }
   return appliedAttributes
 }
