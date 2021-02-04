@@ -567,7 +567,12 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
         const spiedValue: any = spiedValues[0]
         const computedValue = computedValues[0]
         const attributeMetadata = attributeMetadatas[0]
-        const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
+        const {
+          finalValue,
+          isUnknown: pathIsUnknown,
+          usesComputedFallback,
+          setFromCssStyleSheet,
+        } = parseFinalValue(
           propKey,
           simpleValue,
           rawValue,
@@ -578,6 +583,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
         isUnknown = isUnknown || pathIsUnknown
         // setting the status to detected because it uses the fallback value
         propertyStatus.detected = usesComputedFallback
+        propertyStatus.fromCssStyleSheet = setFromCssStyleSheet
         return finalValue
       } else {
         let firstFinalValue: ParsedPropertiesValues
@@ -589,7 +595,12 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           const spiedValue: any = spiedValues[i]
           const computedValue = computedValues[i]
           const attributeMetadata = attributeMetadatas[i]
-          const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
+          const {
+            finalValue,
+            isUnknown: pathIsUnknown,
+            usesComputedFallback,
+            setFromCssStyleSheet,
+          } = parseFinalValue(
             propKey,
             simpleValue,
             rawValue,
@@ -603,6 +614,8 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           isUnknown = isUnknown || pathIsUnknown
           // setting the status to detected because it uses the fallback value
           propertyStatus.detected = propertyStatus.detected || usesComputedFallback
+          propertyStatus.fromCssStyleSheet =
+            propertyStatus.fromCssStyleSheet || setFromCssStyleSheet
         })
         return firstFinalValue
       }
