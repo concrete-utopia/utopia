@@ -545,7 +545,7 @@ export function isCSSNumber(value: unknown): value is CSSNumber {
   return typeof value === 'object' && value != null && 'value' in value && 'unit' in value
 }
 
-export function getCSSNumberValue(value: CSSNumber | null): number | null {
+export function getCSSNumberValue(value: CSSNumber | null | undefined): number | null {
   return value == null ? null : value.value
 }
 
@@ -3798,15 +3798,8 @@ function printCSSObjectFit(value: CSSObjectFit): JSXAttributeValue<string> {
 function parseFramePin(
   simpleValue: unknown | null,
   _: ModifiableAttribute | null,
-): Either<string, FramePin> {
-  const parsedValue = parseCSSNumber(simpleValue, 'LengthPercent')
-  return mapEither((value: CSSNumber) => {
-    if (value.unit === 'px' || value.unit == null) {
-      return value.value
-    } else {
-      return `${value.value}${value.unit}`
-    }
-  }, parsedValue)
+): Either<string, CSSNumber> {
+  return parseCSSNumber(simpleValue, 'LengthPercent')
 }
 
 function isOneOfTheseParser<T extends PrimitiveType>(values: Array<T>): Parser<T> {
@@ -4120,10 +4113,10 @@ const cssParsers: CSSParsers = {
 
   alignSelf: flexAlignmentsParser,
   position: flexPositionParser,
-  left: parseCSSLength,
-  top: parseCSSLength,
-  right: parseCSSLength,
-  bottom: parseCSSLength,
+  left: parseCSSLengthPercent,
+  top: parseCSSLengthPercent,
+  right: parseCSSLengthPercent,
+  bottom: parseCSSLengthPercent,
   minWidth: parseCSSLengthPercent,
   maxWidth: parseCSSLengthPercent,
   minHeight: parseCSSLengthPercent,
@@ -4434,17 +4427,17 @@ const elementPropertiesPrinters: MetadataPrinters = {
 
 interface ParsedLayoutProperties {
   layoutSystem: LayoutSystem | undefined
-  pinLeft: FramePin | undefined
-  pinRight: FramePin | undefined
-  centerX: FramePin | undefined
-  width: FramePin | undefined
-  pinTop: FramePin | undefined
-  pinBottom: FramePin | undefined
-  centerY: FramePin | undefined
-  height: FramePin | undefined
+  pinLeft: CSSNumber | undefined
+  pinRight: CSSNumber | undefined
+  centerX: CSSNumber | undefined
+  width: CSSNumber | undefined
+  pinTop: CSSNumber | undefined
+  pinBottom: CSSNumber | undefined
+  centerY: CSSNumber | undefined
+  height: CSSNumber | undefined
   gapMain: number
-  flexBasis: FramePin | undefined
-  crossBasis: FramePin | undefined
+  flexBasis: CSSNumber | undefined
+  crossBasis: CSSNumber | undefined
 }
 
 export const layoutEmptyValues: ParsedLayoutProperties = {
@@ -4547,19 +4540,19 @@ type LayoutPrintersNew = {
 const layoutPrintersNew: LayoutPrintersNew = {
   LayoutSystem: jsxAttributeValueWithNoComments,
 
-  Width: jsxAttributeValueWithNoComments,
-  Height: jsxAttributeValueWithNoComments,
+  Width: printCSSNumberOrUndefinedAsAttributeValue,
+  Height: printCSSNumberOrUndefinedAsAttributeValue,
 
   FlexGap: jsxAttributeValueWithNoComments,
-  FlexFlexBasis: jsxAttributeValueWithNoComments,
-  FlexCrossBasis: jsxAttributeValueWithNoComments,
+  FlexFlexBasis: printCSSNumberOrUndefinedAsAttributeValue,
+  FlexCrossBasis: printCSSNumberOrUndefinedAsAttributeValue,
 
-  PinnedLeft: jsxAttributeValueWithNoComments,
-  PinnedTop: jsxAttributeValueWithNoComments,
-  PinnedRight: jsxAttributeValueWithNoComments,
-  PinnedBottom: jsxAttributeValueWithNoComments,
-  PinnedCenterX: jsxAttributeValueWithNoComments,
-  PinnedCenterY: jsxAttributeValueWithNoComments,
+  PinnedLeft: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedTop: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedRight: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedBottom: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedCenterX: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedCenterY: printCSSNumberOrUndefinedAsAttributeValue,
 }
 
 export interface ParsedProperties

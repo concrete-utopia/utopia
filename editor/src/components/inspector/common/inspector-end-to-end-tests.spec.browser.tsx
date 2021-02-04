@@ -323,6 +323,66 @@ describe('inspector tests with real metadata', () => {
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
   })
+  it('TLWH layout controls non-px values', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              left: '2em',
+              top: '1.4cm',
+              width: '10vw',
+              height: '124pt',
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Width-number-input',
+    )) as HTMLInputElement
+    const heightControl = (await renderResult.renderedDOM.findByTestId(
+      'position-Height-number-input',
+    )) as HTMLInputElement
+    const topControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedTop-number-input',
+    )) as HTMLInputElement
+    const leftControl = (await renderResult.renderedDOM.findByTestId(
+      'position-PinnedLeft-number-input',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toMatchInlineSnapshot(`"10vw"`)
+    expect(
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(heightControl.value).toMatchInlineSnapshot(`"124pt"`)
+    expect(
+      heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(topControl.value).toMatchInlineSnapshot(`"1.4cm"`)
+    expect(
+      topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    expect(leftControl.value).toMatchInlineSnapshot(`"2em"`)
+    expect(
+      leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+  })
   it('Style props using numbers', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

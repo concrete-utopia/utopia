@@ -161,12 +161,10 @@ const radiusTypeOptions: OptionsType<SelectOption> = [
   },
 ]
 
-function getSliderMax(widthPin: FramePin | undefined, heightPin: FramePin | undefined): number {
+function getSliderMax(widthPin: CSSNumber | undefined, heightPin: CSSNumber | undefined): number {
   const defaultMax = 100
-  const parsedWidth = framePinToCSSNumber(widthPin)
-  const parsedHeight = framePinToCSSNumber(heightPin)
-  const width = utils.defaultIfNull(defaultMax, getCSSNumberValue(parsedWidth))
-  const height = utils.defaultIfNull(defaultMax, getCSSNumberValue(parsedHeight))
+  const width = utils.defaultIfNull(defaultMax, getCSSNumberValue(widthPin))
+  const height = utils.defaultIfNull(defaultMax, getCSSNumberValue(heightPin))
   return Math.min(width, height)
 }
 

@@ -2,7 +2,7 @@ import { FramePin, FlexLength, LayoutSystem, FramePoint } from 'utopia-api'
 import { PropertyPath, PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { ElementInstanceMetadata } from '../shared/element-template'
-import { ParsedCSSProperties } from '../../components/inspector/common/css-utils'
+import { CSSNumber, ParsedCSSProperties } from '../../components/inspector/common/css-utils'
 
 export type LayoutDimension = 'Width' | 'Height'
 
@@ -162,19 +162,19 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
 export interface LayoutPropertyTypes {
   LayoutSystem: LayoutSystem | undefined
 
-  Width: FramePin | undefined
-  Height: FramePin | undefined
+  Width: CSSNumber | undefined
+  Height: CSSNumber | undefined
 
   FlexGap: number
-  FlexFlexBasis: FlexLength
-  FlexCrossBasis: FlexLength
+  FlexFlexBasis: CSSNumber | undefined
+  FlexCrossBasis: CSSNumber | undefined
 
-  PinnedLeft: FramePin | undefined
-  PinnedTop: FramePin | undefined
-  PinnedRight: FramePin | undefined
-  PinnedBottom: FramePin | undefined
-  PinnedCenterX: FramePin | undefined
-  PinnedCenterY: FramePin | undefined
+  PinnedLeft: CSSNumber | undefined
+  PinnedTop: CSSNumber | undefined
+  PinnedRight: CSSNumber | undefined
+  PinnedBottom: CSSNumber | undefined
+  PinnedCenterX: CSSNumber | undefined
+  PinnedCenterY: CSSNumber | undefined
 }
 
 export interface LayoutPropertyTypesAndCSSPropertyTypes
