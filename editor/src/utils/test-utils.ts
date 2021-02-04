@@ -30,6 +30,7 @@ import {
   walkElement,
   getJSXAttribute,
   getJSXAttributeForced,
+  emptyAttributeMetadatada,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
@@ -299,6 +300,7 @@ function createFakeMetadataForJSXElement(
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
+      attributeMetadatada: emptyAttributeMetadatada,
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {

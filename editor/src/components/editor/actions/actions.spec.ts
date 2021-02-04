@@ -20,6 +20,7 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
+  emptyAttributeMetadatada,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -873,6 +874,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     componentInstance: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
   }
 
   const childElementMetadata: ElementInstanceMetadata = {
@@ -893,6 +895,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     componentInstance: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {

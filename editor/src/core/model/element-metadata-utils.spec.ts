@@ -23,6 +23,7 @@ import {
   ElementInstanceMetadataMap,
   jsxMetadata,
   jsxAttributesFromMap,
+  emptyAttributeMetadatada,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file'
 import { BakedInStoryboardUID } from './scene-utils'
@@ -47,6 +48,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -58,6 +60,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -72,6 +75,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 
 const testComponentMetadataChild3: ElementInstanceMetadata = {
@@ -84,6 +88,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -100,6 +105,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 
 const testComponentScene: ComponentMetadata = {
@@ -203,6 +209,7 @@ describe('targetElementSupportsChildren', () => {
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
+      attributeMetadatada: emptyAttributeMetadatada,
     }
   }
 
@@ -331,6 +338,7 @@ describe('getElementLabel', () => {
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
+    emptyAttributeMetadatada,
   )
   const divElement = jsxElement(
     'div',
@@ -349,6 +357,7 @@ describe('getElementLabel', () => {
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
+    emptyAttributeMetadatada,
   )
   const elements: ElementInstanceMetadataMap = {
     [TP.toString(spanElementMetadata.templatePath)]: spanElementMetadata,
