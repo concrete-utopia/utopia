@@ -148,7 +148,7 @@ function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
         if (element.matches(rule.selectorText)) {
           const style = rule.style
           for (const attributeName in style) {
-            const attributeExists = style.getPropertyValue(attributeName) !== ''
+            const attributeExists = style[attributeName] !== ''
             if (attributeExists) {
               appliedAttributes.add(attributeName)
             }
@@ -421,9 +421,9 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             const propertyValue = elementStyle.getPropertyValue(caseCorrectedKey)
             if (propertyValue != '') {
               computedStyle[key] = propertyValue
-              const isSetFromStyleSheet = attributesSetByStylesheet.has(caseCorrectedKey)
+              const isSetFromStyleSheet = attributesSetByStylesheet.has(key)
               if (isSetFromStyleSheet) {
-                attributeMetadata[caseCorrectedKey] = { fromStyleSheet: true }
+                attributeMetadata[key] = { fromStyleSheet: true }
               }
             }
           })
