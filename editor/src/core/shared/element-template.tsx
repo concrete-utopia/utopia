@@ -1259,7 +1259,8 @@ export function isUnparsedCode(topLevelElement: TopLevelElement): topLevelElemen
 }
 
 export type ComputedStyle = { [key: string]: string }
-export type StyleAttributeMetadata = { [key: string]: { fromStyleSheet: boolean } }
+export type StyleAttributeMetadataEntry = { fromStyleSheet: boolean } // TODO rename me to StyleAttributeMetadata, the other one to StyleAttributeMetadataMap
+export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntry | undefined }
 
 export interface JSXMetadata {
   components: Array<ComponentMetadata>
