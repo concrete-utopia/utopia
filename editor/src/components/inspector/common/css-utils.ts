@@ -4124,8 +4124,6 @@ const cssParsers: CSSParsers = {
   top: parseCSSLength,
   right: parseCSSLength,
   bottom: parseCSSLength,
-  flexGrow: parseCSSLength,
-  flexShrink: parseCSSLength,
   minWidth: parseCSSLengthPercent,
   maxWidth: parseCSSLengthPercent,
   minHeight: parseCSSLengthPercent,
@@ -4134,6 +4132,8 @@ const cssParsers: CSSParsers = {
   marginRight: parseCSSLengthPercent,
   marginBottom: parseCSSLengthPercent,
   marginLeft: parseCSSLengthPercent,
+  flexGrow: parseCSSUnitless,
+  flexShrink: parseCSSUnitless,
   display: parseDisplay,
 }
 
