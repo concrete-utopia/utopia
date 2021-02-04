@@ -72,7 +72,7 @@ export const PinsLayoutNumberControl = betterReactMemo(
           onSubmitValue={wrappedOnSubmit}
           onTransientSubmitValue={wrappedOnTransientSubmit}
           controlStatus={pointInfo.controlStatus}
-          numberType={'UnitlessPercent'}
+          numberType={'LengthPercent'}
           defaultUnitToHide={'px'}
         />
       </InspectorContextMenuWrapper>
@@ -172,7 +172,7 @@ export const FlexLayoutNumberControl = betterReactMemo(
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           controlStatus={layoutPropInfo.controlStatus}
-          numberType={'UnitlessPercent'}
+          numberType={'LengthPercent'}
           labelInner={props.label}
           defaultUnitToHide={'px'}
         />
