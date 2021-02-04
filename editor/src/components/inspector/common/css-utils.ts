@@ -3799,7 +3799,7 @@ function parseFramePin(
   simpleValue: unknown | null,
   _: ModifiableAttribute | null,
 ): Either<string, FramePin> {
-  const parsedValue = parseCSSNumber(simpleValue, 'Length')
+  const parsedValue = parseCSSNumber(simpleValue, 'LengthPercent')
   return mapEither((value: CSSNumber) => {
     if (value.unit === 'px' || value.unit == null) {
       return value.value
@@ -4090,7 +4090,7 @@ const cssParsers: CSSParsers = {
   boxShadow: parseBoxShadow,
   color: parseColor,
   fontFamily: parseFontFamily,
-  fontSize: parseCSSLength,
+  fontSize: parseCSSLengthPercent,
   fontStyle: parseFontStyle,
   fontWeight: parseFontWeight,
   letterSpacing: parseLetterSpacing,
@@ -4113,10 +4113,10 @@ const cssParsers: CSSParsers = {
   alignItems: flexAlignmentsParser,
   alignContent: flexAlignmentsParser,
   justifyContent: flexJustifyContentParser,
-  paddingTop: parseCSSLength,
-  paddingRight: parseCSSLength,
-  paddingBottom: parseCSSLength,
-  paddingLeft: parseCSSLength,
+  paddingTop: parseCSSLengthPercent,
+  paddingRight: parseCSSLengthPercent,
+  paddingBottom: parseCSSLengthPercent,
+  paddingLeft: parseCSSLengthPercent,
 
   alignSelf: flexAlignmentsParser,
   position: flexPositionParser,
@@ -4124,16 +4124,16 @@ const cssParsers: CSSParsers = {
   top: parseCSSLength,
   right: parseCSSLength,
   bottom: parseCSSLength,
-  minWidth: parseCSSLength,
-  maxWidth: parseCSSLength,
-  minHeight: parseCSSLength,
-  maxHeight: parseCSSLength,
-  marginTop: parseCSSLength,
-  marginRight: parseCSSLength,
-  marginBottom: parseCSSLength,
-  marginLeft: parseCSSLength,
-  flexGrow: parseCSSLength,
-  flexShrink: parseCSSLength,
+  minWidth: parseCSSLengthPercent,
+  maxWidth: parseCSSLengthPercent,
+  minHeight: parseCSSLengthPercent,
+  maxHeight: parseCSSLengthPercent,
+  marginTop: parseCSSLengthPercent,
+  marginRight: parseCSSLengthPercent,
+  marginBottom: parseCSSLengthPercent,
+  marginLeft: parseCSSLengthPercent,
+  flexGrow: parseCSSUnitless,
+  flexShrink: parseCSSUnitless,
   display: parseDisplay,
 }
 

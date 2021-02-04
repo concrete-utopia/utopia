@@ -656,35 +656,35 @@ describe('inspector tests with real metadata', () => {
       'radius-all-number-input',
     )) as HTMLInputElement
 
-    expect(widthControl.value).toMatchInlineSnapshot(`"320"`)
+    expect(widthControl.value).toMatchInlineSnapshot(`"80%"`)
     expect(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(heightControl.value).toMatchInlineSnapshot(`"260"`)
+    expect(heightControl.value).toMatchInlineSnapshot(`"65%"`)
     expect(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(topControl.value).toMatchInlineSnapshot(`"100"`)
+    expect(topControl.value).toMatchInlineSnapshot(`"25%"`)
     expect(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(leftControl.value).toMatchInlineSnapshot(`"40"`)
+    expect(leftControl.value).toMatchInlineSnapshot(`"10%"`)
     expect(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"detected"`)
 
-    expect(paddingRightControl.value).toMatchInlineSnapshot(`"32"`)
+    expect(paddingRightControl.value).toMatchInlineSnapshot(`"8%"`)
     expect(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(radiusControl.value).toMatchInlineSnapshot(`"50%"`)
     expect(
