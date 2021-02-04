@@ -10,10 +10,11 @@ interface ExpandableIndicatorProps {
   selected: boolean
   onMouseDown?: (e: any) => void
   onClick?: (e: any) => void
+  testId?: string
 }
 
 export const ExpandableIndicator: React.StatelessComponent<ExpandableIndicatorProps> = (props) => (
-  <div style={{ width: 16, height: 16 }}>
+  <div data-testid={props.testId} style={{ width: 16, height: 16 }}>
     {props.visible ? (
       <Icn
         category='semantic'

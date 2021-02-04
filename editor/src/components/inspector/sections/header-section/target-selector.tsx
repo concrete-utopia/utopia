@@ -366,7 +366,9 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
           />
         ) : (
           <React.Fragment>
-            <div style={{ flexGrow: 1 }}>{itemLabel}</div>
+            <div data-testid={`target-list-item-${itemLabel}`} style={{ flexGrow: 1 }}>
+              {itemLabel}
+            </div>
             <div>{target.selectorLength === 0 ? null : target.selectorLength}</div>
           </React.Fragment>
         )}
@@ -410,7 +412,10 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
         },
       }}
     >
-      <H1 style={{ flexGrow: 1, display: 'inline', overflow: 'hidden', ...titleStyle }}>
+      <H1
+        data-testId={`target-selector-${selectedItem[0]}`}
+        style={{ flexGrow: 1, display: 'inline', overflow: 'hidden', ...titleStyle }}
+      >
         {selectedItem}
       </H1>
       <SectionActionSheet className='actionsheet'>
@@ -418,7 +423,12 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
           <FunctionIcons.Add />
         </SquareButton>
         <SquareButton highlight onClick={togglePathPanel}>
-          <ExpandableIndicator visible collapsed={!isOpen} selected={false} />
+          <ExpandableIndicator
+            testId='target-selector'
+            visible
+            collapsed={!isOpen}
+            selected={false}
+          />
         </SquareButton>
       </SectionActionSheet>
     </FlexRow>
