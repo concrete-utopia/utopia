@@ -84,6 +84,7 @@ Object {
   ],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
+      "attributeMetadatada": Object {},
       "children": Array [
         Object {
           "element": Array [
@@ -160,6 +161,7 @@ Object {
       },
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -246,6 +248,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:aaa": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -390,6 +393,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1": Object {
+      "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
       "computedStyle": null,
@@ -470,6 +474,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2": Object {
+      "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
       "computedStyle": null,
@@ -550,6 +555,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3": Object {
+      "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
       "computedStyle": null,
@@ -717,6 +723,7 @@ Object {
   ],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
+      "attributeMetadatada": Object {},
       "children": Array [
         Object {
           "element": Array [
@@ -793,6 +800,7 @@ Object {
       },
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -879,6 +887,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:aaa": Object {
+      "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
       "computedStyle": null,
@@ -1071,6 +1080,7 @@ Object {
   ],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
+      "attributeMetadatada": Object {},
       "children": Array [
         Object {
           "element": Array [
@@ -1147,6 +1157,7 @@ Object {
       },
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -1233,6 +1244,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:05c": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -1352,6 +1364,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:05c/ef0": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -1469,6 +1482,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:05c/ef0/488": Object {
+      "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
       "computedStyle": null,
@@ -1663,6 +1677,7 @@ Object {
   ],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
+      "attributeMetadatada": Object {},
       "children": Array [
         Object {
           "element": Array [
@@ -1739,6 +1754,7 @@ Object {
       },
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -1825,6 +1841,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:05c": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -1945,6 +1962,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:05c/ef0": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -2062,6 +2080,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:05c/ef0/488": Object {
+      "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
       "computedStyle": null,
@@ -2256,6 +2275,7 @@ Object {
   ],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
+      "attributeMetadatada": Object {},
       "children": Array [
         Object {
           "element": Array [
@@ -2332,6 +2352,7 @@ Object {
       },
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -2418,6 +2439,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:05c": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -2537,6 +2559,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:05c/ef0": Object {
+      "attributeMetadatada": null,
       "children": Array [
         Object {
           "element": Array [
@@ -2658,6 +2681,7 @@ Object {
       },
     },
     "utopia-storyboard-uid/scene-aaa:05c/ef0/488": Object {
+      "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": true,
       "computedStyle": null,
