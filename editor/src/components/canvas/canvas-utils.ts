@@ -175,7 +175,6 @@ import { openFileTab } from '../editor/store/editor-tabs'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from './dom-lookup'
 import { WindowMousePositionRaw } from '../../templates/editor-canvas'
-import { cssNumberToFramePin, cssNumberToString } from '../inspector/common/css-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -368,10 +367,8 @@ export function updateFramesOfScenesAndComponents(
                 Utils.fastForEach(['PinnedLeft', 'PinnedTop'] as LayoutPinnedProp[], (p) => {
                   const framePoint = framePointForPinnedProp(p)
                   const value = getLayoutProperty(p, right(sceneElement.props))
-                  if (isLeft(value)) {
+                  if (isLeft(value) || value.value != null) {
                     frameProps[framePoint] = value.value
-                  } else if (value.value != null) {
-                    frameProps[framePoint] = cssNumberToFramePin(value.value)
                   }
                 })
                 let propsToSet = getPropsToSetToMoveElement(
@@ -414,10 +411,8 @@ export function updateFramesOfScenesAndComponents(
                   (p) => {
                     const framePoint = framePointForPinnedProp(p)
                     const value = getLayoutProperty(p, right(sceneElement.props))
-                    if (isLeft(value)) {
+                    if (isLeft(value) || value.value != null) {
                       frameProps[framePoint] = value.value
-                    } else if (value.value != null) {
-                      frameProps[framePoint] = cssNumberToFramePin(value.value)
                     }
                   },
                 )
@@ -627,9 +622,7 @@ export function updateFramesOfScenesAndComponents(
                   propsToSkip.push(propPathToUpdate)
                 } else {
                   const pinIsPercentage =
-                    existingProp.value == null
-                      ? false
-                      : isPercentPin(cssNumberToString(existingProp.value))
+                    existingProp.value == null ? false : isPercentPin(existingProp.value)
                   let valueToUse: string | number
                   if (parentFrame == null) {
                     valueToUse = absoluteValue
@@ -656,11 +649,8 @@ export function updateFramesOfScenesAndComponents(
               const framePoint = framePointForPinnedProp(p)
               if (framePoint !== FramePoint.Width && framePoint !== FramePoint.Height) {
                 const value = getLayoutProperty(p, right(element.props))
-                if (isLeft(value)) {
+                if (isLeft(value) || value.value != null) {
                   frameProps[framePoint] = value.value
-                  propsToSkip.push(createLayoutPropertyPath(p))
-                } else if (value.value != null) {
-                  frameProps[framePoint] = cssNumberToFramePin(value.value)
                   propsToSkip.push(createLayoutPropertyPath(p))
                 }
               }
@@ -694,11 +684,8 @@ export function updateFramesOfScenesAndComponents(
             Utils.fastForEach(LayoutPinnedProps, (p) => {
               const framePoint = framePointForPinnedProp(p)
               const value = getLayoutProperty(p, right(element.props))
-              if (isLeft(value)) {
+              if (isLeft(value) || value.value != null) {
                 frameProps[framePoint] = value.value
-                propsToSkip.push(createLayoutPropertyPath(p))
-              } else if (value.value != null) {
-                frameProps[framePoint] = cssNumberToFramePin(value.value)
                 propsToSkip.push(createLayoutPropertyPath(p))
               }
             })
