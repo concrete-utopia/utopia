@@ -279,7 +279,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
   const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
-  const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(new Set())
+  const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
