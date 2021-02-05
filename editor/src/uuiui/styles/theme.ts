@@ -245,6 +245,8 @@ const light = {
   inspectorDetectedBackgroundColor: lightControls.inputBackground,
   inspectorDetectedSegmentSelectorColor: lightControls.inputBackground,
   inspectorDetectedSegmentTrackColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
+  inspectorDetectedFromCssMainColor: base.neongreen,
+  inspectorDetectedFromCssSecondaryColor: base.neongreen,
   inspectorOffMainColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffSecondaryColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffBackgroundColor: createUtopiColor('rgb(255, 255, 255)', '', ''),

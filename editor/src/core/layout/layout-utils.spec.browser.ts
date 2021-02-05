@@ -16,6 +16,7 @@ import {
   ElementInstanceMetadataMap,
   jsxMetadata,
   jsxAttributesFromMap,
+  emptyAttributeMetadatada,
 } from '../shared/element-template'
 import { generateUidWithExistingComponents } from '../model/element-template-utils'
 import { right } from '../shared/either'
@@ -104,6 +105,7 @@ describe('maybeSwitchLayoutProps', () => {
           null,
         ),
         computedStyle: emptyComputedStyle,
+        attributeMetadatada: emptyAttributeMetadatada,
       },
     }
 
