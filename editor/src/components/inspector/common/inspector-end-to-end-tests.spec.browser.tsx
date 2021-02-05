@@ -1117,23 +1117,23 @@ describe('inspector tests with real metadata', () => {
     expect(widthControl.value).toMatchInlineSnapshot(`"203"`)
     expect(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(metadata.computedStyle?.['height']).toMatchInlineSnapshot(`"102px"`)
     expect(heightControl.value).toMatchInlineSnapshot(`"102"`)
     expect(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"12"`)
     expect(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(opacityControl.value).toMatchInlineSnapshot(`"0.5"`)
     expect(
@@ -1201,22 +1201,22 @@ describe('inspector tests with real metadata', () => {
     expect(widthControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(heightControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(radiusControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
@@ -1305,31 +1305,31 @@ describe('inspector tests with real metadata', () => {
     expect(widthControl.value).toMatchInlineSnapshot(`"250"`)
     expect(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(metadata.computedStyle?.['height']).toMatchInlineSnapshot(`"250px"`)
     expect(heightControl.value).toMatchInlineSnapshot(`"250"`)
     expect(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"14px"`)
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"14"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(metadata.computedStyle?.['borderRadius']).toMatchInlineSnapshot(`"10px"`)
     expect(radiusControl.value).toMatchInlineSnapshot(`"10"`)
     expect(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"0.3"`)
     expect(opacityControl.value).toMatchInlineSnapshot(`"0.3"`)
     expect(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
   })
   it('Style is using css className, with default values', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1427,13 +1427,13 @@ describe('inspector tests with real metadata', () => {
     expect(radiusControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
       radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
 
     expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"1"`)
     expect(opacityControl.value).toMatchInlineSnapshot(`"1"`)
     expect(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"detected-fromcss"`)
   })
   it('Style properties inherited from parent', async () => {
     const renderResult = await renderTestEditorWithCode(

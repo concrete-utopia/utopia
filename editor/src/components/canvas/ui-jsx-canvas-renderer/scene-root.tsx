@@ -8,6 +8,7 @@ import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
   JSXElement,
+  emptyAttributeMetadatada,
 } from '../../../core/shared/element-template'
 import { InstancePath, ScenePath } from '../../../core/shared/project-file-types'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
@@ -73,6 +74,7 @@ function useRunSpy(
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
+      attributeMetadatada: emptyAttributeMetadatada,
     }
   }
 }

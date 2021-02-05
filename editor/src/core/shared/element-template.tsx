@@ -1259,6 +1259,8 @@ export function isUnparsedCode(topLevelElement: TopLevelElement): topLevelElemen
 }
 
 export type ComputedStyle = { [key: string]: string }
+export type StyleAttributeMetadataEntry = { fromStyleSheet: boolean } // TODO rename me to StyleAttributeMetadata, the other one to StyleAttributeMetadataMap
+export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntry | undefined }
 
 export interface JSXMetadata {
   components: Array<ComponentMetadata>
@@ -1292,6 +1294,7 @@ export interface ElementInstanceMetadata {
   componentInstance: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
+  attributeMetadatada: StyleAttributeMetadata | null
 }
 
 export function elementInstanceMetadata(
@@ -1304,6 +1307,7 @@ export function elementInstanceMetadata(
   componentInstance: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
+  attributeMetadatada: StyleAttributeMetadata | null,
 ): ElementInstanceMetadata {
   return {
     templatePath: templatePath,
@@ -1315,6 +1319,7 @@ export function elementInstanceMetadata(
     componentInstance: componentInstance,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
+    attributeMetadatada: attributeMetadatada,
   }
 }
 
@@ -1401,6 +1406,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
 )
 
 export const emptyComputedStyle: ComputedStyle = {}
+export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
 
 export interface ComponentMetadata {
   scenePath: ScenePath
