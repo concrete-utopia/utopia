@@ -6,8 +6,9 @@ import * as TP from '../../../core/shared/template-path'
 import { testInspectorInfo } from './inspector.test-utils'
 import { changePin, ElementFrameInfo, PinsInfo } from './layout-property-path-hooks'
 import { mapValues } from '../../../core/shared/object-utils'
+import { CSSNumber } from './css-utils'
 
-type SimplePinsInfo = { [key in LayoutPinnedProp]: FramePin | undefined }
+type SimplePinsInfo = { [key in LayoutPinnedProp]: CSSNumber | undefined }
 
 function pinsInfoForPins(pins: SimplePinsInfo): PinsInfo {
   return mapValues((pin) => testInspectorInfo(pin), pins) as PinsInfo
@@ -15,14 +16,14 @@ function pinsInfoForPins(pins: SimplePinsInfo): PinsInfo {
 
 function frameForPins(pins: SimplePinsInfo): Frame {
   return {
-    left: pins.PinnedLeft,
-    centerX: pins.PinnedCenterX,
-    right: pins.PinnedRight,
-    width: pins.Width,
-    top: pins.PinnedTop,
-    centerY: pins.PinnedCenterY,
-    bottom: pins.PinnedBottom,
-    height: pins.Height,
+    left: pins.PinnedLeft?.value,
+    centerX: pins.PinnedCenterX?.value,
+    right: pins.PinnedRight?.value,
+    width: pins.Width?.value,
+    top: pins.PinnedTop?.value,
+    centerY: pins.PinnedCenterY?.value,
+    bottom: pins.PinnedBottom?.value,
+    height: pins.Height?.value,
   }
 }
 
@@ -48,10 +49,13 @@ function frameInfoForPins(
 
 describe('changePin', () => {
   const TLWH: SimplePinsInfo = {
-    PinnedLeft: SimpleRect.x,
-    Width: SimpleRect.width,
-    PinnedTop: SimpleRect.y,
-    Height: SimpleRect.height,
+    PinnedLeft: {
+      value: SimpleRect.x,
+      unit: null,
+    },
+    Width: { value: SimpleRect.width, unit: null },
+    PinnedTop: { value: SimpleRect.y, unit: null },
+    Height: { value: SimpleRect.height, unit: null },
     PinnedBottom: undefined,
     PinnedRight: undefined,
     PinnedCenterX: undefined,
@@ -59,25 +63,25 @@ describe('changePin', () => {
   }
 
   const TLBR: SimplePinsInfo = {
-    PinnedLeft: SimpleRect.x,
+    PinnedLeft: { value: SimpleRect.x, unit: null },
     Width: undefined,
-    PinnedTop: SimpleRect.y,
+    PinnedTop: { value: SimpleRect.y, unit: null },
     Height: undefined,
-    PinnedBottom: SimpleRect.y + SimpleRect.height,
-    PinnedRight: SimpleRect.x + SimpleRect.width,
+    PinnedBottom: { value: SimpleRect.y + SimpleRect.height, unit: null },
+    PinnedRight: { value: SimpleRect.x + SimpleRect.width, unit: null },
     PinnedCenterX: undefined,
     PinnedCenterY: undefined,
   }
 
   const CxCyWH: SimplePinsInfo = {
     PinnedLeft: undefined,
-    Width: SimpleRect.width,
+    Width: { value: SimpleRect.width, unit: null },
     PinnedTop: undefined,
-    Height: SimpleRect.height,
+    Height: { value: SimpleRect.height, unit: null },
     PinnedBottom: undefined,
     PinnedRight: undefined,
-    PinnedCenterX: SimpleRect.x, // Offset by 10 since both parent and element frames are the same width
-    PinnedCenterY: SimpleRect.y, // Offset by 10 since both parent and element frames are the same height
+    PinnedCenterX: { value: SimpleRect.x, unit: null }, // Offset by 10 since both parent and element frames are the same width
+    PinnedCenterY: { value: SimpleRect.y, unit: null }, // Offset by 10 since both parent and element frames are the same height
   }
 
   it('Toggles the pin type if clicking an already set pin', () => {
