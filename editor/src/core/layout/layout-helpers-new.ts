@@ -177,9 +177,22 @@ export interface LayoutPropertyTypes {
   PinnedCenterY: CSSNumber | undefined
 }
 
-export interface LayoutPropertyTypesAndCSSPropertyTypes
-  extends LayoutPropertyTypes,
-    ParsedCSSProperties {}
+export interface LayoutPropertyTypesAndCSSPropertyTypes extends ParsedCSSProperties {
+  LayoutSystem: LayoutSystem | undefined
+  Width: FramePin | undefined
+  Height: FramePin | undefined
+
+  FlexGap: number
+  FlexFlexBasis: FlexLength
+  FlexCrossBasis: FlexLength
+
+  PinnedLeft: FramePin | undefined
+  PinnedTop: FramePin | undefined
+  PinnedRight: FramePin | undefined
+  PinnedBottom: FramePin | undefined
+  PinnedCenterX: FramePin | undefined
+  PinnedCenterY: FramePin | undefined
+}
 
 export function createLayoutPropertyPath(layoutProp: LayoutProp | StyleLayoutProp): PropertyPath {
   return PP.create(LayoutPathMap[layoutProp])
