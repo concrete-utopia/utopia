@@ -48,20 +48,13 @@ export const PinsLayoutNumberControl = betterReactMemo(
   (props: PinsLayoutNumberControlProps) => {
     const framePoint = framePointForPinnedProp(props.prop)
     const pointInfo = useInspectorLayoutInfo(props.prop)
-    const framePinToUse = pointInfo.value
-    const asCSSNumber = framePinToCSSNumber(framePinToUse)
-    const [onSubmitValue, onTransientSubmitValue] = pointInfo.useSubmitValueFactory(
-      (newValue: CSSNumber) => {
-        return cssNumberToFramePin(newValue)
-      },
-    )
 
     const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-      onSubmitValue,
+      pointInfo.onSubmitValue,
       pointInfo.onUnsetValues,
     )
     const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-      onTransientSubmitValue,
+      pointInfo.onTransientSubmitValue,
       pointInfo.onUnsetValues,
     )
 
@@ -72,14 +65,14 @@ export const PinsLayoutNumberControl = betterReactMemo(
         data={{}}
       >
         <NumberInput
-          value={asCSSNumber}
+          value={pointInfo.value}
           id={`position-${props.prop}-number-input`}
           testId={`position-${props.prop}-number-input`}
           labelInner={props.label}
           onSubmitValue={wrappedOnSubmit}
           onTransientSubmitValue={wrappedOnTransientSubmit}
           controlStatus={pointInfo.controlStatus}
-          numberType={'UnitlessPercent'}
+          numberType={'LengthPercent'}
           defaultUnitToHide={'px'}
         />
       </InspectorContextMenuWrapper>
@@ -156,19 +149,13 @@ export const FlexLayoutNumberControl = betterReactMemo(
   'FlexLayoutNumberControl',
   (props: FlexLayoutNumberControlProps) => {
     const layoutPropInfo = useInspectorLayoutInfo(props.layoutProp)
-    const asCSSNumber = framePinToCSSNumber(layoutPropInfo.value)
-    const [onSubmitValue, onTransientSubmitValue] = layoutPropInfo.useSubmitValueFactory(
-      (newValue: CSSNumber, oldValue) => {
-        return cssNumberToFramePin(newValue)
-      },
-    )
 
     const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      onSubmitValue,
+      layoutPropInfo.onSubmitValue,
       layoutPropInfo.onUnsetValues,
     )
     const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      onTransientSubmitValue,
+      layoutPropInfo.onTransientSubmitValue,
       layoutPropInfo.onUnsetValues,
     )
 
@@ -181,11 +168,11 @@ export const FlexLayoutNumberControl = betterReactMemo(
         <NumberInput
           id={`position-${props.layoutProp}-number-input`}
           testId={`position-${props.layoutProp}-number-input`}
-          value={asCSSNumber}
+          value={layoutPropInfo.value}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           controlStatus={layoutPropInfo.controlStatus}
-          numberType={'UnitlessPercent'}
+          numberType={'LengthPercent'}
           labelInner={props.label}
           defaultUnitToHide={'px'}
         />

@@ -140,8 +140,8 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
       </PropertyRow>
       <InspectorSubsectionHeader>Layout</InspectorSubsectionHeader>
       <PropertyRow style={{ gridColumnGap: 16 }}>
-        <PositionWidgetForCSSNumber inspectorInfo={frameLeft} point={'left'} />
-        <PositionWidgetForCSSNumber inspectorInfo={frameTop} point={'top'} />
+        <PositionWidget inspectorInfo={frameLeft} point={'left'} />
+        <PositionWidget inspectorInfo={frameTop} point={'top'} />
       </PropertyRow>
       <PropertyRow style={{ gridColumnGap: 16 }}>
         <PositionWidget inspectorInfo={frameWidth} point={'width'} />
@@ -157,47 +157,9 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
 const PositionWidget = betterReactMemo(
   'PositionWidget',
   (props: {
-    inspectorInfo: InspectorInfo<string | number | undefined>
+    inspectorInfo: InspectorInfo<CSSNumber> | InspectorInfo<CSSNumber | undefined>
     point: keyof NormalisedFrame
   }) => {
-    const { inspectorInfo, point } = props
-    const pinnedProp = pinnedPropForFramePoint(point as FramePoint)
-    const label = pinLabels[pinnedProp]
-    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      inspectorInfo.onSubmitValue,
-      inspectorInfo.onUnsetValues,
-    )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      inspectorInfo.onTransientSubmitValue,
-      inspectorInfo.onUnsetValues,
-    )
-    return (
-      <div style={{ gridColumn: 'span 2' }}>
-        <div
-          style={{
-            gridColumn: '1 / span 4',
-            gridRow: '1 / span 2',
-          }}
-        >
-          <SimpleNumberInput
-            value={inspectorInfo.value as any} // I will delete this code once the scenes are merged to components
-            labelInner={label}
-            id={`scene-frame-${pinnedProp}-number-input`}
-            testId={`scene-frame-${pinnedProp}-number-input`}
-            onSubmitValue={wrappedOnSubmitValue}
-            onTransientSubmitValue={wrappedOnTransientSubmitValue}
-            onForcedSubmitValue={wrappedOnSubmitValue}
-            defaultUnitToHide={'px'}
-          />
-        </div>
-      </div>
-    )
-  },
-)
-
-const PositionWidgetForCSSNumber = betterReactMemo(
-  'PositionWidget',
-  (props: { inspectorInfo: InspectorInfo<CSSNumber>; point: keyof NormalisedFrame }) => {
     const { inspectorInfo, point } = props
     const pinnedProp = pinnedPropForFramePoint(point as FramePoint)
     const label = pinLabels[pinnedProp]

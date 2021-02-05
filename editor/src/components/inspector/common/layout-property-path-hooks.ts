@@ -38,6 +38,7 @@ import {
 import React = require('react')
 import { usePropControlledRef_DANGEROUS } from './inspector-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { CSSNumber, cssNumberToString } from './css-utils'
 
 const HorizontalPinPreference = [
   FramePoint.Left,
@@ -93,7 +94,7 @@ export interface ElementFrameInfo {
   parentFrame: LocalRectangle | null
 }
 
-type PinInspectorInfo = InspectorInfo<string | number | undefined>
+type PinInspectorInfo = InspectorInfo<CSSNumber | undefined>
 
 export type PinsInfo = { [key in LayoutPinnedProp]: PinInspectorInfo }
 
@@ -152,7 +153,7 @@ export function changePin(
   const toggleToRelative =
     pinInfoForProp.propertyStatus.identical &&
     pinInfoForProp.value != null &&
-    !isPercentPin(pinInfoForProp.value)
+    !isPercentPin(cssNumberToString(pinInfoForProp.value, true))
 
   let pinsToSet: Array<PinToSet> = []
   let pinsToUnset: Array<PinToUnset> = []
