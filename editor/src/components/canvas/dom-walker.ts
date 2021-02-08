@@ -245,6 +245,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
 ): void {
+  const [, forceUpdate] = React.useReducer((c) => c + 1, 0)
   return useSelectorWithCallback(
     (store) => store.editor.selectedViews,
     (newSelectedViews) => {
@@ -253,6 +254,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
         const sceneID = TP.toString(scenePath)
         invalidatedSceneIDsRef.current.add(sceneID)
         invalidatedPathsForStylesheetCacheRef.current.add(TP.toString(sv))
+        forceUpdate()
       })
     },
   )
