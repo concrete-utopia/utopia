@@ -519,10 +519,10 @@ describe('inspector tests with real metadata', () => {
       'opacity-number-control',
     )) as HTMLInputElement
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-minWidth-number-input',
     )) as HTMLInputElement
     const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-maxWidth-number-input',
     )) as HTMLInputElement
 
     expect(widthControl.value).toMatchInlineSnapshot(`"0"`)
@@ -545,10 +545,10 @@ describe('inspector tests with real metadata', () => {
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple-unknown-css"`)
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"trivial-default"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
@@ -1390,10 +1390,10 @@ describe('inspector tests with real metadata', () => {
     ]
 
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Width-number-input',
+      'position-minWidth-number-input',
     )) as HTMLInputElement
     const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-Height-number-input',
+      'position-maxWidth-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'flexPadding-L',
@@ -1418,10 +1418,10 @@ describe('inspector tests with real metadata', () => {
     ).toMatchInlineSnapshot(`"detected"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"trivial-default"`) // this will be `detected-fromcss` once we use the padding shorthand
 
     expect(metadata.computedStyle?.['borderRadius']).toMatchInlineSnapshot(`"0px"`)
     expect(radiusControl.value).toMatchInlineSnapshot(`"0"`)
@@ -1434,6 +1434,99 @@ describe('inspector tests with real metadata', () => {
     expect(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"detected-fromcss"`)
+  })
+
+  it('Empty style with lots of trivial defaults', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      Prettier.format(
+        `/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    
+      export var App = (props) => {
+        return (
+          <div
+            data-uid={'aaa'}
+          >
+            <div
+              style={{ }}
+              data-uid={'bbb'}
+            ></div>
+          </div>
+        )
+      }
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <Scene
+              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              component={App}
+              static
+              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
+              data-uid='scene-aaa'
+            />
+          </Storyboard>
+        )
+      }`,
+        PrettierConfig,
+      ),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
+    ]
+
+    const minWidthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-minWidth-number-input',
+    )) as HTMLInputElement
+    const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
+      'position-maxHeight-number-input',
+    )) as HTMLInputElement
+    const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-L',
+    )) as HTMLInputElement
+    const radiusControl = (await renderResult.renderedDOM.findByTestId(
+      'radius-all-number-input',
+    )) as HTMLInputElement
+    const opacityControl = (await renderResult.renderedDOM.findByTestId(
+      'opacity-number-control',
+    )) as HTMLInputElement
+
+    expect(metadata.computedStyle?.['minWidth']).toMatchInlineSnapshot(`"0px"`)
+    expect(minWidthControl.value).toMatchInlineSnapshot(`""`)
+    expect(
+      minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"trivial-default"`)
+
+    expect(metadata.computedStyle?.['maxWidth']).toMatchInlineSnapshot(`"none"`)
+    expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
+    expect(
+      maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"trivial-default"`)
+
+    expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
+    expect(
+      paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"trivial-default"`) // this will be `detected-fromcss` once we use the padding shorthand
+
+    expect(metadata.computedStyle?.['borderRadius']).toMatchInlineSnapshot(`"0px"`)
+    expect(radiusControl.value).toMatchInlineSnapshot(`""`)
+    expect(
+      radiusControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"trivial-default"`)
+
+    expect(metadata.computedStyle?.['opacity']).toMatchInlineSnapshot(`"1"`)
+    expect(opacityControl.value).toMatchInlineSnapshot(`"1"`)
+    expect(
+      opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"detected"`)
   })
   it('Style properties inherited from parent', async () => {
     const renderResult = await renderTestEditorWithCode(
