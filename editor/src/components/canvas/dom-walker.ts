@@ -52,6 +52,7 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
+import { useForceUpdate } from '../editor/hook-utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -245,7 +246,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
 ): void {
-  const [, forceUpdate] = React.useReducer((c) => c + 1, 0)
+  const forceUpdate = useForceUpdate()
   return useSelectorWithCallback(
     (store) => store.editor.selectedViews,
     (newSelectedViews) => {

@@ -1,5 +1,6 @@
 import * as PubSub from 'pubsub-js'
 import * as React from 'react'
+import { useForceUpdate } from '../../components/editor/hook-utils'
 
 export interface AtomWithPubSub<T> {
   key: string
@@ -44,7 +45,7 @@ export function useSubscribeToPubSubAtom<T>(
 }
 
 export function usePubSubAtomReadOnly<T>(atom: AtomWithPubSub<T>): T {
-  const [, forceUpdate] = React.useReducer((c) => c + 1, 0)
+  const forceUpdate = useForceUpdate()
   useSubscribeToPubSubAtom(atom, React.useCallback(forceUpdate, [forceUpdate]))
   return atom.currentValue
 }
