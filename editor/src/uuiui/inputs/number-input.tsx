@@ -53,8 +53,9 @@ const getDisplayValue = (
   value: CSSNumber | null,
   defaultUnitToHide: CSSNumberUnit | null,
   mixed: boolean,
+  showContent: boolean,
 ): string => {
-  if (!mixed && value != null) {
+  if (!mixed && value != null && showContent) {
     const unit = getCSSNumberUnit(value)
     const showUnit = unit !== defaultUnitToHide
     return cssNumberToString(value, showUnit)
@@ -176,15 +177,19 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       [controlStyles],
     )
 
+    const { showContent } = controlStyles
+
     const [mixed, setMixed] = React.useState<boolean>(controlStyles.mixed)
     const [
       stateValue,
       setStateValueDirectly,
       forceStateValueToUpdateFromProps,
-    ] = usePropControlledState(getDisplayValue(propsValue ?? null, defaultUnitToHide, mixed))
+    ] = usePropControlledState(
+      getDisplayValue(propsValue ?? null, defaultUnitToHide, mixed, showContent),
+    )
     const updateStateValue = React.useCallback(
       (newValue: CSSNumber) =>
-        setStateValueDirectly(getDisplayValue(newValue, defaultUnitToHide, false)),
+        setStateValueDirectly(getDisplayValue(newValue, defaultUnitToHide, false, true)),
       [defaultUnitToHide, setStateValueDirectly],
     )
     const parsedStateValue = parseDisplayValue(stateValue, numberType, defaultUnitToHide)
