@@ -569,10 +569,10 @@ describe('inspector tests with real metadata', () => {
     expect(minWidthControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
       minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(metadata.computedStyle?.['maxWidth']).toMatchInlineSnapshot(`"none"`)
-    expect(maxWidthControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple-unknown-css"`)
@@ -1406,16 +1406,16 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     expect(metadata.computedStyle?.['minWidth']).toMatchInlineSnapshot(`"0px"`)
-    expect(minWidthControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(minWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"trivial-default"`)
 
     expect(metadata.computedStyle?.['maxWidth']).toMatchInlineSnapshot(`"none"`)
-    expect(maxWidthControl.value).toMatchInlineSnapshot(`"0"`)
+    expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"unset"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
@@ -1508,7 +1508,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`)
+    ).toMatchInlineSnapshot(`"unset"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
