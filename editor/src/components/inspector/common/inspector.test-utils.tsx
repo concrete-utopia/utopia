@@ -118,6 +118,7 @@ const dummyPropertyStatus: PropertyStatus = {
   identical: true,
   detected: false,
   fromCssStyleSheet: false,
+  trivialDefault: false,
 }
 
 const simpleControlStyles = getControlStyles('simple')

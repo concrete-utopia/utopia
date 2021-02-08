@@ -1,5 +1,6 @@
 // FIXME This file shouldn't live under the inspector, and shouldn't be defining types
 import * as Chroma from 'chroma-js'
+import * as fastDeepEqual from 'fast-deep-equal'
 import { Property } from 'csstype'
 import {
   FlexAlignment,
@@ -1553,13 +1554,13 @@ function printTransform(cssTransforms: CSSTransforms): JSXAttributeValue<Propert
   return jsxAttributeValue(cssTransforms.map(printCSSTransformItem).join(' '), emptyComments)
 }
 
-enum CSSTransformOriginStringValueX {
+export enum CSSTransformOriginStringValueX {
   Left = 'left',
   Center = 'center',
   Right = 'right',
 }
 
-enum CSSTransformOriginStringValueY {
+export enum CSSTransformOriginStringValueY {
   Top = 'top',
   Center = 'center',
   Bottom = 'bottom',
@@ -2614,7 +2615,9 @@ export function cssSolidColor(color: CSSColor, enabled = true): CSSSolidColor {
   }
 }
 
-const emptyBackgroundColor: CSSSolidColor = cssSolidColor(cssColorRGB(0, 0, 0, 0, false, false))
+export const emptyBackgroundColor: CSSSolidColor = cssSolidColor(
+  cssColorRGB(0, 0, 0, 0, false, false),
+)
 
 export function isCSSSolidColor(
   value: CSSBackground | CSSUnknownArrayItem,
@@ -4378,7 +4381,7 @@ export interface ParsedElementProperties
 
 export type ParsedElementPropertiesKeys = keyof ParsedElementProperties
 
-const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, item) => {
+export const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, item) => {
   current[item] = jsxAttributeValue(undefined, emptyComments)
   return current
 }, {} as DOMEventAttributeProperties)
@@ -4745,4 +4748,164 @@ const LayoutPropertyList = [
 
 export function isLayoutPropDetectedInCSS(cssProps: { [key: string]: any }): boolean {
   return LayoutPropertyList.findIndex((prop: string) => cssProps[prop] != null) > -1
+}
+
+interface NonTrivialKeyword {
+  trivial: false
+}
+
+const nontrivial: NonTrivialKeyword = { trivial: false }
+
+type ParsedPropertiesWithNonTrivial = {
+  [Property in keyof ParsedProperties]: ParsedProperties[Property] | NonTrivialKeyword
+}
+
+export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
+  // ParsedCSSProperties
+  backgroundColor: cssDefault(emptyBackgroundColor),
+  backgroundImage: [],
+  backgroundSize: [],
+  border: emptyCSSBorder,
+  borderRadius: {
+    type: 'LEFT',
+    value: {
+      value: 0,
+      unit: 'px',
+    },
+  },
+  boxShadow: [],
+  color: nontrivial,
+  fontFamily: nontrivial,
+  fontSize: nontrivial,
+  fontStyle: 'normal',
+  fontWeight: 400,
+  letterSpacing: 'normal',
+  lineHeight: 'normal',
+  mixBlendMode: 'normal', // <-finish from here
+  opacity: cssNumber(1),
+  overflow: true,
+  textAlign: 'left',
+  textDecorationColor: undefined,
+  textDecorationLine: 'none',
+  textDecorationStyle: 'solid',
+  textShadow: [],
+  transform: [],
+  transformOrigin: {
+    x: CSSTransformOriginStringValueX.Center,
+    y: CSSTransformOriginStringValueY.Center,
+  },
+
+  objectFit: 'fill',
+
+  flexWrap: FlexWrap.NoWrap,
+  flexDirection: FlexDirection.Row,
+  alignItems: FlexAlignment.FlexStart,
+  alignContent: FlexAlignment.FlexStart,
+  justifyContent: FlexJustifyContent.FlexStart,
+  paddingTop: {
+    value: 0,
+    unit: 'px',
+  },
+  paddingRight: {
+    value: 0,
+    unit: 'px',
+  },
+  paddingBottom: {
+    value: 0,
+    unit: 'px',
+  },
+  paddingLeft: {
+    value: 0,
+    unit: 'px',
+  },
+  alignSelf: FlexAlignment.Auto,
+  position: 'relative',
+  left: {
+    value: 0,
+    unit: 'px',
+  },
+  top: {
+    value: 0,
+    unit: 'px',
+  },
+  right: {
+    value: 0,
+    unit: 'px',
+  },
+  bottom: {
+    value: 0,
+    unit: 'px',
+  },
+  minWidth: {
+    value: 0,
+    unit: 'px',
+  },
+  maxWidth: undefined, // should be `none`
+  minHeight: {
+    value: 0,
+    unit: 'px',
+  },
+  maxHeight: undefined, // should be `none`
+  marginTop: {
+    value: 0,
+    unit: 'px',
+  },
+  marginRight: {
+    value: 0,
+    unit: 'px',
+  },
+  marginBottom: {
+    value: 0,
+    unit: 'px',
+  },
+  marginLeft: {
+    value: 0,
+    unit: 'px',
+  },
+  flexGrow: cssUnitlessLength(0),
+  flexShrink: cssUnitlessLength(1),
+  display: 'block',
+
+  // ParsedElementProperties
+  alt: '',
+  src: '/',
+  textSizing: 'fixed',
+  ...DOMEventHandlerEmptyValues,
+  className: '',
+
+  // ParsedLayoutProperties
+  layoutSystem: undefined,
+  pinLeft: undefined,
+  pinRight: undefined,
+  centerX: undefined,
+  width: undefined,
+  pinTop: undefined,
+  pinBottom: undefined,
+  centerY: undefined,
+  height: undefined,
+  gapMain: 0,
+  flexBasis: undefined,
+  crossBasis: undefined,
+
+  // LayoutPropertyTypes
+  LayoutSystem: undefined,
+  Width: undefined,
+  Height: undefined,
+  FlexGap: 0,
+  FlexFlexBasis: undefined,
+  FlexCrossBasis: undefined,
+  PinnedLeft: undefined,
+  PinnedTop: undefined,
+  PinnedRight: undefined,
+  PinnedBottom: undefined,
+  PinnedCenterX: undefined,
+  PinnedCenterY: undefined,
+}
+
+export function isTrivialDefaultValue(
+  propertyKey: ParsedPropertiesKeys,
+  valueToCheck: ValueOf<ParsedProperties>,
+): boolean {
+  const maybeTrivial = trivialDefaultValues[propertyKey]
+  return fastDeepEqual(maybeTrivial, valueToCheck)
 }
