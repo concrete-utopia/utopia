@@ -4782,7 +4782,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   letterSpacing: 'normal',
   lineHeight: 'normal',
   mixBlendMode: 'normal', // <-finish from here
-  opacity: cssNumber(1),
+  opacity: nontrivial,
   overflow: true,
   textAlign: 'left',
   textDecorationColor: undefined,
