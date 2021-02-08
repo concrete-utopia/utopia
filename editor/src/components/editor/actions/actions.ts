@@ -66,6 +66,7 @@ import {
   jsxAttributesFromMap,
   deleteJSXAttribute,
   setJSXAttributesAttribute,
+  emptyJsxMetadata,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -3633,6 +3634,7 @@ export const UPDATE_FNS = {
       return {
         ...editor,
         codeEditorErrors: updatedCodeEditorErrors,
+        jsxMetadataKILLME: emptyJsxMetadata,
       }
     }
   },
