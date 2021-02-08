@@ -20,6 +20,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import type { JSONStringifiedCodeEditorProps } from './code-editor-iframe-entry-point'
 import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import type { ConsoleLog } from '../editor/store/editor-state'
+import { useForceUpdate } from '../editor/hook-utils'
 
 export type CodeEditorAction =
   | SelectComponents
@@ -297,7 +298,7 @@ function usePropsFromMainEditor(): {
   runtimeErrors: Array<RuntimeErrorInfo>
   canvasConsoleLogs: Array<ConsoleLog>
 } {
-  const [, forceUpdate] = React.useReducer((c) => c + 1, 0) as [never, () => void]
+  const forceUpdate = useForceUpdate()
 
   const propsRef = React.useRef<JSONStringifiedCodeEditorProps | null>(null)
   const runtimeErrorsRef = React.useRef<Array<RuntimeErrorInfo>>([])
