@@ -53,7 +53,7 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
   }
 
   return (
-    <>
+    <React.Fragment>
       <InspectorSectionHeader>Event Handlers</InspectorSectionHeader>
       {valueKeys.map((handlerName) => {
         if (value.hasOwnProperty(handlerName)) {
@@ -84,7 +84,7 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
         }
         return null
       })}
-    </>
+    </React.Fragment>
   )
 })
 EventHandlersSection.displayName = 'EventHandlersSection'
