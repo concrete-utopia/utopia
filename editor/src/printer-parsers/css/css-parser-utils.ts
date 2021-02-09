@@ -183,10 +183,18 @@ export const parseLength: Parser<CSSNumber> = (value: unknown) => {
 
 export const parseLengthPercentage: Parser<CSSNumber> = (value: unknown) => {
   if (isLexerMatch(value) && value.match.length === 1) {
-    return parseAlternative<CSSNumber>(
-      [parseLength, parsePercentage],
-      'Could not parse length-percentage',
-    )(value)
+    if (value.syntax.type === 'Type' && value.syntax.name === 'length-percentage') {
+      return parseAlternative<CSSNumber>(
+        [parseLength, parsePercentage],
+        'Could not parse length-percentage',
+      )(value.match[0])
+    } else {
+      // TODO let's check from syntax if it's a length or percentage
+      return parseAlternative<CSSNumber>(
+        [parseLength, parsePercentage],
+        'Could not parse length-percentage',
+      )(value)
+    }
   }
   return left(descriptionParseError('Could not parse length-percentage'))
 }
