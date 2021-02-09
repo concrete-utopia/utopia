@@ -6,8 +6,25 @@ describe('padding', () => {
     const parseResults = syntaxParsers['<padding>'](value)
     expect(parseResults).toMatchInlineSnapshot(`
       Object {
-        "type": "LEFT",
-        "value": "Value was not lexer match array",
+        "type": "RIGHT",
+        "value": Object {
+          "paddingBottom": Object {
+            "unit": "px",
+            "value": 155,
+          },
+          "paddingLeft": Object {
+            "unit": "px",
+            "value": 155,
+          },
+          "paddingRight": Object {
+            "unit": "px",
+            "value": 155,
+          },
+          "paddingTop": Object {
+            "unit": "px",
+            "value": 155,
+          },
+        },
       }
     `)
   })
