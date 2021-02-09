@@ -386,6 +386,11 @@ websiteAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
   maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 ["static"]) possibleProxyManager
 
+vsCodeAssetsEndpoint :: ServerMonad Application
+vsCodeAssetsEndpoint = do
+  pathToServeFrom <- getVSCodeAssetRoot
+  servePath pathToServeFrom Nothing
+
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ = do
   defaultLookup [unsafeToPiece "index.html"]
@@ -501,6 +506,7 @@ unprotected = authenticate
          :<|> editorAssetsEndpoint "./editor"
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing
          :<|> websiteAssetsEndpoint "./public/static"
+         :<|> vsCodeAssetsEndpoint
          :<|> servePath "./public/.well-known" Nothing
          :<|> serveWebAppEndpoint "./public"
 

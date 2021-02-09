@@ -62,6 +62,9 @@ const config = {
     monacoEditorIframe: hot
       ? ['react-hot-loader/patch', './src/templates/monaco-editor-iframe.tsx']
       : './src/templates/monaco-editor-iframe.tsx',
+    vsCodeEditorOuterIframe: hot
+      ? ['react-hot-loader/patch', './src/templates/vscode-editor-outer-iframe.tsx']
+      : './src/templates/vscode-editor-outer-iframe.tsx',
     tsWorker: './src/core/workers/ts/ts.worker.ts',
     parserPrinterWorker: './src/core/workers/parser-printer/parser-printer.worker.ts',
     linterWorker: './src/core/workers/linter/linter.worker.ts',
@@ -127,6 +130,22 @@ const config = {
       scriptLoading: 'defer',
       template: './src/templates/monaco-editor-iframe.html',
       filename: 'monaco-editor-iframe.html',
+      minify: false,
+    }),
+    new HtmlWebpackPlugin({
+      chunks: ['vsCodeEditorOuterIframe'],
+      inject: 'head', // Add the script tags to the end of the <head>
+      scriptLoading: 'defer',
+      template: './src/templates/vscode-editor-outer-iframe.html',
+      filename: 'vscode-editor-outer-iframe.html',
+      minify: false,
+    }),
+    new HtmlWebpackPlugin({
+      chunks: [],
+      inject: 'head', // Add the script tags to the end of the <head>
+      scriptLoading: 'defer',
+      template: './src/templates/vscode-editor-inner-iframe.html',
+      filename: 'vscode-editor-inner-iframe.html',
       minify: false,
     }),
     new ScriptExtHtmlWebpackPlugin({

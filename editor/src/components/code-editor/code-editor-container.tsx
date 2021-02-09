@@ -98,6 +98,27 @@ const CodeEditorIframeContainer = betterReactMemo<{ propsToSend: JSONStringified
   },
 )
 
+const VSCodeIframeContainer = betterReactMemo('VSCodeIframeContainer', () => {
+  const iframeSrc = createIframeUrl(
+    MONACO_EDITOR_IFRAME_BASE_URL,
+    'vscode-editor-outer-iframe.html',
+  )
+
+  return (
+    <iframe
+      key={'vscode-editor'}
+      id={'vscode-editor'}
+      src={iframeSrc}
+      allow='autoplay'
+      style={{
+        flex: 1,
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+      }}
+    />
+  )
+})
+
 export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) => {
   const selectedProps = useEditorState((store) => {
     const openEditorTab = getOpenEditorTab(store.editor)
@@ -170,10 +191,14 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     npmDependencies: npmDependencies,
   }
 
-  if (isFeatureEnabled('iFrame Code Editor')) {
-    return <CodeEditorIframeContainer propsToSend={propsToSend} />
+  if (isFeatureEnabled('VSCode Code Editor')) {
+    return <VSCodeIframeContainer />
   } else {
-    return <CodeEditorNonIframeEntryPoint propsFromMainEditor={propsToSend} dispatch={dispatch} />
+    if (isFeatureEnabled('iFrame Code Editor')) {
+      return <CodeEditorIframeContainer propsToSend={propsToSend} />
+    } else {
+      return <CodeEditorNonIframeEntryPoint propsFromMainEditor={propsToSend} dispatch={dispatch} />
+    }
   }
 })
 

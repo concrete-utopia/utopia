@@ -51,6 +51,7 @@ if (fs.existsSync("../dist")) {
 }
 fs.mkdirSync("../dist");
 fse.copySync("out-vscode-min", "../dist/vscode");
+fse.copySync("product.json", "../dist/product.json");
 
 const extensionNM = glob.sync("extensions/**/node_modules", {});
 extensionNM.forEach((modules) => {
