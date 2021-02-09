@@ -270,7 +270,6 @@ export const EditorComponentInner = betterReactMemo(
                   className='LeftPaneShell'
                   style={{
                     transition: 'all .1s linear',
-                    border: '1px solid red',
                     position: 'absolute',
                     height: '100% !important',
                     width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
