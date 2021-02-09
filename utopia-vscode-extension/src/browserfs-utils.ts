@@ -9,6 +9,10 @@ import { appendToPath, toUtopiaPath } from './path-utils'
 
 let fs: FSModule
 
+// Mapping from file path to a scheduled timeout
+let watchedPathTimeouts: Map<string, number> = new Map()
+const POLLING_TIMEOUT = 100
+
 // Immediately attempt to initialise BrowserFS
 new Promise<void>((resolve, reject) => {
   try {
@@ -28,11 +32,9 @@ new Promise<void>((resolve, reject) => {
 })
 
 export async function waitUntilFSReady(): Promise<void> {
-  // All exported functions must call this because otherwise VS Code will attempt to read files before BrowserFS
-  // has finished initialising
   if (fs == undefined) {
     return new Promise((resolve, reject) =>
-      setTimeout(() => waitUntilFSReady().then(resolve).catch(reject), 100),
+      setTimeout(() => waitUntilFSReady().then(resolve).catch(reject), POLLING_TIMEOUT),
     )
   }
 }
@@ -79,7 +81,7 @@ export async function pathIsDirectory(path: string): Promise<boolean> {
 }
 
 export async function deleteFile(path: string, recursive: boolean): Promise<string[]> {
-  const descendentsToDelete = recursive ? await getDescendentPaths(path) : []
+  const descendentsToDelete = recursive ? await getDescendentPaths(path, true) : []
   const targetPaths = [path, ...descendentsToDelete]
   const pathsToDelete = [...targetPaths].reverse() // Delete all paths in reverse order
   await Promise.all(pathsToDelete.map(_deleteFile))
@@ -131,16 +133,88 @@ export async function childPaths(path: string): Promise<string[]> {
   return childrenFileNames.map((name) => appendToPath(path, name))
 }
 
-export async function getDescendentPaths(path: string): Promise<string[]> {
+export async function getDescendentPaths(
+  path: string,
+  includeDirectories: boolean,
+): Promise<string[]> {
   const isDirectory = await pathIsDirectory(path)
   if (isDirectory) {
     const children = await childPaths(path)
-    const descendentPaths = await Promise.all(children.map(getDescendentPaths))
-    let result = []
+    const descendentPaths = await Promise.all(
+      children.map((p) => getDescendentPaths(p, includeDirectories)),
+    )
+    let result = includeDirectories ? [path] : []
     descendentPaths.forEach((paths) => result.push(...paths))
     return result
   } else {
     return [path]
+  }
+}
+
+export async function watch(
+  target: string,
+  recursive: boolean,
+  onCreated: (path: string) => void,
+  onModified: (path: string) => void,
+  onDeleted: (path: string) => void,
+) {
+  const watchPath = async (path: string) => {
+    let lastModified = Date.now()
+
+    const polledWatch = async () => {
+      const stillExists = await exists(path)
+      if (stillExists) {
+        const stats = await stat(path)
+
+        if (recursive && stats.isDirectory()) {
+          // This sucks, but it seems the only way to watch a directory is to check if its children are being watched
+          const children = await childPaths(path)
+          const unsupervisedChildren = children.filter((p) => !watchedPathTimeouts.has(p))
+          unsupervisedChildren.forEach((childPath) => {
+            watchPath(childPath)
+            onCreated(childPath)
+          })
+        }
+
+        const changed = stats.mtime.valueOf() > lastModified
+        if (changed) {
+          lastModified = Date.now()
+          onModified(path)
+        }
+
+        if (watchedPathTimeouts.has(path)) {
+          // Check we're still watching this path
+          watchedPathTimeouts.set(path, setTimeout(polledWatch, POLLING_TIMEOUT))
+        }
+      } else {
+        onDeleted(path)
+      }
+    }
+
+    watchedPathTimeouts.set(path, setTimeout(polledWatch, POLLING_TIMEOUT))
+  }
+
+  if (recursive) {
+    const descendentPaths = await getDescendentPaths(target, true)
+    descendentPaths.forEach(watchPath)
+  }
+
+  watchPath(target)
+}
+
+export async function stopWatching(target: string, recursive: boolean) {
+  const stopWatchingPath = async (path: string) => {
+    const timeout = watchedPathTimeouts.get(path)
+    if (timeout != null) {
+      clearTimeout(timeout)
+    }
+  }
+
+  stopWatchingPath(target)
+
+  if (recursive) {
+    const descendentPaths = await getDescendentPaths(target, true)
+    descendentPaths.forEach(stopWatchingPath)
   }
 }
 

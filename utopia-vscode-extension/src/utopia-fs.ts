@@ -34,6 +34,8 @@ import {
   readFileWithEncoding,
   rename,
   stat,
+  stopWatching,
+  watch,
   writeFile,
 } from './browserfs-utils'
 import {
@@ -51,7 +53,7 @@ export class UtopiaFSExtension
   private disposable: Disposable
   private emitter = new EventEmitter<FileChangeEvent[]>()
   private eventQueue: FileChangeEvent[] = []
-  private emitEventHandle: any | null = null
+  private emitEventHandle: number | null = null
   private allFilePaths: string[] | null = null
 
   constructor() {
@@ -70,23 +72,47 @@ export class UtopiaFSExtension
 
   readonly onDidChangeFile: Event<FileChangeEvent[]> = this.emitter.event
 
-  private queueFileChangeEvent(...events: FileChangeEvent[]): void {
+  private queueFileChangeEvent(event: FileChangeEvent): void {
     this.clearCachedFiles()
-    this.eventQueue.push(...events)
+    this.eventQueue.push(event)
 
     if (this.emitEventHandle != null) {
       clearTimeout(this.emitEventHandle)
     }
 
-    this.emitEventHandle = globalThis.setTimeout(() => {
+    this.emitEventHandle = setTimeout(() => {
       this.emitter.fire(this.eventQueue)
       this.eventQueue = []
     }, 5)
   }
 
+  private notifyFileChanged(path: string): void {
+    this.queueFileChangeEvent({ type: FileChangeType.Changed, uri: toUtopiaURI(path) })
+  }
+
+  private notifyFileCreated(path: string): void {
+    this.queueFileChangeEvent({ type: FileChangeType.Created, uri: toUtopiaURI(path) })
+  }
+
+  private notifyFileDeleted(path: string): void {
+    this.queueFileChangeEvent({ type: FileChangeType.Deleted, uri: toUtopiaURI(path) })
+  }
+
   watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): Disposable {
-    // TODO Implement file watching via polling
-    return new Disposable(() => {})
+    const path = fromUtopiaURI(uri)
+    console.log(`Watching ${path}${options.recursive ? ' (recursive)' : ''}`)
+    watch(
+      path,
+      options.recursive,
+      this.notifyFileCreated.bind(this),
+      this.notifyFileChanged.bind(this),
+      this.notifyFileDeleted.bind(this),
+    )
+
+    return new Disposable(() => {
+      console.log(`Stopping watching ${path}${options.recursive ? ' (recursive)' : ''}`)
+      stopWatching(path, options.recursive)
+    })
   }
 
   async stat(uri: Uri): Promise<FileStat> {
@@ -119,10 +145,8 @@ export class UtopiaFSExtension
     await createDirectory(path)
 
     const parentDir = dirname(path)
-    this.queueFileChangeEvent(
-      { type: FileChangeType.Changed, uri: toUtopiaURI(parentDir) },
-      { type: FileChangeType.Created, uri: toUtopiaURI(path) },
-    )
+    this.notifyFileChanged(parentDir)
+    this.notifyFileCreated(path)
   }
 
   async readFile(uri: Uri): Promise<Uint8Array> {
@@ -146,7 +170,7 @@ export class UtopiaFSExtension
     }
 
     await writeFile(path, content)
-    this.queueFileChangeEvent({ type: FileChangeType.Changed, uri: toUtopiaURI(path) })
+    this.notifyFileChanged(path)
   }
 
   async delete(uri: Uri, options: { recursive: boolean }): Promise<void> {
@@ -154,13 +178,8 @@ export class UtopiaFSExtension
     const parentDir = dirname(path)
     const deletedPaths = await deleteFile(path, options.recursive)
 
-    this.queueFileChangeEvent(
-      { type: FileChangeType.Changed, uri: toUtopiaURI(parentDir) },
-      ...deletedPaths.map((deletedPath) => ({
-        type: FileChangeType.Deleted,
-        uri: toUtopiaURI(deletedPath),
-      })),
-    )
+    this.notifyFileChanged(parentDir)
+    deletedPaths.forEach(this.notifyFileDeleted)
   }
 
   async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): Promise<void> {
@@ -176,10 +195,8 @@ export class UtopiaFSExtension
 
     await rename(oldPath, newPath)
 
-    this.queueFileChangeEvent(
-      { type: FileChangeType.Deleted, uri: toUtopiaURI(oldPath) },
-      { type: FileChangeType.Created, uri: toUtopiaURI(newPath) },
-    )
+    this.notifyFileDeleted(oldPath)
+    this.notifyFileCreated(newPath)
   }
 
   async copy(source: Uri, destination: Uri, options: { overwrite: boolean }): Promise<void> {
@@ -202,7 +219,7 @@ export class UtopiaFSExtension
     const contents = await readFile(sourcePath)
     await writeFile(destinationPath, contents)
 
-    this.queueFileChangeEvent({ type: FileChangeType.Created, uri: toUtopiaURI(destinationPath) })
+    this.notifyFileCreated(destinationPath)
   }
 
   // FileSearchProvider
@@ -300,7 +317,7 @@ export class UtopiaFSExtension
 
   async getAllPaths(): Promise<string[]> {
     if (this.allFilePaths == null) {
-      const result = await getDescendentPaths(RootDir)
+      const result = await getDescendentPaths(RootDir, false)
       this.allFilePaths = result
       return result
     } else {
