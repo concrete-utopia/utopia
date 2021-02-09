@@ -5,7 +5,7 @@ import { emptyComments } from '../../core/workers/parser-printer/parser-printer-
 import { getLexerPropertyMatches, parseLengthPercentage, parseCSSArray } from './css-parser-utils'
 
 export const parsePadding = (value: unknown): Either<string, CSSPadding> => {
-  const lexer = getLexerPropertyMatches('padding', value)
+  const lexer = getLexerPropertyMatches('padding', value, 'px')
   if (isRight(lexer)) {
     const parseResult = parseCSSArray([parseLengthPercentage])(lexer.value)
     if (isRight(parseResult)) {

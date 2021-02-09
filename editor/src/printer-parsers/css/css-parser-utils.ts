@@ -43,10 +43,13 @@ import {
 export function getLexerPropertyMatches(
   propertyName: string,
   propertyValue: unknown,
+  defaultUnit: string,
   syntaxNamesToFilter?: ReadonlyArray<string>,
 ): Either<string, Array<LexerMatch>> {
-  if (typeof propertyValue === 'string') {
-    const ast = csstree.parse(propertyValue, {
+  if (typeof propertyValue === 'string' || typeof propertyValue === 'number') {
+    const valueToUse =
+      typeof propertyValue === 'number' ? `${propertyValue}${defaultUnit}` : propertyValue
+    const ast = csstree.parse(valueToUse, {
       context: 'value',
     })
     const lexerMatch = (csstree as any).lexer.matchProperty(propertyName, ast)
