@@ -8,35 +8,31 @@ export const parsePadding = (value: unknown): Either<string, CSSPadding> => {
   const lexer = getLexerPropertyMatches('padding', value)
   if (isRight(lexer)) {
     const parseResult = parseCSSArray([parseLengthPercentage])(lexer.value)
-    if (
-      isRight(parseResult) &&
-      Array.isArray(parseResult.value) &&
-      parseResult.value.every(isRight)
-    ) {
+    if (isRight(parseResult)) {
       const resultArray = parseResult.value
       let paddingTop, paddingRight, paddingBottom, paddingLeft
       if (resultArray.length === 0 || resultArray.length > 4) {
         return left(`Value ${JSON.stringify(value)} is not a valid padding`)
       } else if (resultArray.length === 1) {
-        paddingTop = resultArray[0].value as CSSNumber
-        paddingRight = resultArray[0].value as CSSNumber
-        paddingBottom = resultArray[0].value as CSSNumber
-        paddingLeft = resultArray[0].value as CSSNumber
+        paddingTop = resultArray[0]
+        paddingRight = resultArray[0]
+        paddingBottom = resultArray[0]
+        paddingLeft = resultArray[0]
       } else if (resultArray.length === 2) {
-        paddingTop = resultArray[0].value as CSSNumber
-        paddingRight = resultArray[1].value as CSSNumber
-        paddingBottom = resultArray[0].value as CSSNumber
-        paddingLeft = resultArray[1].value as CSSNumber
+        paddingTop = resultArray[0]
+        paddingRight = resultArray[1]
+        paddingBottom = resultArray[0]
+        paddingLeft = resultArray[1]
       } else if (resultArray.length === 3) {
-        paddingTop = resultArray[0].value as CSSNumber
-        paddingRight = resultArray[1].value as CSSNumber
-        paddingBottom = resultArray[2].value as CSSNumber
-        paddingLeft = resultArray[1].value as CSSNumber
+        paddingTop = resultArray[0]
+        paddingRight = resultArray[1]
+        paddingBottom = resultArray[2]
+        paddingLeft = resultArray[1]
       } else {
-        paddingTop = resultArray[0].value as CSSNumber
-        paddingRight = resultArray[1].value as CSSNumber
-        paddingBottom = resultArray[2].value as CSSNumber
-        paddingLeft = resultArray[3].value as CSSNumber
+        paddingTop = resultArray[0]
+        paddingRight = resultArray[1]
+        paddingBottom = resultArray[2]
+        paddingLeft = resultArray[3]
       }
       return right({
         paddingTop: paddingTop,

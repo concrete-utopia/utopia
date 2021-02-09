@@ -37,6 +37,7 @@ import {
   descriptionParseError,
   parseAlternative,
   Parser,
+  ParseResult,
 } from '../../utils/value-parser-utils'
 
 export function getLexerPropertyMatches(
@@ -44,8 +45,8 @@ export function getLexerPropertyMatches(
   propertyValue: unknown,
   syntaxNamesToFilter?: ReadonlyArray<string>,
 ): Either<string, Array<LexerMatch>> {
-  if (typeof propertyValue === 'string' || typeof propertyValue === 'number') {
-    const ast = csstree.parse(`${propertyValue}`, {
+  if (typeof propertyValue === 'string') {
+    const ast = csstree.parse(propertyValue, {
       context: 'value',
     })
     const lexerMatch = (csstree as any).lexer.matchProperty(propertyName, ast)
@@ -178,10 +179,13 @@ export const parseLength: Parser<CSSNumber> = (value: unknown) => {
 }
 
 export const parseLengthPercentage: Parser<CSSNumber> = (value: unknown) => {
-  return parseAlternative<CSSNumber>(
-    [parseLength, parsePercentage],
-    'Could not parse length-percentage',
-  )(value)
+  if (isLexerMatch(value) && value.match.length === 1) {
+    return parseAlternative<CSSNumber>(
+      [parseLength, parsePercentage],
+      'Could not parse length-percentage',
+    )(value)
+  }
+  return left(descriptionParseError('Could not parse length-percentage'))
 }
 
 export function parseWholeValue<T>(parser: Parser<T>): Parser<T> {
@@ -389,11 +393,10 @@ export function parseDoubleBar<T>(
   }
 }
 
-export function parseCSSArray<T>(parsers: Array<Parser<T>>): Parser<any> {
-  // TODO missing type
-  return (match: unknown) => {
+export function parseCSSArray<T>(parsers: Array<Parser<T>>): Parser<Array<T>> {
+  return (match: unknown): ParseResult<Array<T>> => {
     if (Array.isArray(match) && match.length > 0) {
-      return right(
+      return sequenceEither(
         match.map((value) => {
           return parseAlternative(parsers, 'Match is not valid array value.')(value)
         }),
