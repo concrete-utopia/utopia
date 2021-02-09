@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { colorTheme } from '../../../uuiui'
+import { useForceUpdate } from '../../editor/hook-utils'
 import { OnSubmitValue } from '../controls/control'
 import { ControlStatus } from './control-status'
 import { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'
@@ -58,7 +59,7 @@ export function usePropControlledStateV2<T>(propValue: T): [T, React.Dispatch<T>
     previousPropValueRef.current = propValue
   }
 
-  const [, forceUpdate] = React.useReducer(forceUpdateFunction, 0)
+  const forceUpdate = useForceUpdate()
 
   const setLocalState = React.useCallback((newValue: T) => {
     localStateRef.current = newValue

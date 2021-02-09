@@ -34,7 +34,7 @@ import type {
 import type { BuildType } from '../../../core/workers/ts/ts-worker'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
 import type { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
-import type { CSSCursor } from '../../../uuiui-deps'
+import type { ContextMenuInnerProps, CSSCursor } from '../../../uuiui-deps'
 import type {
   addFileToProjectContents,
   getContentsTreeFileFromString,
@@ -160,6 +160,7 @@ import type {
   UnsetSceneProp,
   UnwrapGroupOrView,
   UnwrapLayoutable,
+  UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
   UpdateEditorMode,
@@ -820,11 +821,13 @@ export function distributeSelectedViews(distribution: Distribution): DistributeS
 export function showContextMenu(
   menuName: ElementContextMenuInstance,
   event: MouseEvent,
+  props: ContextMenuInnerProps | null,
 ): ShowContextMenu {
   return {
     action: 'SHOW_CONTEXT_MENU',
     menuName: menuName,
     event: event,
+    props: props,
   }
 }
 
@@ -1220,5 +1223,13 @@ export function sendLinterRequestMessage(
     action: 'SEND_LINTER_REQUEST_MESSAGE',
     filePath: filePath,
     content: content,
+  }
+}
+
+export function updateChildText(target: InstancePath, text: string): UpdateChildText {
+  return {
+    action: 'UPDATE_CHILD_TEXT',
+    target: target,
+    text: text,
   }
 }

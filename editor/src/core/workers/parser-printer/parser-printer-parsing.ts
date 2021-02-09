@@ -56,7 +56,12 @@ import {
   isIntrinsicElement,
   clearAttributesUniqueIDs,
   clearAttributesSourceMaps,
+  Comment,
   WithComments,
+  BlockOrExpression,
+  simplifyAttributeIfPossible,
+  jsxAttributesEntry,
+  setJSXAttributesAttribute,
 } from '../../shared/element-template'
 import { maybeToArray, forceNotNull } from '../../shared/optional-utils'
 import {
@@ -88,7 +93,8 @@ import * as Hash from 'object-hash'
 import {
   emptyComments,
   getComments,
-  mergeParsedComments,
+  getTrailingComments,
+  parsedComments,
   ParsedComments,
 } from './parser-printer-comments'
 
@@ -139,6 +145,7 @@ export function isDefaultExport(node: TS.Node): boolean {
 
 function parseArrayLiteralExpression(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -148,14 +155,32 @@ function parseArrayLiteralExpression(
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   let arrayContents: Array<JSXArrayElement> = []
-  let simpleArrayContents: Array<any> = []
   let highlightBounds = existingHighlightBounds
   let propsUsed: Array<string> = []
   let definedElsewhere: Array<string> = []
+
+  // Get comments attached to the square bracket.
+  let openSquareBracketComments: ParsedComments = emptyComments
+  const firstChild = literal.getChildAt(0, sourceFile)
+  if (firstChild != null && firstChild.kind === TS.SyntaxKind.OpenBracketToken) {
+    openSquareBracketComments = getComments(sourceText, firstChild)
+  }
+  let firstProp: boolean = true
+
   for (const literalElement of literal.elements) {
+    // Capture the comments around the entire entry.
+    let elementComments = getComments(sourceText, literalElement)
+    if (firstProp) {
+      elementComments = parsedComments(
+        [...openSquareBracketComments.trailingComments, ...elementComments.leadingComments],
+        elementComments.trailingComments,
+      )
+    }
+
     if (TS.isSpreadElement(literalElement)) {
       const subExpression = parseAttributeExpression(
         sourceFile,
+        sourceText,
         filename,
         imports,
         topLevelNames,
@@ -163,6 +188,7 @@ function parseArrayLiteralExpression(
         literalElement.expression,
         existingHighlightBounds,
         alreadyExistingUIDs,
+        [],
       )
       if (isLeft(subExpression)) {
         return subExpression
@@ -170,11 +196,12 @@ function parseArrayLiteralExpression(
         highlightBounds = subExpression.value.highlightBounds
         propsUsed.push(...subExpression.value.propsUsed)
         definedElsewhere.push(...subExpression.value.definedElsewhere)
-        arrayContents.push(jsxArraySpread(subExpression.value.value))
+        arrayContents.push(jsxArraySpread(subExpression.value.value, elementComments))
       }
     } else {
       const subExpression = parseAttributeExpression(
         sourceFile,
+        sourceText,
         filename,
         imports,
         topLevelNames,
@@ -182,6 +209,7 @@ function parseArrayLiteralExpression(
         literalElement,
         highlightBounds,
         alreadyExistingUIDs,
+        [],
       )
       if (isLeft(subExpression)) {
         return subExpression
@@ -190,37 +218,23 @@ function parseArrayLiteralExpression(
         propsUsed.push(...subExpression.value.propsUsed)
         definedElsewhere.push(...subExpression.value.definedElsewhere)
         const subExpressionValue: JSXAttribute = subExpression.value.value
-        if (isJSXAttributeValue(subExpressionValue)) {
-          simpleArrayContents.push(subExpressionValue.value)
-        }
-        arrayContents.push(jsxArrayValue(subExpressionValue))
+        arrayContents.push(jsxArrayValue(subExpressionValue, elementComments))
       }
     }
   }
-  // If every value is a JSXAttributeValue, we can simplify.
-  if (simpleArrayContents.length === arrayContents.length) {
-    return right(
-      withParserMetadata(
-        jsxAttributeValue(simpleArrayContents),
-        highlightBounds,
-        propsUsed,
-        definedElsewhere,
-      ),
-    )
-  } else {
-    return right(
-      withParserMetadata(
-        jsxAttributeNestedArray(arrayContents),
-        highlightBounds,
-        propsUsed,
-        definedElsewhere,
-      ),
-    )
-  }
+  return right(
+    withParserMetadata(
+      jsxAttributeNestedArray(arrayContents, emptyComments),
+      highlightBounds,
+      propsUsed,
+      definedElsewhere,
+    ),
+  )
 }
 
 function parseObjectLiteralExpression(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -230,20 +244,42 @@ function parseObjectLiteralExpression(
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   let contents: Array<JSXProperty> = []
-  let simpleContents: {
-    [key: string]: any
-  } = {}
-  let simpleContentsCount = 0
   let highlightBounds = existingHighlightBounds
   let propsUsed: Array<string> = []
   let definedElsewhere: Array<string> = []
+
+  // Get comments attached to the open brace.
+  let openBraceComments: ParsedComments = emptyComments
+  const firstChild = literal.getChildAt(0, sourceFile)
+  if (firstChild != null && firstChild.kind === TS.SyntaxKind.OpenBraceToken) {
+    openBraceComments = getComments(sourceText, firstChild)
+  }
+  let firstProp: boolean = true
+
   for (const literalProp of literal.properties) {
+    // Capture the comments around the entire entry.
+    let propComments = getComments(sourceText, literalProp)
+    if (firstProp) {
+      propComments = parsedComments(
+        [...openBraceComments.trailingComments, ...propComments.leadingComments],
+        propComments.trailingComments,
+      )
+    }
+
     if (TS.isPropertyAssignment(literalProp) || TS.isShorthandPropertyAssignment(literalProp)) {
+      // The colon in the middle might have comments attached to it, we should try to grab those.
+      const colonToken = literalProp
+        .getChildren(sourceFile)
+        .find((node) => node.kind === TS.SyntaxKind.ColonToken)
+      const colonTokenComments =
+        colonToken == null ? emptyComments : getComments(sourceText, colonToken)
+
       const initializer = TS.isPropertyAssignment(literalProp)
         ? literalProp.initializer
         : literalProp.name
       const subExpression = parseAttributeExpression(
         sourceFile,
+        sourceText,
         filename,
         imports,
         topLevelNames,
@@ -251,7 +287,9 @@ function parseObjectLiteralExpression(
         initializer,
         highlightBounds,
         alreadyExistingUIDs,
+        colonTokenComments.trailingComments,
       )
+
       if (isLeft(subExpression)) {
         return subExpression
       } else {
@@ -261,19 +299,17 @@ function parseObjectLiteralExpression(
         } else {
           const key = possibleKey.value
           const subExpressionValue: JSXAttribute = subExpression.value.value
-          contents.push(jsxPropertyAssignment(key, subExpressionValue))
+          const keyComments = getComments(sourceText, literalProp.name)
+          contents.push(jsxPropertyAssignment(key, subExpressionValue, propComments, keyComments))
           highlightBounds = subExpression.value.highlightBounds
           propsUsed.push(...subExpression.value.propsUsed)
           definedElsewhere.push(...subExpression.value.definedElsewhere)
-          if (isJSXAttributeValue(subExpressionValue)) {
-            simpleContents[key] = subExpressionValue.value
-            simpleContentsCount++
-          }
         }
       }
     } else if (TS.isSpreadAssignment(literalProp)) {
       const subExpression = parseAttributeExpression(
         sourceFile,
+        sourceText,
         filename,
         imports,
         topLevelNames,
@@ -281,38 +317,31 @@ function parseObjectLiteralExpression(
         literalProp.expression,
         highlightBounds,
         alreadyExistingUIDs,
+        [],
       )
       if (isLeft(subExpression)) {
         return subExpression
       } else {
         const subExpressionValue = subExpression.value.value
-        contents.push(jsxSpreadAssignment(subExpressionValue))
+        contents.push(jsxSpreadAssignment(subExpressionValue, propComments))
         highlightBounds = subExpression.value.highlightBounds
         propsUsed.push(...subExpression.value.propsUsed)
         definedElsewhere.push(...subExpression.value.definedElsewhere)
       }
     }
+
+    // First prop reset after everything has been handled.
+    firstProp = false
   }
-  // If every value is a JSXAttributeValue, we can simplify.
-  if (contents.length === simpleContentsCount) {
-    return right(
-      withParserMetadata(
-        jsxAttributeValue(simpleContents),
-        highlightBounds,
-        propsUsed,
-        definedElsewhere,
-      ),
-    )
-  } else {
-    return right(
-      withParserMetadata(
-        jsxAttributeNestedObject(contents),
-        highlightBounds,
-        propsUsed,
-        definedElsewhere,
-      ),
-    )
-  }
+
+  return right(
+    withParserMetadata(
+      jsxAttributeNestedObject(contents, emptyComments),
+      highlightBounds,
+      propsUsed,
+      definedElsewhere,
+    ),
+  )
 }
 
 interface PropertyAccessDescriptor {
@@ -423,15 +452,35 @@ function turnCodeSnippetIntoSourceMapNodes(
   return new SourceNode(startLine + 1, startChar + 1, fileName, [nodes])
 }
 
+interface ExpressionAndText<E extends TS.Node> {
+  expression: E | undefined
+  text: string
+  startPos: number
+}
+
+function createExpressionAndText<E extends TS.Node>(
+  expression: E | undefined,
+  text: string,
+  startPos: number,
+): ExpressionAndText<E> {
+  return {
+    expression: expression,
+    text: text,
+    startPos: startPos,
+  }
+}
+
 function parseOtherJavaScript<E extends TS.Node, T>(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
-  expressions: Array<E | undefined>,
+  expressionsAndTexts: Array<ExpressionAndText<E>>,
   imports: Imports,
   topLevelNames: Array<string>,
   initialPropsObjectName: string | null,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  trailingCode: string,
   create: (
     code: string,
     definedWithin: Array<string>,
@@ -440,16 +489,16 @@ function parseOtherJavaScript<E extends TS.Node, T>(
     parsedElementsWithin: ElementsWithinInPosition,
   ) => Either<string, T>,
 ): Either<string, WithParserMetadata<T>> {
-  if (expressions.length === 0) {
+  if (expressionsAndTexts.length === 0) {
     throw new Error('Unable to deal with a collection of zero expressions.')
   } else {
     let startLineShift: number = 0
     let startColumnShift: number = 0
-    fastForEach(expressions, (expression) => {
-      if (expression != null) {
+    fastForEach(expressionsAndTexts, (expressionAndText) => {
+      if (expressionAndText.expression != null) {
         const startPosition = TS.getLineAndCharacterOfPosition(
           sourceFile,
-          expression.getStart(sourceFile, false),
+          expressionAndText.startPos,
         )
         const line = startPosition.line - 1
         const column = startPosition.character - 1
@@ -559,6 +608,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
     ): void {
       const parseResult = parseOutJSXElements(
         sourceFile,
+        sourceText,
         filename,
         [node],
         imports,
@@ -810,17 +860,21 @@ function parseOtherJavaScript<E extends TS.Node, T>(
 
     let expressionsText: Array<string> = []
     let expressionsNodes: Array<typeof SourceNode> = []
-    for (const expression of expressions) {
+    for (const expressionAndText of expressionsAndTexts) {
+      const expression = expressionAndText.expression
       if (expression != null) {
         addIfDefinedElsewhere([], expression, false)
-        const expressionText = expression.getText(sourceFile)
+        const expressionText = expressionAndText.text
         if (expressionText.length > 0) {
-          const { line, character } = TS.getLineAndCharacterOfPosition(sourceFile, expression.pos)
+          const { line, character } = TS.getLineAndCharacterOfPosition(
+            sourceFile,
+            expressionAndText.startPos,
+          )
           const expressionNode = turnCodeSnippetIntoSourceMapNodes(
             sourceFile.fileName,
             line,
             character,
-            expression.getFullText(sourceFile),
+            expressionAndText.text,
             isExported(expression),
           )
           expressionsNodes.push(expressionNode)
@@ -842,11 +896,12 @@ function parseOtherJavaScript<E extends TS.Node, T>(
         TS.transform(expression, [transformer(definedWithin)])
       }
     }
+    expressionsText.push(trailingCode)
 
     // Helpfully it appears that in JSX elements the start and end are
     // offset by 1, meaning that if we use them to get the text
     // the string is total nonsense.
-    const code = expressionsText.join('\n')
+    const code = expressionsText.join('')
 
     const fileNode = new SourceNode(null, null, sourceFile.fileName, expressionsNodes)
     fileNode.setSourceContent(sourceFile.fileName, sourceFile.text)
@@ -874,6 +929,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
 
 export function parseAttributeOtherJavaScript(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -882,15 +938,22 @@ export function parseAttributeOtherJavaScript(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttributeOtherJavaScript>> {
+  const expressionAndText = createExpressionAndText(
+    expression,
+    expression.getText(sourceFile),
+    expression.getStart(sourceFile, false),
+  )
   return parseOtherJavaScript(
     sourceFile,
+    sourceText,
     filename,
-    [expression],
+    [expressionAndText],
     imports,
     topLevelNames,
     propsObjectName,
     existingHighlightBounds,
     alreadyExistingUIDs,
+    '',
     (code, _, definedElsewhere, fileSourceNode) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
@@ -924,24 +987,35 @@ export function parseAttributeOtherJavaScript(
 
 function parseJSXArbitraryBlock(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
   propsObjectName: string | null,
-  expression: TS.Expression | undefined,
+  jsxExpression: TS.JsxExpression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXArbitraryBlock>> {
+  // Remove the braces around the expression
+  const expressionFullText = jsxExpression.getFullText(sourceFile).slice(1, -1)
+  const expressionAndText = createExpressionAndText(
+    jsxExpression.expression,
+    expressionFullText,
+    jsxExpression.getFullStart() + 1,
+  )
+
   return parseOtherJavaScript(
     sourceFile,
+    sourceText,
     filename,
-    [expression],
+    [expressionAndText],
     imports,
     topLevelNames,
     propsObjectName,
     existingHighlightBounds,
     alreadyExistingUIDs,
-    (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin) => {
+    '',
+    (code, _definedWithin, definedElsewhere, _fileSourceNode, parsedElementsWithin) => {
       if (code === '') {
         return right(
           jsxArbitraryBlock(
@@ -955,7 +1029,7 @@ function parseJSXArbitraryBlock(
         )
       } else {
         const dataUIDFixed = insertDataUIDsIntoCode(
-          code,
+          expressionFullText,
           parsedElementsWithin,
           true,
           false,
@@ -987,7 +1061,7 @@ function parseJSXArbitraryBlock(
               innerDefinedElsewhere = [...innerDefinedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME]
             }
             return jsxArbitraryBlock(
-              code,
+              expressionFullText,
               dataUIDFixResult.code,
               returnPrepended.code,
               innerDefinedElsewhere,
@@ -1003,6 +1077,7 @@ function parseJSXArbitraryBlock(
 
 function parseAttributeExpression(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -1010,10 +1085,19 @@ function parseAttributeExpression(
   expression: TS.Expression,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  trailingCommentsFromPriorToken: Array<Comment>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
+  let comments = getComments(sourceText, expression)
+  if (trailingCommentsFromPriorToken.length > 0) {
+    comments = parsedComments(
+      [...trailingCommentsFromPriorToken, ...comments.leadingComments],
+      comments.trailingComments,
+    )
+  }
   if (TS.isArrayLiteralExpression(expression)) {
     return parseArrayLiteralExpression(
       sourceFile,
+      sourceText,
       filename,
       imports,
       topLevelNames,
@@ -1039,6 +1123,7 @@ function parseAttributeExpression(
         for (const argument of expression.arguments) {
           const parsedArgument = parseAttributeExpression(
             sourceFile,
+            sourceText,
             filename,
             imports,
             topLevelNames,
@@ -1046,6 +1131,7 @@ function parseAttributeExpression(
             argument,
             highlightBounds,
             alreadyExistingUIDs,
+            [],
           )
           if (isLeft(parsedArgument)) {
             return left(`Error parsing function expression: ${parsedArgument.value}`)
@@ -1068,6 +1154,7 @@ function parseAttributeExpression(
     }
     return parseAttributeOtherJavaScript(
       sourceFile,
+      sourceText,
       filename,
       imports,
       topLevelNames,
@@ -1082,6 +1169,7 @@ function parseAttributeExpression(
   ) {
     return parseAttributeOtherJavaScript(
       sourceFile,
+      sourceText,
       filename,
       imports,
       topLevelNames,
@@ -1094,11 +1182,13 @@ function parseAttributeExpression(
     TS.isIdentifier(expression) &&
     expression.originalKeywordKind === TS.SyntaxKind.UndefinedKeyword
   ) {
-    return right(withParserMetadata(jsxAttributeValue(undefined), existingHighlightBounds, [], []))
+    return right(
+      withParserMetadata(jsxAttributeValue(undefined, comments), existingHighlightBounds, [], []),
+    )
   } else if (TS.isNumericLiteral(expression)) {
     return right(
       withParserMetadata(
-        jsxAttributeValue(Number.parseFloat(expression.getText(sourceFile))),
+        jsxAttributeValue(Number.parseFloat(expression.getText(sourceFile)), comments),
         existingHighlightBounds,
         [],
         [],
@@ -1107,6 +1197,7 @@ function parseAttributeExpression(
   } else if (TS.isObjectLiteralExpression(expression)) {
     return parseObjectLiteralExpression(
       sourceFile,
+      sourceText,
       filename,
       imports,
       topLevelNames,
@@ -1123,7 +1214,7 @@ function parseAttributeExpression(
       if (TS.isNumericLiteral(operand)) {
         return right(
           withParserMetadata(
-            jsxAttributeValue(Number.parseFloat(operand.getText(sourceFile)) * -1),
+            jsxAttributeValue(Number.parseFloat(operand.getText(sourceFile)) * -1, comments),
             existingHighlightBounds,
             [],
             [],
@@ -1133,6 +1224,7 @@ function parseAttributeExpression(
     }
     return parseAttributeOtherJavaScript(
       sourceFile,
+      sourceText,
       filename,
       imports,
       topLevelNames,
@@ -1143,19 +1235,31 @@ function parseAttributeExpression(
     )
   } else if (TS.isStringLiteral(expression)) {
     return right(
-      withParserMetadata(jsxAttributeValue(expression.text), existingHighlightBounds, [], []),
+      withParserMetadata(
+        jsxAttributeValue(expression.text, comments),
+        existingHighlightBounds,
+        [],
+        [],
+      ),
     )
   } else {
     switch (expression.kind) {
       case TS.SyntaxKind.TrueKeyword:
-        return right(withParserMetadata(jsxAttributeValue(true), existingHighlightBounds, [], []))
+        return right(
+          withParserMetadata(jsxAttributeValue(true, comments), existingHighlightBounds, [], []),
+        )
       case TS.SyntaxKind.FalseKeyword:
-        return right(withParserMetadata(jsxAttributeValue(false), existingHighlightBounds, [], []))
+        return right(
+          withParserMetadata(jsxAttributeValue(false, comments), existingHighlightBounds, [], []),
+        )
       case TS.SyntaxKind.NullKeyword:
-        return right(withParserMetadata(jsxAttributeValue(null), existingHighlightBounds, [], []))
+        return right(
+          withParserMetadata(jsxAttributeValue(null, comments), existingHighlightBounds, [], []),
+        )
       default:
         return parseAttributeOtherJavaScript(
           sourceFile,
+          sourceText,
           filename,
           imports,
           topLevelNames,
@@ -1170,6 +1274,7 @@ function parseAttributeExpression(
 
 function getAttributeExpression(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -1179,10 +1284,25 @@ function getAttributeExpression(
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSXAttribute>> {
   if (TS.isStringLiteral(initializer)) {
+    const comments = getComments(sourceText, initializer)
     return right(
-      withParserMetadata(jsxAttributeValue(initializer.text), existingHighlightBounds, [], []),
+      withParserMetadata(
+        jsxAttributeValue(initializer.text, comments),
+        existingHighlightBounds,
+        [],
+        [],
+      ),
     )
   } else if (TS.isJsxExpression(initializer)) {
+    // Need to handle trailing comments on the open brace,
+    // passing them down to be the handled elsewhere.
+    let openBraceComments: ParsedComments = emptyComments
+    const firstChild = initializer.getChildAt(0, sourceFile)
+    if (firstChild != null && firstChild.kind === TS.SyntaxKind.OpenBraceToken) {
+      openBraceComments = getComments(sourceText, firstChild)
+    }
+
+    // Handle the expression itself.
     if (initializer.expression == null) {
       return right(
         withParserMetadata(
@@ -1195,6 +1315,7 @@ function getAttributeExpression(
     } else {
       return parseAttributeExpression(
         sourceFile,
+        sourceText,
         filename,
         imports,
         topLevelNames,
@@ -1202,6 +1323,7 @@ function getAttributeExpression(
         initializer.expression,
         existingHighlightBounds,
         alreadyExistingUIDs,
+        openBraceComments.trailingComments,
       )
     }
   } else {
@@ -1211,6 +1333,7 @@ function getAttributeExpression(
 
 function parseElementProps(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -1218,18 +1341,35 @@ function parseElementProps(
   attributes: TS.JsxAttributes,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
+  leadingCommentsAgainstClosingToken: Array<Comment>,
 ): Either<string, WithParserMetadata<JSXAttributes>> {
-  let result: JSXAttributes = {}
+  let result: JSXAttributes = []
   let highlightBounds = existingHighlightBounds
   let propsUsed = []
   let definedElsewhere = []
+  // Maintain this so that we can still use early returns.
+  let propIndex: number = 0
   for (const prop of attributes.properties) {
     if (TS.isJsxAttribute(prop)) {
+      let propComments = getComments(sourceText, prop)
+      if (propIndex === attributes.properties.length - 1) {
+        propComments = parsedComments(propComments.leadingComments, [
+          ...propComments.trailingComments,
+          ...leadingCommentsAgainstClosingToken,
+        ])
+      }
       if (prop.initializer == null) {
-        result[prop.name.getText(sourceFile)] = jsxAttributeValue(true)
+        result.push(
+          jsxAttributesEntry(
+            prop.name.getText(sourceFile),
+            jsxAttributeValue(true, emptyComments),
+            propComments,
+          ),
+        )
       } else {
         const attributeResult = getAttributeExpression(
           sourceFile,
+          sourceText,
           filename,
           imports,
           topLevelNames,
@@ -1241,7 +1381,13 @@ function parseElementProps(
         if (isLeft(attributeResult)) {
           return attributeResult
         } else {
-          result[prop.name.getText(sourceFile)] = attributeResult.value.value
+          result.push(
+            jsxAttributesEntry(
+              prop.name.getText(sourceFile),
+              simplifyAttributeIfPossible(attributeResult.value.value),
+              propComments,
+            ),
+          )
           highlightBounds = attributeResult.value.highlightBounds
           propsUsed.push(...attributeResult.value.propsUsed)
           definedElsewhere.push(...attributeResult.value.definedElsewhere)
@@ -1250,6 +1396,8 @@ function parseElementProps(
     } else {
       return left(`Invalid attribute found.`)
     }
+
+    propIndex += 1
   }
   return right(withParserMetadata(result, highlightBounds, propsUsed, definedElsewhere))
 }
@@ -1418,10 +1566,11 @@ function forciblyUpdateDataUID(
   })
   const uid = generateConsistentUID(alreadyExistingUIDs, hash)
   alreadyExistingUIDs.add(uid)
-  const updatedProps = {
-    ...props,
-    ['data-uid']: jsxAttributeValue(uid),
-  }
+  const updatedProps = setJSXAttributesAttribute(
+    props,
+    'data-uid',
+    jsxAttributeValue(uid, emptyComments),
+  )
   return withParserMetadata(
     updatedProps,
     {
@@ -1496,6 +1645,7 @@ function createJSXElementAllocatingUID(
 
 export function parseOutJSXElements(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   nodesToParse: Array<TS.Node>,
   imports: Imports,
@@ -1658,11 +1808,12 @@ export function parseOutJSXElements(
   ): Either<string, SuccessfullyParsedElement> {
     const result = parseJSXArbitraryBlock(
       sourceFile,
+      sourceText,
       filename,
       imports,
       topLevelNames,
       propsObjectName,
-      tsExpression.expression,
+      tsExpression,
       highlightBounds,
       alreadyExistingUIDs,
     )
@@ -1684,6 +1835,7 @@ export function parseOutJSXElements(
     let attributes: TS.JsxAttributes
     let tagName: TS.JsxTagNameExpression
     let children: Either<string, Array<JSXElementChild>> = right([])
+    let commentsFromAfterAttributes: ParsedComments = emptyComments
     switch (tsElement.kind) {
       case TS.SyntaxKind.JsxElement:
         attributes = tsElement.openingElement.attributes
@@ -1692,10 +1844,22 @@ export function parseOutJSXElements(
         children = mapEither((parsedChildren) => {
           return parsedChildren.map((c) => c.value)
         }, innerParse(nodeArrayToArray(tsElement.children)))
+        // Capture comments against '>' as that should follow the attributes.
+        tsElement.openingElement.getChildren(sourceFile).forEach((child) => {
+          if (child.kind === TS.SyntaxKind.GreaterThanToken) {
+            commentsFromAfterAttributes = getComments(sourceText, child)
+          }
+        })
         break
       case TS.SyntaxKind.JsxSelfClosingElement:
         attributes = tsElement.attributes
         tagName = tsElement.tagName
+        // Capture comments against '/' as that should follow the attributes.
+        tsElement.getChildren(sourceFile).forEach((child) => {
+          if (child.kind === TS.SyntaxKind.SlashToken) {
+            commentsFromAfterAttributes = getComments(sourceText, child)
+          }
+        })
         break
       default:
         const _exhaustiveCheck: never = tsElement
@@ -1705,6 +1869,7 @@ export function parseOutJSXElements(
       // Attributes of the current element.
       const parsedAttributes = parseElementProps(
         sourceFile,
+        sourceText,
         filename,
         imports,
         topLevelNames,
@@ -1712,6 +1877,7 @@ export function parseOutJSXElements(
         attributes,
         highlightBounds,
         alreadyExistingUIDs,
+        commentsFromAfterAttributes.leadingComments,
       )
       // Construct the element.
       return flatMapEither((attrs) => {
@@ -1841,6 +2007,7 @@ export function flattenOutAnnoyingContainers(
 
 export function parseArbitraryNodes(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   arbitraryNodes: Array<TS.Node>,
   imports: Imports,
@@ -1849,17 +2016,27 @@ export function parseArbitraryNodes(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
   rootLevel: boolean,
-  comments: ParsedComments,
+  trailingCode: string,
+  useFullText: boolean,
 ): Either<string, WithParserMetadata<ArbitraryJSBlock>> {
+  const expressionsAndTexts = arbitraryNodes.map((node) => {
+    return createExpressionAndText(
+      node,
+      useFullText ? node.getFullText(sourceFile) : node.getText(sourceFile),
+      node.getStart(sourceFile, false),
+    )
+  })
   return parseOtherJavaScript(
     sourceFile,
+    sourceText,
     filename,
-    arbitraryNodes,
+    expressionsAndTexts,
     imports,
     topLevelNames,
     propsObjectName,
     existingHighlightBounds,
     alreadyExistingUIDs,
+    trailingCode,
     (code, definedWithin, definedElsewhere, fileSourceNode, parsedElementsWithin) => {
       const definedWithinFields = definedWithin.map((within) => `${within}: ${within}`).join(', ')
       const definedWithCode = `return { ${definedWithinFields} };`
@@ -1882,12 +2059,11 @@ export function parseArbitraryNodes(
         (transpileResult, dataUIDFixResult) => {
           const transpiled = `${transpileResult.code}\n${definedWithCode}`
           return arbitraryJSBlock(
-            dataUIDFixResult.code,
+            code,
             transpiled,
             definedWithin,
             definedElsewhere,
             transpileResult.sourceMap,
-            comments,
           )
         },
         transpileEither,
@@ -1899,28 +2075,36 @@ export function parseArbitraryNodes(
 
 export interface FunctionContents {
   arbitraryJSBlock: ArbitraryJSBlock | null
+  blockOrExpression: BlockOrExpression
   elements: Array<SuccessfullyParsedElement>
   returnStatementComments: ParsedComments
 }
 
 function functionContents(
   jsBlock: ArbitraryJSBlock | null,
+  blockOrExpression: BlockOrExpression,
   elements: Array<SuccessfullyParsedElement>,
   returnStatementComments: ParsedComments,
 ): FunctionContents {
   return {
     arbitraryJSBlock: jsBlock,
+    blockOrExpression: blockOrExpression,
     elements: elements,
     returnStatementComments: returnStatementComments,
   }
 }
 
+export function expressionTypeForExpression(expression: TS.Expression): BlockOrExpression {
+  return TS.isParenthesizedExpression(expression) ? 'parenthesized-expression' : 'expression'
+}
+
 export function liftParsedElementsIntoFunctionContents(
+  blockOrExpression: BlockOrExpression,
   parsedElements: ParseElementsResult,
 ): Either<string, WithParserMetadata<FunctionContents>> {
   return mapEither((parsed) => {
     return withParserMetadata(
-      functionContents(null, parsed.value, emptyComments),
+      functionContents(null, blockOrExpression, parsed.value, emptyComments),
       parsed.highlightBounds,
       parsed.propsUsed,
       parsed.definedElsewhere,
@@ -1930,6 +2114,7 @@ export function liftParsedElementsIntoFunctionContents(
 
 export function parseOutFunctionContents(
   sourceFile: TS.SourceFile,
+  sourceText: string,
   filename: string,
   imports: Imports,
   topLevelNames: Array<string>,
@@ -1939,26 +2124,27 @@ export function parseOutFunctionContents(
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<FunctionContents>> {
   let highlightBounds = existingHighlightBounds
-  const sourceText = sourceFile.getFullText()
   if (TS.isBlock(arrowFunctionBody)) {
     if (arrowFunctionBody.statements.length === 0) {
       return left('No body for component.')
     } else {
-      const possibleBlockExpressions = dropLast(nodeArrayToArray(arrowFunctionBody.statements))
+      const possibleBlockExpressions: TS.Node[] = dropLast(
+        nodeArrayToArray(arrowFunctionBody.statements),
+      )
       const possibleElement = arrowFunctionBody.statements[arrowFunctionBody.statements.length - 1]!
-      let jsBlock: ArbitraryJSBlock | null = null
+      let jsBlock: ArbitraryJSBlock
       let propsUsed: Array<string> = []
       let definedElsewhere: Array<string> = []
-      const returnStatementComments = getComments(sourceText, possibleElement)
-      if (possibleBlockExpressions.length > 0) {
-        const comments = possibleBlockExpressions.reduce(
-          (working: ParsedComments, next: TS.Statement) =>
-            mergeParsedComments(working, getComments(sourceText, next)),
-          emptyComments,
-        )
 
+      const returnStatementComments = parsedComments(
+        [],
+        getTrailingComments(sourceText, possibleElement),
+      )
+      const returnStatementPrefixCode = extractPrefixedCode(possibleElement, sourceFile)
+      if (possibleBlockExpressions.length > 0) {
         const parseResult = parseArbitraryNodes(
           sourceFile,
+          sourceText,
           filename,
           possibleBlockExpressions,
           imports,
@@ -1967,7 +2153,8 @@ export function parseOutFunctionContents(
           highlightBounds,
           alreadyExistingUIDs,
           false,
-          comments,
+          returnStatementPrefixCode,
+          true,
         )
         if (isLeft(parseResult)) {
           return parseResult
@@ -1977,6 +2164,14 @@ export function parseOutFunctionContents(
           propsUsed = parseResult.value.propsUsed
           definedElsewhere = parseResult.value.definedElsewhere
         }
+      } else {
+        jsBlock = arbitraryJSBlock(
+          returnStatementPrefixCode,
+          returnStatementPrefixCode,
+          [],
+          [],
+          null,
+        )
       }
 
       let declared: Array<string> = [...topLevelNames]
@@ -1986,6 +2181,7 @@ export function parseOutFunctionContents(
 
       const parsedElements = parseOutJSXElements(
         sourceFile,
+        sourceText,
         filename,
         [possibleElement],
         imports,
@@ -1996,7 +2192,7 @@ export function parseOutFunctionContents(
       )
       return mapEither((parsed) => {
         return withParserMetadata(
-          functionContents(jsBlock, parsed.value, returnStatementComments),
+          functionContents(jsBlock, 'block', parsed.value, returnStatementComments),
           parsed.highlightBounds,
           propsUsed.concat(parsed.propsUsed),
           definedElsewhere.concat(parsed.definedElsewhere),
@@ -2006,6 +2202,7 @@ export function parseOutFunctionContents(
   } else {
     const parsedElements = parseOutJSXElements(
       sourceFile,
+      sourceText,
       filename,
       [arrowFunctionBody],
       imports,
@@ -2014,6 +2211,17 @@ export function parseOutFunctionContents(
       highlightBounds,
       alreadyExistingUIDs,
     )
-    return liftParsedElementsIntoFunctionContents(parsedElements)
+    return liftParsedElementsIntoFunctionContents(
+      expressionTypeForExpression(arrowFunctionBody),
+      parsedElements,
+    )
   }
+}
+
+export function extractPrefixedCode(node: TS.Node, sourceFile: TS.SourceFile): string {
+  // Attempt to capture everything between this and the last node
+  const nodeText = node.getText(sourceFile) || ''
+  const nodeFullText = node.getFullText(sourceFile) || ''
+  const prefixedText = nodeFullText.slice(0, nodeFullText.lastIndexOf(nodeText))
+  return prefixedText
 }

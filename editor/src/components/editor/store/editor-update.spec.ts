@@ -3,6 +3,7 @@ import { NormalisedFrame } from 'utopia-api'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   isJSXElement,
+  jsxAttributesFromMap,
   jsxAttributeValue,
   jsxElement,
   jsxElementName,
@@ -528,11 +529,11 @@ describe('INSERT_JSX_ELEMENT', () => {
 
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
-      { 'data-uid': jsxAttributeValue('TestView') },
+      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, parentPath, {
-      'utopia-api': importDetails(null, [importAlias('View')], null, emptyComments),
+      'utopia-api': importDetails(null, [importAlias('View')], null),
     })
     const updatedEditor = runLocalEditorAction(
       editor,
@@ -584,11 +585,11 @@ describe('INSERT_JSX_ELEMENT', () => {
 
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
-      { 'data-uid': jsxAttributeValue('TestView') },
+      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
       [],
     )
     const insertAction = insertJSXElement(elementToInsert, null, {
-      'utopia-api': importDetails(null, [importAlias('View')], null, emptyComments),
+      'utopia-api': importDetails(null, [importAlias('View')], null),
     })
     const updatedEditor = runLocalEditorAction(
       editorWithNoHighlighted,

@@ -506,6 +506,7 @@ export const FontFamilySelectPopup = betterReactMemo(
         >
           <FlexRow style={{ padding: 12 }}>
             <StringInput
+              testId='font-family-search'
               ref={stringInputRef}
               placeholder='Search for fonts…'
               value={searchTerm}

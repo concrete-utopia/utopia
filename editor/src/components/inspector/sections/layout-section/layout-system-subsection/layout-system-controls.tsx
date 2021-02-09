@@ -117,6 +117,7 @@ export const LayoutSystemControl = betterReactMemo(
       <OptionChainControl
         id={'layoutSystem'}
         key={'layoutSystem'}
+        testId={'layoutSystem'}
         onSubmitValue={layoutSystemData.onSubmitValue}
         value={detectedLayoutSystem}
         options={layoutSystemOptions}
@@ -214,6 +215,8 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onTransientSubmitValue: flexPaddingTopOnTransientSubmitValue,
           controlStatus: flexPaddingTop.controlStatus,
           numberType: 'UnitlessPercent',
+          defaultUnitToHide: 'px',
+          testId: 'flexPadding-T',
         },
         {
           value: flexPaddingRight.value,
@@ -223,6 +226,8 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onTransientSubmitValue: flexPaddingRightOnTransientSubmitValue,
           controlStatus: flexPaddingRight.controlStatus,
           numberType: 'UnitlessPercent',
+          defaultUnitToHide: 'px',
+          testId: 'flexPadding-R',
         },
         {
           value: flexPaddingBottom.value,
@@ -232,6 +237,8 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onTransientSubmitValue: flexPaddingBottomOnTransientSubmitValue,
           controlStatus: flexPaddingBottom.controlStatus,
           numberType: 'UnitlessPercent',
+          defaultUnitToHide: 'px',
+          testId: 'flexPadding-B',
         },
         {
           value: flexPaddingLeft.value,
@@ -241,6 +248,8 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onTransientSubmitValue: flexPaddingLeftOnTransientSubmitValue,
           controlStatus: flexPaddingLeft.controlStatus,
           numberType: 'UnitlessPercent',
+          defaultUnitToHide: 'px',
+          testId: 'flexPadding-L',
         },
       ]}
     />

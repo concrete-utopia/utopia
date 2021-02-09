@@ -16,7 +16,9 @@ import {
   isJSXElement,
   isJSXFragment,
   isJSXTextBlock,
+  isMultiLineComment,
   isPropertyAssignment,
+  isSingleLineComment,
   isSpreadAssignment,
   JSXArbitraryBlock,
   JSXArrayElement,
@@ -47,10 +49,21 @@ import {
   jsxSpreadAssignment,
   JSXSpreadAssignment,
   JSXTextBlock,
+  multiLineComment,
+  MultiLineComment,
+  SingleLineComment,
+  singleLineComment,
+  Comment,
   specialSizeMeasurements,
   SpecialSizeMeasurements,
+  JSXAttributesEntry,
+  jsxAttributesEntry,
 } from '../../../core/shared/element-template'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
+import {
+  parsedComments,
+  ParsedComments,
+} from '../../../core/workers/parser-printer/parser-printer-comments'
 import {
   KeepDeepEqualityResult,
   keepDeepEqualityResult,
@@ -69,6 +82,8 @@ import {
   combine7EqualityCalls,
   combine8EqualityCalls,
   undefinableDeepEquality,
+  combine4EqualityCalls,
+  combine10EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   TemplatePathArrayKeepDeepEquality,
@@ -136,12 +151,64 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
   )
 }
 
+export function MultiLineCommentKeepDeepEqualityCall(): KeepDeepEqualityCall<MultiLineComment> {
+  return combine4EqualityCalls(
+    (comment) => comment.comment,
+    createCallWithTripleEquals(),
+    (comment) => comment.rawText,
+    createCallWithTripleEquals(),
+    (comment) => comment.trailingNewLine,
+    createCallWithTripleEquals(),
+    (comment) => comment.pos,
+    createCallWithTripleEquals(),
+    multiLineComment,
+  )
+}
+
+export function SingleLineCommentKeepDeepEqualityCall(): KeepDeepEqualityCall<SingleLineComment> {
+  return combine4EqualityCalls(
+    (comment) => comment.comment,
+    createCallWithTripleEquals(),
+    (comment) => comment.rawText,
+    createCallWithTripleEquals(),
+    (comment) => comment.trailingNewLine,
+    createCallWithTripleEquals(),
+    (comment) => comment.pos,
+    createCallWithTripleEquals(),
+    singleLineComment,
+  )
+}
+
+export function CommentKeepDeepEqualityCall(): KeepDeepEqualityCall<Comment> {
+  return (oldComment, newComment) => {
+    if (isMultiLineComment(oldComment) && isMultiLineComment(newComment)) {
+      return MultiLineCommentKeepDeepEqualityCall()(oldComment, newComment)
+    } else if (isSingleLineComment(oldComment) && isSingleLineComment(newComment)) {
+      return SingleLineCommentKeepDeepEqualityCall()(oldComment, newComment)
+    } else {
+      return keepDeepEqualityResult(newComment, false)
+    }
+  }
+}
+
+export function ParsedCommentsKeepDeepEqualityCall(): KeepDeepEqualityCall<ParsedComments> {
+  return combine2EqualityCalls(
+    (comments) => comments.leadingComments,
+    arrayDeepEquality(CommentKeepDeepEqualityCall()),
+    (comments) => comments.trailingComments,
+    arrayDeepEquality(CommentKeepDeepEqualityCall()),
+    parsedComments,
+  )
+}
+
 export function JSXAttributeValueKeepDeepEqualityCall<T>(): KeepDeepEqualityCall<
   JSXAttributeValue<T>
 > {
-  return combine1EqualityCall(
+  return combine2EqualityCalls(
     (attribute) => attribute.value,
     createCallFromIntrospectiveKeepDeep<T>(),
+    (attribute) => attribute.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
     jsxAttributeValue,
   )
 }
@@ -174,17 +241,21 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
 }
 
 export function JSXArrayValueKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXArrayValue> {
-  return combine1EqualityCall(
+  return combine2EqualityCalls(
     (value) => value.value,
     JSXAttributeKeepDeepEqualityCall(),
+    (value) => value.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
     jsxArrayValue,
   )
 }
 
 export function JSXArraySpreadKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXArraySpread> {
-  return combine1EqualityCall(
+  return combine2EqualityCalls(
     (value) => value.value,
     JSXAttributeKeepDeepEqualityCall(),
+    (value) => value.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
     jsxArraySpread,
   )
 }
@@ -204,9 +275,11 @@ export function JSXArrayElementKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXA
 export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityCall<
   JSXAttributeNestedArray
 > {
-  return combine1EqualityCall(
+  return combine2EqualityCalls(
     (attribute) => attribute.content,
     arrayDeepEquality(JSXArrayElementKeepDeepEqualityCall()),
+    (value) => value.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
     jsxAttributeNestedArray,
   )
 }
@@ -214,9 +287,11 @@ export function JSXAttributeNestedArrayKeepDeepEqualityCall(): KeepDeepEqualityC
 export function JSXSpreadAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<
   JSXSpreadAssignment
 > {
-  return combine1EqualityCall(
+  return combine2EqualityCalls(
     (value) => value.value,
     JSXAttributeKeepDeepEqualityCall(),
+    (value) => value.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
     jsxSpreadAssignment,
   )
 }
@@ -224,11 +299,15 @@ export function JSXSpreadAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<
 export function JSXPropertyAssignmentKeepDeepEqualityCall(): KeepDeepEqualityCall<
   JSXPropertyAssignment
 > {
-  return combine2EqualityCalls(
+  return combine4EqualityCalls(
     (value) => value.key,
     createCallWithTripleEquals(),
     (value) => value.value,
     JSXAttributeKeepDeepEqualityCall(),
+    (value) => value.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
+    (value) => value.keyComments,
+    ParsedCommentsKeepDeepEqualityCall(),
     jsxPropertyAssignment,
   )
 }
@@ -248,9 +327,11 @@ export function JSXPropertyKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXPrope
 export function JSXAttributeNestedObjectKeepDeepEqualityCall(): KeepDeepEqualityCall<
   JSXAttributeNestedObject
 > {
-  return combine1EqualityCall(
+  return combine2EqualityCalls(
     (attribute) => attribute.content,
     arrayDeepEquality(JSXPropertyKeepDeepEqualityCall()),
+    (value) => value.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
     jsxAttributeNestedObject,
   )
 }
@@ -294,8 +375,20 @@ export function JSXAttributeKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttr
   }
 }
 
+export function JSXAttributesEntryDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributesEntry> {
+  return combine3EqualityCalls(
+    (entry) => entry.key,
+    createCallWithTripleEquals(),
+    (entry) => entry.value,
+    JSXAttributeKeepDeepEqualityCall(),
+    (entry) => entry.comments,
+    ParsedCommentsKeepDeepEqualityCall(),
+    jsxAttributesEntry,
+  )
+}
+
 export function JSXAttributesKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAttributes> {
-  return objectDeepEquality(JSXAttributeKeepDeepEqualityCall())
+  return arrayDeepEquality(JSXAttributesEntryDeepEqualityCall())
 }
 
 export function JSXElementKeepDeepEquality(): KeepDeepEqualityCall<JSXElement> {
@@ -544,7 +637,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
 export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
-  return combine9EqualityCalls(
+  return combine10EqualityCalls(
     (metadata) => metadata.templatePath,
     InstancePathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -562,6 +655,8 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.specialSizeMeasurements,
     SpecialSizeMeasurementsKeepDeepEquality(),
     (metadata) => metadata.computedStyle,
+    nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
+    (metadata) => metadata.attributeMetadatada,
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
     elementInstanceMetadata,
   )

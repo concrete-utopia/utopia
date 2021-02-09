@@ -22,6 +22,8 @@ import {
   emptyComputedStyle,
   ElementInstanceMetadataMap,
   jsxMetadata,
+  jsxAttributesFromMap,
+  emptyAttributeMetadatada,
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file'
 import { BakedInStoryboardUID } from './scene-utils'
@@ -32,6 +34,7 @@ import {
   TestScenePath as TestScenePathForTestProject,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { createIndexedUid } from '../shared/uid-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const TestScenePath = 'scene-aaa'
 
@@ -40,22 +43,24 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View0']),
   props: {},
-  element: right(jsxTestElement('View', {}, [])),
+  element: right(jsxTestElement('View', [], [])),
   children: [],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View1']),
   props: {},
-  element: right(jsxTestElement('View', {}, [])),
+  element: right(jsxTestElement('View', [], [])),
   children: [],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -65,11 +70,12 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   props: {
     cica: 'hello',
   },
-  element: right(jsxTestElement('View', {}, [])),
+  element: right(jsxTestElement('View', [], [])),
   children: [],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 
 const testComponentMetadataChild3: ElementInstanceMetadata = {
@@ -77,11 +83,12 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View', 'View2']),
   props: {},
-  element: right(jsxTestElement('View', {}, [])),
+  element: right(jsxTestElement('View', [], [])),
   children: [testComponentMetadataGrandchild.templatePath],
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -89,7 +96,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['View']),
   props: {},
-  element: right(jsxTestElement('View', {}, [])),
+  element: right(jsxTestElement('View', [], [])),
   children: [
     testComponentMetadataChild1.templatePath,
     testComponentMetadataChild2.templatePath,
@@ -98,6 +105,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   componentInstance: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
 }
 
 const testComponentScene: ComponentMetadata = {
@@ -196,11 +204,12 @@ describe('targetElementSupportsChildren', () => {
       localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
       templatePath: TP.instancePath([BakedInStoryboardUID, TestScenePath], ['Dummy', 'Element']),
       props: {},
-      element: right(jsxTestElement(elementName, {}, [])),
+      element: right(jsxTestElement(elementName, [], [])),
       children: [],
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
+      attributeMetadatada: emptyAttributeMetadatada,
     }
   }
 
@@ -312,7 +321,11 @@ describe('getElementLabel', () => {
   const divPath = TP.appendToPath(scenePath, 'div-1')
   const spanPath = TP.appendToPath(divPath, 'span-1')
   const textBlock = jsxTextBlock('test text')
-  const spanElement = jsxElement('span', { 'data-uid': jsxAttributeValue('span-1') }, [textBlock])
+  const spanElement = jsxElement(
+    'span',
+    jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('span-1', emptyComments) }),
+    [textBlock],
+  )
   const spanElementMetadata = elementInstanceMetadata(
     spanPath,
     right(spanElement),
@@ -325,8 +338,13 @@ describe('getElementLabel', () => {
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
+    emptyAttributeMetadatada,
   )
-  const divElement = jsxElement('div', { 'data-uid': jsxAttributeValue('div-1') }, [spanElement])
+  const divElement = jsxElement(
+    'div',
+    jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('div-1', emptyComments) }),
+    [spanElement],
+  )
   const divElementMetadata = elementInstanceMetadata(
     divPath,
     right(divElement),
@@ -339,6 +357,7 @@ describe('getElementLabel', () => {
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
+    emptyAttributeMetadatada,
   )
   const elements: ElementInstanceMetadataMap = {
     [TP.toString(spanElementMetadata.templatePath)]: spanElementMetadata,

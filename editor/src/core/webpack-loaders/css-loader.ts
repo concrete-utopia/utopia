@@ -51,7 +51,6 @@ export function unimportAllButTheseCSSFiles(filesToKeep: Array<string>): void {
     elemId.startsWith(InjectedCSSFilePrefix) &&
     !filesToKeep.some((filename) => elemId.endsWith(filename))
   if (head != null) {
-    // eslint-disable-next-line no-restricted-globals
     let inlinedCSSImportsToRemove: Array<Element> = []
     for (let index = 0; index < head.children.length; index++) {
       const child = head.children[index]

@@ -88,7 +88,7 @@ export function importAliasEquals(first: ImportAlias, second: ImportAlias): bool
   return first.name === second.name && first.alias === second.alias
 }
 
-export interface ImportDetails extends WithComments {
+export interface ImportDetails {
   importedWithName: string | null // import name from './place'
   importedFromWithin: Array<ImportAlias> // import { name as alias } from './place'
   importedAs: string | null // import * as name from './place'
@@ -98,13 +98,11 @@ export function importDetails(
   importedWithName: string | null,
   importedFromWithin: Array<ImportAlias>,
   importedAs: string | null,
-  comments: ParsedComments,
 ): ImportDetails {
   return {
     importedWithName: importedWithName,
     importedFromWithin: importedFromWithin,
     importedAs: importedAs,
-    comments: comments,
   }
 }
 
@@ -112,8 +110,7 @@ export function importDetailsEquals(first: ImportDetails, second: ImportDetails)
   return (
     first.importedWithName === second.importedWithName &&
     arrayEquals(first.importedFromWithin, second.importedFromWithin, importAliasEquals) &&
-    first.importedAs === second.importedAs &&
-    first.comments === second.comments
+    first.importedAs === second.importedAs
   )
 }
 
@@ -126,12 +123,14 @@ export function importsEquals(first: Imports, second: Imports): boolean {
 export interface ExportDetailNamed {
   type: 'EXPORT_DETAIL_NAMED'
   name: string
+  moduleName: string | undefined
 }
 
-export function exportDetailNamed(name: string): ExportDetailNamed {
+export function exportDetailNamed(name: string, moduleName: string | undefined): ExportDetailNamed {
   return {
     type: 'EXPORT_DETAIL_NAMED',
     name: name,
+    moduleName: moduleName,
   }
 }
 
@@ -145,7 +144,32 @@ export function exportDetailModifier(): ExportDetailModifier {
   }
 }
 
+export interface ExportDefaultNamed {
+  type: 'EXPORT_DEFAULT_NAMED'
+  name: string
+}
+
+export function exportDefaultNamed(name: string): ExportDefaultNamed {
+  return {
+    type: 'EXPORT_DEFAULT_NAMED',
+    name: name,
+  }
+}
+
+export interface ExportDefaultModifier {
+  type: 'EXPORT_DEFAULT_MODIFIER'
+  name: string
+}
+
+export function exportDefaultModifier(name: string): ExportDefaultModifier {
+  return {
+    type: 'EXPORT_DEFAULT_MODIFIER',
+    name: name,
+  }
+}
+
 export type ExportDetail = ExportDetailNamed | ExportDetailModifier
+export type ExportDefault = ExportDefaultNamed | ExportDefaultModifier
 
 export function isExportDetailNamed(detail: ExportDetail): detail is ExportDetailNamed {
   return detail.type === 'EXPORT_DETAIL_NAMED'
@@ -155,13 +179,21 @@ export function isExportDetailModifier(detail: ExportDetail): detail is ExportDe
   return detail.type === 'EXPORT_DETAIL_MODIFIER'
 }
 
+export function isExportDefaultNamed(detail: ExportDefault): detail is ExportDefaultNamed {
+  return detail.type === 'EXPORT_DEFAULT_NAMED'
+}
+
+export function isExportDefaultModifier(detail: ExportDefault): detail is ExportDefaultModifier {
+  return detail.type === 'EXPORT_DEFAULT_MODIFIER'
+}
+
 export interface ExportsDetail {
-  defaultExport: ExportDetailNamed | null
+  defaultExport: ExportDefault | null
   namedExports: Record<string, ExportDetail>
 }
 
 export function exportsDetail(
-  defaultExport: ExportDetailNamed | null,
+  defaultExport: ExportDefault | null,
   namedExports: Record<string, ExportDetail>,
 ): ExportsDetail {
   return {
@@ -186,12 +218,13 @@ export function addNamedExportToDetail(
   detail: ExportsDetail,
   name: string,
   alias: string,
+  moduleName: string | undefined,
 ): ExportsDetail {
   return {
     defaultExport: detail.defaultExport,
     namedExports: {
       ...detail.namedExports,
-      [name]: exportDetailNamed(alias),
+      [name]: exportDetailNamed(alias, moduleName),
     },
   }
 }
@@ -208,7 +241,17 @@ export function addModifierExportToDetail(detail: ExportsDetail, name: string): 
 
 export function setNamedDefaultExportInDetail(detail: ExportsDetail, name: string): ExportsDetail {
   return {
-    defaultExport: exportDetailNamed(name),
+    defaultExport: exportDefaultNamed(name),
+    namedExports: detail.namedExports,
+  }
+}
+
+export function setModifierDefaultExportInDetail(
+  detail: ExportsDetail,
+  name: string,
+): ExportsDetail {
+  return {
+    defaultExport: exportDefaultModifier(name),
     namedExports: detail.namedExports,
   }
 }

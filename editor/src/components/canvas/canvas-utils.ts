@@ -43,6 +43,7 @@ import {
   UtopiaJSXComponent,
   ElementInstanceMetadata,
   JSXMetadata,
+  setJSXAttributesAttribute,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -61,6 +62,7 @@ import {
   setJSXValueAtPath,
   jsxAttributesToProps,
   jsxSimpleAttributeToValue,
+  getJSXAttributeAtPath,
 } from '../../core/shared/jsx-attributes'
 import {
   Imports,
@@ -75,6 +77,7 @@ import {
   foldParsedTextFile,
   textFile,
   textFileContents,
+  ScenePath,
 } from '../../core/shared/project-file-types'
 import {
   getOrDefaultScenes,
@@ -169,6 +172,9 @@ import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
 import { openFileTab } from '../editor/store/editor-tabs'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import { getAllTargetsAtPoint } from './dom-lookup'
+import { WindowMousePositionRaw } from '../../templates/editor-canvas'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -265,7 +271,11 @@ export function clearDragState(
 ): EditorState {
   let result: EditorState = model
   if (applyChanges && result.canvas.dragState != null && result.canvas.dragState.drag != null) {
-    const producedTransientCanvasState = produceCanvasTransientState(result, false)
+    const producedTransientCanvasState = produceCanvasTransientState(
+      derived.canvas.transientState.selectedViews,
+      result,
+      false,
+    )
     const producedTransientFileState = producedTransientCanvasState.fileState
     if (producedTransientFileState != null) {
       result = modifyOpenParseSuccess((success) => {
@@ -318,12 +328,15 @@ export function updateFramesOfScenesAndComponents(
               const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
                 {
                   path: PP.create(['style']),
-                  value: jsxAttributeValue({
-                    left: frameAndTarget.frame?.x,
-                    top: frameAndTarget.frame?.y,
-                    width: frameAndTarget.frame?.width,
-                    height: frameAndTarget.frame?.height,
-                  }),
+                  value: jsxAttributeValue(
+                    {
+                      left: frameAndTarget.frame?.x,
+                      top: frameAndTarget.frame?.y,
+                      width: frameAndTarget.frame?.width,
+                      height: frameAndTarget.frame?.height,
+                    },
+                    emptyComments,
+                  ),
                 },
               ])
               return foldEither(
@@ -346,7 +359,9 @@ export function updateFramesOfScenesAndComponents(
             workingComponentsResult,
             sceneStaticpath,
             (sceneElement) => {
-              const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
+              const styleProps = jsxSimpleAttributeToValue(
+                getJSXAttributeAtPath(sceneElement.props, PP.create(['style'])).attribute,
+              )
               if (isRight(styleProps)) {
                 let frameProps: { [k: string]: string | number | undefined } = {}
                 Utils.fastForEach(['PinnedLeft', 'PinnedTop'] as LayoutPinnedProp[], (p) => {
@@ -386,7 +401,9 @@ export function updateFramesOfScenesAndComponents(
             workingComponentsResult,
             sceneStaticpath,
             (sceneElement) => {
-              const styleProps = jsxSimpleAttributeToValue(sceneElement.props['style'])
+              const styleProps = jsxSimpleAttributeToValue(
+                getJSXAttributeAtPath(sceneElement.props, PP.create(['style'])).attribute,
+              )
               if (isRight(styleProps)) {
                 let frameProps: { [k: string]: string | number | undefined } = {}
                 Utils.fastForEach(
@@ -496,19 +513,19 @@ export function updateFramesOfScenesAndComponents(
                   if (flexBasis != null) {
                     propsToSet.push({
                       path: createLayoutPropertyPath('FlexFlexBasis'),
-                      value: jsxAttributeValue(flexBasis),
+                      value: jsxAttributeValue(flexBasis, emptyComments),
                     })
                   }
                   if (width != null) {
                     propsToSet.push({
                       path: createLayoutPropertyPath('Width'),
-                      value: jsxAttributeValue(width),
+                      value: jsxAttributeValue(width, emptyComments),
                     })
                   }
                   if (height != null) {
                     propsToSet.push({
                       path: createLayoutPropertyPath('Height'),
-                      value: jsxAttributeValue(height),
+                      value: jsxAttributeValue(height, emptyComments),
                     })
                   }
                 })
@@ -619,7 +636,7 @@ export function updateFramesOfScenesAndComponents(
                   }
                   propsToSet.push({
                     path: propPathToUpdate,
-                    value: jsxAttributeValue(valueToUse),
+                    value: jsxAttributeValue(valueToUse, emptyComments),
                   })
                 }
               })
@@ -809,7 +826,7 @@ function updateFrameValueForProp(
     }
     return {
       path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
-      value: jsxAttributeValue(valueToUse),
+      value: jsxAttributeValue(valueToUse, emptyComments),
     }
   }
   return null
@@ -1538,6 +1555,7 @@ export function produceResizeSingleSelectCanvasTransientState(
 }
 
 export function produceCanvasTransientState(
+  previousCanvasTransientSelectedViews: Array<TemplatePath>,
   editorState: EditorState,
   preventAnimations: boolean,
 ): TransientCanvasState {
@@ -1611,6 +1629,7 @@ export function produceCanvasTransientState(
               switch (dragState.type) {
                 case 'MOVE_DRAG_STATE':
                   return produceMoveTransientCanvasState(
+                    previousCanvasTransientSelectedViews,
                     editorState,
                     dragState,
                     parseSuccess,
@@ -1707,25 +1726,29 @@ export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<Tem
 }
 
 function getReparentTargetAtPosition(
-  editorState: EditorState,
-  position: CanvasPoint,
+  componentMeta: JSXMetadata,
+  selectedViews: Array<TemplatePath>,
+  hiddenInstances: Array<TemplatePath>,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
 ): TemplatePath | undefined {
-  const allTargets = Canvas.getAllTargetsAtPoint(
-    editorState,
-    position,
-    [TargetSearchType.All],
-    false,
-    'loose',
+  const allTargets = getAllTargetsAtPoint(
+    componentMeta,
+    selectedViews,
+    hiddenInstances,
+    'no-filter',
+    WindowMousePositionRaw,
+    canvasScale,
+    canvasOffset,
   )
   // filtering for non-selected views from alltargets
   return R.head(
-    allTargets.filter((target) =>
-      editorState.selectedViews.every((view) => !TP.pathsEqual(view, target)),
-    ),
+    allTargets.filter((target) => selectedViews.every((view) => !TP.pathsEqual(view, target))),
   )
 }
 
 export function getReparentTarget(
+  selectedViews: Array<TemplatePath>,
   editorState: EditorState,
   toReparent: Array<TemplatePath>,
   position: CanvasPoint,
@@ -1733,7 +1756,13 @@ export function getReparentTarget(
   shouldReparent: boolean
   newParent: TemplatePath | null
 } {
-  const result = getReparentTargetAtPosition(editorState, position)
+  const result = getReparentTargetAtPosition(
+    editorState.jsxMetadataKILLME,
+    selectedViews,
+    editorState.hiddenInstances,
+    editorState.canvas.scale,
+    editorState.canvas.realCanvasOffset,
+  )
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(
     toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadataKILLME, view)),
@@ -1826,7 +1855,7 @@ export function moveTemplate(
           const updatedPropsResult = setJSXValueAtPath(
             sceneElement.props,
             PathForSceneStyle,
-            jsxAttributeValue(canvasFrameToNormalisedFrame(newFrame)),
+            jsxAttributeValue(canvasFrameToNormalisedFrame(newFrame), emptyComments),
           )
           return foldEither(
             () => sceneElement,
@@ -2004,7 +2033,7 @@ function preventAnimationsOnTargets(
           const styleUpdated = setJSXValuesAtPaths(element.props, [
             {
               path: PP.create(['style', 'transition']),
-              value: jsxAttributeValue('none'),
+              value: jsxAttributeValue('none', emptyComments),
             },
           ])
           return foldEither(
@@ -2025,6 +2054,7 @@ function preventAnimationsOnTargets(
 }
 
 function produceMoveTransientCanvasState(
+  previousCanvasTransientSelectedViews: Array<TemplatePath>,
   editorState: EditorState,
   dragState: MoveDragState,
   parseSuccess: ParseSuccess,
@@ -2050,6 +2080,7 @@ function produceMoveTransientCanvasState(
 
   if (dragState.reparent) {
     const reparentTarget = getReparentTarget(
+      previousCanvasTransientSelectedViews,
       editorState,
       elementsToTarget,
       dragState.canvasPosition,
@@ -2301,14 +2332,23 @@ export function duplicate(
             const duplicateNewUID: DuplicateNewUID | undefined = duplicateNewUIDs.find((entry) =>
               TP.pathsEqual(entry.originalPath, path),
             )
+            const existingIDs = getAllUniqueUids(utopiaComponents)
             if (duplicateNewUID === undefined) {
-              const existingIDs = getAllUniqueUids(utopiaComponents)
               newElement = guaranteeUniqueUids([jsxElement], existingIDs)[0]
               uid = getUtopiaID(newElement)
             } else {
               // Helps to keep the model consistent because otherwise the dom walker
               // goes into a frenzy.
               newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
+              if (isJSXElement(newElement)) {
+                newElement = {
+                  ...newElement,
+                  children: guaranteeUniqueUids(newElement.children, [
+                    ...existingIDs,
+                    duplicateNewUID.newUID,
+                  ]),
+                }
+              }
               uid = duplicateNewUID.newUID
             }
             let newPath: TemplatePath
@@ -2337,11 +2377,17 @@ export function duplicate(
             if (TP.isScenePath(path) && isJSXElement(jsxElement)) {
               const numberOfScenes = getNumberOfScenes(editor)
               const newSceneLabel = `Scene ${numberOfScenes}`
-              const props = {
-                ...jsxElement.props,
-                'data-label': jsxAttributeValue(newSceneLabel),
-                'data-uid': jsxAttributeValue(getUtopiaID(newElement)),
-              }
+              let props = setJSXAttributesAttribute(
+                jsxElement.props,
+                'data-label',
+                jsxAttributeValue(newSceneLabel, emptyComments),
+              )
+              props = setJSXAttributesAttribute(
+                props,
+                'data-uid',
+                jsxAttributeValue(getUtopiaID(newElement), emptyComments),
+              )
+
               const newSceneElement = {
                 ...jsxElement,
                 props: props,
@@ -2462,7 +2508,17 @@ export function cullSpyCollector(
   })
   // Eliminate the scene paths which are invalid.
   fastForEach(Object.keys(spyCollector.current.spyValues.scenes), (scenePath) => {
-    if (!scenePaths.has(scenePath)) {
+    if (
+      !scenePaths.has(scenePath) &&
+      !elementPaths.has(
+        TP.toString(
+          TP.instancePath(
+            [],
+            spyCollector.current.spyValues.scenes[scenePath].scenePath.sceneElementPath,
+          ),
+        ),
+      ) // this is needed because empty scenes are stored in metadata with an instancepath
+    ) {
       delete spyCollector.current.spyValues.scenes[scenePath]
     }
   })

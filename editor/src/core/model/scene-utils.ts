@@ -20,6 +20,7 @@ import {
   jsxAttributeOtherJavaScript,
   ComponentMetadata,
   JSXMetadata,
+  jsxAttributesFromMap,
 } from '../shared/element-template'
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
@@ -69,18 +70,18 @@ export function createSceneTemplatePath(scenePath: ScenePath): StaticInstancePat
 }
 
 export function mapScene(scene: SceneMetadata): JSXElement {
-  const sceneProps = {
+  const sceneProps = jsxAttributesFromMap({
     component: jsxAttributeOtherJavaScript(
       scene.component ?? 'null',
       `return ${scene.component}`,
       [],
       null,
     ),
-    props: jsxAttributeValue(scene.props),
-    style: jsxAttributeValue(scene.frame),
-    'data-uid': jsxAttributeValue(scene.uid),
-    'data-label': jsxAttributeValue(scene.label),
-  }
+    props: jsxAttributeValue(scene.props, emptyComments),
+    style: jsxAttributeValue(scene.frame, emptyComments),
+    'data-uid': jsxAttributeValue(scene.uid, emptyComments),
+    'data-label': jsxAttributeValue(scene.label, emptyComments),
+  })
   return jsxElement('Scene', sceneProps, [])
 }
 
@@ -126,45 +127,49 @@ export function convertScenesToUtopiaCanvasComponent(
   return utopiaJSXComponent(
     BakedInStoryboardVariableName,
     false,
+    'var',
+    'block',
     null,
     [],
     jsxElement(
       'Storyboard',
-      { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) },
+      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments) }),
       scenes.map(mapScene),
     ),
     null,
     false,
     emptyComments,
-    emptyComments,
   )
 }
 
 export function createSceneFromComponent(componentImportedAs: string, uid: string): JSXElement {
-  const sceneProps = {
+  const sceneProps = jsxAttributesFromMap({
     component: jsxAttributeOtherJavaScript(
       componentImportedAs,
       `return ${componentImportedAs}`,
       [componentImportedAs],
       null,
     ),
-    [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
-    props: jsxAttributeValue({}),
-    style: jsxAttributeValue({
-      position: 'absolute',
-      left: 0,
-      top: 0,
-      width: 375,
-      height: 812,
-    }),
-  }
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
+    props: jsxAttributeValue({}, emptyComments),
+    style: jsxAttributeValue(
+      {
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 375,
+        height: 812,
+      },
+      emptyComments,
+    ),
+  })
   return jsxElement('Scene', sceneProps, [])
 }
 
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
-  const storyboardProps = {
-    [UTOPIA_UID_KEY]: jsxAttributeValue(uid),
-  }
+  const storyboardProps = jsxAttributesFromMap({
+    [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
+  })
   return jsxElement('Storyboard', storyboardProps, scenes)
 }
 

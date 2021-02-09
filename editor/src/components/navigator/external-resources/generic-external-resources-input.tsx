@@ -55,12 +55,14 @@ export const GenericExternalResourcesInput = betterReactMemo(
             onChange={onHrefValueChange}
             onKeyDown={onKeyDown}
             placeholder='href'
+            testId=''
           />
           <StringInput
             value={relValue}
             onChange={onRelValueChange}
             onKeyDown={onKeyDown}
             placeholder='rel'
+            testId=''
           />
         </GridRow>
         <FunctionIcons.Confirm

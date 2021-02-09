@@ -318,6 +318,7 @@ class FileBrowserItemInner extends React.PureComponent<
         <div style={{ ...flexRowStyle, marginLeft: 2 }}>
           <OnClickOutsideHOC onClickOutside={this.onClickOutsideLabel}>
             <StringInput
+              testId=''
               value={this.state.filename}
               onChange={this.onChangeFilename}
               onKeyDown={this.onKeyDownFilename}
@@ -685,6 +686,7 @@ class FileBrowserItemInner extends React.PureComponent<
             }}
           >
             <StringInput
+              testId=''
               value={this.state.addingChildName}
               autoFocus
               onKeyDown={this.inputLabelKeyDown}

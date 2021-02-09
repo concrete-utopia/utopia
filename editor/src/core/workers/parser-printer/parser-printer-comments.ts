@@ -12,6 +12,10 @@ export const emptyComments: ParsedComments = {
   trailingComments: [],
 }
 
+export function isParsedCommentsEmpty(comments: ParsedComments): boolean {
+  return comments.leadingComments.length === 0 && comments.trailingComments.length === 0
+}
+
 export function parsedComments(
   leadingComments: Array<Comment>,
   trailingComments: Array<Comment>,
@@ -20,13 +24,6 @@ export function parsedComments(
     leadingComments: leadingComments,
     trailingComments: trailingComments,
   }
-}
-
-export function mergeParsedComments(first: ParsedComments, second: ParsedComments): ParsedComments {
-  return parsedComments(
-    first.leadingComments.concat(second.leadingComments),
-    first.trailingComments.concat(second.trailingComments),
-  )
 }
 
 function parseComment(
@@ -42,12 +39,14 @@ function parseComment(
         sourceText.slice(pos + 2, end),
         sourceText.slice(pos, end),
         hasTrailingNewLine,
+        pos,
       )
     case TS.SyntaxKind.MultiLineCommentTrivia:
       return multiLineComment(
         sourceText.slice(pos + 2, end - 2),
         sourceText.slice(pos, end),
         hasTrailingNewLine,
+        pos,
       )
     default:
       const _exhaustiveCheck: never = commentKind
@@ -55,7 +54,7 @@ function parseComment(
   }
 }
 
-function getLeadingComments(sourceText: string, node: TS.Node): Array<Comment> {
+export function getLeadingComments(sourceText: string, node: TS.Node): Array<Comment> {
   let result: Array<Comment> = []
   const parseAndPushComment = (
     pos: number,
@@ -66,11 +65,11 @@ function getLeadingComments(sourceText: string, node: TS.Node): Array<Comment> {
     result.push(parseComment(sourceText, pos, end, commentKind, hasTrailingNewLine))
   }
 
-  TS.forEachLeadingCommentRange(sourceText, node.getFullStart(), parseAndPushComment)
+  TS.forEachLeadingCommentRange(sourceText, node.pos, parseAndPushComment)
   return result
 }
 
-function getTrailingComments(sourceText: string, node: TS.Node): Array<Comment> {
+export function getTrailingComments(sourceText: string, node: TS.Node): Array<Comment> {
   let result: Array<Comment> = []
   const parseAndPushComment = (
     pos: number,
@@ -81,7 +80,7 @@ function getTrailingComments(sourceText: string, node: TS.Node): Array<Comment> 
     result.push(parseComment(sourceText, pos, end, commentKind, hasTrailingNewLine))
   }
 
-  TS.forEachTrailingCommentRange(sourceText, node.getEnd(), parseAndPushComment)
+  TS.forEachTrailingCommentRange(sourceText, node.end, parseAndPushComment)
   return result
 }
 
@@ -119,7 +118,8 @@ function createTSComments(comments: Array<Comment>): Array<TS.SynthesizedComment
   return result
 }
 
-export function addCommentsToNode(node: TS.Node, comments: ParsedComments): void {
+// Warning: Mutates the node, but also returns it.
+export function addCommentsToNode(node: TS.Node, comments: ParsedComments): TS.Node {
   const leadingTSComments = createTSComments(comments.leadingComments)
   const trailingTSComments = createTSComments(comments.trailingComments)
 
@@ -128,5 +128,22 @@ export function addCommentsToNode(node: TS.Node, comments: ParsedComments): void
   }
   if (trailingTSComments.length > 0) {
     TS.setSyntheticTrailingComments(node, trailingTSComments)
+  }
+
+  return node
+}
+
+// Comments just inside the opening brace of a JSX expression are treated as trailing comments
+// against the open brace token, because of some reason that I'm unable to fathom.
+export function getJSXExpressionLeadingComments(
+  sourceText: string,
+  sourceFile: TS.SourceFile,
+  expression: TS.JsxExpression,
+): Array<Comment> {
+  const expressionFirstChild = expression.getChildAt(0, sourceFile)
+  if (expressionFirstChild != null && expressionFirstChild.kind === TS.SyntaxKind.OpenBraceToken) {
+    return getTrailingComments(sourceText, expressionFirstChild)
+  } else {
+    return []
   }
 }

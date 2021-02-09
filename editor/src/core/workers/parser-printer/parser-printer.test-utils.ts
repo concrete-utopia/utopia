@@ -54,6 +54,11 @@ import {
   walkElement,
   getJSXElementNameAsString,
   isJSXElement,
+  FunctionDeclarationSyntax,
+  BlockOrExpression,
+  jsxAttributesFromMap,
+  ImportStatement,
+  importStatement,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -86,6 +91,7 @@ import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
 import { getUtopiaID } from '../../model/element-template-utils'
 import { emptyComments, parsedComments, ParsedComments } from './parser-printer-comments'
+import { node } from 'prop-types'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercaseStringArbitrary().map(
   (text) => {
@@ -94,6 +100,7 @@ export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> = lowercas
       comment: text,
       rawText: text,
       trailingNewLine: false,
+      pos: null,
     }
   },
 )
@@ -105,6 +112,7 @@ export const multiLineCommentArbitrary: Arbitrary<MultiLineComment> = lowercaseS
       comment: text,
       rawText: text,
       trailingNewLine: false,
+      pos: null,
     }
   },
 )
@@ -236,16 +244,21 @@ function parseModifyPrint(
   )
 }
 
-export function clearParseResultUniqueIDs(parseResult: ParsedTextFile): ParsedTextFile {
+export function clearParseResultUniqueIDsAndEmptyBlocks(
+  parseResult: ParsedTextFile,
+): ParsedTextFile {
   return mapParsedTextFile((success) => {
-    const updatedTopLevelElements = success.topLevelElements.map(clearTopLevelElementUniqueIDs)
+    const updatedTopLevelElements = success.topLevelElements.map(
+      clearTopLevelElementUniqueIDsAndEmptyBlocks,
+    )
+    const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = optionalMap<
+      ArbitraryJSBlock,
+      ArbitraryJSBlock
+    >(clearTopLevelElementUniqueIDsAndEmptyBlocks, success.combinedTopLevelArbitraryBlock)
     return {
       ...success,
       topLevelElements: updatedTopLevelElements,
-      combinedTopLevelArbitraryBlock: optionalMap(
-        clearArbitraryJSBlockUniqueIDs,
-        success.combinedTopLevelArbitraryBlock,
-      ),
+      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   }, parseResult)
 }
@@ -255,7 +268,6 @@ export const JustImportView: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
-    comments: emptyComments,
   },
 }
 
@@ -264,15 +276,29 @@ export const JustImportViewAndReact: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
-    comments: emptyComments,
   },
   react: {
     importedAs: null,
     importedFromWithin: [],
     importedWithName: 'React',
-    comments: emptyComments,
   },
 }
+
+export const ImportViewImportStatement: ImportStatement = importStatement(
+  `import { View } from 'utopia-api'`,
+  false,
+  false,
+  ['View'],
+  'utopia-api',
+)
+
+export const ImportReactImportStatement: ImportStatement = importStatement(
+  `import * as React from 'react'`,
+  true,
+  false,
+  [],
+  'react',
+)
 
 export function clearErrorMessagePassTime(errorMessage: ErrorMessage): ErrorMessage {
   if (errorMessage.passTime == null) {
@@ -384,7 +410,10 @@ export function jsxArbitraryBlockArbitrary(): Arbitrary<JSXArbitraryBlock> {
 }
 
 export function jsxAttributeValueArbitrary(): Arbitrary<JSXAttributeValue<any>> {
-  return FastCheck.jsonObject().map(jsxAttributeValue)
+  return FastCheck.tuple(
+    FastCheck.jsonObject(),
+    arbitraryMultiLineComments(),
+  ).map(([value, comments]) => jsxAttributeValue(value, comments))
 }
 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOtherJavaScript> {
@@ -392,11 +421,17 @@ export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSXAttributeOt
 }
 
 export function jsxArrayValueArbitrary(depth: number): Arbitrary<JSXArrayValue> {
-  return jsxAttributeArbitrary(depth).map(jsxArrayValue)
+  return FastCheck.tuple(
+    jsxAttributeArbitrary(depth),
+    arbitraryMultiLineComments(),
+  ).map(([array, comments]) => jsxArrayValue(array, comments))
 }
 
 export function jsxArraySpreadArbitrary(depth: number): Arbitrary<JSXArraySpread> {
-  return jsxAttributeArbitrary(depth).map(jsxArraySpread)
+  return FastCheck.tuple(
+    jsxAttributeArbitrary(depth),
+    arbitraryMultiLineComments(),
+  ).map(([array, comments]) => jsxArraySpread(array, comments))
 }
 
 export function jsxArrayElementArbitrary(depth: number): Arbitrary<JSXArrayElement> {
@@ -409,19 +444,25 @@ export function jsxArrayElementArbitrary(depth: number): Arbitrary<JSXArrayEleme
 export function jsxAttributeNestedArrayArbitrary(
   depth: number,
 ): Arbitrary<JSXAttributeNestedArray> {
-  return FastCheck.array(jsxArrayElementArbitrary(depth - 1), 3).map(jsxAttributeNestedArray)
+  return FastCheck.tuple(
+    FastCheck.array(jsxArrayElementArbitrary(depth - 1), 3),
+    arbitraryMultiLineComments(),
+  ).map(([array, comments]) => jsxAttributeNestedArray(array, comments))
 }
 
 export function jsxPropertyAssignmentArbitrary(depth: number): Arbitrary<JSXPropertyAssignment> {
   return FastCheck.tuple(lowercaseStringArbitrary(), jsxAttributeArbitrary(depth)).map(
     ([key, attribute]) => {
-      return jsxPropertyAssignment(key, attribute)
+      return jsxPropertyAssignment(key, attribute, emptyComments, emptyComments)
     },
   )
 }
 
 export function jsxSpreadAssignmentArbitrary(depth: number): Arbitrary<JSXSpreadAssignment> {
-  return jsxAttributeArbitrary(depth).map(jsxSpreadAssignment)
+  return FastCheck.tuple(
+    jsxAttributeArbitrary(depth),
+    arbitraryMultiLineComments(),
+  ).map(([spread, comments]) => jsxSpreadAssignment(spread, comments))
 }
 
 export function jsxPropertyArbitrary(depth: number): Arbitrary<JSXProperty> {
@@ -434,7 +475,10 @@ export function jsxPropertyArbitrary(depth: number): Arbitrary<JSXProperty> {
 export function jsxAttributeNestedObjectArbitrary(
   depth: number,
 ): Arbitrary<JSXAttributeNestedObject> {
-  return FastCheck.array(jsxPropertyArbitrary(depth - 1), 3).map(jsxAttributeNestedObject)
+  return FastCheck.tuple(
+    FastCheck.array(jsxPropertyArbitrary(depth - 1), 3),
+    arbitraryMultiLineComments(),
+  ).map(([values, comments]) => jsxAttributeNestedObject(values, comments))
 }
 
 export function jsxAttributeFunctionCallArbitrary(
@@ -482,7 +526,9 @@ export function flatObjectArbitrary<V>(
 }
 
 export function jsxAttributesArbitrary(): Arbitrary<JSXAttributes> {
-  return flatObjectArbitrary(lowercaseStringArbitrary(), jsxAttributeArbitrary(3))
+  return flatObjectArbitrary(lowercaseStringArbitrary(), jsxAttributeArbitrary(3)).map(
+    jsxAttributesFromMap,
+  )
 }
 
 export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
@@ -517,7 +563,7 @@ export function jsxElementChildArbitrary(): Arbitrary<JSXElementChild> {
 }
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
-  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null, emptyComments))
+  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null))
 }
 
 export function arbitraryComments(): Arbitrary<ParsedComments> {
@@ -527,28 +573,63 @@ export function arbitraryComments(): Arbitrary<ParsedComments> {
   ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
 }
 
+export function arbitraryMultiLineComments(): Arbitrary<ParsedComments> {
+  return FastCheck.tuple(
+    FastCheck.array(multiLineCommentArbitrary),
+    FastCheck.array(multiLineCommentArbitrary),
+  ).map(([leadingComments, trailingComments]) => parsedComments(leadingComments, trailingComments))
+}
+
+export function arbitraryDeclarationSyntax(): Arbitrary<FunctionDeclarationSyntax> {
+  return FastCheck.oneof<FunctionDeclarationSyntax>(
+    FastCheck.constant('function'),
+    FastCheck.constant('var'),
+    FastCheck.constant('let'),
+    FastCheck.constant('const'),
+  )
+}
+
+export function arbitraryBlockOrExpression(): Arbitrary<BlockOrExpression> {
+  return FastCheck.oneof<BlockOrExpression>(
+    FastCheck.constant('block'),
+    FastCheck.constant('expression'),
+  )
+}
+
 export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
   return FastCheck.tuple(
     lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
     FastCheck.boolean(),
+    arbitraryDeclarationSyntax(),
+    arbitraryBlockOrExpression(),
     jsxElementArbitrary(3),
     arbitraryJSBlockArbitrary(),
     arbitraryComments(),
-    arbitraryComments(),
   )
-    .map(([name, isFunction, rootElement, jsBlock, comments, returnStatementComments]) => {
-      return utopiaJSXComponent(
+    .map(
+      ([
         name,
         isFunction,
-        defaultPropsParam,
-        [],
+        declarationSyntax,
+        blockOrExpression,
         rootElement,
         jsBlock,
-        false,
-        comments,
         returnStatementComments,
-      )
-    })
+      ]) => {
+        return utopiaJSXComponent(
+          name,
+          isFunction,
+          declarationSyntax,
+          blockOrExpression,
+          defaultPropsParam,
+          [],
+          rootElement,
+          jsBlock,
+          false,
+          returnStatementComments,
+        )
+      },
+    )
     .filter((component) => {
       // Prevent creating a component that depends on itself.
       let elementNames: Array<string> = []
@@ -569,7 +650,7 @@ export function topLevelElementArbitrary(): Arbitrary<TopLevelElement> {
 export function exportDetailNamedArbitrary(
   possibleNames: Array<string>,
 ): Arbitrary<ExportDetailNamed> {
-  return FastCheck.constantFrom(...possibleNames).map(exportDetailNamed)
+  return FastCheck.constantFrom(...possibleNames).map((name) => exportDetailNamed(name, undefined))
 }
 
 export function exportDetailModifierArbitrary(): Arbitrary<ExportDetailModifier> {
@@ -680,9 +761,9 @@ function babelCheckForDataUID(): { visitor: BabelTraverse.Visitor } {
   return {
     visitor: {
       JSXElement(path) {
-        const node = path.node
+        const pathNode = path.node
         let hasValidUID: boolean = false
-        for (const attribute of node.openingElement.attributes) {
+        for (const attribute of pathNode.openingElement.attributes) {
           if (BabelTypes.isJSXAttribute(attribute)) {
             if (BabelTypes.isJSXIdentifier(attribute.name)) {
               if (attribute.name.name === 'data-uid') {
@@ -736,6 +817,8 @@ function getTopLevelElementVariableName(topLevelElement: TopLevelElement): strin
     case 'UTOPIA_JSX_COMPONENT':
       return topLevelElement.name
     case 'ARBITRARY_JS_BLOCK':
+    case 'IMPORT_STATEMENT':
+    case 'UNPARSED_CODE':
       return null
     default:
       const _exhaustiveCheck: never = topLevelElement
@@ -781,6 +864,8 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
           case 'UTOPIA_JSX_COMPONENT':
             return getAllBaseVariables(topLevelElement.rootElement)
           case 'ARBITRARY_JS_BLOCK':
+          case 'IMPORT_STATEMENT':
+          case 'UNPARSED_CODE':
             return []
           default:
             const _exhaustiveCheck: never = topLevelElement
@@ -788,7 +873,7 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
         }
       }, topLevelElements)
       const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
-        return addImport('testlib', baseVariable, [], null, emptyComments, workingImports)
+        return addImport('testlib', baseVariable, [], null, workingImports)
       }, JustImportViewAndReact)
       return {
         imports: imports,
@@ -840,5 +925,49 @@ export function forceParseSuccessFromFileOrFail(
     }
   } else {
     fail(`Not a text file ${file}`)
+  }
+}
+
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: UtopiaJSXComponent,
+): UtopiaJSXComponent
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: ArbitraryJSBlock,
+): ArbitraryJSBlock
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: TopLevelElement,
+): TopLevelElement
+export function clearTopLevelElementUniqueIDsAndEmptyBlocks(
+  element: TopLevelElement,
+): TopLevelElement {
+  const withoutUID = clearTopLevelElementUniqueIDs(element)
+  switch (withoutUID.type) {
+    case 'UTOPIA_JSX_COMPONENT': {
+      const blockCode = (withoutUID.arbitraryJSBlock?.javascript || '').trim()
+      const blockIsEmpty = blockCode.length === 0
+      return {
+        ...withoutUID,
+        arbitraryJSBlock:
+          blockIsEmpty || withoutUID.arbitraryJSBlock == null
+            ? null
+            : {
+                ...withoutUID.arbitraryJSBlock,
+                javascript: blockCode,
+              },
+      }
+    }
+    case 'ARBITRARY_JS_BLOCK': {
+      const blockCode = (withoutUID.javascript || '').trim()
+      return {
+        ...withoutUID,
+        javascript: blockCode,
+      }
+    }
+    case 'IMPORT_STATEMENT':
+    case 'UNPARSED_CODE':
+      return withoutUID
+    default:
+      const _exhaustiveCheck: never = withoutUID
+      throw new Error(`Unhandled element ${JSON.stringify(withoutUID)}`)
   }
 }

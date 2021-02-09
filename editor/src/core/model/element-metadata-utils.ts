@@ -16,7 +16,14 @@ import Utils, { IndexPosition } from '../../utils/utils'
 import { getLayoutProperty } from '../layout/getLayoutProperty'
 import { FlexLayoutHelpers, LayoutHelpers } from '../layout/layout-helpers'
 import { LayoutProp } from '../layout/layout-helpers-new'
-import { flattenArray, mapDropNulls, pluck, stripNulls, flatMapArray } from '../shared/array-utils'
+import {
+  flattenArray,
+  mapDropNulls,
+  pluck,
+  stripNulls,
+  flatMapArray,
+  uniqBy,
+} from '../shared/array-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import {
   alternativeEither,
@@ -559,6 +566,9 @@ export const MetadataUtils = {
       .map((s) => s.scenePath)
       .filter((s) => !TP.pathsEqual(s, EmptyScenePathForStoryboard))
   },
+  getAllScenePathsIncludingStoryboardForOrphans(scenes: ComponentMetadata[]): ScenePath[] {
+    return scenes.map((s) => s.scenePath)
+  },
   getCanvasRootScenesAndElements(
     metadata: JSXMetadata,
   ): Array<ComponentMetadata | ElementInstanceMetadata> {
@@ -616,7 +626,7 @@ export const MetadataUtils = {
       fastForEach(element?.children ?? [], recurseElement)
     }
 
-    const scenePaths = this.getAllScenePaths(metadata.components)
+    const scenePaths = this.getAllScenePathsIncludingStoryboardForOrphans(metadata.components)
 
     fastForEach(scenePaths, (scenePath) => {
       const scene = metadata.components.find((s) => TP.pathsEqual(scenePath, s.scenePath))
@@ -626,7 +636,7 @@ export const MetadataUtils = {
       }
     })
 
-    return result
+    return uniqBy<TemplatePath>(result, TP.pathsEqual)
   },
   isElementOfType(instance: ElementInstanceMetadata, elementType: string): boolean {
     return foldEither(
@@ -1275,21 +1285,6 @@ export const MetadataUtils = {
       pathToReplaceWith: InstancePath,
       newElementInner: Either<string, JSXElementChild>,
     ): InstancePath {
-      const children = MetadataUtils.getImmediateChildren(metadata, element.templatePath)
-      const duplicatedChildren = children.map((child) => {
-        const childsElement = child.element
-        let duplicatedElement: Either<string, JSXElementChild>
-        if (isLeft(childsElement) || isLeft(newElementInner)) {
-          duplicatedElement = childsElement
-        } else {
-          const childElementUID = getUtopiaID(childsElement.value)
-          duplicatedElement = isJSXElement(newElementInner.value)
-            ? right(newElementInner.value.children.find((c) => getUtopiaID(c) === childElementUID)!)
-            : childsElement
-        }
-        return duplicateElementMetadata(child, pathToReplace, pathToReplaceWith, duplicatedElement)
-      })
-
       const newTemplatePath = TP.replaceIfAncestor(
         element.templatePath,
         pathToReplace,
@@ -1300,7 +1295,7 @@ export const MetadataUtils = {
         ...element,
         templatePath: newTemplatePath,
         element: newElementInner,
-        children: duplicatedChildren,
+        children: [], // all descendants have new UID-s
       }
 
       workingElements[TP.toString(newTemplatePath)] = newElementMetadata
@@ -1564,7 +1559,7 @@ export function getScenePropsOrElementAttributes(
     return null
   } else {
     return foldEither(
-      (sceneMetadata) => left(null),
+      () => left(null),
       (elementMetadata) =>
         foldEither(
           () => null,

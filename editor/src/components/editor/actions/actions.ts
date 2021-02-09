@@ -60,9 +60,13 @@ import {
   isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
   walkElements,
-  isUtopiaJSXComponent,
-  utopiaJSXComponent,
   JSXMetadata,
+  jsxTextBlock,
+  isJSXTextBlock,
+  getJSXAttribute,
+  jsxAttributesFromMap,
+  deleteJSXAttribute,
+  setJSXAttributesAttribute,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -80,6 +84,7 @@ import {
   unsetJSXValueAtPath,
   getModifiableJSXAttributeAtPath,
   unsetJSXValuesAtPaths,
+  setJSXValuesAtPaths,
 } from '../../../core/shared/jsx-attributes'
 import { getDefaultUIJsFile } from '../../../core/model/new-project-files'
 import {
@@ -110,6 +115,7 @@ import {
   right,
   eitherToMaybe,
   mapEither,
+  defaultEither,
 } from '../../../core/shared/either'
 import type {
   RequireFn,
@@ -349,6 +355,7 @@ import {
   SendLinterRequestMessage,
   DecrementCodeEditorFontSize,
   UpdateCodeEditorFontSize,
+  UpdateChildText,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -484,6 +491,8 @@ import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { number } from 'prop-types'
 import { Editor } from 'draft-js'
+import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
+import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -568,7 +577,11 @@ function switchAndUpdateFrames(
         withUpdatedLayoutSystem,
         target,
         (attributes) => {
-          return setJSXValueAtPath(attributes, styleDisplayPath, jsxAttributeValue('flex'))
+          return setJSXValueAtPath(
+            attributes,
+            styleDisplayPath,
+            jsxAttributeValue('flex', emptyComments),
+          )
         },
       )
       break
@@ -609,7 +622,7 @@ function switchAndUpdateFrames(
           return setJSXValueAtPath(
             attributes,
             createLayoutPropertyPath('position'),
-            jsxAttributeValue('absolute'),
+            jsxAttributeValue('absolute', emptyComments),
           )
         },
       )
@@ -1018,7 +1031,11 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: poppedDerived.canvas.descendantsOfHiddenInstances,
       controls: [],
-      transientState: produceCanvasTransientState(history.current.editor, true),
+      transientState: produceCanvasTransientState(
+        poppedDerived.canvas.transientState.selectedViews,
+        history.current.editor,
+        true,
+      ),
     },
     elementWarnings: poppedDerived.elementWarnings,
   }
@@ -1834,7 +1851,7 @@ export const UPDATE_FNS = {
       propsTransform = (props) => unsetJSXValueAtPath(props, PathForSceneDataLabel)
     } else {
       propsTransform = (props) =>
-        setJSXValueAtPath(props, PathForSceneDataLabel, jsxAttributeValue(name))
+        setJSXValueAtPath(props, PathForSceneDataLabel, jsxAttributeValue(name, emptyComments))
     }
     if (TP.isScenePath(target)) {
       return modifyOpenSceneAtPath(
@@ -2460,14 +2477,16 @@ export const UPDATE_FNS = {
           if (TP.isScenePath(originalPath)) {
             const numberOfScenes = getNumberOfScenes(editor)
             const newSceneLabel = `Scene ${numberOfScenes}`
-            const props = {
-              ...currentValue.props,
-              'data-label': jsxAttributeValue(newSceneLabel),
-              'data-uid': jsxAttributeValue(newUID),
-            }
+            const props = setJSXValuesAtPaths(currentValue.props, [
+              {
+                path: PP.create(['data-label']),
+                value: jsxAttributeValue(newSceneLabel, emptyComments),
+              },
+              { path: PP.create(['data-uid']), value: jsxAttributeValue(newUID, emptyComments) },
+            ])
             const newSceneElement = {
               ...currentValue,
-              props: props,
+              props: defaultEither(currentValue.props, props),
             }
             return addSceneToJSXComponents(accumulator, newSceneElement)
           } else {
@@ -2862,7 +2881,7 @@ export const UPDATE_FNS = {
     const height = Utils.pathOr(undefined, ['imageDetails', 'imageSize', 'height'], action)
 
     const imageURL = imagePathURL(assetFilename)
-    const imageAttribute = jsxAttributeValue(imageURL)
+    const imageAttribute = jsxAttributeValue(imageURL, emptyComments)
 
     const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
     const newUID = generateUidWithExistingComponents(utopiaComponents)
@@ -2877,7 +2896,7 @@ export const UPDATE_FNS = {
         const propertyPath = PP.create(['src'])
         walkElements(components, (element, elementPath) => {
           if (isJSXElement(element)) {
-            const srcAttribute = element.props['src']
+            const srcAttribute = getJSXAttribute(element.props, 'src')
             if (srcAttribute != null && isJSXAttributeValue(srcAttribute)) {
               const srcValue: JSXAttributeValue<any> = srcAttribute
               if (
@@ -2963,13 +2982,13 @@ export const UPDATE_FNS = {
           // TODO make a default image and put it in defaults
           const imageElement = jsxElement(
             jsxElementName('img', []),
-            {
-              alt: jsxAttributeValue(''),
+            jsxAttributesFromMap({
+              alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
-              style: jsxAttributeValue({ width: width, height: height }),
-              'data-uid': jsxAttributeValue(newUID),
-              'data-aspect-ratio-locked': jsxAttributeValue(true),
-            },
+              style: jsxAttributeValue({ width: width, height: height }, emptyComments),
+              'data-uid': jsxAttributeValue(newUID, emptyComments),
+              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+            }),
             [],
           )
           const size = width != null && height != null ? { width: width, height: height } : null
@@ -2994,18 +3013,21 @@ export const UPDATE_FNS = {
 
           const imageElement = jsxElement(
             jsxElementName('img', []),
-            {
-              alt: jsxAttributeValue(''),
+            jsxAttributesFromMap({
+              alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
-              style: jsxAttributeValue({
-                left: relativeFrame.x,
-                top: relativeFrame.y,
-                width: relativeFrame.width,
-                height: relativeFrame.height,
-              }),
-              'data-uid': jsxAttributeValue(newUID),
-              'data-aspect-ratio-locked': jsxAttributeValue(true),
-            },
+              style: jsxAttributeValue(
+                {
+                  left: relativeFrame.x,
+                  top: relativeFrame.y,
+                  width: relativeFrame.width,
+                  height: relativeFrame.height,
+                },
+                emptyComments,
+              ),
+              'data-uid': jsxAttributeValue(newUID, emptyComments),
+              'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+            }),
             [],
           )
 
@@ -3049,22 +3071,25 @@ export const UPDATE_FNS = {
       const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
       const newUID = generateUidWithExistingComponents(utopiaComponents)
       const imageURL = imagePathURL(action.imagePath)
-      const imageSrcAttribute = jsxAttributeValue(imageURL)
+      const imageSrcAttribute = jsxAttributeValue(imageURL, emptyComments)
       const width = Utils.optionalMap((w) => w / 2, possiblyAnImage.width)
       const height = Utils.optionalMap((h) => h / 2, possiblyAnImage.height)
       const imageElement = jsxElement(
         jsxElementName('img', []),
-        {
-          alt: jsxAttributeValue(''),
+        jsxAttributesFromMap({
+          alt: jsxAttributeValue('', emptyComments),
           src: imageSrcAttribute,
-          style: jsxAttributeValue({
-            width: width,
-            height: height,
-          }),
-          'data-uid': jsxAttributeValue(newUID),
-          'data-label': jsxAttributeValue('Image'),
-          'data-aspect-ratio-locked': jsxAttributeValue(true),
-        },
+          style: jsxAttributeValue(
+            {
+              width: width,
+              height: height,
+            },
+            emptyComments,
+          ),
+          'data-uid': jsxAttributeValue(newUID, emptyComments),
+          'data-label': jsxAttributeValue('Image', emptyComments),
+          'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+        }),
         [],
       )
       const size = width != null && height != null ? { width: width, height: height } : null
@@ -3172,7 +3197,7 @@ export const UPDATE_FNS = {
   },
   SHOW_CONTEXT_MENU: (action: ShowContextMenu, editor: EditorModel): EditorModel => {
     // side effect!
-    openMenu(action.menuName, action.event)
+    openMenu(action.menuName, action.event, action.props)
     return editor
   },
   SEND_PREVIEW_MODEL: (action: SendPreviewModel, editor: EditorModel): EditorModel => {
@@ -3755,7 +3780,7 @@ export const UPDATE_FNS = {
           const setResult = setJSXValueAtPath(
             attributesWithUnsetKey.value,
             newPropertyPath,
-            jsxAttributeValue(originalValue.value),
+            jsxAttributeValue(originalValue.value, emptyComments),
           )
           return setResult
         } else {
@@ -3799,7 +3824,6 @@ export const UPDATE_FNS = {
         null,
         [importAlias(action.wrapper)],
         null,
-        emptyComments,
         success.imports,
       )
       return {
@@ -3814,9 +3838,8 @@ export const UPDATE_FNS = {
         const component = element.name.baseVariable
         if (component !== action.wrapper) {
           const wrappedComponent =
-            element.props.wrappedComponent == null
-              ? jsxAttributeOtherJavaScript(component, component, [], null)
-              : element.props.wrappedComponent
+            getJSXAttribute(element.props, 'wrappedComponent') ??
+            jsxAttributeOtherJavaScript(component, component, [], null)
           return {
             ...element,
             name: {
@@ -3845,18 +3868,18 @@ export const UPDATE_FNS = {
       action.target,
       (element) => {
         const imports = getOpenImportsFromState(editor)
+        const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
         if (
           MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
-          element.props.wrappedComponent != null
+          wrappedComponent != null
         ) {
-          if (element.props.wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-            const updatedProps = { ...element.props }
-            delete updatedProps['wrappedComponent']
+          if (wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+            const updatedProps = deleteJSXAttribute(element.props, 'wrappedComponent')
             return {
               ...element,
               name: {
                 ...element.name,
-                baseVariable: element.props.wrappedComponent.javascript,
+                baseVariable: wrappedComponent.javascript,
               },
               props: updatedProps,
             }
@@ -3884,7 +3907,6 @@ export const UPDATE_FNS = {
           null,
           [importAlias('animated')],
           null,
-          emptyComments,
           success.imports,
         )
         return {
@@ -3898,11 +3920,12 @@ export const UPDATE_FNS = {
       action.target,
       (element) => {
         const imports = getOpenImportsFromState(editor)
+        const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
         if (
           MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
-          element.props.wrappedComponent != null
+          wrappedComponent != null
         ) {
-          if (element.props.wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
+          if (wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
             const nameAsString = getJSXElementNameAsString(action.elementName)
             return {
               ...element,
@@ -3928,13 +3951,13 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const locked = jsxAttributeValue(action.locked)
+        const locked = jsxAttributeValue(action.locked, emptyComments)
         const updatedProps = eitherToMaybe(
           setJSXValueAtPath(element.props, PP.create(['data-aspect-ratio-locked']), locked),
         )
         return {
           ...element,
-          props: updatedProps ?? {},
+          props: updatedProps ?? element.props,
         }
       },
       editor,
@@ -3967,7 +3990,7 @@ export const UPDATE_FNS = {
     if (projectContent != null && isImageFile(projectContent)) {
       const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
       const newUID = generateUidWithExistingComponents(utopiaComponents)
-      const imageAttribute = jsxAttributeValue(imagePathURL(action.imagePath))
+      const imageAttribute = jsxAttributeValue(imagePathURL(action.imagePath), emptyComments)
       const size: Size = {
         width: projectContent.width ?? 100,
         height: projectContent.height ?? 100,
@@ -3984,18 +4007,21 @@ export const UPDATE_FNS = {
       }
       const imageElement = jsxElement(
         jsxElementName('img', []),
-        {
-          alt: jsxAttributeValue(''),
+        jsxAttributesFromMap({
+          alt: jsxAttributeValue('', emptyComments),
           src: imageAttribute,
-          style: jsxAttributeValue({
-            left: parentShiftX + frame.x,
-            top: parentShiftY + frame.y,
-            width: frame.width,
-            height: frame.height,
-          }),
-          'data-uid': jsxAttributeValue(newUID),
-          'data-aspect-ratio-locked': jsxAttributeValue(true),
-        },
+          style: jsxAttributeValue(
+            {
+              left: parentShiftX + frame.x,
+              top: parentShiftY + frame.y,
+              width: frame.width,
+              height: frame.height,
+            },
+            emptyComments,
+          ),
+          'data-uid': jsxAttributeValue(newUID, emptyComments),
+          'data-aspect-ratio-locked': jsxAttributeValue(true, emptyComments),
+        }),
         [],
       )
 
@@ -4058,15 +4084,24 @@ export const UPDATE_FNS = {
         ? createSceneTemplatePath(action.target)
         : action.target
 
-      if (pathToUpdate != null) {
+      if (pathToUpdate == null) {
         return setPropertyOnTarget(editor, target, (props) => {
-          return setJSXValueAtPath(props, pathToUpdate!, jsxAttributeValue(propsForPath))
+          let updatedProps = jsxAttributesFromMap(
+            objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
+          )
+          const dataUID = getJSXAttribute(props, 'data-uid')
+          if (dataUID != null) {
+            updatedProps = setJSXAttributesAttribute(updatedProps, 'data-uid', dataUID)
+          }
+          return right(updatedProps)
         })
       } else {
         return setPropertyOnTarget(editor, target, (props) => {
-          const updatedProps = objectMap(jsxAttributeValue, defaultProps)
-          updatedProps['data-uid'] = props['data-uid'] as JSXAttributeValue<string>
-          return right(updatedProps)
+          return setJSXValueAtPath(
+            props,
+            pathToUpdate!,
+            jsxAttributeValue(propsForPath, emptyComments),
+          )
         })
       }
     } else {
@@ -4212,6 +4247,25 @@ export const UPDATE_FNS = {
       const openTab = openEditorTab(openFileTab(StoryboardFilePath), null)
       return UPDATE_FNS.OPEN_EDITOR_TAB(openTab, updatedEditor)
     }
+  },
+  UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxElementAtPath(
+      action.target,
+      (element) => {
+        if (action.text.trim() === '') {
+          return {
+            ...element,
+            children: [],
+          }
+        } else {
+          return {
+            ...element,
+            children: [jsxTextBlock(action.text)],
+          }
+        }
+      },
+      editor,
+    )
   },
 }
 

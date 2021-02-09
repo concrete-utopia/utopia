@@ -208,4 +208,11 @@ export const MenuIcons = {
     height: 24,
     color: 'black',
   }),
+  Navigator: makeIcon({
+    category: 'semantic',
+    type: 'navigator',
+    width: 16,
+    height: 16,
+    color: 'black',
+  }),
 }

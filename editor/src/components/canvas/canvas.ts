@@ -27,6 +27,7 @@ import {
   CanvasRectangle,
   rectangleIntersection,
   canvasRectangle,
+  CanvasVector,
 } from '../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -56,6 +57,7 @@ import * as TP from '../../core/shared/template-path'
 import CanvasActions from './canvas-actions'
 import { adjustAllSelectedFrames } from './controls/select-mode/move-utils'
 import { flatMapArray } from '../../core/shared/array-utils'
+import { EmptyScenePathForStoryboard } from '../../core/model/scene-utils'
 
 export const enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -92,7 +94,6 @@ const Canvas = {
       component: ElementInstanceMetadata,
     ): { boundingRect: CanvasRectangle | null; frames: Array<FrameWithPath> } {
       const componentFrame = component.localFrame
-
       if (componentFrame == null) {
         return {
           boundingRect: null,
@@ -130,18 +131,21 @@ const Canvas = {
       }
     }
 
-    return Utils.flatMapArray((rootComponent) => {
-      if (rootComponent.globalFrame == null) {
-        return []
-      } else {
-        const nonNullGlobalFrame = rootComponent.globalFrame
-        const rootElements = MetadataUtils.getImmediateChildren(metadata, rootComponent.scenePath)
-        return flatMapArray(
-          (root) => recurseChildren(nonNullGlobalFrame, root).frames,
-          rootElements,
-        )
-      }
-    }, metadata.components)
+    const storyboardComponent = metadata.components.find((c) =>
+      TP.pathsEqual(c.scenePath, EmptyScenePathForStoryboard),
+    )
+
+    if (storyboardComponent != null) {
+      const storyboardEntryPoint = MetadataUtils.getImmediateChildren(
+        metadata,
+        storyboardComponent.scenePath,
+      )
+      return storyboardEntryPoint.flatMap((storyboardRoot) => {
+        return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardRoot).frames
+      })
+    } else {
+      return []
+    }
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
     switch (selectedViews.length) {
@@ -271,27 +275,24 @@ const Canvas = {
     })
   },
   getAllTargetsAtPoint(
-    editor: EditorState,
+    componentMetadata: JSXMetadata,
+    selectedViews: Array<TemplatePath>,
+    hiddenInstances: Array<TemplatePath>,
     canvasPosition: CanvasPoint,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
     looseTargetingForZeroSizedElements: 'strict' | 'loose',
-  ): Array<TemplatePath> {
+  ): Array<{ templatePath: TemplatePath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5
-    const targetFilters = Canvas.targetFilter(editor.selectedViews, searchTypes)
-    const framesWithPaths = Canvas.getFramesInCanvasContext(
-      editor.jsxMetadataKILLME,
-      useBoundingFrames,
-    )
+    const targetFilters = Canvas.targetFilter(selectedViews, searchTypes)
+    const framesWithPaths = Canvas.getFramesInCanvasContext(componentMetadata, useBoundingFrames)
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
       const shouldUseLooseTargeting =
         looseTargetingForZeroSizedElements &&
         (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
 
       return targetFilters.some((filter) => filter(frameWithPath.path)) &&
-        !editor.hiddenInstances.some((hidden) =>
-          TP.isAncestorOf(frameWithPath.path, hidden, true),
-        ) &&
+        !hiddenInstances.some((hidden) => TP.isAncestorOf(frameWithPath.path, hidden, true)) &&
         shouldUseLooseTargeting
         ? rectangleIntersection(
             canvasRectangle({
@@ -311,7 +312,13 @@ const Canvas = {
     })
     filteredFrames.reverse()
 
-    const targets = filteredFrames.map((filteredFrame) => filteredFrame.path)
+    const targets = filteredFrames.map((filteredFrame) => {
+      const zeroSized = filteredFrame.frame.width === 0 || filteredFrame.frame.height === 0
+      return {
+        templatePath: filteredFrame.path,
+        canBeFilteredOut: !zeroSized,
+      }
+    })
     return targets
   },
   getNextTarget(

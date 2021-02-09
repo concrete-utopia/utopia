@@ -117,11 +117,6 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
     'RightMenu rightMenuSelectedTab',
   )
 
-  const navigatorPosition = useEditorState(
-    (store) => store.editor.navigator.position,
-    'RightMenu navigatorVisible',
-  )
-
   const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
   const isInspectorSelected = rightMenuSelectedTab === RightMenuTab.Inspector
 
@@ -189,10 +184,6 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
   )
 
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
-
-  const onClickNavigateTab = React.useCallback(() => {
-    dispatch([EditorActions.togglePanel('navigatorPane')])
-  }, [dispatch])
 
   return (
     <SimpleFlexColumn
@@ -300,16 +291,6 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               highlightSelected={false}
               icon={<LargerIcons.PreviewPane />}
               onClick={togglePreviewPaneVisible}
-            />
-          </span>
-        </Tooltip>
-        <Tooltip title={'Navigator'} placement={'right'}>
-          <span>
-            <RightMenuTile
-              selected={navigatorPosition !== 'hidden'}
-              highlightSelected={false}
-              icon={<MenuIcons.Project />}
-              onClick={onClickNavigateTab}
             />
           </span>
         </Tooltip>

@@ -7,7 +7,6 @@ import {
 import { jsxElement, jsxElementName } from '../shared/element-template'
 import { AntdControls } from '../property-controls/third-party-property-controls/antd-controls'
 import { PropertyControls } from 'utopia-api'
-import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const StyleObjectProps: PropertyControls = {
   style: {
@@ -23,10 +22,10 @@ function createBasicComponent(
 ): ComponentDescriptor {
   return componentDescriptor(
     {
-      antd: importDetails(null, [importAlias(baseVariable)], null, emptyComments),
-      'antd/dist/antd.css': importDetails(null, [], null, emptyComments),
+      antd: importDetails(null, [importAlias(baseVariable)], null),
+      'antd/dist/antd.css': importDetails(null, [], null),
     },
-    jsxElement(jsxElementName(baseVariable, propertyPathParts), {}, []),
+    jsxElement(jsxElementName(baseVariable, propertyPathParts), [], []),
     name,
     { ...StyleObjectProps, ...propertyControls },
   )

@@ -23,6 +23,8 @@ import {
   SpecialSizeMeasurements,
   emptySpecialSizeMeasurements,
   ComputedStyle,
+  getJSXAttribute,
+  StyleAttributeMetadata,
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
@@ -92,7 +94,8 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme } from '../../uuiui'
+import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -376,18 +379,9 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       return (
         <React.Fragment>
           <AlignmentButtons numberOfTargets={instancePaths.length} />
-          <HeaderSection
-            elementPath={props.elementPath}
-            onSelect={props.onSelect}
-            label={props.input.label}
-            type={props.input.type}
-            onElementTypeChange={props.onElementTypeChange}
-            onWrap={props.onWrap}
-            onUnwrap={props.onUnwrap}
-            value={props.input.layoutWrapper}
-          />
+          <ClassNameSubsection />
+          <StyleSection />
           <WarningSubsection />
-
           <RenderedLayoutSection
             anyHTMLElements={anyHTMLElements}
             layout={props.input.layout}
@@ -410,13 +404,20 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
           <EventHandlersSection />
-          <ClassNameSubsection />
-          <StyleSection />
+          <HeaderSection
+            elementPath={props.elementPath}
+            onSelect={props.onSelect}
+            label={props.input.label}
+            type={props.input.type}
+            onElementTypeChange={props.onElementTypeChange}
+            onWrap={props.onWrap}
+            onUnwrap={props.onUnwrap}
+            value={props.input.layoutWrapper}
+          />
         </React.Fragment>
       )
     }
   }
-
   return (
     <div
       id='inspector'
@@ -611,7 +612,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
           if (MetadataUtils.isLayoutWrapperAgainstImports(imports, elementMetadata)) {
             inspectorModel.layoutWrapper = elementName as any
           }
-          const wrappedComponent = jsxElement.props.wrappedComponent
+          const wrappedComponent = getJSXAttribute(jsxElement.props, 'wrappedComponent')
           if (wrappedComponent != null && isJSXAttributeOtherJavaScript(wrappedComponent)) {
             inspectorModel.type = wrappedComponent.javascript
           }
@@ -675,7 +676,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       const actions = Utils.flatMapArray(
         (elem) =>
           updates.map((update) =>
-            setProp_UNSAFE(elem, update.path, jsxAttributeValue(update.value)),
+            setProp_UNSAFE(elem, update.path, jsxAttributeValue(update.value, emptyComments)),
           ),
         refElementsToTargetForUpdates.current,
       )
@@ -732,7 +733,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       const newPath = [...parent.path, label]
       const newPropertyPath = PP.create(newPath)
       const actions: Array<EditorAction> = refElementsToTargetForUpdates.current.map((elem) =>
-        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({})),
+        EditorActions.setProp_UNSAFE(elem, newPropertyPath, jsxAttributeValue({}, emptyComments)),
       )
       dispatch(actions, 'everyone')
       setSelectedTarget(newPath)
@@ -807,6 +808,7 @@ export const InspectorContextProvider = betterReactMemo<{
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newSpiedProps: Array<{ [key: string]: any }> = []
   let newComputedStyles: Array<ComputedStyle> = []
+  let newAttributeMetadatas: Array<StyleAttributeMetadata> = []
 
   Utils.fastForEach(selectedViews, (path) => {
     if (TP.isScenePath(path)) {
@@ -821,7 +823,7 @@ export const InspectorContextProvider = betterReactMemo<{
         path,
       )
       if (elementMetadata != null) {
-        if (elementMetadata.computedStyle == null) {
+        if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
           /**
            * This early return will cause the inspector to render with empty fields.
            * Because the computedStyle is only used in some cases for some controls,
@@ -831,10 +833,11 @@ export const InspectorContextProvider = betterReactMemo<{
         }
 
         const jsxElement = findElementAtPath(path, rootComponents)
-        const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : {}
+        const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : []
         newEditedMultiSelectedProps.push(jsxAttributes)
         newSpiedProps.push(elementMetadata.props)
         newComputedStyles.push(elementMetadata.computedStyle)
+        newAttributeMetadatas.push(elementMetadata.attributeMetadatada)
       }
     }
   })
@@ -842,6 +845,7 @@ export const InspectorContextProvider = betterReactMemo<{
   const editedMultiSelectedProps = useKeepReferenceEqualityIfPossible(newEditedMultiSelectedProps)
   const spiedProps = useKeepReferenceEqualityIfPossible(newSpiedProps)
   const computedStyles = useKeepReferenceEqualityIfPossible(newComputedStyles)
+  const attributeMetadatas = useKeepReferenceEqualityIfPossible(newAttributeMetadatas)
 
   const selectedViewsRef = usePropControlledRef_DANGEROUS(selectedViews)
   const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
@@ -911,6 +915,7 @@ export const InspectorContextProvider = betterReactMemo<{
           targetPath: props.targetPath,
           spiedProps: spiedProps,
           computedStyles: computedStyles,
+          selectedAttributeMetadatas: attributeMetadatas,
         }}
       >
         {props.children}

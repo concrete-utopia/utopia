@@ -9,6 +9,8 @@ import {
   jsxAttributeValue,
   jsxElement,
   JSXAttributes,
+  setJSXAttributesAttribute,
+  jsxAttributesFromMap,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -185,22 +187,22 @@ const divComponentBeingInserted = componentBeingInserted({}, jsxElementName('div
 const imageComponentBeingInserted = componentBeingInserted({}, jsxElementName('img', []))
 
 const textComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Text')], null, emptyComments) },
+  { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
   jsxElementName('Text', []),
 )
 
 const ellipseComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null, emptyComments) },
+  { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
   jsxElementName('Ellipse', []),
 )
 
 const rectangleComponentBeingInserted = componentBeingInserted(
-  { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null, emptyComments) },
+  { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
   jsxElementName('Rectangle', []),
 )
 
 const animatedDivComponentBeingInserted = componentBeingInserted(
-  { 'react-spring': importDetails(null, [importAlias('animated')], null, emptyComments) },
+  { 'react-spring': importDetails(null, [importAlias('animated')], null) },
   jsxElementName('animated', ['div']),
 )
 
@@ -245,7 +247,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         enableInsertModeForJSXElement(
           defaultTextElement(newUID),
           newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Text')], null, emptyComments) },
+          { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
           null,
         ),
       ],
@@ -260,7 +262,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         enableInsertModeForJSXElement(
           defaultAnimatedDivElement(newUID),
           newUID,
-          { 'react-spring': importDetails(null, [importAlias('animated')], null, emptyComments) },
+          { 'react-spring': importDetails(null, [importAlias('animated')], null) },
           null,
         ),
       ],
@@ -275,7 +277,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         enableInsertModeForJSXElement(
           defaultEllipseElement(newUID),
           newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null, emptyComments) },
+          { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
           null,
         ),
       ],
@@ -290,7 +292,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         enableInsertModeForJSXElement(
           defaultRectangleElement(newUID),
           newUID,
-          { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null, emptyComments) },
+          { 'utopia-api': importDetails(null, [importAlias('Rectangle')], null) },
           null,
         ),
       ],
@@ -407,8 +409,14 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
               const warningMessage = findMissingDefaultsAndGetWarning(detectedProps, defaultProps)
               const insertItemOnMouseDown = () => {
                 const newUID = generateUID(this.props.existingUIDs)
-                let props: JSXAttributes = objectMap(jsxAttributeValue, defaultProps)
-                props['data-uid'] = jsxAttributeValue(newUID)
+                let props: JSXAttributes = jsxAttributesFromMap(
+                  objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
+                )
+                props = setJSXAttributesAttribute(
+                  props,
+                  'data-uid',
+                  jsxAttributeValue(newUID, emptyComments),
+                )
                 const newElement = jsxElement(jsxElementName(componentName, []), props, [])
                 this.props.editorDispatch(
                   [enableInsertModeForJSXElement(newElement, newUID, {}, null)],
@@ -455,10 +463,11 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                       const newUID = generateUID(this.props.existingUIDs)
                       const newElement = {
                         ...component.element,
-                        props: {
-                          ...component.element.props,
-                          ['data-uid']: jsxAttributeValue(newUID),
-                        },
+                        props: setJSXAttributesAttribute(
+                          component.element.props,
+                          'data-uid',
+                          jsxAttributeValue(newUID, emptyComments),
+                        ),
                       }
                       this.props.editorDispatch(
                         [

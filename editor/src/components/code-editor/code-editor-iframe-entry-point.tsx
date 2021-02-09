@@ -32,11 +32,13 @@ import {
 import * as EditorActions from '../../components/editor/actions/action-creators'
 import { ScriptEditor } from './script-editor'
 import { EditorTab } from '../editor/store/editor-tabs'
+import {
+  useReadOnlyConsoleLogs,
+  useReadOnlyRuntimeErrors,
+} from '../../core/shared/runtime-report-logs'
 
 export interface JSONStringifiedCodeEditorProps {
   relevantPanel: EditorPanel
-  runtimeErrors: Array<RuntimeErrorInfo>
-  canvasConsoleLogs: Array<ConsoleLog>
   selectedViews: TemplatePath[]
   filePath: string | null
   openFile: TextFile | ImageFile | Directory | AssetFile | null
@@ -56,18 +58,48 @@ export interface JSONStringifiedCodeEditorProps {
 }
 
 export const CodeEditorIframeEntryPoint = betterReactMemo('CodeEditorIframeEntryPoint', () => {
-  const propsFromMainEditor = useBridgeFromMainEditor()
+  const { propsFromMainEditor, runtimeErrors, canvasConsoleLogs } = useBridgeFromMainEditor()
   const dispatch = BridgeTowardsMainEditor.sendCodeEditorAction
 
-  return <CodeEditorEntryPoint propsFromMainEditor={propsFromMainEditor} dispatch={dispatch} />
+  return (
+    <CodeEditorEntryPoint
+      propsFromMainEditor={propsFromMainEditor}
+      dispatch={dispatch}
+      runtimeErrors={runtimeErrors}
+      canvasConsoleLogs={canvasConsoleLogs}
+    />
+  )
 })
 
-export interface CodeEditorEntryPointProps {
+export interface CodeEditorNonIframeEntryPointProps {
   propsFromMainEditor: JSONStringifiedCodeEditorProps | null
   dispatch: (actions: CodeEditorAction[]) => void
 }
 
-export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
+export const CodeEditorNonIframeEntryPoint = betterReactMemo<CodeEditorNonIframeEntryPointProps>(
+  'CodeEditorNonIframeEntryPoint',
+  (props) => {
+    const runtimeErrors: RuntimeErrorInfo[] = useReadOnlyRuntimeErrors()
+    const canvasConsoleLogs: ConsoleLog[] = useReadOnlyConsoleLogs()
+    return (
+      <CodeEditorEntryPoint
+        dispatch={props.dispatch}
+        propsFromMainEditor={props.propsFromMainEditor}
+        runtimeErrors={runtimeErrors}
+        canvasConsoleLogs={canvasConsoleLogs}
+      />
+    )
+  },
+)
+
+export interface CodeEditorEntryPointProps {
+  propsFromMainEditor: JSONStringifiedCodeEditorProps | null
+  dispatch: (actions: CodeEditorAction[]) => void
+  runtimeErrors: Array<RuntimeErrorInfo>
+  canvasConsoleLogs: Array<ConsoleLog>
+}
+
+const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
   'CodeEditorEntryPoint',
   (props) => {
     const { dispatch, propsFromMainEditor } = props
@@ -150,6 +182,8 @@ export const CodeEditorEntryPoint = betterReactMemo<CodeEditorEntryPointProps>(
           openEditorTab={openEditorTab}
           setCodeEditorVisibility={setCodeEditorVisibility}
           setFocus={setFocusCallback}
+          runtimeErrors={props.runtimeErrors}
+          canvasConsoleLogs={props.canvasConsoleLogs}
           {...propsFromMainEditor}
         />
       )

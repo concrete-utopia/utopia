@@ -52,6 +52,7 @@ dependencies:
   - process
   - protolude ==0.2.4
   - resource-pool
+  - rio
   - servant ==0.15
   - servant-blaze
   - servant-client ==0.15

@@ -11,6 +11,8 @@ import {
   jsxElement,
   utopiaJSXComponent,
   defaultPropsParam,
+  getJSXAttribute,
+  jsxAttributesFromMap,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
@@ -24,7 +26,7 @@ import {
 import { parseSuccess } from '../common/project-file-utils'
 import { applyPrettier } from './prettier-utils'
 import {
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   JustImportViewAndReact,
   testParseCode,
   testParseModifyPrint,
@@ -46,13 +48,13 @@ export var App = props => {
 }
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ height: 200, left: 59, width: 200, top: 79 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid={'scene-0'}
+        data-uid='scene-0'
       />
     </Storyboard>
   )
@@ -63,16 +65,16 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     foldParsedTextFile(
       (failure) => fail(failure),
       (success) => {
-        const firstComponent = success.topLevelElements[0]
-        if (isUtopiaJSXComponent(firstComponent)) {
+        const firstComponent = success.topLevelElements.find(isUtopiaJSXComponent)
+        if (firstComponent != null) {
           const view = firstComponent.rootElement
           if (isJSXElement(view)) {
-            expect(view.props['data-uid']).not.toBeNull()
+            expect(getJSXAttribute(view.props, 'data-uid')).not.toBeNull()
             const firstChild = view.children[0]
             if (isJSXArbitraryBlock(firstChild)) {
               const elementWithin =
                 firstChild.elementsWithin[Object.keys(firstChild.elementsWithin)[0]]
-              expect(elementWithin.props['data-uid']).not.toBeNull()
+              expect(getJSXAttribute(elementWithin.props, 'data-uid')).not.toBeNull()
             } else {
               fail('First child is not an arbitrary block of code.')
             }
@@ -91,22 +93,24 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     const code = applyPrettier(
       `import * as React from "react";
 import { View, Storyboard, Scene } from 'utopia-api';
+
 export var App = props => {
   return (
-    <View data-uid={'aaa'}>
-      {<div data-uid={'bbb'} />}
+    <View data-uid='aaa'>
+      {<div data-uid='bbb' />}
     </View>
   )
 }
+
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ height: 200, left: 59, width: 200, top: 79 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid={'scene-0'}
+        data-uid='scene-0'
       />
     </Storyboard>
   )
@@ -117,23 +121,25 @@ export var ${BakedInStoryboardVariableName} = (props) => {
 
     const expectedCode = applyPrettier(
       `import * as React from "react";
-import { Scene, Storyboard, View } from 'utopia-api';
+import { View, Storyboard, Scene } from 'utopia-api';
+
 export var App = props => {
   return (
-    <View data-uid={"aaa"}>
-      {<div data-uid={"bbb"} style={{ left: 20, top: 300 }} />}
+    <View data-uid="aaa">
+      {<div data-uid="bbb" style={{ left: 20, top: 300 }} />}
     </View>
   );
 };
+
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ height: 200, left: 59, width: 200, top: 79 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid={'scene-0'}
+        data-uid='scene-0'
       />
     </Storyboard>
   )
@@ -143,8 +149,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     ).formatted
 
     testParseModifyPrint(code, expectedCode, (success: ParseSuccess) => {
-      const firstComponent = success.topLevelElements[0]
-      if (isUtopiaJSXComponent(firstComponent)) {
+      const firstComponent = success.topLevelElements.find(isUtopiaJSXComponent)
+      if (firstComponent != null) {
         const view = firstComponent.rootElement
         if (isJSXElement(view)) {
           const firstChild = view.children[0]
@@ -153,7 +159,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             const newAttributes = setJSXValueAtPath(
               elementWithin.props,
               PP.create(['style']),
-              jsxAttributeValue({ left: 20, top: 300 }),
+              jsxAttributeValue({ left: 20, top: 300 }, emptyComments),
             )
             forEachRight(newAttributes, (updated) => {
               elementWithin.props = updated
@@ -168,30 +174,35 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('Supports using top level components inside an arbitrary block', () => {
     const code = `import React from "react";
 import { View } from "utopia-api";
-var MyComp = (props) => <div data-uid={'abc'}/>
+var MyComp = (props) => <div data-uid='abc'/>
 export var whatever = props => (
-<View data-uid={'aaa'}>
-  {<MyComp data-uid={'aab'}/>}
+<View data-uid='aaa'>
+  {<MyComp data-uid='aab'/>}
 </View>
 )
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
 
     const myComp = utopiaJSXComponent(
       'MyComp',
       true,
+      'var',
+      'expression',
       defaultPropsParam,
       [],
-      jsxElement('div', { 'data-uid': jsxAttributeValue('abc') }, []),
+      jsxElement(
+        'div',
+        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('abc', emptyComments) }),
+        [],
+      ),
       null,
       false,
-      emptyComments,
       emptyComments,
     )
 
     const codeBlock = jsxArbitraryBlock(
-      `<MyComp data-uid={'aab'}/>`,
-      `<MyComp data-uid={'aab'} />;`,
+      `<MyComp data-uid='aab'/>`,
+      `<MyComp data-uid='aab' />;`,
       `return utopiaCanvasJSXLookup("aab", {});`,
       ['React', 'MyComp', 'utopiaCanvasJSXLookup'],
       expect.objectContaining({
@@ -199,24 +210,35 @@ export var whatever = props => (
         version: 3,
         file: 'code.tsx',
       }),
-      { aab: jsxElement('MyComp', { 'data-uid': jsxAttributeValue('aab') }, []) },
+      {
+        aab: jsxElement(
+          'MyComp',
+          jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aab', emptyComments) }),
+          [],
+        ),
+      },
     )
-    const view = jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [codeBlock])
+    const view = jsxElement(
+      'View',
+      jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+      [codeBlock],
+    )
     const whatever = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'parenthesized-expression',
       defaultPropsParam,
       [],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [myComp, whatever].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -231,22 +253,22 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ { n: 1 } ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(({ n }) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(({ n }) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [
         jsxArbitraryBlock(
-          `arr.map(({ n }) => <View data-uid={'aab'} thing={n} /> )`,
-          `arr.map(({ n }) => <View data-uid={'aab'} thing={n} />);`,
+          ` arr.map(({ n }) => <View data-uid='aab' thing={n} /> ) `,
+          `arr.map(({ n }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
   var n = _ref.n;
   return utopiaCanvasJSXLookup("aab", {
@@ -262,8 +284,8 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
-                'data-uid': jsxAttributeValue('aab'),
+              jsxAttributesFromMap({
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',
@@ -274,14 +296,14 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },
         ),
       ],
     )
-    const jsCode = `const arr = [{ n: 1 }];`
+    const jsCode = `const arr = [ { n: 1 } ]`
     const transpiledJsCode = `var arr = [{
   n: 1
 }];
@@ -296,23 +318,23 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
-      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
       arbitraryBlock,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -327,22 +349,22 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ { a: { n: 1 } } ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(({ a: { n } }) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [
         jsxArbitraryBlock(
-          `arr.map(({ a: { n } }) => <View data-uid={'aab'} thing={n} /> )`,
-          `arr.map(({ a: { n } }) => <View data-uid={'aab'} thing={n} />);`,
+          ` arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> ) `,
+          `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
   var n = _ref.a.n;
   return utopiaCanvasJSXLookup("aab", {
@@ -358,8 +380,8 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
-                'data-uid': jsxAttributeValue('aab'),
+              jsxAttributesFromMap({
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',
@@ -370,14 +392,14 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },
         ),
       ],
     )
-    const jsCode = `const arr = [{ a: { n: 1 } }];`
+    const jsCode = `const arr = [ { a: { n: 1 } } ]`
     const transpiledJsCode = `var arr = [{
   a: {
     n: 1
@@ -394,23 +416,23 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
-      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
       arbitraryBlock,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -425,15 +447,15 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ [ 1 ] ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(([ n ]) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(([ n ]) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const originalMapJsCode = `arr.map(([ n ]) => <View data-uid={'aab'} thing={n} /> )`
-    const mapJsCode = `arr.map(([n]) => <View data-uid={'aab'} thing={n} />);`
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+    const originalMapJsCode = ` arr.map(([ n ]) => <View data-uid='aab' thing={n} /> ) `
+    const mapJsCode = `arr.map(([n]) => <View data-uid='aab' thing={n} />);`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
   var _ref2 = babelHelpers.slicedToArray(_ref, 1),
       n = _ref2[0];
@@ -444,9 +466,9 @@ export var whatever = (props) => {
 });`
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [
         jsxArbitraryBlock(
           originalMapJsCode,
@@ -461,8 +483,8 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
-                'data-uid': jsxAttributeValue('aab'),
+              jsxAttributesFromMap({
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',
@@ -473,14 +495,14 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },
         ),
       ],
     )
-    const jsCode = `const arr = [[1]];`
+    const jsCode = `const arr = [ [ 1 ] ]`
     const transpiledJsCode = `var arr = [[1]];
 return { arr: arr };`
     const arbitraryBlock = arbitraryJSBlock(
@@ -493,23 +515,23 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
-      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
       arbitraryBlock,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -522,22 +544,22 @@ return { arr: arr };`
 import { View } from "utopia-api";
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      { [1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> ) }
+    <View data-uid='aaa'>
+      { [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) }
     </View>
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [
         jsxArbitraryBlock(
-          `[1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> )`,
-          `[1].map(n => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div>);`,
+          ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
+          `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
     n: n
@@ -552,15 +574,15 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'div',
-              {
-                'data-uid': jsxAttributeValue('aab'),
-              },
+              jsxAttributesFromMap({
+                'data-uid': jsxAttributeValue('aab', emptyComments),
+              }),
               [
                 jsxElement(
                   'div',
-                  {
-                    'data-uid': jsxAttributeValue('aac'),
-                  },
+                  jsxAttributesFromMap({
+                    'data-uid': jsxAttributeValue('aac', emptyComments),
+                  }),
                   [
                     jsxArbitraryBlock(
                       `n`,
@@ -585,18 +607,19 @@ export var whatever = (props) => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -611,14 +634,14 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ [ [ 1 ] ] ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const mapJsCode = `arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> )`
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+    const mapJsCode = `arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> )`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
   var _ref2 = babelHelpers.slicedToArray(_ref, 1),
       _ref2$ = babelHelpers.slicedToArray(_ref2[0], 1),
@@ -630,9 +653,9 @@ export var whatever = (props) => {
 });`
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [
         jsxArbitraryBlock(
           mapJsCode,
@@ -647,8 +670,8 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
-                'data-uid': jsxAttributeValue('aab'),
+              jsxAttributesFromMap({
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',
@@ -659,7 +682,7 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },
@@ -679,23 +702,23 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
-      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
       arbitraryBlock,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -708,22 +731,22 @@ return { arr: arr };`
 import { View } from "utopia-api";
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      { [1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> ) }
+    <View data-uid='aaa'>
+      { [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) }
     </View>
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [
         jsxArbitraryBlock(
-          `[1].map((n) => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div> )`,
-          `[1].map(n => <div data-uid={'aab'}><div data-uid={'aac'}>{n}</div></div>);`,
+          ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
+          `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
     n: n
@@ -738,15 +761,15 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'div',
-              {
-                'data-uid': jsxAttributeValue('aab'),
-              },
+              jsxAttributesFromMap({
+                'data-uid': jsxAttributeValue('aab', emptyComments),
+              }),
               [
                 jsxElement(
                   'div',
-                  {
-                    'data-uid': jsxAttributeValue('aac'),
-                  },
+                  jsxAttributesFromMap({
+                    'data-uid': jsxAttributeValue('aac', emptyComments),
+                  }),
                   [
                     jsxArbitraryBlock(
                       `n`,
@@ -771,18 +794,19 @@ export var whatever = (props) => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -797,14 +821,14 @@ import { View } from "utopia-api";
 export var whatever = (props) => {
   const arr = [ [ [ 1 ] ] ]
   return (
-    <View data-uid={'aaa'}>
-      { arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> ) }
+    <View data-uid='aaa'>
+      { arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> ) }
     </View>
   )
 }
 `
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
-    const mapJsCode = `arr.map(([[ n ]]) => <View data-uid={'aab'} thing={n} /> )`
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+    const mapJsCode = `arr.map(([[ n ]]) => <View data-uid='aab' thing={n} /> )`
     const transpiledMapJsCode = `return arr.map(function (_ref) {
   var _ref2 = babelHelpers.slicedToArray(_ref, 1),
       _ref2$ = babelHelpers.slicedToArray(_ref2[0], 1),
@@ -816,9 +840,9 @@ export var whatever = (props) => {
 });`
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [
         jsxArbitraryBlock(
           mapJsCode,
@@ -833,8 +857,8 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
-              {
-                'data-uid': jsxAttributeValue('aab'),
+              jsxAttributesFromMap({
+                'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
                   'n',
                   'return n;',
@@ -845,7 +869,7 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                 ),
-              },
+              }),
               [],
             ),
           },
@@ -865,23 +889,23 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
-      emptyComments,
     )
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
       arbitraryBlock,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -906,7 +930,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -922,16 +946,16 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
     />
   </Storyboard>
 )`
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(actualResult).toMatchSnapshot()
   })
 })

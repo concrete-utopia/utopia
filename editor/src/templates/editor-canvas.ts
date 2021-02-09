@@ -77,6 +77,7 @@ import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
 import { UtopiaStyles } from '../uuiui'
+import { DeselectControl } from '../components/canvas/controls/deselect-control'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -498,13 +499,10 @@ function createNodeConnectorsDiv(offset: CanvasPoint, scale: number) {
   })
 }
 
-interface EditorCanvasProps extends CanvasReactErrorCallback {
+interface EditorCanvasProps {
   model: CanvasModel
   editor: EditorState
   dispatch: EditorDispatch
-  canvasConsoleLogs: Array<ConsoleLog>
-  clearConsoleLogs: () => void
-  addToConsoleLogs: (log: ConsoleLog) => void
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
@@ -669,6 +667,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       {
         id: 'canvas-root',
         key: 'canvas-root',
+        'data-testid': 'canvas-root',
         style: {
           ...canvasLiveEditingStyle,
           transition: 'all .2s linear',
@@ -769,13 +768,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
         },
       },
+      React.createElement(DeselectControl, {}),
       nodeConnectorsDiv,
       React.createElement(CanvasComponentEntry, {
-        reportError: this.props.reportError,
-        clearErrors: this.props.clearErrors,
-        canvasConsoleLogs: this.props.canvasConsoleLogs,
-        clearConsoleLogs: this.props.clearConsoleLogs,
-        addToConsoleLogs: this.props.addToConsoleLogs,
         getPositionFromCoordinates: this.getPositionFromCoordinates,
         dispatch: this.props.dispatch,
       }),
@@ -1132,7 +1127,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     window.addEventListener('keyup', this.handleKeyUp)
     window.addEventListener('mousedown', this.handleMouseDown)
     window.addEventListener('mouseup', this.handleMouseUp)
-    window.addEventListener('mousemove', this.handleMouseMove)
+    window.addEventListener('mousemove', this.handleMouseMove, { capture: true }) // we use this event in the capture phase because size-box.ts calls stopPropagation() on mouseMove
     window.addEventListener('mouseleave', this.handleMouseLeave)
     window.addEventListener('click', this.handleClick)
     window.addEventListener('dblclick', this.handleDoubleClick)

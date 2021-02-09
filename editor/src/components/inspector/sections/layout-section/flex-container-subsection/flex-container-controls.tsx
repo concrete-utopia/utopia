@@ -84,6 +84,7 @@ export const FlexDirectionControl = betterReactMemo(
         <OptionChainControl
           id='flex.container.flexDirection'
           key='flex.container.flexDirection'
+          testId='flex.container.flexDirection'
           value={props.value}
           DEPRECATED_controlOptions={{
             labelBelow: 'Direction',
@@ -123,6 +124,7 @@ export const FlexAlignItemsControl = betterReactMemo(
           <OptionChainControl
             id='flex.container.alignItems'
             key='flex.container.alignItems'
+            testId='flex.container.alignItems'
             value={props.value}
             controlStatus={props.controlStatus}
             controlStyles={props.controlStyles}
@@ -209,6 +211,7 @@ export const FlexJustifyContentControl = betterReactMemo(
         <OptionChainControl
           id='flex.container.justifyContent'
           key='flex.container.justifyContent'
+          testId='flex.container.justifyContent'
           value={props.value}
           DEPRECATED_controlOptions={{
             labelBelow: 'Justify',
@@ -246,6 +249,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
           <SliderControl
             id='flex.container.gap.main'
             key='flex.container.gap.main'
+            testId='flex.container.gap.main'
             value={props.value}
             DEPRECATED_controlOptions={
               {
@@ -266,6 +270,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
         <InspectorContextMenuWrapper id={`gap-main-context-menu`} items={menuItems} data={{}}>
           <SimpleNumberInput
             id='flex.container.gap.main'
+            testId='flex.container.gap.main'
             value={props.value}
             minimum={0}
             maximum={50}
@@ -274,6 +279,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             onTransientSubmitValue={wrappedOnTransientSubmit}
             onForcedSubmitValue={wrappedOnSubmit}
             controlStatus={props.controlStatus}
+            defaultUnitToHide={'px'}
           />
         </InspectorContextMenuWrapper>
       </GridRow>
@@ -304,6 +310,7 @@ export const FlexAlignContentControl = betterReactMemo(
         <OptionChainControl
           id='flex.container.alignContent'
           key='flex.container.alignContent'
+          testId='flex.container.alignContent'
           value={props.value}
           options={alignContentOptions(
             props.alignDirection,

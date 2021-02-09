@@ -15,7 +15,7 @@ import { DistanceGuideline } from './distance-guideline'
 import { GuidelineControl } from './guideline-control'
 import { collectParentAndSiblingGuidelines, getSnappedGuidelines } from './guideline-helpers'
 import { ControlProps } from './new-canvas-controls'
-import { ComponentAreaControl, ComponentLabelControl } from './component-area-control'
+import { ComponentLabelControl } from './component-area-control'
 import { YogaControls } from './yoga-control'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -28,7 +28,9 @@ import { areYogaChildren } from './select-mode/yoga-utils'
 import { JSXMetadata } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
-import { uniqBy } from '../../../core/shared/array-utils'
+import { getSelectableViews } from './select-mode/select-mode-hooks'
+import { getAllTargetsAtPoint } from '../dom-lookup'
+import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 
 export const SnappingThreshold = 5
 
@@ -45,6 +47,10 @@ function getDistanceGuidelines(
 }
 
 interface SelectModeControlContainerProps extends ControlProps {
+  startDragStateAfterDragExceedsThreshold: (
+    nativeEvent: MouseEvent,
+    foundTarget: TemplatePath,
+  ) => void
   setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
   keysPressed: KeysPressed
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
@@ -98,6 +104,7 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   selectComponent = (target: TemplatePath, isMultiselect: boolean): Array<TemplatePath> => {
+    // TODO BALAZS Remove this and unify with select-mode-hooks
     if (this.props.selectedViews.some((view) => TP.pathsEqual(target, view))) {
       return this.props.selectedViews
     } else {
@@ -134,83 +141,27 @@ export class SelectModeControlContainer extends React.Component<
     start: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
   ) => {
-    if (
-      // Only on left mouse down.
-      originalEvent.buttons === 1 &&
-      !MetadataUtils.anyUnknownOrGeneratedElements(this.props.rootComponents, selectedViews)
-    ) {
-      const selection = TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
-      const moveTargets = selection.filter(
-        (view) =>
-          TP.isScenePath(view) ||
-          this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
-      )
-      // setting original frames
-      if (moveTargets.length > 0) {
-        let originalFrames = getOriginalCanvasFrames(moveTargets, this.props.componentMetadata)
-        originalFrames = originalFrames.filter((f) => f.frame != null)
-        const selectionArea = Utils.boundingRectangleArray(
-          selectedViews.map((view) => {
-            return MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
-          }),
-        )
-
-        const onMouseMove = (event: MouseEvent) => {
-          const cursorPosition = this.props.windowToCanvasPosition(event)
-          if (Utils.distance(start, cursorPosition.canvasPositionRaw) > 2) {
-            // actually start the drag state
-            const duplicate = event.altKey
-            const duplicateNewUIDs = duplicate
-              ? createDuplicationNewUIDs(
-                  this.props.selectedViews,
-                  this.props.componentMetadata,
-                  this.props.rootComponents,
-                )
-              : null
-
-            removeMouseListeners()
-            this.props.dispatch([
-              CanvasActions.createDragState(
-                moveDragState(
-                  start,
-                  null,
-                  null,
-                  originalFrames,
-                  selectionArea,
-                  !event.metaKey,
-                  event.shiftKey,
-                  duplicate,
-                  event.metaKey,
-                  duplicateNewUIDs,
-                  start,
-                  this.props.componentMetadata,
-                  moveTargets,
-                ),
-              ),
-            ])
-          }
-        }
-
-        const onMouseUp = () => {
-          removeMouseListeners()
-        }
-
-        const removeMouseListeners = () => {
-          window.removeEventListener('mousemove', onMouseMove)
-          window.removeEventListener('mouseup', onMouseUp)
-        }
-
-        window.addEventListener('mousemove', onMouseMove)
-        window.addEventListener('mouseup', onMouseUp)
-      }
-    }
+    this.props.startDragStateAfterDragExceedsThreshold(originalEvent.nativeEvent, target)
   }
 
   onContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation()
     event.preventDefault()
+    const elementsUnderCursor = getAllTargetsAtPoint(
+      this.props.componentMetadata,
+      this.props.selectedViews,
+      this.props.hiddenInstances,
+      'no-filter',
+      WindowMousePositionRaw,
+      this.props.scale,
+      this.props.canvasOffset,
+    )
     this.props.dispatch(
-      [EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent)],
+      [
+        EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent, {
+          elementsUnderCursor,
+        }),
+      ],
       'canvas',
     )
   }
@@ -245,79 +196,8 @@ export class SelectModeControlContainer extends React.Component<
     this.currentlyReparenting = false
   }
 
-  filterHiddenInstances = (paths: Array<TemplatePath>): Array<TemplatePath> => {
-    return paths.filter((path) =>
-      this.props.hiddenInstances.every((hidden) => !TP.pathsEqual(path, hidden)),
-    )
-  }
-
   isHighlighted = (path: TemplatePath) => {
     return this.props.highlightedViews.some((highlighted) => TP.pathsEqual(path, highlighted))
-  }
-
-  getSelectableViews(allElementsDirectlySelectable: boolean): TemplatePath[] {
-    let candidateViews: Array<TemplatePath>
-
-    if (allElementsDirectlySelectable) {
-      candidateViews = MetadataUtils.getAllPaths(this.props.componentMetadata)
-    } else {
-      const scenes = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-      let rootElementsToFilter: TemplatePath[] = []
-      let dynamicScenesWithFragmentRootViews: ScenePath[] = []
-      Utils.fastForEach(scenes, (path) => {
-        const scene = MetadataUtils.findSceneByTemplatePath(
-          this.props.componentMetadata.components,
-          path,
-        )
-        const rootElements = scene?.rootElements
-        if (
-          MetadataUtils.isSceneTreatedAsGroup(scene) &&
-          rootElements != null &&
-          rootElements.length > 1
-        ) {
-          rootElementsToFilter.push(...rootElements)
-          dynamicScenesWithFragmentRootViews.push(path)
-        }
-      })
-      const allRoots = MetadataUtils.getAllCanvasRootPaths(this.props.componentMetadata).filter(
-        (rootPath) => {
-          return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
-        },
-      )
-      let siblings: Array<TemplatePath> = []
-      Utils.fastForEach(this.props.selectedViews, (view) => {
-        Utils.fastForEach(TP.allPaths(view), (ancestor) => {
-          const ancestorChildren = MetadataUtils.getImmediateChildren(
-            this.props.componentMetadata,
-            ancestor,
-          )
-
-          siblings.push(...ancestorChildren.map((child) => child.templatePath))
-        })
-      })
-
-      const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
-      const uniqueSelectableViews = uniqBy<TemplatePath>(selectableViews, TP.pathsEqual)
-
-      const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
-        // I kept the group-like behavior here that the user can't single-click select the parent group, even though it is a view now
-        const isGroup = MetadataUtils.isAutoSizingViewFromComponents(
-          this.props.componentMetadata,
-          view,
-        )
-        const isAncestorOfSelected = this.props.selectedViews.some((selectedView) =>
-          TP.isAncestorOf(selectedView, view, false),
-        )
-        if (isGroup && isAncestorOfSelected) {
-          return false
-        } else {
-          return true
-        }
-      })
-      candidateViews = selectableViewsFiltered
-    }
-
-    return this.filterHiddenInstances(candidateViews)
   }
 
   getClippedArea = (target: TemplatePath): CanvasRectangle | null => {
@@ -353,39 +233,6 @@ export class SelectModeControlContainer extends React.Component<
     )
   }
 
-  renderControl = (target: TemplatePath, index: number, isChild: boolean): JSX.Element | null => {
-    const frame = this.getClippedArea(target)
-    if (frame != null) {
-      return (
-        <ComponentAreaControl
-          key={`${TP.toComponentId(target)}-${index}-control`}
-          testID={`component-area-control-${TP.toComponentId(target)}-${index}`}
-          componentMetadata={this.props.componentMetadata}
-          target={target}
-          frame={frame}
-          scale={this.props.scale}
-          highlighted={this.isHighlighted(target)}
-          selectedComponents={this.props.selectedViews}
-          dispatch={this.props.dispatch}
-          canvasOffset={this.props.canvasOffset}
-          hoverEffectEnabled={!isChild}
-          doubleClickToSelect={isChild}
-          selectComponent={this.selectComponent}
-          onMouseDown={this.onControlMouseDown}
-          onHover={this.onHover}
-          onHoverEnd={this.onHoverEnd}
-          keysPressed={this.props.keysPressed}
-          windowToCanvasPosition={this.props.windowToCanvasPosition}
-          selectedViews={this.props.selectedViews}
-          imports={this.props.imports}
-          showAdditionalControls={this.props.showAdditionalControls}
-        />
-      )
-    } else {
-      return null
-    }
-  }
-
   renderLabel = (target: TemplatePath, hoverEnabled: boolean): JSX.Element | null => {
     const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
     if (frame == null) {
@@ -394,6 +241,8 @@ export class SelectModeControlContainer extends React.Component<
     return (
       <ComponentLabelControl
         key={`${TP.toComponentId(target)}-label`}
+        testID={`label-control-${TP.toComponentId(target)}`}
+        mouseEnabled={true}
         componentMetadata={this.props.componentMetadata}
         target={target}
         frame={frame}
@@ -421,36 +270,6 @@ export class SelectModeControlContainer extends React.Component<
     if (this.props.selectionEnabled) {
       this.props.dispatch([EditorActions.clearSelection()], 'canvas')
     }
-  }
-
-  renderNonSelectableControl = (target: TemplatePath): JSX.Element | null => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
-    if (frame == null) {
-      return null
-    }
-    return (
-      <ComponentAreaControl
-        key={`${TP.toComponentId(target)}-non-selectable`}
-        componentMetadata={this.props.componentMetadata}
-        target={target}
-        frame={frame}
-        scale={this.props.scale}
-        highlighted={this.isHighlighted(target)}
-        selectedComponents={this.props.selectedViews}
-        dispatch={this.props.dispatch}
-        canvasOffset={this.props.canvasOffset}
-        hoverEffectEnabled={true}
-        doubleClickToSelect={false}
-        onMouseDown={this.clearSelection}
-        onHover={Utils.NO_OP}
-        onHoverEnd={Utils.NO_OP}
-        keysPressed={this.props.keysPressed}
-        windowToCanvasPosition={this.props.windowToCanvasPosition}
-        selectedViews={this.props.selectedViews}
-        imports={this.props.imports}
-        showAdditionalControls={this.props.showAdditionalControls}
-      />
-    )
   }
 
   getSelectedBoundingBox = (views: TemplatePath[]) => {
@@ -677,12 +496,7 @@ export class SelectModeControlContainer extends React.Component<
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-    let labelDirectlySelectable = true
-    let draggableViews = this.getSelectableViews(allElementsDirectlySelectable)
-    if (!this.props.highlightsEnabled) {
-      draggableViews = []
-      labelDirectlySelectable = false
-    }
+    let labelDirectlySelectable = this.props.highlightsEnabled
 
     // TODO future span element should be included here
     let repositionOnly = false
@@ -713,26 +527,9 @@ export class SelectModeControlContainer extends React.Component<
           return (
             <React.Fragment key={`${TP.toComponentId(root)}}-root-controls`}>
               {this.renderLabel(root, allElementsDirectlySelectable || labelDirectlySelectable)}
-              {this.renderNonSelectableControl(root)}
             </React.Fragment>
           )
         })}
-        {this.props.selectionEnabled
-          ? draggableViews.map((draggableView, index) => {
-              if (
-                !allElementsDirectlySelectable &&
-                this.props.selectedViews.some((view) =>
-                  TP.pathsEqual(TP.parentPath(draggableView), view),
-                )
-              ) {
-                // only double clickable to select and drag
-                return this.renderControl(draggableView, index, true)
-              } else {
-                // directly draggable
-                return this.renderControl(draggableView, index, false)
-              }
-            })
-          : null}
         {this.props.selectionEnabled ? (
           <>
             <OutlineControls {...this.props} />

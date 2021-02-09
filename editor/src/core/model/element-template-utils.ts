@@ -15,6 +15,7 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXFragment,
+  getJSXAttribute,
 } from '../shared/element-template'
 import {
   Imports,
@@ -43,8 +44,9 @@ function getAllUniqueUidsInner(
   function extractUid(element: JSXElementChild): void {
     if (isJSXElement(element)) {
       fastForEach(element.children, extractUid)
-      if (isJSXAttributeValue(element.props['data-uid'])) {
-        const uid = element.props['data-uid'].value
+      const uidProp = getJSXAttribute(element.props, 'data-uid')
+      if (uidProp != null && isJSXAttributeValue(uidProp)) {
+        const uid = uidProp.value
         if (throwErrorWithSuspiciousActions) {
           if (uniqueIDs.has(uid)) {
             throw new Error(

@@ -20,20 +20,22 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
+
 export var App = props => {
   return (
-    <View data-uid={'aaa'} onClick={() => {console.log('hat')}}/>
+    <View data-uid='aaa' onClick={() => {console.log('hat')}}/>
   )
 }
+
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ left: 0, top: 0, width: 400, height: 400 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
+        data-uid='scene-aaa'
       />
     </Storyboard>
   )
@@ -62,25 +64,27 @@ import {
   UtopiaUtils,
   View
 } from "utopia-api";
+
 export var App = props => {
   return (
     <View
-      data-uid={"aaa"}
+      data-uid='aaa'
       onClick={() => {
         console.log("hat");
       }}
     />
   );
 };
+
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
-    <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ left: 0, top: 0, width: 400, height: 400 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
+        data-uid='scene-aaa'
       />
     </Storyboard>
   )

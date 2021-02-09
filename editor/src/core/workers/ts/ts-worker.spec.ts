@@ -12,6 +12,7 @@ import { convertScenesToUtopiaCanvasComponent } from '../../model/scene-utils'
 import * as SampleTypeDefinitions from './sample-type-definitions.json'
 import { contentsToTree } from '../../../components/assets'
 import { emptyComments } from '../parser-printer/parser-printer-comments'
+import { jsxAttributesFromMap } from '../../shared/element-template'
 
 describe('Typescript worker builds the project', () => {
   it('initializing a new project', (done) => {
@@ -83,7 +84,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               importedWithName: null,
               importedFromWithin: [],
               importedAs: 'React',
-              comments: emptyComments,
             },
             'utopia-api': {
               importedWithName: null,
@@ -98,7 +98,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                 { name: 'jsx', alias: 'jsx' },
               ],
               importedAs: null,
-              comments: emptyComments,
             },
             uuiui: {
               importedWithName: null,
@@ -140,7 +139,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                 { name: 'colorTheme', alias: 'colorTheme' },
               ],
               importedAs: null,
-              comments: emptyComments,
             },
           },
           topLevelElements: [
@@ -148,6 +146,8 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               type: 'UTOPIA_JSX_COMPONENT',
               name: 'App',
               isFunction: true,
+              declarationSyntax: 'var',
+              blockOrExpression: 'block',
               param: {
                 type: 'PARAM',
                 dotDotDotToken: false,
@@ -166,7 +166,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                     propertyElements: [],
                   },
                 },
-                props: {
+                props: jsxAttributesFromMap({
                   style: {
                     type: 'ATTRIBUTE_NESTED_OBJECT',
                     content: [
@@ -189,6 +189,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                           },
                           uniqueID: '00df44d9-e76c-47d8-b832-60ee0fb3a5bc',
                         },
+                        comments: emptyComments,
                       },
                       {
                         type: 'PROPERTY_ASSIGNMENT',
@@ -210,25 +211,29 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                           },
                           uniqueID: '6173f632-5d44-42bc-86a2-dc857c77d767',
                         },
+                        comments: emptyComments,
+                        keyComments: emptyComments,
                       },
                     ],
+                    comments: emptyComments,
                   },
                   layout: {
                     type: 'ATTRIBUTE_VALUE',
                     value: {
                       layoutSystem: LayoutSystem.PinSystem,
                     },
+                    comments: emptyComments,
                   },
                   'data-uid': {
                     type: 'ATTRIBUTE_VALUE',
                     value: 'aaa',
+                    comments: emptyComments,
                   },
-                },
+                }),
                 children: [],
               },
               arbitraryJSBlock: null,
               usedInReactDOMRender: false,
-              comments: emptyComments,
               returnStatementComments: emptyComments,
             },
             convertScenesToUtopiaCanvasComponent([

@@ -1,6 +1,7 @@
 import { BASE_URL } from '../common/env-vars'
 import {
   ElementInstanceMetadata,
+  jsxAttributesFromMap,
   jsxAttributeValue,
   jsxElement,
   jsxElementName,
@@ -12,6 +13,7 @@ import { Size, CanvasRectangle, CanvasPoint, canvasRectangle } from '../core/sha
 import { EditorAction } from './editor/action-types'
 import { insertJSXElement } from './editor/actions/action-creators'
 import { forceNotNull } from '../core/shared/optional-utils'
+import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 
 export function getImageSrc(
   projectId: string | null,
@@ -90,7 +92,7 @@ export function createInsertImageAction(
     projectContents[imagePath],
   )
   if (imageDetails.type === 'IMAGE_FILE') {
-    const srcAttribute = jsxAttributeValue(`.${imagePath}`)
+    const srcAttribute = jsxAttributeValue(`.${imagePath}`, emptyComments)
     const width = imageDetails.width ?? 100
     const height = imageDetails.height ?? 100
     const { frame } = getFrameAndMultiplier(
@@ -102,17 +104,20 @@ export function createInsertImageAction(
 
     const imageElement = jsxElement(
       jsxElementName('img', []),
-      {
-        alt: jsxAttributeValue(''),
+      jsxAttributesFromMap({
+        alt: jsxAttributeValue('', emptyComments),
         src: srcAttribute,
-        style: jsxAttributeValue({
-          left: frame.x,
-          top: frame.y,
-          width: frame.width,
-          height: frame.height,
-        }),
-        'data-uid': jsxAttributeValue(newUID),
-      },
+        style: jsxAttributeValue(
+          {
+            left: frame.x,
+            top: frame.y,
+            width: frame.width,
+            height: frame.height,
+          },
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue(newUID, emptyComments),
+      }),
       [],
     )
     return insertJSXElement(imageElement, parentPath, {})

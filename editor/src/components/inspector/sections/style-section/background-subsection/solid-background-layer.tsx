@@ -117,6 +117,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
             <BackgroundSolidOrGradientThumbnailControl
               id={`background-layer-gradient-${props.index}`}
               key={`background-layer-gradient-${props.index}`}
+              testId={`background-layer-gradient-${props.index}`}
               value={props.value}
               backgroundIndex={props.index}
               useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
@@ -133,6 +134,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
             <StringBackgroundColorControl
               id={`background-layer-gradient-${props.index}`}
               key={`background-layer-gradient-${props.index}`}
+              testId={`background-layer-gradient-${props.index}`}
               value={props.value}
               backgroundIndex={props.index}
               useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
@@ -146,6 +148,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
             />
             <SimplePercentInput
               id={`background-layer-alpha-${props.index}`}
+              testId={`background-layer-alpha-${props.index}`}
               value={alpha}
               onSubmitValue={onAlphaSubmitValue}
               onTransientSubmitValue={onAlphaTransientSubmitValue}
@@ -156,6 +159,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
               maximum={1}
               stepSize={0.01}
               inputProps={{ onMouseDown: stopPropagation }}
+              defaultUnitToHide={null}
             />
           </GridRow>
         </GridRow>
