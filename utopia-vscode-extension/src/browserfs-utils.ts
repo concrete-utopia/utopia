@@ -1,11 +1,11 @@
 import * as BrowserFS from 'browserfs'
-import { FSModule } from 'browserfs/dist/node/core/FS'
-import { BFSCallback, BFSOneArgCallback, FileSystem } from 'browserfs/dist/node/core/file_system'
-import Stats from 'browserfs/dist/node/core/node_fs_stats'
-import { appendToPath, toUtopiaPath } from './path-utils'
 import { ApiError } from 'browserfs/dist/node/core/api_error'
-import { FileSystemError } from 'vscode'
+import { BFSCallback, BFSOneArgCallback } from 'browserfs/dist/node/core/file_system'
+import { FSModule } from 'browserfs/dist/node/core/FS'
+import Stats from 'browserfs/dist/node/core/node_fs_stats'
 import { uint8Array2Buffer } from 'browserfs/dist/node/core/util'
+import { FileSystemError } from 'vscode'
+import { appendToPath, toUtopiaPath } from './path-utils'
 
 let fs: FSModule
 
