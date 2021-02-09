@@ -20,6 +20,7 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
+  emptyAttributeMetadatada,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -110,7 +111,6 @@ describe('SET_PROP', () => {
           ),
           null,
           false,
-          emptyComments,
           emptyComments,
         ),
       ],
@@ -212,7 +212,6 @@ describe('SET_CANVAS_FRAMES', () => {
       null,
       false,
       emptyComments,
-      emptyComments,
     ),
   ]
 
@@ -296,7 +295,6 @@ describe('moveTemplate', () => {
             element,
             null,
             false,
-            emptyComments,
             emptyComments,
           ),
         ),
@@ -829,7 +827,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     null,
     false,
     emptyComments,
-    emptyComments,
   )
   const fileForUI = textFile(
     textFileContents(
@@ -877,6 +874,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     componentInstance: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
   }
 
   const childElementMetadata: ElementInstanceMetadata = {
@@ -897,6 +895,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     componentInstance: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {

@@ -81,6 +81,7 @@ export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgro
             <BackgroundSolidOrGradientThumbnailControl
               id={`background-layer-gradient-${props.index}`}
               key={`background-layer-gradient-${props.index}`}
+              testId={`background-layer-gradient-${props.index}`}
               controlStyles={props.controlStyles}
               controlStatus={props.controlStatus}
               modalOffset={{ x: -45, y: 0 }}
@@ -114,6 +115,8 @@ export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgro
                   onTransientSubmitValue: gradientCenterXTransientSubmitValue,
                   controlStatus: props.controlStatus,
                   numberType: 'LengthPercent' as const,
+                  testId: 'background-layer-gradient-center-x',
+                  defaultUnitToHide: null,
                 },
                 {
                   value: props.value.center.y.value,
@@ -122,6 +125,8 @@ export const ConicGradientBackgroundLayer = betterReactMemo<ConicGradientBackgro
                   onTransientSubmitValue: gradientCenterYTransientSubmitValue,
                   controlStatus: props.controlStatus,
                   numberType: 'LengthPercent' as const,
+                  testId: 'background-layer-gradient-center-y',
+                  defaultUnitToHide: null,
                 },
               ]}
             />

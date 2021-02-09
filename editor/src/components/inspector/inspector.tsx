@@ -24,6 +24,7 @@ import {
   emptySpecialSizeMeasurements,
   ComputedStyle,
   getJSXAttribute,
+  StyleAttributeMetadata,
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
@@ -808,6 +809,7 @@ export const InspectorContextProvider = betterReactMemo<{
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newSpiedProps: Array<{ [key: string]: any }> = []
   let newComputedStyles: Array<ComputedStyle> = []
+  let newAttributeMetadatas: Array<StyleAttributeMetadata> = []
 
   Utils.fastForEach(selectedViews, (path) => {
     if (TP.isScenePath(path)) {
@@ -822,7 +824,7 @@ export const InspectorContextProvider = betterReactMemo<{
         path,
       )
       if (elementMetadata != null) {
-        if (elementMetadata.computedStyle == null) {
+        if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
           /**
            * This early return will cause the inspector to render with empty fields.
            * Because the computedStyle is only used in some cases for some controls,
@@ -836,6 +838,7 @@ export const InspectorContextProvider = betterReactMemo<{
         newEditedMultiSelectedProps.push(jsxAttributes)
         newSpiedProps.push(elementMetadata.props)
         newComputedStyles.push(elementMetadata.computedStyle)
+        newAttributeMetadatas.push(elementMetadata.attributeMetadatada)
       }
     }
   })
@@ -843,6 +846,7 @@ export const InspectorContextProvider = betterReactMemo<{
   const editedMultiSelectedProps = useKeepReferenceEqualityIfPossible(newEditedMultiSelectedProps)
   const spiedProps = useKeepReferenceEqualityIfPossible(newSpiedProps)
   const computedStyles = useKeepReferenceEqualityIfPossible(newComputedStyles)
+  const attributeMetadatas = useKeepReferenceEqualityIfPossible(newAttributeMetadatas)
 
   const selectedViewsRef = usePropControlledRef_DANGEROUS(selectedViews)
   const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
@@ -912,6 +916,7 @@ export const InspectorContextProvider = betterReactMemo<{
           targetPath: props.targetPath,
           spiedProps: spiedProps,
           computedStyles: computedStyles,
+          selectedAttributeMetadatas: attributeMetadatas,
         }}
       >
         {props.children}

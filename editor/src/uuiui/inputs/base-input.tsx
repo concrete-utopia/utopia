@@ -1,6 +1,6 @@
 import styled from '@emotion/styled'
 import { getChainSegmentEdge } from '../../utils/utils'
-import { ControlStyles, betterReactMemo } from '../../uuiui-deps'
+import { ControlStyles, betterReactMemo, ControlStatus } from '../../uuiui-deps'
 import { IcnProps } from '../icn'
 import { UtopiaTheme } from '../styles/theme'
 import * as React from 'react'
@@ -87,11 +87,14 @@ export function getBorderRadiusStyles(chained: ChainedType, rc: BoxCorners) {
 export interface BaseInputProps {
   focusOnMount?: boolean
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>
+  testId: string
 }
 
 interface InspectorInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  testId: string
   chained?: ChainedType
   controlStyles: ControlStyles
+  controlStatus: ControlStatus
   focused: boolean
   labelInner?: string | IcnProps
   roundCorners?: BoxCorners
@@ -123,6 +126,14 @@ const StyledInput = styled.input<InspectorInputProps>(
 export const InspectorInput = betterReactMemo(
   'InspectorInput',
   React.forwardRef<HTMLInputElement, InspectorInputProps>((props, ref) => {
-    return <StyledInput {...props} ref={ref} data-inspector-input={true} />
+    return (
+      <StyledInput
+        {...props}
+        ref={ref}
+        data-inspector-input={true}
+        data-testid={props.testId}
+        data-controlstatus={props.controlStatus}
+      />
+    )
   }),
 )

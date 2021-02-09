@@ -65,6 +65,7 @@ export const ImageDensityControl = betterReactMemo(
       <OptionChainControl
         id='image-density-control'
         key='image-density-control'
+        testId='image-density-control'
         value={dimensionMultiplier}
         options={[
           {

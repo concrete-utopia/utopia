@@ -62,6 +62,7 @@ export const StringControl = betterReactMemo(
         <StringInput
           ref={ref}
           id={props.id}
+          testId={props.testId}
           onContextMenu={props.onContextMenu}
           disabled={editDisabled}
           className={inputClassName}

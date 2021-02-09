@@ -32,7 +32,11 @@ export const EventHandlerControl = betterReactMemo(
     return (
       <>
         <PropertyLabel target={target}>{handlerName}</PropertyLabel>
-        <StringInput value={value} controlStatus='disabled' />
+        <StringInput
+          value={value}
+          controlStatus='disabled'
+          testId={`event-handler-control-${handlerName}`}
+        />
       </>
     )
   },

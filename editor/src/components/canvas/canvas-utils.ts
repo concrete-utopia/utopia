@@ -77,6 +77,7 @@ import {
   foldParsedTextFile,
   textFile,
   textFileContents,
+  ScenePath,
 } from '../../core/shared/project-file-types'
 import {
   getOrDefaultScenes,
@@ -1725,10 +1726,21 @@ export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<Tem
 }
 
 function getReparentTargetAtPosition(
+  componentMeta: JSXMetadata,
   selectedViews: Array<TemplatePath>,
-  position: CanvasPoint,
+  hiddenInstances: Array<TemplatePath>,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
 ): TemplatePath | undefined {
-  const allTargets = getAllTargetsAtPoint(WindowMousePositionRaw)
+  const allTargets = getAllTargetsAtPoint(
+    componentMeta,
+    selectedViews,
+    hiddenInstances,
+    'no-filter',
+    WindowMousePositionRaw,
+    canvasScale,
+    canvasOffset,
+  )
   // filtering for non-selected views from alltargets
   return R.head(
     allTargets.filter((target) => selectedViews.every((view) => !TP.pathsEqual(view, target))),
@@ -1744,7 +1756,13 @@ export function getReparentTarget(
   shouldReparent: boolean
   newParent: TemplatePath | null
 } {
-  const result = getReparentTargetAtPosition(selectedViews, position)
+  const result = getReparentTargetAtPosition(
+    editorState.jsxMetadataKILLME,
+    selectedViews,
+    editorState.hiddenInstances,
+    editorState.canvas.scale,
+    editorState.canvas.realCanvasOffset,
+  )
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(
     toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadataKILLME, view)),
@@ -2314,14 +2332,23 @@ export function duplicate(
             const duplicateNewUID: DuplicateNewUID | undefined = duplicateNewUIDs.find((entry) =>
               TP.pathsEqual(entry.originalPath, path),
             )
+            const existingIDs = getAllUniqueUids(utopiaComponents)
             if (duplicateNewUID === undefined) {
-              const existingIDs = getAllUniqueUids(utopiaComponents)
               newElement = guaranteeUniqueUids([jsxElement], existingIDs)[0]
               uid = getUtopiaID(newElement)
             } else {
               // Helps to keep the model consistent because otherwise the dom walker
               // goes into a frenzy.
               newElement = setUtopiaID(jsxElement, duplicateNewUID.newUID)
+              if (isJSXElement(newElement)) {
+                newElement = {
+                  ...newElement,
+                  children: guaranteeUniqueUids(newElement.children, [
+                    ...existingIDs,
+                    duplicateNewUID.newUID,
+                  ]),
+                }
+              }
               uid = duplicateNewUID.newUID
             }
             let newPath: TemplatePath
@@ -2481,7 +2508,17 @@ export function cullSpyCollector(
   })
   // Eliminate the scene paths which are invalid.
   fastForEach(Object.keys(spyCollector.current.spyValues.scenes), (scenePath) => {
-    if (!scenePaths.has(scenePath)) {
+    if (
+      !scenePaths.has(scenePath) &&
+      !elementPaths.has(
+        TP.toString(
+          TP.instancePath(
+            [],
+            spyCollector.current.spyValues.scenes[scenePath].scenePath.sceneElementPath,
+          ),
+        ),
+      ) // this is needed because empty scenes are stored in metadata with an instancepath
+    ) {
       delete spyCollector.current.spyValues.scenes[scenePath]
     }
   })

@@ -91,12 +91,9 @@ import {
 } from './parser-printer-utils'
 import * as Hash from 'object-hash'
 import {
-  addCommentsToCode,
   emptyComments,
   getComments,
-  getJSXExpressionLeadingComments,
   getTrailingComments,
-  mergeParsedComments,
   parsedComments,
   ParsedComments,
 } from './parser-printer-comments'
@@ -2067,7 +2064,6 @@ export function parseArbitraryNodes(
             definedWithin,
             definedElsewhere,
             transpileResult.sourceMap,
-            emptyComments,
           )
         },
         transpileEither,
@@ -2175,7 +2171,6 @@ export function parseOutFunctionContents(
           [],
           [],
           null,
-          emptyComments,
         )
       }
 

@@ -181,6 +181,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
         style={{ gridColumn: '1 / span 1' }}
         id='textShadow-enable-disable'
         key='textShadow-enable-disable'
+        testId='textShadow-enable-disable'
         value={props.value.enabled}
         onSubmitValue={enabledSubmitValue}
         controlStatus={props.controlStatus}
@@ -191,6 +192,7 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
         style={{ gridColumn: '2 / span 1' }}
         id='textShadow-Color'
         key='textShadow-Color'
+        testId='textShadow-Color'
         value={props.value.color}
         onSubmitValue={colorSubmitValue}
         onTransientSubmitValue={colorTransientSubmitValue}
@@ -203,36 +205,39 @@ const TextShadowItem = betterReactMemo<TextShadowItemProps>('TextShadowItem', (p
         value={props.value.offsetX}
         DEPRECATED_labelBelow='x'
         id={`textShadow-offsetX-${props.index}`}
+        testId={`textShadow-offsetX-${props.index}`}
         onSubmitValue={offsetXSubmitValue}
         onTransientSubmitValue={offsetXTransientSubmitValue}
         controlStatus={props.controlStatus}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='Length'
-        defaultUnitToHide='px'
+        defaultUnitToHide={'px'}
       />
       <NumberInput
         style={{ gridColumn: '4 / span 1' }}
         value={props.value.offsetY}
         DEPRECATED_labelBelow='y'
         id={`textShadow-offsetY-${props.index}`}
+        testId={`textShadow-offsetY-${props.index}`}
         onSubmitValue={offsetYSubmitValue}
         onTransientSubmitValue={offsetYTransientSubmitValue}
         controlStatus={props.controlStatus}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='Length'
-        defaultUnitToHide='px'
+        defaultUnitToHide={'px'}
       />
       <NumberInput
         style={{ gridColumn: '5 / span 1' }}
         value={props.value.blurRadius == null ? zeroBlurRadius : props.value.blurRadius.value}
         DEPRECATED_labelBelow='blur'
         id={`textShadow-blurRadius-${props.index}`}
+        testId={`textShadow-blurRadius-${props.index}`}
         onSubmitValue={blurRadiusSubmitValue}
         onTransientSubmitValue={blurRadiusTransientSubmitValue}
         controlStatus={props.controlStatus}
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='Length'
-        defaultUnitToHide='px'
+        defaultUnitToHide={'px'}
       />
       <SquareButton highlight onMouseDown={removeShadow} style={{ marginTop: 1 }}>
         <Icn category='semantic' type='minus' color='darkgray' width={16} height={16} />

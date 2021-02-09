@@ -53,8 +53,9 @@ const getDisplayValue = (
   value: CSSNumber | null,
   defaultUnitToHide: CSSNumberUnit | null,
   mixed: boolean,
+  showContent: boolean,
 ): string => {
-  if (!mixed && value != null) {
+  if (!mixed && value != null && showContent) {
     const unit = getCSSNumberUnit(value)
     const showUnit = unit !== defaultUnitToHide
     return cssNumberToString(value, showUnit)
@@ -124,7 +125,7 @@ export interface NumberInputOptions {
   height?: number
   roundCorners?: BoxCorners
   numberType: CSSNumberType
-  defaultUnitToHide?: CSSNumberUnit
+  defaultUnitToHide: CSSNumberUnit | null
 }
 
 export interface AbstractNumberInputProps<T extends CSSNumber | number>
@@ -148,6 +149,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
   ({
     value: propsValue,
     style,
+    testId,
     inputProps = {},
     id,
     className,
@@ -166,7 +168,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
     controlStatus = 'simple',
     focusOnMount = false,
     numberType,
-    defaultUnitToHide = null,
+    defaultUnitToHide,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
     const controlStyles = getControlStyles(controlStatus)
@@ -175,15 +177,19 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
       [controlStyles],
     )
 
+    const { showContent } = controlStyles
+
     const [mixed, setMixed] = React.useState<boolean>(controlStyles.mixed)
     const [
       stateValue,
       setStateValueDirectly,
       forceStateValueToUpdateFromProps,
-    ] = usePropControlledState(getDisplayValue(propsValue ?? null, defaultUnitToHide, mixed))
+    ] = usePropControlledState(
+      getDisplayValue(propsValue ?? null, defaultUnitToHide, mixed, showContent),
+    )
     const updateStateValue = React.useCallback(
       (newValue: CSSNumber) =>
-        setStateValueDirectly(getDisplayValue(newValue, defaultUnitToHide, false)),
+        setStateValueDirectly(getDisplayValue(newValue, defaultUnitToHide, false, true)),
       [defaultUnitToHide, setStateValueDirectly],
     )
     const parsedStateValue = parseDisplayValue(stateValue, numberType, defaultUnitToHide)
@@ -604,6 +610,8 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             {...inputProps}
             chained={chained}
             controlStyles={controlStyles}
+            controlStatus={controlStatus}
+            testId={testId}
             focused={isFocused}
             labelInner={labelInner}
             roundCorners={roundCorners}

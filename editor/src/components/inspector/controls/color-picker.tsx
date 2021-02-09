@@ -69,6 +69,7 @@ export interface ColorPickerInnerProps {
   offsetX: number
   offsetY: number
   id: string
+  testId: string
 }
 
 function toPassedInColorType(color: Chroma.Color, passedInColor: CSSColor): CSSColor {
@@ -570,6 +571,7 @@ export class ColorPickerInner extends React.Component<
             controlStatus='simple'
             controlStyles={getControlStyles('simple')}
             id='colorPicker-controls-hex'
+            testId={`${this.props.testId}-colorPicker-controls-hex`}
             style={{
               gridColumn: 'span 1',
             }}
@@ -578,6 +580,7 @@ export class ColorPickerInner extends React.Component<
           <SimpleNumberInput
             value={this.state.normalisedHuePosition * 360}
             id='colorPicker-controls-hue'
+            testId={`${this.props.testId}-colorPicker-controls-hue`}
             onSubmitValue={this.onSubmitValueHue}
             onTransientSubmitValue={this.onTransientSubmitValueHue}
             onForcedSubmitValue={this.onSubmitValueHue}
@@ -591,10 +594,12 @@ export class ColorPickerInner extends React.Component<
               width: 10,
               height: 10,
             }}
+            defaultUnitToHide={null}
           />
           <SimplePercentInput
             value={Number(this.state.normalisedSaturationPosition.toFixed(2))}
             id='colorPicker-controls-saturation'
+            testId={`${this.props.testId}-colorPicker-controls-saturation`}
             onSubmitValue={this.onSubmitValueSaturation}
             onTransientSubmitValue={this.onTransientSubmitValueSaturation}
             onForcedSubmitValue={this.onSubmitValueSaturation}
@@ -603,10 +608,12 @@ export class ColorPickerInner extends React.Component<
             maximum={1}
             stepSize={0.01}
             DEPRECATED_labelBelow='S'
+            defaultUnitToHide={null}
           />
           <SimplePercentInput
             value={Number(this.state.normalisedValuePosition.toFixed(2))}
             id='colorPicker-controls-value'
+            testId={`${this.props.testId}-colorPicker-controls-value`}
             onSubmitValue={this.onSubmitHSVValueValue}
             onTransientSubmitValue={this.onTransientSubmitHSVValueValue}
             onForcedSubmitValue={this.onSubmitHSVValueValue}
@@ -615,10 +622,12 @@ export class ColorPickerInner extends React.Component<
             maximum={1}
             stepSize={0.01}
             DEPRECATED_labelBelow='V'
+            defaultUnitToHide={null}
           />
           <SimplePercentInput
             value={this.state.normalisedAlphaPosition}
             id='colorPicker-controls-alpha'
+            testId={`${this.props.testId}-colorPicker-controls-alpha`}
             onSubmitValue={this.onSubmitValueAlpha}
             onTransientSubmitValue={this.onTransientSubmitValueAlpha}
             onForcedSubmitValue={this.onSubmitValueAlpha}
@@ -627,6 +636,7 @@ export class ColorPickerInner extends React.Component<
             maximum={1}
             stepSize={0.01}
             DEPRECATED_labelBelow='A'
+            defaultUnitToHide={null}
           />
         </div>
       </div>

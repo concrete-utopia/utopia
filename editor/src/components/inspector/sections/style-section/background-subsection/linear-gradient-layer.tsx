@@ -99,6 +99,7 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
             <BackgroundSolidOrGradientThumbnailControl
               id={`background-layer-gradient-${props.index}`}
               key={`background-layer-gradient-${props.index}`}
+              testId={`background-layer-gradient-${props.index}`}
               controlStyles={props.controlStyles}
               controlStatus={props.controlStatus}
               modalOffset={{ x: -45, y: 0 }}
@@ -121,6 +122,7 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
             </FlexRow>
             <NumberInput
               id={`background-layer-gradient-angle-${props.index}`}
+              testId={`background-layer-gradient-angle-${props.index}`}
               value={props.value.angle.value}
               onSubmitValue={gradientAngleSubmitValue}
               onTransientSubmitValue={gradientAngleTransientSubmitValue}
@@ -128,6 +130,7 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
               DEPRECATED_labelBelow='angle'
               inputProps={{ onMouseDown: stopPropagation }}
               numberType='AnglePercent'
+              defaultUnitToHide={null}
             />
           </GridRow>
         </GridRow>

@@ -94,6 +94,7 @@ export interface ControlProps {
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
   elementsThatRespectLayout: Array<TemplatePath>
+  maybeClearHighlightsOnHoverEnd: () => void
 }
 
 interface NewCanvasControlsProps {
@@ -251,6 +252,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
   const startDragStateAfterDragExceedsThreshold = useStartDragStateAfterDragExceedsThreshold()
 
   const { localSelectedViews, localHighlightedViews, setLocalSelectedViews } = props
+  const cmdKeyPressed = props.editor.keysPressed['cmd'] ?? false
 
   const componentMetadata = getMetadata(props.editor)
 
@@ -260,14 +262,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
-  const { onMouseMove, onMouseDown } = useSelectAndHover(setLocalSelectedViews)
+  const { onMouseMove, onMouseDown } = useSelectAndHover(cmdKeyPressed, setLocalSelectedViews)
 
   const getResizeStatus = () => {
     const selectedViews = localSelectedViews
     if (props.editor.canvas.textEditor != null || props.editor.keysPressed['z']) {
       return 'disabled'
     }
-    if (props.editor.keysPressed['cmd'] === true) {
+    if (cmdKeyPressed) {
       return 'noninteractive'
     }
     const anyIncomprehensibleElementsSelected = selectedViews.some((selectedView) => {
@@ -329,9 +331,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       elementAspectRatioLocked: elementAspectRatioLocked,
       imageMultiplier: imageMultiplier,
       windowToCanvasPosition: props.windowToCanvasPosition,
-      cmdKeyPressed: props.editor.keysPressed['cmd'] ?? false,
+      cmdKeyPressed: cmdKeyPressed,
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
       elementsThatRespectLayout: elementsThatRespectLayout,
+      maybeClearHighlightsOnHoverEnd: maybeClearHighlightsOnHoverEnd,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

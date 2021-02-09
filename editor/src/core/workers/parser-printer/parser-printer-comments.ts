@@ -26,13 +26,6 @@ export function parsedComments(
   }
 }
 
-export function mergeParsedComments(first: ParsedComments, second: ParsedComments): ParsedComments {
-  return parsedComments(
-    first.leadingComments.concat(second.leadingComments),
-    first.trailingComments.concat(second.trailingComments),
-  )
-}
-
 function parseComment(
   sourceText: string,
   pos: number,
@@ -138,24 +131,6 @@ export function addCommentsToNode(node: TS.Node, comments: ParsedComments): TS.N
   }
 
   return node
-}
-
-export function addCommentsToCode(
-  code: string,
-  leadingComments: Array<Comment>,
-  trailingComments: Array<Comment>,
-): string {
-  let result: string = ''
-  function addComment(comment: Comment): void {
-    result += comment.rawText
-    if (comment.trailingNewLine) {
-      result += '\n'
-    }
-  }
-  leadingComments.forEach(addComment)
-  result += code
-  trailingComments.forEach(addComment)
-  return result
 }
 
 // Comments just inside the opening brace of a JSX expression are treated as trailing comments
