@@ -26,7 +26,6 @@ import {
 import {
   createDirectory,
   deleteFile,
-  ensureDirectoryExists,
   exists,
   getDescendentPaths,
   pathIsDirectory,
@@ -61,10 +60,6 @@ export class UtopiaFSExtension
       workspace.registerFileSearchProvider(Scheme, this),
       workspace.registerTextSearchProvider(Scheme, this),
     )
-  }
-
-  async init(): Promise<void> {
-    await ensureDirectoryExists(RootDir)
   }
 
   dispose() {
