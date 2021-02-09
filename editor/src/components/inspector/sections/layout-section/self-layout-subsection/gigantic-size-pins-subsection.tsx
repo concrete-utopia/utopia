@@ -302,7 +302,11 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
           {aspectRatioLocked ? <Icons.LockClosed /> : <Icons.LockOpen />}
         </SquareButton>
         {heightControl}
-        <SquareButton onClick={toggleMinMax} style={{ width: 16, height: 16, fontSize: 8 }}>
+        <SquareButton
+          data-testid='toggle-min-max-button'
+          onClick={toggleMinMax}
+          style={{ width: 16, height: 16, fontSize: 8 }}
+        >
           min
           <br />
           max
@@ -470,10 +474,10 @@ export const GiganticSizePinsSubsection = betterReactMemo(
     const maxHeight = useInspectorLayoutInfo('maxHeight')
 
     const hasMinMaxValues =
-      minWidth.controlStatus !== 'unset' ||
-      maxWidth.controlStatus !== 'unset' ||
-      minHeight.controlStatus !== 'unset' ||
-      maxHeight.controlStatus !== 'unset'
+      (minWidth.controlStatus !== 'unset' && minWidth.controlStatus !== 'trivial-default') ||
+      (maxWidth.controlStatus !== 'unset' && maxWidth.controlStatus !== 'trivial-default') ||
+      (minHeight.controlStatus !== 'unset' && minHeight.controlStatus !== 'trivial-default') ||
+      (maxHeight.controlStatus !== 'unset' && maxHeight.controlStatus !== 'trivial-default')
 
     const [minMaxToggled, setMinMaxToggled] = React.useState<boolean>(hasMinMaxValues)
     const toggleMinMax = React.useCallback(() => {
