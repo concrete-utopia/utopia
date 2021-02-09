@@ -4862,8 +4862,8 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     value: 0,
     unit: 'px',
   },
-  flexGrow: cssUnitlessLength(0),
-  flexShrink: cssUnitlessLength(1),
+  flexGrow: nontrivial,
+  flexShrink: nontrivial,
   display: 'block',
 
   // ParsedElementProperties
