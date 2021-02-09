@@ -169,6 +169,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
   const flexPaddingRight = useInspectorLayoutInfo('paddingRight')
   const flexPaddingBottom = useInspectorLayoutInfo('paddingBottom')
   const flexPaddingLeft = useInspectorLayoutInfo('paddingLeft')
+  const flexPadding = useInspectorLayoutInfo('padding')
 
   const flexPaddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     flexPaddingTop.onSubmitValue,

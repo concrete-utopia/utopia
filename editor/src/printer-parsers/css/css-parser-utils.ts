@@ -29,6 +29,7 @@ import {
   traverseEither,
   mapEither,
 } from '../../core/shared/either'
+import { fastForEach } from '../../core/shared/utils'
 import * as csstreemissing from '../../missing-types/css-tree'
 import utils from '../../utils/utils'
 import {
@@ -43,11 +44,9 @@ export function getLexerPropertyMatches(
   propertyValue: unknown,
   syntaxNamesToFilter?: ReadonlyArray<string>,
 ): Either<string, Array<LexerMatch>> {
-  // todo support for number values
-  if (typeof propertyValue === 'string') {
-    const ast = csstree.parse(propertyValue, {
+  if (typeof propertyValue === 'string' || typeof propertyValue === 'number') {
+    const ast = csstree.parse(`${propertyValue}`, {
       context: 'value',
-      positions: true,
     })
     const lexerMatch = (csstree as any).lexer.matchProperty(propertyName, ast)
     if (lexerMatch.error === null && ast.type === 'Value') {
@@ -179,13 +178,10 @@ export const parseLength: Parser<CSSNumber> = (value: unknown) => {
 }
 
 export const parseLengthPercentage: Parser<CSSNumber> = (value: unknown) => {
-  if (isLexerMatch(value) && value.match.length === 1) {
-    return parseAlternative<CSSNumber>(
-      [parseLength, parsePercentage],
-      'Could not parse length-percentage',
-    )(value.match[0])
-  }
-  return left(descriptionParseError('Could not parse length-percentage'))
+  return parseAlternative<CSSNumber>(
+    [parseLength, parsePercentage],
+    'Could not parse length-percentage',
+  )(value)
 }
 
 export function parseWholeValue<T>(parser: Parser<T>): Parser<T> {
@@ -393,6 +389,20 @@ export function parseDoubleBar<T>(
   }
 }
 
+export function parseCSSArray<T>(parsers: Array<Parser<T>>): Parser<any> {
+  // TODO missing type
+  return (match: unknown) => {
+    if (Array.isArray(match) && match.length > 0) {
+      return right(
+        match.map((value) => {
+          return parseAlternative(parsers, 'Match is not valid array value.')(value)
+        }),
+      )
+    }
+    return left(descriptionParseError('Lexer element is not a match'))
+  }
+}
+
 // Type is very much in flex, if you find it doesn't match the data, fix it please
 export type LexerToken<T extends string = string> = {
   syntax: csstreemissing.Syntax.Keyword<T> | null
@@ -402,12 +412,7 @@ export type LexerToken<T extends string = string> = {
 
 function isLexerToken(leaf: unknown): leaf is LexerToken<string> {
   const anyLeaf = leaf as any
-  return (
-    typeof anyLeaf === 'object' &&
-    anyLeaf.token != null &&
-    anyLeaf.node != null &&
-    anyLeaf.node.loc != null
-  )
+  return typeof anyLeaf === 'object' && anyLeaf.token != null && anyLeaf.node != null
 }
 
 // Type is very much in flex, if you find it doesn't match the data, fix it please

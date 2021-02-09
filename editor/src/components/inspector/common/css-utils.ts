@@ -65,6 +65,10 @@ import { toggleBorderEnabled } from '../sections/style-section/border-subsection
 import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection/shadow-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import {
+  parsePadding,
+  printPaddingAsAttributeValue,
+} from '../../../printer-parsers/css/css-parser-padding'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -706,6 +710,13 @@ export function cssNumberToFramePin(value: CSSNumber): FramePin {
   } else {
     return printCSSNumber(value)
   }
+}
+
+export interface CSSPadding {
+  paddingTop: CSSNumber
+  paddingRight: CSSNumber
+  paddingBottom: CSSNumber
+  paddingLeft: CSSNumber
 }
 
 // For matching CSS Dimensions (lengths, angles etc.) as they are always specified as a number
@@ -3913,6 +3924,7 @@ export interface ParsedCSSProperties {
 
   objectFit: CSSObjectFit
 
+  padding: CSSPadding
   paddingTop: CSSNumber
   paddingRight: CSSNumber
   paddingBottom: CSSNumber
@@ -4011,6 +4023,24 @@ export const cssEmptyValues: ParsedCSSProperties = {
   alignItems: FlexAlignment.FlexStart,
   alignContent: FlexAlignment.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
+  padding: {
+    paddingTop: {
+      value: 0,
+      unit: null,
+    },
+    paddingRight: {
+      value: 0,
+      unit: null,
+    },
+    paddingBottom: {
+      value: 0,
+      unit: null,
+    },
+    paddingLeft: {
+      value: 0,
+      unit: null,
+    },
+  },
   paddingTop: {
     value: 0,
     unit: null,
@@ -4106,6 +4136,7 @@ const cssParsers: CSSParsers = {
   alignItems: flexAlignmentsParser,
   alignContent: flexAlignmentsParser,
   justifyContent: flexJustifyContentParser,
+  padding: parsePadding,
   paddingTop: parseCSSLengthPercent,
   paddingRight: parseCSSLengthPercent,
   paddingBottom: parseCSSLengthPercent,
@@ -4168,6 +4199,7 @@ const cssPrinters: CSSPrinters = {
   alignItems: jsxAttributeValueWithNoComments,
   alignContent: jsxAttributeValueWithNoComments,
   justifyContent: jsxAttributeValueWithNoComments,
+  padding: printPaddingAsAttributeValue,
   paddingTop: printCSSNumberAsAttributeValue,
   paddingRight: printCSSNumberAsAttributeValue,
   paddingBottom: printCSSNumberAsAttributeValue,
