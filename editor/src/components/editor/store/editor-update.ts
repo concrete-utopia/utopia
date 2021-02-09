@@ -130,10 +130,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_RIGHT_MENU_EXPANDED(action, state)
     case 'TOGGLE_COLLAPSE':
       return UPDATE_FNS.TOGGLE_COLLAPSE(action, state)
-    case 'PUSH_TOAST':
-      return UPDATE_FNS.PUSH_TOAST(action, state, dispatch)
-    case 'POP_TOAST':
-      return UPDATE_FNS.POP_TOAST(action, state)
+    case 'ADD_TOAST':
+      return UPDATE_FNS.ADD_TOAST(action, state, dispatch)
+    case 'REMOVE_TOAST':
+      return UPDATE_FNS.REMOVE_TOAST(action, state)
     case 'SET_HIGHLIGHTED_VIEW':
       return UPDATE_FNS.SET_HIGHLIGHTED_VIEW(action, state)
     case 'CLEAR_HIGHLIGHTED_VIEWS':
@@ -282,6 +282,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PROPERTY_CONTROLS_IFRAME_READY(action, state)
     case 'ADD_STORYBOARD_FILE':
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
+    case 'UPDATE_CHILD_TEXT':
+      return UPDATE_FNS.UPDATE_CHILD_TEXT(action, state)
     case 'SEND_LINTER_REQUEST_MESSAGE':
       // side effect ☢️
       workers.sendLinterRequestMessage(action.filePath, action.content)

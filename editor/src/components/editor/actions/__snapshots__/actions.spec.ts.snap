@@ -4,10 +4,8 @@ exports[`SWITCH_LAYOUT_SYSTEM switches from flex to pins correctly 1`] = `
 Array [
   Object {
     "arbitraryJSBlock": null,
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
+    "blockOrExpression": "block",
+    "declarationSyntax": "var",
     "isFunction": true,
     "name": "App",
     "param": null,
@@ -26,57 +24,139 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Object {
-            "data-uid": Object {
-              "type": "ATTRIBUTE_VALUE",
-              "value": "bbb",
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "data-uid",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "bbb",
+              },
             },
-            "style": Object {
-              "content": Array [
-                Object {
-                  "key": "left",
-                  "type": "PROPERTY_ASSIGNMENT",
-                  "value": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": 0,
-                  },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "style",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
                 },
-                Object {
-                  "key": "top",
-                  "type": "PROPERTY_ASSIGNMENT",
-                  "value": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": 0,
+                "content": Array [
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "left",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": 0,
+                    },
                   },
-                },
-                Object {
-                  "key": "width",
-                  "type": "PROPERTY_ASSIGNMENT",
-                  "value": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": 200,
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "top",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": 0,
+                    },
                   },
-                },
-                Object {
-                  "key": "height",
-                  "type": "PROPERTY_ASSIGNMENT",
-                  "value": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": 300,
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "width",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": 200,
+                    },
                   },
-                },
-                Object {
-                  "key": "position",
-                  "type": "PROPERTY_ASSIGNMENT",
-                  "value": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": "absolute",
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "height",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": 300,
+                    },
                   },
-                },
-              ],
-              "type": "ATTRIBUTE_NESTED_OBJECT",
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "position",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": "absolute",
+                    },
+                  },
+                ],
+                "type": "ATTRIBUTE_NESTED_OBJECT",
+              },
             },
-          },
+          ],
           "type": "JSX_ELEMENT",
         },
       ],
@@ -86,37 +166,94 @@ Array [
           "propertyElements": Array [],
         },
       },
-      "props": Object {
-        "data-uid": Object {
-          "type": "ATTRIBUTE_VALUE",
-          "value": "aaa",
-        },
-        "layout": Object {
-          "type": "ATTRIBUTE_VALUE",
-          "value": Object {},
-        },
-        "style": Object {
-          "content": Array [
-            Object {
-              "key": "backgroundColor",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": "#FFFFFF",
-              },
+      "props": Array [
+        Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "key": "data-uid",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
             },
-            Object {
-              "key": "position",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": "absolute",
-              },
-            },
-          ],
-          "type": "ATTRIBUTE_NESTED_OBJECT",
+            "type": "ATTRIBUTE_VALUE",
+            "value": "aaa",
+          },
         },
-      },
+        Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "key": "style",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "content": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "backgroundColor",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "PROPERTY_ASSIGNMENT",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "#FFFFFF",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "position",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "PROPERTY_ASSIGNMENT",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "absolute",
+                },
+              },
+            ],
+            "type": "ATTRIBUTE_NESTED_OBJECT",
+          },
+        },
+        Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "key": "layout",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {},
+          },
+        },
+      ],
       "type": "JSX_ELEMENT",
     },
     "type": "UTOPIA_JSX_COMPONENT",
@@ -129,10 +266,8 @@ exports[`SWITCH_LAYOUT_SYSTEM switches from pins to flex correctly 1`] = `
 Array [
   Object {
     "arbitraryJSBlock": null,
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
+    "blockOrExpression": "block",
+    "declarationSyntax": "var",
     "isFunction": true,
     "name": "App",
     "param": null,
@@ -151,41 +286,99 @@ Array [
               "propertyElements": Array [],
             },
           },
-          "props": Object {
-            "data-uid": Object {
-              "type": "ATTRIBUTE_VALUE",
-              "value": "bbb",
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "data-uid",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "bbb",
+              },
             },
-            "style": Object {
-              "content": Array [
-                Object {
-                  "key": "position",
-                  "type": "PROPERTY_ASSIGNMENT",
-                  "value": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": "relative",
-                  },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "style",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
                 },
-                Object {
-                  "key": "flexBasis",
-                  "type": "PROPERTY_ASSIGNMENT",
-                  "value": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": 200,
+                "content": Array [
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "position",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": "relative",
+                    },
                   },
-                },
-                Object {
-                  "key": "height",
-                  "type": "PROPERTY_ASSIGNMENT",
-                  "value": Object {
-                    "type": "ATTRIBUTE_VALUE",
-                    "value": 300,
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "flexBasis",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": 200,
+                    },
                   },
-                },
-              ],
-              "type": "ATTRIBUTE_NESTED_OBJECT",
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "height",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": 300,
+                    },
+                  },
+                ],
+                "type": "ATTRIBUTE_NESTED_OBJECT",
+              },
             },
-          },
+          ],
           "type": "JSX_ELEMENT",
         },
       ],
@@ -195,37 +388,94 @@ Array [
           "propertyElements": Array [],
         },
       },
-      "props": Object {
-        "data-uid": Object {
-          "type": "ATTRIBUTE_VALUE",
-          "value": "aaa",
-        },
-        "layout": Object {
-          "type": "ATTRIBUTE_VALUE",
-          "value": Object {},
-        },
-        "style": Object {
-          "content": Array [
-            Object {
-              "key": "backgroundColor",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": "#FFFFFF",
-              },
+      "props": Array [
+        Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "key": "data-uid",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
             },
-            Object {
-              "key": "display",
-              "type": "PROPERTY_ASSIGNMENT",
-              "value": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": "flex",
-              },
-            },
-          ],
-          "type": "ATTRIBUTE_NESTED_OBJECT",
+            "type": "ATTRIBUTE_VALUE",
+            "value": "aaa",
+          },
         },
-      },
+        Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "key": "style",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "content": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "backgroundColor",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "PROPERTY_ASSIGNMENT",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "#FFFFFF",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "display",
+                "keyComments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "PROPERTY_ASSIGNMENT",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "flex",
+                },
+              },
+            ],
+            "type": "ATTRIBUTE_NESTED_OBJECT",
+          },
+        },
+        Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "key": "layout",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {},
+          },
+        },
+      ],
       "type": "JSX_ELEMENT",
     },
     "type": "UTOPIA_JSX_COMPONENT",

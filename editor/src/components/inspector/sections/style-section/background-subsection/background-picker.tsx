@@ -81,6 +81,7 @@ interface BackgroundPickerProps {
   offsetX: number
   offsetY: number
   id: string
+  testId: string
   backgroundLayerIndex: number
   controlStatus: ControlStatus
 }
@@ -141,6 +142,7 @@ const LinearGradientControls: React.FunctionComponent<LinearGradientControlsProp
     <div style={MetadataControlsStyle}>
       <NumberInput
         id='background-layer-gradient-angle'
+        testId='background-layer-gradient-angle'
         value={props.value.angle.value}
         onSubmitValue={gradientAngleSubmitValue}
         onTransientSubmitValue={gradientAngleTransientSubmitValue}
@@ -155,6 +157,7 @@ const LinearGradientControls: React.FunctionComponent<LinearGradientControlsProp
         DEPRECATED_labelBelow='angle'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
+        defaultUnitToHide={null}
       />
     </div>
   )
@@ -236,6 +239,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
           gridColumn: '1 / span 1',
         }}
         id='background-gradient-center-x'
+        testId='background-gradient-center-x'
         value={props.value.center.x.value}
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
@@ -243,12 +247,14 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         DEPRECATED_labelBelow='center x'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{
           gridColumn: '3 / span 1',
         }}
         id='background-gradient-center-y'
+        testId='background-gradient-center-y'
         value={props.value.center.y.value}
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
@@ -256,12 +262,14 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         DEPRECATED_labelBelow='center y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{
           gridColumn: '5 / span 1',
         }}
         id='background-gradient-width'
+        testId='background-gradient-width'
         value={radialBackgroundLayerWidth}
         onSubmitValue={gradientWidthSubmitValue}
         onTransientSubmitValue={gradientWidthTransientSubmitValue}
@@ -269,12 +277,14 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         DEPRECATED_labelBelow='width'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{
           gridColumn: '7 / span 1',
         }}
         id='background-gradient-height'
+        testId='background-gradient-height'
         value={radialBackgroundLayerHeight}
         onSubmitValue={gradientHeightSubmitValue}
         onTransientSubmitValue={gradientHeightTransientSubmitValue}
@@ -282,6 +292,7 @@ const RadialGradientControls: React.FunctionComponent<RadialGradientControlsProp
         DEPRECATED_labelBelow='height'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
     </div>
   )
@@ -335,6 +346,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
       <NumberInput
         style={{ gridColumn: '1 / span 1' }}
         id='background-gradient-center-x'
+        testId='background-gradient-center-x'
         value={props.value.center.x.value}
         onSubmitValue={gradientCenterXSubmitValue}
         onTransientSubmitValue={gradientCenterXTransientSubmitValue}
@@ -342,10 +354,12 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
         DEPRECATED_labelBelow='x'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{ gridColumn: '3 / span 1' }}
         id='background-gradient-center-y'
+        testId='background-gradient-center-y'
         value={props.value.center.y.value}
         onSubmitValue={gradientCenterYSubmitValue}
         onTransientSubmitValue={gradientCenterYTransientSubmitValue}
@@ -353,10 +367,12 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
         DEPRECATED_labelBelow='y'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='LengthPercent'
+        defaultUnitToHide={null}
       />
       <NumberInput
         style={{ gridColumn: '5 / span 1' }}
         id='background-gradient-from-angle'
+        testId='background-gradient-from-angle'
         value={props.value.fromAngle.value}
         onSubmitValue={gradientFromAngleSubmitValue}
         onTransientSubmitValue={gradientFromAngleTransientSubmitValue}
@@ -364,6 +380,7 @@ const ConicGradientControls: React.FunctionComponent<ConicGradientControlsProps>
         DEPRECATED_labelBelow='angle'
         inputProps={{ onMouseDown: stopPropagation }}
         numberType='AnglePercent'
+        defaultUnitToHide={null}
       />
     </div>
   )
@@ -567,6 +584,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
                   offsetX={props.offsetX}
                   offsetY={props.offsetY}
                   id={props.id}
+                  testId={props.testId}
                 />
               ) : (
                 <ColorPickerInner
@@ -576,6 +594,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
                   offsetX={props.offsetX}
                   offsetY={props.offsetY}
                   id={props.id}
+                  testId={props.testId}
                 />
               )
             ) : null}

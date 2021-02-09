@@ -1,5 +1,6 @@
 // FIXME This file shouldn't live under the inspector, and shouldn't be defining types
 import * as Chroma from 'chroma-js'
+import * as fastDeepEqual from 'fast-deep-equal'
 import { Property } from 'csstype'
 import {
   FlexAlignment,
@@ -64,6 +65,7 @@ import Utils from '../../../utils/utils'
 import { toggleBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
 import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection/shadow-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -544,7 +546,7 @@ export function isCSSNumber(value: unknown): value is CSSNumber {
   return typeof value === 'object' && value != null && 'value' in value && 'unit' in value
 }
 
-export function getCSSNumberValue(value: CSSNumber | null): number | null {
+export function getCSSNumberValue(value: CSSNumber | null | undefined): number | null {
   return value == null ? null : value.value
 }
 
@@ -921,7 +923,7 @@ function printBorder(value: CSSBorder): JSXAttributeValue<string> {
   })()
   const style: CSSLineStyleKeywordValue | null = value.style?.value.value ?? null
 
-  return jsxAttributeValue(Utils.stripNulls([width, style, color]).join(' '))
+  return jsxAttributeValue(Utils.stripNulls([width, style, color]).join(' '), emptyComments)
 }
 
 export declare type Complete<T> = {
@@ -967,6 +969,7 @@ export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<str
         return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
       })
       .join(' '),
+    emptyComments,
   )
 }
 
@@ -1548,16 +1551,16 @@ function printCSSTransformItem(cssTransform: CSSTransformItem): string {
 }
 
 function printTransform(cssTransforms: CSSTransforms): JSXAttributeValue<Property.Transform> {
-  return jsxAttributeValue(cssTransforms.map(printCSSTransformItem).join(' '))
+  return jsxAttributeValue(cssTransforms.map(printCSSTransformItem).join(' '), emptyComments)
 }
 
-enum CSSTransformOriginStringValueX {
+export enum CSSTransformOriginStringValueX {
   Left = 'left',
   Center = 'center',
   Right = 'right',
 }
 
-enum CSSTransformOriginStringValueY {
+export enum CSSTransformOriginStringValueY {
   Top = 'top',
   Center = 'center',
   Bottom = 'bottom',
@@ -1758,6 +1761,7 @@ function printTransformOrigin(transformOrigin: CSSTransformOrigin): JSXAttribute
     `${printTransformOriginComponent(transformOrigin.x)} ${printTransformOriginComponent(
       transformOrigin.y,
     )}`,
+    emptyComments,
   )
 }
 
@@ -1772,7 +1776,7 @@ function parseOverflow(overflow: unknown): Either<string, CSSOverflow> {
 }
 
 function printOverflow(overflow: CSSOverflow): JSXAttributeValue<string> {
-  return jsxAttributeValue(overflow ? 'visible' : 'hidden')
+  return jsxAttributeValue(overflow ? 'visible' : 'hidden', emptyComments)
 }
 
 export interface CSSBorderRadiusIndividual {
@@ -1858,6 +1862,7 @@ export function printBorderRadius(
     const { tl, tr, br, bl } = borderRadius.value
     return jsxAttributeValue(
       `${printCSSNumber(tl)} ${printCSSNumber(tr)} ${printCSSNumber(br)} ${printCSSNumber(bl)}`,
+      emptyComments,
     )
   }
 }
@@ -2094,7 +2099,10 @@ export function parseBackgroundColor(color?: unknown): Either<string, CSSDefault
 }
 
 function printBackgroundColor(value: CSSDefault<CSSSolidColor>): JSXAttributeValue<string> {
-  return jsxAttributeValue(printEnabled(printColor(value.value.color), value.value.enabled))
+  return jsxAttributeValue(
+    printEnabled(printColor(value.value.color), value.value.enabled),
+    emptyComments,
+  )
 }
 
 const matchColorKeyword = combineRegExp(['^', '(', RegExpLibrary.colorKeyword, ')', '$'])
@@ -2142,7 +2150,7 @@ export function parseColor(color: unknown): Either<string, CSSColor> {
 }
 
 export function printColorToJsx(color: CSSColor | undefined): JSXAttributeValue<string> {
-  return jsxAttributeValue(color != null ? printColor(color) : '')
+  return jsxAttributeValue(color != null ? printColor(color) : '', emptyComments)
 }
 
 export function cssColor(value: string, defaultColor: CSSColor = { ...defaultCSSColor }): CSSColor {
@@ -2607,7 +2615,9 @@ export function cssSolidColor(color: CSSColor, enabled = true): CSSSolidColor {
   }
 }
 
-const emptyBackgroundColor: CSSSolidColor = cssSolidColor(cssColorRGB(0, 0, 0, 0, false, false))
+export const emptyBackgroundColor: CSSSolidColor = cssSolidColor(
+  cssColorRGB(0, 0, 0, 0, false, false),
+)
 
 export function isCSSSolidColor(
   value: CSSBackground | CSSUnknownArrayItem,
@@ -2794,7 +2804,7 @@ export function isCSSUnknownFunctionParameters<T>(
 export function cssUnknownFunctionParameters<T>(value: T): CSSUnknownFunctionParameters<T> {
   return {
     type: 'unknown-helper-function-parameters',
-    value: jsxAttributeValue(value),
+    value: jsxAttributeValue(value, emptyComments),
   }
 }
 
@@ -3242,7 +3252,7 @@ export function printBackgroundImage(
       }
     }
   })
-  return jsxAttributeValue(backgroundImageStrings.join(' '))
+  return jsxAttributeValue(backgroundImageStrings.join(' '), emptyComments)
 }
 
 export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue<string> {
@@ -3283,6 +3293,7 @@ export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue
         }
       })
       .join(' '),
+    emptyComments,
   )
 }
 
@@ -3411,6 +3422,7 @@ function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string>
         return printEnabled(printComma(`${parts.join(' ')}`, comma), textShadow.enabled)
       })
       .join(' '),
+    emptyComments,
   )
 }
 
@@ -3428,7 +3440,7 @@ function parseFontFamily(fontFamily: unknown): Either<string, CSSFontFamily> {
 }
 
 function printFontFamily(cssFontFamily: CSSFontFamily): JSXAttributeValue<string> {
-  return jsxAttributeValue(fontFamilyArrayToCSSFontFamilyString(cssFontFamily))
+  return jsxAttributeValue(fontFamilyArrayToCSSFontFamilyString(cssFontFamily), emptyComments)
 }
 
 function parseFontWeight(fontWeight: unknown): Either<string, CSSFontWeight> {
@@ -3446,13 +3458,13 @@ function parseFontWeight(fontWeight: unknown): Either<string, CSSFontWeight> {
 }
 
 function printFontWeight(cssFontFamily: CSSFontWeight): JSXAttributeValue<Property.FontWeight> {
-  return jsxAttributeValue(cssFontFamily)
+  return jsxAttributeValue(cssFontFamily, emptyComments)
 }
 
 const parseFontStyle = isOneOfTheseParser<CSSFontStyle>(['normal', 'italic'])
 
 function printFontStyle(cssFontStyle: CSSFontStyle): JSXAttributeValue<Property.FontStyle> {
-  return jsxAttributeValue(cssFontStyle)
+  return jsxAttributeValue(cssFontStyle, emptyComments)
 }
 
 const parseTextAlign = isOneOfTheseParser<CSSTextAlign>([
@@ -3465,13 +3477,13 @@ const parseTextAlign = isOneOfTheseParser<CSSTextAlign>([
 ])
 
 function printTextAlign(cssTextAlign: CSSTextAlign): JSXAttributeValue<Property.TextAlign> {
-  return jsxAttributeValue(cssTextAlign)
+  return jsxAttributeValue(cssTextAlign, emptyComments)
 }
 
 const parseTextSizing = isOneOfTheseParser<TextSizing>(['auto', 'fixed'])
 
 function printTextSizing(textSizing: TextSizing): JSXAttributeValue<TextSizing> {
-  return jsxAttributeValue(textSizing)
+  return jsxAttributeValue(textSizing, emptyComments)
 }
 
 const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
@@ -3484,7 +3496,7 @@ const parseTextDecorationLine = isOneOfTheseParser<CSSTextDecorationLine>([
 function printTextDecorationLine(
   cssTextDecorationLine: CSSTextDecorationLine,
 ): JSXAttributeValue<Property.TextDecorationLine> {
-  return jsxAttributeValue(cssTextDecorationLine)
+  return jsxAttributeValue(cssTextDecorationLine, emptyComments)
 }
 
 const parseTextDecorationStyle = isOneOfTheseParser<CSSTextDecorationStyle>([
@@ -3498,7 +3510,7 @@ const parseTextDecorationStyle = isOneOfTheseParser<CSSTextDecorationStyle>([
 function printTextDecorationStyle(
   cssTextDecorationStyle: CSSTextDecorationStyle,
 ): JSXAttributeValue<Property.TextDecorationStyle> {
-  return jsxAttributeValue(cssTextDecorationStyle)
+  return jsxAttributeValue(cssTextDecorationStyle, emptyComments)
 }
 
 function parseLetterSpacing(letterSpacing: unknown): Either<string, CSSLetterSpacing> {
@@ -3513,7 +3525,7 @@ function printLetterSpacing(
   cssLetterSpacing: CSSLetterSpacing,
 ): JSXAttributeValue<Property.LetterSpacing<string | number>> {
   if (cssLetterSpacing === 'normal') {
-    return jsxAttributeValue(cssLetterSpacing)
+    return jsxAttributeValue(cssLetterSpacing, emptyComments)
   } else {
     return printCSSNumberAsAttributeValue(cssLetterSpacing)
   }
@@ -3531,7 +3543,7 @@ function printLineHeight(
   cssLineHeight: CSSLineHeight,
 ): JSXAttributeValue<Property.LineHeight<string | number>> {
   if (cssLineHeight === 'normal') {
-    return jsxAttributeValue(cssLineHeight)
+    return jsxAttributeValue(cssLineHeight, emptyComments)
   } else {
     return printCSSNumberAsAttributeValue(cssLineHeight)
   }
@@ -3545,7 +3557,7 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
       if (params.length === 1) {
         const originalValueSimple = jsxSimpleAttributeToValue(params[0])
         if (isRight(originalValueSimple)) {
-          return jsxAttributeValue(originalValueSimple.value)
+          return jsxAttributeValue(originalValueSimple.value, emptyComments)
         } else {
           return params[0]
         }
@@ -3557,7 +3569,9 @@ export function toggleSimple(attribute: ModifiableAttribute): ModifiableAttribut
   } else {
     const simpleValue = jsxSimpleAttributeToValue(attribute)
     if (isRight(simpleValue)) {
-      return jsxAttributeFunctionCall(disabledFunctionName, [jsxAttributeValue(simpleValue.value)])
+      return jsxAttributeFunctionCall(disabledFunctionName, [
+        jsxAttributeValue(simpleValue.value, emptyComments),
+      ])
     } else if (isRegularJSXAttribute(attribute)) {
       return jsxAttributeFunctionCall(disabledFunctionName, [attribute])
     } else {
@@ -3735,13 +3749,15 @@ export function toggleStylePropPaths(toggleFn: (attribute: JSXAttribute) => JSXA
 }
 
 function printCSSNumberAsAttributeValue(value: CSSNumber): JSXAttributeValue<string | number> {
-  return jsxAttributeValue(printCSSNumber(value))
+  return jsxAttributeValue(printCSSNumber(value), emptyComments)
 }
 
 function printCSSNumberOrUndefinedAsAttributeValue(
   value: CSSNumber | undefined,
 ): JSXAttributeValue<string | number | undefined> {
-  return value != null ? printCSSNumberAsAttributeValue(value) : jsxAttributeValue(undefined)
+  return value != null
+    ? printCSSNumberAsAttributeValue(value)
+    : jsxAttributeValue(undefined, emptyComments)
 }
 
 function parseString(value: unknown): Either<string, string> {
@@ -3749,7 +3765,7 @@ function parseString(value: unknown): Either<string, string> {
 }
 
 function printStringAsAttributeValue(value: string): JSXAttributeValue<string> {
-  return jsxAttributeValue(value)
+  return jsxAttributeValue(value, emptyComments)
 }
 
 type CSSMixBlendMode = 'normal' | 'multiply' | 'screen' | 'darken'
@@ -3762,7 +3778,7 @@ const parseMixBlendMode = isOneOfTheseParser<CSSMixBlendMode>([
 ])
 
 function printMixBlendMode(blendMode: CSSMixBlendMode): JSXAttributeValue<string> {
-  return jsxAttributeValue(blendMode)
+  return jsxAttributeValue(blendMode, emptyComments)
 }
 
 type CSSObjectFit = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
@@ -3779,21 +3795,14 @@ const parseCSSObjectFit = isOneOfTheseParser<CSSObjectFit>([
 type ImageURL = string
 
 function printCSSObjectFit(value: CSSObjectFit): JSXAttributeValue<string> {
-  return jsxAttributeValue(value)
+  return jsxAttributeValue(value, emptyComments)
 }
 
 function parseFramePin(
   simpleValue: unknown | null,
   _: ModifiableAttribute | null,
-): Either<string, FramePin> {
-  if (
-    typeof simpleValue === 'number' ||
-    (typeof simpleValue === 'string' && isPercentPin(simpleValue))
-  ) {
-    return right(simpleValue)
-  } else {
-    return left('Value is not a valid frame pin.')
-  }
+): Either<string, CSSNumber> {
+  return parseCSSNumber(simpleValue, 'LengthPercent')
 }
 
 function isOneOfTheseParser<T extends PrimitiveType>(values: Array<T>): Parser<T> {
@@ -4077,7 +4086,7 @@ const cssParsers: CSSParsers = {
   boxShadow: parseBoxShadow,
   color: parseColor,
   fontFamily: parseFontFamily,
-  fontSize: parseCSSLength,
+  fontSize: parseCSSLengthPercent,
   fontStyle: parseFontStyle,
   fontWeight: parseFontWeight,
   letterSpacing: parseLetterSpacing,
@@ -4100,33 +4109,35 @@ const cssParsers: CSSParsers = {
   alignItems: flexAlignmentsParser,
   alignContent: flexAlignmentsParser,
   justifyContent: flexJustifyContentParser,
-  paddingTop: parseCSSLength,
-  paddingRight: parseCSSLength,
-  paddingBottom: parseCSSLength,
-  paddingLeft: parseCSSLength,
+  paddingTop: parseCSSLengthPercent,
+  paddingRight: parseCSSLengthPercent,
+  paddingBottom: parseCSSLengthPercent,
+  paddingLeft: parseCSSLengthPercent,
 
   alignSelf: flexAlignmentsParser,
   position: flexPositionParser,
-  left: parseCSSLength,
-  top: parseCSSLength,
-  right: parseCSSLength,
-  bottom: parseCSSLength,
-  minWidth: parseCSSLength,
-  maxWidth: parseCSSLength,
-  minHeight: parseCSSLength,
-  maxHeight: parseCSSLength,
-  marginTop: parseCSSLength,
-  marginRight: parseCSSLength,
-  marginBottom: parseCSSLength,
-  marginLeft: parseCSSLength,
-  flexGrow: parseCSSLength,
-  flexShrink: parseCSSLength,
+  left: parseCSSLengthPercent,
+  top: parseCSSLengthPercent,
+  right: parseCSSLengthPercent,
+  bottom: parseCSSLengthPercent,
+  minWidth: parseCSSLengthPercent,
+  maxWidth: parseCSSLengthPercent,
+  minHeight: parseCSSLengthPercent,
+  maxHeight: parseCSSLengthPercent,
+  marginTop: parseCSSLengthPercent,
+  marginRight: parseCSSLengthPercent,
+  marginBottom: parseCSSLengthPercent,
+  marginLeft: parseCSSLengthPercent,
+  flexGrow: parseCSSUnitless,
+  flexShrink: parseCSSUnitless,
   display: parseDisplay,
 }
 
 type CSSPrinters = {
   [key in keyof ParsedCSSProperties]: Printer<ParsedCSSProperties[key]>
 }
+
+const jsxAttributeValueWithNoComments = (value: unknown) => jsxAttributeValue(value, emptyComments)
 
 const cssPrinters: CSSPrinters = {
   backgroundColor: printBackgroundColor,
@@ -4155,18 +4166,18 @@ const cssPrinters: CSSPrinters = {
 
   objectFit: printCSSObjectFit,
 
-  flexWrap: jsxAttributeValue,
-  flexDirection: jsxAttributeValue,
-  alignItems: jsxAttributeValue,
-  alignContent: jsxAttributeValue,
-  justifyContent: jsxAttributeValue,
+  flexWrap: jsxAttributeValueWithNoComments,
+  flexDirection: jsxAttributeValueWithNoComments,
+  alignItems: jsxAttributeValueWithNoComments,
+  alignContent: jsxAttributeValueWithNoComments,
+  justifyContent: jsxAttributeValueWithNoComments,
   paddingTop: printCSSNumberAsAttributeValue,
   paddingRight: printCSSNumberAsAttributeValue,
   paddingBottom: printCSSNumberAsAttributeValue,
   paddingLeft: printCSSNumberAsAttributeValue,
 
-  alignSelf: jsxAttributeValue,
-  position: jsxAttributeValue,
+  alignSelf: jsxAttributeValueWithNoComments,
+  position: jsxAttributeValueWithNoComments,
   left: printCSSNumberOrUndefinedAsAttributeValue,
   top: printCSSNumberOrUndefinedAsAttributeValue,
   right: printCSSNumberOrUndefinedAsAttributeValue,
@@ -4370,8 +4381,8 @@ export interface ParsedElementProperties
 
 export type ParsedElementPropertiesKeys = keyof ParsedElementProperties
 
-const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, item) => {
-  current[item] = jsxAttributeValue(undefined)
+export const DOMEventHandlerEmptyValues = DOMEventHandlerNames.reduce((current, item) => {
+  current[item] = jsxAttributeValue(undefined, emptyComments)
   return current
 }, {} as DOMEventAttributeProperties)
 
@@ -4419,17 +4430,17 @@ const elementPropertiesPrinters: MetadataPrinters = {
 
 interface ParsedLayoutProperties {
   layoutSystem: LayoutSystem | undefined
-  pinLeft: FramePin | undefined
-  pinRight: FramePin | undefined
-  centerX: FramePin | undefined
-  width: FramePin | undefined
-  pinTop: FramePin | undefined
-  pinBottom: FramePin | undefined
-  centerY: FramePin | undefined
-  height: FramePin | undefined
+  pinLeft: CSSNumber | undefined
+  pinRight: CSSNumber | undefined
+  centerX: CSSNumber | undefined
+  width: CSSNumber | undefined
+  pinTop: CSSNumber | undefined
+  pinBottom: CSSNumber | undefined
+  centerY: CSSNumber | undefined
+  height: CSSNumber | undefined
   gapMain: number
-  flexBasis: FramePin | undefined
-  crossBasis: FramePin | undefined
+  flexBasis: CSSNumber | undefined
+  crossBasis: CSSNumber | undefined
 }
 
 export const layoutEmptyValues: ParsedLayoutProperties = {
@@ -4471,18 +4482,18 @@ type LayoutPrinters = {
 }
 
 const layoutPrinters: LayoutPrinters = {
-  layoutSystem: jsxAttributeValue,
-  pinLeft: jsxAttributeValue,
-  pinRight: jsxAttributeValue,
-  centerX: jsxAttributeValue,
-  width: jsxAttributeValue,
-  pinTop: jsxAttributeValue,
-  pinBottom: jsxAttributeValue,
-  centerY: jsxAttributeValue,
-  height: jsxAttributeValue,
-  gapMain: jsxAttributeValue,
-  flexBasis: jsxAttributeValue,
-  crossBasis: jsxAttributeValue,
+  layoutSystem: jsxAttributeValueWithNoComments,
+  pinLeft: jsxAttributeValueWithNoComments,
+  pinRight: jsxAttributeValueWithNoComments,
+  centerX: jsxAttributeValueWithNoComments,
+  width: jsxAttributeValueWithNoComments,
+  pinTop: jsxAttributeValueWithNoComments,
+  pinBottom: jsxAttributeValueWithNoComments,
+  centerY: jsxAttributeValueWithNoComments,
+  height: jsxAttributeValueWithNoComments,
+  gapMain: jsxAttributeValueWithNoComments,
+  flexBasis: jsxAttributeValueWithNoComments,
+  crossBasis: jsxAttributeValueWithNoComments,
 }
 
 const layoutEmptyValuesNew: LayoutPropertyTypes = {
@@ -4530,21 +4541,21 @@ type LayoutPrintersNew = {
 }
 
 const layoutPrintersNew: LayoutPrintersNew = {
-  LayoutSystem: jsxAttributeValue,
+  LayoutSystem: jsxAttributeValueWithNoComments,
 
-  Width: jsxAttributeValue,
-  Height: jsxAttributeValue,
+  Width: printCSSNumberOrUndefinedAsAttributeValue,
+  Height: printCSSNumberOrUndefinedAsAttributeValue,
 
-  FlexGap: jsxAttributeValue,
-  FlexFlexBasis: jsxAttributeValue,
-  FlexCrossBasis: jsxAttributeValue,
+  FlexGap: jsxAttributeValueWithNoComments,
+  FlexFlexBasis: printCSSNumberOrUndefinedAsAttributeValue,
+  FlexCrossBasis: printCSSNumberOrUndefinedAsAttributeValue,
 
-  PinnedLeft: jsxAttributeValue,
-  PinnedTop: jsxAttributeValue,
-  PinnedRight: jsxAttributeValue,
-  PinnedBottom: jsxAttributeValue,
-  PinnedCenterX: jsxAttributeValue,
-  PinnedCenterY: jsxAttributeValue,
+  PinnedLeft: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedTop: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedRight: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedBottom: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedCenterX: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedCenterY: printCSSNumberOrUndefinedAsAttributeValue,
 }
 
 export interface ParsedProperties
@@ -4737,4 +4748,164 @@ const LayoutPropertyList = [
 
 export function isLayoutPropDetectedInCSS(cssProps: { [key: string]: any }): boolean {
   return LayoutPropertyList.findIndex((prop: string) => cssProps[prop] != null) > -1
+}
+
+interface NonTrivialKeyword {
+  trivial: false
+}
+
+const nontrivial: NonTrivialKeyword = { trivial: false }
+
+type ParsedPropertiesWithNonTrivial = {
+  [Property in keyof ParsedProperties]: ParsedProperties[Property] | NonTrivialKeyword
+}
+
+export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
+  // ParsedCSSProperties
+  backgroundColor: cssDefault(emptyBackgroundColor),
+  backgroundImage: [],
+  backgroundSize: [],
+  border: emptyCSSBorder,
+  borderRadius: {
+    type: 'LEFT',
+    value: {
+      value: 0,
+      unit: 'px',
+    },
+  },
+  boxShadow: [],
+  color: nontrivial,
+  fontFamily: nontrivial,
+  fontSize: nontrivial,
+  fontStyle: 'normal',
+  fontWeight: 400,
+  letterSpacing: 'normal',
+  lineHeight: 'normal',
+  mixBlendMode: 'normal',
+  opacity: nontrivial,
+  overflow: nontrivial,
+  textAlign: 'left',
+  textDecorationColor: undefined,
+  textDecorationLine: 'none',
+  textDecorationStyle: 'solid',
+  textShadow: [],
+  transform: [],
+  transformOrigin: {
+    x: CSSTransformOriginStringValueX.Center,
+    y: CSSTransformOriginStringValueY.Center,
+  },
+
+  objectFit: 'fill',
+
+  flexWrap: FlexWrap.NoWrap,
+  flexDirection: FlexDirection.Row,
+  alignItems: FlexAlignment.FlexStart,
+  alignContent: FlexAlignment.FlexStart,
+  justifyContent: FlexJustifyContent.FlexStart,
+  paddingTop: {
+    value: 0,
+    unit: 'px',
+  },
+  paddingRight: {
+    value: 0,
+    unit: 'px',
+  },
+  paddingBottom: {
+    value: 0,
+    unit: 'px',
+  },
+  paddingLeft: {
+    value: 0,
+    unit: 'px',
+  },
+  alignSelf: FlexAlignment.Auto,
+  position: 'relative',
+  left: {
+    value: 0,
+    unit: 'px',
+  },
+  top: {
+    value: 0,
+    unit: 'px',
+  },
+  right: {
+    value: 0,
+    unit: 'px',
+  },
+  bottom: {
+    value: 0,
+    unit: 'px',
+  },
+  minWidth: {
+    value: 0,
+    unit: 'px',
+  },
+  maxWidth: undefined, // should be `none`
+  minHeight: {
+    value: 0,
+    unit: 'px',
+  },
+  maxHeight: undefined, // should be `none`
+  marginTop: {
+    value: 0,
+    unit: 'px',
+  },
+  marginRight: {
+    value: 0,
+    unit: 'px',
+  },
+  marginBottom: {
+    value: 0,
+    unit: 'px',
+  },
+  marginLeft: {
+    value: 0,
+    unit: 'px',
+  },
+  flexGrow: nontrivial,
+  flexShrink: nontrivial,
+  display: 'block',
+
+  // ParsedElementProperties
+  alt: '',
+  src: '/',
+  textSizing: 'fixed',
+  ...DOMEventHandlerEmptyValues,
+  className: '',
+
+  // ParsedLayoutProperties
+  layoutSystem: undefined,
+  pinLeft: undefined,
+  pinRight: undefined,
+  centerX: undefined,
+  width: undefined,
+  pinTop: undefined,
+  pinBottom: undefined,
+  centerY: undefined,
+  height: undefined,
+  gapMain: 0,
+  flexBasis: undefined,
+  crossBasis: undefined,
+
+  // LayoutPropertyTypes
+  LayoutSystem: undefined,
+  Width: undefined,
+  Height: undefined,
+  FlexGap: 0,
+  FlexFlexBasis: undefined,
+  FlexCrossBasis: undefined,
+  PinnedLeft: undefined,
+  PinnedTop: undefined,
+  PinnedRight: undefined,
+  PinnedBottom: undefined,
+  PinnedCenterX: undefined,
+  PinnedCenterY: undefined,
+}
+
+export function isTrivialDefaultValue(
+  propertyKey: ParsedPropertiesKeys,
+  valueToCheck: ValueOf<ParsedProperties>,
+): boolean {
+  const maybeTrivial = trivialDefaultValues[propertyKey]
+  return fastDeepEqual(maybeTrivial, valueToCheck)
 }

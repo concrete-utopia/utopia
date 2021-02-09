@@ -13,7 +13,7 @@ import Utils from '../../utils/utils'
 import { EditorPanel, setFocus } from '../common/actions'
 import { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import { clearSelection, pushToast } from '../editor/actions/action-creators'
+import { clearSelection, addToast } from '../editor/actions/action-creators'
 import {
   dependenciesFromPackageJson,
   findLatestVersion,
@@ -32,6 +32,7 @@ import {
   FunctionIcons,
   SectionBodyArea,
 } from '../../uuiui'
+import { notice } from '../common/notice'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch
@@ -236,11 +237,9 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     this.props.editorDispatch(
       [
         EditorActions.setPackageStatus(packageName, 'error'),
-        pushToast({
-          message: `${packageName} couldn't be added. Check the console for details.`,
-          level: 'ERROR',
-          persistent: true,
-        }),
+        addToast(
+          notice(`${packageName} couldn't be added. Check the console for details.`, 'ERROR', true),
+        ),
       ],
       'leftpane',
     )
@@ -291,22 +290,19 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
 
   addDependency = (packageName: string | null, packageVersion: string | null) => {
     this.props.editorDispatch(
-      [
-        pushToast({
-          message: `Adding ${packageName} to your project.`,
-          level: 'INFO',
-        }),
-      ],
+      [addToast(notice(`Adding ${packageName} to your project.`, 'INFO'))],
       'leftpane',
     )
 
     if (DefaultPackagesList.find((pkg) => pkg.name === packageName)) {
       this.props.editorDispatch(
         [
-          pushToast({
-            message: `${packageName} is already available as a default package, no need to add it again :)`,
-            level: 'SUCCESS',
-          }),
+          addToast(
+            notice(
+              `${packageName} is already available as a default package, no need to add it again :)`,
+              'SUCCESS',
+            ),
+          ),
         ],
         'leftpane',
       )
@@ -334,10 +330,9 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
           if (editedPackageVersion == null) {
             this.props.editorDispatch(
               [
-                pushToast({
-                  message: `No npm registry entry found for ${packageNameAndVersion}`,
-                  level: 'ERROR',
-                }),
+                addToast(
+                  notice(`No npm registry entry found for ${packageNameAndVersion}`, 'ERROR'),
+                ),
               ],
               'leftpane',
             )
@@ -387,12 +382,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
         })
         .catch((reason) => {
           this.props.editorDispatch(
-            [
-              pushToast({
-                message: `Couldn't fetch metadata for ${packageNameAndVersion}`,
-                level: 'ERROR',
-              }),
-            ],
+            [addToast(notice(`Couldn't fetch metadata for ${packageNameAndVersion}`, 'ERROR'))],
             'leftpane',
           )
           console.error('Reason for failing to locate the latest version.', reason)

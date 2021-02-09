@@ -30,7 +30,6 @@ import { Toast } from '../common/notices'
 import { chrome as isChrome } from 'platform-detect'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import { UserConfiguration } from '../user-configuration'
-import urljoin = require('url-join')
 import { PROPERTY_CONTROLS_INFO_BASE_URL } from '../../common/env-vars'
 import {
   PropertyControlsInfoIFrameID,
@@ -50,6 +49,7 @@ import {
   FlexColumn,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
+import { createIframeUrl } from '../../core/shared/utils'
 
 interface NumberSize {
   width: number
@@ -59,11 +59,6 @@ interface NumberSize {
 export interface EditorProps {
   propertyControlsInfoSupported: boolean
 }
-
-const EmptyArray: Array<RuntimeErrorInfo> = []
-
-const ConsoleLogSizeLimit = 100
-const EmptyConsoleLogs: Array<ConsoleLog> = []
 
 export const EditorComponentInner = betterReactMemo(
   'EditorComponentInner',
@@ -257,57 +252,18 @@ export const EditorComponentInner = betterReactMemo(
                 borderRight: `1px solid ${UtopiaTheme.color.neutralBorder.value}`,
               }}
             >
-              <SimpleFlexColumn
-                className='EditorSpace'
+              <SimpleFlexRow
+                className='openTabShell'
                 style={{
                   flexGrow: 1,
+                  alignItems: 'stretch',
+                  justifyContent: 'stretch',
+                  overflowX: 'hidden',
                   backgroundColor: UtopiaTheme.color.slightlyEmphasizedBackground.value,
                 }}
               >
-                <SimpleFlexRow
-                  className='tabRail'
-                  style={{
-                    minHeight: 30,
-                    height: 30,
-                    borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
-                    alignItems: 'stretch',
-                    justifyContent: 'stretch',
-                    backgroundColor: 'transparent',
-                    overflowX: 'hidden',
-                  }}
-                >
-                  <SimpleFlexRow style={{ flexGrow: 1, alignItems: 'stretch' }}>
-                    <FileTabs />
-                  </SimpleFlexRow>
-                  <FlexRow
-                    css={{
-                      marginLeft: 8,
-                      marginRight: 8,
-                      '& > :not(:first-of-type):not(:last-of-type)': {
-                        marginRight: 8,
-                      },
-                      '& > :first-of-type': {
-                        marginRight: 8,
-                      },
-                      '& > :last-of-type': {
-                        marginRight: 0,
-                      },
-                    }}
-                  ></FlexRow>
-                </SimpleFlexRow>
-
-                <SimpleFlexRow
-                  className='openTabShell'
-                  style={{
-                    flexGrow: 1,
-                    alignItems: 'stretch',
-                    justifyContent: 'stretch',
-                    overflowX: 'hidden',
-                  }}
-                >
-                  <OpenFileEditor />
-                </SimpleFlexRow>
-              </SimpleFlexColumn>
+                <OpenFileEditor />
+              </SimpleFlexRow>
               {/* insert more columns here */}
               {
                 <div
@@ -392,75 +348,6 @@ export function EditorComponent(props: EditorProps) {
   )
 }
 
-function useRuntimeErrors(): {
-  runtimeErrors: Array<RuntimeErrorInfo>
-  onRuntimeError: (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => void
-  clearRuntimeErrors: () => void
-} {
-  const [runtimeErrors, setRuntimeErrors] = React.useState<Array<RuntimeErrorInfo>>(EmptyArray)
-
-  const onRuntimeError = React.useCallback(
-    (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
-      setRuntimeErrors([
-        {
-          editedFile: editedFile,
-          error: error,
-          errorInfo: Utils.defaultIfNull(null, errorInfo),
-        },
-      ])
-    },
-    [],
-  )
-
-  const clearRuntimeErrors = React.useCallback(() => {
-    setRuntimeErrors(EmptyArray)
-  }, [])
-
-  return {
-    runtimeErrors: runtimeErrors,
-    onRuntimeError: onRuntimeError,
-    clearRuntimeErrors: clearRuntimeErrors,
-  }
-}
-
-function useConsoleLogs(): {
-  consoleLogs: Array<ConsoleLog>
-  addToConsoleLogs: (log: ConsoleLog) => void
-  clearConsoleLogs: () => void
-} {
-  const [consoleLogs, setConsoleLogs] = React.useState<Array<ConsoleLog>>(EmptyConsoleLogs)
-
-  const modifyLogs = React.useCallback(
-    (updateLogs: (logs: Array<ConsoleLog>) => Array<ConsoleLog>) => {
-      setConsoleLogs(updateLogs)
-    },
-    [setConsoleLogs],
-  )
-
-  const clearConsoleLogs = React.useCallback(() => {
-    modifyLogs((_) => EmptyConsoleLogs)
-  }, [modifyLogs])
-
-  const addToConsoleLogs = React.useCallback(
-    (log: ConsoleLog) => {
-      modifyLogs((logs) => {
-        let result = [...logs, log]
-        while (result.length > ConsoleLogSizeLimit) {
-          result.shift()
-        }
-        return result
-      })
-    },
-    [modifyLogs],
-  )
-
-  return {
-    consoleLogs: consoleLogs,
-    addToConsoleLogs: addToConsoleLogs,
-    clearConsoleLogs: clearConsoleLogs,
-  }
-}
-
 const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   const {
     noFileOpen,
@@ -482,9 +369,6 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
     }
   }, 'OpenFileEditor')
 
-  const { runtimeErrors, onRuntimeError, clearRuntimeErrors } = useRuntimeErrors()
-  const { consoleLogs, addToConsoleLogs, clearConsoleLogs } = useConsoleLogs()
-
   if (noFileOpen) {
     return <Subdued>No file open</Subdued>
   } else if (areReleaseNotesOpen) {
@@ -492,17 +376,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   } else if (isUserConfigurationOpen) {
     return <UserConfiguration />
   } else {
-    return (
-      <DesignPanelRoot
-        isUiJsFileOpen={isUiJsFileOpen}
-        runtimeErrors={runtimeErrors}
-        onRuntimeError={onRuntimeError}
-        clearRuntimeErrors={clearRuntimeErrors}
-        canvasConsoleLogs={consoleLogs}
-        clearConsoleLogs={clearConsoleLogs}
-        addToConsoleLogs={addToConsoleLogs}
-      />
-    )
+    return <DesignPanelRoot isUiJsFileOpen={isUiJsFileOpen} />
   }
 })
 OpenFileEditor.displayName = 'OpenFileEditor'
@@ -547,6 +421,7 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
           message={toast.message}
           level={toast.level}
           persistent={toast.persistent}
+          id={toast.id}
         />
       ))}
     </FlexColumn>
@@ -554,11 +429,7 @@ const ToastRenderer = betterReactMemo('ToastRenderer', () => {
 })
 
 const PropertyControlsInfoComponent = betterReactMemo('PropertyControlsInfoComponent', () => {
-  const iframeSrc = urljoin(
-    PROPERTY_CONTROLS_INFO_BASE_URL,
-    'editor',
-    'property-controls-info.html',
-  )
+  const iframeSrc = createIframeUrl(PROPERTY_CONTROLS_INFO_BASE_URL, 'property-controls-info.html')
 
   return (
     <iframe

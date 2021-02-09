@@ -1,6 +1,7 @@
 import { fileTypeFromFileName } from '../../core/model/project-file-utils'
 import { extractFile, extractImage, FileResult } from '../../core/shared/file-utils'
 import { codeFile } from '../../core/shared/project-file-types'
+import { notice } from '../common/notice'
 import { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/action-creators'
 
@@ -77,9 +78,7 @@ function handleImageSelected(
     } else {
       // FIXME Support inserting SVGs by adding an import statement
       fileUploadAction(file, imageFilePath).then((saveFileAction) => {
-        const warningMessage = EditorActions.showToast({
-          message: `File saved to ${imageFilePath}`,
-        })
+        const warningMessage = EditorActions.showToast(notice(`File saved to ${imageFilePath}`))
         dispatch([saveFileAction, warningMessage], 'everyone')
       })
     }

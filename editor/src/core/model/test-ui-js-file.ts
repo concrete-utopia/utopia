@@ -10,6 +10,7 @@ import {
   utopiaJSXComponent,
   defaultPropsParam,
   jsxFragment,
+  jsxAttributesFromMap,
 } from '../shared/element-template'
 import { addImport, emptyImports, mergeImports } from '../workers/common/project-file-utils'
 import {
@@ -23,33 +24,34 @@ import { emptyComments } from '../workers/parser-printer/parser-printer-comments
 
 const sampleIncludedElementTypes: Array<string> = [
   'Ellipse',
-  'Text',
+  'Image',
   'Rectangle',
   'Storyboard',
+  'Text',
   'View',
-  'Image',
 ]
 
-export const sampleDefaultImports = {
+export const onlyImportReact: Imports = {
   react: {
     importedWithName: null,
     importedFromWithin: [],
     importedAs: 'React',
-    comments: emptyComments,
   },
+}
+
+export const sampleDefaultImports: Imports = mergeImports(onlyImportReact, {
   'utopia-api': {
     importedWithName: null,
     importedFromWithin: [importAlias('UtopiaUtils')],
     importedAs: null,
-    comments: emptyComments,
   },
-}
+})
 
 export const sampleImportsForTests: Imports = mergeImports(
   sampleDefaultImports,
   sampleIncludedElementTypes.reduce<Imports>(
     (working, elementType) =>
-      addImport('utopia-api', null, [importAlias(elementType)], null, emptyComments, working),
+      addImport('utopia-api', null, [importAlias(elementType)], null, working),
     emptyImports(),
   ),
 )
@@ -59,76 +61,96 @@ const MainComponentForTestsName = 'Test'
 const mainComponentForTests = utopiaJSXComponent(
   MainComponentForTestsName,
   true,
+  'var',
+  'block',
   defaultPropsParam,
   [],
   jsxElement(
     'View',
-    {
-      layout: jsxAttributeNestedObjectSimple({
-        left: jsxAttributeOtherJavaScript(
-          `props.${createLayoutPropertyPathString('PinnedLeft')}`,
-          `return props.${createLayoutPropertyPathString('PinnedLeft')}`,
-          ['props'],
-          null,
-        ),
-        top: jsxAttributeOtherJavaScript(
-          `props.${createLayoutPropertyPathString('PinnedTop')}`,
-          `return props.${createLayoutPropertyPathString('PinnedTop')}`,
-          ['props'],
-          null,
-        ),
-        width: jsxAttributeOtherJavaScript(
-          `props.${createLayoutPropertyPathString('Width')}`,
-          `return props.${createLayoutPropertyPathString('Width')}`,
-          ['props'],
-          null,
-        ),
-        height: jsxAttributeOtherJavaScript(
-          `props.${createLayoutPropertyPathString('Height')}`,
-          `return props.${createLayoutPropertyPathString('Height')}`,
-          ['props'],
-          null,
-        ),
-      }),
-      style: jsxAttributeValue({
-        position: 'absolute',
-        backgroundColor: 'lightgrey',
-      }),
-      'data-uid': jsxAttributeValue('aaa'),
-    },
+    jsxAttributesFromMap({
+      layout: jsxAttributeNestedObjectSimple(
+        jsxAttributesFromMap({
+          left: jsxAttributeOtherJavaScript(
+            `props.${createLayoutPropertyPathString('PinnedLeft')}`,
+            `return props.${createLayoutPropertyPathString('PinnedLeft')}`,
+            ['props'],
+            null,
+          ),
+          top: jsxAttributeOtherJavaScript(
+            `props.${createLayoutPropertyPathString('PinnedTop')}`,
+            `return props.${createLayoutPropertyPathString('PinnedTop')}`,
+            ['props'],
+            null,
+          ),
+          width: jsxAttributeOtherJavaScript(
+            `props.${createLayoutPropertyPathString('Width')}`,
+            `return props.${createLayoutPropertyPathString('Width')}`,
+            ['props'],
+            null,
+          ),
+          height: jsxAttributeOtherJavaScript(
+            `props.${createLayoutPropertyPathString('Height')}`,
+            `return props.${createLayoutPropertyPathString('Height')}`,
+            ['props'],
+            null,
+          ),
+        }),
+        emptyComments,
+      ),
+      style: jsxAttributeValue(
+        {
+          position: 'absolute',
+          backgroundColor: 'lightgrey',
+        },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
+    }),
     [
       jsxFragment(
         [
           jsxElement(
             'Ellipse',
-            {
-              layout: jsxAttributeValue({
-                left: 150,
-                top: 25,
-                width: 100,
-                height: 100,
-              }),
-              style: jsxAttributeNestedObjectSimple({
-                backgroundColor: jsxAttributeValue('lightgreen'),
-              }),
-              'data-uid': jsxAttributeValue('bbb'),
-            },
+            jsxAttributesFromMap({
+              layout: jsxAttributeValue(
+                {
+                  left: 150,
+                  top: 25,
+                  width: 100,
+                  height: 100,
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  backgroundColor: jsxAttributeValue('lightgreen', emptyComments),
+                }),
+                emptyComments,
+              ),
+              'data-uid': jsxAttributeValue('bbb', emptyComments),
+            }),
             [],
           ),
           jsxElement(
             'Rectangle',
-            {
-              layout: jsxAttributeValue({
-                left: 25,
-                top: 25,
-                width: 100,
-                height: 100,
-              }),
-              style: jsxAttributeNestedObjectSimple({
-                backgroundColor: jsxAttributeValue('orange'),
-              }),
-              'data-uid': jsxAttributeValue('ccc'),
-            },
+            jsxAttributesFromMap({
+              layout: jsxAttributeValue(
+                {
+                  left: 25,
+                  top: 25,
+                  width: 100,
+                  height: 100,
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  backgroundColor: jsxAttributeValue('orange', emptyComments),
+                }),
+                emptyComments,
+              ),
+              'data-uid': jsxAttributeValue('ccc', emptyComments),
+            }),
             [],
           ),
         ],
@@ -136,131 +158,168 @@ const mainComponentForTests = utopiaJSXComponent(
       ),
       jsxElement(
         'View',
-        {
-          layout: jsxAttributeValue({
-            left: 150,
-            top: 150,
-            width: 100,
-            height: 100,
-            layoutSystem: 'group',
-          }),
-          style: jsxAttributeNestedObjectSimple({
-            position: jsxAttributeValue('absolute'),
-            backgroundColor: jsxAttributeValue('red'),
-            boxShadow: jsxAttributeValue('10px 10px 8px #888888'),
-          }),
-          'data-uid': jsxAttributeValue('ddd'),
-        },
+        jsxAttributesFromMap({
+          layout: jsxAttributeValue(
+            {
+              left: 150,
+              top: 150,
+              width: 100,
+              height: 100,
+              layoutSystem: 'group',
+            },
+            emptyComments,
+          ),
+          style: jsxAttributeNestedObjectSimple(
+            jsxAttributesFromMap({
+              position: jsxAttributeValue('absolute', emptyComments),
+              backgroundColor: jsxAttributeValue('red', emptyComments),
+              boxShadow: jsxAttributeValue('10px 10px 8px #888888', emptyComments),
+            }),
+            emptyComments,
+          ),
+          'data-uid': jsxAttributeValue('ddd', emptyComments),
+        }),
         [
           jsxElement(
             'Rectangle',
-            {
-              layout: jsxAttributeValue({
-                left: 220,
-                top: 220,
-                width: 20,
-                height: 20,
-              }),
-              style: jsxAttributeNestedObjectSimple({
-                backgroundColor: jsxAttributeValue('orange'),
-              }),
-              'data-uid': jsxAttributeValue('eee'),
-            },
+            jsxAttributesFromMap({
+              layout: jsxAttributeValue(
+                {
+                  left: 220,
+                  top: 220,
+                  width: 20,
+                  height: 20,
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  backgroundColor: jsxAttributeValue('orange', emptyComments),
+                }),
+                emptyComments,
+              ),
+              'data-uid': jsxAttributeValue('eee', emptyComments),
+            }),
             [],
           ),
           jsxElement(
             'Rectangle',
-            {
-              layout: jsxAttributeValue({
-                left: 90,
-                top: 90,
-                width: 100,
-                height: 100,
-              }),
-              style: jsxAttributeNestedObjectSimple({
-                backgroundColor: jsxAttributeValue('orange'),
-              }),
-              'data-uid': jsxAttributeValue('fff'),
-            },
+            jsxAttributesFromMap({
+              layout: jsxAttributeValue(
+                {
+                  left: 90,
+                  top: 90,
+                  width: 100,
+                  height: 100,
+                },
+                emptyComments,
+              ),
+              style: jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  backgroundColor: jsxAttributeValue('orange', emptyComments),
+                }),
+                emptyComments,
+              ),
+              'data-uid': jsxAttributeValue('fff', emptyComments),
+            }),
             [],
           ),
         ],
       ),
       jsxElement(
         'View',
-        {
-          layout: jsxAttributeNestedObjectSimple({
-            left: jsxAttributeValue(50),
-            top: jsxAttributeValue(250),
-            width: jsxAttributeValue(100),
-            height: jsxAttributeValue(200),
-          }),
-          style: jsxAttributeValue({
-            position: 'absolute',
-            backgroundColor: 'blue',
-          }),
-          'data-uid': jsxAttributeValue('ggg'),
-        },
+        jsxAttributesFromMap({
+          layout: jsxAttributeNestedObjectSimple(
+            jsxAttributesFromMap({
+              left: jsxAttributeValue(50, emptyComments),
+              top: jsxAttributeValue(250, emptyComments),
+              width: jsxAttributeValue(100, emptyComments),
+              height: jsxAttributeValue(200, emptyComments),
+            }),
+            emptyComments,
+          ),
+          style: jsxAttributeValue(
+            {
+              position: 'absolute',
+              backgroundColor: 'blue',
+            },
+            emptyComments,
+          ),
+          'data-uid': jsxAttributeValue('ggg', emptyComments),
+        }),
         [],
       ),
       jsxElement(
         'Text',
-        {
-          layout: jsxAttributeValue({
-            left: 200,
-            top: 200,
-            width: 200,
-            height: 100,
-          }),
-          text: jsxAttributeValue('TEST'),
-          style: jsxAttributeValue({
-            fontSize: 16,
-          }),
-          textSizing: jsxAttributeValue('auto'),
-          'data-uid': jsxAttributeValue('hhh'),
-        },
+        jsxAttributesFromMap({
+          layout: jsxAttributeValue(
+            {
+              left: 200,
+              top: 200,
+              width: 200,
+              height: 100,
+            },
+            emptyComments,
+          ),
+          text: jsxAttributeValue('TEST', emptyComments),
+          style: jsxAttributeValue(
+            {
+              fontSize: 16,
+            },
+            emptyComments,
+          ),
+          textSizing: jsxAttributeValue('auto', emptyComments),
+          'data-uid': jsxAttributeValue('hhh', emptyComments),
+        }),
         [],
       ),
       jsxElement(
         'Image',
-        {
-          layout: jsxAttributeValue({
-            left: 200,
-            top: 300,
-            width: 484 / 2,
-            height: 426 / 2,
-          }),
-          src: jsxAttributeValue(KrazyGeorgeTestUrl),
-          fillType: jsxAttributeValue('fill'),
-          'data-uid': jsxAttributeValue('iii'),
-        },
+        jsxAttributesFromMap({
+          layout: jsxAttributeValue(
+            {
+              left: 200,
+              top: 300,
+              width: 484 / 2,
+              height: 426 / 2,
+            },
+            emptyComments,
+          ),
+          src: jsxAttributeValue(KrazyGeorgeTestUrl, emptyComments),
+          fillType: jsxAttributeValue('fill', emptyComments),
+          'data-uid': jsxAttributeValue('iii', emptyComments),
+        }),
         [],
       ),
-      jsxElement('MyComponent', { 'data-uid': jsxAttributeValue('mycomponent') }, []),
+      jsxElement(
+        'MyComponent',
+        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('mycomponent', emptyComments) }),
+        [],
+      ),
     ],
   ),
   null,
   false,
-  emptyComments,
   emptyComments,
 )
 
 const scene = utopiaJSXComponent(
   'MyComponent',
   true,
+  'var',
+  'block',
   defaultPropsParam,
   [],
   jsxElement(
     'View',
-    {
-      style: jsxAttributeValue({ backgroundColor: 'green' }),
-      'data-uid': jsxAttributeValue('jjj'),
-    },
+    jsxAttributesFromMap({
+      style: jsxAttributeValue({ backgroundColor: 'green' }, emptyComments),
+      'data-uid': jsxAttributeValue('jjj', emptyComments),
+    }),
     [],
   ),
   null,
   false,
-  emptyComments,
   emptyComments,
 )
 
@@ -285,15 +344,17 @@ const Scene2 = defaultSceneElement(
 const TestStoryboard = utopiaJSXComponent(
   BakedInStoryboardVariableName,
   false,
+  'var',
+  'block',
   null,
   [],
-  jsxElement('Storyboard', { 'data-uid': jsxAttributeValue(BakedInStoryboardUID) }, [
-    Scene1,
-    Scene2,
-  ]),
+  jsxElement(
+    'Storyboard',
+    jsxAttributesFromMap({ 'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments) }),
+    [Scene1, Scene2],
+  ),
   null,
   false,
-  emptyComments,
   emptyComments,
 )
 

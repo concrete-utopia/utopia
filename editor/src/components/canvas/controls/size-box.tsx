@@ -46,6 +46,7 @@ class ResizeControl extends React.Component<ResizeControlProps> {
   }
 
   onMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.stopPropagation()
     if (event.buttons === 1) {
       const centerBasedResize = event.altKey
       const keepAspectRatio = event.shiftKey || this.props.elementAspectRatioLocked
@@ -77,6 +78,11 @@ class ResizeControl extends React.Component<ResizeControlProps> {
     }
   }
 
+  onMouseMove = (event: React.MouseEvent<any>) => {
+    this.props.maybeClearHighlightsOnHoverEnd()
+    event.stopPropagation()
+  }
+
   render() {
     const currentSize = this.props.visualSize
     const top =
@@ -98,7 +104,9 @@ class ResizeControl extends React.Component<ResizeControlProps> {
     return (
       <React.Fragment>
         {this.props.resizeStatus === 'enabled' ? (
-          <div onMouseDown={this.onMouseDown}>{this.props.children}</div>
+          <div onMouseDown={this.onMouseDown} onMouseMove={this.onMouseMove}>
+            {this.props.children}
+          </div>
         ) : (
           this.props.children
         )}
@@ -157,6 +165,7 @@ class ResizeEdge extends React.Component<ResizeEdgeProps> {
       <div
         ref={this.reference}
         style={{
+          pointerEvents: 'initial',
           position: 'absolute',
           left: left,
           top: top,
@@ -201,6 +210,7 @@ const ResizeLines = (props: ResizeLinesProps) => {
       <div
         ref={reference}
         style={{
+          pointerEvents: 'initial',
           position: 'absolute',
           width: catchmentSize,
           height: catchmentSize,
@@ -337,6 +347,7 @@ class ResizePoint extends React.Component<ResizePointProps> {
       <React.Fragment>
         <div
           style={{
+            pointerEvents: 'initial',
             position: 'absolute',
             width: size,
             height: size,
@@ -387,6 +398,7 @@ interface ResizeRectangleProps {
   metadata: JSXMetadata
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
+  maybeClearHighlightsOnHoverEnd: () => void
 }
 
 export class ResizeRectangle extends React.Component<ResizeRectangleProps> {

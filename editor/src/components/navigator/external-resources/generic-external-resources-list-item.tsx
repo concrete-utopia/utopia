@@ -4,10 +4,9 @@ import {
   useExternalResources,
   ExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
-import { betterReactMemo, MomentumContextMenu } from '../../../uuiui-deps'
+import { betterReactMemo, MenuProvider, MomentumContextMenu } from '../../../uuiui-deps'
 import { GridRow } from '../../inspector/widgets/grid-row'
 import { ResourcesListGridRowConfig } from './generic-external-resources-list'
-import { MenuProvider } from 'react-contexify'
 import { ContextMenuItem } from '../../context-menu-items'
 import { NO_OP } from '../../../core/shared/utils'
 
@@ -58,7 +57,7 @@ export const GenericExternalResourcesListItem = betterReactMemo<
   ]
 
   return (
-    <MenuProvider id={menuId} storeRef={false}>
+    <MenuProvider id={menuId}>
       <GridRow
         {...ResourcesListGridRowConfig}
         style={{ paddingLeft: 12, paddingRight: 8 }}

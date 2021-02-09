@@ -3,10 +3,6 @@
 exports[`JSX parser circularly referenced arbitrary blocks parse and produce a combined block 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "definedElsewhere": Array [],
     "definedWithin": Array [
       "a",
@@ -14,21 +10,22 @@ Object {
     ],
     "javascript": "function a(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return b(n - 1);
+    return b(n - 1)
   }
 }
+
 function b(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return a(n - 1);
+    return a(n - 1)
   }
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAICA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWFA;;AAEDX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
+      "mappings": "AAMCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWHA;;AAEAX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
       "names": Array [
         "function",
         "a",
@@ -64,7 +61,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -80,9 +77,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -147,26 +144,11 @@ return { a: a, b: b };",
   },
   "imports": Object {
     "react": Object {
-      "comments": Object {
-        "leadingComments": Array [
-          Object {
-            "comment": "* @jsx jsx ",
-            "rawText": "/** @jsx jsx */",
-            "trailingNewLine": true,
-            "type": "MULTI_LINE_COMMENT",
-          },
-        ],
-        "trailingComments": Array [],
-      },
       "importedAs": "React",
       "importedFromWithin": Array [],
       "importedWithName": null,
     },
     "utopia-api": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
@@ -188,10 +170,42 @@ return { a: a, b: b };",
   "jsxFactoryFunction": "jsx",
   "topLevelElements": Array [
     Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "rawCode": "/** @jsx jsx */
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
+      "importStarAs": true,
+      "importWithName": false,
+      "imports": Array [],
+      "module": "react",
+      "rawCode": "import * as React from 'react'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "Scene",
+        "Storyboard",
+        "jsx",
+      ],
+      "module": "utopia-api",
+      "rawCode": "import { Scene, Storyboard, jsx } from 'utopia-api'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "definedElsewhere": Array [
         "b",
       ],
@@ -200,9 +214,9 @@ return { a: a, b: b };",
       ],
       "javascript": "function a(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return b(n - 1);
+    return b(n - 1)
   }
 }",
       "sourceMap": Object {
@@ -243,7 +257,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -259,9 +273,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -283,11 +297,15 @@ return { a: a };",
       "uniqueID": "",
     },
     Object {
+      "rawCode": "
+
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "arbitraryJSBlock": null,
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "blockOrExpression": "block",
+      "declarationSyntax": "var",
       "isFunction": true,
       "name": "App",
       "param": Object {
@@ -338,7 +356,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -354,9 +372,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -407,7 +425,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -423,9 +441,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -446,36 +464,71 @@ export var storyboard = (
             "propertyElements": Array [],
           },
         },
-        "props": Object {
-          "data-uid": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": "aaa",
-          },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
             "value": Object {
-              "layoutSystem": "pinSystem",
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
             },
           },
-          "style": Object {
-            "type": "ATTRIBUTE_VALUE",
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "style",
             "value": Object {
-              "backgroundColor": "#FFFFFF",
-              "height": "100%",
-              "width": "100%",
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "backgroundColor": "#FFFFFF",
+                "height": "100%",
+                "width": "100%",
+              },
             },
           },
-        },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "layout",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "layoutSystem": "pinSystem",
+              },
+            },
+          },
+        ],
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
     },
     Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "rawCode": "
+
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "definedElsewhere": Array [
         "a",
       ],
@@ -484,9 +537,9 @@ export var storyboard = (
       ],
       "javascript": "function b(n) {
   if (n <= 0) {
-    return 0;
+    return 0
   } else {
-    return a(n - 1);
+    return a(n - 1)
   }
 }",
       "sourceMap": Object {
@@ -527,7 +580,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -543,9 +596,9 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -567,11 +620,15 @@ return { b: b };",
       "uniqueID": "",
     },
     Object {
+      "rawCode": "
+
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "arbitraryJSBlock": null,
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "blockOrExpression": "parenthesized-expression",
+      "declarationSyntax": "var",
       "isFunction": false,
       "name": "storyboard",
       "param": null,
@@ -590,23 +647,44 @@ return { b: b };",
                 "propertyElements": Array [],
               },
             },
-            "props": Object {
-              "component": Object {
-                "definedElsewhere": Array [
-                  "App",
-                ],
-                "javascript": "App",
-                "sourceMap": Object {
-                  "file": "code.tsx",
-                  "mappings": "OAkCkBA",
-                  "names": Array [
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "ccc",
+                },
+              },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "component",
+                "value": Object {
+                  "definedElsewhere": Array [
                     "App",
                   ],
-                  "sources": Array [
-                    "code.tsx",
-                  ],
-                  "sourcesContent": Array [
-                    "/** @jsx jsx */
+                  "javascript": "App",
+                  "sourceMap": Object {
+                    "file": "code.tsx",
+                    "mappings": "OAkCkBA",
+                    "names": Array [
+                      "App",
+                    ],
+                    "sources": Array [
+                      "code.tsx",
+                    ],
+                    "sourcesContent": Array [
+                      "/** @jsx jsx */
 import * as React from 'react'
 import { Scene, Storyboard, jsx } from 'utopia-api'
 
@@ -621,7 +699,7 @@ function a(n) {
 export var App = (props) => {
   return (
     <div
-      data-uid={'aaa'}
+      data-uid='aaa'
       style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
       layout={{ layoutSystem: 'pinSystem' }}
     >{b(5)} - {a(5)}</div>
@@ -637,41 +715,60 @@ function b(n) {
 }
 
 export var storyboard = (
-  <Storyboard data-uid={'bbb'} layout={{ layoutSystem: 'pinSystem' }}>
+  <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
-      data-uid={'ccc'}
+      data-uid='ccc'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
     />
   </Storyboard>
 )",
-                  ],
-                  "version": 3,
+                    ],
+                    "version": 3,
+                  },
+                  "transpiledJavascript": "return App;",
+                  "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                  "uniqueID": "",
                 },
-                "transpiledJavascript": "return App;",
-                "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-                "uniqueID": "",
               },
-              "data-uid": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": "ccc",
-              },
-              "props": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": Object {},
-              },
-              "style": Object {
-                "type": "ATTRIBUTE_VALUE",
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "props",
                 "value": Object {
-                  "height": 812,
-                  "left": 0,
-                  "position": "absolute",
-                  "top": 0,
-                  "width": 375,
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": Object {},
                 },
               },
-            },
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "style",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": Object {
+                    "height": 812,
+                    "left": 0,
+                    "position": "absolute",
+                    "top": 0,
+                    "width": 375,
+                  },
+                },
+              },
+            ],
             "type": "JSX_ELEMENT",
           },
         ],
@@ -681,18 +778,40 @@ export var storyboard = (
             "propertyElements": Array [],
           },
         },
-        "props": Object {
-          "data-uid": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": "bbb",
-          },
-          "layout": Object {
-            "type": "ATTRIBUTE_VALUE",
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
             "value": Object {
-              "layoutSystem": "pinSystem",
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "bbb",
             },
           },
-        },
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "layout",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": Object {
+                "layoutSystem": "pinSystem",
+              },
+            },
+          },
+        ],
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",

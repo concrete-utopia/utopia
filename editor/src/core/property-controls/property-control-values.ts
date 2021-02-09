@@ -57,6 +57,7 @@ import { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { fastForEach } from '../shared/utils'
 import { mapToArray } from '../shared/object-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 type Printer<T> = (value: T) => JSXAttribute
 
@@ -317,14 +318,14 @@ export function controlToUseForUnion(
 }
 
 function printSimple<T>(value: T): JSXAttribute {
-  return jsxAttributeValue(value)
+  return jsxAttributeValue(value, emptyComments)
 }
 
 function printColor(value: unknown): JSXAttribute {
   if (isCSSColor(value) || value === undefined) {
     return printColorToJsx(value)
   } else {
-    return jsxAttributeValue(`${value}`)
+    return jsxAttributeValue(`${value}`, emptyComments)
   }
 }
 
@@ -369,8 +370,10 @@ export function printerForBasePropertyControl(control: BaseControlDescription): 
 function printerForArray<T>(control: ControlDescription): Printer<Array<T>> {
   const printContentsValue = printerForPropertyControl(control)
   return (array: Array<T>): JSXAttribute => {
-    const printedContents = array.map((value) => jsxArrayValue(printContentsValue(value)))
-    return jsxAttributeNestedArray(printedContents)
+    const printedContents = array.map((value) =>
+      jsxArrayValue(printContentsValue(value), emptyComments),
+    )
+    return jsxAttributeNestedArray(printedContents, emptyComments)
   }
 }
 
@@ -382,10 +385,10 @@ function printerForObject(objectControls: {
       const valueControl = objectControls[key]
       const valuePrinter =
         valueControl == null ? printSimple : printerForPropertyControl(valueControl)
-      return jsxPropertyAssignment(key, valuePrinter(value))
+      return jsxPropertyAssignment(key, valuePrinter(value), emptyComments, emptyComments)
     }, objectToPrint)
 
-    return jsxAttributeNestedObject(printedContents)
+    return jsxAttributeNestedObject(printedContents, emptyComments)
   }
 }
 

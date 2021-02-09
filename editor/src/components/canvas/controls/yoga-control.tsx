@@ -95,6 +95,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
         metadata={this.props.componentMetadata}
         onResizeStart={Utils.NO_OP}
         testID={`component-resize-control-${TP.toComponentId(this.props.target)}-0`}
+        maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
       />
     )
   }

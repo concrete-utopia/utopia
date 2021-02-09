@@ -12,7 +12,7 @@ Object {
     layout: {
       layoutSystem: 'pinSystem'
     },
-    \\"data-uid\\": 'aaa'
+    \\"data-uid\\": \\"aaa\\"
   }));
 };",
     "sourceMap": Object {
@@ -52,7 +52,7 @@ export var App = (props) => {
       <View
         style={{ ...props.style, backgroundColor: '#FFFFFF' }}
         layout={{ layoutSystem: 'pinSystem' }}
-        data-uid={'aaa'}
+        data-uid='aaa'
       ></View>
     </>
   )
@@ -68,34 +68,28 @@ export var App = (props) => {
 exports[`JSX parser parses back and forth as a function, with an arbitrary piece of JavaScript 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "definedElsewhere": Array [],
     "definedWithin": Array [
       "cakeFn",
       "otherFn",
     ],
     "javascript": "function cakeFn(n) {
-  return n;
+  return n
 }
 function otherFn(n) {
-  return n;
+  return n
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
+      "mappings": "AAICA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC;;AACAL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
       "names": Array [
         "function",
         "cakeFn",
         "n",
         "{",
         "return",
-        "
-",
-        "otherFn",
         "}",
+        "otherFn",
       ],
       "sources": Array [
         "code.tsx",
@@ -103,7 +97,7 @@ function otherFn(n) {
       "sourcesContent": Array [
         "import { cake } from 'cake'
 import * as React from 'react'
-import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -112,8 +106,8 @@ function otherFn(n) {
 }
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
     </View>
   )
 }
@@ -149,7 +143,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "uid": "aaa",
     },
     "aab": Object {
-      "endCol": 63,
+      "endCol": 61,
       "endLine": 12,
       "startCol": 6,
       "startLine": 12,
@@ -158,10 +152,6 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
   },
   "imports": Object {
     "cake": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
@@ -172,21 +162,17 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "importedWithName": null,
     },
     "react": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": "React",
       "importedFromWithin": Array [],
       "importedWithName": null,
     },
     "utopia-api": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": null,
       "importedFromWithin": Array [
+        Object {
+          "alias": "UtopiaUtils",
+          "name": "UtopiaUtils",
+        },
         Object {
           "alias": "Ellipse",
           "name": "Ellipse",
@@ -208,10 +194,6 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
           "name": "Text",
         },
         Object {
-          "alias": "UtopiaUtils",
-          "name": "UtopiaUtils",
-        },
-        Object {
           "alias": "View",
           "name": "View",
         },
@@ -222,16 +204,61 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
   "jsxFactoryFunction": null,
   "topLevelElements": Array [
     Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "cake",
+      ],
+      "module": "cake",
+      "rawCode": "import { cake } from 'cake'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
+      "importStarAs": true,
+      "importWithName": false,
+      "imports": Array [],
+      "module": "react",
+      "rawCode": "import * as React from 'react'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "UtopiaUtils",
+        "Ellipse",
+        "Image",
+        "Rectangle",
+        "Storyboard",
+        "Text",
+        "View",
+      ],
+      "module": "utopia-api",
+      "rawCode": "import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "definedElsewhere": Array [],
       "definedWithin": Array [
         "cakeFn",
       ],
       "javascript": "function cakeFn(n) {
-  return n;
+  return n
 }",
       "sourceMap": Object {
         "file": "code.tsx",
@@ -250,7 +277,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "sourcesContent": Array [
           "import { cake } from 'cake'
 import * as React from 'react'
-import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -259,8 +286,8 @@ function otherFn(n) {
 }
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
     </View>
   )
 }
@@ -276,16 +303,17 @@ return { cakeFn: cakeFn };",
       "uniqueID": "",
     },
     Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "definedElsewhere": Array [],
       "definedWithin": Array [
         "otherFn",
       ],
       "javascript": "function otherFn(n) {
-  return n;
+  return n
 }",
       "sourceMap": Object {
         "file": "code.tsx",
@@ -304,7 +332,7 @@ return { cakeFn: cakeFn };",
         "sourcesContent": Array [
           "import { cake } from 'cake'
 import * as React from 'react'
-import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -313,8 +341,8 @@ function otherFn(n) {
 }
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
     </View>
   )
 }
@@ -330,11 +358,14 @@ return { otherFn: otherFn };",
       "uniqueID": "",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "arbitraryJSBlock": null,
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "blockOrExpression": "block",
+      "declarationSyntax": "var",
       "isFunction": true,
       "name": "whatever",
       "param": Object {
@@ -361,34 +392,51 @@ return { otherFn: otherFn };",
                 "propertyElements": Array [],
               },
             },
-            "props": Object {
-              "data-uid": Object {
-                "type": "ATTRIBUTE_VALUE",
-                "value": "aab",
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "aab",
+                },
               },
-              "left": Object {
-                "definedElsewhere": Array [
-                  "cakeFn",
-                  "otherFn",
-                ],
-                "javascript": "cakeFn(otherFn('b') + 2)",
-                "sourceMap": Object {
-                  "file": "code.tsx",
-                  "mappings": "OAYoCA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
-                  "names": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "left",
+                "value": Object {
+                  "definedElsewhere": Array [
                     "cakeFn",
                     "otherFn",
-                    "'",
-                    "b",
-                    ")",
                   ],
-                  "sources": Array [
-                    "code.tsx",
-                  ],
-                  "sourcesContent": Array [
-                    "import { cake } from 'cake'
+                  "javascript": "cakeFn(otherFn('b') + 2)",
+                  "sourceMap": Object {
+                    "file": "code.tsx",
+                    "mappings": "OAYkCA,MAAOC,QAAQC,CAACC,GAADD,CAARD,GAAgBG,CAAhBH,CAAPD",
+                    "names": Array [
+                      "cakeFn",
+                      "otherFn",
+                      "'",
+                      "b",
+                      ")",
+                    ],
+                    "sources": Array [
+                      "code.tsx",
+                    ],
+                    "sourcesContent": Array [
+                      "import { cake } from 'cake'
 import * as React from 'react'
-import { Ellipse, Image, Rectangle, Storyboard, Text, UtopiaUtils, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -397,20 +445,21 @@ function otherFn(n) {
 }
 export var whatever = (props) => {
   return (
-    <View data-uid={'aaa'}>
-      <cake data-uid={'aab'} left={cakeFn(otherFn('b') + 2)} />
+    <View data-uid='aaa'>
+      <cake data-uid='aab' left={cakeFn(otherFn('b') + 2)} />
     </View>
   )
 }
 ",
-                  ],
-                  "version": 3,
+                    ],
+                    "version": 3,
+                  },
+                  "transpiledJavascript": "return cakeFn(otherFn('b') + 2);",
+                  "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                  "uniqueID": "",
                 },
-                "transpiledJavascript": "return cakeFn(otherFn('b') + 2);",
-                "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-                "uniqueID": "",
               },
-            },
+            ],
             "type": "JSX_ELEMENT",
           },
         ],
@@ -420,16 +469,32 @@ export var whatever = (props) => {
             "propertyElements": Array [],
           },
         },
-        "props": Object {
-          "data-uid": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": "aaa",
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
+            },
           },
-        },
+        ],
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
   ],
   "type": "PARSE_SUCCESS",
@@ -439,20 +504,16 @@ export var whatever = (props) => {
 exports[`JSX parser parses fine with a circular dependency. 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "definedElsewhere": Array [],
     "definedWithin": Array [
       "a",
       "b",
     ],
-    "javascript": "const a = n => n > 0 ? n : b(10);
-const b = n => n > 0 ? n : a(10);",
+    "javascript": "const a = (n) => n > 0 ? n : b(10)
+const b = (n) => n > 0 ? n : a(10)",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+      "mappings": "AAKCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
       "names": Array [
         "const",
         "a",
@@ -472,7 +533,7 @@ import {
   View
 } from \\"utopia-api\\";
 const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid={'aaa'} />
+export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 ",
       ],
@@ -499,7 +560,7 @@ return { a: a, b: b };",
   },
   "highlightBounds": Object {
     "aaa": Object {
-      "endCol": 58,
+      "endCol": 56,
       "endLine": 5,
       "startCol": 33,
       "startLine": 5,
@@ -508,19 +569,11 @@ return { a: a, b: b };",
   },
   "imports": Object {
     "react": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": "React",
       "importedFromWithin": Array [],
       "importedWithName": null,
     },
     "utopia-api": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": null,
       "importedFromWithin": Array [
         Object {
@@ -534,17 +587,43 @@ return { a: a, b: b };",
   "jsxFactoryFunction": null,
   "topLevelElements": Array [
     Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "importStarAs": true,
+      "importWithName": false,
+      "imports": Array [],
+      "module": "react",
+      "rawCode": "import * as React from \\"react\\";",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "View",
+      ],
+      "module": "utopia-api",
+      "rawCode": "import {
+  View
+} from \\"utopia-api\\";",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "definedElsewhere": Array [
         "b",
       ],
       "definedWithin": Array [
         "a",
       ],
-      "javascript": "const a = n => n > 0 ? n : b(10);",
+      "javascript": "const a = (n) => n > 0 ? n : b(10)",
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
@@ -567,7 +646,7 @@ import {
   View
 } from \\"utopia-api\\";
 const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid={'aaa'} />
+export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 ",
         ],
@@ -581,11 +660,14 @@ return { a: a };",
       "uniqueID": "",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "arbitraryJSBlock": null,
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "blockOrExpression": "expression",
+      "declarationSyntax": "var",
       "isFunction": true,
       "name": "whatever",
       "param": Object {
@@ -610,29 +692,41 @@ return { a: a };",
             "propertyElements": Array [],
           },
         },
-        "props": Object {
-          "data-uid": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": "aaa",
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
+            },
           },
-        },
+        ],
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
     },
     Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "definedElsewhere": Array [
         "a",
       ],
       "definedWithin": Array [
         "b",
       ],
-      "javascript": "const b = n => n > 0 ? n : a(10);",
+      "javascript": "const b = (n) => n > 0 ? n : a(10)",
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAMCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
@@ -655,7 +749,7 @@ import {
   View
 } from \\"utopia-api\\";
 const a = (n) => n > 0 ? n : b(10)
-export var whatever = (props) => <View data-uid={'aaa'} />
+export var whatever = (props) => <View data-uid='aaa' />
 const b = (n) => n > 0 ? n : a(10)
 ",
         ],
@@ -668,6 +762,11 @@ return { b: b };",
       "type": "ARBITRARY_JS_BLOCK",
       "uniqueID": "",
     },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
   ],
   "type": "PARSE_SUCCESS",
 }
@@ -676,18 +775,14 @@ return { b: b };",
 exports[`JSX parser parses the code when it has a JSX block with an object defined inside 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "definedElsewhere": Array [],
     "definedWithin": Array [
       "a",
     ],
-    "javascript": "const a = \\"cake\\";",
+    "javascript": "const a = \\"cake\\"",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AAWCA,IAAMC,CAACC,GAAGC,MAAVH",
       "names": Array [
         "const",
         "a",
@@ -700,16 +795,16 @@ Object {
       "sourcesContent": Array [
         "import * as React from \\"react\\";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from \\"utopia-api\\";
 const a = \\"cake\\"
-export var App = (props) => <View data-uid={'bbb'}>
+export var App = (props) => <View data-uid='bbb'>
   {{a: a}}
 </View>
 ",
@@ -740,21 +835,17 @@ return { a: a };",
   },
   "imports": Object {
     "react": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": "React",
       "importedFromWithin": Array [],
       "importedWithName": null,
     },
     "utopia-api": Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
       "importedAs": null,
       "importedFromWithin": Array [
+        Object {
+          "alias": "UtopiaUtils",
+          "name": "UtopiaUtils",
+        },
         Object {
           "alias": "Ellipse",
           "name": "Ellipse",
@@ -776,10 +867,6 @@ return { a: a };",
           "name": "Text",
         },
         Object {
-          "alias": "UtopiaUtils",
-          "name": "UtopiaUtils",
-        },
-        Object {
           "alias": "View",
           "name": "View",
         },
@@ -790,15 +877,53 @@ return { a: a };",
   "jsxFactoryFunction": null,
   "topLevelElements": Array [
     Object {
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "importStarAs": true,
+      "importWithName": false,
+      "imports": Array [],
+      "module": "react",
+      "rawCode": "import * as React from \\"react\\";",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
+      "importStarAs": false,
+      "importWithName": false,
+      "imports": Array [
+        "UtopiaUtils",
+        "Ellipse",
+        "Image",
+        "Rectangle",
+        "Storyboard",
+        "Text",
+        "View",
+      ],
+      "module": "utopia-api",
+      "rawCode": "import {
+  UtopiaUtils,
+  Ellipse,
+  Image,
+  Rectangle,
+  Storyboard,
+  Text,
+  View
+} from \\"utopia-api\\";",
+      "type": "IMPORT_STATEMENT",
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "definedElsewhere": Array [],
       "definedWithin": Array [
         "a",
       ],
-      "javascript": "const a = \\"cake\\";",
+      "javascript": "const a = \\"cake\\"",
       "sourceMap": Object {
         "file": "code.tsx",
         "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
@@ -814,16 +939,16 @@ return { a: a };",
         "sourcesContent": Array [
           "import * as React from \\"react\\";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from \\"utopia-api\\";
 const a = \\"cake\\"
-export var App = (props) => <View data-uid={'bbb'}>
+export var App = (props) => <View data-uid='bbb'>
   {{a: a}}
 </View>
 ",
@@ -836,11 +961,14 @@ return { a: a };",
       "uniqueID": "",
     },
     Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
+    },
+    Object {
       "arbitraryJSBlock": null,
-      "comments": Object {
-        "leadingComments": Array [],
-        "trailingComments": Array [],
-      },
+      "blockOrExpression": "expression",
+      "declarationSyntax": "var",
       "isFunction": true,
       "name": "App",
       "param": Object {
@@ -874,16 +1002,16 @@ return { a: a };",
               "sourcesContent": Array [
                 "import * as React from \\"react\\";
 import {
+  UtopiaUtils,
   Ellipse,
   Image,
   Rectangle,
   Storyboard,
   Text,
-  UtopiaUtils,
   View
 } from \\"utopia-api\\";
 const a = \\"cake\\"
-export var App = (props) => <View data-uid={'bbb'}>
+export var App = (props) => <View data-uid='bbb'>
   {{a: a}}
 </View>
 ",
@@ -903,16 +1031,32 @@ export var App = (props) => <View data-uid={'bbb'}>
             "propertyElements": Array [],
           },
         },
-        "props": Object {
-          "data-uid": Object {
-            "type": "ATTRIBUTE_VALUE",
-            "value": "bbb",
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "bbb",
+            },
           },
-        },
+        ],
         "type": "JSX_ELEMENT",
       },
       "type": "UTOPIA_JSX_COMPONENT",
       "usedInReactDOMRender": false,
+    },
+    Object {
+      "rawCode": "
+",
+      "type": "UNPARSED_CODE",
     },
   ],
   "type": "PARSE_SUCCESS",

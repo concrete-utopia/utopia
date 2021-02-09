@@ -4,10 +4,12 @@ import {
   jsxAttributeValue,
   jsxElementName,
   jsxAttributeOtherJavaScript,
+  jsxAttributesFromMap,
 } from '../../core/shared/element-template'
 import { NormalisedFrame } from 'utopia-api'
 import { PathForResizeContent } from '../../core/model/scene-utils'
 import * as PP from '../../core/shared/property-path'
+import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export function defaultSceneElement(
   uid: string,
@@ -16,16 +18,19 @@ export function defaultSceneElement(
   label: string,
 ): JSXElement {
   const component = componentName == null ? 'null' : componentName
-  const props = {
-    'data-uid': jsxAttributeValue(uid),
-    'data-label': jsxAttributeValue(label),
+  const props = jsxAttributesFromMap({
+    'data-uid': jsxAttributeValue(uid, emptyComments),
+    'data-label': jsxAttributeValue(label, emptyComments),
     component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
-    [PP.toString(PathForResizeContent)]: jsxAttributeValue(true),
-    style: jsxAttributeValue({
-      position: 'absolute',
-      ...frame,
-    }),
-  }
+    [PP.toString(PathForResizeContent)]: jsxAttributeValue(true, emptyComments),
+    style: jsxAttributeValue(
+      {
+        position: 'absolute',
+        ...frame,
+      },
+      emptyComments,
+    ),
+  })
 
   return jsxElement(jsxElementName('Scene', []), props, [])
 }
@@ -33,13 +38,16 @@ export function defaultSceneElement(
 export function defaultViewElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('View', []),
-    {
-      style: jsxAttributeValue({
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-      }),
-      'data-uid': jsxAttributeValue(uid),
-    },
+    jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          backgroundColor: '#0091FFAA',
+          position: 'absolute',
+        },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
     [],
   )
 }
@@ -47,12 +55,15 @@ export function defaultViewElement(uid: string): JSXElement {
 export function defaultAnimatedDivElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('animated', ['div']),
-    {
-      style: jsxAttributeValue({
-        backgroundColor: '#0091FFAA',
-      }),
-      'data-uid': jsxAttributeValue(uid),
-    },
+    jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          backgroundColor: '#0091FFAA',
+        },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
     [],
   )
 }
@@ -60,12 +71,15 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
 export function defaultTransparentViewElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('View', []),
-    {
-      style: jsxAttributeValue({
-        position: 'absolute',
-      }),
-      'data-uid': jsxAttributeValue(uid),
-    },
+    jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          position: 'absolute',
+        },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
     [],
   )
 }
@@ -73,13 +87,16 @@ export function defaultTransparentViewElement(uid: string): JSXElement {
 export function defaultTextElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('Text', []),
-    {
-      style: jsxAttributeValue({
-        fontSize: 16,
-      }),
-      text: jsxAttributeValue('Text'),
-      'data-uid': jsxAttributeValue(uid),
-    },
+    jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          fontSize: 16,
+        },
+        emptyComments,
+      ),
+      text: jsxAttributeValue('Text', emptyComments),
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
     [],
   )
 }
@@ -87,12 +104,15 @@ export function defaultTextElement(uid: string): JSXElement {
 export function defaultRectangleElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('Rectangle', []),
-    {
-      style: jsxAttributeValue({
-        backgroundColor: '#0091FFAA',
-      }),
-      'data-uid': jsxAttributeValue(uid),
-    },
+    jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          backgroundColor: '#0091FFAA',
+        },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
     [],
   )
 }
@@ -100,12 +120,15 @@ export function defaultRectangleElement(uid: string): JSXElement {
 export function defaultEllipseElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('Ellipse', []),
-    {
-      style: jsxAttributeValue({
-        backgroundColor: '#0091FFAA',
-      }),
-      'data-uid': jsxAttributeValue(uid),
-    },
+    jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          backgroundColor: '#0091FFAA',
+        },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
     [],
   )
 }
@@ -113,13 +136,16 @@ export function defaultEllipseElement(uid: string): JSXElement {
 export function defaultDivElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('div', []),
-    {
-      style: jsxAttributeValue({
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-      }),
-      'data-uid': jsxAttributeValue(uid),
-    },
+    jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          backgroundColor: '#0091FFAA',
+          position: 'absolute',
+        },
+        emptyComments,
+      ),
+      'data-uid': jsxAttributeValue(uid, emptyComments),
+    }),
     [],
   )
 }

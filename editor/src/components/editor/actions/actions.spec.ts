@@ -19,6 +19,8 @@ import {
   ComponentMetadata,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  jsxAttributesFromMap,
+  emptyAttributeMetadatada,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -84,27 +86,31 @@ describe('SET_PROP', () => {
         utopiaJSXComponent(
           'MyView',
           true,
+          'var',
+          'block',
           defaultPropsParam,
           [],
           jsxElement(
             jsxElementName('View', []),
-            {
-              'data-uid': jsxAttributeValue('aaa'),
-            },
+            jsxAttributesFromMap({
+              'data-uid': jsxAttributeValue('aaa', emptyComments),
+            }),
             [
               jsxElement(
                 jsxElementName('View', []),
-                {
-                  test: jsxAttributeNestedObjectSimple({ prop: jsxAttributeValue(5) }),
-                  'data-uid': jsxAttributeValue('bbb'),
-                },
+                jsxAttributesFromMap({
+                  test: jsxAttributeNestedObjectSimple(
+                    jsxAttributesFromMap({ prop: jsxAttributeValue(5, emptyComments) }),
+                    emptyComments,
+                  ),
+                  'data-uid': jsxAttributeValue('bbb', emptyComments),
+                }),
                 [],
               ),
             ],
           ),
           null,
           false,
-          emptyComments,
           emptyComments,
         ),
       ],
@@ -133,7 +139,7 @@ describe('SET_PROP', () => {
     const action = setProp_UNSAFE(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       PP.create(['test', 'prop']),
-      jsxAttributeValue(100),
+      jsxAttributeValue(100, emptyComments),
     )
     const newEditor = UPDATE_FNS.SET_PROP(action, testEditor)
     const newUiJsFile = getContentsTreeFileFromString(
@@ -147,7 +153,7 @@ describe('SET_PROP', () => {
     const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
     const updatedViewProps = Utils.pathOr<JSXAttributes>(
-      {},
+      [],
       ['rootElement', 'children', 0, 'props'],
       updatedRoot,
     )
@@ -155,7 +161,7 @@ describe('SET_PROP', () => {
       updatedViewProps,
       PP.create(['test', 'prop']),
     )
-    chaiExpect(updatedTestProp).to.deep.equal(right(jsxAttributeValue(100)))
+    chaiExpect(updatedTestProp).to.deep.equal(right(jsxAttributeValue(100, emptyComments)))
   })
 })
 
@@ -166,38 +172,45 @@ describe('SET_CANVAS_FRAMES', () => {
     utopiaJSXComponent(
       'MyView',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       jsxElement(
         jsxElementName('View', []),
-        {
-          layout: jsxAttributeNestedObjectSimple({
-            top: jsxAttributeValue(0),
-            left: jsxAttributeValue(0),
-            width: jsxAttributeValue(100),
-            height: jsxAttributeValue(100),
-          }),
-          'data-uid': jsxAttributeValue('aaa'),
-        },
+        jsxAttributesFromMap({
+          layout: jsxAttributeNestedObjectSimple(
+            jsxAttributesFromMap({
+              top: jsxAttributeValue(0, emptyComments),
+              left: jsxAttributeValue(0, emptyComments),
+              width: jsxAttributeValue(100, emptyComments),
+              height: jsxAttributeValue(100, emptyComments),
+            }),
+            emptyComments,
+          ),
+          'data-uid': jsxAttributeValue('aaa', emptyComments),
+        }),
         [
           jsxElement(
             jsxElementName('View', []),
-            {
-              layout: jsxAttributeNestedObjectSimple({
-                top: jsxAttributeValue(0),
-                left: jsxAttributeValue(0),
-                width: jsxAttributeValue(10),
-                height: jsxAttributeValue(10),
-              }),
-              'data-uid': jsxAttributeValue('bbb'),
-            },
+            jsxAttributesFromMap({
+              layout: jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({
+                  top: jsxAttributeValue(0, emptyComments),
+                  left: jsxAttributeValue(0, emptyComments),
+                  width: jsxAttributeValue(10, emptyComments),
+                  height: jsxAttributeValue(10, emptyComments),
+                }),
+                emptyComments,
+              ),
+              'data-uid': jsxAttributeValue('bbb', emptyComments),
+            }),
             [],
           ),
         ],
       ),
       null,
       false,
-      emptyComments,
       emptyComments,
     ),
   ]
@@ -251,7 +264,7 @@ describe('SET_CANVAS_FRAMES', () => {
     const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
     const updatedViewProps = Utils.pathOr<JSXAttributes>(
-      {},
+      [],
       ['rootElement', 'children', 0, 'props'],
       updatedRoot,
     )
@@ -275,12 +288,13 @@ describe('moveTemplate', () => {
           utopiaJSXComponent(
             `MyView${index}`,
             true,
+            'var',
+            'block',
             defaultPropsParam,
             [],
             element,
             null,
             false,
-            emptyComments,
             emptyComments,
           ),
         ),
@@ -303,15 +317,18 @@ describe('moveTemplate', () => {
   ): JSXElement {
     return jsxElement(
       jsxElementName(name, []),
-      {
-        layout: jsxAttributeNestedObjectSimple({
-          left: jsxAttributeValue(x),
-          top: jsxAttributeValue(y),
-          width: jsxAttributeValue(width),
-          height: jsxAttributeValue(height),
-        }),
-        'data-uid': jsxAttributeValue(uid),
-      },
+      jsxAttributesFromMap({
+        layout: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            left: jsxAttributeValue(x, emptyComments),
+            top: jsxAttributeValue(y, emptyComments),
+            width: jsxAttributeValue(width, emptyComments),
+            height: jsxAttributeValue(height, emptyComments),
+          }),
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue(uid, emptyComments),
+      }),
       children,
     )
   }
@@ -327,16 +344,19 @@ describe('moveTemplate', () => {
   ): JSXElement {
     return jsxElement(
       jsxElementName(name, []),
-      {
-        layout: jsxAttributeNestedObjectSimple({
-          left: jsxAttributeValue(x),
-          top: jsxAttributeValue(y),
-          width: jsxAttributeValue(width),
-          height: jsxAttributeValue(height),
-          layoutSystem: jsxAttributeValue(LayoutSystem.Group),
-        }),
-        'data-uid': jsxAttributeValue(uid),
-      },
+      jsxAttributesFromMap({
+        layout: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            left: jsxAttributeValue(x, emptyComments),
+            top: jsxAttributeValue(y, emptyComments),
+            width: jsxAttributeValue(width, emptyComments),
+            height: jsxAttributeValue(height, emptyComments),
+            layoutSystem: jsxAttributeValue(LayoutSystem.Group, emptyComments),
+          }),
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue(uid, emptyComments),
+      }),
       children,
     )
   }
@@ -615,15 +635,18 @@ describe('moveTemplate', () => {
   it('reparents from pinned to group with frame props updated', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
-      {
-        layout: jsxAttributeNestedObjectSimple({
-          bottom: jsxAttributeValue(50),
-          right: jsxAttributeValue(50),
-          width: jsxAttributeValue(100),
-          height: jsxAttributeValue(100),
-        }),
-        'data-uid': jsxAttributeValue('bbb'),
-      },
+      jsxAttributesFromMap({
+        layout: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            bottom: jsxAttributeValue(50, emptyComments),
+            right: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(100, emptyComments),
+            height: jsxAttributeValue(100, emptyComments),
+          }),
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue('bbb', emptyComments),
+      }),
       [],
     )
     const group1 = group('ddd', [], -10, -10, 100, 100, 'Group')
@@ -667,18 +690,24 @@ describe('moveTemplate', () => {
     const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
     const flexView = jsxElement(
       jsxElementName('aaa', []),
-      {
-        layout: jsxAttributeNestedObjectSimple({
-          left: jsxAttributeValue(50),
-          top: jsxAttributeValue(50),
-          width: jsxAttributeValue(200),
-          height: jsxAttributeValue(200),
-        }),
-        style: jsxAttributeNestedObjectSimple({
-          display: jsxAttributeValue('flex'),
-        }),
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        layout: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            left: jsxAttributeValue(50, emptyComments),
+            top: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(200, emptyComments),
+            height: jsxAttributeValue(200, emptyComments),
+          }),
+          emptyComments,
+        ),
+        style: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            display: jsxAttributeValue('flex', emptyComments),
+          }),
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const editor = testEditor(fileModel([flexView, group1]))
@@ -716,15 +745,18 @@ describe('moveTemplate', () => {
   xit('reparents from group to pinned with frame props unchanged', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
-      {
-        layout: jsxAttributeNestedObjectSimple({
-          top: jsxAttributeValue(50),
-          left: jsxAttributeValue(50),
-          width: jsxAttributeValue(100),
-          height: jsxAttributeValue(100),
-        }),
-        'data-uid': jsxAttributeValue('bbb'),
-      },
+      jsxAttributesFromMap({
+        layout: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            top: jsxAttributeValue(50, emptyComments),
+            left: jsxAttributeValue(50, emptyComments),
+            width: jsxAttributeValue(100, emptyComments),
+            height: jsxAttributeValue(100, emptyComments),
+          }),
+          emptyComments,
+        ),
+        'data-uid': jsxAttributeValue('bbb', emptyComments),
+      }),
       [],
     )
     const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
@@ -761,35 +793,39 @@ describe('moveTemplate', () => {
 describe('SWITCH_LAYOUT_SYSTEM', () => {
   const childElement = jsxElement(
     'View',
-    {
-      'data-uid': jsxAttributeValue('bbb'),
-      style: jsxAttributeValue({
-        left: 5,
-        top: 10,
-        width: 200,
-        height: 300,
-      }),
-    },
+    jsxAttributesFromMap({
+      'data-uid': jsxAttributeValue('bbb', emptyComments),
+      style: jsxAttributeValue(
+        {
+          left: 5,
+          top: 10,
+          width: 200,
+          height: 300,
+        },
+        emptyComments,
+      ),
+    }),
     [],
   )
   const rootElement = jsxElement(
     'View',
-    {
-      'data-uid': jsxAttributeValue('aaa'),
-      style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }),
-      layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }),
-    },
+    jsxAttributesFromMap({
+      'data-uid': jsxAttributeValue('aaa', emptyComments),
+      style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }, emptyComments),
+      layout: jsxAttributeValue({ layoutSystem: 'pinSystem' }, emptyComments),
+    }),
     [childElement],
   )
   const firstTopLevelElement = utopiaJSXComponent(
     'App',
     true,
+    'var',
+    'block',
     null,
     [],
     rootElement,
     null,
     false,
-    emptyComments,
     emptyComments,
   )
   const fileForUI = textFile(
@@ -838,6 +874,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     componentInstance: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
   }
 
   const childElementMetadata: ElementInstanceMetadata = {
@@ -858,6 +895,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     componentInstance: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {

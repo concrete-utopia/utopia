@@ -33,6 +33,7 @@ import {
 import { right, isLeft } from '../shared/either'
 import { fastForEach } from '../shared/utils'
 import { cssColor } from '../../components/inspector/common/css-utils'
+import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 function runBaseTestSuite<T>(
   validValue: T,
@@ -75,8 +76,11 @@ describe('BooleanControlDescription', () => {
   }
 
   const validValue = true
-  const wrappedValidValue = jsxAttributeValue(validValue)
-  const wrappedInvalidValues = [jsxAttributeValue('hat'), jsxAttributeValue(0)]
+  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
+  const wrappedInvalidValues = [
+    jsxAttributeValue('hat', emptyComments),
+    jsxAttributeValue(0, emptyComments),
+  ]
 
   runBaseTestSuite(
     validValue,
@@ -93,8 +97,11 @@ describe('ColorControlDescription', () => {
 
   const validValueAsString = '#FFFFFFFF'
   const validValue = cssColor(validValueAsString)
-  const wrappedValidValue = jsxAttributeValue(validValueAsString)
-  const wrappedInvalidValues = [jsxAttributeValue('hat'), jsxAttributeValue(0)]
+  const wrappedValidValue = jsxAttributeValue(validValueAsString, emptyComments)
+  const wrappedInvalidValues = [
+    jsxAttributeValue('hat', emptyComments),
+    jsxAttributeValue(0, emptyComments),
+  ]
 
   runBaseTestSuite(
     validValue,
@@ -128,8 +135,11 @@ describe('EnumControlDescription', () => {
     options: [validValue],
   }
 
-  const wrappedValidValue = jsxAttributeValue(validValue)
-  const wrappedInvalidValues = [jsxAttributeValue('hat'), jsxAttributeValue(0)]
+  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
+  const wrappedInvalidValues = [
+    jsxAttributeValue('hat', emptyComments),
+    jsxAttributeValue(0, emptyComments),
+  ]
 
   runBaseTestSuite(validValue, wrappedValidValue, wrappedInvalidValues, enumControlDescriptionValue)
 })
@@ -156,7 +166,7 @@ describe('IgnoreControlDescription', () => {
   }
 
   const validValue = 'Cake'
-  const wrappedValidValue = jsxAttributeValue(validValue)
+  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
 
   runBaseTestSuite(validValue, wrappedValidValue, [], IgnoreControlDescriptionValue)
 })
@@ -167,8 +177,8 @@ describe('NumberControlDescription', () => {
   }
 
   const validValue = 0
-  const wrappedValidValue = jsxAttributeValue(validValue)
-  const wrappedInvalidValues = [jsxAttributeValue('hat')]
+  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
+  const wrappedInvalidValues = [jsxAttributeValue('hat', emptyComments)]
 
   runBaseTestSuite(
     validValue,
@@ -191,7 +201,7 @@ describe('OptionsControlDescription', () => {
     ],
   }
 
-  const wrappedValidValue = jsxAttributeValue(validValue)
+  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
 
   runBaseTestSuite(validValue, wrappedValidValue, [], optionsControlDescriptionValue)
 })
@@ -209,7 +219,7 @@ describe('PopupListControlDescription', () => {
     ],
   }
 
-  const wrappedValidValue = jsxAttributeValue(validValue)
+  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
 
   runBaseTestSuite(validValue, wrappedValidValue, [], PopupListControlDescriptionValue)
 })
@@ -223,8 +233,8 @@ describe('SliderControlDescription', () => {
   }
 
   const validValue = 10
-  const wrappedValidValue = jsxAttributeValue(validValue)
-  const wrappedInvalidValues = [jsxAttributeValue('hat')]
+  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
+  const wrappedInvalidValues = [jsxAttributeValue('hat', emptyComments)]
 
   runBaseTestSuite(
     validValue,
@@ -240,8 +250,8 @@ describe('StringControlDescription', () => {
   }
 
   const validValue = 'hat'
-  const wrappedValidValue = jsxAttributeValue(validValue)
-  const wrappedInvalidValues = [jsxAttributeValue(0)]
+  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
+  const wrappedInvalidValues = [jsxAttributeValue(0, emptyComments)]
 
   runBaseTestSuite(
     validValue,
@@ -257,8 +267,8 @@ describe('StringControlDescription', () => {
   }
 
   const validValue = 'hat'
-  const wrappedValidValue = jsxAttributeValue(validValue)
-  const wrappedInvalidValues = [jsxAttributeValue(0)]
+  const wrappedValidValue = jsxAttributeValue(validValue, emptyComments)
+  const wrappedInvalidValues = [jsxAttributeValue(0, emptyComments)]
 
   runBaseTestSuite(
     validValue,
@@ -278,11 +288,15 @@ describe('ArrayControlDescription', () => {
 
   const simpleValidContents = 'hat'
   const simpleValidValue = [simpleValidContents]
-  const simpleWrappedValidValue = jsxAttributeNestedArray([
-    jsxArrayValue(jsxAttributeValue(simpleValidContents)),
-  ])
+  const simpleWrappedValidValue = jsxAttributeNestedArray(
+    [jsxArrayValue(jsxAttributeValue(simpleValidContents, emptyComments), emptyComments)],
+    emptyComments,
+  )
   const simpleWrappedInvalidValues = [
-    jsxAttributeNestedArray([jsxArrayValue(jsxAttributeValue(0))]),
+    jsxAttributeNestedArray(
+      [jsxArrayValue(jsxAttributeValue(0, emptyComments), emptyComments)],
+      emptyComments,
+    ),
   ]
 
   runBaseTestSuite(
@@ -304,15 +318,31 @@ describe('ArrayControlDescription', () => {
 
   const complexValidContents = 'hat'
   const complexValidValue = [[complexValidContents]]
-  const complexWrappedValidValue = jsxAttributeNestedArray([
-    jsxArrayValue(
-      jsxAttributeNestedArray([jsxArrayValue(jsxAttributeValue(complexValidContents))]),
-    ),
-  ])
+  const complexWrappedValidValue = jsxAttributeNestedArray(
+    [
+      jsxArrayValue(
+        jsxAttributeNestedArray(
+          [jsxArrayValue(jsxAttributeValue(complexValidContents, emptyComments), emptyComments)],
+          emptyComments,
+        ),
+        emptyComments,
+      ),
+    ],
+    emptyComments,
+  )
   const complexWrappedInvalidValues = [
-    jsxAttributeNestedArray([
-      jsxArrayValue(jsxAttributeNestedArray([jsxArrayValue(jsxAttributeValue(0))])),
-    ]),
+    jsxAttributeNestedArray(
+      [
+        jsxArrayValue(
+          jsxAttributeNestedArray(
+            [jsxArrayValue(jsxAttributeValue(0, emptyComments), emptyComments)],
+            emptyComments,
+          ),
+          emptyComments,
+        ),
+      ],
+      emptyComments,
+    ),
   ]
 
   runBaseTestSuite(
@@ -336,11 +366,29 @@ describe('ObjectControlDescription', () => {
 
   const simpleValidContents = 'hat'
   const simpleValidValue = { [simpleValidKey]: simpleValidContents }
-  const simpleWrappedValidValue = jsxAttributeNestedObject([
-    jsxPropertyAssignment(simpleValidKey, jsxAttributeValue(simpleValidContents)),
-  ])
+  const simpleWrappedValidValue = jsxAttributeNestedObject(
+    [
+      jsxPropertyAssignment(
+        simpleValidKey,
+        jsxAttributeValue(simpleValidContents, emptyComments),
+        emptyComments,
+        emptyComments,
+      ),
+    ],
+    emptyComments,
+  )
   const simpleWrappedInvalidValues = [
-    jsxAttributeNestedObject([jsxPropertyAssignment(simpleValidKey, jsxAttributeValue(0))]),
+    jsxAttributeNestedObject(
+      [
+        jsxPropertyAssignment(
+          simpleValidKey,
+          jsxAttributeValue(0, emptyComments),
+          emptyComments,
+          emptyComments,
+        ),
+      ],
+      emptyComments,
+    ),
   ]
 
   runBaseTestSuite(
@@ -366,21 +414,49 @@ describe('ObjectControlDescription', () => {
   }
 
   const complexValidValue = { [complexValidKey]: { [simpleValidKey]: simpleValidContents } }
-  const complexWrappedValidValue = jsxAttributeNestedObject([
-    jsxPropertyAssignment(
-      complexValidKey,
-      jsxAttributeNestedObject([
-        jsxPropertyAssignment(simpleValidKey, jsxAttributeValue(simpleValidContents)),
-      ]),
-    ),
-  ])
-  const complexWrappedInvalidValues = [
-    jsxAttributeNestedObject([
+  const complexWrappedValidValue = jsxAttributeNestedObject(
+    [
       jsxPropertyAssignment(
         complexValidKey,
-        jsxAttributeNestedObject([jsxPropertyAssignment(simpleValidKey, jsxAttributeValue(0))]),
+        jsxAttributeNestedObject(
+          [
+            jsxPropertyAssignment(
+              simpleValidKey,
+              jsxAttributeValue(simpleValidContents, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+        emptyComments,
+        emptyComments,
       ),
-    ]),
+    ],
+    emptyComments,
+  )
+  const complexWrappedInvalidValues = [
+    jsxAttributeNestedObject(
+      [
+        jsxPropertyAssignment(
+          complexValidKey,
+          jsxAttributeNestedObject(
+            [
+              jsxPropertyAssignment(
+                simpleValidKey,
+                jsxAttributeValue(0, emptyComments),
+                emptyComments,
+                emptyComments,
+              ),
+            ],
+            emptyComments,
+          ),
+          emptyComments,
+          emptyComments,
+        ),
+      ],
+      emptyComments,
+    ),
   ]
 
   runBaseTestSuite(
@@ -405,8 +481,8 @@ describe('UnionControlDescription', () => {
   }
 
   const simpleValidValue = 10
-  const simpleWrappedValidValue = jsxAttributeValue(simpleValidValue)
-  const simpleWrappedInvalidValues = [jsxAttributeValue(false)]
+  const simpleWrappedValidValue = jsxAttributeValue(simpleValidValue, emptyComments)
+  const simpleWrappedInvalidValues = [jsxAttributeValue(false, emptyComments)]
 
   runBaseTestSuite(
     simpleValidValue,
@@ -432,11 +508,15 @@ describe('UnionControlDescription', () => {
 
   const complexValidContents = 'hat'
   const complexValidValue = [complexValidContents]
-  const complexWrappedValidValue = jsxAttributeNestedArray([
-    jsxArrayValue(jsxAttributeValue(complexValidContents)),
-  ])
+  const complexWrappedValidValue = jsxAttributeNestedArray(
+    [jsxArrayValue(jsxAttributeValue(complexValidContents, emptyComments), emptyComments)],
+    emptyComments,
+  )
   const complexWrappedInvalidValues = [
-    jsxAttributeNestedArray([jsxArrayValue(jsxAttributeValue(0))]),
+    jsxAttributeNestedArray(
+      [jsxArrayValue(jsxAttributeValue(0, emptyComments), emptyComments)],
+      emptyComments,
+    ),
   ]
 
   runBaseTestSuite(

@@ -1,5 +1,5 @@
 import {
-  clearParseResultUniqueIDs,
+  clearParseResultUniqueIDsAndEmptyBlocks,
   testParseCode,
   JustImportViewAndReact,
 } from './parser-printer.test-utils'
@@ -16,6 +16,7 @@ import {
   destructuredArray,
   omittedParam,
   jsxAttributeOtherJavaScript,
+  jsxAttributesFromMap,
 } from '../../shared/element-template'
 import { parseSuccess } from '../common/project-file-utils'
 import { printCode, printCodeOptions } from './parser-printer'
@@ -145,29 +146,32 @@ export var whatever = ({arrayPart: [prop1 = 5, ,{ prop2: renamedProp2 = {thing: 
 
 describe('Parsing a function component with props', () => {
   it('Correctly parses a basic props object', () => {
-    const actualResult = clearParseResultUniqueIDs(testParseCode(codeWithBasicPropsObject))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithBasicPropsObject),
+    )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -177,14 +181,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a basic props object with default', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithBasicPropsObjectWithDefault),
     )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const propsParam = functionParam(
@@ -204,18 +208,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -225,30 +230,33 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a basic props object with a different name', () => {
-    const actualResult = clearParseResultUniqueIDs(testParseCode(codeWithRenamedBasicPropsObject))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithRenamedBasicPropsObject),
+    )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const propsParam = functionParam(false, regularParam('myProps', null))
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -258,12 +266,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object', () => {
-    const actualResult = clearParseResultUniqueIDs(testParseCode(codeWithDestructuredPropsObject))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithDestructuredPropsObject),
+    )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const destructuredParam = functionParam(false, regularParam('prop', null))
@@ -274,18 +284,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -295,14 +306,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object with a default', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredPropsObjectWithDefault),
     )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const destructuredParam = functionParam(
@@ -319,18 +330,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -341,14 +353,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object that renames the param', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredPropsObjectWithRenamedParam),
     )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const destructuredParam = functionParam(false, regularParam('renamedProp', null))
@@ -359,18 +371,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -380,14 +393,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object that renames the param with a default', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredPropsObjectWithRenamedParamAndDefault),
     )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const destructuredParam = functionParam(
@@ -404,18 +417,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -425,14 +439,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props object that uses a rest param', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredPropsObjectWithRestParam),
     )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const destructuredParam1 = functionParam(false, regularParam('prop', null))
@@ -445,18 +459,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       ['prop'],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -466,12 +481,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props array', () => {
-    const actualResult = clearParseResultUniqueIDs(testParseCode(codeWithDestructuredArray))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
+      testParseCode(codeWithDestructuredArray),
+    )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const destructuredParam = functionParam(false, regularParam('prop', null))
@@ -479,18 +496,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -500,14 +518,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props array with a default', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredArrayWithDefault),
     )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const destructuredParam = functionParam(
@@ -521,18 +539,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -542,14 +561,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a destructured props array with an omitted param', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithDestructuredArrayWithOmittedParam),
     )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const destructuredParam1 = functionParam(false, regularParam('prop1', null))
@@ -561,18 +580,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       propsParam,
       [],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -582,14 +602,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a nested destructured props mess', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithNestedDestructuredPropsMess),
     )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const otherArrayProps = functionParam(true, regularParam('otherArrayProps', null))
@@ -614,18 +634,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       outerDestructuredObject,
       ['arrayPart'],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -635,14 +656,14 @@ describe('Parsing a function component with props', () => {
   })
 
   it('Correctly parses a nested destructured props mess with defaults', () => {
-    const actualResult = clearParseResultUniqueIDs(
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(
       testParseCode(codeWithNestedDestructuredPropsMessWithDefaults),
     )
     const view = jsxElement(
       'View',
-      {
-        'data-uid': jsxAttributeValue('aaa'),
-      },
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue('aaa', emptyComments),
+      }),
       [],
     )
     const otherArrayProps = functionParam(true, regularParam('otherArrayProps', null))
@@ -686,18 +707,19 @@ describe('Parsing a function component with props', () => {
     const exported = utopiaJSXComponent(
       'whatever',
       true,
+      'var',
+      'block',
       outerDestructuredObject,
       ['arrayPart'],
       view,
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const topLevelElements = [exported].map(clearTopLevelElementUniqueIDs)
     const expectedResult = parseSuccess(
       JustImportViewAndReact,
-      [...topLevelElements],
+      expect.arrayContaining(topLevelElements),
       expect.objectContaining({}),
       null,
       null,
@@ -712,7 +734,7 @@ describe('Parsing, printing, reparsing a function component with props', () => {
   // due to the above tests
 
   function testParsePrintParse(code: string) {
-    const firstParse = clearParseResultUniqueIDs(testParseCode(code))
+    const firstParse = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
 
     if (!isParseSuccess(firstParse)) {
       fail(firstParse)
@@ -728,16 +750,14 @@ describe('Parsing, printing, reparsing a function component with props', () => {
       firstAsParseSuccess.exportsDetail,
     )
 
-    const secondParse = clearParseResultUniqueIDs(testParseCode(printed))
+    const secondParse = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(printed))
 
     if (!isParseSuccess(secondParse)) {
       fail(secondParse)
     }
 
     const secondAsParseSuccess = firstParse
-    expect(secondAsParseSuccess.topLevelElements[0]).toEqual(
-      firstAsParseSuccess.topLevelElements[0],
-    )
+    expect(secondAsParseSuccess.topLevelElements).toEqual(firstAsParseSuccess.topLevelElements)
   }
 
   it('Correctly parses back and forth a basic props object', () => {

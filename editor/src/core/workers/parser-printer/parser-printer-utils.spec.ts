@@ -8,6 +8,10 @@ import {
   TopLevelElement,
   isJSXAttributeValue,
   defaultPropsParam,
+  jsxAttributesFromMap,
+  getJSXAttribute,
+  JSXElement,
+  JSXAttributes,
 } from '../../shared/element-template'
 import { guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import Utils from '../../../utils/utils'
@@ -18,61 +22,82 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('aa') }, []),
+      jsxElement(
+        'View',
+        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aa', emptyComments) }),
+        [],
+      ),
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
-    expect(Utils.path(['rootElement', 'props', 'data-uid'], fixedComponent)).toBeDefined()
+    const rootElementProps = Utils.path<JSXAttributes>(['rootElement', 'props'], fixedComponent)
+    expect(getJSXAttribute(rootElementProps ?? [], 'data-uid')).toBeDefined()
   })
 
   it('if two siblings have the same ID, one will be replaced', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('root') }, [
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
-      ]),
+      jsxElement(
+        'View',
+        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('root', emptyComments) }),
+        [
+          jsxElement(
+            'View',
+            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+            [],
+          ),
+          jsxElement(
+            'View',
+            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+            [],
+          ),
+        ],
+      ),
       null,
       false,
       emptyComments,
-      emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
-    const child0UID = Utils.path(
-      ['rootElement', 'children', 0, 'props', 'data-uid'],
-      fixedComponent,
-    )
-    expect(child0UID).toEqual(jsxAttributeValue('aaa'))
-    const child1UID = Utils.path(
-      ['rootElement', 'children', 1, 'props', 'data-uid'],
-      fixedComponent,
-    )
-    expect(child1UID).not.toEqual(jsxAttributeValue('aaa'))
+    const child0 = Utils.path<JSXElement>(['rootElement', 'children', 0], fixedComponent)
+    const child0UID = getJSXAttribute(child0?.props ?? [], 'data-uid')
+    expect(child0UID).toEqual(jsxAttributeValue('aaa', emptyComments))
+    const child1 = Utils.path<JSXElement>(['rootElement', 'children', 1], fixedComponent)
+    const child1UID = getJSXAttribute(child1?.props ?? [], 'data-uid')
+    expect(child1UID).not.toEqual(jsxAttributeValue('aaa', emptyComments))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeFunctionCall('someFunction', []) }, []),
+      jsxElement(
+        'View',
+        jsxAttributesFromMap({ 'data-uid': jsxAttributeFunctionCall('someFunction', []) }),
+        [],
+      ),
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
 
-    const uidProp = Utils.path<JSXAttribute>(['rootElement', 'props', 'data-uid'], fixedComponent)
+    const rootElementProps = Utils.path<JSXAttributes>(['rootElement', 'props'], fixedComponent)
+    const uidProp = getJSXAttribute(rootElementProps ?? [], 'data-uid')
     if (uidProp == null) {
       fail('uid prop does not exist')
     } else {
@@ -84,15 +109,28 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
-      ]),
+      jsxElement(
+        'View',
+        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('baa', emptyComments) }),
+        [
+          jsxElement(
+            'View',
+            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+            [],
+          ),
+          jsxElement(
+            'View',
+            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aab', emptyComments) }),
+            [],
+          ),
+        ],
+      ),
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -105,15 +143,24 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, []),
-        jsxElement('View', {} as any, []),
-      ]),
+      jsxElement(
+        'View',
+        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('baa', emptyComments) }),
+        [
+          jsxElement(
+            'View',
+            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+            [],
+          ),
+          jsxElement('View', [], []),
+        ],
+      ),
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]
@@ -126,18 +173,35 @@ describe('guaranteeUniqueUidsFromTopLevel', () => {
     const exampleComponent = utopiaJSXComponent(
       'Output',
       true,
+      'var',
+      'block',
       defaultPropsParam,
       [],
-      jsxElement('View', { 'data-uid': jsxAttributeValue('baa') }, [
-        jsxElement('View', { 'data-uid': jsxAttributeValue('aaa') }, [
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aab') }, []),
-          jsxElement('View', { 'data-uid': jsxAttributeValue('aac') }, []),
-        ]),
-        jsxElement('View', {}, []),
-      ]),
+      jsxElement(
+        'View',
+        jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('baa', emptyComments) }),
+        [
+          jsxElement(
+            'View',
+            jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
+            [
+              jsxElement(
+                'View',
+                jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aab', emptyComments) }),
+                [],
+              ),
+              jsxElement(
+                'View',
+                jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aac', emptyComments) }),
+                [],
+              ),
+            ],
+          ),
+          jsxElement('View', [], []),
+        ],
+      ),
       null,
       false,
-      emptyComments,
       emptyComments,
     )
     const fixedComponent = guaranteeUniqueUidsFromTopLevel([exampleComponent])[0]

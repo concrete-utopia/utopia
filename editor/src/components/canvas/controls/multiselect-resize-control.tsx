@@ -172,6 +172,7 @@ export class MultiselectResizeControl extends React.Component<
               metadata={this.props.componentMetadata}
               onResizeStart={this.onResizeStart}
               testID={'component-resize-control-0'}
+              maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
             />
             {...guidelineElements}
           </>
@@ -224,6 +225,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
               metadata={this.props.componentMetadata}
               onResizeStart={this.props.onResizeStart}
               testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
+              maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
             />
           </>
         )

@@ -245,6 +245,8 @@ const light = {
   inspectorDetectedBackgroundColor: lightControls.inputBackground,
   inspectorDetectedSegmentSelectorColor: lightControls.inputBackground,
   inspectorDetectedSegmentTrackColor: createUtopiColor('rgb(246, 246, 246)', '', ''),
+  inspectorDetectedFromCssMainColor: base.neongreen,
+  inspectorDetectedFromCssSecondaryColor: base.neongreen,
   inspectorOffMainColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffSecondaryColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
   inspectorOffBackgroundColor: createUtopiColor('rgb(255, 255, 255)', '', ''),
@@ -508,7 +510,7 @@ const backgroundURLs = {
 
 const noticeStyles = {
   success: { background: backgroundURLs.green, color: 'white' },
-  info: { background: 'white', color: colorTheme.darkPrimary.value },
+  info: { background: '#f1f1f1', color: colorTheme.darkPrimary.value },
   primary: { background: backgroundURLs.blue, color: 'white' },
   notice: { background: backgroundURLs.paleblue, color: 'white' },
   warning: { background: backgroundURLs.red, color: 'white' },

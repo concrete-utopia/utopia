@@ -14,6 +14,7 @@ import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { UtopiaTheme, colorTheme } from '../../../uuiui'
 
 interface ComponentAreaControlProps {
+  mouseEnabled: boolean
   target: TemplatePath
   frame: CanvasRectangle
   highlighted: boolean
@@ -24,7 +25,7 @@ interface ComponentAreaControlProps {
   doubleClickToSelect: boolean
   selectedComponents: Array<TemplatePath>
   selectComponent?: (target: TemplatePath, isMultiselect: boolean) => Array<TemplatePath>
-  onMouseDown: (
+  onMouseDown?: (
     views: Array<TemplatePath>,
     target: TemplatePath,
     dragStart: CanvasPoint,
@@ -63,52 +64,6 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
         this.handleDragStart(newSelection, event)
       } else {
         this.handleDragStart(this.props.selectedComponents, event)
-      }
-    }
-  }
-
-  onClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (this.mouseEnabled()) {
-      if (event.nativeEvent.detail > 1) {
-        // we interpret this as a double click so that the user can keep on clicking and we keep firing double clicks
-        this.onDoubleClick(event)
-      }
-    }
-  }
-
-  onDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    const { showingInvisibleElement } = calculateExtraSizeForZeroSizedElement(this.props.frame)
-    if (this.mouseEnabled()) {
-      if (this.props.doubleClickToSelect && this.props.selectComponent != null) {
-        const isMultiselect = event.shiftKey
-        this.props.selectComponent(this.props.target, isMultiselect)
-      }
-      if (TP.isInstancePath(this.props.target)) {
-        const instance = MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata.elements,
-          this.props.target,
-        )
-        if (
-          this.props.selectedComponents.length === 1 &&
-          TP.pathsEqual(this.props.selectedComponents[0], this.props.target)
-        ) {
-          if (MetadataUtils.isTextAgainstImports(this.props.imports, instance)) {
-            // if target is a text and it is the one and only selected component, then activate the text editor
-            const mousePosition = {
-              x: event.clientX,
-              y: event.clientY,
-            } as WindowPoint
-            this.props.dispatch(
-              [EditorActions.openTextEditor(this.props.target, mousePosition)],
-              'canvas',
-            )
-          } else if (showingInvisibleElement) {
-            // double clicking on an invisible element should give it an arbitrary size
-            this.props.dispatch([
-              EditorActions.addMissingDimensions(this.props.target, this.props.frame),
-            ])
-          }
-        }
       }
     }
   }
@@ -158,48 +113,20 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     event: React.MouseEvent<HTMLDivElement>,
   ): void {
     const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
-    this.props.onMouseDown(
-      selectedViews,
-      this.props.target,
-      cursorPosition.canvasPositionRaw,
-      event,
-    )
-  }
+    if (this.props.mouseEnabled) {
+      if (this.props.onMouseDown == null) {
+        throw new Error('onMouseDown must be provided for mouse enabled controls')
+      }
 
-  getComponentAreaControl = (canShowInvisibleIndicator: boolean) => {
-    const {
-      extraWidth,
-      extraHeight,
-      showingInvisibleElement,
-      borderRadius,
-    } = calculateExtraSizeForZeroSizedElement(this.props.frame)
-    const showInvisibleIndicator = canShowInvisibleIndicator && showingInvisibleElement
+      event.stopPropagation()
 
-    return (
-      <React.Fragment>
-        <div
-          className='role-component-selection-highlight'
-          onMouseOver={this.onMouseOver}
-          onMouseLeave={this.onMouseLeave}
-          onMouseDown={this.onMouseDown}
-          onClick={this.onClick}
-          onDragEnter={this.onDragEnter}
-          onDragLeave={this.onDragLeave}
-          style={{
-            position: 'absolute',
-            left: this.props.canvasOffset.x + this.props.frame.x - extraWidth / 2,
-            top: this.props.canvasOffset.y + this.props.frame.y - extraHeight / 2,
-            width: this.props.frame.width + extraWidth,
-            height: this.props.frame.height + extraHeight,
-            borderColor: UtopiaTheme.color.primary.o(50).value,
-            borderStyle: showInvisibleIndicator ? 'solid' : undefined,
-            borderWidth: 0.5 / this.props.scale,
-            borderRadius: showInvisibleIndicator ? borderRadius : 0,
-          }}
-          data-testid={this.props.testID}
-        />
-      </React.Fragment>
-    )
+      this.props.onMouseDown(
+        selectedViews,
+        this.props.target,
+        cursorPosition.canvasPositionRaw,
+        event,
+      )
+    }
   }
 
   getComponentLabelControl = () => {
@@ -220,8 +147,10 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
           onMouseDown={labelSelectable ? this.onMouseDown : utils.NO_OP}
           onDragEnter={labelSelectable ? this.onDragEnter : utils.NO_OP}
           onDragLeave={labelSelectable ? this.onDragLeave : utils.NO_OP}
+          data-testid={this.props.mouseEnabled && labelSelectable ? this.props.testID : undefined}
           className='roleComponentName'
           style={{
+            pointerEvents: this.props.mouseEnabled ? 'initial' : 'none',
             color: isInternalComponent
               ? colorTheme.component.value
               : colorTheme.subduedForeground.value,
@@ -259,28 +188,6 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
     )
   }
 }
-
-export class ComponentAreaControl extends ComponentAreaControlInner {
-  componentDidUpdate(prevProps: ComponentAreaControlProps) {
-    if (prevProps.hoverEffectEnabled !== this.props.hoverEffectEnabled) {
-      if (this.mouseOver && !this.isTargetSelected()) {
-        if (this.props.hoverEffectEnabled) {
-          this.onHoverBegin()
-        } else {
-          this.onHoverEnd()
-        }
-      }
-    }
-  }
-
-  render() {
-    const isParentSelected = this.props.selectedComponents.some((tp: TemplatePath) =>
-      TP.pathsEqual(TP.parentPath(this.props.target), tp),
-    )
-    return this.getComponentAreaControl(isParentSelected || this.props.showAdditionalControls)
-  }
-}
-
 export class ComponentLabelControl extends ComponentAreaControlInner {
   render() {
     return this.getComponentLabelControl()

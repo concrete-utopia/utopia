@@ -129,7 +129,7 @@ import {
   toString,
 } from '../../../core/shared/template-path'
 
-import { Notice } from '../../common/notices'
+import { Notice } from '../../common/notice'
 import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 import * as friendlyWords from 'friendly-words'
 import { fastForEach } from '../../../core/shared/utils'
@@ -925,7 +925,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
     canvas: {
       descendantsOfHiddenInstances: [],
       controls: [],
-      transientState: produceCanvasTransientState(editorState, false),
+      transientState: produceCanvasTransientState(editorState.selectedViews, editorState, false),
     },
     elementWarnings: emptyComplexMap(),
   }
@@ -1216,7 +1216,11 @@ export function deriveState(
     canvas: {
       descendantsOfHiddenInstances: editor.hiddenInstances, // FIXME This has been dead for like ever
       controls: derivedState.canvas.controls,
-      transientState: produceCanvasTransientState(editor, true),
+      transientState: produceCanvasTransientState(
+        oldDerivedState?.canvas.transientState.selectedViews ?? editor.selectedViews,
+        editor,
+        true,
+      ),
     },
     elementWarnings: getElementWarnings(getMetadata(editor)),
   }

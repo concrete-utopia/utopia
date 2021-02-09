@@ -3,19 +3,11 @@
 exports[`JSX parser should parse out dot-notation element names 1`] = `
 Object {
   "react": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "importedAs": "React",
     "importedFromWithin": Array [],
     "importedWithName": null,
   },
   "utopia-api": Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "importedAs": "Utopia",
     "importedFromWithin": Array [],
     "importedWithName": null,
@@ -26,11 +18,36 @@ Object {
 exports[`JSX parser should parse out dot-notation element names 2`] = `
 Array [
   Object {
+    "importStarAs": true,
+    "importWithName": false,
+    "imports": Array [],
+    "module": "react",
+    "rawCode": "import * as React from 'react'",
+    "type": "IMPORT_STATEMENT",
+  },
+  Object {
+    "rawCode": "
+",
+    "type": "UNPARSED_CODE",
+  },
+  Object {
+    "importStarAs": true,
+    "importWithName": false,
+    "imports": Array [],
+    "module": "utopia-api",
+    "rawCode": "import * as Utopia from 'utopia-api'",
+    "type": "IMPORT_STATEMENT",
+  },
+  Object {
+    "rawCode": "
+
+",
+    "type": "UNPARSED_CODE",
+  },
+  Object {
     "arbitraryJSBlock": null,
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
+    "blockOrExpression": "block",
+    "declarationSyntax": "var",
     "isFunction": true,
     "name": "App",
     "param": Object {
@@ -63,17 +80,28 @@ Array [
                   "propertyElements": Array [],
                 },
               },
-              "props": Object {
-                "data-uid": Object {
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "bbb",
+              "props": Array [
+                Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "key": "data-uid",
+                  "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "bbb",
+                  },
                 },
-              },
+              ],
               "type": "JSX_ELEMENT",
             },
           },
-          "javascript": "<div data-uid={'bbb'} />;",
-          "originalJavascript": "<div data-uid={'bbb'} />",
+          "javascript": "<div data-uid='bbb' />;",
+          "originalJavascript": "<div data-uid='bbb' />",
           "sourceMap": Object {
             "file": "code.tsx",
             "mappings": "OAAA",
@@ -84,18 +112,20 @@ Array [
             "sourcesContent": Array [
               "import * as React from 'react'
 import * as Utopia from 'utopia-api'
+
 export var App = (props) => {
-  return <Utopia.View data-uid={'aaa'}>{<div data-uid={'bbb'} />}</Utopia.View>
+  return <Utopia.View data-uid='aaa'>{<div data-uid='bbb' />}</Utopia.View>
 }
+
 export var storyboard = (props) => {
   return (
-    <Storyboard data-uid={'utopia-storyboard-uid'}>
+    <Storyboard data-uid='utopia-storyboard-uid'>
       <Scene
         style={{ left: 0, top: 0, width: 400, height: 400 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
+        data-uid='scene-aaa'
       />
     </Storyboard>
   )
@@ -117,22 +147,35 @@ export var storyboard = (props) => {
           ],
         },
       },
-      "props": Object {
-        "data-uid": Object {
-          "type": "ATTRIBUTE_VALUE",
-          "value": "aaa",
+      "props": Array [
+        Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "key": "data-uid",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": "aaa",
+          },
         },
-      },
+      ],
       "type": "JSX_ELEMENT",
     },
     "type": "UTOPIA_JSX_COMPONENT",
     "usedInReactDOMRender": false,
   },
   Object {
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
+    "rawCode": "
+
+",
+    "type": "UNPARSED_CODE",
+  },
+  Object {
     "definedElsewhere": Array [
       "React",
       "Storyboard",
@@ -142,22 +185,22 @@ export var storyboard = (props) => {
     "definedWithin": Array [
       "storyboard",
     ],
-    "javascript": "export var storyboard = props => {
+    "javascript": "export var storyboard = (props) => {
   return (
-    <Storyboard data-uid={'utopia-storyboard-uid'}>
+    <Storyboard data-uid='utopia-storyboard-uid'>
       <Scene
-      style={{ left: 0, top: 0, width: 400, height: 400 }}
-      component={App}
-      layout={{ layoutSystem: 'pinSystem' }}
-      props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-      data-uid={'scene-aaa'} />
-
-    </Storyboard>);
-
-};",
+        style={{ left: 0, top: 0, width: 400, height: 400 }}
+        component={App}
+        layout={{ layoutSystem: 'pinSystem' }}
+        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
+        data-uid='scene-aaa'
+      />
+    </Storyboard>
+  )
+}",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAKQA,IAAIC,UAAUC,GAAGC,SAAbF,UAAaE,CAACC,KAADD,EAAWE;AACjCC,SACEC,oBAACC,UAADD;AAAYE,gBAAUC;AAAtBH,KACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEc,IAAAA,SAASR,EAAES,GAFbf;AAGEgB,IAAAA,MAAMV,EAAER;AAAEmB,MAAAA,YAAYT,EAAEL;AAAhBL,KAHVE;AAIEH,IAAAA,KAAKS,EAAER;AAAEkB,MAAAA,MAAMR,EAAEV;AAAEoB,QAAAA,MAAMV,EAAEC,CAAVX;AAAaS,QAAAA,IAAIC,EAAEC,CAAnBX;AAAsBqB,QAAAA,KAAKX,EAAEC,CAA7BX;AAAgCY,QAAAA,GAAGF,EAAEC;AAArCX;AAAVA,KAJTE;AAKEE,gBAAUC;AALZH,IADFA,CADFD;AAWFqB,CAZO3B",
+      "mappings": "AAOQA,IAAIC,UAAUC,GAAGC,SAAbF,UAAaE,CAACC,KAADD,EAAWE;AACjCC,SACEC,oBAACC,UAADD;AAAYE,gBAASC;AAArBH,KACEA,oBAACI,KAADJ;AACEK,IAAAA,KAAKC,EAAER;AAAES,MAAAA,IAAIC,EAAEC,CAARX;AAAWY,MAAAA,GAAGF,EAAEC,CAAhBX;AAAmBa,MAAAA,KAAKH,EAAEI,GAA1Bd;AAA+Be,MAAAA,MAAML,EAAEI;AAAvCd,KADTE;AAEEc,IAAAA,SAASR,EAAES,GAFbf;AAGEgB,IAAAA,MAAMV,EAAER;AAAEmB,MAAAA,YAAYT,EAAEL;AAAhBL,KAHVE;AAIEH,IAAAA,KAAKS,EAAER;AAAEkB,MAAAA,MAAMR,EAAEV;AAAEoB,QAAAA,MAAMV,EAAEC,CAAVX;AAAaS,QAAAA,IAAIC,EAAEC,CAAnBX;AAAsBqB,QAAAA,KAAKX,EAAEC,CAA7BX;AAAgCY,QAAAA,GAAGF,EAAEC;AAArCX;AAAVA,KAJTE;AAKEE,gBAASC;AALXH,IADFA,CADFD;AAWFqB,CAZO3B",
       "names": Array [
         "var",
         "storyboard",
@@ -194,18 +237,20 @@ export var storyboard = (props) => {
       "sourcesContent": Array [
         "import * as React from 'react'
 import * as Utopia from 'utopia-api'
+
 export var App = (props) => {
-  return <Utopia.View data-uid={'aaa'}>{<div data-uid={'bbb'} />}</Utopia.View>
+  return <Utopia.View data-uid='aaa'>{<div data-uid='bbb' />}</Utopia.View>
 }
+
 export var storyboard = (props) => {
   return (
-    <Storyboard data-uid={'utopia-storyboard-uid'}>
+    <Storyboard data-uid='utopia-storyboard-uid'>
       <Scene
         style={{ left: 0, top: 0, width: 400, height: 400 }}
         component={App}
         layout={{ layoutSystem: 'pinSystem' }}
         props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
+        data-uid='scene-aaa'
       />
     </Storyboard>
   )
@@ -216,7 +261,7 @@ export var storyboard = (props) => {
     },
     "transpiledJavascript": "var storyboard = function storyboard(props) {
   return React.createElement(Storyboard, {
-    \\"data-uid\\": 'utopia-storyboard-uid'
+    \\"data-uid\\": \\"utopia-storyboard-uid\\"
   }, React.createElement(Scene, {
     style: {
       left: 0,
@@ -236,12 +281,17 @@ export var storyboard = (props) => {
         top: 0
       }
     },
-    \\"data-uid\\": 'scene-aaa'
+    \\"data-uid\\": \\"scene-aaa\\"
   }));
 };
 return { storyboard: storyboard };",
     "type": "ARBITRARY_JS_BLOCK",
     "uniqueID": "",
+  },
+  Object {
+    "rawCode": "
+",
+    "type": "UNPARSED_CODE",
   },
 ]
 `;

@@ -10,7 +10,7 @@ import {
 import * as PP from '../../core/shared/property-path'
 import * as TP from '../../core/shared/template-path'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
-import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
+import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
   KeyCharacter,
   KeysPressed,
@@ -23,6 +23,7 @@ import Utils from '../../utils/utils'
 import Canvas, { TargetSearchType } from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
 import { adjustAllSelectedFrames } from '../canvas/controls/select-mode/move-utils'
+import { getAllTargetsAtPoint } from '../canvas/dom-lookup'
 import {
   toggleBackgroundLayers,
   toggleBorder,
@@ -461,12 +462,14 @@ export function handleKeyDown(
           if (CanvasMousePositionRaw == null) {
             return [EditorActions.clearSelection()]
           }
-          const targetStack = Canvas.getAllTargetsAtPoint(
-            editor,
-            CanvasMousePositionRaw,
-            [TargetSearchType.All],
-            true,
-            'strict', // _IF_ we want to enable loose targeting for selection, it means we also need to change component-area-control
+          const targetStack = getAllTargetsAtPoint(
+            editor.jsxMetadataKILLME,
+            editor.selectedViews,
+            editor.hiddenInstances,
+            'no-filter',
+            WindowMousePositionRaw,
+            editor.canvas.scale,
+            editor.canvas.realCanvasOffset,
           )
           const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
           if (targetStack.length === 0 || nextTarget === null) {
@@ -603,7 +606,7 @@ export function handleKeyDown(
               defaultRectangleElement(newUID),
               newUID,
               {
-                'utopia-api': importDetails(null, [importAlias('Rectangle')], null, emptyComments),
+                'utopia-api': importDetails(null, [importAlias('Rectangle')], null),
               },
               null,
             ),
@@ -620,7 +623,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null, emptyComments) },
+              { 'utopia-api': importDetails(null, [importAlias('Ellipse')], null) },
               null,
             ),
           ]
@@ -647,7 +650,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultTextElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('Text')], null, emptyComments) },
+              { 'utopia-api': importDetails(null, [importAlias('Text')], null) },
               null,
             ),
           ]
@@ -663,7 +666,7 @@ export function handleKeyDown(
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),
               newUID,
-              { 'utopia-api': importDetails(null, [importAlias('View')], null, emptyComments) },
+              { 'utopia-api': importDetails(null, [importAlias('View')], null) },
               null,
             ),
           ]

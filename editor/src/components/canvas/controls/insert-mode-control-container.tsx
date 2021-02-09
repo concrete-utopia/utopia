@@ -36,9 +36,9 @@ import { LeftMenuTab } from '../../navigator/left-pane'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import CanvasActions from '../canvas-actions'
-import { InsertDragState, insertDragState } from '../canvas-types'
+import { CanvasContainerID, InsertDragState, insertDragState } from '../canvas-types'
 import { GuidelineWithSnappingVector } from '../guideline'
-import { ComponentAreaControl, ComponentLabelControl } from './component-area-control'
+import { ComponentLabelControl } from './component-area-control'
 import { GuidelineControl } from './guideline-control'
 import {
   applySnappingToPoint,
@@ -46,12 +46,13 @@ import {
   getSnappedGuidelinesForPoint,
 } from './guideline-helpers'
 import { InsertionControls } from './insertion-control'
-import { ControlProps } from './new-canvas-controls'
+import { CanvasControlsContainerID, ControlProps } from './new-canvas-controls'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { RightMenuTab } from '../right-menu'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import { getStoryboardTemplatePath } from '../../../core/model/scene-utils'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -195,39 +196,6 @@ export class InsertModeControlContainer extends React.Component<
     return this.isUtopiaAPIInsertion(element, importsToAdd, 'View')
   }
 
-  renderControl = (target: TemplatePath): JSX.Element | null => {
-    const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
-
-    if (frame == null) {
-      return null
-    }
-
-    return (
-      <ComponentAreaControl
-        key={TP.toComponentId(target)}
-        componentMetadata={this.props.componentMetadata}
-        target={target}
-        frame={frame}
-        highlighted={this.isHighlighted(target)}
-        scale={this.props.scale}
-        selectedComponents={this.props.selectedViews}
-        dispatch={this.props.dispatch}
-        canvasOffset={this.props.canvasOffset}
-        hoverEffectEnabled={true}
-        doubleClickToSelect={false}
-        onMouseDown={Utils.NO_OP}
-        onHover={this.onHover}
-        onHoverEnd={this.onHoverEnd}
-        keysPressed={this.props.keysPressed}
-        windowToCanvasPosition={this.props.windowToCanvasPosition}
-        selectedViews={this.props.selectedViews}
-        imports={this.props.imports}
-        testID={`insert-target-${TP.toComponentId(target)}`}
-        showAdditionalControls={this.props.showAdditionalControls}
-      />
-    )
-  }
-
   renderLabel = (target: TemplatePath): JSX.Element | null => {
     const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
 
@@ -238,6 +206,7 @@ export class InsertModeControlContainer extends React.Component<
     return (
       <ComponentLabelControl
         key={TP.toComponentId(target)}
+        mouseEnabled={true}
         componentMetadata={this.props.componentMetadata}
         target={target}
         frame={frame}
@@ -366,7 +335,7 @@ export class InsertModeControlContainer extends React.Component<
     const updatedAttributes = forceSetValueAtPath(
       attributes,
       PP.create(['textSizing']),
-      jsxAttributeValue('fixed'),
+      jsxAttributeValue('fixed', emptyComments),
     )
 
     return {
@@ -406,7 +375,7 @@ export class InsertModeControlContainer extends React.Component<
     const updatedAttributes2 = forceSetValueAtPath(
       updatedAttributes.value,
       PP.create(['textSizing']),
-      jsxAttributeValue('auto'),
+      jsxAttributeValue('auto', emptyComments),
     )
 
     return {
@@ -415,8 +384,8 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  onMouseDown = (e: React.MouseEvent) => {
-    const mousePoint = this.props.windowToCanvasPosition(e.nativeEvent).canvasPositionRounded
+  onMouseDown = (e: MouseEvent) => {
+    const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
     const snappedMousePoint = applySnappingToPoint(mousePoint, this.state.guidelines)
     const updateDragStateAction = CanvasActions.createDragState(
       insertDragState(
@@ -446,12 +415,11 @@ export class InsertModeControlContainer extends React.Component<
               setJSXValueAtPath(
                 element.props,
                 createLayoutPropertyPath('position'),
-                jsxAttributeValue('relative'),
+                jsxAttributeValue('relative', emptyComments),
               ),
             ) ?? element.props,
         }
       }
-
       this.props.dispatch(
         [
           EditorActions.updateEditorMode(
@@ -486,7 +454,7 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  onMouseUp = (event: React.MouseEvent) => {
+  onMouseUp = (event: MouseEvent) => {
     if (!this.props.mode.insertionStarted) {
       return
     }
@@ -560,8 +528,8 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  onMouseMove = (e: React.MouseEvent) => {
-    const mousePoint = this.props.windowToCanvasPosition(e.nativeEvent).canvasPositionRounded
+  onMouseMove = (e: MouseEvent) => {
+    const mousePoint = this.props.windowToCanvasPosition(e).canvasPositionRounded
     const keepAspectRatio = this.props.keysPressed['shift'] || false
 
     if (insertionSubjectIsJSXElement(this.props.mode.subject)) {
@@ -599,7 +567,6 @@ export class InsertModeControlContainer extends React.Component<
           closestGuidelines,
         )
         const dragVector = Utils.vectorFromPoints(this.props.dragState.start, snappedMousePoint)
-
         this.props.dispatch(
           [
             EditorActions.updateEditorMode(
@@ -674,44 +641,41 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
+  componentDidMount() {
+    const canvasContainer = document.getElementById(CanvasControlsContainerID)
+    if (canvasContainer != null) {
+      canvasContainer.addEventListener('mousedown', this.onMouseDown)
+      canvasContainer.addEventListener('mousemove', this.onMouseMove)
+      canvasContainer.addEventListener('mouseup', this.onMouseUp)
+    }
+  }
+
+  componentWillUnmount() {
+    const canvasContainer = document.getElementById(CanvasControlsContainerID)
+    if (canvasContainer != null) {
+      canvasContainer.removeEventListener('mousedown', this.onMouseDown)
+      canvasContainer.removeEventListener('mousemove', this.onMouseMove)
+      canvasContainer.removeEventListener('mouseup', this.onMouseUp)
+    }
+  }
+
   render() {
     const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
-    const allPaths = MetadataUtils.getAllPaths(this.props.componentMetadata)
-    const insertTargets = allPaths.filter((path) => {
-      if (TP.isScenePath(path)) {
-        // TODO Scene Implementation
-        return false
-      } else {
-        return (
-          (insertionSubjectIsJSXElement(this.props.mode.subject) ||
-            insertionSubjectIsDragAndDrop(this.props.mode.subject)) &&
-          MetadataUtils.targetSupportsChildren(
-            this.props.imports,
-            this.props.componentMetadata,
-            path,
-          )
-        )
-      }
-    })
     const dragFrame = this.state.dragFrame
 
     return (
       <div
         style={{
-          pointerEvents: 'initial',
+          pointerEvents: 'none',
           position: 'absolute',
           top: 0,
           left: 0,
           width: '100%',
           height: '100%',
         }}
-        onMouseDown={this.onMouseDown}
-        onMouseUp={this.onMouseUp}
-        onMouseMove={this.onMouseMove}
         data-testid='insert-mode-mouse-catcher'
       >
         {roots.map((root) => this.renderLabel(root))}
-        {insertTargets.map(this.renderControl)}
         {dragFrame == null ? null : this.renderInsertionOutline(dragFrame)}
         {this.renderGuidelines()}
       </div>

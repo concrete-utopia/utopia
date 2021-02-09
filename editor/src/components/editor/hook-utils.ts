@@ -21,3 +21,8 @@ export function usePrevious<T>(currentValue: T): T | undefined {
 
   return previousRef.current
 }
+
+export function useForceUpdate() {
+  const [, forceUpdate] = React.useReducer((c) => c + 1, 0)
+  return forceUpdate
+}

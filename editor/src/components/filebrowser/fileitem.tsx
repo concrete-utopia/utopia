@@ -32,6 +32,7 @@ import {
   SimpleFlexRow,
   Button,
 } from '../../uuiui'
+import { notice } from '../common/notice'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -301,12 +302,7 @@ class FileBrowserItemInner extends React.PureComponent<
       this.props.dispatch([EditorActions.setFilebrowserRenamingTarget(this.props.path)], 'everyone')
     } else if (isFile(this.props)) {
       this.props.dispatch(
-        [
-          EditorActions.showToast({
-            message: 'We need this file. You cannot rename it.',
-            level: 'WARNING',
-          }),
-        ],
+        [EditorActions.showToast(notice('We need this file. You cannot rename it.', 'WARNING'))],
         'everyone',
       )
     }
@@ -322,6 +318,7 @@ class FileBrowserItemInner extends React.PureComponent<
         <div style={{ ...flexRowStyle, marginLeft: 2 }}>
           <OnClickOutsideHOC onClickOutside={this.onClickOutsideLabel}>
             <StringInput
+              testId=''
               value={this.state.filename}
               onChange={this.onChangeFilename}
               onKeyDown={this.onKeyDownFilename}
@@ -689,6 +686,7 @@ class FileBrowserItemInner extends React.PureComponent<
             }}
           >
             <StringInput
+              testId=''
               value={this.state.addingChildName}
               autoFocus
               onKeyDown={this.inputLabelKeyDown}

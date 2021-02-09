@@ -1,4 +1,4 @@
-import { clearParseResultUniqueIDs, testParseCode } from './parser-printer.test-utils'
+import { clearParseResultUniqueIDsAndEmptyBlocks, testParseCode } from './parser-printer.test-utils'
 import Utils from '../../../utils/utils'
 import { applyPrettier } from './prettier-utils'
 import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx.test-utils'
@@ -8,12 +8,12 @@ describe('parseCode', () => {
     const code = applyPrettier(
       `
     export var whatever = (props) => {
-      return <div data-uid={'aaa'} />
+      return <div data-uid='aaa' />
     }
 `,
       false,
     ).formatted
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(testPrintParsedTextFile(actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`
@@ -31,13 +31,14 @@ describe('parseCode', () => {
     const code = applyPrettier(
       `
     var whatever = (props) => {
-      return <div data-uid={'aaa'} />
+      return <div data-uid='aaa' />
     }
+
     export { whatever }
 `,
       false,
     ).formatted
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(testPrintParsedTextFile(actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`
@@ -45,6 +46,7 @@ describe('parseCode', () => {
         "defaultExport": null,
         "namedExports": Object {
           "whatever": Object {
+            "moduleName": undefined,
             "name": "whatever",
             "type": "EXPORT_DETAIL_NAMED",
           },
@@ -56,13 +58,14 @@ describe('parseCode', () => {
     const code = applyPrettier(
       `
     var whatever = (props) => {
-      return <div data-uid={'aaa'} />
+      return <div data-uid='aaa' />
     }
+    
     export { whatever as otherThing }
 `,
       false,
     ).formatted
-    const actualResult = clearParseResultUniqueIDs(testParseCode(code))
+    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(testPrintParsedTextFile(actualResult)).toEqual(code)
     const exports = Utils.path(['exportsDetail'], actualResult)
     expect(exports).toMatchInlineSnapshot(`
@@ -70,6 +73,7 @@ describe('parseCode', () => {
         "defaultExport": null,
         "namedExports": Object {
           "otherThing": Object {
+            "moduleName": undefined,
             "name": "whatever",
             "type": "EXPORT_DETAIL_NAMED",
           },

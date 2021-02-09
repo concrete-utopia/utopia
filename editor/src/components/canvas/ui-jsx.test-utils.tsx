@@ -213,6 +213,21 @@ export function getPrintedUiJsCode(store: EditorStore): string {
   }
 }
 
+export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
+  const file = getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js')
+  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    return printCode(
+      printCodeOptions(false, true, false, true),
+      file.fileContents.parsed.imports,
+      file.fileContents.parsed.topLevelElements,
+      file.fileContents.parsed.jsxFactoryFunction,
+      file.fileContents.parsed.exportsDetail,
+    )
+  } else {
+    fail('File is not a text file.')
+  }
+}
+
 const TestSceneUID = 'scene-aaa'
 export const TestScenePath = scenePath([BakedInStoryboardUID, TestSceneUID])
 
@@ -220,20 +235,22 @@ export function makeTestProjectCodeWithSnippet(snippet: string): string {
   const code = `/** @jsx jsx */
   import * as React from 'react'
   import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
   export var App = (props) => {
     return (
 ${snippet}
     )
   }
+
   export var ${BakedInStoryboardVariableName} = (props) => {
     return (
-      <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
         <Scene
           style={{ left: 0, top: 0, width: 400, height: 400 }}
           component={App}
           static
           props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-          data-uid={'${TestSceneUID}'}
+          data-uid='${TestSceneUID}'
         />
       </Storyboard>
     )

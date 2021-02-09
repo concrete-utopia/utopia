@@ -30,7 +30,6 @@ import { betterReactMemo } from '../../../../../uuiui-deps'
 interface PinsLayoutNumberControlProps {
   label: string
   prop: LayoutPinnedProp
-  frame: LocalRectangle | null
 }
 
 export const pinLabels: { [key in LayoutPinnedProp]: string } = {
@@ -49,24 +48,13 @@ export const PinsLayoutNumberControl = betterReactMemo(
   (props: PinsLayoutNumberControlProps) => {
     const framePoint = framePointForPinnedProp(props.prop)
     const pointInfo = useInspectorLayoutInfo(props.prop)
-    const fullFrame = Utils.defaultIfNull(
-      {} as FullFrame,
-      Utils.optionalMap(getFullFrame, props.frame),
-    )
-    const framePinToUse = Utils.defaultIfNull(fullFrame[framePoint], pointInfo.value)
-    const asCSSNumber = framePinToCSSNumber(framePinToUse)
-    const [onSubmitValue, onTransientSubmitValue] = pointInfo.useSubmitValueFactory(
-      (newValue: CSSNumber) => {
-        return cssNumberToFramePin(newValue)
-      },
-    )
 
     const wrappedOnSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-      onSubmitValue,
+      pointInfo.onSubmitValue,
       pointInfo.onUnsetValues,
     )
     const wrappedOnTransientSubmit = useWrappedEmptyOrUnknownOnSubmitValue(
-      onTransientSubmitValue,
+      pointInfo.onTransientSubmitValue,
       pointInfo.onUnsetValues,
     )
 
@@ -77,13 +65,15 @@ export const PinsLayoutNumberControl = betterReactMemo(
         data={{}}
       >
         <NumberInput
-          value={asCSSNumber}
+          value={pointInfo.value}
           id={`position-${props.prop}-number-input`}
+          testId={`position-${props.prop}-number-input`}
           labelInner={props.label}
           onSubmitValue={wrappedOnSubmit}
           onTransientSubmitValue={wrappedOnTransientSubmit}
           controlStatus={pointInfo.controlStatus}
-          numberType={'UnitlessPercent'}
+          numberType={'LengthPercent'}
+          defaultUnitToHide={'px'}
         />
       </InspectorContextMenuWrapper>
     )
@@ -136,12 +126,14 @@ export const FlexStyleNumberControl = betterReactMemo(
       >
         <NumberInput
           id={`position-${props.styleProp}-number-input`}
+          testId={`position-${props.styleProp}-number-input`}
           value={layoutPropInfo.value}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           controlStatus={layoutPropInfo.controlStatus}
           numberType={'UnitlessPercent'}
           labelInner={props.label}
+          defaultUnitToHide={'px'}
         />
       </InspectorContextMenuWrapper>
     )
@@ -157,19 +149,13 @@ export const FlexLayoutNumberControl = betterReactMemo(
   'FlexLayoutNumberControl',
   (props: FlexLayoutNumberControlProps) => {
     const layoutPropInfo = useInspectorLayoutInfo(props.layoutProp)
-    const asCSSNumber = framePinToCSSNumber(layoutPropInfo.value)
-    const [onSubmitValue, onTransientSubmitValue] = layoutPropInfo.useSubmitValueFactory(
-      (newValue: CSSNumber, oldValue) => {
-        return cssNumberToFramePin(newValue)
-      },
-    )
 
     const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      onSubmitValue,
+      layoutPropInfo.onSubmitValue,
       layoutPropInfo.onUnsetValues,
     )
     const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      onTransientSubmitValue,
+      layoutPropInfo.onTransientSubmitValue,
       layoutPropInfo.onUnsetValues,
     )
 
@@ -181,12 +167,14 @@ export const FlexLayoutNumberControl = betterReactMemo(
       >
         <NumberInput
           id={`position-${props.layoutProp}-number-input`}
-          value={asCSSNumber}
+          testId={`position-${props.layoutProp}-number-input`}
+          value={layoutPropInfo.value}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           controlStatus={layoutPropInfo.controlStatus}
-          numberType={'UnitlessPercent'}
+          numberType={'LengthPercent'}
           labelInner={props.label}
+          defaultUnitToHide={'px'}
         />
       </InspectorContextMenuWrapper>
     )
@@ -219,8 +207,8 @@ const PinControls = betterReactMemo('PinControls', (props: PinControlsProps) => 
   )
 })
 
-function pinsLayoutNumberControl(frame: LocalRectangle | null, prop: LayoutPinnedProp) {
-  return <PinsLayoutNumberControl label={pinLabels[prop]} prop={prop} frame={frame} />
+function pinsLayoutNumberControl(prop: LayoutPinnedProp) {
+  return <PinsLayoutNumberControl label={pinLabels[prop]} prop={prop} />
 }
 
 function flexLayoutNumberControl(label: string, layoutProp: LayoutFlexElementNumericProp) {
@@ -271,8 +259,8 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
         break
     }
   } else {
-    widthControl = pinsLayoutNumberControl(frame, 'Width')
-    heightControl = pinsLayoutNumberControl(frame, 'Height')
+    widthControl = pinsLayoutNumberControl('Width')
+    heightControl = pinsLayoutNumberControl('Height')
   }
 
   const toggleWidth = React.useCallback(() => {
@@ -402,8 +390,8 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
   // const topInfo = useInspectorLayoutInfo('PinnedTop')
   // if (centerXInfo.value == null) {
   // No CenterX value, just show top and bottom.
-  firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedTop')
-  secondXAxisControl = pinsLayoutNumberControl(frame, 'PinnedBottom')
+  firstXAxisControl = pinsLayoutNumberControl('PinnedTop')
+  secondXAxisControl = pinsLayoutNumberControl('PinnedBottom')
   // } else {
   //   // We have a CenterX value, so put that first and then top or bottom after it.
   //   firstXAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterX')
@@ -419,8 +407,8 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
   // const leftInfo = useInspectorLayoutInfo('PinnedLeft')
   // if (centerYInfo.value == null) {
   // No CenterY value, just show left and right.
-  firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedLeft')
-  secondYAxisControl = pinsLayoutNumberControl(frame, 'PinnedRight')
+  firstYAxisControl = pinsLayoutNumberControl('PinnedLeft')
+  secondYAxisControl = pinsLayoutNumberControl('PinnedRight')
   // } else {
   //   // We have a CenterY value, so put that first and then left or right after it.
   //   firstYAxisControl = pinsLayoutNumberControl(frame, 'PinnedCenterY')

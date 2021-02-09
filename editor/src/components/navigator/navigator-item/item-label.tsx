@@ -8,6 +8,7 @@ import { renameComponent } from '../actions'
 import { StringInput, flexRowStyle } from '../../../uuiui'
 
 interface ItemLabelProps {
+  testId: string
   dispatch: EditorDispatch
   target: TemplatePath
   isDynamic: boolean
@@ -126,6 +127,7 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
       <div key='item-rename-label'>
         <StringInput
           key='item-rename-input'
+          testId={this.props.testId}
           className='rename-input-field'
           ref={this.inputLabelUpdateRef}
           type='text'

@@ -9,7 +9,13 @@ import {
 } from '../core/workers/parser-printer/parser-printer'
 import { foldParsedTextFile } from '../core/shared/project-file-types'
 import * as Diff from 'diff'
-import { GitRepoWithRevision, downloadAndExtractRepo, githubProjects } from './github-projects'
+import {
+  GitRepoWithRevision,
+  downloadAndExtractRepo,
+  githubProjects,
+  githubProjectsFileFilters,
+} from './github-projects'
+import * as minimatch from 'minimatch'
 
 const javascriptFileEndings = ['.js', '.ts', '.jsx', '.tsx']
 
@@ -53,6 +59,12 @@ async function processFile(
   )
 }
 
+function allowedByGlobFilters(filePath: string): boolean {
+  return githubProjectsFileFilters.every((filter) => {
+    return !minimatch(filePath, filter)
+  })
+}
+
 async function processProjectCode(
   repo: GitRepoWithRevision,
   rootProjectPath: string,
@@ -66,7 +78,10 @@ async function processProjectCode(
     const fullPathWithoutRoot = fullPath.slice(rootProjectPath.length)
     // Some projects have built files in them which are potentially gigantic.
     // This allows us to filter them out of the results.
-    if (!repo.pathsToIgnore.some((pathToIgnore) => pathToIgnore === fullPathWithoutRoot)) {
+    if (
+      !repo.pathsToIgnore.some((pathToIgnore) => pathToIgnore === fullPathWithoutRoot) &&
+      allowedByGlobFilters(fullPathWithoutRoot)
+    ) {
       // Walk down into the directory if it is one.
       if (dirEntry.isDirectory()) {
         const dirResult = await processProjectCode(repo, rootProjectPath, fullPath)
@@ -75,7 +90,10 @@ async function processProjectCode(
       // Handle
       if (dirEntry.isFile() && javascriptFileEndings.some((ending) => fullPath.endsWith(ending))) {
         const fileResult = await processFile(repo, rootProjectPath, fullPath)
-        result.push(fileResult)
+        if (fileResult.split('\n').length > 4) {
+          // Skip empty patches
+          result.push(fileResult)
+        }
       }
     }
   }

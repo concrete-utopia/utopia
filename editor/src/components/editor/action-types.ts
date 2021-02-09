@@ -48,9 +48,10 @@ import {
   PersistentModel,
   StoredEditorState,
 } from './store/editor-state'
-import { Notice } from '../common/notices'
+import { Notice } from '../common/notice'
 import { BuildType } from '../../core/workers/ts/ts-worker'
 import type { EditorTab } from './store/editor-tabs'
+import { ContextMenuInnerProps } from '../../uuiui-deps'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {
@@ -347,13 +348,14 @@ export interface ToggleCollapse {
   target: TemplatePath
 }
 
-export interface PushToast {
-  action: 'PUSH_TOAST'
+export interface AddToast {
+  action: 'ADD_TOAST'
   toast: Notice
 }
 
-export interface PopToast {
-  action: 'POP_TOAST'
+export interface RemoveToast {
+  action: 'REMOVE_TOAST'
+  id: string
 }
 
 export interface SetHighlightedView {
@@ -512,6 +514,7 @@ export interface ShowContextMenu {
   action: 'SHOW_CONTEXT_MENU'
   menuName: ElementContextMenuInstance
   event: MouseEvent
+  props: ContextMenuInnerProps | null
 }
 
 export interface SetCursorOverlay {
@@ -764,6 +767,12 @@ export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
 
+export interface UpdateChildText {
+  action: 'UPDATE_CHILD_TEXT'
+  target: InstancePath
+  text: string
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -808,8 +817,8 @@ export type EditorAction =
   | SetRightMenuTab
   | SetRightMenuExpanded
   | ToggleCollapse
-  | PushToast
-  | PopToast
+  | AddToast
+  | RemoveToast
   | SetHighlightedView
   | ClearHighlightedViews
   | UpdateKeysPressed
@@ -891,6 +900,7 @@ export type EditorAction =
   | UpdatePropertyControlsInfo
   | PropertyControlsIFrameReady
   | AddStoryboardFile
+  | UpdateChildText
 
 export type DispatchPriority =
   | 'everyone'

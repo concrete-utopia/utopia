@@ -12,39 +12,46 @@ import * as Prettier from 'prettier'
 import * as TP from '../../core/shared/template-path'
 
 import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
-import { createFakeMetadataForParseSuccess } from '../../utils/test-utils'
+import { createFakeMetadataForParseSuccess, wait } from '../../utils/test-utils'
 import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
+import { CanvasControlsContainerID } from './controls/new-canvas-controls'
+import { setElectronWindow } from '../../core/shared/test-setup.test-utils'
 
 describe('moving a scene/rootview on the canvas', () => {
+  beforeAll(setElectronWindow)
+
   it('dragging a dynamic scene’s root view sets the scene position', async () => {
     const testCode = Prettier.format(
       `
       /** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
               style={{ width: 375, height: 812 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'aaa'}
+              data-uid='aaa'
+              data-testid='aaa'
             >
               <View
                 style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
                 layout={{ layoutSystem: 'pinSystem' }}
-                data-uid={'bbb'}
+                data-uid='bbb'
               />
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
-            <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Storyboard data-uid='utopia-storyboard-uid'>
               <Scene
                 style={{ position: 'absolute' }}
                 component={App}
-                data-uid={'scene-aaa'}
+                data-uid='scene-aaa'
                 resizeContent
               />
             </Storyboard>
@@ -59,14 +66,14 @@ describe('moving a scene/rootview on the canvas', () => {
       false,
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa-0',
-    )
+    const areaControl = renderResult.renderedDOM.getByTestId('aaa')
 
     const areaControlBounds = areaControl.getBoundingClientRect()
 
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
     fireEvent(
-      areaControl,
+      canvasControlsLayer,
       new MouseEvent('mousedown', {
         bubbles: true,
         cancelable: true,
@@ -81,7 +88,7 @@ describe('moving a scene/rootview on the canvas', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -99,7 +106,7 @@ describe('moving a scene/rootview on the canvas', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -133,28 +140,31 @@ describe('moving a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
             style={{ width: 375, height: 812 }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'aaa'}
+            data-uid='aaa'
+            data-testid='aaa'
           >
             <View
               style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'bbb'}
+              data-uid='bbb'
             />
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
-          <Storyboard data-uid={'utopia-storyboard-uid'}>
+          <Storyboard data-uid='utopia-storyboard-uid'>
             <Scene
               style={{ position: 'absolute', top: -30, left: 40 }}
               component={App}
-              data-uid={'scene-aaa'}
+              data-uid='scene-aaa'
               resizeContent
             />
           </Storyboard>
@@ -171,28 +181,30 @@ describe('moving a scene/rootview on the canvas', () => {
       /** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
               style={{ width: 375, height: 812 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'aaa'}
+              data-uid='aaa'
             >
               <View
                 style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
                 layout={{ layoutSystem: 'pinSystem' }}
-                data-uid={'bbb'}
+                data-uid='bbb'
               />
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
-            <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Storyboard data-uid='utopia-storyboard-uid'>
               <Scene
                 style={{ position: 'absolute' }}
                 component={App}
-                data-uid={'scene-aaa'}
+                data-uid='scene-aaa'
                 resizeContent
               />
             </Storyboard>
@@ -205,7 +217,7 @@ describe('moving a scene/rootview on the canvas', () => {
     await renderResult.dispatch([selectComponents([TestScenePath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa-0',
+      'label-control-utopia-storyboard-uid/scene-aaa',
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -278,28 +290,30 @@ describe('moving a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
             style={{ width: 375, height: 812 }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'aaa'}
+            data-uid='aaa'
           >
             <View
               style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'bbb'}
+              data-uid='bbb'
             />
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
-          <Storyboard data-uid={'utopia-storyboard-uid'}>
+          <Storyboard data-uid='utopia-storyboard-uid'>
             <Scene
               style={{ position: 'absolute', top: 20, left: 40 }}
               component={App}
-              data-uid={'scene-aaa'}
+              data-uid='scene-aaa'
               resizeContent
             />
           </Storyboard>
@@ -314,11 +328,11 @@ describe('moving a scene/rootview on the canvas', () => {
   it('dragging a static scene’s root view sets the root view position', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ width: '100%', height: '100%' }} layout={{ layoutSystem: 'pinSystem' }} data-uid={'aaa'}>
+        <View style={{ width: '100%', height: '100%' }} layout={{ layoutSystem: 'pinSystem' }} data-testid='aaa' data-uid='aaa'>
           <View
             style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'bbb'}
+            data-uid='bbb'
           />
         </View>
       `),
@@ -329,14 +343,14 @@ describe('moving a scene/rootview on the canvas', () => {
       false,
     )
 
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa-0',
-    )
+    const areaControl = renderResult.renderedDOM.getByTestId('aaa')
 
     const areaControlBounds = areaControl.getBoundingClientRect()
 
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
     fireEvent(
-      areaControl,
+      canvasControlsLayer,
       new MouseEvent('mousedown', {
         bubbles: true,
         cancelable: true,
@@ -351,7 +365,7 @@ describe('moving a scene/rootview on the canvas', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -369,7 +383,7 @@ describe('moving a scene/rootview on the canvas', () => {
       const domFinished = renderResult.getDomReportDispatched()
       const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
       fireEvent(
-        areaControl,
+        canvasControlsLayer,
         new MouseEvent('mousemove', {
           bubbles: true,
           cancelable: true,
@@ -405,12 +419,13 @@ describe('moving a scene/rootview on the canvas', () => {
       <View
           style={{ width: '100%', height: '100%', left: 40, top: -30 }}
           layout={{ layoutSystem: 'pinSystem' }}
-          data-uid={'aaa'}
+          data-testid='aaa'
+          data-uid='aaa'
         >
           <View
             style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'bbb'}
+            data-uid='bbb'
           />
         </View>
       `),
@@ -421,28 +436,30 @@ describe('moving a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
               style={{ width: '100%', height: '100%' }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'aaa'}
+              data-uid='aaa'
             >
               <View
                 style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
                 layout={{ layoutSystem: 'pinSystem' }}
-                data-uid={'bbb'}
+                data-uid='bbb'
               />
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
-            <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Storyboard data-uid='utopia-storyboard-uid'>
               <Scene
                 style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
                 component={App}
-                data-uid={'scene-aaa'}
+                data-uid='scene-aaa'
               />
             </Storyboard>
           )
@@ -454,7 +471,7 @@ describe('moving a scene/rootview on the canvas', () => {
     await renderResult.dispatch([selectComponents([TestScenePath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-area-control-utopia-storyboard-uid/scene-aaa:aaa-0',
+      'label-control-utopia-storyboard-uid/scene-aaa',
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -527,28 +544,30 @@ describe('moving a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
     import * as React from 'react'
     import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
     export var App = (props) => {
       return (
         <View
           style={{ width: '100%', height: '100%' }}
           layout={{ layoutSystem: 'pinSystem' }}
-          data-uid={'aaa'}
+          data-uid='aaa'
         >
           <View
             style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'bbb'}
+            data-uid='bbb'
           />
         </View>
       )
     }
+
     export var storyboard = (props) => {
       return (
-        <Storyboard data-uid={'utopia-storyboard-uid'}>
+        <Storyboard data-uid='utopia-storyboard-uid'>
           <Scene
             style={{ position: 'absolute', width: 400, height: 400, top: -30, left: 40 }}
             component={App}
-            data-uid={'scene-aaa'}
+            data-uid='scene-aaa'
           />
         </Storyboard>
       )
@@ -566,28 +585,31 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
               style={{ width: 200, height: 400 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'aaa'}
+              data-uid='aaa'
+              data-testid='aaa'
             >
               <View
                 style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
                 layout={{ layoutSystem: 'pinSystem' }}
-                data-uid={'bbb'}
+                data-uid='bbb'
               />
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
-            <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Storyboard data-uid='utopia-storyboard-uid'>
               <Scene
                 style={{ position: 'absolute' }}
                 component={App}
-                data-uid={'scene-aaa'}
+                data-uid='scene-aaa'
                 resizeContent
               />
             </Storyboard>
@@ -658,28 +680,31 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
             style={{ height: 370, width: 240 }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'aaa'}
+            data-uid='aaa'
+            data-testid='aaa'
           >
             <View
               style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'bbb'}
+              data-uid='bbb'
             />
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
-          <Storyboard data-uid={'utopia-storyboard-uid'}>
+          <Storyboard data-uid='utopia-storyboard-uid'>
             <Scene
               style={{ position: 'absolute' }}
               component={App}
-              data-uid={'scene-aaa'}
+              data-uid='scene-aaa'
               resizeContent
             />
           </Storyboard>
@@ -695,28 +720,30 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
               style={{ width: 200, height: 400 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'aaa'}
+              data-uid='aaa'
             >
               <View
                 style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
                 layout={{ layoutSystem: 'pinSystem' }}
-                data-uid={'bbb'}
+                data-uid='bbb'
               />
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
-            <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Storyboard data-uid='utopia-storyboard-uid'>
               <Scene
                 style={{ position: 'absolute' }}
                 component={App}
-                data-uid={'scene-aaa'}
+                data-uid='scene-aaa'
                 resizeContent
               />
             </Storyboard>
@@ -784,28 +811,30 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
             style={{ height: 370, width: 240 }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'aaa'}
+            data-uid='aaa'
           >
             <View
               style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'bbb'}
+              data-uid='bbb'
             />
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
-          <Storyboard data-uid={'utopia-storyboard-uid'}>
+          <Storyboard data-uid='utopia-storyboard-uid'>
             <Scene
               style={{ position: 'absolute' }}
               component={App}
-              data-uid={'scene-aaa'}
+              data-uid='scene-aaa'
               resizeContent
             />
           </Storyboard>
@@ -821,28 +850,30 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
               style={{ width: 200, height: 400 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'aaa'}
+              data-uid='aaa'
             >
               <View
                 style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
                 layout={{ layoutSystem: 'pinSystem' }}
-                data-uid={'bbb'}
+                data-uid='bbb'
               />
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
-            <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Storyboard data-uid='utopia-storyboard-uid'>
               <Scene
                 style={{ position: 'absolute', width: 200, height: 200 }}
                 component={App}
-                data-uid={'scene-aaa'}
+                data-uid='scene-aaa'
                 resizeContent
               />
             </Storyboard>
@@ -910,28 +941,30 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
             style={{ height: 170, width: 240 }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'aaa'}
+            data-uid='aaa'
           >
             <View
               style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'bbb'}
+              data-uid='bbb'
             />
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
-          <Storyboard data-uid={'utopia-storyboard-uid'}>
+          <Storyboard data-uid='utopia-storyboard-uid'>
             <Scene
               style={{ position: 'absolute', width: 200, height: 200 }}
               component={App}
-              data-uid={'scene-aaa'}
+              data-uid='scene-aaa'
               resizeContent
             />
           </Storyboard>
@@ -947,28 +980,30 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
         import * as React from 'react'
         import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
         export var App = (props) => {
           return (
             <View
               style={{ width: '100%', height: '100%' }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'aaa'}
+              data-uid='aaa'
             >
               <View
                 style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
                 layout={{ layoutSystem: 'pinSystem' }}
-                data-uid={'bbb'}
+                data-uid='bbb'
               />
             </View>
           )
         }
+
         export var storyboard = (props) => {
           return (
-            <Storyboard data-uid={'utopia-storyboard-uid'}>
+            <Storyboard data-uid='utopia-storyboard-uid'>
               <Scene
                 style={{ position: 'absolute', top: 0, left: 0, width: 200, height: 400 }}
                 component={App}
-                data-uid={'scene-aaa'}
+                data-uid='scene-aaa'
               />
             </Storyboard>
           )
@@ -1038,28 +1073,30 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
     import * as React from 'react'
     import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
     export var App = (props) => {
       return (
         <View
           style={{ height: '92.5%', width: '120%' }}
           layout={{ layoutSystem: 'pinSystem' }}
-          data-uid={'aaa'}
+          data-uid='aaa'
         >
           <View
             style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'bbb'}
+            data-uid='bbb'
           />
         </View>
       )
     }
+
     export var storyboard = (props) => {
       return (
-        <Storyboard data-uid={'utopia-storyboard-uid'}>
+        <Storyboard data-uid='utopia-storyboard-uid'>
           <Scene
             style={{ position: 'absolute', top: 0, left: 0, width: 200, height: 400 }}
             component={App}
-            data-uid={'scene-aaa'}
+            data-uid='scene-aaa'
           />
         </Storyboard>
       )
@@ -1074,28 +1111,30 @@ describe('resizing a scene/rootview on the canvas', () => {
       `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
             style={{ width: '100%', height: '100%' }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'aaa'}
+            data-uid='aaa'
           >
             <View
               style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'bbb'}
+              data-uid='bbb'
             />
           </View>
         )
       }
+
       export var storyboard = (props) => {
         return (
-          <Storyboard data-uid={'utopia-storyboard-uid'}>
+          <Storyboard data-uid='utopia-storyboard-uid'>
             <Scene
               style={{ position: 'absolute', top: 0, left: 0, width: 200, height: 400 }}
               component={App}
-              data-uid={'scene-aaa'}
+              data-uid='scene-aaa'
             />
           </Storyboard>
         )
@@ -1162,28 +1201,30 @@ describe('resizing a scene/rootview on the canvas', () => {
     const expectedCode = `/** @jsx jsx */
       import * as React from 'react'
       import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
       export var App = (props) => {
         return (
           <View
             style={{ width: '100%', height: '100%' }}
             layout={{ layoutSystem: 'pinSystem' }}
-            data-uid={'aaa'}
+            data-uid='aaa'
           >
             <View
               style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
               layout={{ layoutSystem: 'pinSystem' }}
-              data-uid={'bbb'}
+              data-uid='bbb'
             />
           </View>
         )
       }
+      
       export var storyboard = (props) => {
         return (
-          <Storyboard data-uid={'utopia-storyboard-uid'}>
+          <Storyboard data-uid='utopia-storyboard-uid'>
             <Scene
               style={{ position: 'absolute', top: 0, left: 0, width: 240, height: 370 }}
               component={App}
-              data-uid={'scene-aaa'}
+              data-uid='scene-aaa'
             />
           </Storyboard>
         )

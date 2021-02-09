@@ -36,8 +36,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_RIGHT_MENU_TAB':
     case 'SET_RIGHT_MENU_EXPANDED':
     case 'TOGGLE_COLLAPSE':
-    case 'PUSH_TOAST':
-    case 'POP_TOAST':
+    case 'ADD_TOAST':
+    case 'REMOVE_TOAST':
     case 'SET_HIGHLIGHTED_VIEW':
     case 'CLEAR_HIGHLIGHTED_VIEWS':
     case 'HIDE_MODAL':
@@ -137,6 +137,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FINISH_CHECKPOINT_TIMER':
     case 'ADD_MISSING_DIMENSIONS':
     case 'ADD_STORYBOARD_FILE':
+    case 'UPDATE_CHILD_TEXT':
       return false
     case 'SAVE_ASSET':
       return (

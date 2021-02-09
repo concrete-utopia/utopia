@@ -41,6 +41,7 @@ import { OptionControl } from '../../../controls/option-control'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelect } from './font-family-select'
 import { FontVariantSelect } from './font-variant-select'
+import { emptyComments } from '../../../../../core/workers/parser-printer/parser-printer-comments'
 
 const ObjectPathImmutable: any = OPI
 
@@ -224,13 +225,14 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
         >
           <NumberInput
             id='fontSize'
+            testId='fontSize'
             value={fontSizeMetadata.value}
             controlStatus={fontSizeMetadata.controlStatus}
             onSubmitValue={wrappedFontSizeOnSubmitValue}
             onTransientSubmitValue={wrappedFontSizeOnTransientSubmitValue}
             minimum={0}
             numberType='Length'
-            defaultUnitToHide='px'
+            defaultUnitToHide={'px'}
           />
         </InspectorContextMenuWrapper>
         <InspectorContextMenuWrapper
@@ -242,6 +244,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           <ColorControl
             id='color-control'
             key='color-control'
+            testId='text-subsection-color-control'
             value={colorMetadata.value}
             onSubmitValue={colorMetadata.onSubmitValue}
             onTransientSubmitValue={colorMetadata.onTransientSubmitValue}
@@ -261,6 +264,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           <OptionChainControl
             id='textAutoSizing'
             key='textAutoSizing'
+            testId='textAutoSizing'
             controlStatus={textSizingMetadata.controlStatus}
             controlStyles={textSizingMetadata.controlStyles}
             onSubmitValue={textSizingMetadata.onSubmitValue}
@@ -302,6 +306,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
           <OptionChainControl
             id='textAlign'
             key='textAlign'
+            testId='textAlign'
             value={textAlignMetadata.value}
             onSubmitValue={textAlignMetadata.onSubmitValue}
             controlStatus={textAlignMetadata.controlStatus}
@@ -362,6 +367,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             <OptionControl
               id='italic'
               key='italic'
+              testId='italic'
               value={fontStyleMetadata.value === 'italic'}
               onSubmitValue={onItalicSubmitValue}
               controlStatus={fontStyleMetadata.controlStatus}
@@ -386,6 +392,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             <OptionControl
               id='underlined'
               key='underlined'
+              testId='underlined'
               value={textDecorationLineMetadata.value === 'underline'}
               onSubmitValue={onUnderlinedSubmitValue}
               controlStatus={textDecorationLineMetadata.controlStatus}
@@ -412,6 +419,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             <NumberInput
               key='letterSpacing'
               id='letterSpacing'
+              testId='letterSpacing'
               value={
                 letterSpacingMetadata.value === 'normal'
                   ? normalLetterSpacingAsCSSNumber
@@ -423,7 +431,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               DEPRECATED_labelBelow='letter'
               stepSize={0.01}
               numberType='Length'
-              defaultUnitToHide='px'
+              defaultUnitToHide={'px'}
             />
           </InspectorContextMenuWrapper>
           <InspectorContextMenuWrapper
@@ -435,6 +443,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             <NumberInput
               key='lineHeight'
               id='lineHeight'
+              testId='lineHeight'
               value={
                 lineHeightMetadata.value === 'normal'
                   ? normalLineHeightAsCSSNumber
@@ -446,6 +455,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
               DEPRECATED_labelBelow='line'
               stepSize={0.01}
               numberType='Length'
+              defaultUnitToHide={'em'}
             />
           </InspectorContextMenuWrapper>
         </PropertyRow>
@@ -508,7 +518,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
             EditorActions.setProp_UNSAFE(
               path,
               PP.create(['textSizing']),
-              jsxAttributeValue('fixed'),
+              jsxAttributeValue('fixed', emptyComments),
             ),
           )
         }

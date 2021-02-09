@@ -4,6 +4,7 @@ import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { right } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
+  emptyAttributeMetadatada,
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
   JSXElement,
@@ -42,6 +43,7 @@ export function buildSpyWrappedElement(
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
+      attributeMetadatada: emptyAttributeMetadatada,
     }
     const isChildOfRootScene = TP.pathsEqual(
       TP.scenePathForPath(templatePath),

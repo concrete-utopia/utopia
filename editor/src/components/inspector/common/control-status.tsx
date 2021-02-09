@@ -8,6 +8,7 @@ import {
   JSXAttribute,
   JSXAttributeNotFound,
   PartOfJSXAttributeValue,
+  StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
@@ -75,6 +76,8 @@ export const ControlStyleDefaults = {
   DetectedBackgroundColor: colorTheme.inspectorDetectedBackgroundColor.value,
   DetectedSegmentSelectorColor: colorTheme.inspectorDetectedSegmentSelectorColor.value,
   DetectedSegmentTrackColor: colorTheme.inspectorDetectedSegmentTrackColor.value,
+  DetectedFromCssMainColor: colorTheme.inspectorDetectedFromCssMainColor.value,
+  DetectedFromCssSecondaryColor: colorTheme.inspectorDetectedFromCssMainColor.value,
   OffMainColor: colorTheme.inspectorOffMainColor.value,
   OffSecondaryColor: colorTheme.inspectorOffSecondaryColor.value,
   OffBackgroundColor: colorTheme.inspectorOffBackgroundColor.value,
@@ -91,15 +94,19 @@ export type ControlStatus =
   | 'disabled' // this single-selected element's property is disabled due to some other style property or metadata (e.g. a hex string input for a border that is disabled)
   | 'unoverwritable' // this single-selected element's property is part of a (grand)parent prop that is 'controlled', and we can't edit it directly without destroying the parent prop
   | 'controlled' // this single-selected element's property is defined by unparseable arbitrary js (e.g. `15 + 15`, `isDark ? 'black' : white`)
+  | 'detected-fromcss' // this single-selected element's property is detected from measurement, and we know it comes from a CSS Stylesheet (might be via Emotion)
   | 'detected' // this single-selected element's property is detected from measurement
+  | 'trivial-default' // this single-selected element's property is detected from measurement and we think its not important to show it to the user
   | 'multiselect-identical-simple' // all elements in this multi-selection have this property 'simple', with identical values
   | 'multiselect-simple-unknown-css' // at least one element in the multiselection is 'unknown-css', and the rest are 'simple' or 'unset'
   | 'multiselect-identical-unset' // all elements in this multi-selection have this property either 'simple' or 'unset', with identical values
   | 'multiselect-mixed-simple-or-unset' // all elements in the multi-selection are 'simple' or 'unset', with at least one non-identical value
   | 'multiselect-controlled' // at least one element in the multiselection is 'controlled', and the rest are 'simple', 'unset', or 'unknown-css'
+  | 'multiselect-detected-fromcss' // at least one element in the multiselection is 'detected-fromcss', and the rest are 'simple', 'unset', 'unknown-css', or 'controlled'
   | 'multiselect-detected' // at least one element in the multiselection is 'detected', and the rest are 'simple', 'unset', 'unknown-css', or 'controlled'
   | 'multiselect-unoverwritable' // at least one element in the multi-selection is 'unoverwritable'
   | 'multiselect-disabled' // at least one element in the multi-selection is 'disabled'
+  | 'multiselect-trivial-default' // this single-selected element's property is detected from measurement and we think its not important to show it to the user
 
 const AllControlStatuses: Array<ControlStatus> = [
   'off',
@@ -109,15 +116,19 @@ const AllControlStatuses: Array<ControlStatus> = [
   'disabled',
   'unoverwritable',
   'controlled',
+  'detected-fromcss',
   'detected',
+  'trivial-default',
   'multiselect-identical-simple',
   'multiselect-simple-unknown-css',
   'multiselect-identical-unset',
   'multiselect-mixed-simple-or-unset',
   'multiselect-controlled',
+  'multiselect-detected-fromcss',
   'multiselect-detected',
   'multiselect-unoverwritable',
   'multiselect-disabled',
+  'multiselect-trivial-default',
 ]
 
 export function isControlledStatus(controlStatus: ControlStatus): boolean {
@@ -132,6 +143,7 @@ export function isControlledStatus(controlStatus: ControlStatus): boolean {
     case 'disabled':
     case 'unoverwritable':
     case 'detected':
+    case 'detected-fromcss':
     case 'multiselect-identical-simple':
     case 'multiselect-simple-unknown-css':
     case 'multiselect-identical-unset':
@@ -139,6 +151,9 @@ export function isControlledStatus(controlStatus: ControlStatus): boolean {
     case 'multiselect-unoverwritable':
     case 'multiselect-disabled':
     case 'multiselect-detected':
+    case 'multiselect-detected-fromcss':
+    case 'trivial-default':
+    case 'multiselect-trivial-default':
       return false
     default:
       const _exhaustiveCheck: never = controlStatus
@@ -170,6 +185,11 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
     switch (status) {
       case 'simple':
       case 'multiselect-identical-simple':
+        break
+      case 'detected-fromcss':
+      case 'multiselect-detected-fromcss':
+        mainColor = ControlStyleDefaults.DetectedFromCssMainColor
+        secondaryColor = ControlStyleDefaults.DetectedFromCssSecondaryColor
         break
       case 'multiselect-mixed-simple-or-unset':
         set = false
@@ -276,6 +296,20 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         railColor = ControlStyleDefaults.DetectedSecondaryColor
         showContent = true
         break
+      case 'trivial-default':
+      case 'multiselect-trivial-default':
+        fontWeight = 600
+        borderColor = ControlStyleDefaults.DetectedBorderColor
+        interactive = true
+        mainColor = ControlStyleDefaults.DetectedMainColor
+        secondaryColor = ControlStyleDefaults.DetectedSecondaryColor
+        backgroundColor = ControlStyleDefaults.DetectedBackgroundColor
+        segmentSelectorColor = ControlStyleDefaults.DetectedSegmentSelectorColor
+        segmentTrackColor = ControlStyleDefaults.DetectedSegmentTrackColor
+        trackColor = ControlStyleDefaults.DetectedMainColor
+        railColor = ControlStyleDefaults.DetectedSecondaryColor
+        showContent = false
+        break
       default:
         break
     }
@@ -310,6 +344,8 @@ interface SinglePropertyStatus {
   set: boolean
   overwritable: boolean
   detected: boolean
+  fromCssStyleSheet: boolean
+  trivialDefault: boolean
 }
 
 export interface PropertyStatus extends SinglePropertyStatus {
@@ -334,7 +370,13 @@ export function getControlStatusFromPropertyStatus(status: PropertyStatus): Cont
       }
     } else {
       if (status.detected) {
-        return 'detected'
+        if (status.fromCssStyleSheet) {
+          return 'detected-fromcss'
+        } else if (status.trivialDefault) {
+          return 'trivial-default'
+        } else {
+          return 'detected'
+        }
       } else {
         return 'unset'
       }
@@ -359,7 +401,13 @@ export function getControlStatusFromPropertyStatus(status: PropertyStatus): Cont
         return 'multiselect-identical-unset'
       } else {
         if (status.detected) {
-          return 'multiselect-detected'
+          if (status.fromCssStyleSheet) {
+            return 'multiselect-detected-fromcss'
+          } else if (status.trivialDefault) {
+            return 'multiselect-trivial-default'
+          } else {
+            return 'multiselect-detected'
+          }
         } else {
           return 'multiselect-controlled'
         }
@@ -421,6 +469,8 @@ function calculatePropertyStatusPerProperty(
     controlled: isControlled(modifiableAttributeResult, realValue),
     overwritable: isOverwritable(modifiableAttributeResult),
     detected: false,
+    fromCssStyleSheet: false,
+    trivialDefault: false,
   }
 }
 
@@ -439,6 +489,8 @@ export function calculatePropertyStatusForSelection(
       selectionLength,
       identical: true,
       detected: false,
+      fromCssStyleSheet: false,
+      trivialDefault: false,
     }
   }
   if (selectionLength === 1) {
@@ -452,7 +504,6 @@ export function calculatePropertyStatusForSelection(
     let controlled = false
     let set = false
     let overwritable = true
-    let detected = false
     const firstValue = firstResult.value
     modifiableAttributeResult.forEach((attribute, index) => {
       if (identical && isRight(attribute)) {
@@ -472,7 +523,9 @@ export function calculatePropertyStatusForSelection(
       set,
       overwritable,
       selectionLength,
-      detected,
+      detected: false,
+      fromCssStyleSheet: false,
+      trivialDefault: false,
     }
   }
 }
@@ -502,6 +555,8 @@ export function calculateMultiPropertyStatusForSelection<
   let set = false
   let overwritable = true
   let detected = false
+  let fromCssStyleSheet = false
+  let trivialDefault = true
   propertyStatuses.forEach((propertyStatus) => {
     // if any property is not identical, set to false
     identical = identical && propertyStatus.identical
@@ -513,6 +568,10 @@ export function calculateMultiPropertyStatusForSelection<
     overwritable = overwritable && propertyStatus.overwritable
     // if any property is detected, set to true
     detected = detected || propertyStatus.detected
+    // if any property comes from a css stylesheet, set to true
+    fromCssStyleSheet = fromCssStyleSheet || propertyStatus.fromCssStyleSheet
+    // if all properties are trivial, set to true
+    trivialDefault = trivialDefault && propertyStatus.trivialDefault
   })
 
   return {
@@ -522,6 +581,8 @@ export function calculateMultiPropertyStatusForSelection<
     overwritable,
     selectionLength,
     detected,
+    fromCssStyleSheet,
+    trivialDefault,
   }
 }
 
@@ -548,6 +609,8 @@ export function calculateMultiStringPropertyStatusForSelection(
   let set = false
   let overwritable = true
   let detected = false
+  let fromCssStyleSheet = false
+  let trivialDefault = true
   propertyStatuses.forEach((propertyStatus) => {
     // if any property is not identical, set to false
     identical = identical && propertyStatus.identical
@@ -559,6 +622,10 @@ export function calculateMultiStringPropertyStatusForSelection(
     overwritable = overwritable && propertyStatus.overwritable
     // if any property is detected, set to true
     detected = detected || propertyStatus.detected
+    // if any property comes from a css stylesheet, set to true
+    fromCssStyleSheet = fromCssStyleSheet || propertyStatus.fromCssStyleSheet
+    // if all properties are trivial, set to true
+    trivialDefault = trivialDefault && propertyStatus.trivialDefault
   })
 
   return {
@@ -568,5 +635,7 @@ export function calculateMultiStringPropertyStatusForSelection(
     overwritable,
     selectionLength,
     detected,
+    fromCssStyleSheet,
+    trivialDefault,
   }
 }

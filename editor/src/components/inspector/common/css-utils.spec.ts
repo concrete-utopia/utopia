@@ -2,6 +2,7 @@ import { Either, isLeft, isRight, right } from '../../../core/shared/either'
 import {
   jsxAttributeFunctionCall,
   jsxAttributeNestedObjectSimple,
+  jsxAttributesFromMap,
   jsxAttributeValue,
   jsxTestElement,
 } from '../../../core/shared/element-template'
@@ -63,6 +64,7 @@ import {
   toggleSimple,
   toggleStylePropPath,
 } from './css-utils'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 describe('toggleStyleProp', () => {
   const simpleToggleProp = toggleStylePropPath(
@@ -73,23 +75,29 @@ describe('toggleStyleProp', () => {
   it('disables simple value', () => {
     const element = jsxTestElement(
       'View',
-      {
-        style: jsxAttributeValue({
-          backgroundColor: 'red',
-        }),
-      },
+      jsxAttributesFromMap({
+        style: jsxAttributeValue(
+          {
+            backgroundColor: 'red',
+          },
+          emptyComments,
+        ),
+      }),
       [],
     )
 
     const expectedElement = jsxTestElement(
       'View',
-      {
-        style: jsxAttributeNestedObjectSimple({
-          backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-            jsxAttributeValue('red'),
-          ]),
-        }),
-      },
+      jsxAttributesFromMap({
+        style: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
+              jsxAttributeValue('red', emptyComments),
+            ]),
+          }),
+          emptyComments,
+        ),
+      }),
       [],
     )
     const toggledElement = simpleToggleProp(element)
@@ -99,23 +107,29 @@ describe('toggleStyleProp', () => {
   it('enables simple value', () => {
     const element = jsxTestElement(
       'View',
-      {
-        style: jsxAttributeNestedObjectSimple({
-          backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-            jsxAttributeValue('red'),
-          ]),
-        }),
-      },
+      jsxAttributesFromMap({
+        style: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
+              jsxAttributeValue('red', emptyComments),
+            ]),
+          }),
+          emptyComments,
+        ),
+      }),
       [],
     )
 
     const expectedElement = jsxTestElement(
       'View',
-      {
-        style: jsxAttributeNestedObjectSimple({
-          backgroundColor: jsxAttributeValue('red'),
-        }),
-      },
+      jsxAttributesFromMap({
+        style: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            backgroundColor: jsxAttributeValue('red', emptyComments),
+          }),
+          emptyComments,
+        ),
+      }),
       [],
     )
     const toggledElement = simpleToggleProp(element)
@@ -125,23 +139,29 @@ describe('toggleStyleProp', () => {
   it('works with nested objects', () => {
     const element = jsxTestElement(
       'View',
-      {
-        style: jsxAttributeNestedObjectSimple({
-          backgroundColor: jsxAttributeValue('red'),
-        }),
-      },
+      jsxAttributesFromMap({
+        style: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            backgroundColor: jsxAttributeValue('red', emptyComments),
+          }),
+          emptyComments,
+        ),
+      }),
       [],
     )
 
     const expectedElement = jsxTestElement(
       'View',
-      {
-        style: jsxAttributeNestedObjectSimple({
-          backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
-            jsxAttributeValue('red'),
-          ]),
-        }),
-      },
+      jsxAttributesFromMap({
+        style: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            backgroundColor: jsxAttributeFunctionCall(disabledFunctionName, [
+              jsxAttributeValue('red', emptyComments),
+            ]),
+          }),
+          emptyComments,
+        ),
+      }),
       [],
     )
     const toggledElement = simpleToggleProp(element)
@@ -151,9 +171,9 @@ describe('toggleStyleProp', () => {
 
 describe('toggleSimple', () => {
   it('disables the attribute', () => {
-    const attribute = jsxAttributeValue('colorValue')
+    const attribute = jsxAttributeValue('colorValue', emptyComments)
     const expectedAttribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeValue('colorValue'),
+      jsxAttributeValue('colorValue', emptyComments),
     ])
     const result = toggleSimple(attribute)
     expect(result).toEqual(expectedAttribute)
@@ -161,21 +181,31 @@ describe('toggleSimple', () => {
 
   it('enables the attribute', () => {
     const attribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeValue('colorValue'),
+      jsxAttributeValue('colorValue', emptyComments),
     ])
-    const expectedAttribute = jsxAttributeValue('colorValue')
+    const expectedAttribute = jsxAttributeValue('colorValue', emptyComments)
     const result = toggleSimple(attribute)
     expect(result).toEqual(expectedAttribute)
   })
 
   it('disables a nested object attribute', () => {
-    const attribute = jsxAttributeNestedObjectSimple({
-      aParameter: jsxAttributeFunctionCall('aHelperFunction', [jsxAttributeValue('hello')]),
-    })
-    const expectedAttribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeNestedObjectSimple({
-        aParameter: jsxAttributeFunctionCall('aHelperFunction', [jsxAttributeValue('hello')]),
+    const attribute = jsxAttributeNestedObjectSimple(
+      jsxAttributesFromMap({
+        aParameter: jsxAttributeFunctionCall('aHelperFunction', [
+          jsxAttributeValue('hello', emptyComments),
+        ]),
       }),
+      emptyComments,
+    )
+    const expectedAttribute = jsxAttributeFunctionCall(disabledFunctionName, [
+      jsxAttributeNestedObjectSimple(
+        jsxAttributesFromMap({
+          aParameter: jsxAttributeFunctionCall('aHelperFunction', [
+            jsxAttributeValue('hello', emptyComments),
+          ]),
+        }),
+        emptyComments,
+      ),
     ])
     const result = toggleSimple(attribute)
     expect(result).toEqual(expectedAttribute)
@@ -183,13 +213,23 @@ describe('toggleSimple', () => {
 
   it('enables a nested object attribute', () => {
     const attribute = jsxAttributeFunctionCall(disabledFunctionName, [
-      jsxAttributeNestedObjectSimple({
-        aParameter: jsxAttributeFunctionCall('aHelperFunction', [jsxAttributeValue('hello')]),
-      }),
+      jsxAttributeNestedObjectSimple(
+        jsxAttributesFromMap({
+          aParameter: jsxAttributeFunctionCall('aHelperFunction', [
+            jsxAttributeValue('hello', emptyComments),
+          ]),
+        }),
+        emptyComments,
+      ),
     ])
-    const expectedAttribute = jsxAttributeNestedObjectSimple({
-      aParameter: jsxAttributeFunctionCall('aHelperFunction', [jsxAttributeValue('hello')]),
-    })
+    const expectedAttribute = jsxAttributeNestedObjectSimple(
+      jsxAttributesFromMap({
+        aParameter: jsxAttributeFunctionCall('aHelperFunction', [
+          jsxAttributeValue('hello', emptyComments),
+        ]),
+      }),
+      emptyComments,
+    )
     const result = toggleSimple(attribute)
     expect(result).toEqual(expectedAttribute)
   })
@@ -866,14 +906,26 @@ describe('printBackgroundImage', () => {
     expect(validValues.map((valid) => printBackgroundImage(valid))).toMatchInlineSnapshot(`
       Array [
         Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "radial-gradient(#000 0%, #fff 100%)",
         },
         Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "linear-gradient(90deg, #000 0%, #fff 100%), linear-gradient(#000 0%, #000 100%)",
         },
         Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "type": "ATTRIBUTE_VALUE",
           "value": "linear-gradient(#000 0%, #000 100%), linear-gradient(#000 0%, #fff 100%), /*radial-gradient(#000 0%, #fff 100%)*/ linear-gradient(90deg, #000 0%, #fff 100%), /*linear-gradient(#000 0%, #000 100%)*/ radial-gradient(#000 0%, #fff 100%)",
         },
@@ -1705,6 +1757,10 @@ describe('printBackgroundSize', () => {
     ]
     expect(printBackgroundSize(backgroundSize)).toMatchInlineSnapshot(`
       Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "type": "ATTRIBUTE_VALUE",
         "value": "auto, auto auto, 100px, 100% 100%",
       }
