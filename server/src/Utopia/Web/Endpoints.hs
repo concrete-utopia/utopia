@@ -30,7 +30,6 @@ import           Servant                         hiding
                                                   (serveDirectoryFileServer,
                                                   serveDirectoryWith)
 import           Servant.RawM
-import           System.FilePath.Posix
 import           Text.Blaze.Html.Renderer.Text
 import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5                as H
@@ -46,6 +45,9 @@ import           Utopia.Web.Types
 import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
+
+import Network.Wai.Middleware.RequestLogger
+
 
 checkForUser :: Maybe Text -> (Maybe SessionUser -> ServerMonad a) -> ServerMonad a
 checkForUser (Just sessionCookie) action = do
@@ -338,7 +340,8 @@ servePath' defaultPathToServe settingsChange branchName = do
   let defaultSettings = defaultFileServerSettings pathToServe
   let withIndicesTurnedOff = defaultSettings { ssListing = Nothing }
   app <- serveDirectoryWith $ settingsChange withIndicesTurnedOff
-  let gzipConfig = def{gzipFiles = GzipCacheFolder (pathToServe </> ".gzipcache")}
+  debugLog $ toS pathToServe
+  let gzipConfig = def{gzipFiles = GzipCompress}
   return $ gzip gzipConfig app
 
 servePath :: FilePath -> Maybe Text -> ServerMonad Application
@@ -389,7 +392,7 @@ websiteAssetsEndpoint notProxiedPath = do
 vsCodeAssetsEndpoint :: ServerMonad Application
 vsCodeAssetsEndpoint = do
   pathToServeFrom <- getVSCodeAssetRoot
-  servePath pathToServeFrom Nothing
+  fmap logStdoutDev $ servePath pathToServeFrom Nothing
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ = do
