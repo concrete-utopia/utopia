@@ -99,10 +99,7 @@ const CodeEditorIframeContainer = betterReactMemo<{ propsToSend: JSONStringified
 )
 
 const VSCodeIframeContainer = betterReactMemo('VSCodeIframeContainer', () => {
-  const iframeSrc = createIframeUrl(
-    MONACO_EDITOR_IFRAME_BASE_URL,
-    'vscode-editor-outer-iframe.html',
-  )
+  const iframeSrc = createIframeUrl(MONACO_EDITOR_IFRAME_BASE_URL, 'vscode-editor-outer-iframe')
 
   return (
     <iframe
