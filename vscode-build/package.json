@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "build": "node build.js",
+    "pull-utopia-extension": "node pull-utopia-extension.js",
     "make-patch": "cd vscode && git add . && git diff --staged > ../vscode.patch && git restore --staged ."
   },
   "license": "MIT",
