@@ -4848,6 +4848,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   alignItems: FlexAlignment.FlexStart,
   alignContent: FlexAlignment.FlexStart,
   justifyContent: FlexJustifyContent.FlexStart,
+  padding: nontrivial,
   paddingTop: {
     value: 0,
     unit: 'px',
