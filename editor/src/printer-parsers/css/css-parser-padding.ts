@@ -1,4 +1,10 @@
-import { CSSNumber, CSSPadding, printCSSNumber } from '../../components/inspector/common/css-utils'
+import {
+  CSSNumber,
+  cssNumberToString,
+  CSSPadding,
+  printCSSNumber,
+  printCSSNumberWithDefaultUnit,
+} from '../../components/inspector/common/css-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'
 import { JSXAttributeValue, jsxAttributeValue } from '../../core/shared/element-template'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
@@ -50,6 +56,36 @@ export const parsePadding = (value: unknown): Either<string, CSSPadding> => {
 export const printPaddingAsAttributeValue = (
   value: CSSPadding,
 ): JSXAttributeValue<number | string> => {
-  // TODO all paddings!
-  return jsxAttributeValue(printCSSNumber(value.paddingTop), emptyComments)
+  const paddingTop = printCSSNumberWithDefaultUnit(value.paddingTop, 'px')
+  const paddingRight = printCSSNumberWithDefaultUnit(value.paddingRight, 'px')
+  const paddingBottom = printCSSNumberWithDefaultUnit(value.paddingBottom, 'px')
+  const paddingLeft = printCSSNumberWithDefaultUnit(value.paddingLeft, 'px')
+
+  function canUseOneValueSyntax(): boolean {
+    return paddingTop === paddingRight && paddingTop === paddingBottom && paddingTop === paddingLeft
+  }
+
+  function canUseTwoValueSyntax(): boolean {
+    return (
+      paddingTop !== paddingLeft && paddingTop === paddingBottom && paddingLeft === paddingRight
+    )
+  }
+
+  function canUseThreeValueSyntax(): boolean {
+    return paddingTop !== paddingBottom && paddingLeft === paddingRight
+  }
+
+  if (canUseOneValueSyntax()) {
+    const paddingValue = printCSSNumber(value.paddingTop)
+    return jsxAttributeValue(paddingValue, emptyComments)
+  } else if (canUseTwoValueSyntax()) {
+    const paddingValue = `${paddingTop} ${paddingLeft}`
+    return jsxAttributeValue(paddingValue, emptyComments)
+  } else if (canUseThreeValueSyntax()) {
+    const paddingValue = `${paddingTop} ${paddingLeft} ${paddingBottom}`
+    return jsxAttributeValue(paddingValue, emptyComments)
+  } else {
+    const paddingValue = `${paddingTop} ${paddingRight} ${paddingBottom} ${paddingLeft}`
+    return jsxAttributeValue(paddingValue, emptyComments)
+  }
 }

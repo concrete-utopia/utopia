@@ -1,6 +1,7 @@
 import { syntaxParsers } from './css-parser-map'
+import { printPaddingAsAttributeValue } from './css-parser-padding'
 
-describe('padding', () => {
+describe('parse padding', () => {
   it("parses a simple number <'padding'> property", () => {
     const value = 155
     const parseResults = syntaxParsers['<padding>'](value)
@@ -187,6 +188,226 @@ describe('padding', () => {
             "value": 4,
           },
         },
+      }
+    `)
+  })
+})
+
+describe('print padding', () => {
+  it('4 different padding values', () => {
+    const cssPadding = {
+      paddingTop: {
+        value: 4,
+        unit: 'px' as const,
+      },
+      paddingRight: {
+        value: 24,
+        unit: 'px' as const,
+      },
+      paddingBottom: {
+        value: 12,
+        unit: 'px' as const,
+      },
+      paddingLeft: {
+        value: 8,
+        unit: 'px' as const,
+      },
+    }
+    const printResult = printPaddingAsAttributeValue(cssPadding)
+    expect(printResult).toMatchInlineSnapshot(`
+      Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "type": "ATTRIBUTE_VALUE",
+        "value": "4px 24px 12px 8px",
+      }
+    `)
+  })
+  it('4 different padding values, missing unit', () => {
+    const cssPadding = {
+      paddingTop: {
+        value: 4,
+        unit: null,
+      },
+      paddingRight: {
+        value: 24,
+        unit: null,
+      },
+      paddingBottom: {
+        value: 12,
+        unit: null,
+      },
+      paddingLeft: {
+        value: 8,
+        unit: null,
+      },
+    }
+    const printResult = printPaddingAsAttributeValue(cssPadding)
+    expect(printResult).toMatchInlineSnapshot(`
+      Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "type": "ATTRIBUTE_VALUE",
+        "value": "4px 24px 12px 8px",
+      }
+    `)
+  })
+  it('2-2 sides matching, 2-value-syntax', () => {
+    const cssPadding = {
+      paddingTop: {
+        value: 4,
+        unit: 'px' as const,
+      },
+      paddingRight: {
+        value: 24,
+        unit: 'px' as const,
+      },
+      paddingBottom: {
+        value: 4,
+        unit: 'px' as const,
+      },
+      paddingLeft: {
+        value: 24,
+        unit: 'px' as const,
+      },
+    }
+    const printResult = printPaddingAsAttributeValue(cssPadding)
+    expect(printResult).toMatchInlineSnapshot(`
+      Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "type": "ATTRIBUTE_VALUE",
+        "value": "4px 24px",
+      }
+    `)
+  })
+  it('2-2 sides matching, percentage values, 2-value-syntax', () => {
+    const cssPadding = {
+      paddingTop: {
+        value: 4,
+        unit: '%' as const,
+      },
+      paddingRight: {
+        value: 24,
+        unit: '%' as const,
+      },
+      paddingBottom: {
+        value: 4,
+        unit: '%' as const,
+      },
+      paddingLeft: {
+        value: 24,
+        unit: '%' as const,
+      },
+    }
+    const printResult = printPaddingAsAttributeValue(cssPadding)
+    expect(printResult).toMatchInlineSnapshot(`
+      Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "type": "ATTRIBUTE_VALUE",
+        "value": "4% 24%",
+      }
+    `)
+  })
+  it('left and right is the same, 3-value-syntax', () => {
+    const cssPadding = {
+      paddingTop: {
+        value: 4,
+        unit: null,
+      },
+      paddingRight: {
+        value: 8,
+        unit: null,
+      },
+      paddingBottom: {
+        value: 12,
+        unit: null,
+      },
+      paddingLeft: {
+        value: 8,
+        unit: null,
+      },
+    }
+    const printResult = printPaddingAsAttributeValue(cssPadding)
+    expect(printResult).toMatchInlineSnapshot(`
+      Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "type": "ATTRIBUTE_VALUE",
+        "value": "4px 8px 12px",
+      }
+    `)
+  })
+  it('all padding values are the same, 1-value-syntax', () => {
+    const cssPadding = {
+      paddingTop: {
+        value: 6,
+        unit: null,
+      },
+      paddingRight: {
+        value: 6,
+        unit: null,
+      },
+      paddingBottom: {
+        value: 6,
+        unit: null,
+      },
+      paddingLeft: {
+        value: 6,
+        unit: null,
+      },
+    }
+    const printResult = printPaddingAsAttributeValue(cssPadding)
+    expect(printResult).toMatchInlineSnapshot(`
+      Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "type": "ATTRIBUTE_VALUE",
+        "value": 6,
+      }
+    `)
+  })
+  it('all padding values are the same, percentage, 1-value-syntax', () => {
+    const cssPadding = {
+      paddingTop: {
+        value: 6,
+        unit: '%' as const,
+      },
+      paddingRight: {
+        value: 6,
+        unit: '%' as const,
+      },
+      paddingBottom: {
+        value: 6,
+        unit: '%' as const,
+      },
+      paddingLeft: {
+        value: 6,
+        unit: '%' as const,
+      },
+    }
+    const printResult = printPaddingAsAttributeValue(cssPadding)
+    expect(printResult).toMatchInlineSnapshot(`
+      Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "type": "ATTRIBUTE_VALUE",
+        "value": "6%",
       }
     `)
   })

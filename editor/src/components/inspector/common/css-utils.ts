@@ -664,6 +664,20 @@ export function cssNumberToString(input: CSSNumber, showUnit: boolean = true): s
   return `${printed}`
 }
 
+export function printCSSNumberWithDefaultUnit(
+  input: CSSNumber,
+  defaultUnit: CSSNumberUnit,
+): string {
+  if (input.unit == null) {
+    return printCSSNumber({
+      ...input,
+      unit: defaultUnit,
+    }) as string
+  } else {
+    return printCSSNumber(input) as string
+  }
+}
+
 export const parseCSSLength = (input: unknown) => parseCSSNumber(input, 'Length')
 export const parseCSSLengthPercent = (input: unknown) => parseCSSNumber(input, 'LengthPercent')
 export const parseCSSAngle = (input: unknown) => parseCSSNumber(input, 'Angle')
