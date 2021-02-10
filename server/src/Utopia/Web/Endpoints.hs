@@ -46,9 +46,6 @@ import           Utopia.Web.Utils.Files
 import           WaiAppStatic.Storage.Filesystem
 import           WaiAppStatic.Types
 
-import Network.Wai.Middleware.RequestLogger
-
-
 checkForUser :: Maybe Text -> (Maybe SessionUser -> ServerMonad a) -> ServerMonad a
 checkForUser (Just sessionCookie) action = do
   maybeSessionUser <- validateAuth sessionCookie -- ServerMonad (Maybe SessionUser)
@@ -340,7 +337,6 @@ servePath' defaultPathToServe settingsChange branchName = do
   let defaultSettings = defaultFileServerSettings pathToServe
   let withIndicesTurnedOff = defaultSettings { ssListing = Nothing }
   app <- serveDirectoryWith $ settingsChange withIndicesTurnedOff
-  debugLog $ toS pathToServe
   let gzipConfig = def{gzipFiles = GzipCompress}
   return $ gzip gzipConfig app
 
@@ -392,7 +388,7 @@ websiteAssetsEndpoint notProxiedPath = do
 vsCodeAssetsEndpoint :: ServerMonad Application
 vsCodeAssetsEndpoint = do
   pathToServeFrom <- getVSCodeAssetRoot
-  fmap logStdoutDev $ servePath pathToServeFrom Nothing
+  servePath pathToServeFrom Nothing
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ = do
