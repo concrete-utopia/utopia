@@ -33,6 +33,7 @@ import {
   ParsedPropertiesValues,
   printCSSValue,
   cssNumber,
+  isTrivialDefaultValue,
 } from '../../../components/inspector/common/css-utils'
 import {
   createLayoutPropertyPath,
@@ -375,6 +376,7 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
 ): {
   finalValue: ParsedPropertiesValues
   isUnknown: boolean
+  trivialDefault: boolean
   usesComputedFallback: boolean
   setFromCssStyleSheet: boolean
 } {
@@ -388,6 +390,7 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
     return {
       finalValue: parsedValue.value,
       isUnknown: isCSSUnknownFunctionParameters(parsedValue.value),
+      trivialDefault: false,
       usesComputedFallback: false,
       setFromCssStyleSheet: false,
     }
@@ -395,20 +398,27 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
     return {
       finalValue: parsedSpiedValue.value,
       isUnknown: simpleValueAsMaybe != null,
+      trivialDefault: false,
       usesComputedFallback: false,
       setFromCssStyleSheet: false,
     }
   } else if (isRight(parsedComputedValue)) {
+    const detectedComputedValue = parsedComputedValue.value
+    const trivialDefault = isTrivialDefaultValue(property, detectedComputedValue)
     return {
-      finalValue: parsedComputedValue.value,
+      finalValue: detectedComputedValue,
       isUnknown: simpleValueAsMaybe != null,
+      trivialDefault: trivialDefault,
       usesComputedFallback: true,
       setFromCssStyleSheet: attributeMetadataEntry?.fromStyleSheet ?? false,
     }
   } else {
+    const defaultValue = emptyValues[property]
+    const trivialDefault = isTrivialDefaultValue(property, defaultValue)
     return {
       finalValue: emptyValues[property],
       isUnknown: simpleValueAsMaybe != null,
+      trivialDefault: trivialDefault,
       usesComputedFallback: false,
       setFromCssStyleSheet: false,
     }
@@ -572,6 +582,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           isUnknown: pathIsUnknown,
           usesComputedFallback,
           setFromCssStyleSheet,
+          trivialDefault,
         } = parseFinalValue(
           propKey,
           simpleValue,
@@ -584,6 +595,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
         // setting the status to detected because it uses the fallback value
         propertyStatus.detected = usesComputedFallback
         propertyStatus.fromCssStyleSheet = setFromCssStyleSheet
+        propertyStatus.trivialDefault = trivialDefault
         return finalValue
       } else {
         let firstFinalValue: ParsedPropertiesValues
@@ -600,6 +612,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
             isUnknown: pathIsUnknown,
             usesComputedFallback,
             setFromCssStyleSheet,
+            trivialDefault,
           } = parseFinalValue(
             propKey,
             simpleValue,
@@ -616,6 +629,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           propertyStatus.detected = propertyStatus.detected || usesComputedFallback
           propertyStatus.fromCssStyleSheet =
             propertyStatus.fromCssStyleSheet || setFromCssStyleSheet
+          propertyStatus.trivialDefault = propertyStatus.trivialDefault && trivialDefault
         })
         return firstFinalValue
       }

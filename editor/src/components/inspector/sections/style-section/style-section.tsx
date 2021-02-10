@@ -25,7 +25,7 @@ export interface StyleSectionProps extends InspectorPartProps<React.CSSPropertie
 
 export const StyleSection = betterReactMemo('StyleSection', () => {
   return (
-    <>
+    <React.Fragment>
       <ContainerSubsection />
       <AutosizingTextSubsection />
       <TransformSubsection />
@@ -33,7 +33,7 @@ export const StyleSection = betterReactMemo('StyleSection', () => {
       <BorderSubsection />
       <ShadowSubsection />
       <TextShadowSubsection />
-    </>
+    </React.Fragment>
   )
 })
 StyleSection.displayName = 'StyleSection'

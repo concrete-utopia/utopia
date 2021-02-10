@@ -583,7 +583,6 @@ export const ComponentSectionInner = betterReactMemo(
                 <SimpleFlexRow style={{ flexGrow: 1 }}>Component props</SimpleFlexRow>
               </InspectorSectionHeader>
               <InfoBox message={'No properties available to configure.'} />
-              <InfoBox message={'Use code instead.'} />
             </>
           )
         }
