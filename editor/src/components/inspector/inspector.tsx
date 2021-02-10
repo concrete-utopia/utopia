@@ -832,9 +832,16 @@ export const InspectorContextProvider = betterReactMemo<{
            */
           return
         }
-
         const jsxElement = findElementAtPath(path, rootComponents)
-        const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : []
+        if (jsxElement == null) {
+          /**
+           * This early return will cause the inspector to render with empty fields.
+           * With missing jsxElement manipulating style props is not possible.
+           */
+          return
+        }
+
+        const jsxAttributes = isJSXElement(jsxElement) ? jsxElement.props : []
         newEditedMultiSelectedProps.push(jsxAttributes)
         newSpiedProps.push(elementMetadata.props)
         newComputedStyles.push(elementMetadata.computedStyle)
