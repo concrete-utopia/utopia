@@ -25,7 +25,7 @@ import {
 } from 'vscode'
 import {
   createDirectory,
-  deleteFile,
+  deletePath,
   exists,
   getDescendentPaths,
   pathIsDirectory,
@@ -100,7 +100,6 @@ export class UtopiaFSExtension
 
   watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): Disposable {
     const path = fromUtopiaURI(uri)
-    console.log(`Watching ${path}${options.recursive ? ' (recursive)' : ''}`)
     watch(
       path,
       options.recursive,
@@ -110,7 +109,6 @@ export class UtopiaFSExtension
     )
 
     return new Disposable(() => {
-      console.log(`Stopping watching ${path}${options.recursive ? ' (recursive)' : ''}`)
       stopWatching(path, options.recursive)
     })
   }
@@ -176,10 +174,10 @@ export class UtopiaFSExtension
   async delete(uri: Uri, options: { recursive: boolean }): Promise<void> {
     const path = fromUtopiaURI(uri)
     const parentDir = dirname(path)
-    const deletedPaths = await deleteFile(path, options.recursive)
+    const deletedPaths = await deletePath(path, options.recursive)
 
     this.notifyFileChanged(parentDir)
-    deletedPaths.forEach(this.notifyFileDeleted)
+    deletedPaths.forEach(this.notifyFileDeleted, this)
   }
 
   async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): Promise<void> {

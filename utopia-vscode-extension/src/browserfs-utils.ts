@@ -9,8 +9,16 @@ import { appendToPath, toUtopiaPath } from './path-utils'
 
 let fs: FSModule
 
-// Mapping from file path to a scheduled timeout
-let watchedPathTimeouts: Map<string, number> = new Map()
+interface WatchConfig {
+  recursive: boolean
+  onCreated: (path: string) => void
+  onModified: (path: string) => void
+  onDeleted: (path: string) => void
+}
+
+let watchTimeout: number | null = null
+let watchedPaths: Map<string, WatchConfig> = new Map()
+let lastModifiedTSs: Map<string, number> = new Map()
 const POLLING_TIMEOUT = 100
 
 // Immediately attempt to initialise BrowserFS
@@ -34,7 +42,7 @@ new Promise<void>((resolve, reject) => {
 export async function waitUntilFSReady(): Promise<void> {
   if (fs == undefined) {
     return new Promise((resolve, reject) =>
-      setTimeout(() => waitUntilFSReady().then(resolve).catch(reject), POLLING_TIMEOUT),
+      setTimeout(() => waitUntilFSReady().then(resolve).catch(reject), 100),
     )
   }
 }
@@ -80,15 +88,18 @@ export async function pathIsDirectory(path: string): Promise<boolean> {
   return stats.isDirectory()
 }
 
-export async function deleteFile(path: string, recursive: boolean): Promise<string[]> {
-  const descendentsToDelete = recursive ? await getDescendentPaths(path, true) : []
-  const targetPaths = [path, ...descendentsToDelete]
+export async function deletePath(path: string, recursive: boolean): Promise<string[]> {
+  const targetPaths = recursive ? await getDescendentPaths(path, true) : [path]
   const pathsToDelete = [...targetPaths].reverse() // Delete all paths in reverse order
-  await Promise.all(pathsToDelete.map(_deleteFile))
+
+  for (const pathToDelete of pathsToDelete) {
+    await _deletePath(pathToDelete)
+  }
+
   return targetPaths
 }
 
-async function _deleteFile(path: string): Promise<void> {
+async function _deletePath(path: string): Promise<void> {
   const isDirectory = await pathIsDirectory(path)
   if (isDirectory) {
     return rmdir(path)
@@ -151,70 +162,95 @@ export async function getDescendentPaths(
   }
 }
 
+function watchPath(path: string, config: WatchConfig) {
+  watchedPaths.set(path, config)
+  lastModifiedTSs.set(path, Date.now())
+}
+
+async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
+  const { recursive, onCreated, onModified, onDeleted } = config
+
+  try {
+    const stillExists = await exists(path)
+    if (stillExists) {
+      const stats = await stat(path)
+
+      if (recursive && stats.isDirectory()) {
+        // This sucks, but it seems the only way to watch a directory is to check if its children are being watched
+        const children = await childPaths(path)
+        const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
+        unsupervisedChildren.forEach((childPath) => {
+          watchPath(childPath, config)
+          onCreated(childPath)
+        })
+      }
+
+      const modifiedTS = stats.mtime.valueOf()
+      if (modifiedTS > lastModifiedTSs.get(path) ?? 0) {
+        lastModifiedTSs.set(path, modifiedTS)
+        onModified(path)
+      }
+    } else {
+      watchedPaths.delete(path)
+      lastModifiedTSs.delete(path)
+      onDeleted(path)
+    }
+  } catch (e) {
+    // Something was changed mid-poll, likely the file or its parent was deleted. We'll catch it on the next poll.
+  }
+}
+
+async function polledWatch(): Promise<void> {
+  let promises: Array<Promise<void>> = []
+  watchedPaths.forEach((config, path) => {
+    promises.push(onPolledWatch(path, config))
+  })
+
+  await Promise.all(promises)
+  watchTimeout = setTimeout(polledWatch, POLLING_TIMEOUT)
+}
+
 export async function watch(
   target: string,
   recursive: boolean,
   onCreated: (path: string) => void,
   onModified: (path: string) => void,
   onDeleted: (path: string) => void,
-) {
-  const watchPath = async (path: string) => {
-    let lastModified = Date.now()
+): Promise<void> {
+  const fileExists = await exists(target)
+  if (fileExists) {
+    // This has the limitation that calling `watch` on a path will replace any existing subscriber
+    const startWatchingPath = (path: string) =>
+      watchPath(path, {
+        recursive: recursive,
+        onCreated: onCreated,
+        onModified: onModified,
+        onDeleted: onDeleted,
+      })
 
-    const polledWatch = async () => {
-      const stillExists = await exists(path)
-      if (stillExists) {
-        const stats = await stat(path)
-
-        if (recursive && stats.isDirectory()) {
-          // This sucks, but it seems the only way to watch a directory is to check if its children are being watched
-          const children = await childPaths(path)
-          const unsupervisedChildren = children.filter((p) => !watchedPathTimeouts.has(p))
-          unsupervisedChildren.forEach((childPath) => {
-            watchPath(childPath)
-            onCreated(childPath)
-          })
-        }
-
-        const changed = stats.mtime.valueOf() > lastModified
-        if (changed) {
-          lastModified = Date.now()
-          onModified(path)
-        }
-
-        if (watchedPathTimeouts.has(path)) {
-          // Check we're still watching this path
-          watchedPathTimeouts.set(path, setTimeout(polledWatch, POLLING_TIMEOUT))
-        }
-      } else {
-        onDeleted(path)
-      }
+    if (recursive) {
+      const allPaths = await getDescendentPaths(target, true)
+      allPaths.forEach(startWatchingPath)
+    } else {
+      startWatchingPath(target)
     }
 
-    watchedPathTimeouts.set(path, setTimeout(polledWatch, POLLING_TIMEOUT))
+    if (watchTimeout == null) {
+      watchTimeout = setTimeout(polledWatch, POLLING_TIMEOUT)
+    }
   }
-
-  if (recursive) {
-    const descendentPaths = await getDescendentPaths(target, true)
-    descendentPaths.forEach(watchPath)
-  }
-
-  watchPath(target)
 }
 
 export async function stopWatching(target: string, recursive: boolean) {
-  const stopWatchingPath = async (path: string) => {
-    const timeout = watchedPathTimeouts.get(path)
-    if (timeout != null) {
-      clearTimeout(timeout)
-    }
+  const stopWatchingPath = (path: string) => {
+    watchedPaths.delete(path)
   }
 
-  stopWatchingPath(target)
-
   if (recursive) {
-    const descendentPaths = await getDescendentPaths(target, true)
-    descendentPaths.forEach(stopWatchingPath)
+    const allPaths = await getDescendentPaths(target, true)
+    allPaths.forEach(stopWatchingPath)
+  } else {
+    stopWatchingPath(target)
   }
 }
 
