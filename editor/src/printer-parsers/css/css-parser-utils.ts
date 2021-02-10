@@ -29,7 +29,6 @@ import {
   traverseEither,
   mapEither,
 } from '../../core/shared/either'
-import { fastForEach } from '../../core/shared/utils'
 import * as csstreemissing from '../../missing-types/css-tree'
 import utils from '../../utils/utils'
 import {

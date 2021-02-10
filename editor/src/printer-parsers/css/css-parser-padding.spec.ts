@@ -56,7 +56,7 @@ describe('parse padding', () => {
       }
     `)
   })
-  it("parses shorthand(2) <'padding'> property, number values", () => {
+  it("parses shorthand(2-value-syntax) <'padding'> property, number values", () => {
     const value = '3px 4px'
     const parseResults = syntaxParsers['<padding>'](value)
     expect(parseResults).toMatchInlineSnapshot(`
@@ -83,7 +83,7 @@ describe('parse padding', () => {
       }
     `)
   })
-  it("parses shorthand(2) <'padding'> property, percentage values", () => {
+  it("parses shorthand(2-value-syntax) <'padding'> property, percentage values", () => {
     const value = '3% 4%'
     const parseResults = syntaxParsers['<padding>'](value)
     expect(parseResults).toMatchInlineSnapshot(`
@@ -110,7 +110,7 @@ describe('parse padding', () => {
       }
     `)
   })
-  it("parses shorthand(3) <'padding'> property", () => {
+  it("parses shorthand(3-value-syntax) <'padding'> property", () => {
     const value = '2px 4px 8px'
     const parseResults = syntaxParsers['<padding>'](value)
     expect(parseResults).toMatchInlineSnapshot(`
@@ -287,7 +287,7 @@ describe('print padding', () => {
       }
     `)
   })
-  it('2-2 sides matching, percentage values, 2-value-syntax', () => {
+  it('2-2 sides matching percent values, 2-value-syntax', () => {
     const cssPadding = {
       paddingTop: {
         value: 4,
@@ -380,7 +380,7 @@ describe('print padding', () => {
       }
     `)
   })
-  it('all padding values are the same, percentage, 1-value-syntax', () => {
+  it('all padding values are the same percent values, 1-value-syntax', () => {
     const cssPadding = {
       paddingTop: {
         value: 6,
