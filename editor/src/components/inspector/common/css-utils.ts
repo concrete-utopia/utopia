@@ -669,14 +669,9 @@ export function printCSSNumberWithDefaultUnit(
   input: CSSNumber,
   defaultUnit: CSSNumberUnit,
 ): string {
-  if (input.unit == null) {
-    return printCSSNumber({
-      ...input,
-      unit: defaultUnit,
-    }) as string
-  } else {
-    return printCSSNumber(input) as string
-  }
+  const { value, unit } = input
+  const unitToUse = unit ?? defaultUnit
+  return `${fixNumber(value)}${unitToUse}`
 }
 
 export const parseCSSLength = (input: unknown) => parseCSSNumber(input, 'Length')
