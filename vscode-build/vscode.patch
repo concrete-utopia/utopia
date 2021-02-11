@@ -36,18 +36,6 @@ index 9e26dfeeb6..0000000000
 @@ -1 +0,0 @@
 -{}
 \ No newline at end of file
-diff --git a/package.json b/package.json
-index 1352c4355d..660abf0bb7 100644
---- a/package.json
-+++ b/package.json
-@@ -66,6 +66,7 @@
-     "graceful-fs": "4.2.3",
-     "http-proxy-agent": "^2.1.0",
-     "https-proxy-agent": "^2.2.3",
-+    "browserfs": "1.4.3",
-     "iconv-lite-umd": "0.6.8",
-     "jschardet": "2.2.1",
-     "keytar": "7.2.0",
 diff --git a/product.json b/product.json
 index 9cddae242a..54324f0e67 100644
 --- a/product.json
@@ -204,154 +192,16 @@ index 9cddae242a..54324f0e67 100644
 +    "path": "/"
 +  }
  }
-diff --git a/resources/web/code-web.js b/resources/web/code-web.js
-index f4e97df0c6..5957bc3a5d 100644
---- a/resources/web/code-web.js
-+++ b/resources/web/code-web.js
-@@ -351,7 +351,7 @@ async function handleExtension(req, res, parsedUrl) {
-  * @param {import('http').ServerResponse} res
-  */
- async function handleRoot(req, res) {
--	let folderUri = { scheme: 'memfs', path: `/sample-folder` };
-+	let folderUri = { scheme: 'utopia', path: `/utopia-project` };
- 
- 	const match = req.url && req.url.match(/\?([^#]+)/);
- 	if (match) {
-diff --git a/src/vs/code/browser/workbench/editorOnly.ts b/src/vs/code/browser/workbench/editorOnly.ts
-new file mode 100644
-index 0000000000..70069c6f11
---- /dev/null
-+++ b/src/vs/code/browser/workbench/editorOnly.ts
-@@ -0,0 +1,95 @@
-+import { getSingletonServiceDescriptors, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-+import { BrandedService, ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation';
-+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
-+
-+const _registry = getSingletonServiceDescriptors()
-+
-+function replaceRegisteredSingleton<T, Services extends BrandedService[]>(id: ServiceIdentifier<T>, ctor: new (...services: Services) => T, supportsDelayedInstantiation?: boolean): void {
-+	const index = _registry.findIndex(tuple => tuple[0] === id)
-+	if (index > 0) {
-+		_registry[index] = [id, new SyncDescriptor<T>(ctor as new (...args: any[]) => T, [], supportsDelayedInstantiation)]
-+	} else {
-+		registerSingleton(id, ctor)
-+	}
-+}
-+
-+// Replace services for the parts we don't want to use -
-+// We have to import the original part first to ensure it isn't registered later
-+import 'vs/workbench/browser/parts/panel/panelPart'
-+import { PanelPart } from 'vs/workbench/browser/parts/dummies/panelPart';
-+import { IPanelService } from 'vs/workbench/services/panel/common/panelService';
-+replaceRegisteredSingleton(IPanelService, PanelPart);
-+
-+import 'vs/workbench/browser/parts/sidebar/sidebarPart'
-+import { SidebarPart } from 'vs/workbench/browser/parts/dummies/sidebarPart';
-+import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
-+replaceRegisteredSingleton(IViewletService, SidebarPart);
-+
-+import 'vs/workbench/browser/parts/activitybar/activitybarPart'
-+import { ActivitybarPart } from 'vs/workbench/browser/parts/dummies/activitybarPart'
-+import { IActivityBarService } from 'vs/workbench/services/activityBar/browser/activityBarService';
-+replaceRegisteredSingleton(IActivityBarService, ActivitybarPart);
-+
-+import 'vs/workbench/browser/parts/titlebar/titlebarPart'
-+import { TitlebarPart } from 'vs/workbench/browser/parts/dummies/titlebarPart'
-+import { ITitleService } from 'vs/workbench/services/title/common/titleService'
-+replaceRegisteredSingleton(ITitleService, TitlebarPart);
-+
-+import 'vs/workbench/browser/parts/statusbar/statusbarPart'
-+import { StatusbarPart } from 'vs/workbench/browser/parts/dummies/statusbarPart'
-+import { IStatusbarService } from 'vs/workbench/services/statusbar/common/statusbar';
-+replaceRegisteredSingleton(IStatusbarService, StatusbarPart);
-+
-+// Start the workbench
-+import 'vs/code/browser/workbench/workbench'
-+
-+// Communication between extension and parent window
-+
-+import * as BrowserFS from 'browserfs';
-+import { FSModule } from 'browserfs/dist/node/core/FS'
-+
-+let fileSystem: FSModule
-+
-+new Promise<void>((resolve) => {
-+	BrowserFS.getFileSystem({ fs: 'IndexedDB', options: { storeName: 'utopia' } }, (e, v) => {
-+		if (e || v == undefined) {
-+			console.error(`Failed to start BrowserFS at the boundary`)
-+			throw e
-+		}
-+
-+		BrowserFS.initialize(v)
-+		fileSystem = BrowserFS.BFSRequire('fs')
-+		resolve()
-+	})
-+})
-+
-+function writeFile(path: string, content: string) {
-+	new Promise<void>((resolve, reject) => {
-+		fileSystem.writeFile(path, content, (e) => {
-+			if (e == null) {
-+				resolve()
-+			} else {
-+				console.log(`Failed to write file`, e)
-+				reject(e)
-+			}
-+		})
-+	})
-+}
-+
-+interface UtopiaFSMessage {
-+	type: 'UtopiaFSMessage',
-+	path: string,
-+	contents: string,
-+}
-+
-+function isUtopiaFSMessage(data: unknown): data is UtopiaFSMessage {
-+	return data != null && typeof data === 'object' && !Array.isArray(data) && (data as UtopiaFSMessage).type === 'UtopiaFSMessage'
-+}
-+
-+window.addEventListener('message', (e) => {
-+	if (isUtopiaFSMessage(e.data)) {
-+		const { path, contents } = e.data
-+		console.log(`Writing file ${path} with data ${contents}`)
-+		writeFile(path, contents)
-+	}
-+})
-diff --git a/src/vs/code/browser/workbench/workbench-dev.html b/src/vs/code/browser/workbench/workbench-dev.html
-index 2df6f81256..f1f6f025d5 100644
---- a/src/vs/code/browser/workbench/workbench-dev.html
-+++ b/src/vs/code/browser/workbench/workbench-dev.html
-@@ -50,6 +50,9 @@
- 				'tas-client-umd': `${window.location.origin}/static/remote/web/node_modules/tas-client-umd/lib/tas-client-umd.js`,
- 				'iconv-lite-umd': `${window.location.origin}/static/remote/web/node_modules/iconv-lite-umd/lib/iconv-lite-umd.js`,
- 				'jschardet': `${window.location.origin}/static/remote/web/node_modules/jschardet/dist/jschardet.min.js`,
-+				'browserfs': `${window.location.origin}/static/node_modules/browserfs/dist/browserfs.min.js`,
-+				// 'browserfs/dist/node/core/file_flag': `${window.location.origin}/static/node_modules/browserfs/dist/node/core/file_flag.js`,
-+				// 'browserfs/dist/node/core/file_flag': `${window.location.origin}/static/node_modules/browserfs/dist/browserfs.min.js`,
- 			}
- 		};
- 	</script>
-@@ -58,6 +61,6 @@
- 		performance.mark('code/willLoadWorkbenchMain');
- 	</script>
- 	<script>
--		require(['vs/code/browser/workbench/workbench'], function() {});
-+		require(['vs/code/browser/workbench/editorOnly'], function() {});
- 	</script>
- </html>
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 1ed7feec97..7811b014ba 100644
+index 1ed7feec97..418f9cdb60 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
-@@ -1,532 +1,31 @@
+@@ -1,532 +1,89 @@
 -/*---------------------------------------------------------------------------------------------
 - *  Copyright (c) Microsoft Corporation. All rights reserved.
 - *  Licensed under the MIT License. See License.txt in the project root for license information.
 - *--------------------------------------------------------------------------------------------*/
-+import { create, IWorkbenchConstructionOptions, IWorkspaceProvider } from 'vs/workbench/workbench.web.api';
-+import { URI, UriComponents} from 'vs/base/common/uri';
- 
+-
 -import { IWorkbenchConstructionOptions, create, ICredentialsProvider, IURLCallbackProvider, IWorkspaceProvider, IWorkspace, IWindowIndicator, IHomeIndicator, IProductQualityChangeHandler, ISettingsSyncOptions } from 'vs/workbench/workbench.web.api';
 -import { URI, UriComponents } from 'vs/base/common/uri';
 -import { Event, Emitter } from 'vs/base/common/event';
@@ -367,14 +217,10 @@ index 1ed7feec97..7811b014ba 100644
 -import { Schemas } from 'vs/base/common/network';
 -import product from 'vs/platform/product/common/product';
 -import { parseLogLevel } from 'vs/platform/log/common/log';
-+(async function () {
-+	// create workbench
-+	const result = await fetch('/vscode/product.json');
-+	let config: IWorkbenchConstructionOptions & { folderUri?: UriComponents, workspaceUri?: UriComponents }  = await result.json();
- 
+-
 -function doCreateUri(path: string, queryValues: Map<string, string>): URI {
 -	let query: string | undefined = undefined;
- 
+-
 -	if (queryValues) {
 -		let index = 0;
 -		queryValues.forEach((value, key) => {
@@ -394,8 +240,38 @@ index 1ed7feec97..7811b014ba 100644
 -	service: string;
 -	account: string;
 -	password: string;
--}
--
++import {
++  create,
++  IWorkbenchConstructionOptions,
++  IWorkspaceProvider,
++} from 'vs/workbench/workbench.web.api'
++import { URI, UriComponents } from 'vs/base/common/uri'
++
++import {
++  getSingletonServiceDescriptors,
++  registerSingleton,
++} from 'vs/platform/instantiation/common/extensions'
++import { BrandedService, ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation'
++import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
++
++const _registry = getSingletonServiceDescriptors()
++
++function replaceRegisteredSingleton<T, Services extends BrandedService[]>(
++  id: ServiceIdentifier<T>,
++  ctor: new (...services: Services) => T,
++  supportsDelayedInstantiation?: boolean,
++): void {
++  const index = _registry.findIndex((tuple) => tuple[0] === id)
++  if (index > 0) {
++    _registry[index] = [
++      id,
++      new SyncDescriptor<T>(ctor as new (...args: any[]) => T, [], supportsDelayedInstantiation),
++    ]
++  } else {
++    registerSingleton(id, ctor)
++  }
+ }
+ 
 -class LocalStorageCredentialsProvider implements ICredentialsProvider {
 -
 -	static readonly CREDENTIALS_OPENED_KEY = 'credentials.provider';
@@ -760,12 +636,12 @@ index 1ed7feec97..7811b014ba 100644
 -	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents, workspaceUri?: UriComponents } = JSON.parse(configElementAttribute);
 -
 -	// Revive static extension locations
- 	if (Array.isArray(config.staticExtensions)) {
- 		config.staticExtensions.forEach(extension => {
- 			extension.extensionLocation = URI.revive(extension.extensionLocation);
- 		});
- 	}
- 
+-	if (Array.isArray(config.staticExtensions)) {
+-		config.staticExtensions.forEach(extension => {
+-			extension.extensionLocation = URI.revive(extension.extensionLocation);
+-		});
+-	}
+-
 -	// Find workspace to open and payload
 -	let foundWorkspace = false;
 -	let workspace: IWorkspace;
@@ -819,15 +695,8 @@ index 1ed7feec97..7811b014ba 100644
 -		} else {
 -			workspace = undefined;
 -		}
-+	let workspace;
-+	if (config.folderUri) {
-+		workspace = { folderUri: URI.revive(config.folderUri) };
-+	} else if (config.workspaceUri) {
-+		workspace = { workspaceUri: URI.revive(config.workspaceUri) };
-+	} else {
-+		workspace = undefined;
- 	}
- 
+-	}
+-
 -	// Workspace Provider
 -	const workspaceProvider = new WorkspaceProvider(workspace, payload);
 -
@@ -842,11 +711,8 @@ index 1ed7feec97..7811b014ba 100644
 -	let windowIndicator: WindowIndicator | undefined = undefined;
 -	if (!workspaceProvider.hasRemote()) {
 -		windowIndicator = new WindowIndicator(workspace);
-+	if(workspace){
-+		const workspaceProvider: IWorkspaceProvider = { workspace, open: async () => {} }
-+		config = { ...config, workspaceProvider };
- 	}
- 
+-	}
+-
 -	// Product Quality Change Handler
 -	const productQualityChangeHandler: IProductQualityChangeHandler = (quality) => {
 -		let queryString = `quality=${quality}`;
@@ -892,8 +758,64 @@ index 1ed7feec97..7811b014ba 100644
 -		urlCallbackProvider: new PollingURLCallbackProvider(),
 -		credentialsProvider: new LocalStorageCredentialsProvider()
 -	});
-+	create(document.body, config);
- })();
+-})();
++// Replace services for the parts we don't want to use -
++// We have to import the original part first to ensure it isn't registered later
++import 'vs/workbench/browser/parts/panel/panelPart'
++import { PanelPart } from 'vs/workbench/browser/parts/dummies/panelPart'
++import { IPanelService } from 'vs/workbench/services/panel/common/panelService'
++replaceRegisteredSingleton(IPanelService, PanelPart)
++
++import 'vs/workbench/browser/parts/sidebar/sidebarPart'
++import { SidebarPart } from 'vs/workbench/browser/parts/dummies/sidebarPart'
++import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet'
++replaceRegisteredSingleton(IViewletService, SidebarPart)
++
++import 'vs/workbench/browser/parts/activitybar/activitybarPart'
++import { ActivitybarPart } from 'vs/workbench/browser/parts/dummies/activitybarPart'
++import { IActivityBarService } from 'vs/workbench/services/activityBar/browser/activityBarService'
++replaceRegisteredSingleton(IActivityBarService, ActivitybarPart)
++
++import 'vs/workbench/browser/parts/titlebar/titlebarPart'
++import { TitlebarPart } from 'vs/workbench/browser/parts/dummies/titlebarPart'
++import { ITitleService } from 'vs/workbench/services/title/common/titleService'
++replaceRegisteredSingleton(ITitleService, TitlebarPart)
++
++import 'vs/workbench/browser/parts/statusbar/statusbarPart'
++import { StatusbarPart } from 'vs/workbench/browser/parts/dummies/statusbarPart'
++import { IStatusbarService } from 'vs/workbench/services/statusbar/common/statusbar'
++replaceRegisteredSingleton(IStatusbarService, StatusbarPart)
++
++;(async function () {
++  // create workbench
++  const result = await fetch('/vscode/product.json')
++  let config: IWorkbenchConstructionOptions & {
++    folderUri?: UriComponents
++    workspaceUri?: UriComponents
++  } = await result.json()
++
++  if (Array.isArray(config.staticExtensions)) {
++    config.staticExtensions.forEach((extension) => {
++      extension.extensionLocation = URI.revive(extension.extensionLocation)
++    })
++  }
++
++  let workspace
++  if (config.folderUri) {
++    workspace = { folderUri: URI.revive(config.folderUri) }
++  } else if (config.workspaceUri) {
++    workspace = { workspaceUri: URI.revive(config.workspaceUri) }
++  } else {
++    workspace = undefined
++  }
++
++  if (workspace) {
++    const workspaceProvider: IWorkspaceProvider = { workspace, open: async () => {} }
++    config = { ...config, workspaceProvider }
++  }
++
++  create(document.body, config)
++})()
 diff --git a/src/vs/workbench/browser/parts/dummies/activitybarPart.ts b/src/vs/workbench/browser/parts/dummies/activitybarPart.ts
 new file mode 100644
 index 0000000000..455a50bb45
@@ -1142,40 +1064,3 @@ index 0000000000..4466b0a054
 +
 +	updateProperties(properties: ITitleProperties): void { }
 +}
-diff --git a/yarn.lock b/yarn.lock
-index d546267393..685eae4436 100644
---- a/yarn.lock
-+++ b/yarn.lock
-@@ -1210,7 +1210,7 @@ async-settle@^1.0.0:
-   dependencies:
-     async-done "^1.2.2"
- 
--async@^2.1.5:
-+async@^2.1.4, async@^2.1.5:
-   version "2.6.3"
-   resolved "https://registry.yarnpkg.com/async/-/async-2.6.3.tgz#d72625e2344a3656e3a3ad4fa749fa83299d82ff"
-   integrity sha512-zflvls11DCy+dQWzTW2dzuilv8Z5X/pjfmZOWba6TNIVDm+2UDaJmXSOXlasHKfNBs8oo3M0aT50fDEWfKZjXg==
-@@ -1437,6 +1437,14 @@ browser-stdout@1.3.1:
-   resolved "https://registry.yarnpkg.com/browser-stdout/-/browser-stdout-1.3.1.tgz#baa559ee14ced73452229bad7326467c61fabd60"
-   integrity sha512-qhAVI1+Av2X7qelOfAIYwXONood6XlZE/fXaBSmW/T5SzLAmCgzi+eiWE7fUvbHaeNBQH13UftjpXxsfLkMpgw==
- 
-+browserfs@1.4.3:
-+  version "1.4.3"
-+  resolved "https://registry.yarnpkg.com/browserfs/-/browserfs-1.4.3.tgz#92ffc6063967612daccdb8566d3fc03f521205fb"
-+  integrity sha512-tz8HClVrzTJshcyIu8frE15cjqjcBIu15Bezxsvl/i+6f59iNCN3kznlWjz0FEb3DlnDx3gW5szxeT6D1x0s0w==
-+  dependencies:
-+    async "^2.1.4"
-+    pako "^1.0.4"
-+
- browserify-aes@^1.0.0, browserify-aes@^1.0.4:
-   version "1.2.0"
-   resolved "https://registry.yarnpkg.com/browserify-aes/-/browserify-aes-1.2.0.tgz#326734642f403dabc3003209853bb70ad428ef48"
-@@ -7013,7 +7021,7 @@ p-try@^2.0.0:
-   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
-   integrity sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==
- 
--pako@~1.0.5:
-+pako@^1.0.4, pako@~1.0.5:
-   version "1.0.11"
-   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
-   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
