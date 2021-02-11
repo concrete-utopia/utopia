@@ -26,9 +26,9 @@
       ...extensions,
     ]);
 
-    let baseUri = `%VSCODE_DOMAIN%`;
+    let baseUri = `%VSCODE_DOMAIN%/vscode`;
     self.require = {
-      baseUrl: `${baseUri}/vscode/vscode/`,
+      baseUrl: `${baseUri}/vscode/`,
       paths: {
         "vscode-textmate": `${baseUri}/lib/vscode-textmate/release/main?hash=%UTOPIA_SHA%`,
         "vscode-oniguruma": `${baseUri}/lib/vscode-oniguruma/release/main?hash=%UTOPIA_SHA%`,
