@@ -49,9 +49,14 @@ mapFiles.forEach((mapFile) => {
 if (fs.existsSync('../dist')) {
   fs.rmdirSync('../dist', { recursive: true })
 }
+
 fs.mkdirSync('../dist')
+fs.mkdirSync('../dist/lib')
 fse.copySync('out-vscode-min', '../dist/vscode')
 fse.copySync('product.json', '../dist/product.json')
+fse.copySync('../node_modules/semver-umd', '../dist/lib/semver-umd')
+fse.copySync('../node_modules/vscode-oniguruma', '../dist/lib/vscode-oniguruma')
+fse.copySync('../node_modules/vscode-textmate', '../dist/lib/vscode-textmate')
 
 const extensionNM = glob.sync('extensions/**/node_modules', {})
 extensionNM.forEach((modules) => {
