@@ -406,11 +406,9 @@ export function parseDoubleBar<T>(
 export function parseCSSArray<T>(parsers: Array<Parser<T>>): Parser<Array<T>> {
   return (match: unknown): ParseResult<Array<T>> => {
     if (Array.isArray(match) && match.length > 0) {
-      return sequenceEither(
-        match.map((value) => {
-          return parseAlternative(parsers, 'Match is not valid array value.')(value)
-        }),
-      )
+      return traverseEither((value) => {
+        return parseAlternative(parsers, 'Match is not valid array value.')(value)
+      }, match)
     }
     return left(descriptionParseError('Lexer element is not a match'))
   }
