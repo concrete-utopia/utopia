@@ -1287,3 +1287,16 @@ index 03297afe7f..dcf30dd1ef 100644
  			},
  			'window.openFilesInNewWindow': {
  				'type': 'string',
+diff --git a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
+index 380122d251..f979c43887 100644
+--- a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
++++ b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
+@@ -38,7 +38,7 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+ 					? [localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.gettingStarted' }, "Open the Getting Started page (experimental).")]
+ 					: [])
+ 				],
+-				'default': 'welcomePage',
++				'default': 'none',
+ 				'description': localize('workbench.startupEditor', "Controls which editor is shown at startup, if none are restored from the previous session.")
+ 			},
+ 		}
