@@ -37,10 +37,10 @@ index 9e26dfeeb6..0000000000
 -{}
 \ No newline at end of file
 diff --git a/product.json b/product.json
-index 9cddae242a..54324f0e67 100644
+index 9cddae242a..35400d5d59 100644
 --- a/product.json
 +++ b/product.json
-@@ -1,140 +1,13 @@
+@@ -1,140 +1,9 @@
  {
 -	"nameShort": "Code - OSS",
 -	"nameLong": "Code - OSS",
@@ -186,17 +186,13 @@ index 9cddae242a..54324f0e67 100644
 +    "applicationName": "code-web",
 +    "dataFolderName": ".vscode-web",
 +    "version": "1.53.0"
-+  },
-+  "folderUri": {
-+    "scheme": "utopia",
-+    "path": "/"
 +  }
  }
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 1ed7feec97..4a2246d35c 100644
+index 1ed7feec97..80e9753bba 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
-@@ -1,532 +1,90 @@
+@@ -1,532 +1,95 @@
 -/*---------------------------------------------------------------------------------------------
 - *  Copyright (c) Microsoft Corporation. All rights reserved.
 - *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -734,7 +730,7 @@ index 1ed7feec97..4a2246d35c 100644
 +  IWorkbenchConstructionOptions,
 +  IWorkspaceProvider,
 +} from 'vs/workbench/workbench.web.api'
-+import { URI, UriComponents } from 'vs/base/common/uri'
++import { URI } from 'vs/base/common/uri'
 +
 +// TODO revisit these dummy parts so that they can return something rather than nothing
 +// import {
@@ -792,10 +788,22 @@ index 1ed7feec97..4a2246d35c 100644
 +;(async function () {
 +  // create workbench
 +  const result = await fetch('/vscode/product.json')
-+  let config: IWorkbenchConstructionOptions & {
-+    folderUri?: UriComponents
-+    workspaceUri?: UriComponents
-+  } = await result.json()
++  const loadedConfig: IWorkbenchConstructionOptions = await result.json()
++
++  // Inject project specific utopia config into the product.json
++  const urlParams = new URLSearchParams(window.location.search)
++  const projectID = urlParams.get('project_id')!
++
++  let config = {
++    ...loadedConfig,
++    folderUri: {
++      scheme: 'utopia',
++      authority: '',
++      path: `/${projectID}`,
++      query: '',
++      fragment: '',
++    },
++  }
 +
 +  if (Array.isArray(config.staticExtensions)) {
 +    config.staticExtensions.forEach((extension) => {
@@ -803,14 +811,7 @@ index 1ed7feec97..4a2246d35c 100644
 +    })
 +  }
 +
-+  let workspace
-+  if (config.folderUri) {
-+    workspace = { folderUri: URI.revive(config.folderUri) }
-+  } else if (config.workspaceUri) {
-+    workspace = { workspaceUri: URI.revive(config.workspaceUri) }
-+  } else {
-+    workspace = undefined
-+  }
++  const workspace = { folderUri: URI.revive(config.folderUri) }
 +
 +  if (workspace) {
 +    const workspaceProvider: IWorkspaceProvider = { workspace, open: async () => {} }
@@ -1287,6 +1288,19 @@ index 03297afe7f..dcf30dd1ef 100644
  			},
  			'window.openFilesInNewWindow': {
  				'type': 'string',
+diff --git a/src/vs/workbench/contrib/search/browser/search.contribution.ts b/src/vs/workbench/contrib/search/browser/search.contribution.ts
+index cfbbb00c6e..e7486279ab 100644
+--- a/src/vs/workbench/contrib/search/browser/search.contribution.ts
++++ b/src/vs/workbench/contrib/search/browser/search.contribution.ts
+@@ -879,7 +879,7 @@ configurationRegistry.registerConfiguration({
+ 		'search.quickOpen.includeHistory': {
+ 			type: 'boolean',
+ 			description: nls.localize('search.quickOpen.includeHistory', "Whether to include results from recently opened files in the file results for Quick Open."),
+-			default: true
++			default: false // FIXME We should be filtering history based on project rather than disabling it
+ 		},
+ 		'search.quickOpen.history.filterSortOrder': {
+ 			'type': 'string',
 diff --git a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
 index 380122d251..f979c43887 100644
 --- a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts

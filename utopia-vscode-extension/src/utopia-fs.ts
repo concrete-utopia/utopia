@@ -42,7 +42,6 @@ import {
   appendToPath,
   dirname,
   fromUtopiaURI,
-  RootDir,
   Scheme,
   stripRootPrefix,
   toUtopiaURI,
@@ -56,7 +55,7 @@ export class UtopiaFSExtension
   private emitEventHandle: number | null = null
   private allFilePaths: string[] | null = null
 
-  constructor() {
+  constructor(private workspaceRootPath: string) {
     this.disposable = Disposable.from(
       workspace.registerFileSystemProvider(Scheme, this, { isCaseSensitive: true }),
       workspace.registerFileSearchProvider(Scheme, this),
@@ -315,7 +314,7 @@ export class UtopiaFSExtension
 
   async getAllPaths(): Promise<string[]> {
     if (this.allFilePaths == null) {
-      const result = await getDescendentPaths(RootDir, false)
+      const result = await getDescendentPaths(this.workspaceRootPath, false)
       this.allFilePaths = result
       return result
     } else {

@@ -2,7 +2,7 @@ import { Uri } from 'vscode'
 
 export const Scheme = 'utopia'
 export const RootDir = `/${Scheme}`
-export const URIScheme = `${Scheme}:/`
+export const URIPrefix = `${Scheme}:/`
 
 export function appendToPath(path: string, elem: string): string {
   const joinChar = path.endsWith('/') ? '' : '/'
@@ -14,7 +14,7 @@ export function stripRootPrefix(path: string): string {
 }
 
 export function toUtopiaPath(path: string): string {
-  const result = `${URIScheme}${stripRootPrefix(path)}`
+  const result = `${URIPrefix}${stripRootPrefix(path)}`
   return result
 }
 
@@ -22,13 +22,8 @@ export function toUtopiaURI(path: string): Uri {
   return Uri.parse(toUtopiaPath(path))
 }
 
-export function fromUtopiaPath(path: string | undefined): string {
-  const result = path == null ? RootDir : `${RootDir}/${path.slice(URIScheme.length)}`
-  return result
-}
-
 export function fromUtopiaURI(uri: Uri): string {
-  return fromUtopiaPath(uri.toString())
+  return `${RootDir}/${uri.path}`
 }
 
 // Copied from VS Code's source
