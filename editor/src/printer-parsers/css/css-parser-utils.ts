@@ -36,18 +36,20 @@ import {
   descriptionParseError,
   parseAlternative,
   Parser,
+  ParseResult,
 } from '../../utils/value-parser-utils'
 
 export function getLexerPropertyMatches(
   propertyName: string,
   propertyValue: unknown,
+  defaultUnit: string,
   syntaxNamesToFilter?: ReadonlyArray<string>,
 ): Either<string, Array<LexerMatch>> {
-  // todo support for number values
-  if (typeof propertyValue === 'string') {
-    const ast = csstree.parse(propertyValue, {
+  if (typeof propertyValue === 'string' || typeof propertyValue === 'number') {
+    const valueToUse =
+      typeof propertyValue === 'number' ? `${propertyValue}${defaultUnit}` : propertyValue
+    const ast = csstree.parse(valueToUse, {
       context: 'value',
-      positions: true,
     })
     const lexerMatch = (csstree as any).lexer.matchProperty(propertyName, ast)
     if (lexerMatch.error === null && ast.type === 'Value') {
@@ -180,10 +182,18 @@ export const parseLength: Parser<CSSNumber> = (value: unknown) => {
 
 export const parseLengthPercentage: Parser<CSSNumber> = (value: unknown) => {
   if (isLexerMatch(value) && value.match.length === 1) {
-    return parseAlternative<CSSNumber>(
-      [parseLength, parsePercentage],
-      'Could not parse length-percentage',
-    )(value.match[0])
+    if (value.syntax.type === 'Type' && value.syntax.name === 'length-percentage') {
+      return parseAlternative<CSSNumber>(
+        [parseLength, parsePercentage],
+        'Could not parse length-percentage',
+      )(value.match[0])
+    } else {
+      // TODO let's check from syntax if it's a length or percentage
+      return parseAlternative<CSSNumber>(
+        [parseLength, parsePercentage],
+        'Could not parse length-percentage',
+      )(value)
+    }
   }
   return left(descriptionParseError('Could not parse length-percentage'))
 }
@@ -393,6 +403,19 @@ export function parseDoubleBar<T>(
   }
 }
 
+export function parseCSSArray<T>(parsers: Array<Parser<T>>): Parser<Array<T>> {
+  return (match: unknown): ParseResult<Array<T>> => {
+    if (Array.isArray(match) && match.length > 0) {
+      return sequenceEither(
+        match.map((value) => {
+          return parseAlternative(parsers, 'Match is not valid array value.')(value)
+        }),
+      )
+    }
+    return left(descriptionParseError('Lexer element is not a match'))
+  }
+}
+
 // Type is very much in flex, if you find it doesn't match the data, fix it please
 export type LexerToken<T extends string = string> = {
   syntax: csstreemissing.Syntax.Keyword<T> | null
@@ -402,12 +425,7 @@ export type LexerToken<T extends string = string> = {
 
 function isLexerToken(leaf: unknown): leaf is LexerToken<string> {
   const anyLeaf = leaf as any
-  return (
-    typeof anyLeaf === 'object' &&
-    anyLeaf.token != null &&
-    anyLeaf.node != null &&
-    anyLeaf.node.loc != null
-  )
+  return typeof anyLeaf === 'object' && anyLeaf.token != null && anyLeaf.node != null
 }
 
 // Type is very much in flex, if you find it doesn't match the data, fix it please
