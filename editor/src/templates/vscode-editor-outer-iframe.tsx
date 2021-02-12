@@ -5,7 +5,11 @@ import { createIframeUrl } from '../core/shared/utils'
 
 function VSCodeOuterIframe(): React.ReactElement {
   // TODO: Alternative root handling.
-  const iframeSrc = createIframeUrl(MONACO_EDITOR_IFRAME_BASE_URL, 'vscode-editor-inner-iframe')
+  const urlParams = new URLSearchParams(window.location.search)
+  const projectID = urlParams.get('project_id')!
+  const baseIframeSrc = createIframeUrl(MONACO_EDITOR_IFRAME_BASE_URL, 'vscode-editor-inner-iframe')
+  const url = new URL(baseIframeSrc)
+  url.searchParams.append('project_id', projectID)
   return (
     <iframe
       id={'vscode-outer'}
@@ -15,7 +19,7 @@ function VSCodeOuterIframe(): React.ReactElement {
         backgroundColor: 'transparent',
         borderWidth: 0,
       }}
-      src={iframeSrc}
+      src={url.toString()}
     />
   )
 }

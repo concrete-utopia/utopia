@@ -60,6 +60,7 @@ import {
   useUpdateOnRuntimeErrors,
 } from '../../core/shared/runtime-report-logs'
 import { createIframeUrl } from '../../core/shared/utils'
+import { forceNotNull } from '../../core/shared/optional-utils'
 
 const CodeEditorIframeID = 'code-editor-iframe'
 
@@ -98,23 +99,32 @@ const CodeEditorIframeContainer = betterReactMemo<{ propsToSend: JSONStringified
   },
 )
 
-const VSCodeIframeContainer = betterReactMemo('VSCodeIframeContainer', () => {
-  const iframeSrc = createIframeUrl(MONACO_EDITOR_IFRAME_BASE_URL, 'vscode-editor-outer-iframe')
+const VSCodeIframeContainer = betterReactMemo(
+  'VSCodeIframeContainer',
+  (props: { projectID: string }) => {
+    const projectID = props.projectID
+    const baseIframeSrc = createIframeUrl(
+      MONACO_EDITOR_IFRAME_BASE_URL,
+      'vscode-editor-outer-iframe',
+    )
+    const url = new URL(baseIframeSrc)
+    url.searchParams.append('project_id', projectID)
 
-  return (
-    <iframe
-      key={'vscode-editor'}
-      id={'vscode-editor'}
-      src={iframeSrc}
-      allow='autoplay'
-      style={{
-        flex: 1,
-        backgroundColor: 'transparent',
-        borderWidth: 0,
-      }}
-    />
-  )
-})
+    return (
+      <iframe
+        key={'vscode-editor'}
+        id={'vscode-editor'}
+        src={url.toString()}
+        allow='autoplay'
+        style={{
+          flex: 1,
+          backgroundColor: 'transparent',
+          borderWidth: 0,
+        }}
+      />
+    )
+  },
+)
 
 export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) => {
   const selectedProps = useEditorState((store) => {
@@ -142,6 +152,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
       focusedPanel: store.editor.focusedPanel,
       codeEditorTheme: store.editor.codeEditorTheme,
       selectedViews: store.editor.selectedViews,
+      projectID: store.editor.id,
     }
   }, 'CodeEditorWrapper')
 
@@ -189,7 +200,14 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
   }
 
   if (isFeatureEnabled('VSCode Code Editor')) {
-    return <VSCodeIframeContainer />
+    return (
+      <VSCodeIframeContainer
+        projectID={forceNotNull(
+          'Project ID must be set when launching the code editor',
+          selectedProps.projectID,
+        )}
+      />
+    )
   } else {
     if (isFeatureEnabled('iFrame Code Editor')) {
       return <CodeEditorIframeContainer propsToSend={propsToSend} />
