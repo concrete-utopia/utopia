@@ -1,7 +1,7 @@
 import * as ObjectPath from 'object-path'
 import { MapLike } from 'typescript'
 import { UtopiaUtils } from 'utopia-api'
-import { findLastIndex } from './array-utils'
+import { findLastIndex, uniqBy } from './array-utils'
 import { Either, isLeft, left, mapEither, reduceWithEither, right, sequenceEither } from './either'
 import {
   isArraySpread,
@@ -839,5 +839,5 @@ export function getAllPathsFromAttributes(attributes: JSXAttributes): Array<Prop
       }
     }
   })
-  return paths
+  return uniqBy(paths, PP.pathsEqual)
 }
