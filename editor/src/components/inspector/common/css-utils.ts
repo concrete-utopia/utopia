@@ -574,8 +574,6 @@ function parseCSSNumberUnit(
   }
 }
 
-export type CSSNumberOrUndefined = CSSNumber | undefined
-
 const parseCSSLengthUnit = (input: string) => parseCSSNumberUnit(input, LengthUnits)
 const parseCSSLengthPercentUnit = (input: string) => parseCSSNumberUnit(input, LengthPercentUnits)
 const parseCSSAngleUnit = (input: string) => parseCSSNumberUnit(input, AngleUnits)
@@ -709,7 +707,7 @@ export const parseCSSNumberUndefined = (
   input: unknown,
   numberType: CSSNumberType,
   defaultUnit: CSSNumberUnit | null = null,
-): Either<string, CSSNumberOrUndefined> => {
+): Either<string, CSSNumber | undefined> => {
   if (input === undefined) {
     return right(undefined)
   } else {
@@ -3953,10 +3951,10 @@ export interface ParsedCSSProperties {
   objectFit: CSSObjectFit
 
   padding: CSSPadding
-  paddingTop: CSSNumberOrUndefined
-  paddingRight: CSSNumberOrUndefined
-  paddingBottom: CSSNumberOrUndefined
-  paddingLeft: CSSNumberOrUndefined
+  paddingTop: CSSNumber | undefined
+  paddingRight: CSSNumber | undefined
+  paddingBottom: CSSNumber | undefined
+  paddingLeft: CSSNumber | undefined
   marginTop: CSSNumber
   marginRight: CSSNumber
   marginBottom: CSSNumber
