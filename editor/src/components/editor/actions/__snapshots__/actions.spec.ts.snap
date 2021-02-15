@@ -57,6 +57,46 @@ Array [
                       "leadingComments": Array [],
                       "trailingComments": Array [],
                     },
+                    "key": "position",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": "absolute",
+                    },
+                  },
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "height",
+                    "keyComments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "PROPERTY_ASSIGNMENT",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "value": 300,
+                    },
+                  },
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "key": "left",
                     "keyComments": Object {
                       "leadingComments": Array [],
@@ -110,46 +150,6 @@ Array [
                       },
                       "type": "ATTRIBUTE_VALUE",
                       "value": 200,
-                    },
-                  },
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "height",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": 300,
-                    },
-                  },
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "position",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": "absolute",
                     },
                   },
                 ],
