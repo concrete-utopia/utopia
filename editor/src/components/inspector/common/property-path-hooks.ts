@@ -1037,16 +1037,17 @@ export function useInspectorInfoSimpleUntyped(
   }
 }
 
-export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(property: P) {
-  type T = ParsedProperties[P] | undefined
-  const transformValue: (parsedValues: Partial<ParsedValues<P>>) => T = (parsedValues) =>
-    parsedValues[property]
-
-  function untransformValue(transformedType: T): Partial<ParsedValues<P>> {
+export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
+  property: P,
+): InspectorInfo<ParsedProperties[P]> {
+  function transformValue(parsedValues: ParsedValues<P>): ParsedProperties[P] {
+    return parsedValues[property]
+  }
+  function untransformValue(transformedType: ParsedProperties[P]): Partial<ParsedValues<P>> {
     return { [property]: transformedType } as Partial<ParsedValues<P>>
   }
 
-  let inspectorInfo = useInspectorInfoNoDefaults<P, T>(
+  let inspectorInfo = useInspectorInfo(
     [property],
     transformValue,
     untransformValue,
