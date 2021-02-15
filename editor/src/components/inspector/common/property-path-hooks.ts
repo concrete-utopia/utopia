@@ -1035,7 +1035,7 @@ export function useInspectorInfoSimpleUntyped(
 
 export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
   property: P,
-): InspectorInfo<ParsedProperties[P]> {
+): InspectorInfo<ParsedProperties[P], P> {
   function transformValue(parsedValues: ParsedValues<P>): ParsedProperties[P] {
     return parsedValues[property]
   }
