@@ -323,16 +323,15 @@ function elementPathMappingFn<P extends ParsedElementPropertiesKeys>(p: P) {
 }
 
 export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(prop: P) {
-  type T = ParsedElementProperties[P] | undefined
-  const transformValue: (parsedValues: Partial<ParsedValues<P>>) => T = (parsedValues) =>
-    parsedValues[prop]
+  type T = ParsedElementProperties[P]
+  const transformValue: (parsedValues: ParsedValues<P>) => T = (parsedValues) => parsedValues[prop]
 
   const untransformValue = (transformedType: T) =>
     ({
       [prop]: transformedType,
     } as Partial<ParsedValues<P>>)
 
-  return useInspectorInfoNoDefaults([prop], transformValue, untransformValue, elementPathMappingFn)
+  return useInspectorInfo([prop], transformValue, untransformValue, elementPathMappingFn)
 }
 
 export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(
@@ -451,9 +450,6 @@ export type PathMappingFn<P> = (propKey: P, targetPath: readonly string[]) => Pr
 export type TransformInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
   parsedValues: ParsedValues<P>,
 ) => T
-export type TransformInspectorInfoMaybe<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
-  parsedValues: Partial<ParsedValues<P>>,
-) => T
 export type UntransformInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
   transformedType: T,
 ) => Partial<ParsedValues<P>>
@@ -463,7 +459,7 @@ export function useInspectorInfoNoDefaults<
   T = ParsedProperties[P] | undefined
 >(
   propKeysIn: Array<P>,
-  transformValue: TransformInspectorInfoMaybe<P, T>,
+  transformValue: TransformInspectorInfo<P, T>,
   untransformValue: UntransformInspectorInfo<P, T>,
   pathMappingFn: PathMappingFn<P>,
 ): InspectorInfo<T, P> {

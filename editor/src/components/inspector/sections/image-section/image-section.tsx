@@ -96,7 +96,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             id='image-src'
             key='image-src'
             testId='image-src'
-            value={srcValue ?? ''}
+            value={srcValue}
             onSubmitValue={srcOnSubmitValue}
             controlStyles={srcControlStyles}
             controlStatus={srcControlStatus}
@@ -115,7 +115,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             id='image-alt'
             key='image-alt'
             testId='image-alt'
-            value={altValue ?? ''}
+            value={altValue}
             onSubmitValue={altOnSubmitValue}
             controlStyles={altControlStyles}
             controlStatus={altControlStatus}
