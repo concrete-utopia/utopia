@@ -574,6 +574,8 @@ function parseCSSNumberUnit(
   }
 }
 
+export type CSSNumberOrUndefined = CSSNumber | undefined
+
 const parseCSSLengthUnit = (input: string) => parseCSSNumberUnit(input, LengthUnits)
 const parseCSSLengthPercentUnit = (input: string) => parseCSSNumberUnit(input, LengthPercentUnits)
 const parseCSSAngleUnit = (input: string) => parseCSSNumberUnit(input, AngleUnits)
@@ -676,6 +678,8 @@ export function printCSSNumberWithDefaultUnit(
 
 export const parseCSSLength = (input: unknown) => parseCSSNumber(input, 'Length')
 export const parseCSSLengthPercent = (input: unknown) => parseCSSNumber(input, 'LengthPercent')
+export const parseCSSLengthPercentUndefined = (input: unknown) =>
+  parseCSSNumberUndefined(input, 'LengthPercent')
 export const parseCSSAngle = (input: unknown) => parseCSSNumber(input, 'Angle')
 export const parseCSSAnglePercent = (input: unknown) => parseCSSNumber(input, 'AnglePercent')
 export const parseCSSPercent = (input: unknown) => parseCSSNumber(input, 'Percent', '%')
@@ -698,6 +702,18 @@ export const parseCSSNumber = (
     return parseCSSNumericTypeString(input, unitParseFn, defaultUnit)
   } else {
     return left(`Unable to parse invalid number`)
+  }
+}
+
+export const parseCSSNumberUndefined = (
+  input: unknown,
+  numberType: CSSNumberType,
+  defaultUnit: CSSNumberUnit | null = null,
+): Either<string, CSSNumberOrUndefined> => {
+  if (input === undefined) {
+    return right(undefined)
+  } else {
+    return parseCSSNumber(input, numberType, defaultUnit)
   }
 }
 
@@ -3937,10 +3953,10 @@ export interface ParsedCSSProperties {
   objectFit: CSSObjectFit
 
   padding: CSSPadding
-  paddingTop: CSSNumber
-  paddingRight: CSSNumber
-  paddingBottom: CSSNumber
-  paddingLeft: CSSNumber
+  paddingTop: CSSNumberOrUndefined
+  paddingRight: CSSNumberOrUndefined
+  paddingBottom: CSSNumberOrUndefined
+  paddingLeft: CSSNumberOrUndefined
   marginTop: CSSNumber
   marginRight: CSSNumber
   marginBottom: CSSNumber
@@ -4149,10 +4165,10 @@ const cssParsers: CSSParsers = {
   alignContent: flexAlignmentsParser,
   justifyContent: flexJustifyContentParser,
   padding: parsePadding,
-  paddingTop: parseCSSLengthPercent,
-  paddingRight: parseCSSLengthPercent,
-  paddingBottom: parseCSSLengthPercent,
-  paddingLeft: parseCSSLengthPercent,
+  paddingTop: parseCSSLengthPercentUndefined,
+  paddingRight: parseCSSLengthPercentUndefined,
+  paddingBottom: parseCSSLengthPercentUndefined,
+  paddingLeft: parseCSSLengthPercentUndefined,
 
   alignSelf: flexAlignmentsParser,
   position: flexPositionParser,

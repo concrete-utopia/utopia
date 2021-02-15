@@ -1172,6 +1172,26 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
     expect(hookResult.orderedPropKeys).toEqual([['padding']])
   })
 
+  it('does give value for prop set to undefined', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15, paddingLeft: undefined }`],
+      [{ padding: 15, paddingLeft: undefined }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
+      [],
+    )
+    expect(hookResult.value).toEqual({
+      padding: {
+        paddingBottom: { unit: 'px', value: 15 },
+        paddingLeft: { unit: 'px', value: 15 },
+        paddingRight: { unit: 'px', value: 15 },
+        paddingTop: { unit: 'px', value: 15 },
+      },
+      paddingLeft: undefined,
+    })
+    expect(hookResult.orderedPropKeys).toEqual([['padding', 'paddingLeft']])
+  })
+
   it('keeps the order of props for single select 1', () => {
     const hookResult = getPaddingHookResult(
       ['paddingLeft', 'padding'],
