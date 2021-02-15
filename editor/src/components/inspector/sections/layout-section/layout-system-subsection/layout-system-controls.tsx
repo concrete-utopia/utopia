@@ -40,7 +40,7 @@ function useDefaultedLayoutSystemInfo(): {
   const layoutSystemMetadata = useInspectorLayoutInfo('LayoutSystem')
   const styleDisplayMetadata = useInspectorStyleInfo('display')
 
-  let metadataToUse: InspectorInfo<any> = layoutSystemMetadata
+  let metadataToUse: InspectorInfo<any, unknown> = layoutSystemMetadata
   if (styleDisplayMetadata.value === 'flex') {
     metadataToUse = styleDisplayMetadata
   }

@@ -94,7 +94,7 @@ export interface ElementFrameInfo {
   parentFrame: LocalRectangle | null
 }
 
-type PinInspectorInfo = InspectorInfo<CSSNumber | undefined>
+type PinInspectorInfo = InspectorInfo<CSSNumber | undefined, unknown>
 
 export type PinsInfo = { [key in LayoutPinnedProp]: PinInspectorInfo }
 

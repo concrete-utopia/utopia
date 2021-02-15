@@ -157,7 +157,7 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
 const PositionWidget = betterReactMemo(
   'PositionWidget',
   (props: {
-    inspectorInfo: InspectorInfo<CSSNumber> | InspectorInfo<CSSNumber | undefined>
+    inspectorInfo: InspectorInfo<CSSNumber, unknown> | InspectorInfo<CSSNumber | undefined, unknown>
     point: keyof NormalisedFrame
   }) => {
     const { inspectorInfo, point } = props

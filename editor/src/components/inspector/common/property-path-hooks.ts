@@ -53,7 +53,7 @@ import {
   removeIgnored,
   getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
-import { addUniquely, SkipValueToken } from '../../../core/shared/array-utils'
+import { addUniquely, SkipValueToken, stripNulls } from '../../../core/shared/array-utils'
 import {
   defaultEither,
   Either,
@@ -76,6 +76,7 @@ import {
   StyleAttributeMetadataEntry,
 } from '../../../core/shared/element-template'
 import {
+  getAllPathsFromAttributes,
   GetModifiableAttributeResult,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
@@ -145,11 +146,12 @@ export type MultiselectAtStringProps = {
   [key in string]: readonly Either<string, ModifiableAttribute>[]
 }
 
-export interface InspectorInfo<T> {
+export interface InspectorInfo<T, P> {
   value: T
   controlStatus: ControlStatus
   propertyStatus: PropertyStatus
   controlStyles: ControlStyles
+  orderedPropKeys: Array<Array<P>>
   onUnsetValues: () => void
   onSubmitValue: (newTransformedValues: T, transient?: boolean) => void
   onTransientSubmitValue: (newTransformedValues: T) => void
@@ -464,7 +466,7 @@ export function useInspectorInfoNoDefaults<
   transformValue: TransformInspectorInfoMaybe<P, T>,
   untransformValue: UntransformInspectorInfo<P, T>,
   pathMappingFn: PathMappingFn<P>,
-): InspectorInfo<T> {
+): InspectorInfo<T, P> {
   const propKeys = useMemoizedPropKeys(propKeysIn)
   const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
     pathMappingFn,
@@ -532,11 +534,14 @@ export function useInspectorInfoNoDefaults<
   const controlStyles = getControlStyles(controlStatus)
   const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
 
+  const orderedPropKeys: Array<Array<P>> = useGetOrderedPropertyKeys(pathMappingFn, propKeys)
+
   return {
     value: transformedValue,
     controlStatus,
     propertyStatus: propertyStatusToReturn,
     controlStyles,
+    orderedPropKeys: orderedPropKeys,
     onSubmitValue,
     onTransientSubmitValue,
     onUnsetValues,
@@ -549,7 +554,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   transformValue: TransformInspectorInfo<P, T>,
   untransformValue: UntransformInspectorInfo<P, T>,
   pathMappingFn: PathMappingFn<P>,
-): InspectorInfo<T> {
+): InspectorInfo<T, P> {
   const propKeys = useMemoizedPropKeys(propKeysIn)
   const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
     pathMappingFn,
@@ -617,11 +622,14 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   const controlStyles = getControlStyles(controlStatus)
   const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
 
+  const orderedPropKeys: Array<Array<P>> = useGetOrderedPropertyKeys(pathMappingFn, propKeys)
+
   return {
     value: transformedValue,
     controlStatus,
     propertyStatus: propertyStatusToReturn,
     controlStyles,
+    orderedPropKeys: orderedPropKeys,
     onSubmitValue,
     onTransientSubmitValue,
     onUnsetValues,
@@ -775,6 +783,29 @@ function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   )
 }
 
+export function useGetOrderedPropertyKeys<P>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: Readonly<Array<P>>,
+): Array<Array<P>> {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        return contextData.editedMultiSelectedProps.map((props) =>
+          stripNulls(
+            getAllPathsFromAttributes(props).map((path) =>
+              propKeys.find((propKey) =>
+                PP.pathsEqual(path, pathMappingFn(propKey, contextData.targetPath)),
+              ),
+            ),
+          ),
+        )
+      },
+      deepEqual,
+    ),
+  )
+}
+
 function getParsedValues<P extends ParsedPropertiesKeys>(
   propKeys: P[],
   simpleAndRawValues: {
@@ -885,7 +916,7 @@ export function useInspectorInfoSimpleUntyped(
   propertyPaths: ReadonlyArray<PropertyPath>,
   transformValue: (parsedValues: any) => any,
   untransformValue: (transformedType: any) => any,
-): InspectorInfo<any> {
+): InspectorInfo<any, PropertyPath> {
   const multiselectAtProps: MultiselectAtStringProps = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
@@ -988,11 +1019,17 @@ export function useInspectorInfoSimpleUntyped(
   const controlStyles = getControlStyles(controlStatus)
   const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
 
+  const orderedPropKeys: Array<Array<PropertyPath>> = useGetOrderedPropertyKeys(
+    (p) => p,
+    propertyPaths,
+  )
+
   return {
     value: transformedValue,
     controlStatus,
     propertyStatus: propertyStatusToReturn,
     controlStyles,
+    orderedPropKeys: orderedPropKeys,
     onSubmitValue,
     onTransientSubmitValue,
     onUnsetValues,
