@@ -86,18 +86,34 @@ export function arrayToObject<T>(
   return result
 }
 
+export type SkipValueToken = () => void
+const skipValueToken: SkipValueToken = () => {
+  return skipValueToken
+}
+function isSkipValueToken(
+  token: SkipValueToken,
+  maybeToken: SkipValueToken | any,
+): maybeToken is SkipValueToken {
+  return token === maybeToken
+}
+
 export function mapArrayToDictionary<From, Values, Keys extends string | number>(
   arr: ReadonlyArray<From>,
   keyFn: (t: From, index: number) => Keys,
-  mapFn: (t: From, index: number) => Values,
+  mapFn: (t: From, index: number, skipValueToken: SkipValueToken) => Values | SkipValueToken,
 ): {
   [key in Keys]: Values
 } {
   return arr.reduce(
     (working, next, index) => {
       const key = keyFn(next, index)
-      working[key] = mapFn(next, index)
-      return working
+      const result = mapFn(next, index, skipValueToken)
+      if (isSkipValueToken(skipValueToken, result)) {
+        return working
+      } else {
+        working[key] = result
+        return working
+      }
     },
     {} as {
       [key in Keys]: Values

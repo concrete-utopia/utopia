@@ -33,6 +33,8 @@ import {
   defaultLinearGradientBackgroundLayer,
   printCSSNumber,
   cssSolidBackgroundLayer,
+  ParsedPropertiesKeys,
+  ParsedProperties,
 } from './css-utils'
 import {
   InspectorCallbackContext,
@@ -42,6 +44,7 @@ import {
   stylePropPathMappingFn,
   useCallbackFactory,
   useInspectorInfo,
+  useInspectorInfoNoDefaults,
   useInspectorStyleInfo,
 } from './property-path-hooks'
 import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
@@ -1099,5 +1102,118 @@ describe('Integration Test: boxShadow property', () => {
     )
     const expectedControlStatus: ControlStatus = 'multiselect-controlled'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
+  })
+})
+
+describe('useInspectorInfo: padding shorthand and longhands', () => {
+  function getPaddingHookResult<P extends ParsedPropertiesKeys>(
+    propsKeys: Array<P>,
+    styleObjectExpressions: Array<string>,
+    spiedProps: Array<any>,
+    computedStyles: Array<ComputedStyle>,
+    attributeMetadatas: Array<StyleAttributeMetadata>,
+  ) {
+    const props = styleObjectExpressions.map(
+      (styleExpression) => getPropsForStyleProp(styleExpression, ['myStyleOuter', 'myStyleInner'])!,
+    )
+
+    const contextProvider = makeInspectorHookContextProvider(
+      [],
+      props,
+      ['myStyleOuter', 'myStyleInner'],
+      spiedProps,
+      computedStyles,
+      attributeMetadatas,
+    )
+
+    const { result } = renderHook(
+      () =>
+        useInspectorInfoNoDefaults(
+          propsKeys,
+          (v) => v,
+          (v) => v,
+          stylePropPathMappingFn as any, // ¯\_(ツ)_/¯
+        ),
+      {
+        wrapper: contextProvider,
+      },
+    )
+    return result.current
+  }
+
+  it('does not give value for nonexistent props 1', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5 }`],
+      [{ paddingLeft: 5 }],
+      [{ paddingTop: '0px', paddingRight: '0px', paddingBottom: '0px', paddingLeft: '15px' }],
+      [],
+    )
+    expect(Object.entries(hookResult.value)).toEqual([['paddingLeft', { unit: null, value: 5 }]])
+  })
+
+  it('does not give value for nonexistent props 2', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15 }`],
+      [{ padding: 15 }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
+      [],
+    )
+    expect(Object.entries(hookResult.value)).toEqual([
+      [
+        'padding',
+        {
+          paddingBottom: { unit: 'px', value: 15 },
+          paddingLeft: { unit: 'px', value: 15 },
+          paddingRight: { unit: 'px', value: 15 },
+          paddingTop: { unit: 'px', value: 15 },
+        },
+      ],
+    ])
+  })
+
+  it('keeps the order of props for single select 1', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5, padding: 15 }`],
+      [{ paddingLeft: 5, padding: 15 }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
+      [],
+    )
+    expect(Object.entries(hookResult.value)).toEqual([
+      ['paddingLeft', { unit: null, value: 5 }],
+      [
+        'padding',
+        {
+          paddingBottom: { unit: 'px', value: 15 },
+          paddingLeft: { unit: 'px', value: 15 },
+          paddingRight: { unit: 'px', value: 15 },
+          paddingTop: { unit: 'px', value: 15 },
+        },
+      ],
+    ])
+  })
+
+  it('keeps the order of props for single select 2', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15, paddingLeft: 5 }`],
+      [{ padding: 15, paddingLeft: 5 }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '5px' }],
+      [],
+    )
+    expect(Object.entries(hookResult.value)).toEqual([
+      [
+        'padding',
+        {
+          paddingBottom: { unit: 'px', value: 15 },
+          paddingLeft: { unit: 'px', value: 15 },
+          paddingRight: { unit: 'px', value: 15 },
+          paddingTop: { unit: 'px', value: 15 },
+        },
+      ],
+      ['paddingLeft', { unit: null, value: 5 }],
+    ])
   })
 })

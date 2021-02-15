@@ -4946,7 +4946,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
 
 export function isTrivialDefaultValue(
   propertyKey: ParsedPropertiesKeys,
-  valueToCheck: ValueOf<ParsedProperties>,
+  valueToCheck: ValueOf<ParsedProperties> | any,
 ): boolean {
   const maybeTrivial = trivialDefaultValues[propertyKey]
   return fastDeepEqual(maybeTrivial, valueToCheck)

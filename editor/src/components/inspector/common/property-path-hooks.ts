@@ -53,7 +53,7 @@ import {
   removeIgnored,
   getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
-import { addUniquely } from '../../../core/shared/array-utils'
+import { addUniquely, SkipValueToken } from '../../../core/shared/array-utils'
 import {
   defaultEither,
   Either,
@@ -373,8 +373,9 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   spiedValue: any,
   computedValue: string | undefined,
   attributeMetadataEntry: StyleAttributeMetadataEntry | undefined,
+  emptyValue: ParsedProperties[PropertiesToControl] | SkipValueToken,
 ): {
-  finalValue: ParsedPropertiesValues
+  finalValue: ParsedPropertiesValues | typeof emptyValue
   isUnknown: boolean
   trivialDefault: boolean
   usesComputedFallback: boolean
@@ -413,10 +414,10 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
       setFromCssStyleSheet: attributeMetadataEntry?.fromStyleSheet ?? false,
     }
   } else {
-    const defaultValue = emptyValues[property]
+    const defaultValue = emptyValue
     const trivialDefault = isTrivialDefaultValue(property, defaultValue)
     return {
-      finalValue: emptyValues[property],
+      finalValue: defaultValue,
       isUnknown: simpleValueAsMaybe != null,
       trivialDefault: trivialDefault,
       usesComputedFallback: false,
@@ -451,6 +452,94 @@ export type UntransformInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedP
   transformedType: T,
 ) => Partial<ParsedValues<P>>
 
+export function useInspectorInfoNoDefaults<
+  P extends ParsedPropertiesKeys,
+  T = ParsedProperties[P] | undefined
+>(
+  propKeysIn: Array<P>,
+  transformValue: TransformInspectorInfo<P, T>,
+  untransformValue: UntransformInspectorInfo<P, T>,
+  pathMappingFn: PathMappingFn<P>,
+): InspectorInfo<T> {
+  const propKeys = useMemoizedPropKeys(propKeysIn)
+  const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
+    pathMappingFn,
+    propKeys,
+  )
+
+  const selectedProps = useGetSpiedProps<P>(pathMappingFn, propKeys)
+
+  const selectedComputedStyles = useGetSelectedComputedStyles<P>(pathMappingFn, propKeys)
+
+  const selectedAttributeMetadatas: {
+    [key in P]: StyleAttributeMetadataEntry[]
+  } = useGetSelectedAttributeMetadatas<P>(pathMappingFn, propKeys)
+
+  const simpleAndRawValues = useInspectorInfoFromMultiselectMultiStyleAttribute(
+    multiselectAtProps,
+    selectedProps,
+    selectedComputedStyles,
+    selectedAttributeMetadatas,
+  )
+
+  const propertyStatus = calculateMultiPropertyStatusForSelection(
+    multiselectAtProps,
+    simpleAndRawValues,
+  )
+
+  const { values, isUnknown } = getParsedValues(
+    propKeys,
+    simpleAndRawValues,
+    propertyStatus,
+    'omit-missing-value',
+  )
+
+  const controlStatus = calculateControlStatusWithUnknown(propertyStatus, isUnknown)
+
+  const {
+    onContextSubmitValue: onSingleSubmitValue,
+    onContextUnsetValue: onUnsetValue,
+  } = useInspectorContext()
+
+  const target = useKeepReferenceEqualityIfPossible(
+    useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
+  )
+  const onUnsetValues = React.useCallback(() => {
+    onUnsetValue(propKeys.map((propKey) => pathMappingFn(propKey, target)))
+  }, [onUnsetValue, propKeys, pathMappingFn, target])
+
+  const transformedValue = transformValue(values)
+  const onSubmitValue: (newValue: T, transient?: boolean) => void = useCreateOnSubmitValue<P, T>(
+    untransformValue,
+    propKeys,
+    pathMappingFn,
+    target,
+    onSingleSubmitValue,
+    onUnsetValue,
+  )
+
+  const onTransientSubmitValue: (newValue: T) => void = React.useCallback(
+    (newValue) => onSubmitValue(newValue, true),
+    [onSubmitValue],
+  )
+
+  const useSubmitValueFactory = useCallbackFactory(transformedValue, onSubmitValue)
+
+  const controlStyles = getControlStyles(controlStatus)
+  const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
+
+  return {
+    value: transformedValue,
+    controlStatus,
+    propertyStatus: propertyStatusToReturn,
+    controlStyles,
+    onSubmitValue,
+    onTransientSubmitValue,
+    onUnsetValues,
+    useSubmitValueFactory,
+  }
+}
+
 export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedProperties[P]>(
   propKeysIn: Array<P>,
   transformValue: TransformInspectorInfo<P, T>,
@@ -483,7 +572,12 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     simpleAndRawValues,
   )
 
-  const { values, isUnknown } = getParsedValues(propKeys, simpleAndRawValues, propertyStatus)
+  const { values, isUnknown } = getParsedValues(
+    propKeys,
+    simpleAndRawValues,
+    propertyStatus,
+    'use-default-empty-value',
+  )
 
   const controlStatus = calculateControlStatusWithUnknown(propertyStatus, isUnknown)
 
@@ -689,12 +783,13 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
     }
   },
   propertyStatus: PropertyStatus,
+  emptyValue: 'use-default-empty-value' | 'omit-missing-value', // these need better names
 ): { values: ParsedValues<P>; isUnknown: boolean } {
   let isUnknownInner = false
   const valuesInner = Utils.mapArrayToDictionary(
     propKeys,
     (propKey) => propKey,
-    (propKey) => {
+    (propKey, _, skipValue) => {
       const {
         simpleValues,
         rawValues,
@@ -727,6 +822,7 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
           spiedValue,
           computedValue,
           attributeMetadata,
+          emptyValue === 'use-default-empty-value' ? emptyValues[propKey] : skipValue,
         )
         isUnknownInner = isUnknownInner || pathIsUnknown
         // setting the status to detected because it uses the fallback value
@@ -735,7 +831,7 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
         propertyStatus.trivialDefault = trivialDefault
         return finalValue
       } else {
-        let firstFinalValue: ParsedPropertiesValues
+        let firstFinalValue: ParsedPropertiesValues | SkipValueToken
         simpleValues.forEach((simpleValue, i) => {
           const rawValue: Either<string, ModifiableAttribute> = Utils.defaultIfNull(
             left('Raw value missing'),
@@ -757,6 +853,7 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
             spiedValue,
             computedValue,
             attributeMetadata,
+            emptyValue === 'use-default-empty-value' ? emptyValues[propKey] : skipValue,
           )
           if (i === 0) {
             firstFinalValue = finalValue
