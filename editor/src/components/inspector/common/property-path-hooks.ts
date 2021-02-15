@@ -320,7 +320,9 @@ function elementPathMappingFn<P extends ParsedElementPropertiesKeys>(p: P) {
   return PP.create([p])
 }
 
-export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(prop: P) {
+export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(
+  prop: P,
+): InspectorInfo<ParsedElementProperties[P] | undefined> {
   type T = ParsedElementProperties[P] | undefined
   const transformValue: (parsedValues: Partial<ParsedValues<P>>) => T = (parsedValues) =>
     parsedValues[prop]
@@ -336,7 +338,7 @@ export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(p
 export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(
   p: P,
   target: readonly string[],
-) {
+): PropertyPath {
   return PP.create([...target, p])
 }
 
@@ -1000,7 +1002,9 @@ export function useInspectorInfoSimpleUntyped(
   }
 }
 
-export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(property: P) {
+export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
+  property: P,
+): InspectorInfo<ParsedProperties[P] | undefined> {
   type T = ParsedProperties[P] | undefined
   const transformValue: (parsedValues: Partial<ParsedValues<P>>) => T = (parsedValues) =>
     parsedValues[property]
