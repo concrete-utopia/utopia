@@ -1010,7 +1010,7 @@ export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
     return { [property]: transformedType } as Partial<ParsedValues<P>>
   }
 
-  let inspectorInfo = useInspectorInfo(
+  let inspectorInfo = useInspectorInfoNoDefaults(
     [property],
     transformValue,
     untransformValue,
