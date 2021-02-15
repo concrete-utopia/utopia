@@ -68,6 +68,10 @@
       "eslint --quiet",
       "git add"
     ],
+    "*.{html}": [
+      "prettier --write",
+      "git add"
+    ],
     "../utopia-api/src/**/*.{js,ts,tsx}": [
       "prettier --write",
       "git add"

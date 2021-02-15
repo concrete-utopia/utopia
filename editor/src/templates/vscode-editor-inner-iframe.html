@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" style="height: 100%;">
   <head>
-  <!-- Disable pinch zooming -->
+              <!-- Disable pinch zooming -->
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"
@@ -20,22 +20,18 @@
   <body aria-label=""></body>
 
   <script>
-    const extElement = document.getElementById(
-      "vscode-workbench-builtin-extensions"
-    );
-    extElement.attributes["data-settings"].value = JSON.stringify([
-      ...extensions,
-    ]);
+    const extElement = document.getElementById('vscode-workbench-builtin-extensions')
+    extElement.attributes['data-settings'].value = JSON.stringify([...extensions])
 
-    let baseUri = `%VSCODE_DOMAIN%/vscode`;
+    let baseUri = `%VSCODE_DOMAIN%/vscode`
     self.require = {
       baseUrl: `${baseUri}/vscode/`,
       paths: {
-        "vscode-textmate": `${baseUri}/lib/vscode-textmate/release/main`,
-        "vscode-oniguruma": `${baseUri}/lib/vscode-oniguruma/release/main`,
-        "semver-umd": `${baseUri}/lib/semver-umd/lib/semver-umd.js`,
+        'vscode-textmate': `${baseUri}/lib/vscode-textmate/release/main`,
+        'vscode-oniguruma': `${baseUri}/lib/vscode-oniguruma/release/main`,
+        'semver-umd': `${baseUri}/lib/semver-umd/lib/semver-umd.js`,
       },
-    };
+    }
   </script>
   <script src="%UTOPIA_DOMAIN%/vscode/vscode/vs/loader.js?hash=%UTOPIA_SHA%"></script>
 
