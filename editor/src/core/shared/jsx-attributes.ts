@@ -470,17 +470,30 @@ export function setJSXValueInAttributeAtPath(
           const attributeKey = PP.firstPart(path)
           const tailPath = PP.tail(path)
           const key = `${attributeKey}`
-          const newProps = dropKeyFromNestedObject(attribute, key).content
           if (lastPartOfPath) {
-            return right(
-              jsxAttributeNestedObject(
-                newProps.concat(
-                  jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments),
+            let updatedExistingProperty = false
+            let updatedContent = attribute.content.map((attr) => {
+              if (attr.type === 'PROPERTY_ASSIGNMENT' && attr.key === key) {
+                updatedExistingProperty = true
+                return jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments)
+              } else {
+                return attr
+              }
+            })
+            if (updatedExistingProperty) {
+              return right(jsxAttributeNestedObject(updatedContent, emptyComments))
+            } else {
+              return right(
+                jsxAttributeNestedObject(
+                  attribute.content.concat(
+                    jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments),
+                  ),
+                  emptyComments,
                 ),
-                emptyComments,
-              ),
-            )
+              )
+            }
           } else {
+            const newProps = dropKeyFromNestedObject(attribute, key).content
             const existingAttribute = nestedObjectValueForKey(attribute, key)
             const updatedNestedAttribute: Either<string, JSXAttribute> =
               existingAttribute.type === 'ATTRIBUTE_NOT_FOUND'

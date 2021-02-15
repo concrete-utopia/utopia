@@ -565,7 +565,7 @@ describe('moving a scene/rootview on the canvas', () => {
       return (
         <Storyboard data-uid='utopia-storyboard-uid'>
           <Scene
-            style={{ position: 'absolute', width: 400, height: 400, top: -30, left: 40 }}
+            style={{ position: 'absolute', left: 40, top: -30, width: 400, height: 400 }}
             component={App}
             data-uid='scene-aaa'
           />
@@ -684,7 +684,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ height: 370, width: 240 }}
+            style={{ width: 240, height: 370 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='aaa'
             data-testid='aaa'
@@ -815,7 +815,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ height: 370, width: 240 }}
+            style={{ width: 240, height: 370 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='aaa'
           >
@@ -945,7 +945,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ height: 170, width: 240 }}
+            style={{ width: 240, height: 170 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='aaa'
           >
@@ -1077,7 +1077,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     export var App = (props) => {
       return (
         <View
-          style={{ height: '92.5%', width: '120%' }}
+          style={{ width: '120%', height: '92.5%' }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='aaa'
         >

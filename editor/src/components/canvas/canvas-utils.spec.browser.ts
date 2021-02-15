@@ -53,7 +53,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: 100, height: 100, left: 20, top: 20 }}
+          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
@@ -86,7 +86,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: 100, height: 100, left: 20, top: 20 }}
+          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
@@ -119,7 +119,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: '25%', height: '25%', left: 20, top: 20 }}
+          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: '25%', height: '25%' }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
@@ -619,8 +619,8 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
           style={{
             backgroundColor: '#0091FFAA',
             left: '15%',
-            right: '5%',
             top: '31.3%',
+            right: '5%',
             bottom: '8.8%',
           }}
           layout={{ layoutSystem: 'pinSystem' }}
@@ -729,12 +729,12 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
             }
             style={{
               backgroundColor: '#0091FFAA',
-              width: 256,
-              height: 202,
               left: 20,
               top: 20,
-              right: 125,
+              width: 256,
+              height: 202,
               bottom: 178,
+              right: 125,
             }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='bbb'
@@ -804,7 +804,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 20, width: 100, top: 20, height: 100 }}
+            style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='bbb'
           />
@@ -840,7 +840,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', width: 100, left: 20, height: 100 }}
+            style={{ backgroundColor: '#0091FFAA', left: 20, width: 100, height: 100 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='bbb'
           />
@@ -874,7 +874,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 20, right: 280, top: 20, bottom: 280 }}
+            style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 280, bottom: 280 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='bbb'
           />
@@ -910,7 +910,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 40, top: 40, height: '17.5%', width: '45%' }}
+          style={{ backgroundColor: '#0091FFAA', left: 40, top: 40, width: '45%', height: '17.5%' }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
@@ -978,7 +978,7 @@ describe('moveTemplate', () => {
           data-uid='${NewUID}'
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 0, top: 0, width: 256, height: 202, position: 'absolute' }}
+            style={{ position: 'absolute', backgroundColor: '#0091FFAA', left: 0, top: 0, width: 256, height: 202 }}
             data-uid='bbb'
           />
         </View>
@@ -1090,7 +1090,7 @@ describe('moveTemplate', () => {
           data-uid='${NewUID}'
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 0, top: 0, width: 256, height: 202, position: 'absolute' }}
+            style={{ position: 'absolute', backgroundColor: '#0091FFAA', left: 0, top: 0, width: 256, height: 202 }}
             data-uid='bbb'
           >
             <View data-uid='ccc'>
@@ -1140,7 +1140,7 @@ describe('moveTemplate', () => {
         <View style={{ ...props.style }} data-uid='aaa'>
           <View data-uid='eee'>
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 52, width: 256, height: 202, top: -141 }}
+              style={{ backgroundColor: '#0091FFAA', left: 52, top: -141, width: 256, height: 202 }}
               layout={{ layoutSystem: 'pinSystem'  }}
               data-uid='bbb'
             >
@@ -1189,7 +1189,7 @@ describe('moveTemplate', () => {
         <View style={{ ...props.style }} data-uid='aaa'>
           <View data-uid='eee'>
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 52, width: 256, height: 202, top: -141 }}
+              style={{ backgroundColor: '#0091FFAA', left: 52, top: -141, width: 256, height: 202}}
               layout={{ layoutSystem: 'pinSystem' }}
               data-uid='bbb'
             >
@@ -1236,7 +1236,7 @@ describe('moveTemplate', () => {
           <View data-uid='eee'>
             <View data-uid='ddd' style={{ left: 52, top: -141 }} />
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 52, width: 256, height: 202, top: -141 }}
+              style={{ backgroundColor: '#0091FFAA', left: 52, top: -141, width: 256, height: 202 }}
               layout={{ layoutSystem: 'pinSystem' }}
               data-uid='bbb'
             >
@@ -1532,8 +1532,8 @@ describe('moveTemplate', () => {
                 position: 'absolute',
                 width: 100,
                 height: 100,
-                top: 0,
                 left: 340,
+                top: 0,
               }}
               data-uid='orphan-bbb'
               data-testid='orphan-bbb'
@@ -1824,7 +1824,7 @@ describe('moveTemplate', () => {
           >
             <div data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
             <View
-              style={{ backgroundColor: '#0091FFAA', position: 'relative', flexBasis: 74, height: 74 }}
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', height: 74, flexBasis: 74 }}
               data-uid='${NewUID}'
             />
           </div>
@@ -2080,7 +2080,7 @@ describe('moveTemplate', () => {
         <View
           data-testid='eee'
           data-uid='eee'
-          style={{ backgroundColor: '#00ff00', width: 80, height: 80, left: 100, top: 170 }}
+          style={{ backgroundColor: '#00ff00', left: 100, top: 170, width: 80, height: 80 }}
           layout={{ layoutSystem: 'pinSystem' }}
         />
       </View>
@@ -2193,7 +2193,7 @@ describe('moveTemplate', () => {
             data-uid='bbb'
           />
           <View
-            style={{ backgroundColor: '#0091FFAA', width: 200, height: 105, left: 95, top: 245 }}
+            style={{ backgroundColor: '#0091FFAA', left: 95, top: 245, width: 200, height: 105 }}
             data-uid='ccc'
             data-testid='ccc'
           />
