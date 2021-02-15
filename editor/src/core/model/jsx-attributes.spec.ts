@@ -24,6 +24,7 @@ import {
 } from '../shared/element-template'
 import {
   dropKeyFromNestedObject,
+  getAllPathsFromAttributes,
   getModifiableJSXAttributeAtPath,
   jsxAttributesToProps,
   jsxSimpleAttributeToValue,
@@ -702,5 +703,25 @@ describe('simplifyAttributeIfPossible', () => {
     const expectedValue = jsxAttributeValue('test', emptyComments)
     const actualValue = simplifyAttributeIfPossible(expectedValue)
     expect(actualValue).toBe(expectedValue)
+  })
+})
+
+describe('getAllPathsFromAttributes', () => {
+  it('works for a simple case', () => {
+    const result = getAllPathsFromAttributes(
+      jsxAttributesFromMap({ cica: jsxAttributeValue('hello!', emptyComments) }),
+    )
+    expect(result).toEqual([PP.create(['cica'])])
+  })
+
+  it('drills into paths of object values too', () => {
+    const result = getAllPathsFromAttributes(
+      jsxAttributesFromMap({ cica: jsxAttributeValue({ deep: { path: 5 } }, emptyComments) }),
+    )
+    expect(result).toEqual([
+      PP.create(['cica']),
+      PP.create(['cica', 'deep']),
+      PP.create(['cica', 'deep', 'path']),
+    ])
   })
 })
