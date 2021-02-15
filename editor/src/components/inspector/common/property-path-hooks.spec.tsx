@@ -1216,4 +1216,84 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       ['paddingLeft', { unit: null, value: 5 }],
     ])
   })
+
+  it('keeps the order of props for multi select 1', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15 }`, `{ padding: 15 }`],
+      [{ padding: 15 }, { padding: 15 }],
+      [
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+      ],
+      [],
+    )
+    expect(Object.entries(hookResult.value)).toEqual([
+      [
+        'padding',
+        {
+          paddingBottom: { unit: 'px', value: 15 },
+          paddingLeft: { unit: 'px', value: 15 },
+          paddingRight: { unit: 'px', value: 15 },
+          paddingTop: { unit: 'px', value: 15 },
+        },
+      ],
+    ])
+  })
+
+  it('keeps the order of props for multi select 2', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5, padding: 15 }`, `{ paddingLeft: 5, padding: 15 }`],
+      [
+        { paddingLeft: 5, padding: 15 },
+        { paddingLeft: 5, padding: 15 },
+      ],
+      [
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+      ],
+      [],
+    )
+    expect(Object.entries(hookResult.value)).toEqual([
+      ['paddingLeft', { unit: null, value: 5 }],
+      [
+        'padding',
+        {
+          paddingBottom: { unit: 'px', value: 15 },
+          paddingLeft: { unit: 'px', value: 15 },
+          paddingRight: { unit: 'px', value: 15 },
+          paddingTop: { unit: 'px', value: 15 },
+        },
+      ],
+    ])
+  })
+
+  it('multiselect: if the paddings are in different order, give up 1', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5, padding: 15 }`, `{ padding: 15 }`],
+      [{ paddingLeft: 5, padding: 15 }, { padding: 15 }],
+      [
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+      ],
+      [],
+    )
+    expect(Object.entries(hookResult.value)).toEqual([])
+  })
+
+  it('multiselect: if the paddings are in different order, give up 2', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15, paddingLeft: 5 }`, `{ padding: 15 }`],
+      [{ padding: 15, paddingLeft: 5 }, { padding: 15 }],
+      [
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '5px' },
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+      ],
+      [],
+    )
+    expect(Object.entries(hookResult.value)).toEqual([])
+  })
 })
