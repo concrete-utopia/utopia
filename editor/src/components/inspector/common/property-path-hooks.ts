@@ -334,7 +334,7 @@ export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(
       [prop]: transformedType,
     } as Partial<ParsedValues<P>>)
 
-  return useInspectorInfo([prop], transformValue, untransformValue, elementPathMappingFn)
+  return useInspectorInfoNoDefaults([prop], transformValue, untransformValue, elementPathMappingFn)
 }
 
 export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(
