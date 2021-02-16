@@ -15,6 +15,12 @@ import {
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelectPopup } from './font-family-select-popup'
 
+export function transformFontFamily(
+  values: Partial<ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>> = {},
+): Partial<ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>> {
+  return values
+}
+
 export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
   const [referenceElement, setReferenceElement] = React.useState<HTMLDivElement | null>(null)
   const [popperElement, setPopperElement] = React.useState<HTMLDivElement | null>(null)
@@ -43,7 +49,7 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
 
   const { value, useSubmitValueFactory, onUnsetValues, controlStyles } = useInspectorInfoNoDefaults(
     ['fontFamily', 'fontStyle', 'fontWeight'],
-    identity,
+    transformFontFamily,
     identity,
     stylePropPathMappingFn,
   )
