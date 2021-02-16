@@ -16,6 +16,7 @@ import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import { useWrappedEmptyOrUnknownOnSubmitValue } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
+import { emptyValues } from '../../../common/css-utils'
 
 const flexGapProp = [createLayoutPropertyPath('FlexGap')]
 const alignItemsProp = [createLayoutPropertyPath('alignItems')]
@@ -31,6 +32,9 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
     const justifyContent = useInspectorLayoutInfo('justifyContent')
     const flexGap = useInspectorLayoutInfo('FlexGap')
 
+    const flexWrapValueOrDefault = flexWrap.value ?? emptyValues['flexWrap']
+    const flexDirectionOrDefault = flexDirection.value ?? emptyValues['flexDirection']
+
     const {
       justifyFlexStart,
       justifyFlexEnd,
@@ -39,7 +43,7 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
       alignItemsFlexEnd,
       alignContentFlexStart,
       alignContentFlexEnd,
-    } = getDirectionAwareLabels(flexWrap.value, flexDirection.value)
+    } = getDirectionAwareLabels(flexWrapValueOrDefault, flexDirectionOrDefault)
 
     const alignItemsControlStatus: ControlStatus =
       flexWrap.value === FlexWrap.NoWrap ? 'disabled' : alignItems.controlStatus
@@ -64,7 +68,7 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
             controlStyles={flexDirection.controlStyles}
             onSubmitValue={flexDirection.onSubmitValue}
             onUnset={flexDirection.onUnsetValues}
-            flexWrap={flexWrap.value}
+            flexWrap={flexWrapValueOrDefault}
           />
           <FlexJustifyContentControl
             value={justifyContent.value}
@@ -72,7 +76,7 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
             onUnset={justifyContent.onUnsetValues}
             controlStatus={justifyContent.controlStatus}
             controlStyles={justifyContent.controlStyles}
-            flexDirection={flexDirection.value}
+            flexDirection={flexDirectionOrDefault}
             justifyFlexStart={justifyFlexStart}
             justifyFlexEnd={justifyFlexEnd}
           />

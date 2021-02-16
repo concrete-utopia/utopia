@@ -18,6 +18,7 @@ import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
 import { colorTheme, InspectorSectionHeader } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
+import { emptyValues } from '../../common/css-utils'
 
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]
@@ -96,7 +97,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             id='image-src'
             key='image-src'
             testId='image-src'
-            value={srcValue}
+            value={srcValue ?? emptyValues['src']}
             onSubmitValue={srcOnSubmitValue}
             controlStyles={srcControlStyles}
             controlStatus={srcControlStatus}
@@ -115,7 +116,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             id='image-alt'
             key='image-alt'
             testId='image-alt'
-            value={altValue}
+            value={altValue ?? emptyValues['alt']}
             onSubmitValue={altOnSubmitValue}
             controlStyles={altControlStyles}
             controlStatus={altControlStatus}

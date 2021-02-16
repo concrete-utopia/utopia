@@ -355,7 +355,7 @@ export function useInspectorStyleInfo<P extends ParsedCSSPropertiesKeys>(
     ({
       [prop]: transformedType,
     } as Partial<ParsedValues<P>>),
-): InspectorInfo<ParsedCSSProperties[P] | undefined> {
+): InspectorInfo<ParsedCSSProperties[P] | undefined, P> {
   return useInspectorInfoNoDefaults(
     [prop],
     transformValue,
@@ -1053,7 +1053,7 @@ export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
     return { [property]: transformedType } as Partial<ParsedValues<P>>
   }
 
-  let inspectorInfo = useInspectorInfo(
+  let inspectorInfo = useInspectorInfoNoDefaults(
     [property],
     transformValue,
     untransformValue,
