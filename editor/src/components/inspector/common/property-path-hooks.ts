@@ -344,16 +344,22 @@ export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(
 
 export function useInspectorStyleInfo<P extends ParsedCSSPropertiesKeys>(
   prop: P,
-  transformValue: (parsedValues: ParsedValues<P>) => ParsedCSSProperties[P] = (parsedValues) =>
-    parsedValues[prop],
-  untransformValue: (transformedType: ParsedCSSProperties[P]) => Partial<ParsedValues<P>> = (
-    transformedType,
-  ) =>
+  transformValue: (parsedValues: Partial<ParsedValues<P>>) => ParsedCSSProperties[P] | undefined = (
+    parsedValues,
+  ) => parsedValues[prop],
+  untransformValue: (
+    transformedType: ParsedCSSProperties[P] | undefined,
+  ) => Partial<ParsedValues<P>> = (transformedType) =>
     ({
       [prop]: transformedType,
     } as Partial<ParsedValues<P>>),
-) {
-  return useInspectorInfo([prop], transformValue, untransformValue, stylePropPathMappingFn)
+): InspectorInfo<ParsedCSSProperties[P] | undefined> {
+  return useInspectorInfoNoDefaults(
+    [prop],
+    transformValue,
+    untransformValue,
+    stylePropPathMappingFn,
+  )
 }
 
 export function useInspectorContext() {
@@ -437,7 +443,7 @@ export type SubmitValueFactoryReturn<T> = [(newValue: T) => void, (newValue: T) 
  * @returns [onSubmitValue, onTransientSubmitValue]
  */
 export type UseSubmitValueFactory<T> = <NewType>(
-  transform: (newValue: NewType, oldValue: T) => T,
+  transform: (newValue: NewType, oldValue: T | undefined) => T,
 ) => SubmitValueFactoryReturn<NewType>
 
 export type OnUnsetValues = () => void

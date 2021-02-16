@@ -45,6 +45,7 @@ import {
   defaultTransformTranslateY,
   defaultTransformTranslateZ,
   EmptyInputValue,
+  emptyValues,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   isCSSDefault,
@@ -73,7 +74,7 @@ const ObjectPathImmutable: any = OPI
 
 interface TransformItemProps {
   index: number
-  useSubmitValueFactory: UseSubmitValueFactory<CSSTransforms>
+  useSubmitValueFactory: UseSubmitValueFactory<CSSTransforms | undefined>
   controlStatus: ControlStatus
   controlStyles: ControlStyles
 }
@@ -81,9 +82,9 @@ interface TransformItemProps {
 function getIndexedToggleTransformItemEnabled(index: number) {
   return function indexedToggleTransformItemEnabled(
     enabled: boolean,
-    oldValue: CSSTransforms,
+    oldValue?: CSSTransforms,
   ): CSSTransforms {
-    let newCSSTransforms = [...oldValue]
+    let newCSSTransforms = oldValue != null ? [...oldValue] : []
     newCSSTransforms[index].enabled = enabled
     return newCSSTransforms
   }
@@ -222,9 +223,9 @@ const transformSelectOptions: Array<TransformSelectOption> = cssTransformSupport
 export function getIndexedOnTransformTypeSelectSubmitValue(transformIndex: number) {
   return function onTransformTypeSelectSubmitValue(
     newTransformType: CSSTransformSupportedType,
-    oldValue: CSSTransforms,
+    oldValue?: CSSTransforms,
   ): CSSTransforms {
-    let newCSSTransforms = [...oldValue]
+    let newCSSTransforms = oldValue != null ? [...oldValue] : []
     newCSSTransforms[transformIndex] = {
       ...transformItemControlMetadatas[newTransformType].emptyValue,
     }
@@ -245,12 +246,13 @@ const transformsToInsert: Array<CSSTransformSupportedType> = [
 ]
 
 function insertCSSTransform(
-  oldValue: CSSTransforms,
+  oldValue: CSSTransforms | undefined,
   onSubmitValue: OnSubmitValue<CSSTransforms>,
 ): void {
   let submitted = false
   for (const transformItemToCheck of transformsToInsert) {
     if (
+      Array.isArray(oldValue) &&
       oldValue.every((oldValueTransformItem) => oldValueTransformItem.type !== transformItemToCheck)
     ) {
       onSubmitValue([
@@ -262,7 +264,11 @@ function insertCSSTransform(
     }
   }
   if (!submitted) {
-    onSubmitValue([...oldValue, { ...defaultTransformTranslate }])
+    const value =
+      oldValue != null
+        ? [...oldValue, { ...defaultTransformTranslate }]
+        : [{ ...defaultTransformTranslate }]
+    onSubmitValue(value)
   }
 }
 
@@ -272,9 +278,9 @@ function getIndexedUpdateSingleLengthValue(
 ) {
   return function indexedUpdateSingleLengthValueEnabled(
     value: CSSNumber | EmptyInputValue,
-    oldValue: CSSTransforms,
+    oldValue?: CSSTransforms,
   ): CSSTransforms {
-    let newCSSTransforms = [...oldValue]
+    let newCSSTransforms = oldValue != null ? [...oldValue] : []
     let newTransformValue: CSSTransformItem = { ...newCSSTransforms[index] }
     if (isCSSTransformSingleItem(newTransformValue)) {
       newTransformValue.value = fallbackOnEmptyInputValueToCSSEmptyValue(emptyValue.value, value)
@@ -375,9 +381,9 @@ function getIndexedUpdateDoubleLengthValue(
 ) {
   return function indexedUpdateDoubleLengthFirstValueEnabled(
     value: CSSNumber | EmptyInputValue,
-    oldValue: CSSTransforms,
+    oldValue?: CSSTransforms,
   ): CSSTransforms {
-    let newCSSTransforms = [...oldValue]
+    let newCSSTransforms = oldValue != null ? [...oldValue] : []
     let newTransformValue: CSSTransformItem = { ...newCSSTransforms[itemIndex] }
     if (isCSSTransformDoubleItem(newTransformValue)) {
       let indexedValue = { ...newTransformValue.values[lengthIndex] }
@@ -521,7 +527,7 @@ const DoubleLengthItem = betterReactMemo<DoubleLengthItemProps>('DoubleLengthIte
   )
 })
 
-const CSSTransformsToTransform = (transformedType: CSSTransforms) => {
+const CSSTransformsToTransform = (transformedType?: CSSTransforms) => {
   if (Array.isArray(transformedType) && transformedType.length !== 0) {
     return {
       transform: transformedType,
@@ -544,11 +550,12 @@ export const TransformSubsection = betterReactMemo('TransformSubsection', () => 
     propertyStatus,
   } = useInspectorStyleInfo('transform', undefined, CSSTransformsToTransform)
 
+  const transformValue = value != null ? value : emptyValues['transform']
   const transformContextMenuItems = utils.stripNulls([
     controlStyles.unsettable ? addOnUnsetValues(['transform'], onUnsetValues) : null,
   ])
 
-  const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight)
+  const { springs, bind } = useArraySuperControl(transformValue, onSubmitValue, rowHeight)
 
   const insertCSSTransformMouseDown = React.useCallback(() => {
     insertCSSTransform(value, onSubmitValue)
@@ -594,7 +601,7 @@ export const TransformSubsection = betterReactMemo('TransformSubsection', () => 
             }}
           >
             {springs.map((springStyle: { [x: string]: SpringValue<any> }, index: number) => {
-              const transformItem = value[index]
+              const transformItem = transformValue[index]
               if (transformItem != null) {
                 let item: JSX.Element
                 if (isCSSTransformSingleItem(transformItem)) {
@@ -629,7 +636,7 @@ export const TransformSubsection = betterReactMemo('TransformSubsection', () => 
                   )
                 } else {
                   item = (
-                    <UnknownArrayItem
+                    <UnknownArrayItem<CSSTransformItem>
                       index={index}
                       key={`unknown-${index}`}
                       useSubmitTransformedValuesFactory={useSubmitValueFactory}

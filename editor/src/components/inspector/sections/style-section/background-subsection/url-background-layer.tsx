@@ -32,11 +32,11 @@ interface URLBackgroundLayerProps extends BackgroundLayerProps {
 function getIndexedUpdateNewURL(index: number) {
   return function updateNewURL(
     newValue: string | EmptyInputValue,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    const oldLayer = oldValue[index]
+    const oldLayer = oldValue != null ? oldValue[index] : null
     if (oldLayer != null) {
-      let newCSSBackgroundLayers = [...oldValue]
+      let newCSSBackgroundLayers = oldValue != null ? [...oldValue] : []
       const newURL = fallbackOnEmptyInputValueToCSSEmptyValue('', newValue)
       if (isCSSImageURLBackgroundLayer(oldLayer)) {
         newCSSBackgroundLayers[index] = {

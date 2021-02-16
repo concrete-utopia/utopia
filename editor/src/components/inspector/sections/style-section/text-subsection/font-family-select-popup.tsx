@@ -67,7 +67,7 @@ interface FontFamilySelectPopupProps {
   controlStyles: ControlStyles
   closePopup: () => void
   useSubmitFontVariantFactory: UseSubmitValueFactory<
-    ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>
+    Partial<ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'>>
   >
 }
 

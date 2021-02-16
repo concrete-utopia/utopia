@@ -35,9 +35,9 @@ import { betterReactMemo } from '../../../../../uuiui-deps'
 export function getIndexedUpdateCSSBackgroundLayerLinearGradientAngle(index: number) {
   return function updateCSSBackgroundLayersLinearGradientAngle(
     newAngle: CSSNumber | EmptyInputValue,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    let newBackgroundLayers = [...oldValue]
+    let newBackgroundLayers = oldValue != null ? [...oldValue] : []
     let workingBackgroundLayer = newBackgroundLayers[index]
     if (workingBackgroundLayer.type === 'linear-gradient-background-layer') {
       workingBackgroundLayer.angle = fallbackOnEmptyInputValueToCSSDefaultEmptyValue(

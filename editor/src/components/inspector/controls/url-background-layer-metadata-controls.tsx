@@ -14,9 +14,9 @@ import { StringControl } from './string-control'
 export function getIndexedUpdateCSSBackgroundLayerURLImageValue(index: number) {
   return function updateCSSBackgroundLayerURLImageValue(
     newValue: string,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    let newBackgroundLayers = [...oldValue]
+    let newBackgroundLayers = oldValue != null ? [...oldValue] : []
     let workingBackgroundLayer = { ...newBackgroundLayers[index] }
     if (isCSSImageURLBackgroundLayer(workingBackgroundLayer)) {
       workingBackgroundLayer.url = newValue

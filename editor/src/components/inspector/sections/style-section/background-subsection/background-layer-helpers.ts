@@ -36,9 +36,9 @@ export interface BackgroundLayerProps {
 export function getIndexedUpdateEnabled(index: number) {
   return function indexedUpdateEnabled(
     enabled: boolean,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    let newCSSBackgroundLayers = [...oldValue]
+    let newCSSBackgroundLayers = oldValue != null ? [...oldValue] : []
     const workingValue = newCSSBackgroundLayers[index]
     workingValue.enabled = enabled
     if (isCSSBackgroundLayerWithBGSize(workingValue)) {
@@ -89,11 +89,11 @@ export const backgroundLayerTypeSelectOptions: Array<CSSBackgroundLayerTypeSelec
 export function getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(backgroundLayerIndex: number) {
   return function onCSSBackgroundLayerTypeSelectSubmitValue(
     newValue: CSSBackgroundLayerTypeSelectOption,
-    oldValue: CSSBackgroundLayers,
+    oldValue: CSSBackgroundLayers | undefined,
   ): CSSBackgroundLayers {
     const newBackgroundLayerType = newValue.value
-    let newBackgroundLayers = [...oldValue]
-    const oldBackgroundLayer = oldValue[backgroundLayerIndex]
+    let newBackgroundLayers = oldValue != null ? [...oldValue] : []
+    const oldBackgroundLayer = oldValue != null ? oldValue[backgroundLayerIndex] : null
     if (oldBackgroundLayer != null) {
       if (newBackgroundLayerType === oldBackgroundLayer.type) {
         return newBackgroundLayers
@@ -145,7 +145,7 @@ export function getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(backgroundLa
           newStops[1].color = { type: 'Hex', hex: color1.hex() }
           switch (newBackgroundLayerType) {
             case 'solid-background-layer': {
-              return oldValue
+              return oldValue != null ? oldValue : []
             }
             case 'linear-gradient-background-layer': {
               newBackgroundLayers[backgroundLayerIndex] = {
@@ -266,7 +266,7 @@ export function getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(backgroundLa
               return newBackgroundLayers
             }
             case 'url-function-background-layer': {
-              return oldValue
+              return oldValue != null ? oldValue : []
             }
             default: {
               const _exhaustiveCheck: never = newBackgroundLayerType
@@ -289,9 +289,9 @@ export function getIndexedOnCSSBackgroundLayerTypeSelectSubmitValue(backgroundLa
 export function getIndexedUpdateRadialOrConicGradientCenterX(index: number) {
   return function updateRadialOrConicGradientCenterX(
     newX: CSSNumber | EmptyInputValue,
-    cssBackgroundImages: CSSBackgroundLayers,
+    cssBackgroundImages: CSSBackgroundLayers | undefined,
   ): CSSBackgroundLayers {
-    const newCssBackgroundImages = [...cssBackgroundImages]
+    const newCssBackgroundImages = cssBackgroundImages != null ? [...cssBackgroundImages] : []
     const workingBackgroundImage = newCssBackgroundImages[index]
     if (
       workingBackgroundImage.type === 'radial-gradient-background-layer' ||
@@ -317,9 +317,9 @@ export function getIndexedUpdateRadialOrConicGradientCenterX(index: number) {
 export function getIndexedUpdateRadialOrConicGradientCenterY(index: number) {
   return function updateRadialOrConicGradientCenterY(
     newY: CSSNumber | EmptyInputValue,
-    cssBackgroundImages: CSSBackgroundLayers,
+    cssBackgroundImages: CSSBackgroundLayers | undefined,
   ): CSSBackgroundLayers {
-    const newCssBackgroundImages = [...cssBackgroundImages]
+    const newCssBackgroundImages = cssBackgroundImages != null ? [...cssBackgroundImages] : []
     const workingBackgroundImage = newCssBackgroundImages[index]
     if (
       workingBackgroundImage.type === 'radial-gradient-background-layer' ||
@@ -343,4 +343,6 @@ export function getIndexedUpdateRadialOrConicGradientCenterY(index: number) {
   }
 }
 
-export type UseSubmitTransformedValuesFactory = UseSubmitValueFactory<CSSBackgroundLayers>
+export type UseSubmitTransformedValuesFactory = UseSubmitValueFactory<
+  CSSBackgroundLayers | undefined
+>

@@ -228,7 +228,7 @@ const GradientStop = betterReactMemo<GradientStopProps>(
 export interface GradientControlProps {
   stops: Array<CSSGradientStop>
   onSubmitValueAndUpdateLocalStops: OnSubmitValueAndUpdateLocalState<Array<CSSGradientStop>>
-  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers>
+  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers | undefined>
   selectedStopUnorderedIndex: number
   setSelectedStopUnorderedIndex: (index: number) => void
   style?: React.CSSProperties

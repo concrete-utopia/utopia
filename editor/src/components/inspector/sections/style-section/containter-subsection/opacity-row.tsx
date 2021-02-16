@@ -11,6 +11,7 @@ import {
   InspectorContextMenuWrapper,
   SliderControl,
 } from '../../../../../uuiui-deps'
+import { CSSNumber, emptyValues } from '../../../common/css-utils'
 
 const sliderControlOptions = {
   minimum: 0,
@@ -26,14 +27,13 @@ const opacityProp = [PP.create(['style', 'opacity'])]
 export const OpacityRow = betterReactMemo('OpacityRow', () => {
   const opacityMetadata = useInspectorStyleInfo('opacity')
 
-  const opacity = opacityMetadata.value
+  const opacity = opacityMetadata.value ?? emptyValues['opacity']
   const scale = opacity.unit === '%' ? 100 : 1
   const scaledOpacity = opacity.value / scale
-
   const isVisible = useIsSubSectionVisible('opacity')
   const [onScaledSubmit, onScaledTransientSubmit] = opacityMetadata.useSubmitValueFactory(
-    (newValue: number, oldValue) => {
-      return CSSUtils.setCSSNumberValue(oldValue, newValue * scale)
+    (newValue: number, oldValue?: CSSNumber) => {
+      return CSSUtils.setCSSNumberValue(oldValue ?? null, newValue * scale)
     },
   )
 

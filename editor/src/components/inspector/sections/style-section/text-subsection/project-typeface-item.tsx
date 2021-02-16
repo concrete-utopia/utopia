@@ -10,10 +10,10 @@ import { ProjectTypeface } from './font-family-select-popup'
 
 export function updateRemoveFontFamily(
   fontFamilyToDelete: string,
-  oldValue: ExternalResources,
+  oldValue?: ExternalResources,
 ): ExternalResources {
   const googleFontsResources: Array<GoogleFontsResource> = (() => {
-    let workingGoogleFontsResources = [...oldValue.googleFontsResources]
+    let workingGoogleFontsResources = oldValue != null ? [...oldValue.googleFontsResources] : []
     const familyIndex = workingGoogleFontsResources.findIndex(
       (resource) => resource.fontFamily === fontFamilyToDelete,
     )
@@ -23,7 +23,8 @@ export function updateRemoveFontFamily(
     return workingGoogleFontsResources
   })()
   return {
-    ...oldValue,
+    type: oldValue != null ? oldValue.type : 'external-resources',
+    genericExternalResources: oldValue != null ? oldValue.genericExternalResources : [],
     googleFontsResources,
   }
 }

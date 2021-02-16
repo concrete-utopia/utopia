@@ -14,6 +14,7 @@ import {
   cssNumber,
   defaultBorderRadiusIndividual,
   EmptyInputValue,
+  emptyValues,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   framePinToCSSNumber,
   getCSSNumberValue,
@@ -31,40 +32,42 @@ import { betterReactMemo, InspectorContextMenuItems } from '../../../../../uuiui
 
 function updateRadiusType(
   newRadiusTypeValue: SelectOption,
-  borderRadius: CSSBorderRadius,
+  borderRadius?: CSSBorderRadius,
 ): CSSBorderRadius {
+  const oldValue = borderRadius != null ? borderRadius : emptyValues['borderRadius']
   if (newRadiusTypeValue.value === 'individual') {
-    if (isLeft(borderRadius)) {
+    if (isLeft(oldValue)) {
       return right({
-        tl: borderRadius.value,
-        tr: borderRadius.value,
-        br: borderRadius.value,
-        bl: borderRadius.value,
+        tl: oldValue.value,
+        tr: oldValue.value,
+        br: oldValue.value,
+        bl: oldValue.value,
       })
     } else {
-      return borderRadius
+      return oldValue
     }
   } else {
-    if (isRight(borderRadius)) {
-      return left(borderRadius.value.tl)
+    if (isRight(oldValue)) {
+      return left(oldValue.value.tl)
     } else {
-      return borderRadius
+      return oldValue
     }
   }
 }
 
 function updateBorderRadiusAll(
   newBorderRadiusAllValue: number,
-  borderRadius: CSSBorderRadius,
+  borderRadius?: CSSBorderRadius,
 ): CSSBorderRadius {
-  if (isLeft(borderRadius)) {
+  const oldValue = borderRadius != null ? borderRadius : emptyValues['borderRadius']
+  if (isLeft(oldValue)) {
     return left({
-      ...borderRadius.value,
+      ...oldValue.value,
       value: newBorderRadiusAllValue,
     })
   } else {
     return left({
-      ...borderRadius.value.tr,
+      ...oldValue.value.tr,
       value: newBorderRadiusAllValue,
     })
   }
@@ -76,15 +79,16 @@ function updateBorderRadiusAllCSSNumber(newBorderRadiusAllValue: CSSNumber): CSS
 
 function updateBorderRadiusTL(
   newBorderRadiusTLValue: CSSNumber | EmptyInputValue,
-  borderRadius: CSSBorderRadius,
+  borderRadius?: CSSBorderRadius,
 ): CSSBorderRadius {
   const safeNewValue = fallbackOnEmptyInputValueToCSSEmptyValue(
     cssNumber(0),
     newBorderRadiusTLValue,
   )
-  if (isRight(borderRadius)) {
+  const oldValue = borderRadius != null ? borderRadius : emptyValues['borderRadius']
+  if (isRight(oldValue)) {
     const newBorderRadius: CSSBorderRadiusIndividual = {
-      ...borderRadius.value,
+      ...oldValue.value,
       tl: safeNewValue,
     }
     return right(newBorderRadius)
@@ -95,15 +99,16 @@ function updateBorderRadiusTL(
 
 function updateBorderRadiusTR(
   newBorderRadiusTRValue: CSSNumber | EmptyInputValue,
-  borderRadius: CSSBorderRadius,
+  borderRadius?: CSSBorderRadius,
 ): CSSBorderRadius {
   const safeNewValue = fallbackOnEmptyInputValueToCSSEmptyValue(
     cssNumber(0),
     newBorderRadiusTRValue,
   )
-  if (isRight(borderRadius)) {
+  const oldValue = borderRadius != null ? borderRadius : emptyValues['borderRadius']
+  if (isRight(oldValue)) {
     const newBorderRadius: CSSBorderRadiusIndividual = {
-      ...borderRadius.value,
+      ...oldValue.value,
       tr: safeNewValue,
     }
     return right(newBorderRadius)
@@ -114,15 +119,16 @@ function updateBorderRadiusTR(
 
 function updateBorderRadiusBL(
   newBorderRadiusBLValue: CSSNumber | EmptyInputValue,
-  borderRadius: CSSBorderRadius,
+  borderRadius?: CSSBorderRadius,
 ): CSSBorderRadius {
   const safeNewValue = fallbackOnEmptyInputValueToCSSEmptyValue(
     cssNumber(0),
     newBorderRadiusBLValue,
   )
-  if (isRight(borderRadius)) {
+  const oldValue = borderRadius != null ? borderRadius : emptyValues['borderRadius']
+  if (isRight(oldValue)) {
     const newBorderRadius: CSSBorderRadiusIndividual = {
-      ...borderRadius.value,
+      ...oldValue.value,
       bl: safeNewValue,
     }
     return right(newBorderRadius)
@@ -133,15 +139,16 @@ function updateBorderRadiusBL(
 
 function updateBorderRadiusBR(
   newBorderRadiusBRValue: CSSNumber | EmptyInputValue,
-  borderRadius: CSSBorderRadius,
+  borderRadius?: CSSBorderRadius,
 ): CSSBorderRadius {
   const safeNewValue = fallbackOnEmptyInputValueToCSSEmptyValue(
     cssNumber(0),
     newBorderRadiusBRValue,
   )
-  if (isRight(borderRadius)) {
+  const oldValue = borderRadius != null ? borderRadius : emptyValues['borderRadius']
+  if (isRight(oldValue)) {
     const newBorderRadius: CSSBorderRadiusIndividual = {
-      ...borderRadius.value,
+      ...oldValue.value,
       br: safeNewValue,
     }
     return right(newBorderRadius)
@@ -170,12 +177,13 @@ function getSliderMax(widthPin: CSSNumber | undefined, heightPin: CSSNumber | un
 
 export const RadiusRow = betterReactMemo('RadiusControls', () => {
   const {
-    value: borderRadiusValue,
+    value,
     controlStatus,
     controlStyles,
     useSubmitValueFactory,
     onUnsetValues,
   } = useInspectorStyleInfo('borderRadius')
+  const borderRadiusValue = value != null ? value : emptyValues['borderRadius']
   const valueWidth = useInspectorLayoutInfo('Width')
   const valueHeight = useInspectorLayoutInfo('Height')
   const sliderMax = getSliderMax(valueWidth.value, valueHeight.value)

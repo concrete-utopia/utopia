@@ -6,10 +6,7 @@ import { EditorDispatch } from '../../components/editor/action-types'
 import { addToast, updateFile } from '../../components/editor/actions/action-creators'
 import { defaultIndexHtmlFilePath, EditorState } from '../../components/editor/store/editor-state'
 import { useEditorState } from '../../components/editor/store/store-hook'
-import {
-  useCallbackFactory,
-  UseSubmitValueFactory,
-} from '../../components/inspector/common/property-path-hooks'
+import { useCallbackFactory } from '../../components/inspector/common/property-path-hooks'
 import {
   WebFontVariant,
   webFontVariant,
@@ -453,10 +450,14 @@ export function getExternalResourcesInfo(
   }
 }
 
+export type UseSubmitValueFactoryNavigator<T> = <NewType>(
+  transform: (newValue: NewType, oldValue: T) => T,
+) => [(newValue: NewType) => void, (newValue: NewType) => void]
+
 export function useExternalResources(): {
   values: Either<DescriptionParseError, ExternalResources>
   onSubmitValue: OnSubmitValue<ExternalResources>
-  useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
+  useSubmitValueFactory: UseSubmitValueFactoryNavigator<ExternalResources>
 } {
   const { dispatch, editorState } = useEditorState(
     (store) => ({

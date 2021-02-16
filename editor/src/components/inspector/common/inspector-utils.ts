@@ -29,8 +29,11 @@ export function useGetSubsectionHeaderStyle(controlStatus: ControlStatus): React
 export type CSSArrayItem = CSSBackgroundLayer | CSSTransformItem | CSSUnknownArrayItem
 
 export function getIndexedSpliceArrayItem<T extends CSSArrayItem>(index: number) {
-  return function spliceArrayItem(_: any, oldValue: ReadonlyArray<T>): ReadonlyArray<T> {
-    let newArrayItems = [...oldValue]
+  return function spliceArrayItem(
+    _: any,
+    oldValue: ReadonlyArray<T> | undefined,
+  ): ReadonlyArray<T> {
+    let newArrayItems = oldValue != null ? [...oldValue] : []
     newArrayItems.splice(index, 1)
     return newArrayItems
   }

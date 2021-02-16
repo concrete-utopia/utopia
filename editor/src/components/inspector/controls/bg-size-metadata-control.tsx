@@ -61,9 +61,9 @@ const BGSizeKeywordValueSelectOptions = [
 function getIndexedUpdateBGSizePopupList(index: number) {
   return function updateBGSizePopupList(
     newValue: BGSizeSelectOption,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    let newCSSBackgroundLayers = [...oldValue]
+    let newCSSBackgroundLayers = oldValue != null ? [...oldValue] : []
     const indexedLayer = newCSSBackgroundLayers[index]
     if (isCSSBackgroundLayerWithBGSize(indexedLayer)) {
       const bgSize = ((): CSSBGSize => {
@@ -95,9 +95,9 @@ function getIndexedUpdateBGSizePopupList(index: number) {
 function getIndexedUpdateBGSizeWidthNumberValue(index: number) {
   return function updateBGSizeWidthNumberValue(
     newValue: UnknownOrEmptyInput<CSSNumber | CSSKeyword>,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    let newCSSBackgroundLayers = [...oldValue]
+    let newCSSBackgroundLayers = oldValue != null ? [...oldValue] : []
     const indexedLayer = newCSSBackgroundLayers[index]
     if (isCSSBackgroundLayerWithBGSize(indexedLayer)) {
       const bgSizeValue = indexedLayer.bgSize.size.value
@@ -142,9 +142,9 @@ function getIndexedUpdateBGSizeWidthNumberValue(index: number) {
 function getIndexedUpdateBGSizeHeightNumberValue(index: number) {
   return function updateBGSizeHeightNumberValue(
     newValue: UnknownOrEmptyInput<CSSNumber | CSSKeyword>,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    let newCSSBackgroundLayers = [...oldValue]
+    let newCSSBackgroundLayers = oldValue != null ? [...oldValue] : []
     const indexedLayer = newCSSBackgroundLayers[index]
     if (isCSSBackgroundLayerWithBGSize(indexedLayer)) {
       const bgSizeValue = indexedLayer.bgSize.size.value

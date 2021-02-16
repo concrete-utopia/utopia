@@ -18,10 +18,12 @@ import {
   webFontFamilyVariant,
 } from '../../../../navigator/external-resources/google-fonts-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
+import { emptyValues } from '../../../common/css-utils'
 import {
   ParsedValues,
   stylePropPathMappingFn,
   useInspectorInfo,
+  useInspectorInfoNoDefaults,
   useInspectorStyleInfo,
 } from '../../../common/property-path-hooks'
 
@@ -38,10 +40,10 @@ function updateFontWeightAndStyle(
 
 function updateAddNewFontVariant(
   newValue: FontWeightAndStyleSelectOption,
-  oldValue: ExternalResources,
+  oldValue?: ExternalResources,
 ): ExternalResources {
   const newVariant = newValue.value.fontVariant
-  let workingGoogleFontsResources = [...oldValue.googleFontsResources]
+  let workingGoogleFontsResources = oldValue != null ? [...oldValue.googleFontsResources] : []
   const workingResourceIndex = workingGoogleFontsResources.findIndex(
     (v) => v.fontFamily === newValue.value.familyName,
   )
@@ -81,7 +83,8 @@ function updateAddNewFontVariant(
     }
   }
   return {
-    ...oldValue,
+    type: oldValue != null ? oldValue.type : 'external-resources',
+    genericExternalResources: oldValue != null ? oldValue.genericExternalResources : [],
     googleFontsResources: workingGoogleFontsResources,
   }
 }
@@ -91,7 +94,7 @@ interface FontWeightAndStyleSelectOption {
 }
 
 export const FontVariantSelect = betterReactMemo('FontVariantSelect', () => {
-  const { value, controlStyles, onUnsetValues, useSubmitValueFactory } = useInspectorInfo(
+  const { value, controlStyles, onUnsetValues, useSubmitValueFactory } = useInspectorInfoNoDefaults(
     weightAndStylePaths,
     identity,
     identity,
@@ -99,7 +102,7 @@ export const FontVariantSelect = betterReactMemo('FontVariantSelect', () => {
   )
 
   const { value: fontFamilyValue } = useInspectorStyleInfo('fontFamily')
-  const primaryFont = fontFamilyValue[0]
+  const primaryFont = (fontFamilyValue ?? emptyValues['fontFamily'])[0]
 
   const fontWeightAndStyleContextMenuItems = utils.stripNulls([
     controlStyles.unsettable ? addOnUnsetValues(['fontWeight', 'fontStyle'], onUnsetValues) : null,

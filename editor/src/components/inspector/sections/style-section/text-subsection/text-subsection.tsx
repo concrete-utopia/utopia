@@ -26,7 +26,12 @@ import * as EditorActions from '../../../../editor/actions/action-creators'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
 import { measureTextFieldNew } from '../../../../text-utils'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
-import { CSSFontStyle, cssNumber, CSSTextDecorationLine } from '../../../common/css-utils'
+import {
+  CSSFontStyle,
+  cssNumber,
+  CSSTextDecorationLine,
+  emptyValues,
+} from '../../../common/css-utils'
 import { usePropControlledRef_DANGEROUS } from '../../../common/inspector-utils'
 import {
   InspectorCallbackContext,
@@ -45,7 +50,7 @@ import { emptyComments } from '../../../../../core/workers/parser-printer/parser
 
 const ObjectPathImmutable: any = OPI
 
-function updateItalicFontStyle(newValue: boolean, oldValue: CSSFontStyle): CSSFontStyle {
+function updateItalicFontStyle(newValue: boolean, oldValue?: CSSFontStyle): CSSFontStyle {
   return newValue ? 'italic' : 'normal'
 }
 
@@ -245,7 +250,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
             id='color-control'
             key='color-control'
             testId='text-subsection-color-control'
-            value={colorMetadata.value}
+            value={colorMetadata.value ?? emptyValues['color']}
             onSubmitValue={colorMetadata.onSubmitValue}
             onTransientSubmitValue={colorMetadata.onTransientSubmitValue}
             pickerOffset={{ x: -223, y: 0 }}

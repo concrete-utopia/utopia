@@ -27,6 +27,7 @@ import {
   fallbackOnEmptyInputValueToCSSEmptyValue,
   cssPixelLength,
   cssDefault,
+  emptyValues,
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import {
@@ -45,8 +46,8 @@ export function toggleShadowEnabled(oldValue: CSSBoxShadow): CSSBoxShadow {
 }
 
 export function getIndexedToggleShadowEnabled(index: number) {
-  return function (_: null, oldValue: CSSBoxShadows): CSSBoxShadows {
-    let newBoxShadows = [...oldValue]
+  return function (_: null, oldValue?: CSSBoxShadows): CSSBoxShadows {
+    let newBoxShadows = oldValue != null ? [...oldValue] : []
     newBoxShadows[index] = toggleShadowEnabled(newBoxShadows[index])
     return newBoxShadows
   }
@@ -54,9 +55,9 @@ export function getIndexedToggleShadowEnabled(index: number) {
 function getIndexedUpdateShadowColor(index: number) {
   return function indexedUpdateShadowColor(
     newValue: CSSColor,
-    oldValue: CSSBoxShadows,
+    oldValue?: CSSBoxShadows,
   ): CSSBoxShadows {
-    let newBoxShadows = [...oldValue]
+    let newBoxShadows = oldValue != null ? [...oldValue] : []
     newBoxShadows[index] = { ...newBoxShadows[index], color: newValue }
     return newBoxShadows
   }
@@ -65,9 +66,9 @@ function getIndexedUpdateShadowColor(index: number) {
 function getIndexedUpdateShadowOffsetX(index: number) {
   return function indexedUpdateShadowOffsetX(
     newOffsetX: CSSNumber | EmptyInputValue,
-    oldValue: CSSBoxShadows,
+    oldValue?: CSSBoxShadows,
   ): CSSBoxShadows {
-    let newBoxShadows = [...oldValue]
+    let newBoxShadows = oldValue != null ? [...oldValue] : []
     newBoxShadows[index] = {
       ...newBoxShadows[index],
       offsetX: fallbackOnEmptyInputValueToCSSEmptyValue(cssPixelLength(0), newOffsetX),
@@ -79,9 +80,9 @@ function getIndexedUpdateShadowOffsetX(index: number) {
 function getIndexedUpdateShadowOffsetY(index: number) {
   return function indexedUpdateShadowOffsetY(
     newOffsetY: CSSNumber | EmptyInputValue,
-    oldValue: CSSBoxShadows,
+    oldValue?: CSSBoxShadows,
   ): CSSBoxShadows {
-    let newBoxShadows = [...oldValue]
+    let newBoxShadows = oldValue != null ? [...oldValue] : []
     newBoxShadows[index] = {
       ...newBoxShadows[index],
       offsetY: fallbackOnEmptyInputValueToCSSEmptyValue(cssPixelLength(0), newOffsetY),
@@ -93,9 +94,9 @@ function getIndexedUpdateShadowOffsetY(index: number) {
 function getIndexedUpdateShadowBlurRadius(index: number) {
   return function indexedUpdateShadowBlurRadius(
     newBlurRadius: CSSNumber | EmptyInputValue,
-    oldValue: CSSBoxShadows,
+    oldValue?: CSSBoxShadows,
   ): CSSBoxShadows {
-    let newBoxShadows = [...oldValue]
+    let newBoxShadows = oldValue != null ? [...oldValue] : []
     newBoxShadows[index] = {
       ...newBoxShadows[index],
       blurRadius: fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
@@ -110,9 +111,9 @@ function getIndexedUpdateShadowBlurRadius(index: number) {
 function getIndexedUpdateShadowSpreadRadius(index: number) {
   return function indexedUpdateShadowSpreadRadius(
     newSpreadRadius: CSSNumber | EmptyInputValue,
-    oldValue: CSSBoxShadows,
+    oldValue?: CSSBoxShadows,
   ): CSSBoxShadows {
-    let newBoxShadows = [...oldValue]
+    let newBoxShadows = oldValue != null ? [...oldValue] : []
     newBoxShadows[index] = {
       ...newBoxShadows[index],
       spreadRadius: fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
@@ -124,13 +125,13 @@ function getIndexedUpdateShadowSpreadRadius(index: number) {
   }
 }
 
-function updateInsertShadow(_: any, oldValue: CSSBoxShadows): CSSBoxShadows {
-  return [...oldValue, { ...defaultBoxShadow }]
+function updateInsertShadow(_: any, oldValue?: CSSBoxShadows): CSSBoxShadows {
+  return oldValue != null ? [...oldValue, { ...defaultBoxShadow }] : [{ ...defaultBoxShadow }]
 }
 
 function getIndexedSpliceShadow(index: number) {
-  return function (_: any, oldValue: CSSBoxShadows) {
-    let newCSSBoxShadow = [...oldValue]
+  return function (_: any, oldValue?: CSSBoxShadows) {
+    let newCSSBoxShadow = oldValue != null ? [...oldValue] : []
     newCSSBoxShadow.splice(index, 1)
     return newCSSBoxShadow
   }
@@ -143,7 +144,7 @@ interface ShadowItemProps {
   index: number
   controlStatus: ControlStatus
   controlStyles: ControlStyles
-  useSubmitValueFactory: UseSubmitValueFactory<CSSBoxShadows>
+  useSubmitValueFactory: UseSubmitValueFactory<CSSBoxShadows | undefined>
   contextMenuItems: Array<ContextMenuItem<null>>
 }
 
@@ -286,14 +287,15 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
     propertyStatus,
     useSubmitValueFactory,
   } = useInspectorStyleInfo('boxShadow')
+  const shadowValue = value != null ? value : emptyValues['boxShadow']
   const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 
   const [insertShadowValue] = useSubmitValueFactory(updateInsertShadow)
 
-  const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight)
+  const { springs, bind } = useArraySuperControl(shadowValue, onSubmitValue, rowHeight)
 
   const contextMenuItems = utils.stripNulls([
-    value.length > 0 ? addOnUnsetValues(['boxShadow'], onUnsetValues) : null,
+    shadowValue.length > 0 ? addOnUnsetValues(['boxShadow'], onUnsetValues) : null,
   ])
 
   if (!isVisible) {
@@ -333,7 +335,7 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
         }}
       >
         {springs.map((springStyle: { [x: string]: SpringValue<any> }, index: number) => {
-          const boxShadow = value[index]
+          const boxShadow = shadowValue[index]
           if (boxShadow != null) {
             return (
               <animated.div
@@ -348,7 +350,7 @@ export const ShadowSubsection = betterReactMemo('ShadowSubsection', () => {
               >
                 <ShadowItem
                   value={boxShadow}
-                  shadowsLength={value.length}
+                  shadowsLength={shadowValue.length}
                   useSubmitValueFactory={useSubmitValueFactory}
                   onUnsetValues={onUnsetValues}
                   index={index}

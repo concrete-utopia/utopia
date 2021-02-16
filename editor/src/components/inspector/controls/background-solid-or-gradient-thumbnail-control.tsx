@@ -41,7 +41,7 @@ export interface BackgroundThumbnailControlProps {
   showString?: boolean
   onSubmitSolidStringValue?: (value: string) => void
   backgroundIndex: number
-  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers>
+  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers | undefined>
 }
 
 interface BackgroundSolidOrGradientThumbnailControlProps extends BackgroundThumbnailControlProps {

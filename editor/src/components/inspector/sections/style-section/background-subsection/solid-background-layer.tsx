@@ -32,10 +32,10 @@ import { betterReactMemo } from '../../../../../uuiui-deps'
 function getIndexedUpdateStringCSSBackgroundLayerSolidColor(index: number) {
   return function indexedUpdateStringCSSBackgroundLayerSolidColor(
     newValue: string,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
     const parsedColor = parseColor(newValue)
-    let newCSSBackgroundLayers = [...oldValue]
+    let newCSSBackgroundLayers = oldValue != null ? [...oldValue] : []
     if (isRight(parsedColor)) {
       const oldIndexedValue = newCSSBackgroundLayers[index]
       if (isCSSSolidBackgroundLayer(oldIndexedValue)) {
@@ -52,11 +52,11 @@ function getIndexedUpdateStringCSSBackgroundLayerSolidColor(index: number) {
 function getIndexedUpdateNewAlpha(index: number) {
   return function updateNewAlpha(
     newValue: number | EmptyInputValue,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    const oldColor = oldValue[index]
+    const oldColor = oldValue != null ? oldValue[index] : null
     if (oldColor != null) {
-      let newCSSBackgroundLayers = [...oldValue]
+      let newCSSBackgroundLayers = oldValue != null ? [...oldValue] : []
       if (oldColor.type === 'solid-background-layer') {
         newCSSBackgroundLayers[index] = {
           ...oldColor,

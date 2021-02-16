@@ -6,10 +6,10 @@ import {
   ExternalResources,
   GoogleFontsResource,
   googleFontsResource,
+  UseSubmitValueFactoryNavigator,
 } from '../../../printer-parsers/html/external-resources-parser'
 import { StringInput } from '../../../uuiui'
 import { betterReactMemo, Utils } from '../../../uuiui-deps'
-import { UseSubmitValueFactory } from '../../inspector/common/property-path-hooks'
 import {
   fontFamilyData,
   FontFamilyData,
@@ -24,7 +24,7 @@ import { GoogleFontsListItem } from './google-fonts-variant-list-item'
 
 interface GoogleFontsResourcesListSearchProps {
   linkedResources: Array<GoogleFontsResource>
-  useSubmitValueFactory: UseSubmitValueFactory<ExternalResources>
+  useSubmitValueFactory: UseSubmitValueFactoryNavigator<ExternalResources>
 }
 
 export type PushNewFontFamilyVariant = (newValue: WebFontFamilyVariant) => void

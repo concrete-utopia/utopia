@@ -2,11 +2,16 @@ import * as React from 'react'
 import { usePopper } from 'react-popper'
 import { identity } from '../../../../../core/shared/utils'
 import utils from '../../../../../utils/utils'
-import { FlexRow, UtopiaTheme, Icons } from '../../../../../uuiui'
+import { FlexRow, UtopiaTheme, Icons, fontSize, fontWeight } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
-import { stylePropPathMappingFn, useInspectorInfo } from '../../../common/property-path-hooks'
+import { emptyValues } from '../../../common/css-utils'
+import {
+  ParsedValues,
+  stylePropPathMappingFn,
+  useInspectorInfoNoDefaults,
+} from '../../../common/property-path-hooks'
 import { PropertyRow } from '../../../widgets/property-row'
 import { FontFamilySelectPopup } from './font-family-select-popup'
 
@@ -36,7 +41,7 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
     [togglePopup],
   )
 
-  const { value, useSubmitValueFactory, onUnsetValues, controlStyles } = useInspectorInfo(
+  const { value, useSubmitValueFactory, onUnsetValues, controlStyles } = useInspectorInfoNoDefaults(
     ['fontFamily', 'fontStyle', 'fontWeight'],
     identity,
     identity,
@@ -46,6 +51,12 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
   const fontFamilyContextMenuItems = utils.stripNulls([
     controlStyles.unsettable ? addOnUnsetValues(['fontFamily'], onUnsetValues) : null,
   ])
+
+  const fontFamilyValue: ParsedValues<'fontFamily' | 'fontStyle' | 'fontWeight'> = {
+    fontFamily: value?.fontFamily ?? emptyValues['fontFamily'],
+    fontStyle: value?.fontStyle ?? emptyValues['fontStyle'],
+    fontWeight: value?.fontWeight ?? emptyValues['fontWeight'],
+  }
 
   return (
     <PropertyRow>
@@ -60,7 +71,7 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
             {...attributes.popper}
             style={styles.popper}
             ref={setPopperElement}
-            value={value}
+            value={fontFamilyValue}
             onUnsetValues={onUnsetValues}
             controlStyles={controlStyles}
             closePopup={closePopup}
@@ -78,7 +89,7 @@ export const FontFamilySelect = betterReactMemo('FontFamilySelect', () => {
             borderRadius: UtopiaTheme.inputBorderRadius,
           }}
         >
-          <div style={{ flexGrow: 1 }}>{value.fontFamily[0]}</div>
+          <div style={{ flexGrow: 1 }}>{fontFamilyValue.fontFamily[0]}</div>
           <Icons.ExpansionArrowDown />
         </FlexRow>
       </InspectorContextMenuWrapper>

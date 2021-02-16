@@ -77,7 +77,7 @@ interface BackgroundPickerProps {
   value: CSSSolidBackgroundLayer | CSSGradientBackgroundLayer | CSSURLFunctionBackgroundLayer
   closePopup: () => void
   portalTarget?: HTMLElement
-  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers>
+  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers | undefined>
   offsetX: number
   offsetY: number
   id: string
@@ -89,11 +89,11 @@ interface BackgroundPickerProps {
 function getIndexedUpdateCSSBackgroundLayerStop(index: number, backgroundLayerIndex: number) {
   return function indexedUpdateCSSBackgroundLayerStop(
     newValue: CSSColor,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    const oldBackgroundLayer = oldValue[backgroundLayerIndex]
+    const oldBackgroundLayer = oldValue != null ? oldValue[backgroundLayerIndex] : null
     if (oldBackgroundLayer != null) {
-      const newBackgroundLayers = [...oldValue]
+      const newBackgroundLayers = oldValue != null ? [...oldValue] : []
       if (isCSSGradientBackgroundLayer(oldBackgroundLayer)) {
         const newStopsArray = [...oldBackgroundLayer.stops]
         newStopsArray[index].color = { ...newValue }
@@ -106,7 +106,7 @@ function getIndexedUpdateCSSBackgroundLayerStop(index: number, backgroundLayerIn
       }
       return newBackgroundLayers
     }
-    return oldValue
+    return oldValue != null ? oldValue : []
   }
 }
 
@@ -114,7 +114,7 @@ export const inspectorEdgePadding = 8
 
 export interface BackgroundLayerControlsProps {
   value: CSSBackgroundLayer
-  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers>
+  useSubmitValueFactory: UseSubmitValueFactory<CSSBackgroundLayers | undefined>
   controlStatus: ControlStatus
   index: number
 }
@@ -170,9 +170,9 @@ interface RadialGradientControlsProps extends BackgroundLayerControlsProps {
 function getIndexedUpdateRadialGradientWidth(index: number) {
   return function updateRadialGradientWidth(
     newValue: CSSNumber | EmptyInputValue,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    const newCssBackgroundImagesizing = [...oldValue]
+    const newCssBackgroundImagesizing = oldValue != null ? [...oldValue] : []
     const workingRadialGradient = { ...newCssBackgroundImagesizing[index] }
     if (isCSSRadialGradientBackgroundLayer(workingRadialGradient)) {
       workingRadialGradient.gradientSize.width = fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
@@ -188,9 +188,9 @@ function getIndexedUpdateRadialGradientWidth(index: number) {
 function getIndexedUpdateRadialGradientHeight(index: number) {
   return function updateRadialGradientHeight(
     newValue: CSSNumber | EmptyInputValue,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    const newCssBackgroundImagesizing = [...oldValue]
+    const newCssBackgroundImagesizing = oldValue != null ? [...oldValue] : []
     const workingRadialGradient = { ...newCssBackgroundImagesizing[index] }
     if (isCSSRadialGradientBackgroundLayer(workingRadialGradient)) {
       workingRadialGradient.gradientSize.height = fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
@@ -305,9 +305,9 @@ interface ConicGradientControlsProps extends BackgroundLayerControlsProps {
 function getIndexedUpdateConicGradientFromAngle(index: number) {
   return function updateConicGradientFromAngle(
     newValue: CSSNumber | EmptyInputValue,
-    oldValue: CSSBackgroundLayers,
+    oldValue?: CSSBackgroundLayers,
   ): CSSBackgroundLayers {
-    const newCssBackgroundImagesizing = [...oldValue]
+    const newCssBackgroundImagesizing = oldValue != null ? [...oldValue] : []
     const workingConicGradient = { ...newCssBackgroundImagesizing[index] }
     if (isCSSConicGradientBackgroundLayer(workingConicGradient)) {
       workingConicGradient.fromAngle = fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
@@ -420,11 +420,11 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
 
   const { backgroundLayerIndex } = props
   const updateStops = React.useCallback(
-    (newStops: Array<CSSGradientStop>, oldValue: CSSBackgroundLayers) => {
-      const oldBackgroundLayer = oldValue[backgroundLayerIndex]
+    (newStops: Array<CSSGradientStop>, oldValue?: CSSBackgroundLayers) => {
+      const oldBackgroundLayer = oldValue != null ? oldValue[backgroundLayerIndex] : null
       if (oldBackgroundLayer != null) {
         if (isCSSGradientBackgroundLayer(oldBackgroundLayer)) {
-          const newBackgroundLayers = [...oldValue]
+          const newBackgroundLayers = oldValue != null ? [...oldValue] : []
           newBackgroundLayers[backgroundLayerIndex] = {
             ...oldBackgroundLayer,
             stops: newStops,
@@ -432,7 +432,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
           return newBackgroundLayers
         }
       }
-      return oldValue
+      return oldValue != null ? oldValue : []
     },
     [backgroundLayerIndex],
   )

@@ -16,6 +16,7 @@ import {
   EmptyInputValue,
   fallbackOnEmptyInputValueToCSSEmptyValue,
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
+  emptyValues,
 } from '../../../common/css-utils'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { stopPropagation } from '../../../common/inspector-utils'
@@ -36,9 +37,9 @@ import { betterReactMemo } from '../../../../../uuiui-deps'
 function getIndexedToggleTextShadowEnabled(index: number) {
   return function indexedToggleTextShadowEnabled(
     enabled: boolean,
-    cssTextShadows: CSSTextShadows,
+    cssTextShadows?: CSSTextShadows,
   ): CSSTextShadows {
-    let newTextShadow = [...cssTextShadows]
+    let newTextShadow = cssTextShadows != null ? [...cssTextShadows] : []
     newTextShadow[index].enabled = enabled
     return newTextShadow
   }
@@ -47,9 +48,9 @@ function getIndexedToggleTextShadowEnabled(index: number) {
 function getIndexedUpdateTextShadowColor(index: number) {
   return function updateTextShadowColor(
     newColor: CSSColor,
-    cssTextShadows: CSSTextShadows,
+    cssTextShadows?: CSSTextShadows,
   ): CSSTextShadows {
-    let newTextShadows = [...cssTextShadows]
+    let newTextShadows = cssTextShadows != null ? [...cssTextShadows] : []
     let newTextShadow: CSSTextShadow = { ...newTextShadows[index] }
     newTextShadow.color = newColor
     newTextShadows[index] = newTextShadow
@@ -60,9 +61,9 @@ function getIndexedUpdateTextShadowColor(index: number) {
 function getIndexedUpdateTextShadowOffsetX(index: number) {
   return function updateTextShadowOffsetX(
     newOffsetX: CSSNumber | EmptyInputValue,
-    cssTextShadows: CSSTextShadows,
+    cssTextShadows?: CSSTextShadows,
   ): CSSTextShadows {
-    let newTextShadows = [...cssTextShadows]
+    let newTextShadows = cssTextShadows != null ? [...cssTextShadows] : []
     let newTextShadow: CSSTextShadow = { ...newTextShadows[index] }
     newTextShadow.offsetX = fallbackOnEmptyInputValueToCSSEmptyValue(
       {
@@ -78,9 +79,9 @@ function getIndexedUpdateTextShadowOffsetX(index: number) {
 function getIndexedUpdateTextShadowOffsetY(index: number) {
   return function updateTextShadowOffsetY(
     newOffsetY: CSSNumber | EmptyInputValue,
-    cssTextShadows: CSSTextShadows,
+    cssTextShadows?: CSSTextShadows,
   ): CSSTextShadows {
-    let newTextShadows = [...cssTextShadows]
+    let newTextShadows = cssTextShadows != null ? [...cssTextShadows] : []
     let newTextShadow: CSSTextShadow = { ...newTextShadows[index] }
     newTextShadow.offsetY = fallbackOnEmptyInputValueToCSSEmptyValue(
       {
@@ -96,9 +97,9 @@ function getIndexedUpdateTextShadowOffsetY(index: number) {
 function getIndexedUpdateTextShadowBlurRadius(index: number) {
   return function updateTextShadowBlurRadius(
     newBlurRadius: CSSNumber | EmptyInputValue,
-    cssTextShadows: CSSTextShadows,
+    cssTextShadows?: CSSTextShadows,
   ): CSSTextShadows {
-    let newTextShadows = [...cssTextShadows]
+    let newTextShadows = cssTextShadows != null ? [...cssTextShadows] : []
     let newTextShadow: CSSTextShadow = { ...newTextShadows[index] }
     newTextShadow.blurRadius = fallbackOnEmptyInputValueToCSSDefaultEmptyValue(
       defaultTextShadow.blurRadius,
@@ -110,13 +111,13 @@ function getIndexedUpdateTextShadowBlurRadius(index: number) {
 }
 
 function getIndexedSpliceTextShadow(index: number) {
-  return function spliceTextShadow(_: any, cssTextShadows: CSSTextShadows): CSSTextShadows {
-    return R.remove(index, 1, [...cssTextShadows])
+  return function spliceTextShadow(_: any, cssTextShadows?: CSSTextShadows): CSSTextShadows {
+    return R.remove(index, 1, cssTextShadows != null ? [...cssTextShadows] : [])
   }
 }
 
-function insertTextShadow(_: any, cssTextShadows: CSSTextShadows): CSSTextShadows {
-  return [...cssTextShadows, defaultTextShadow]
+function insertTextShadow(_: any, cssTextShadows?: CSSTextShadows): CSSTextShadows {
+  return cssTextShadows != null ? [...cssTextShadows, defaultTextShadow] : [defaultTextShadow]
 }
 
 type TextShadowItemProps = {
@@ -126,7 +127,7 @@ type TextShadowItemProps = {
   controlStatus: ControlStatus
   controlStyles: ControlStyles
   useSubmitValueFactory: <NT>(
-    transform: (newValue: NT, oldValue: CSSTextShadows) => CSSTextShadows,
+    transform: (newValue: NT, oldValue?: CSSTextShadows) => CSSTextShadows,
   ) => [(newValue: NT) => void, (newValue: NT) => void]
 }
 
@@ -254,7 +255,7 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
     onUnsetValues,
     onSubmitValue,
     useSubmitValueFactory,
-  } = useInspectorStyleInfo('textShadow', undefined, (transformedType: CSSTextShadows) => {
+  } = useInspectorStyleInfo('textShadow', undefined, (transformedType?: CSSTextShadows) => {
     if (Array.isArray(transformedType) && transformedType.length === 0) {
       return {}
     } else {
@@ -269,7 +270,7 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
   const isVisible = useIsSubSectionVisible('textShadow')
 
   const { springs, bind } = useArraySuperControl(
-    textShadowsValue,
+    textShadowsValue ?? [],
     onSubmitValue,
     PropertyRowHeightWithLabel,
   )
@@ -279,10 +280,10 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
   }, [onUnsetValues])
 
   const contextMenuItems = utils.stripNulls([
-    textShadowsValue.length > 0 ? addOnUnsetValues(['textShadow'], onUnsetValues) : null,
+    (textShadowsValue ?? []).length > 0 ? addOnUnsetValues(['textShadow'], onUnsetValues) : null,
   ])
 
-  const length = textShadowsValue.length
+  const length = (textShadowsValue ?? []).length
 
   const insertShadow = React.useCallback(() => {
     insertTextShadowItemSubmitValue(null)
@@ -323,7 +324,7 @@ export const TextShadowSubsection = betterReactMemo('TextShadowSubsection', () =
             <FakeUnknownArrayItem controlStatus={controlStatus} />
           ) : (
             springs.map((springStyle: { [x: string]: SpringValue<any> }, index: number) => {
-              const value = textShadowsValue[index]
+              const value = (textShadowsValue ?? emptyValues['textShadow'])[index]
               if (value != null) {
                 return (
                   <animated.div

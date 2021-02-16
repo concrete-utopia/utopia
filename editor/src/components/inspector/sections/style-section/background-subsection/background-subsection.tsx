@@ -23,12 +23,15 @@ import {
   isCSSSolidBackgroundLayer,
   cssDefault,
   CSSDefault,
+  CSSUnknownArrayItem,
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import {
   stylePropPathMappingFn,
   useInspectorInfo,
+  useInspectorInfoNoDefaults,
   useIsSubSectionVisible,
+  UseSubmitValueFactory,
 } from '../../../common/property-path-hooks'
 import { ConicGradientBackgroundLayer } from './conic-gradient-layer'
 import { LinearGradientBackgroundLayer } from './linear-gradient-layer'
@@ -79,12 +82,15 @@ function getBackgroundSizeOrUndefinedIfDefault(
 }
 
 export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
-  cssBackgroundLayers: CSSBackgroundLayers,
+  cssBackgroundLayers?: CSSBackgroundLayers | undefined,
 ): {
   backgroundColor?: CSSDefault<CSSSolidColor>
   backgroundImage?: CSSBackgrounds
   backgroundSize?: CSSBackgroundSize
 } {
+  if (cssBackgroundLayers == null) {
+    return {}
+  }
   switch (cssBackgroundLayers.length) {
     case 0: {
       return {}
@@ -137,18 +143,24 @@ export function cssBackgroundLayerArrayToBackgroundImagesAndColor(
   }
 }
 
-export function backgroundImagesAndColorToCSSBackgroundLayerArray(values: {
-  backgroundColor: CSSDefault<CSSSolidColor>
-  backgroundImage: CSSBackgrounds
-  backgroundSize: CSSBackgroundSize
-}): CSSBackgroundLayers {
-  const backgroundLayers = values.backgroundImage
+export function backgroundImagesAndColorToCSSBackgroundLayerArray(
+  values:
+    | {
+        backgroundColor?: CSSDefault<CSSSolidColor>
+        backgroundImage?: CSSBackgrounds
+        backgroundSize?: CSSBackgroundSize
+      }
+    | undefined = {},
+): CSSBackgroundLayers {
+  const backgroundImage = values.backgroundImage != null ? values.backgroundImage : []
+  const backgroundLayers = backgroundImage
     .map((bgImage, i) => {
-      const bgSize = values.backgroundSize[i] ?? { ...defaultBGSize }
+      const bgSizes = values.backgroundSize != null ? values.backgroundSize : []
+      const bgSize = bgSizes[i] ?? { ...defaultBGSize }
       return cssBackgroundToCSSBackgroundLayer(bgImage, bgSize)
     })
     .reverse()
-  if (!values.backgroundColor.default) {
+  if (values.backgroundColor != null && !values.backgroundColor.default) {
     return [cssSolidBackgroundLayer(values.backgroundColor.value), ...backgroundLayers]
   } else {
     return backgroundLayers
@@ -171,25 +183,30 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
     onUnsetValues,
     onSubmitValue,
     useSubmitValueFactory,
-  } = useInspectorInfo(
+  } = useInspectorInfoNoDefaults<
+    'backgroundColor' | 'backgroundImage' | 'backgroundSize',
+    CSSBackgroundLayers | undefined
+  >(
     backgroundLonghandPaths,
     backgroundImagesAndColorToCSSBackgroundLayerArray,
     cssBackgroundLayerArrayToBackgroundImagesAndColor,
     stylePropPathMappingFn,
   )
 
+  const valueOrDefault = value ?? []
+
   const isVisible = useIsSubSectionVisible('background')
 
   const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 
-  const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight, true)
+  const { springs, bind } = useArraySuperControl(valueOrDefault, onSubmitValue, rowHeight, true)
 
   let unsetPropertyValues: Array<string> = []
-  const zerothValue = value[0]
+  const zerothValue = valueOrDefault[0]
   if (zerothValue) {
     if (isCSSSolidBackgroundLayer(zerothValue)) {
       unsetPropertyValues.push('backgroundColor')
-      if (value.length > 1) {
+      if (valueOrDefault.length > 1) {
         unsetPropertyValues.push('backgroundImage')
       }
     } else {
@@ -199,7 +216,7 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
 
   const memoizedUnsetPropertyValues = useKeepReferenceEqualityIfPossible(unsetPropertyValues)
 
-  const valueLength = value.length
+  const valueLength = valueOrDefault.length
 
   const unsetContextMenuItem = React.useMemo(
     () =>
@@ -209,7 +226,7 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
     [memoizedUnsetPropertyValues, onUnsetValues, valueLength],
   )
 
-  const backgroundLayerArrayForDisplay = value.map((backgroundLayer, index) => {
+  const backgroundLayerArrayForDisplay = valueOrDefault.map((backgroundLayer, index) => {
     switch (backgroundLayer.type) {
       case 'linear-gradient-background-layer': {
         return (
@@ -287,7 +304,7 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
       }
       case 'unknown-array-item': {
         return (
-          <UnknownArrayItem
+          <UnknownArrayItem<CSSBackgroundLayer>
             index={index}
             key={`unknown-${index}`}
             value={backgroundLayer}
@@ -305,8 +322,8 @@ export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () =
   })
 
   const insertBackgroundLayerMouseDown = React.useCallback(() => {
-    insertBackgroundLayer([...value], controlStatus === 'unset', onSubmitValue)
-  }, [onSubmitValue, value, controlStatus])
+    insertBackgroundLayer([...valueOrDefault], controlStatus === 'unset', onSubmitValue)
+  }, [onSubmitValue, valueOrDefault, controlStatus])
 
   if (!isVisible) {
     return null

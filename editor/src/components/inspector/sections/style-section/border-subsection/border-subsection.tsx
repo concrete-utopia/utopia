@@ -33,15 +33,15 @@ import { ColorControl, StringColorControl } from '../../../controls/color-contro
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { GridRow } from '../../../widgets/grid-row'
 
-export function toggleBorderEnabled(_: null, oldValue: CSSBorder): CSSBorder {
-  const valueIsEnabled = (oldValue.style?.value.value ?? 'none') !== 'none'
+export function toggleBorderEnabled(_: null, oldValue?: CSSBorder): CSSBorder {
+  const valueIsEnabled = (oldValue?.style?.value.value ?? 'none') !== 'none'
   if (valueIsEnabled) {
-    let workingNewValue = { ...oldValue }
+    let workingNewValue = { ...(oldValue ?? defaultCSSBorder) }
     delete workingNewValue.style
     return workingNewValue
   } else {
     return {
-      ...oldValue,
+      ...(oldValue ?? defaultCSSBorder),
       style: cssLineStyle(cssKeyword('solid')),
     }
   }
@@ -49,47 +49,47 @@ export function toggleBorderEnabled(_: null, oldValue: CSSBorder): CSSBorder {
 
 export function updateBorderWidth(
   newWidth: CSSNumber | EmptyInputValue,
-  oldValue: CSSBorder,
+  oldValue?: CSSBorder,
 ): CSSBorder {
   if (isEmptyInputValue(newWidth)) {
     let newValue = {
-      ...oldValue,
+      ...(oldValue ?? defaultCSSBorder),
     }
     delete newValue.width
     return newValue
   } else {
     return {
-      ...oldValue,
+      ...(oldValue ?? defaultCSSBorder),
       style:
-        (oldValue.style?.value.value ?? 'none') === 'none'
+        (oldValue?.style?.value.value ?? 'none') === 'none'
           ? cssLineStyle(cssKeyword('solid'))
-          : oldValue.style,
+          : oldValue?.style,
       width: cssLineWidth(newWidth),
     }
   }
 }
 
-export function updateBorderColor(newColor: CSSColor, oldValue: CSSBorder): CSSBorder {
+export function updateBorderColor(newColor: CSSColor, oldValue?: CSSBorder): CSSBorder {
   return {
-    ...oldValue,
+    ...(oldValue ?? defaultCSSBorder),
     style:
-      (oldValue.style?.value.value ?? 'none') === 'none'
+      (oldValue?.style?.value.value ?? 'none') === 'none'
         ? cssLineStyle(cssKeyword('solid'))
-        : oldValue.style,
+        : oldValue?.style,
     color: newColor,
   }
 }
 
-export function updateBorderColorString(newValue: string, oldValue: CSSBorder): CSSBorder {
+export function updateBorderColorString(newValue: string, oldValue?: CSSBorder): CSSBorder {
   const parsed = parseColor(newValue)
   if (isRight(parsed)) {
     return updateBorderColor(parsed.value, oldValue)
   } else {
-    return oldValue
+    return oldValue ?? defaultCSSBorder
   }
 }
 
-function insertBorder(_: null, oldValue: CSSBorder): CSSBorder {
+function insertBorder(_: null, oldValue?: CSSBorder): CSSBorder {
   return { ...defaultCSSBorder }
 }
 
@@ -107,10 +107,10 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
 
   const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 
-  const borderEnabled = (value.style?.value.value ?? 'none') !== 'none'
-  const borderColor: CSSColor = value.color ?? defaultCSSBorder.color
+  const borderEnabled = (value?.style?.value.value ?? 'none') !== 'none'
+  const borderColor: CSSColor = value?.color ?? defaultCSSBorder.color
   const borderWidth: CSSNumber = (() => {
-    if (value.width == null) {
+    if (value?.width == null) {
       return { ...defaultBorderWidth }
     } else if (isCSSNumber(value.width.value)) {
       return value.width.value
