@@ -20,8 +20,8 @@
     "compile": "yarn webpack-cli --config extension-browser.webpack.config --mode production",
     "watch": "yarn webpack-cli --config extension-browser.webpack.config --mode production --watch --info-verbosity verbose",
     "watch-dev": "yarn webpack-cli --config extension-browser.webpack.config --watch --info-verbosity verbose",
-    "download-api": "cd src/vscode-types && npx vscode-dts dev 1.53.0",
-    "postdownload-api": "cd src/vscode-types && npx vscode-dts master 1.53.0",
+    "download-api": "mkdir -p src/vscode-types && cd src/vscode-types && npx vscode-dts dev 1.53.0",
+    "postdownload-api": "mkdir -p src/vscode-types && cd src/vscode-types && npx vscode-dts master 1.53.0",
     "postinstall": "npm run download-api"
   },
   "dependencies": {
