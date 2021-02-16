@@ -1,0 +1,1336 @@
+diff --git a/build/gulpfile.vscode.js b/build/gulpfile.vscode.js
+index 6d3a369082..7ad3222305 100644
+--- a/build/gulpfile.vscode.js
++++ b/build/gulpfile.vscode.js
+@@ -35,11 +35,12 @@ const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
+ 
+ // Build
+ const vscodeEntryPoints = _.flatten([
+-	buildfile.entrypoint('vs/workbench/workbench.desktop.main'),
++	buildfile.entrypoint('vs/workbench/workbench.web.api'),
+ 	buildfile.base,
+ 	buildfile.workerExtensionHost,
+ 	buildfile.workerNotebook,
+-	buildfile.workbenchDesktop,
++	buildfile.workbenchWeb,
++  buildfile.keyboardMaps,
+ 	buildfile.code
+ ]);
+ 
+@@ -157,8 +158,8 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
+ 
+ 		const checksums = computeChecksums(out, [
+ 			'vs/base/parts/sandbox/electron-browser/preload.js',
+-			'vs/workbench/workbench.desktop.main.js',
+-			'vs/workbench/workbench.desktop.main.css',
++			'vs/workbench/workbench.web.api.js',
++			'vs/workbench/workbench.web.api.css',
+ 			'vs/workbench/services/extensions/node/extensionHostProcess.js',
+ 			'vs/code/electron-browser/workbench/workbench.html',
+ 			'vs/code/electron-browser/workbench/workbench.js'
+diff --git a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json b/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
+deleted file mode 100644
+index 9e26dfeeb6..0000000000
+--- a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{}
+\ No newline at end of file
+diff --git a/product.json b/product.json
+index 9cddae242a..35400d5d59 100644
+--- a/product.json
++++ b/product.json
+@@ -1,140 +1,9 @@
+ {
+-	"nameShort": "Code - OSS",
+-	"nameLong": "Code - OSS",
+-	"applicationName": "code-oss",
+-	"dataFolderName": ".vscode-oss",
+-	"win32MutexName": "vscodeoss",
+-	"licenseName": "MIT",
+-	"licenseUrl": "https://github.com/microsoft/vscode/blob/master/LICENSE.txt",
+-	"win32DirName": "Microsoft Code OSS",
+-	"win32NameVersion": "Microsoft Code OSS",
+-	"win32RegValueName": "CodeOSS",
+-	"win32AppId": "{{E34003BB-9E10-4501-8C11-BE3FAA83F23F}",
+-	"win32x64AppId": "{{D77B7E06-80BA-4137-BCF4-654B95CCEBC5}",
+-	"win32arm64AppId": "{{D1ACE434-89C5-48D1-88D3-E2991DF85475}",
+-	"win32UserAppId": "{{C6065F05-9603-4FC4-8101-B9781A25D88E}",
+-	"win32x64UserAppId": "{{CC6B787D-37A0-49E8-AE24-8559A032BE0C}",
+-	"win32arm64UserAppId": "{{3AEBF0C8-F733-4AD4-BADE-FDB816D53D7B}",
+-	"win32AppUserModelId": "Microsoft.CodeOSS",
+-	"win32ShellNameShort": "C&ode - OSS",
+-	"darwinBundleIdentifier": "com.visualstudio.code.oss",
+-	"linuxIconName": "com.visualstudio.code.oss",
+-	"licenseFileName": "LICENSE.txt",
+-	"reportIssueUrl": "https://github.com/microsoft/vscode/issues/new",
+-	"urlProtocol": "code-oss",
+-	"extensionAllowedProposedApi": [
+-		"ms-vscode.vscode-js-profile-flame",
+-		"ms-vscode.vscode-js-profile-table",
+-		"ms-vscode.github-browser",
+-		"ms-vscode.github-richnav"
+-	],
+-	"builtInExtensions": [
+-		{
+-			"name": "ms-vscode.node-debug",
+-			"version": "1.44.16",
+-			"repo": "https://github.com/microsoft/vscode-node-debug",
+-			"metadata": {
+-				"id": "b6ded8fb-a0a0-4c1c-acbd-ab2a3bc995a6",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
+-			"name": "ms-vscode.node-debug2",
+-			"version": "1.42.5",
+-			"repo": "https://github.com/microsoft/vscode-node-debug2",
+-			"metadata": {
+-				"id": "36d19e17-7569-4841-a001-947eb18602b2",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
+-			"name": "ms-vscode.references-view",
+-			"version": "0.0.77",
+-			"repo": "https://github.com/microsoft/vscode-reference-view",
+-			"metadata": {
+-				"id": "dc489f46-520d-4556-ae85-1f9eab3c412d",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
+-			"name": "ms-vscode.js-debug-companion",
+-			"version": "1.0.8",
+-			"repo": "https://github.com/microsoft/vscode-js-debug-companion",
+-			"metadata": {
+-				"id": "99cb0b7f-7354-4278-b8da-6cc79972169d",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
+-			"name": "ms-vscode.js-debug",
+-			"version": "1.53.0",
+-			"repo": "https://github.com/microsoft/vscode-js-debug",
+-			"metadata": {
+-				"id": "25629058-ddac-4e17-abba-74678e126c5d",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		},
+-		{
+-			"name": "ms-vscode.vscode-js-profile-table",
+-			"version": "0.0.11",
+-			"repo": "https://github.com/microsoft/vscode-js-debug",
+-			"metadata": {
+-				"id": "7e52b41b-71ad-457b-ab7e-0620f1fc4feb",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		}
+-	],
+-	"webBuiltInExtensions": [
+-		{
+-			"name": "ms-vscode.github-browser",
+-			"version": "0.0.14",
+-			"repo": "https://github.com/microsoft/vscode-github-browser",
+-			"metadata": {
+-				"id": "c1bcff4b-4ecb-466e-b8f6-b02788b5fb5a",
+-				"publisherId": {
+-					"publisherId": "5f5636e7-69ed-4afe-b5d6-8d231fb3d3ee",
+-					"publisherName": "ms-vscode",
+-					"displayName": "Microsoft",
+-					"flags": "verified"
+-				},
+-				"publisherDisplayName": "Microsoft"
+-			}
+-		}
+-	]
++  "productConfiguration": {
++    "nameShort": "Code Web",
++    "nameLong": "Code Web",
++    "applicationName": "code-web",
++    "dataFolderName": ".vscode-web",
++    "version": "1.53.0"
++  }
+ }
+diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
+index 1ed7feec97..80e9753bba 100644
+--- a/src/vs/code/browser/workbench/workbench.ts
++++ b/src/vs/code/browser/workbench/workbench.ts
+@@ -1,532 +1,95 @@
+-/*---------------------------------------------------------------------------------------------
+- *  Copyright (c) Microsoft Corporation. All rights reserved.
+- *  Licensed under the MIT License. See License.txt in the project root for license information.
+- *--------------------------------------------------------------------------------------------*/
+-
+-import { IWorkbenchConstructionOptions, create, ICredentialsProvider, IURLCallbackProvider, IWorkspaceProvider, IWorkspace, IWindowIndicator, IHomeIndicator, IProductQualityChangeHandler, ISettingsSyncOptions } from 'vs/workbench/workbench.web.api';
+-import { URI, UriComponents } from 'vs/base/common/uri';
+-import { Event, Emitter } from 'vs/base/common/event';
+-import { generateUuid } from 'vs/base/common/uuid';
+-import { CancellationToken } from 'vs/base/common/cancellation';
+-import { streamToBuffer } from 'vs/base/common/buffer';
+-import { Disposable } from 'vs/base/common/lifecycle';
+-import { request } from 'vs/base/parts/request/browser/request';
+-import { isFolderToOpen, isWorkspaceToOpen } from 'vs/platform/windows/common/windows';
+-import { isEqual } from 'vs/base/common/resources';
+-import { isStandalone } from 'vs/base/browser/browser';
+-import { localize } from 'vs/nls';
+-import { Schemas } from 'vs/base/common/network';
+-import product from 'vs/platform/product/common/product';
+-import { parseLogLevel } from 'vs/platform/log/common/log';
+-
+-function doCreateUri(path: string, queryValues: Map<string, string>): URI {
+-	let query: string | undefined = undefined;
+-
+-	if (queryValues) {
+-		let index = 0;
+-		queryValues.forEach((value, key) => {
+-			if (!query) {
+-				query = '';
+-			}
+-
+-			const prefix = (index++ === 0) ? '' : '&';
+-			query += `${prefix}${key}=${encodeURIComponent(value)}`;
+-		});
+-	}
+-
+-	return URI.parse(window.location.href).with({ path, query });
+-}
+-
+-interface ICredential {
+-	service: string;
+-	account: string;
+-	password: string;
+-}
+-
+-class LocalStorageCredentialsProvider implements ICredentialsProvider {
+-
+-	static readonly CREDENTIALS_OPENED_KEY = 'credentials.provider';
+-
+-	private readonly authService: string | undefined;
+-
+-	constructor() {
+-		let authSessionInfo: { readonly id: string, readonly accessToken: string, readonly providerId: string, readonly canSignOut?: boolean, readonly scopes: string[][] } | undefined;
+-		const authSessionElement = document.getElementById('vscode-workbench-auth-session');
+-		const authSessionElementAttribute = authSessionElement ? authSessionElement.getAttribute('data-settings') : undefined;
+-		if (authSessionElementAttribute) {
+-			try {
+-				authSessionInfo = JSON.parse(authSessionElementAttribute);
+-			} catch (error) { /* Invalid session is passed. Ignore. */ }
+-		}
+-
+-		if (authSessionInfo) {
+-			// Settings Sync Entry
+-			this.setPassword(`${product.urlProtocol}.login`, 'account', JSON.stringify(authSessionInfo));
+-
+-			// Auth extension Entry
+-			this.authService = `${product.urlProtocol}-${authSessionInfo.providerId}.login`;
+-			this.setPassword(this.authService, 'account', JSON.stringify(authSessionInfo.scopes.map(scopes => ({
+-				id: authSessionInfo!.id,
+-				scopes,
+-				accessToken: authSessionInfo!.accessToken
+-			}))));
+-		}
+-	}
+-
+-	private _credentials: ICredential[] | undefined;
+-	private get credentials(): ICredential[] {
+-		if (!this._credentials) {
+-			try {
+-				const serializedCredentials = window.localStorage.getItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY);
+-				if (serializedCredentials) {
+-					this._credentials = JSON.parse(serializedCredentials);
+-				}
+-			} catch (error) {
+-				// ignore
+-			}
+-
+-			if (!Array.isArray(this._credentials)) {
+-				this._credentials = [];
+-			}
+-		}
+-
+-		return this._credentials;
+-	}
+-
+-	private save(): void {
+-		window.localStorage.setItem(LocalStorageCredentialsProvider.CREDENTIALS_OPENED_KEY, JSON.stringify(this.credentials));
+-	}
+-
+-	async getPassword(service: string, account: string): Promise<string | null> {
+-		return this.doGetPassword(service, account);
+-	}
+-
+-	private async doGetPassword(service: string, account?: string): Promise<string | null> {
+-		for (const credential of this.credentials) {
+-			if (credential.service === service) {
+-				if (typeof account !== 'string' || account === credential.account) {
+-					return credential.password;
+-				}
+-			}
+-		}
+-
+-		return null;
+-	}
+-
+-	async setPassword(service: string, account: string, password: string): Promise<void> {
+-		this.doDeletePassword(service, account);
+-
+-		this.credentials.push({ service, account, password });
+-
+-		this.save();
+-
+-		try {
+-			if (password && service === this.authService) {
+-				const value = JSON.parse(password);
+-				if (Array.isArray(value) && value.length === 0) {
+-					await this.logout(service);
+-				}
+-			}
+-		} catch (error) {
+-			console.log(error);
+-		}
+-	}
+-
+-	async deletePassword(service: string, account: string): Promise<boolean> {
+-		const result = await this.doDeletePassword(service, account);
+-
+-		if (result && service === this.authService) {
+-			try {
+-				await this.logout(service);
+-			} catch (error) {
+-				console.log(error);
+-			}
+-		}
+-
+-		return result;
+-	}
+-
+-	private async doDeletePassword(service: string, account: string): Promise<boolean> {
+-		let found = false;
+-
+-		this._credentials = this.credentials.filter(credential => {
+-			if (credential.service === service && credential.account === account) {
+-				found = true;
+-
+-				return false;
+-			}
+-
+-			return true;
+-		});
+-
+-		if (found) {
+-			this.save();
+-		}
+-
+-		return found;
+-	}
+-
+-	async findPassword(service: string): Promise<string | null> {
+-		return this.doGetPassword(service);
+-	}
+-
+-	async findCredentials(service: string): Promise<Array<{ account: string, password: string }>> {
+-		return this.credentials
+-			.filter(credential => credential.service === service)
+-			.map(({ account, password }) => ({ account, password }));
+-	}
+-
+-	private async logout(service: string): Promise<void> {
+-		const queryValues: Map<string, string> = new Map();
+-		queryValues.set('logout', String(true));
+-		queryValues.set('service', service);
+-
+-		await request({
+-			url: doCreateUri('/auth/logout', queryValues).toString(true)
+-		}, CancellationToken.None);
+-	}
+-}
+-
+-class PollingURLCallbackProvider extends Disposable implements IURLCallbackProvider {
+-
+-	static readonly FETCH_INTERVAL = 500; 			// fetch every 500ms
+-	static readonly FETCH_TIMEOUT = 5 * 60 * 1000; 	// ...but stop after 5min
+-
+-	static readonly QUERY_KEYS = {
+-		REQUEST_ID: 'vscode-requestId',
+-		SCHEME: 'vscode-scheme',
+-		AUTHORITY: 'vscode-authority',
+-		PATH: 'vscode-path',
+-		QUERY: 'vscode-query',
+-		FRAGMENT: 'vscode-fragment'
+-	};
+-
+-	private readonly _onCallback = this._register(new Emitter<URI>());
+-	readonly onCallback = this._onCallback.event;
+-
+-	create(options?: Partial<UriComponents>): URI {
+-		const queryValues: Map<string, string> = new Map();
+-
+-		const requestId = generateUuid();
+-		queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.REQUEST_ID, requestId);
+-
+-		const { scheme, authority, path, query, fragment } = options ? options : { scheme: undefined, authority: undefined, path: undefined, query: undefined, fragment: undefined };
+-
+-		if (scheme) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.SCHEME, scheme);
+-		}
+-
+-		if (authority) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.AUTHORITY, authority);
+-		}
+-
+-		if (path) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.PATH, path);
+-		}
+-
+-		if (query) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.QUERY, query);
+-		}
+-
+-		if (fragment) {
+-			queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.FRAGMENT, fragment);
+-		}
+-
+-		// Start to poll on the callback being fired
+-		this.periodicFetchCallback(requestId, Date.now());
+-
+-		return doCreateUri('/callback', queryValues);
+-	}
+-
+-	private async periodicFetchCallback(requestId: string, startTime: number): Promise<void> {
+-
+-		// Ask server for callback results
+-		const queryValues: Map<string, string> = new Map();
+-		queryValues.set(PollingURLCallbackProvider.QUERY_KEYS.REQUEST_ID, requestId);
+-
+-		const result = await request({
+-			url: doCreateUri('/fetch-callback', queryValues).toString(true)
+-		}, CancellationToken.None);
+-
+-		// Check for callback results
+-		const content = await streamToBuffer(result.stream);
+-		if (content.byteLength > 0) {
+-			try {
+-				this._onCallback.fire(URI.revive(JSON.parse(content.toString())));
+-			} catch (error) {
+-				console.error(error);
+-			}
+-
+-			return; // done
+-		}
+-
+-		// Continue fetching unless we hit the timeout
+-		if (Date.now() - startTime < PollingURLCallbackProvider.FETCH_TIMEOUT) {
+-			setTimeout(() => this.periodicFetchCallback(requestId, startTime), PollingURLCallbackProvider.FETCH_INTERVAL);
+-		}
+-	}
+-}
+-
+-class WorkspaceProvider implements IWorkspaceProvider {
+-
+-	static QUERY_PARAM_EMPTY_WINDOW = 'ew';
+-	static QUERY_PARAM_FOLDER = 'folder';
+-	static QUERY_PARAM_WORKSPACE = 'workspace';
+-
+-	static QUERY_PARAM_PAYLOAD = 'payload';
+-
+-	constructor(
+-		public readonly workspace: IWorkspace,
+-		public readonly payload: object
+-	) { }
+-
+-	async open(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): Promise<void> {
+-		if (options?.reuse && !options.payload && this.isSame(this.workspace, workspace)) {
+-			return; // return early if workspace and environment is not changing and we are reusing window
+-		}
+-
+-		const targetHref = this.createTargetUrl(workspace, options);
+-		if (targetHref) {
+-			if (options?.reuse) {
+-				window.location.href = targetHref;
+-			} else {
+-				if (isStandalone) {
+-					window.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
+-				} else {
+-					window.open(targetHref);
+-				}
+-			}
+-		}
+-	}
+-
+-	private createTargetUrl(workspace: IWorkspace, options?: { reuse?: boolean, payload?: object }): string | undefined {
+-
+-		// Empty
+-		let targetHref: string | undefined = undefined;
+-		if (!workspace) {
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW}=true`;
+-		}
+-
+-		// Folder
+-		else if (isFolderToOpen(workspace)) {
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_FOLDER}=${encodeURIComponent(workspace.folderUri.toString())}`;
+-		}
+-
+-		// Workspace
+-		else if (isWorkspaceToOpen(workspace)) {
+-			targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_WORKSPACE}=${encodeURIComponent(workspace.workspaceUri.toString())}`;
+-		}
+-
+-		// Append payload if any
+-		if (options?.payload) {
+-			targetHref += `&${WorkspaceProvider.QUERY_PARAM_PAYLOAD}=${encodeURIComponent(JSON.stringify(options.payload))}`;
+-		}
+-
+-		return targetHref;
+-	}
+-
+-	private isSame(workspaceA: IWorkspace, workspaceB: IWorkspace): boolean {
+-		if (!workspaceA || !workspaceB) {
+-			return workspaceA === workspaceB; // both empty
+-		}
+-
+-		if (isFolderToOpen(workspaceA) && isFolderToOpen(workspaceB)) {
+-			return isEqual(workspaceA.folderUri, workspaceB.folderUri); // same workspace
+-		}
+-
+-		if (isWorkspaceToOpen(workspaceA) && isWorkspaceToOpen(workspaceB)) {
+-			return isEqual(workspaceA.workspaceUri, workspaceB.workspaceUri); // same workspace
+-		}
+-
+-		return false;
+-	}
+-
+-	hasRemote(): boolean {
+-		if (this.workspace) {
+-			if (isFolderToOpen(this.workspace)) {
+-				return this.workspace.folderUri.scheme === Schemas.vscodeRemote;
+-			}
+-
+-			if (isWorkspaceToOpen(this.workspace)) {
+-				return this.workspace.workspaceUri.scheme === Schemas.vscodeRemote;
+-			}
+-		}
+-
+-		return true;
+-	}
+-}
+-
+-class WindowIndicator implements IWindowIndicator {
+-
+-	readonly onDidChange = Event.None;
+-
+-	readonly label: string;
+-	readonly tooltip: string;
+-	readonly command: string | undefined;
+-
+-	constructor(workspace: IWorkspace) {
+-		let repositoryOwner: string | undefined = undefined;
+-		let repositoryName: string | undefined = undefined;
+-
+-		if (workspace) {
+-			let uri: URI | undefined = undefined;
+-			if (isFolderToOpen(workspace)) {
+-				uri = workspace.folderUri;
+-			} else if (isWorkspaceToOpen(workspace)) {
+-				uri = workspace.workspaceUri;
+-			}
+-
+-			if (uri?.scheme === 'github' || uri?.scheme === 'codespace') {
+-				[repositoryOwner, repositoryName] = uri.authority.split('+');
+-			}
+-		}
+-
+-		// Repo
+-		if (repositoryName && repositoryOwner) {
+-			this.label = localize('playgroundLabelRepository', "$(remote) VS Code Web Playground: {0}/{1}", repositoryOwner, repositoryName);
+-			this.tooltip = localize('playgroundRepositoryTooltip', "VS Code Web Playground: {0}/{1}", repositoryOwner, repositoryName);
+-		}
+-
+-		// No Repo
+-		else {
+-			this.label = localize('playgroundLabel', "$(remote) VS Code Web Playground");
+-			this.tooltip = localize('playgroundTooltip', "VS Code Web Playground");
+-		}
+-	}
+-}
+-
+-(function () {
+-
+-	// Find config by checking for DOM
+-	const configElement = document.getElementById('vscode-workbench-web-configuration');
+-	const configElementAttribute = configElement ? configElement.getAttribute('data-settings') : undefined;
+-	if (!configElement || !configElementAttribute) {
+-		throw new Error('Missing web configuration element');
+-	}
+-
+-	const config: IWorkbenchConstructionOptions & { folderUri?: UriComponents, workspaceUri?: UriComponents } = JSON.parse(configElementAttribute);
+-
+-	// Revive static extension locations
+-	if (Array.isArray(config.staticExtensions)) {
+-		config.staticExtensions.forEach(extension => {
+-			extension.extensionLocation = URI.revive(extension.extensionLocation);
+-		});
+-	}
+-
+-	// Find workspace to open and payload
+-	let foundWorkspace = false;
+-	let workspace: IWorkspace;
+-	let payload = Object.create(null);
+-	let logLevel: string | undefined = undefined;
+-
+-	const query = new URL(document.location.href).searchParams;
+-	query.forEach((value, key) => {
+-		switch (key) {
+-
+-			// Folder
+-			case WorkspaceProvider.QUERY_PARAM_FOLDER:
+-				workspace = { folderUri: URI.parse(value) };
+-				foundWorkspace = true;
+-				break;
+-
+-			// Workspace
+-			case WorkspaceProvider.QUERY_PARAM_WORKSPACE:
+-				workspace = { workspaceUri: URI.parse(value) };
+-				foundWorkspace = true;
+-				break;
+-
+-			// Empty
+-			case WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW:
+-				workspace = undefined;
+-				foundWorkspace = true;
+-				break;
+-
+-			// Payload
+-			case WorkspaceProvider.QUERY_PARAM_PAYLOAD:
+-				try {
+-					payload = JSON.parse(value);
+-				} catch (error) {
+-					console.error(error); // possible invalid JSON
+-				}
+-				break;
+-
+-			// Log level
+-			case 'logLevel':
+-				logLevel = value;
+-				break;
+-		}
+-	});
+-
+-	// If no workspace is provided through the URL, check for config attribute from server
+-	if (!foundWorkspace) {
+-		if (config.folderUri) {
+-			workspace = { folderUri: URI.revive(config.folderUri) };
+-		} else if (config.workspaceUri) {
+-			workspace = { workspaceUri: URI.revive(config.workspaceUri) };
+-		} else {
+-			workspace = undefined;
+-		}
+-	}
+-
+-	// Workspace Provider
+-	const workspaceProvider = new WorkspaceProvider(workspace, payload);
+-
+-	// Home Indicator
+-	const homeIndicator: IHomeIndicator = {
+-		href: 'https://github.com/microsoft/vscode',
+-		icon: 'code',
+-		title: localize('home', "Home")
+-	};
+-
+-	// Window indicator (unless connected to a remote)
+-	let windowIndicator: WindowIndicator | undefined = undefined;
+-	if (!workspaceProvider.hasRemote()) {
+-		windowIndicator = new WindowIndicator(workspace);
+-	}
+-
+-	// Product Quality Change Handler
+-	const productQualityChangeHandler: IProductQualityChangeHandler = (quality) => {
+-		let queryString = `quality=${quality}`;
+-
+-		// Save all other query params we might have
+-		const query = new URL(document.location.href).searchParams;
+-		query.forEach((value, key) => {
+-			if (key !== 'quality') {
+-				queryString += `&${key}=${value}`;
+-			}
+-		});
+-
+-		window.location.href = `${window.location.origin}?${queryString}`;
+-	};
+-
+-	// settings sync options
+-	const settingsSyncOptions: ISettingsSyncOptions | undefined = config.settingsSyncOptions ? {
+-		enabled: config.settingsSyncOptions.enabled,
+-		enablementHandler: (enablement) => {
+-			let queryString = `settingsSync=${enablement ? 'true' : 'false'}`;
+-
+-			// Save all other query params we might have
+-			const query = new URL(document.location.href).searchParams;
+-			query.forEach((value, key) => {
+-				if (key !== 'settingsSync') {
+-					queryString += `&${key}=${value}`;
+-				}
+-			});
+-
+-			window.location.href = `${window.location.origin}?${queryString}`;
+-		}
+-	} : undefined;
+-
+-	// Finally create workbench
+-	create(document.body, {
+-		...config,
+-		logLevel: logLevel ? parseLogLevel(logLevel) : undefined,
+-		settingsSyncOptions,
+-		homeIndicator,
+-		windowIndicator,
+-		productQualityChangeHandler,
+-		workspaceProvider,
+-		urlCallbackProvider: new PollingURLCallbackProvider(),
+-		credentialsProvider: new LocalStorageCredentialsProvider()
+-	});
+-})();
++import {
++  create,
++  IWorkbenchConstructionOptions,
++  IWorkspaceProvider,
++} from 'vs/workbench/workbench.web.api'
++import { URI } from 'vs/base/common/uri'
++
++// TODO revisit these dummy parts so that they can return something rather than nothing
++// import {
++//   getSingletonServiceDescriptors,
++//   registerSingleton,
++// } from 'vs/platform/instantiation/common/extensions'
++// import { BrandedService, ServiceIdentifier } from 'vs/platform/instantiation/common/instantiation'
++// import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors'
++
++// const _registry = getSingletonServiceDescriptors()
++
++// function replaceRegisteredSingleton<T, Services extends BrandedService[]>(
++//   id: ServiceIdentifier<T>,
++//   ctor: new (...services: Services) => T,
++//   supportsDelayedInstantiation?: boolean,
++// ): void {
++//   const index = _registry.findIndex((tuple) => tuple[0] === id)
++//   if (index > 0) {
++//     _registry[index] = [
++//       id,
++//       new SyncDescriptor<T>(ctor as new (...args: any[]) => T, [], supportsDelayedInstantiation),
++//     ]
++//   } else {
++//     registerSingleton(id, ctor)
++//   }
++// }
++
++// // Replace services for the parts we don't want to use -
++// // We have to import the original part first to ensure it isn't registered later
++// import 'vs/workbench/browser/parts/panel/panelPart'
++// import { PanelPart } from 'vs/workbench/browser/parts/dummies/panelPart'
++// import { IPanelService } from 'vs/workbench/services/panel/common/panelService'
++// replaceRegisteredSingleton(IPanelService, PanelPart)
++
++// import 'vs/workbench/browser/parts/sidebar/sidebarPart'
++// import { SidebarPart } from 'vs/workbench/browser/parts/dummies/sidebarPart'
++// import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet'
++// replaceRegisteredSingleton(IViewletService, SidebarPart)
++
++// import 'vs/workbench/browser/parts/activitybar/activitybarPart'
++// import { ActivitybarPart } from 'vs/workbench/browser/parts/dummies/activitybarPart'
++// import { IActivityBarService } from 'vs/workbench/services/activityBar/browser/activityBarService'
++// replaceRegisteredSingleton(IActivityBarService, ActivitybarPart)
++
++// import 'vs/workbench/browser/parts/titlebar/titlebarPart'
++// import { TitlebarPart } from 'vs/workbench/browser/parts/dummies/titlebarPart'
++// import { ITitleService } from 'vs/workbench/services/title/common/titleService'
++// replaceRegisteredSingleton(ITitleService, TitlebarPart)
++
++// import 'vs/workbench/browser/parts/statusbar/statusbarPart'
++// import { StatusbarPart } from 'vs/workbench/browser/parts/dummies/statusbarPart'
++// import { IStatusbarService } from 'vs/workbench/services/statusbar/common/statusbar'
++// replaceRegisteredSingleton(IStatusbarService, StatusbarPart)
++
++;(async function () {
++  // create workbench
++  const result = await fetch('/vscode/product.json')
++  const loadedConfig: IWorkbenchConstructionOptions = await result.json()
++
++  // Inject project specific utopia config into the product.json
++  const urlParams = new URLSearchParams(window.location.search)
++  const projectID = urlParams.get('project_id')!
++
++  let config = {
++    ...loadedConfig,
++    folderUri: {
++      scheme: 'utopia',
++      authority: '',
++      path: `/${projectID}`,
++      query: '',
++      fragment: '',
++    },
++  }
++
++  if (Array.isArray(config.staticExtensions)) {
++    config.staticExtensions.forEach((extension) => {
++      extension.extensionLocation = URI.revive(extension.extensionLocation)
++    })
++  }
++
++  const workspace = { folderUri: URI.revive(config.folderUri) }
++
++  if (workspace) {
++    const workspaceProvider: IWorkspaceProvider = { workspace, open: async () => {} }
++    config = { ...config, workspaceProvider }
++  }
++
++  create(document.body, config)
++})()
+diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
+index 1fe5aa621c..18d257fab3 100644
+--- a/src/vs/workbench/browser/layout.ts
++++ b/src/vs/workbench/browser/layout.ts
+@@ -51,6 +51,7 @@ import { ILogService } from 'vs/platform/log/common/log';
+ export enum Settings {
+ 	ACTIVITYBAR_VISIBLE = 'workbench.activityBar.visible',
+ 	STATUSBAR_VISIBLE = 'workbench.statusBar.visible',
++	SIDEBAR_VISIBLE = 'workbench.sideBar.visible',
+ 
+ 	SIDEBAR_POSITION = 'workbench.sideBar.location',
+ 	PANEL_POSITION = 'workbench.panel.defaultLocation',
+@@ -179,16 +180,16 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		windowBorder: false,
+ 
+ 		menuBar: {
+-			visibility: 'default' as MenuBarVisibility,
++			visibility: 'hidden' as MenuBarVisibility,
+ 			toggled: false
+ 		},
+ 
+ 		activityBar: {
+-			hidden: false
++			hidden: true
+ 		},
+ 
+ 		sideBar: {
+-			hidden: false,
++			hidden: true,
+ 			position: Position.LEFT,
+ 			width: 300,
+ 			viewletToRestore: undefined as string | undefined
+@@ -203,7 +204,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		},
+ 
+ 		panel: {
+-			hidden: false,
++			hidden: true,
+ 			position: Position.BOTTOM,
+ 			lastNonMaximizedWidth: 300,
+ 			lastNonMaximizedHeight: 300,
+@@ -212,7 +213,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		},
+ 
+ 		statusBar: {
+-			hidden: false
++			hidden: true
+ 		},
+ 
+ 		views: {
+@@ -384,7 +385,6 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.updatePanelPosition();
+ 
+ 		if (!this.state.zenMode.active) {
+-
+ 			// Statusbar visibility
+ 			const newStatusbarHiddenValue = !this.configurationService.getValue<boolean>(Settings.STATUSBAR_VISIBLE);
+ 			if (newStatusbarHiddenValue !== this.state.statusBar.hidden) {
+@@ -487,13 +487,13 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.fullscreen = isFullscreen();
+ 
+ 		// Menubar visibility
+-		this.state.menuBar.visibility = getMenuBarVisibility(this.configurationService);
++		this.state.menuBar.visibility = 'hidden';
+ 
+ 		// Activity bar visibility
+-		this.state.activityBar.hidden = !this.configurationService.getValue<string>(Settings.ACTIVITYBAR_VISIBLE);
++		this.state.activityBar.hidden = true
+ 
+ 		// Sidebar visibility
+-		this.state.sideBar.hidden = this.storageService.getBoolean(Storage.SIDEBAR_HIDDEN, StorageScope.WORKSPACE, this.contextService.getWorkbenchState() === WorkbenchState.EMPTY);
++		this.state.sideBar.hidden = true
+ 
+ 		// Sidebar position
+ 		this.state.sideBar.position = (this.configurationService.getValue<string>(Settings.SIDEBAR_POSITION) === 'right') ? Position.RIGHT : Position.LEFT;
+@@ -526,7 +526,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.editor.editorsToOpen = this.resolveEditorsToOpen(fileService);
+ 
+ 		// Panel visibility
+-		this.state.panel.hidden = this.storageService.getBoolean(Storage.PANEL_HIDDEN, StorageScope.WORKSPACE, true);
++		this.state.panel.hidden = true
+ 
+ 		// Whether or not the panel was last maximized
+ 		this.state.panel.wasLastMaximized = this.storageService.getBoolean(Storage.PANEL_LAST_IS_MAXIMIZED, StorageScope.WORKSPACE, false);
+@@ -550,7 +550,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		this.state.panel.lastNonMaximizedWidth = this.storageService.getNumber(Storage.PANEL_LAST_NON_MAXIMIZED_WIDTH, StorageScope.GLOBAL, 300);
+ 
+ 		// Statusbar visibility
+-		this.state.statusBar.hidden = !this.configurationService.getValue<string>(Settings.STATUSBAR_VISIBLE);
++		this.state.statusBar.hidden = true
+ 
+ 		// Zen mode enablement
+ 		this.state.zenMode.restore = this.storageService.getBoolean(Storage.ZEN_MODE_ENABLED, StorageScope.WORKSPACE, false) && this.configurationService.getValue(Settings.ZEN_MODE_RESTORE);
+@@ -1094,7 +1094,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		}
+ 	}
+ 
+-	private setStatusBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	private setStatusBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true;
+ 		this.state.statusBar.hidden = hidden;
+ 
+ 		// Adjust CSS
+@@ -1298,7 +1299,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		}
+ 	}
+ 
+-	setActivityBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	setActivityBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true
+ 		this.state.activityBar.hidden = hidden;
+ 
+ 		// Propagate to grid
+@@ -1341,7 +1343,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		]);
+ 	}
+ 
+-	setSideBarHidden(hidden: boolean, skipLayout?: boolean): void {
++	setSideBarHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true
+ 		this.state.sideBar.hidden = hidden;
+ 
+ 		// Adjust CSS
+@@ -1387,7 +1390,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		}
+ 	}
+ 
+-	setPanelHidden(hidden: boolean, skipLayout?: boolean): void {
++	setPanelHidden(_hidden: boolean, skipLayout?: boolean): void {
++		const hidden = true
+ 		const wasHidden = this.state.panel.hidden;
+ 		this.state.panel.hidden = hidden;
+ 
+@@ -1541,7 +1545,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
+ 		return this.state.sideBar.position;
+ 	}
+ 
+-	setMenubarVisibility(visibility: MenuBarVisibility, skipLayout: boolean): void {
++	setMenubarVisibility(_visibility: MenuBarVisibility, skipLayout: boolean): void {
++		const visibility = 'hidden'
+ 		if (this.state.menuBar.visibility !== visibility) {
+ 			this.state.menuBar.visibility = visibility;
+ 
+diff --git a/src/vs/workbench/browser/parts/dummies/activitybarPart.ts b/src/vs/workbench/browser/parts/dummies/activitybarPart.ts
+new file mode 100644
+index 0000000000..455a50bb45
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/activitybarPart.ts
+@@ -0,0 +1,25 @@
++import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++import { IBadge } from 'vs/workbench/services/activity/common/activity';
++import { IActivityBarService } from 'vs/workbench/services/activityBar/browser/activityBarService';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++
++export class ActivitybarPart extends DummyPart implements IActivityBarService {
++	declare readonly _serviceBrand: undefined;
++
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.ACTIVITYBAR_PART, themeService, storageService, layoutService)
++
++		this.setVisible(false)
++	}
++
++	showActivity(viewletOrActionId: string, badge: IBadge, clazz?: string, priority?: number): IDisposable { return Disposable.None }
++	getPinnedViewContainerIds(): string[] { return [] }
++	getVisibleViewContainerIds(): string[] { return [] }
++	focusActivityBar(): void { }
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/dummyPart.ts b/src/vs/workbench/browser/parts/dummies/dummyPart.ts
+new file mode 100644
+index 0000000000..8bc3a355ed
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/dummyPart.ts
+@@ -0,0 +1,39 @@
++import { Event } from 'vs/base/common/event';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { Part } from 'vs/workbench/browser/part';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++
++export abstract class DummyPart extends Part {
++	constructor(
++		private part: Parts,
++		themeService: IThemeService,
++		storageService: IStorageService,
++		layoutService: IWorkbenchLayoutService
++	) {
++		super(part, {}, themeService, storageService, layoutService)
++	}
++
++	create(parent: HTMLElement): void {
++		this.element = parent
++	}
++
++	setVisible(_: boolean) {
++		super.setVisible(false)
++	}
++
++	minimumWidth: number = 0
++	maximumWidth: number = Number.POSITIVE_INFINITY;
++	minimumHeight: number = 0
++	maximumHeight: number = Number.POSITIVE_INFINITY;
++	toJSON(): object {
++		return {
++			type: this.part
++		}
++	}
++
++	onDidOpenEvent<T>(): Event<T> {
++		this.setVisible(false);
++		return Event.None
++	}
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/panelPart.ts b/src/vs/workbench/browser/parts/dummies/panelPart.ts
+new file mode 100644
+index 0000000000..7615e89b43
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/panelPart.ts
+@@ -0,0 +1,45 @@
++import { Event } from 'vs/base/common/event';
++import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
++import { IProgressIndicator } from 'vs/platform/progress/common/progress';
++import { IPanel } from 'vs/workbench/common/panel';
++import { IBadge } from 'vs/workbench/services/activity/common/activity';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++import { IPanelIdentifier, IPanelService } from 'vs/workbench/services/panel/common/panelService';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++
++export class PanelPart extends DummyPart implements IPanelService {
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.PANEL_PART, themeService, storageService, layoutService)
++	}
++
++	declare readonly _serviceBrand: undefined;
++
++	get onDidPanelOpen(): Event<{ panel: IPanel, focus: boolean; }> { return this.onDidOpenEvent() }
++
++	get onDidPanelClose() { return Event.None }
++
++	openPanel(id?: string, focus?: boolean): Promise<IPanel | undefined> {
++		return Promise.resolve(undefined)
++	}
++
++	getActivePanel(): IPanel | undefined { return undefined }
++
++	getPanel(id: string): IPanelIdentifier | undefined { return undefined }
++
++	getPanels(): readonly IPanelIdentifier[] { return [] }
++
++	getPinnedPanels(): readonly IPanelIdentifier[] { return [] }
++
++	getProgressIndicator(id: string): IProgressIndicator | undefined { return undefined }
++
++	showActivity(panelId: string, badge: IBadge, clazz?: string): IDisposable { return Disposable.None }
++
++	hideActivePanel(): void { }
++
++	getLastActivePanelId(): string { return '' }
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/sidebarPart.ts b/src/vs/workbench/browser/parts/dummies/sidebarPart.ts
+new file mode 100644
+index 0000000000..6bb6143484
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/sidebarPart.ts
+@@ -0,0 +1,43 @@
++import { Event } from 'vs/base/common/event';
++import { IProgressIndicator } from 'vs/platform/progress/common/progress';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++import { IViewletService } from 'vs/workbench/services/viewlet/browser/viewlet';
++import { ViewletDescriptor } from 'vs/workbench/browser/viewlet';
++import { IViewlet } from 'vs/workbench/common/viewlet';
++
++export class SidebarPart extends DummyPart implements IViewletService {
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.SIDEBAR_PART, themeService, storageService, layoutService)
++
++		this.setVisible(false)
++	}
++
++	declare readonly _serviceBrand: undefined;
++
++	get onDidViewletRegister(): Event<ViewletDescriptor> { return Event.None }
++	get onDidViewletDeregister(): Event<ViewletDescriptor> { return Event.None }
++	get onDidViewletOpen(): Event<IViewlet> { return this.onDidOpenEvent() }
++	get onDidViewletClose(): Event<IViewlet> { return Event.None }
++
++	openViewlet(id: string | undefined, focus?: boolean): Promise<IViewlet | undefined> {
++		return Promise.resolve(undefined)
++	}
++
++	getActiveViewlet(): IViewlet | undefined { return undefined }
++
++	getViewlet(id: string): ViewletDescriptor | undefined { return undefined }
++
++	getViewlets(): ViewletDescriptor[] { return [] }
++
++	getProgressIndicator(id: string): IProgressIndicator | undefined { return undefined }
++
++	hideActiveViewlet(): void { }
++
++	getLastActiveViewletId(): string { return '' }
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/statusbarPart.ts b/src/vs/workbench/browser/parts/dummies/statusbarPart.ts
+new file mode 100644
+index 0000000000..225cfe59c9
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/statusbarPart.ts
+@@ -0,0 +1,35 @@
++import { Event } from 'vs/base/common/event';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++import { IStatusbarEntry, IStatusbarService, IStatusbarEntryAccessor, StatusbarAlignment } from 'vs/workbench/services/statusbar/common/statusbar';
++
++export class StatusbarPart extends DummyPart implements IStatusbarService {
++	readonly _serviceBrand: undefined;
++
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.STATUSBAR_PART, themeService, storageService, layoutService)
++
++		this.setVisible(false)
++	}
++
++	addEntry(entry: IStatusbarEntry, id: string, name: string, alignment: StatusbarAlignment, priority?: number): IStatusbarEntryAccessor {
++		return dummyStatusbarEntryAccessor
++	}
++
++	get onDidChangeEntryVisibility(): Event<{ id: string, visible: boolean }> { return this.onDidOpenEvent() }
++	isEntryVisible(id: string): boolean { return false }
++	updateEntryVisibility(id: string, visible: boolean): void { }
++	focus(preserveEntryFocus?: boolean): void { }
++	focusNextEntry(): void { }
++	focusPreviousEntry(): void { }
++}
++
++const dummyStatusbarEntryAccessor: IStatusbarEntryAccessor = {
++	dispose() { },
++	update(properties: IStatusbarEntry): void { }
++}
+diff --git a/src/vs/workbench/browser/parts/dummies/titlebarPart.ts b/src/vs/workbench/browser/parts/dummies/titlebarPart.ts
+new file mode 100644
+index 0000000000..4466b0a054
+--- /dev/null
++++ b/src/vs/workbench/browser/parts/dummies/titlebarPart.ts
+@@ -0,0 +1,25 @@
++import { Event } from 'vs/base/common/event';
++import { IStorageService } from 'vs/platform/storage/common/storage';
++import { IThemeService } from 'vs/platform/theme/common/themeService';
++import { DummyPart } from 'vs/workbench/browser/parts/dummies/dummyPart';
++import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
++import { ITitleProperties, ITitleService } from 'vs/workbench/services/title/common/titleService';
++
++export class TitlebarPart extends DummyPart implements ITitleService {
++	declare readonly _serviceBrand: undefined;
++
++	constructor(
++		@IThemeService themeService: IThemeService,
++		@IStorageService storageService: IStorageService,
++		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService) {
++		super(Parts.TITLEBAR_PART, themeService, storageService, layoutService)
++
++		this.setVisible(false)
++	}
++
++	get onMenubarVisibilityChange(): Event<boolean> {
++		return Event.None
++	}
++
++	updateProperties(properties: ITitleProperties): void { }
++}
+diff --git a/src/vs/workbench/browser/workbench.contribution.ts b/src/vs/workbench/browser/workbench.contribution.ts
+index 03297afe7f..dcf30dd1ef 100644
+--- a/src/vs/workbench/browser/workbench.contribution.ts
++++ b/src/vs/workbench/browser/workbench.contribution.ts
+@@ -6,7 +6,7 @@
+ import { Registry } from 'vs/platform/registry/common/platform';
+ import * as nls from 'vs/nls';
+ import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from 'vs/platform/configuration/common/configurationRegistry';
+-import { isMacintosh, isWindows, isLinux, isWeb, isNative } from 'vs/base/common/platform';
++import { isMacintosh, isWeb, isNative } from 'vs/base/common/platform';
+ import { workbenchConfigurationNodeBase } from 'vs/workbench/common/configuration';
+ import { isStandalone } from 'vs/base/browser/browser';
+ 
+@@ -253,6 +253,12 @@ import { isStandalone } from 'vs/base/browser/browser';
+ 				'default': 'left',
+ 				'description': nls.localize('sideBarLocation', "Controls the location of the sidebar and activity bar. They can either show on the left or right of the workbench.")
+ 			},
++			'workbench.sideBar.visible': {
++				'type': 'boolean',
++				'default': false,
++				'description': nls.localize('sideBarVisibility', "Controls the visibility of the side bar at the side of the workbench."),
++				'included': false
++			},
+ 			'workbench.panel.defaultLocation': {
+ 				'type': 'string',
+ 				'enum': ['left', 'bottom', 'right'],
+@@ -272,13 +278,15 @@ import { isStandalone } from 'vs/base/browser/browser';
+ 			},
+ 			'workbench.statusBar.visible': {
+ 				'type': 'boolean',
+-				'default': true,
+-				'description': nls.localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench.")
++				'default': false,
++				'description': nls.localize('statusBarVisibility', "Controls the visibility of the status bar at the bottom of the workbench."),
++				'included': false
+ 			},
+ 			'workbench.activityBar.visible': {
+ 				'type': 'boolean',
+-				'default': true,
+-				'description': nls.localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench.")
++				'default': false,
++				'description': nls.localize('activityBarVisibility', "Controls the visibility of the activity bar in the workbench."),
++				'included': false
+ 			},
+ 			'workbench.activityBar.iconClickBehavior': {
+ 				'type': 'string',
+@@ -380,24 +388,24 @@ import { isStandalone } from 'vs/base/browser/browser';
+ 					nls.localize('window.menuBarVisibility.hidden', "Menu is always hidden."),
+ 					nls.localize('window.menuBarVisibility.compact', "Menu is displayed as a compact button in the sidebar. This value is ignored when `#window.titleBarStyle#` is `native`.")
+ 				],
+-				'default': isWeb ? 'compact' : 'default',
++				'default': 'hidden',
+ 				'scope': ConfigurationScope.APPLICATION,
+ 				'description': nls.localize('menuBarVisibility', "Control the visibility of the menu bar. A setting of 'toggle' means that the menu bar is hidden and a single press of the Alt key will show it. By default, the menu bar will be visible, unless the window is full screen."),
+-				'included': isWindows || isLinux || isWeb
++				'included': false
+ 			},
+ 			'window.enableMenuBarMnemonics': {
+ 				'type': 'boolean',
+-				'default': !isMacintosh,
++				'default': false,
+ 				'scope': ConfigurationScope.APPLICATION,
+ 				'description': nls.localize('enableMenuBarMnemonics', "Controls whether the main menus can be opened via Alt-key shortcuts. Disabling mnemonics allows to bind these Alt-key shortcuts to editor commands instead."),
+-				'included': isWindows || isLinux || isWeb
++				'included': false
+ 			},
+ 			'window.customMenuBarAltFocus': {
+ 				'type': 'boolean',
+-				'default': !isMacintosh,
++				'default': false,
+ 				'scope': ConfigurationScope.APPLICATION,
+ 				'markdownDescription': nls.localize('customMenuBarAltFocus', "Controls whether the menu bar will be focused by pressing the Alt-key. This setting has no effect on toggling the menu bar with the Alt-key."),
+-				'included': isWindows || isLinux || isWeb
++				'included': false
+ 			},
+ 			'window.openFilesInNewWindow': {
+ 				'type': 'string',
+diff --git a/src/vs/workbench/contrib/search/browser/search.contribution.ts b/src/vs/workbench/contrib/search/browser/search.contribution.ts
+index cfbbb00c6e..e7486279ab 100644
+--- a/src/vs/workbench/contrib/search/browser/search.contribution.ts
++++ b/src/vs/workbench/contrib/search/browser/search.contribution.ts
+@@ -879,7 +879,7 @@ configurationRegistry.registerConfiguration({
+ 		'search.quickOpen.includeHistory': {
+ 			type: 'boolean',
+ 			description: nls.localize('search.quickOpen.includeHistory', "Whether to include results from recently opened files in the file results for Quick Open."),
+-			default: true
++			default: false // FIXME We should be filtering history based on project rather than disabling it
+ 		},
+ 		'search.quickOpen.history.filterSortOrder': {
+ 			'type': 'string',
+diff --git a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
+index 380122d251..f979c43887 100644
+--- a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
++++ b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
+@@ -38,7 +38,7 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+ 					? [localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'workbench.startupEditor.gettingStarted' }, "Open the Getting Started page (experimental).")]
+ 					: [])
+ 				],
+-				'default': 'welcomePage',
++				'default': 'none',
+ 				'description': localize('workbench.startupEditor', "Controls which editor is shown at startup, if none are restored from the previous session.")
+ 			},
+ 		}
+diff --git a/src/vs/workbench/services/workspaces/browser/workspaces.ts b/src/vs/workbench/services/workspaces/browser/workspaces.ts
+index 3b90080dc3..a2228f49e9 100644
+--- a/src/vs/workbench/services/workspaces/browser/workspaces.ts
++++ b/src/vs/workbench/services/workspaces/browser/workspaces.ts
+@@ -5,7 +5,6 @@
+ 
+ import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspaces/common/workspaces';
+ import { URI } from 'vs/base/common/uri';
+-import { hash } from 'vs/base/common/hash';
+ 
+ // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
+@@ -30,5 +29,6 @@ export function getSingleFolderWorkspaceIdentifier(folderPath: URI): ISingleFold
+ }
+ 
+ function getWorkspaceId(uri: URI): string {
+-	return hash(uri.toString()).toString(16);
++	const urlParams = new URLSearchParams(window.location.search);
++	return urlParams.get('project_id')!;
+ }

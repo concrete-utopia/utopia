@@ -45,6 +45,7 @@ function srcPath(subdir) {
 const hashPattern = hot ? '[hash]' : '[chunkhash]'
 
 const BaseDomain = isProd ? 'https://cdn.utopia.app' : isStaging ? 'https://cdn.utopia.pizza' : ''
+const VSCodeBaseDomain = BaseDomain === '' ? '${window.location.origin}' : BaseDomain
 
 const config = {
   mode: actualMode,
@@ -62,6 +63,9 @@ const config = {
     monacoEditorIframe: hot
       ? ['react-hot-loader/patch', './src/templates/monaco-editor-iframe.tsx']
       : './src/templates/monaco-editor-iframe.tsx',
+    vsCodeEditorOuterIframe: hot
+      ? ['react-hot-loader/patch', './src/templates/vscode-editor-outer-iframe.tsx']
+      : './src/templates/vscode-editor-outer-iframe.tsx',
     tsWorker: './src/core/workers/ts/ts.worker.ts',
     parserPrinterWorker: './src/core/workers/parser-printer/parser-printer.worker.ts',
     linterWorker: './src/core/workers/linter/linter.worker.ts',
@@ -129,6 +133,22 @@ const config = {
       filename: 'monaco-editor-iframe.html',
       minify: false,
     }),
+    new HtmlWebpackPlugin({
+      chunks: ['vsCodeEditorOuterIframe'],
+      inject: 'head', // Add the script tags to the end of the <head>
+      scriptLoading: 'defer',
+      template: './src/templates/vscode-editor-outer-iframe.html',
+      filename: 'vscode-editor-outer-iframe/index.html',
+      minify: false,
+    }),
+    new HtmlWebpackPlugin({
+      chunks: [],
+      inject: 'head', // Add the script tags to the end of the <head>
+      scriptLoading: 'defer',
+      template: './src/templates/vscode-editor-inner-iframe.html',
+      filename: 'vscode-editor-inner-iframe/index.html',
+      minify: false,
+    }),
     new ScriptExtHtmlWebpackPlugin({
       // Support CORS so we can use the CDN endpoint from either of the domains
       custom: {
@@ -141,6 +161,7 @@ const config = {
       // This plugin replaces variables of the form %VARIABLE% with the value provided in this object
       UTOPIA_SHA: process.env.UTOPIA_SHA || 'nocommit',
       UTOPIA_DOMAIN: BaseDomain,
+      VSCODE_DOMAIN: VSCodeBaseDomain,
     }),
 
     // Optionally run the TS compiler in a different thread, but as part of the webpack build still

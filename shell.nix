@@ -261,7 +261,7 @@ let
 
   scripts = withCustomDevScripts; # ++ (if needsRelease then releaseScripts else []);
 
-  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run ];
+  linuxOnlyPackages = lib.optionals stdenv.isLinux [ pkgs.xvfb_run pkgs.x11 pkgs.xorg.libxkbfile ];
   macOSOnlyPackages = lib.optionals stdenv.isDarwin (with pkgs.darwin.apple_sdk.frameworks; [
     Cocoa
     CoreServices
@@ -278,14 +278,15 @@ let
   ];
 
   serverRunPackages = [
-    pkgs.python
   ];
 
   releasePackages = [
     pkgs.heroku
   ];
 
-  basePackages = [ node ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
+  pythonAndPackages = pkgs.python37.withPackages(ps: with ps; [ pyusb tkinter pkgconfig ]);
+
+  basePackages = [ node pkgs.yarn pkgs.libsecret pythonAndPackages pkgs.pkg-config ] ++ linuxOnlyPackages ++ macOSOnlyPackages;
   withServerBasePackages = basePackages ++ (lib.optionals includeServerBuildSupport baseServerPackages);
   withServerRunPackages = withServerBasePackages ++ (lib.optionals includeRunLocallySupport serverRunPackages);
   withReleasePackages = withServerRunPackages ++ (lib.optionals includeReleaseSupport releasePackages);

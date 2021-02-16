@@ -30,7 +30,6 @@ import           Servant                         hiding
                                                   (serveDirectoryFileServer,
                                                   serveDirectoryWith)
 import           Servant.RawM
-import           System.FilePath.Posix
 import           Text.Blaze.Html.Renderer.Text
 import           Text.Blaze.Html5                ((!))
 import qualified Text.Blaze.Html5                as H
@@ -338,7 +337,7 @@ servePath' defaultPathToServe settingsChange branchName = do
   let defaultSettings = defaultFileServerSettings pathToServe
   let withIndicesTurnedOff = defaultSettings { ssListing = Nothing }
   app <- serveDirectoryWith $ settingsChange withIndicesTurnedOff
-  let gzipConfig = def{gzipFiles = GzipCacheFolder (pathToServe </> ".gzipcache")}
+  let gzipConfig = def{gzipFiles = GzipCompress}
   return $ gzip gzipConfig app
 
 servePath :: FilePath -> Maybe Text -> ServerMonad Application
@@ -385,6 +384,11 @@ websiteAssetsEndpoint :: FilePath -> ServerMonad Application
 websiteAssetsEndpoint notProxiedPath = do
   possibleProxyManager <- getProxyManager
   maybe (servePath notProxiedPath Nothing) (\proxyManager -> return $ proxyApplication proxyManager 3000 ["static"]) possibleProxyManager
+
+vsCodeAssetsEndpoint :: ServerMonad Application
+vsCodeAssetsEndpoint = do
+  pathToServeFrom <- getVSCodeAssetRoot
+  servePath pathToServeFrom Nothing
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ = do
@@ -501,6 +505,7 @@ unprotected = authenticate
          :<|> editorAssetsEndpoint "./editor"
          :<|> editorAssetsEndpoint "./sockjs-node" Nothing
          :<|> websiteAssetsEndpoint "./public/static"
+         :<|> vsCodeAssetsEndpoint
          :<|> servePath "./public/.well-known" Nothing
          :<|> serveWebAppEndpoint "./public"
 
