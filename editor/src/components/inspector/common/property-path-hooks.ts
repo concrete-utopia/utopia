@@ -53,7 +53,7 @@ import {
   removeIgnored,
   getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
-import { addUniquely, SkipValueToken } from '../../../core/shared/array-utils'
+import { addUniquely, SkipValueToken, stripNulls } from '../../../core/shared/array-utils'
 import {
   defaultEither,
   Either,
@@ -76,6 +76,7 @@ import {
   StyleAttributeMetadataEntry,
 } from '../../../core/shared/element-template'
 import {
+  getAllPathsFromAttributes,
   GetModifiableAttributeResult,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
@@ -145,11 +146,12 @@ export type MultiselectAtStringProps = {
   [key in string]: readonly Either<string, ModifiableAttribute>[]
 }
 
-export interface InspectorInfo<T> {
+export interface InspectorInfo<T, P> {
   value: T
   controlStatus: ControlStatus
   propertyStatus: PropertyStatus
   controlStyles: ControlStyles
+  orderedPropKeys: Array<Array<P>>
   onUnsetValues: () => void
   onSubmitValue: (newTransformedValues: T, transient?: boolean) => void
   onTransientSubmitValue: (newTransformedValues: T) => void
@@ -322,7 +324,7 @@ function elementPathMappingFn<P extends ParsedElementPropertiesKeys>(p: P) {
 
 export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(
   prop: P,
-): InspectorInfo<ParsedElementProperties[P] | undefined> {
+): InspectorInfo<ParsedElementProperties[P] | undefined, P> {
   type T = ParsedElementProperties[P] | undefined
   const transformValue: (parsedValues: Partial<ParsedValues<P>>) => T = (parsedValues) =>
     parsedValues[prop]
@@ -332,7 +334,7 @@ export function useInspectorElementInfo<P extends ParsedElementPropertiesKeys>(
       [prop]: transformedType,
     } as Partial<ParsedValues<P>>)
 
-  return useInspectorInfoNoDefaults([prop], transformValue, untransformValue, elementPathMappingFn)
+  return useInspectorInfo([prop], transformValue, untransformValue, elementPathMappingFn)
 }
 
 export function stylePropPathMappingFn<P extends ParsedCSSPropertiesKeys>(
@@ -457,9 +459,6 @@ export type PathMappingFn<P> = (propKey: P, targetPath: readonly string[]) => Pr
 export type TransformInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
   parsedValues: ParsedValues<P>,
 ) => T
-export type TransformInspectorInfoMaybe<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
-  parsedValues: Partial<ParsedValues<P>>,
-) => T
 export type UntransformInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
   transformedType: T,
 ) => Partial<ParsedValues<P>>
@@ -469,10 +468,10 @@ export function useInspectorInfoNoDefaults<
   T = ParsedProperties[P] | undefined
 >(
   propKeysIn: Array<P>,
-  transformValue: TransformInspectorInfoMaybe<P, T>,
+  transformValue: TransformInspectorInfo<P, T>,
   untransformValue: UntransformInspectorInfo<P, T>,
   pathMappingFn: PathMappingFn<P>,
-): InspectorInfo<T> {
+): InspectorInfo<T, P> {
   const propKeys = useMemoizedPropKeys(propKeysIn)
   const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
     pathMappingFn,
@@ -540,11 +539,14 @@ export function useInspectorInfoNoDefaults<
   const controlStyles = getControlStyles(controlStatus)
   const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
 
+  const orderedPropKeys: Array<Array<P>> = useGetOrderedPropertyKeys(pathMappingFn, propKeys)
+
   return {
     value: transformedValue,
     controlStatus,
     propertyStatus: propertyStatusToReturn,
     controlStyles,
+    orderedPropKeys: orderedPropKeys,
     onSubmitValue,
     onTransientSubmitValue,
     onUnsetValues,
@@ -557,7 +559,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   transformValue: TransformInspectorInfo<P, T>,
   untransformValue: UntransformInspectorInfo<P, T>,
   pathMappingFn: PathMappingFn<P>,
-): InspectorInfo<T> {
+): InspectorInfo<T, P> {
   const propKeys = useMemoizedPropKeys(propKeysIn)
   const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
     pathMappingFn,
@@ -625,11 +627,14 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   const controlStyles = getControlStyles(controlStatus)
   const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
 
+  const orderedPropKeys: Array<Array<P>> = useGetOrderedPropertyKeys(pathMappingFn, propKeys)
+
   return {
     value: transformedValue,
     controlStatus,
     propertyStatus: propertyStatusToReturn,
     controlStyles,
+    orderedPropKeys: orderedPropKeys,
     onSubmitValue,
     onTransientSubmitValue,
     onUnsetValues,
@@ -783,6 +788,29 @@ function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   )
 }
 
+export function useGetOrderedPropertyKeys<P>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: Readonly<Array<P>>,
+): Array<Array<P>> {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        return contextData.editedMultiSelectedProps.map((props) =>
+          stripNulls(
+            getAllPathsFromAttributes(props).map((path) =>
+              propKeys.find((propKey) =>
+                PP.pathsEqual(path, pathMappingFn(propKey, contextData.targetPath)),
+              ),
+            ),
+          ),
+        )
+      },
+      deepEqual,
+    ),
+  )
+}
+
 function getParsedValues<P extends ParsedPropertiesKeys>(
   propKeys: P[],
   simpleAndRawValues: {
@@ -893,7 +921,7 @@ export function useInspectorInfoSimpleUntyped(
   propertyPaths: ReadonlyArray<PropertyPath>,
   transformValue: (parsedValues: any) => any,
   untransformValue: (transformedType: any) => any,
-): InspectorInfo<any> {
+): InspectorInfo<any, PropertyPath> {
   const multiselectAtProps: MultiselectAtStringProps = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
@@ -996,11 +1024,17 @@ export function useInspectorInfoSimpleUntyped(
   const controlStyles = getControlStyles(controlStatus)
   const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
 
+  const orderedPropKeys: Array<Array<PropertyPath>> = useGetOrderedPropertyKeys(
+    (p) => p,
+    propertyPaths,
+  )
+
   return {
     value: transformedValue,
     controlStatus,
     propertyStatus: propertyStatusToReturn,
     controlStyles,
+    orderedPropKeys: orderedPropKeys,
     onSubmitValue,
     onTransientSubmitValue,
     onUnsetValues,
@@ -1010,7 +1044,7 @@ export function useInspectorInfoSimpleUntyped(
 
 export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
   property: P,
-): InspectorInfo<ParsedProperties[P] | undefined> {
+): InspectorInfo<ParsedProperties[P] | undefined, P> {
   type T = ParsedProperties[P] | undefined
   const transformValue: (parsedValues: Partial<ParsedValues<P>>) => T = (parsedValues) =>
     parsedValues[property]
@@ -1019,7 +1053,7 @@ export function useInspectorLayoutInfo<P extends LayoutProp | StyleLayoutProp>(
     return { [property]: transformedType } as Partial<ParsedValues<P>>
   }
 
-  let inspectorInfo = useInspectorInfoNoDefaults<P, T>(
+  let inspectorInfo = useInspectorInfo(
     [property],
     transformValue,
     untransformValue,

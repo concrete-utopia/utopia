@@ -18,6 +18,7 @@ import {
   InspectorInfo,
   InspectorPropsContext,
   useCallbackFactory,
+  useGetOrderedPropertyKeys,
   useInspectorContext,
 } from './property-path-hooks'
 import {
@@ -40,7 +41,7 @@ type RealValues = unknown[]
 export function useInspectorInfoForPropertyControl(
   propertyPath: PropertyPath,
   control: ControlDescription,
-): InspectorInfo<any> {
+): InspectorInfo<any, PropertyPath> {
   const rawValues: RawValues = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
@@ -104,11 +105,16 @@ export function useInspectorInfoForPropertyControl(
     onSingleUnsetValue(propertyPath)
   }, [onSingleUnsetValue, propertyPath])
 
+  const orderedPropKeys: Array<Array<PropertyPath>> = useGetOrderedPropertyKeys((p) => p, [
+    propertyPath,
+  ])
+
   return {
     value: parsedValue,
     controlStatus,
     propertyStatus: propertyStatusToReturn,
     controlStyles,
+    orderedPropKeys: orderedPropKeys,
     onSubmitValue,
     onTransientSubmitValue,
     onUnsetValues,

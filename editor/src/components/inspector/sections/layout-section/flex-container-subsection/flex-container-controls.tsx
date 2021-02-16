@@ -19,7 +19,6 @@ import {
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { OnSubmitValueOrEmpty } from '../../../controls/control'
-import { emptyValues } from '../../../common/css-utils'
 
 type uglyLabel =
   | 'left'
@@ -58,7 +57,7 @@ const PrettyLabel: { [K in uglyLabel]: prettyLabel } = {
 }
 
 interface FlexFieldControlProps<T> {
-  value: T | undefined
+  value: T
   controlStatus: ControlStatus
   controlStyles: ControlStyles
   onSubmitValue: (newValue: T) => void
@@ -251,7 +250,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             id='flex.container.gap.main'
             key='flex.container.gap.main'
             testId='flex.container.gap.main'
-            value={props.value ?? emptyValues['FlexGap']}
+            value={props.value}
             DEPRECATED_controlOptions={
               {
                 minimum: 0,

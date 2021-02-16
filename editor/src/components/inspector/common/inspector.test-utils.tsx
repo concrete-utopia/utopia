@@ -123,12 +123,13 @@ const dummyPropertyStatus: PropertyStatus = {
 
 const simpleControlStyles = getControlStyles('simple')
 
-export function testInspectorInfo<T>(value: T): InspectorInfo<T> {
+export function testInspectorInfo<T>(value: T): InspectorInfo<T, unknown> {
   return {
     value: value,
     controlStatus: 'simple',
     propertyStatus: dummyPropertyStatus,
     controlStyles: simpleControlStyles,
+    orderedPropKeys: [],
     onUnsetValues: utils.NO_OP,
     onSubmitValue: utils.NO_OP,
     onTransientSubmitValue: utils.NO_OP,

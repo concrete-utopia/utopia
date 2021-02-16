@@ -35,7 +35,7 @@ import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-perf
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propName: string
   controlDescription: T
-  propMetadata: InspectorInfo<any>
+  propMetadata: InspectorInfo<any, unknown>
 }
 
 export const ControlForBooleanProp = betterReactMemo(

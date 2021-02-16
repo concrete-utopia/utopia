@@ -234,7 +234,7 @@ export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => 
   } = useInspectorElementInfo('className')
 
   const values: ReadonlyArray<SelectOption> =
-    value === '' || value == null ? [] : value.split(' ').map((v) => ({ value: v, label: `.${v}` }))
+    value === '' ? [] : value.split(' ').map((v) => ({ value: v, label: `.${v}` }))
 
   const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
 

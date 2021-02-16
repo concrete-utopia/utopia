@@ -1153,7 +1153,8 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       [{ paddingTop: '0px', paddingRight: '0px', paddingBottom: '0px', paddingLeft: '15px' }],
       [],
     )
-    expect(Object.entries(hookResult.value)).toEqual([['paddingLeft', { unit: null, value: 5 }]])
+    expect(hookResult.value).toEqual({ paddingLeft: { unit: null, value: 5 } })
+    expect(hookResult.orderedPropKeys).toEqual([['paddingLeft']])
   })
 
   it('does not give value for nonexistent props 2', () => {
@@ -1164,17 +1165,35 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
       [],
     )
-    expect(Object.entries(hookResult.value)).toEqual([
-      [
-        'padding',
-        {
-          paddingBottom: { unit: 'px', value: 15 },
-          paddingLeft: { unit: 'px', value: 15 },
-          paddingRight: { unit: 'px', value: 15 },
-          paddingTop: { unit: 'px', value: 15 },
-        },
-      ],
-    ])
+    expect(hookResult.value).toEqual({
+      padding: {
+        paddingBottom: { unit: 'px', value: 15 },
+        paddingLeft: { unit: 'px', value: 15 },
+        paddingRight: { unit: 'px', value: 15 },
+        paddingTop: { unit: 'px', value: 15 },
+      },
+    })
+    expect(hookResult.orderedPropKeys).toEqual([['padding']])
+  })
+
+  it('does give value for prop set to undefined', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15, paddingLeft: undefined }`],
+      [{ padding: 15, paddingLeft: undefined }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
+      [],
+    )
+    expect(hookResult.value).toEqual({
+      padding: {
+        paddingBottom: { unit: 'px', value: 15 },
+        paddingLeft: { unit: 'px', value: 15 },
+        paddingRight: { unit: 'px', value: 15 },
+        paddingTop: { unit: 'px', value: 15 },
+      },
+      paddingLeft: undefined,
+    })
+    expect(hookResult.orderedPropKeys).toEqual([['padding', 'paddingLeft']])
   })
 
   it('keeps the order of props for single select 1', () => {
@@ -1185,18 +1204,16 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
       [],
     )
-    expect(Object.entries(hookResult.value)).toEqual([
-      ['paddingLeft', { unit: null, value: 5 }],
-      [
-        'padding',
-        {
-          paddingBottom: { unit: 'px', value: 15 },
-          paddingLeft: { unit: 'px', value: 15 },
-          paddingRight: { unit: 'px', value: 15 },
-          paddingTop: { unit: 'px', value: 15 },
-        },
-      ],
-    ])
+    expect(hookResult.value).toEqual({
+      padding: {
+        paddingBottom: { unit: 'px', value: 15 },
+        paddingLeft: { unit: 'px', value: 15 },
+        paddingRight: { unit: 'px', value: 15 },
+        paddingTop: { unit: 'px', value: 15 },
+      },
+      paddingLeft: { unit: null, value: 5 },
+    })
+    expect(hookResult.orderedPropKeys).toEqual([['paddingLeft', 'padding']])
   })
 
   it('keeps the order of props for single select 2', () => {
@@ -1207,18 +1224,16 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '5px' }],
       [],
     )
-    expect(Object.entries(hookResult.value)).toEqual([
-      [
-        'padding',
-        {
-          paddingBottom: { unit: 'px', value: 15 },
-          paddingLeft: { unit: 'px', value: 15 },
-          paddingRight: { unit: 'px', value: 15 },
-          paddingTop: { unit: 'px', value: 15 },
-        },
-      ],
-      ['paddingLeft', { unit: null, value: 5 }],
-    ])
+    expect(hookResult.value).toEqual({
+      padding: {
+        paddingBottom: { unit: 'px', value: 15 },
+        paddingLeft: { unit: 'px', value: 15 },
+        paddingRight: { unit: 'px', value: 15 },
+        paddingTop: { unit: 'px', value: 15 },
+      },
+      paddingLeft: { unit: null, value: 5 },
+    })
+    expect(hookResult.orderedPropKeys).toEqual([['padding', 'paddingLeft']])
   })
 
   it('keeps the order of props for multi select 1', () => {
@@ -1232,17 +1247,15 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       ],
       [],
     )
-    expect(Object.entries(hookResult.value)).toEqual([
-      [
-        'padding',
-        {
-          paddingBottom: { unit: 'px', value: 15 },
-          paddingLeft: { unit: 'px', value: 15 },
-          paddingRight: { unit: 'px', value: 15 },
-          paddingTop: { unit: 'px', value: 15 },
-        },
-      ],
-    ])
+    expect(hookResult.value).toEqual({
+      padding: {
+        paddingBottom: { unit: 'px', value: 15 },
+        paddingLeft: { unit: 'px', value: 15 },
+        paddingRight: { unit: 'px', value: 15 },
+        paddingTop: { unit: 'px', value: 15 },
+      },
+    })
+    expect(hookResult.orderedPropKeys).toEqual([['padding'], ['padding']])
   })
 
   it('keeps the order of props for multi select 2', () => {
@@ -1259,17 +1272,18 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       ],
       [],
     )
-    expect(Object.entries(hookResult.value)).toEqual([
-      ['paddingLeft', { unit: null, value: 5 }],
-      [
-        'padding',
-        {
-          paddingBottom: { unit: 'px', value: 15 },
-          paddingLeft: { unit: 'px', value: 15 },
-          paddingRight: { unit: 'px', value: 15 },
-          paddingTop: { unit: 'px', value: 15 },
-        },
-      ],
+    expect(hookResult.value).toEqual({
+      paddingLeft: { unit: null, value: 5 },
+      padding: {
+        paddingBottom: { unit: 'px', value: 15 },
+        paddingLeft: { unit: 'px', value: 15 },
+        paddingRight: { unit: 'px', value: 15 },
+        paddingTop: { unit: 'px', value: 15 },
+      },
+    })
+    expect(hookResult.orderedPropKeys).toEqual([
+      ['paddingLeft', 'padding'],
+      ['paddingLeft', 'padding'],
     ])
   })
 
@@ -1284,7 +1298,16 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       ],
       [],
     )
-    expect(Object.entries(hookResult.value)).toEqual([])
+    expect(hookResult.value).toEqual({
+      padding: {
+        paddingBottom: { unit: 'px', value: 15 },
+        paddingLeft: { unit: 'px', value: 15 },
+        paddingRight: { unit: 'px', value: 15 },
+        paddingTop: { unit: 'px', value: 15 },
+      },
+      paddingLeft: { unit: null, value: 5 },
+    })
+    expect(hookResult.orderedPropKeys).toEqual([['paddingLeft', 'padding'], ['padding']])
   })
 
   it('multiselect: if the paddings are in different order, give up 2', () => {
@@ -1298,6 +1321,15 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       ],
       [],
     )
-    expect(Object.entries(hookResult.value)).toEqual([])
+    expect(hookResult.value).toEqual({
+      padding: {
+        paddingBottom: { unit: 'px', value: 15 },
+        paddingLeft: { unit: 'px', value: 15 },
+        paddingRight: { unit: 'px', value: 15 },
+        paddingTop: { unit: 'px', value: 15 },
+      },
+      paddingLeft: { unit: null, value: 5 },
+    })
+    expect(hookResult.orderedPropKeys).toEqual([['padding', 'paddingLeft'], ['padding']])
   })
 })

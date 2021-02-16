@@ -158,7 +158,7 @@ export const SceneFlexContainerSection = betterReactMemo('SceneFlexContainerSect
   }
 })
 
-function useSceneType(): InspectorInfo<boolean> {
+function useSceneType(): InspectorInfo<boolean, unknown> {
   return useInspectorInfoSimpleUntyped(
     [PathForResizeContent],
     (targets) => {

@@ -676,6 +676,8 @@ export function printCSSNumberWithDefaultUnit(
 
 export const parseCSSLength = (input: unknown) => parseCSSNumber(input, 'Length')
 export const parseCSSLengthPercent = (input: unknown) => parseCSSNumber(input, 'LengthPercent')
+export const parseCSSLengthPercentUndefined = (input: unknown) =>
+  parseCSSNumberUndefined(input, 'LengthPercent')
 export const parseCSSAngle = (input: unknown) => parseCSSNumber(input, 'Angle')
 export const parseCSSAnglePercent = (input: unknown) => parseCSSNumber(input, 'AnglePercent')
 export const parseCSSPercent = (input: unknown) => parseCSSNumber(input, 'Percent', '%')
@@ -698,6 +700,18 @@ export const parseCSSNumber = (
     return parseCSSNumericTypeString(input, unitParseFn, defaultUnit)
   } else {
     return left(`Unable to parse invalid number`)
+  }
+}
+
+export const parseCSSNumberUndefined = (
+  input: unknown,
+  numberType: CSSNumberType,
+  defaultUnit: CSSNumberUnit | null = null,
+): Either<string, CSSNumber | undefined> => {
+  if (input === undefined) {
+    return right(undefined)
+  } else {
+    return parseCSSNumber(input, numberType, defaultUnit)
   }
 }
 
@@ -3937,10 +3951,10 @@ export interface ParsedCSSProperties {
   objectFit: CSSObjectFit
 
   padding: CSSPadding
-  paddingTop: CSSNumber
-  paddingRight: CSSNumber
-  paddingBottom: CSSNumber
-  paddingLeft: CSSNumber
+  paddingTop: CSSNumber | undefined
+  paddingRight: CSSNumber | undefined
+  paddingBottom: CSSNumber | undefined
+  paddingLeft: CSSNumber | undefined
   marginTop: CSSNumber
   marginRight: CSSNumber
   marginBottom: CSSNumber
@@ -4149,10 +4163,10 @@ const cssParsers: CSSParsers = {
   alignContent: flexAlignmentsParser,
   justifyContent: flexJustifyContentParser,
   padding: parsePadding,
-  paddingTop: parseCSSLengthPercent,
-  paddingRight: parseCSSLengthPercent,
-  paddingBottom: parseCSSLengthPercent,
-  paddingLeft: parseCSSLengthPercent,
+  paddingTop: parseCSSLengthPercentUndefined,
+  paddingRight: parseCSSLengthPercentUndefined,
+  paddingBottom: parseCSSLengthPercentUndefined,
+  paddingLeft: parseCSSLengthPercentUndefined,
 
   alignSelf: flexAlignmentsParser,
   position: flexPositionParser,
@@ -4212,10 +4226,10 @@ const cssPrinters: CSSPrinters = {
   alignContent: jsxAttributeValueWithNoComments,
   justifyContent: jsxAttributeValueWithNoComments,
   padding: printPaddingAsAttributeValue,
-  paddingTop: printCSSNumberAsAttributeValue,
-  paddingRight: printCSSNumberAsAttributeValue,
-  paddingBottom: printCSSNumberAsAttributeValue,
-  paddingLeft: printCSSNumberAsAttributeValue,
+  paddingTop: printCSSNumberOrUndefinedAsAttributeValue,
+  paddingRight: printCSSNumberOrUndefinedAsAttributeValue,
+  paddingBottom: printCSSNumberOrUndefinedAsAttributeValue,
+  paddingLeft: printCSSNumberOrUndefinedAsAttributeValue,
 
   alignSelf: jsxAttributeValueWithNoComments,
   position: jsxAttributeValueWithNoComments,
