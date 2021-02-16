@@ -29,7 +29,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
   'Performance Test Triggers': true,
-  'VSCode Code Editor': false,
+  'VSCode Code Editor': true,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

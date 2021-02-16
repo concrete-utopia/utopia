@@ -37,15 +37,13 @@ import {
   stopWatching,
   watch,
   writeFile,
-} from './browserfs-utils'
-import {
   appendToPath,
   dirname,
   fromUtopiaURI,
   Scheme,
   stripRootPrefix,
   toUtopiaURI,
-} from './path-utils'
+} from 'utopia-vscode-common'
 
 export class UtopiaFSExtension
   implements FileSystemProvider, FileSearchProvider, TextSearchProvider, Disposable {
@@ -56,6 +54,7 @@ export class UtopiaFSExtension
   private allFilePaths: string[] | null = null
 
   constructor(private workspaceRootPath: string) {
+    console.log('workspaceRootPath', workspaceRootPath)
     this.disposable = Disposable.from(
       workspace.registerFileSystemProvider(Scheme, this, { isCaseSensitive: true }),
       workspace.registerFileSearchProvider(Scheme, this),

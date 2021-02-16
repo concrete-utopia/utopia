@@ -178,6 +178,7 @@ import {
   ProjectContentTreeRoot,
   removeFromProjectContents,
   treeToContents,
+  walkContentsTree,
 } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import {
@@ -488,6 +489,7 @@ import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
+import { writeProjectFile } from '../../../core/vscode/vscode-bridge'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1402,6 +1404,14 @@ export const UPDATE_FNS = {
         )
       },
     )
+    if (action.projectId != null) {
+      const nonNullProjectId = action.projectId
+      walkContentsTree(parsedProjectFiles, (fullPath, file) => {
+        if (isTextFile(file) || isDirectory(file)) {
+          writeProjectFile(nonNullProjectId, fullPath, file)
+        }
+      })
+    }
     const parsedModel = {
       ...migratedModel,
       projectContents: parsedProjectFiles,
@@ -1423,6 +1433,7 @@ export const UPDATE_FNS = {
       action.storedState,
       newModel,
     )
+
     return loadModel(newModelMergedWithStoredState, oldEditor)
   },
   SET_HIGHLIGHTED_VIEW: (action: SetHighlightedView, editor: EditorModel): EditorModel => {
