@@ -799,7 +799,7 @@ export function distributeSelectedViews(distribution: Distribution): DistributeS
 export function showContextMenu(
   menuName: ElementContextMenuInstance,
   event: MouseEvent,
-  props: ContextMenuInnerProps | null
+  props: ContextMenuInnerProps | null,
 ): ShowContextMenu {
   return {
     action: 'SHOW_CONTEXT_MENU',

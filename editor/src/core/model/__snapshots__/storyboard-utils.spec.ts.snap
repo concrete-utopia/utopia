@@ -5,10 +5,6 @@ Array [
   Object {
     "arbitraryJSBlock": null,
     "blockOrExpression": "block",
-    "comments": Object {
-      "leadingComments": Array [],
-      "trailingComments": Array [],
-    },
     "declarationSyntax": "var",
     "isFunction": false,
     "name": "storyboard",

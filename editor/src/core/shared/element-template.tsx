@@ -915,7 +915,6 @@ export function utopiaJSXComponent(
   rootElement: JSXElementChild,
   jsBlock: ArbitraryJSBlock | null,
   usedInReactDOMRender: boolean,
-  comments: ParsedComments,
   returnStatementComments: ParsedComments,
 ): UtopiaJSXComponent {
   return {
@@ -929,7 +928,6 @@ export function utopiaJSXComponent(
     rootElement: rootElement,
     arbitraryJSBlock: jsBlock,
     usedInReactDOMRender: usedInReactDOMRender,
-    comments: comments,
     returnStatementComments: returnStatementComments,
   }
 }
@@ -940,7 +938,6 @@ export function arbitraryJSBlock(
   definedWithin: Array<string>,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
-  comments: ParsedComments,
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
@@ -950,7 +947,6 @@ export function arbitraryJSBlock(
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uniqueID: UUID(),
-    comments: comments,
   }
 }
 
@@ -1108,7 +1104,7 @@ export type VarLetOrConst = 'var' | 'let' | 'const'
 export type FunctionDeclarationSyntax = 'function' | VarLetOrConst
 export type BlockOrExpression = 'block' | 'parenthesized-expression' | 'expression'
 
-export interface UtopiaJSXComponent extends WithComments {
+export interface UtopiaJSXComponent {
   type: 'UTOPIA_JSX_COMPONENT'
   name: string
   /**
@@ -1127,7 +1123,7 @@ export interface UtopiaJSXComponent extends WithComments {
   returnStatementComments: ParsedComments
 }
 
-export interface ArbitraryJSBlock extends WithComments {
+export interface ArbitraryJSBlock {
   type: 'ARBITRARY_JS_BLOCK'
   javascript: string
   transpiledJavascript: string
@@ -1263,6 +1259,8 @@ export function isUnparsedCode(topLevelElement: TopLevelElement): topLevelElemen
 }
 
 export type ComputedStyle = { [key: string]: string }
+export type StyleAttributeMetadataEntry = { fromStyleSheet: boolean } // TODO rename me to StyleAttributeMetadata, the other one to StyleAttributeMetadataMap
+export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntry | undefined }
 
 export interface JSXMetadata {
   components: Array<ComponentMetadata>
@@ -1296,6 +1294,7 @@ export interface ElementInstanceMetadata {
   componentInstance: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
+  attributeMetadatada: StyleAttributeMetadata | null
 }
 
 export function elementInstanceMetadata(
@@ -1308,6 +1307,7 @@ export function elementInstanceMetadata(
   componentInstance: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
+  attributeMetadatada: StyleAttributeMetadata | null,
 ): ElementInstanceMetadata {
   return {
     templatePath: templatePath,
@@ -1319,6 +1319,7 @@ export function elementInstanceMetadata(
     componentInstance: componentInstance,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
+    attributeMetadatada: attributeMetadatada,
   }
 }
 
@@ -1405,6 +1406,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
 )
 
 export const emptyComputedStyle: ComputedStyle = {}
+export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
 
 export interface ComponentMetadata {
   scenePath: ScenePath

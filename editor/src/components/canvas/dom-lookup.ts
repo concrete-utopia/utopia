@@ -1,6 +1,7 @@
 import * as R from 'ramda'
 import { last, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
+import { JSXMetadata } from '../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasVector,
@@ -13,6 +14,7 @@ import {
 } from '../../core/shared/math-utils'
 import { TemplatePath } from '../../core/shared/project-file-types'
 import * as TP from '../../core/shared/template-path'
+import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
 
 export function findParentSceneValidPaths(target: Element): Array<string> | null {
@@ -29,13 +31,16 @@ export function findParentSceneValidPaths(target: Element): Array<string> | null
 }
 
 export function findFirstParentWithValidUID(
-  validTemplatePathsForLookup: Array<string>,
+  validTemplatePathsForLookup: Array<string> | 'no-filter',
   target: Element,
 ): string | null {
   const uid = getDOMAttribute(target, 'data-uid')
   const originalUid = getDOMAttribute(target, 'data-utopia-original-uid')
   const validTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
-  const validTemplatePaths = R.intersection(validTemplatePathsForLookup, validTemplatePathsForScene)
+  const validTemplatePaths =
+    validTemplatePathsForLookup === 'no-filter'
+      ? validTemplatePathsForScene
+      : R.intersection(validTemplatePathsForLookup, validTemplatePathsForScene)
   if (originalUid != null && validTemplatePaths.find((tp) => tp.endsWith(originalUid))) {
     return last(validTemplatePaths.filter((tp) => tp.endsWith(originalUid))) ?? null
   } else if (uid != null && validTemplatePaths.find((tp) => tp.endsWith(uid))) {
@@ -50,39 +55,76 @@ export function findFirstParentWithValidUID(
 }
 
 export function getValidTargetAtPoint(
-  validTemplatePaths: Array<string>,
+  componentMetadata: JSXMetadata,
+  selectedViews: Array<TemplatePath>,
+  hiddenInstances: Array<TemplatePath>,
+  validTemplatePathsForLookup: Array<string> | 'no-filter',
   point: WindowPoint | null,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
 ): TemplatePath | null {
   if (point == null) {
     return null
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
-  for (const element of elementsUnderPoint) {
-    const foundValidtemplatePath = findFirstParentWithValidUID(validTemplatePaths, element)
-    if (foundValidtemplatePath != null) {
-      return TP.fromString(foundValidtemplatePath)
-    }
-  }
-  return null
+  return (
+    getAllTargetsAtPoint(
+      componentMetadata,
+      selectedViews,
+      hiddenInstances,
+      validTemplatePathsForLookup,
+      point,
+      canvasScale,
+      canvasOffset,
+    )[0] ?? null
+  )
 }
 
-export function getAllTargetsAtPoint(point: WindowPoint | null): Array<TemplatePath> {
+export function getAllTargetsAtPoint(
+  componentMetadata: JSXMetadata,
+  selectedViews: Array<TemplatePath>,
+  hiddenInstances: Array<TemplatePath>,
+  validTemplatePathsForLookup: Array<string> | 'no-filter',
+  point: WindowPoint | null,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+): Array<TemplatePath> {
   if (point == null) {
     return []
   }
+  const pointOnCanvas = windowToCanvasCoordinates(canvasScale, canvasOffset, point)
+  const getElementsUnderPointFromAABB = Canvas.getAllTargetsAtPoint(
+    componentMetadata,
+    selectedViews,
+    hiddenInstances,
+    pointOnCanvas.canvasPositionRaw,
+    [TargetSearchType.All],
+    true,
+    'loose',
+  )
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
-  return stripNulls(
+  const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const validTPs = findParentSceneValidPaths(element)
-      if (validTPs != null) {
-        const foundValidtemplatePath = findFirstParentWithValidUID(validTPs, element)
-        if (foundValidtemplatePath != null) {
-          return TP.fromString(foundValidtemplatePath)
-        }
+      const foundValidtemplatePath = findFirstParentWithValidUID(
+        validTemplatePathsForLookup,
+        element,
+      )
+      if (foundValidtemplatePath != null) {
+        return TP.fromString(foundValidtemplatePath)
+      } else {
+        return null
       }
-      return null
     }),
   )
+
+  return getElementsUnderPointFromAABB
+    .filter((foundElement) => {
+      if (!foundElement.canBeFilteredOut) {
+        return true
+      } else {
+        return elementsFromDOM.some((e) => TP.pathsEqual(e, foundElement.templatePath))
+      }
+    })
+    .map((e) => e.templatePath)
 }
 
 export function windowToCanvasCoordinates(

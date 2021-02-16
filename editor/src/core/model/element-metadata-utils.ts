@@ -1285,21 +1285,6 @@ export const MetadataUtils = {
       pathToReplaceWith: InstancePath,
       newElementInner: Either<string, JSXElementChild>,
     ): InstancePath {
-      const children = MetadataUtils.getImmediateChildren(metadata, element.templatePath)
-      const duplicatedChildren = children.map((child) => {
-        const childsElement = child.element
-        let duplicatedElement: Either<string, JSXElementChild>
-        if (isLeft(childsElement) || isLeft(newElementInner)) {
-          duplicatedElement = childsElement
-        } else {
-          const childElementUID = getUtopiaID(childsElement.value)
-          duplicatedElement = isJSXElement(newElementInner.value)
-            ? right(newElementInner.value.children.find((c) => getUtopiaID(c) === childElementUID)!)
-            : childsElement
-        }
-        return duplicateElementMetadata(child, pathToReplace, pathToReplaceWith, duplicatedElement)
-      })
-
       const newTemplatePath = TP.replaceIfAncestor(
         element.templatePath,
         pathToReplace,
@@ -1310,7 +1295,7 @@ export const MetadataUtils = {
         ...element,
         templatePath: newTemplatePath,
         element: newElementInner,
-        children: duplicatedChildren,
+        children: [], // all descendants have new UID-s
       }
 
       workingElements[TP.toString(newTemplatePath)] = newElementMetadata

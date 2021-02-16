@@ -16,19 +16,10 @@ import { createFakeMetadataForParseSuccess, wait } from '../../utils/test-utils'
 import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
+import { setElectronWindow } from '../../core/shared/test-setup.test-utils'
 
 describe('moving a scene/rootview on the canvas', () => {
-  beforeAll((done) => {
-    // we need to set the Electron window to a larger size so document.elementsUnderPoint works correctly!
-    const currentWindow = require('electron').remote.getCurrentWindow()
-    const size = currentWindow.getSize()
-    if (size.width !== 2200) {
-      currentWindow.once('resize', () => {
-        done()
-      })
-      currentWindow.setSize(2200, 1000)
-    }
-  })
+  beforeAll(setElectronWindow)
 
   it('dragging a dynamic scene’s root view sets the scene position', async () => {
     const testCode = Prettier.format(
@@ -574,7 +565,7 @@ describe('moving a scene/rootview on the canvas', () => {
       return (
         <Storyboard data-uid='utopia-storyboard-uid'>
           <Scene
-            style={{ position: 'absolute', width: 400, height: 400, top: -30, left: 40 }}
+            style={{ position: 'absolute', left: 40, top: -30, width: 400, height: 400 }}
             component={App}
             data-uid='scene-aaa'
           />
@@ -693,7 +684,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ height: 370, width: 240 }}
+            style={{ width: 240, height: 370 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='aaa'
             data-testid='aaa'
@@ -824,7 +815,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ height: 370, width: 240 }}
+            style={{ width: 240, height: 370 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='aaa'
           >
@@ -954,7 +945,7 @@ describe('resizing a scene/rootview on the canvas', () => {
       export var App = (props) => {
         return (
           <View
-            style={{ height: 170, width: 240 }}
+            style={{ width: 240, height: 170 }}
             layout={{ layoutSystem: 'pinSystem' }}
             data-uid='aaa'
           >
@@ -1086,7 +1077,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     export var App = (props) => {
       return (
         <View
-          style={{ height: '92.5%', width: '120%' }}
+          style={{ width: '120%', height: '92.5%' }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='aaa'
         >

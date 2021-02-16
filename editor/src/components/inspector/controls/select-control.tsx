@@ -252,6 +252,7 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
 interface BasicSelectControlParams {
   value: string
   id: string
+  testId: string
   options: Array<SelectOption>
   onSubmitValue: DEPRECATEDControlProps<any>['onSubmitValue']
   onTransientSubmitValue?: DEPRECATEDControlProps<any>['onTransientSubmitValue']
@@ -267,6 +268,7 @@ interface BasicSelectControlParams {
 export const BasicSelectControl = ({
   value,
   id,
+  testId,
   options,
   onSubmitValue,
   onTransientSubmitValue,
@@ -281,6 +283,7 @@ export const BasicSelectControl = ({
     <SelectControl
       id={id}
       key={id}
+      testId={testId}
       controlClassName={controlClassName}
       onSubmitValue={onSubmitValue}
       onTransientSubmitValue={onTransientSubmitValue}

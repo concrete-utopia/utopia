@@ -84,7 +84,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               importedWithName: null,
               importedFromWithin: [],
               importedAs: 'React',
-              comments: emptyComments,
             },
             'utopia-api': {
               importedWithName: null,
@@ -99,7 +98,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                 { name: 'jsx', alias: 'jsx' },
               ],
               importedAs: null,
-              comments: emptyComments,
             },
             uuiui: {
               importedWithName: null,
@@ -141,7 +139,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                 { name: 'colorTheme', alias: 'colorTheme' },
               ],
               importedAs: null,
-              comments: emptyComments,
             },
           },
           topLevelElements: [
@@ -237,7 +234,6 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               },
               arbitraryJSBlock: null,
               usedInReactDOMRender: false,
-              comments: emptyComments,
               returnStatementComments: emptyComments,
             },
             convertScenesToUtopiaCanvasComponent([

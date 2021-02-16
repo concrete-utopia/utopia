@@ -268,7 +268,6 @@ export const JustImportView: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
-    comments: emptyComments,
   },
 }
 
@@ -277,13 +276,11 @@ export const JustImportViewAndReact: Imports = {
     importedAs: null,
     importedFromWithin: [importAlias('View')],
     importedWithName: null,
-    comments: emptyComments,
   },
   react: {
     importedAs: null,
     importedFromWithin: [],
     importedWithName: 'React',
-    comments: emptyComments,
   },
 }
 
@@ -566,7 +563,7 @@ export function jsxElementChildArbitrary(): Arbitrary<JSXElementChild> {
 }
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
-  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null, emptyComments))
+  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null))
 }
 
 export function arbitraryComments(): Arbitrary<ParsedComments> {
@@ -608,7 +605,6 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
     jsxElementArbitrary(3),
     arbitraryJSBlockArbitrary(),
     arbitraryComments(),
-    arbitraryComments(),
   )
     .map(
       ([
@@ -618,7 +614,6 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
         blockOrExpression,
         rootElement,
         jsBlock,
-        comments,
         returnStatementComments,
       ]) => {
         return utopiaJSXComponent(
@@ -631,7 +626,6 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
           rootElement,
           jsBlock,
           false,
-          comments,
           returnStatementComments,
         )
       },
@@ -879,7 +873,7 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
         }
       }, topLevelElements)
       const imports: Imports = allBaseVariables.reduce((workingImports, baseVariable) => {
-        return addImport('testlib', baseVariable, [], null, emptyComments, workingImports)
+        return addImport('testlib', baseVariable, [], null, workingImports)
       }, JustImportViewAndReact)
       return {
         imports: imports,

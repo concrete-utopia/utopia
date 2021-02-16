@@ -69,6 +69,7 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
             DEPRECATED_controlOptions={sliderControlOptions}
             id={`opacity-slider`}
             key={`opacity-slider`}
+            testId={`opacity-slider`}
             value={scaledOpacity}
             controlStatus={opacityMetadata.controlStatus}
             controlStyles={opacityMetadata.controlStyles}
@@ -82,10 +83,12 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
             maximum={1}
             stepSize={0.01}
             id='opacity-number-control'
+            testId='opacity-number-control'
             onSubmitValue={wrappedOnSubmitValue}
             onTransientSubmitValue={wrappedOnTransientSubmitValue}
             controlStatus={opacityMetadata.controlStatus}
             numberType='UnitlessPercent'
+            defaultUnitToHide={null}
           />
         </GridRow>
       </GridRow>

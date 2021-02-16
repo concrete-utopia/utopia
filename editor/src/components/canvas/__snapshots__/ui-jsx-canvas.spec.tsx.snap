@@ -30,17 +30,17 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
       data-uid=\\"aaa\\"
     >
       <div
-        data-uid=\\"bbb-1\\"
+        data-uid=\\"bbb~~~1\\"
         data-label=\\"Plane\\"
         data-utopia-original-uid=\\"bbb\\"
       ></div>
       <div
-        data-uid=\\"bbb-2\\"
+        data-uid=\\"bbb~~~2\\"
         data-label=\\"Plane\\"
         data-utopia-original-uid=\\"bbb\\"
       ></div>
       <div
-        data-uid=\\"bbb-3\\"
+        data-uid=\\"bbb~~~3\\"
         data-label=\\"Plane\\"
         data-utopia-original-uid=\\"bbb\\"
       ></div>
@@ -53,6 +53,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
 exports[`UiJsxCanvas render Label carried through for generated elements 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -374,6 +375,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
 exports[`UiJsxCanvas render Label carried through for normal elements 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -604,6 +606,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
 exports[`UiJsxCanvas render Renders input tag without errors 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:567": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -716,9 +719,9 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
-      <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">1</div>
-      <div data-uid=\\"aaa-2\\" data-utopia-original-uid=\\"aaa\\">2</div>
-      <div data-uid=\\"aaa-3\\" data-utopia-original-uid=\\"aaa\\">3</div>
+      <div data-uid=\\"aaa~~~1\\" data-utopia-original-uid=\\"aaa\\">1</div>
+      <div data-uid=\\"aaa~~~2\\" data-utopia-original-uid=\\"aaa\\">2</div>
+      <div data-uid=\\"aaa~~~3\\" data-utopia-original-uid=\\"aaa\\">3</div>
     </div>
   </div>
 </div>
@@ -728,6 +731,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -973,20 +977,20 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
-      <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">
-        <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">4</div>
-        <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">5</div>
-        <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">6</div>
+      <div data-uid=\\"aaa~~~1\\" data-utopia-original-uid=\\"aaa\\">
+        <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">4</div>
+        <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">5</div>
+        <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">6</div>
       </div>
-      <div data-uid=\\"aaa-2\\" data-utopia-original-uid=\\"aaa\\">
-        <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">8</div>
-        <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">10</div>
-        <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">12</div>
+      <div data-uid=\\"aaa~~~2\\" data-utopia-original-uid=\\"aaa\\">
+        <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">8</div>
+        <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">10</div>
+        <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">12</div>
       </div>
-      <div data-uid=\\"aaa-3\\" data-utopia-original-uid=\\"aaa\\">
-        <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">12</div>
-        <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">15</div>
-        <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">18</div>
+      <div data-uid=\\"aaa~~~3\\" data-utopia-original-uid=\\"aaa\\">
+        <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">12</div>
+        <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">15</div>
+        <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">18</div>
       </div>
     </div>
   </div>
@@ -997,6 +1001,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbitrary jsx block inside an element inside an arbitrary jsx block 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -1365,6 +1370,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
 exports[`UiJsxCanvas render class component is available from arbitrary block in JSX element 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -1531,6 +1537,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -1616,6 +1623,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -1740,6 +1748,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
 exports[`UiJsxCanvas render console logging does not do anything bizarre 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -1948,9 +1957,9 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -1960,6 +1969,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
 exports[`UiJsxCanvas render does not crash if the metadata scenes are not the appropriate value 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -2214,9 +2224,9 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -2226,6 +2236,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
 exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -2493,6 +2504,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
 exports[`UiJsxCanvas render function component is available from arbitrary block in JSX element 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -2659,6 +2671,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -2744,6 +2757,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -2857,8 +2871,8 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"zzz\\">
-      <div data-uid=\\"aaa-1\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
-      <div data-uid=\\"aaa-2\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
+      <div data-uid=\\"aaa~~~1\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
+      <div data-uid=\\"aaa~~~2\\" data-utopia-original-uid=\\"aaa\\">Thing</div>
     </div>
   </div>
 </div>
@@ -2868,6 +2882,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
 exports[`UiJsxCanvas render function component works inside a map 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3087,6 +3102,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
 exports[`UiJsxCanvas render handles a component that destructures its props object 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -3412,6 +3428,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3660,6 +3677,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
 exports[`UiJsxCanvas render handles a component that renames its props object 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -3985,6 +4003,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -4226,6 +4245,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -4599,6 +4619,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -4894,6 +4915,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 exports[`UiJsxCanvas render handles a component with a props object written by someone that wants to watch the world burn and also loves defaults 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -5267,6 +5289,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5547,6 +5570,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
 exports[`UiJsxCanvas render handles chaining dependencies into the appropriate order 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5682,70 +5706,82 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
         \\"
         data-uid=\\"03a\\"
       >
-        <div data-uid=\\"834-1\\" data-label=\\"Copy\\" data-utopia-original-uid=\\"834\\">
+        <div
+          data-uid=\\"834~~~1\\"
+          data-label=\\"Copy\\"
+          data-utopia-original-uid=\\"834\\"
+        >
           Copy
         </div>
-        <div data-uid=\\"999-2\\" data-label=\\"⌘,⎇,C\\" data-utopia-original-uid=\\"999\\">
+        <div
+          data-uid=\\"999~~~2\\"
+          data-label=\\"⌘,⎇,C\\"
+          data-utopia-original-uid=\\"999\\"
+        >
           <span data-uid=\\"000\\"
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-1\\"
+              data-uid=\\"726~~~1\\"
               data-utopia-original-uid=\\"726\\"
               >⌘</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-2\\"
+              data-uid=\\"726~~~2\\"
               data-utopia-original-uid=\\"726\\"
               >⎇</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-3\\"
+              data-uid=\\"726~~~3\\"
               data-utopia-original-uid=\\"726\\"
               >C</span
             ></span
           >
         </div>
-        <div data-uid=\\"834-3\\" data-label=\\"Paste\\" data-utopia-original-uid=\\"834\\">
+        <div
+          data-uid=\\"834~~~3\\"
+          data-label=\\"Paste\\"
+          data-utopia-original-uid=\\"834\\"
+        >
           Paste
         </div>
-        <div data-uid=\\"999-4\\" data-label=\\"⌘⎇V\\" data-utopia-original-uid=\\"999\\">
+        <div data-uid=\\"999~~~4\\" data-label=\\"⌘⎇V\\" data-utopia-original-uid=\\"999\\">
           <span data-uid=\\"000\\"
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-1\\"
+              data-uid=\\"726~~~1\\"
               data-utopia-original-uid=\\"726\\"
               >⌘</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-2\\"
+              data-uid=\\"726~~~2\\"
               data-utopia-original-uid=\\"726\\"
               >⎇</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-3\\"
+              data-uid=\\"726~~~3\\"
               data-utopia-original-uid=\\"726\\"
               >V</span
             ></span
           >
         </div>
-        <div data-uid=\\"834-5\\" data-label=\\"Cut\\" data-utopia-original-uid=\\"834\\">
+        <div data-uid=\\"834~~~5\\" data-label=\\"Cut\\" data-utopia-original-uid=\\"834\\">
           Cut
         </div>
-        <div data-uid=\\"999-6\\" data-label=\\"⌘⎇C\\" data-utopia-original-uid=\\"999\\">
+        <div data-uid=\\"999~~~6\\" data-label=\\"⌘⎇C\\" data-utopia-original-uid=\\"999\\">
           <span data-uid=\\"000\\"
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-1\\"
+              data-uid=\\"726~~~1\\"
               data-utopia-original-uid=\\"726\\"
               >⌘</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-2\\"
+              data-uid=\\"726~~~2\\"
               data-utopia-original-uid=\\"726\\"
               >⎇</span
             ><span
               style=\\"padding: 6px;\\"
-              data-uid=\\"726-3\\"
+              data-uid=\\"726~~~3\\"
               data-utopia-original-uid=\\"726\\"
               >C</span
             ></span
@@ -5761,6 +5797,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
 exports[`UiJsxCanvas render handles fragments in an arbitrary block 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -6933,6 +6970,7 @@ export var storyboard = (props) => {
     },
   },
   "utopia-storyboard-uid/scene-aaa:aaa/03a": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7816,6 +7854,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
 exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block inside a text range 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -8012,6 +8051,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8113,6 +8153,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8250,6 +8291,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a class component 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8435,6 +8477,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
 exports[`UiJsxCanvas render refs are handled and triggered correctly in a functional component 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8717,6 +8760,7 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
 exports[`UiJsxCanvas render renderrs correctly when a component is passed in via a prop 2`] = `
 Object {
   "eee/fff:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -8938,6 +8982,7 @@ export var storyboard = (
     },
   },
   "eee/fff:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9169,6 +9214,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
 exports[`UiJsxCanvas render renders a 1st party component with uids correctly, using the passed uid instead inside App 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -9386,6 +9432,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:aaa/d59": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -9581,6 +9628,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:aaa/d59/dd5": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9761,6 +9809,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
 exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard component 2`] = `
 Object {
   "utopia-storyboard-uid/scene-0:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -10031,6 +10080,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-0:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -10193,9 +10243,9 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -10205,6 +10255,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -10459,9 +10510,9 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -10471,6 +10522,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 exports[`UiJsxCanvas render renders a component used in an arbitrary block correctly, with an HTML element name as a parameter name 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -10726,9 +10778,9 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">n1</div>
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">n2</div>
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">n3</div>
     </div>
   </div>
 </div>
@@ -10738,6 +10790,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
 exports[`UiJsxCanvas render renders a component used in an arbitrary block with eye-stabbingly awful nested destructuring correctly 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -11008,6 +11061,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
 exports[`UiJsxCanvas render renders a component with a fragment at the root 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -11098,6 +11152,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -11228,6 +11283,7 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
 exports[`UiJsxCanvas render renders correctly with a context 2`] = `
 Object {
   "ccc/ddd:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -11437,6 +11493,7 @@ export var storyboard = (
     },
   },
   "ccc/ddd:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -11588,6 +11645,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
 exports[`UiJsxCanvas render renders fine with two circularly referencing arbitrary blocks 2`] = `
 Object {
   "utopia-storyboard-uid/scene:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -11866,6 +11924,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
 exports[`UiJsxCanvas render renders fine with two components that reference each other 2`] = `
 Object {
   "utopia-storyboard-uid/scene:BBB": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12026,6 +12085,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
 exports[`UiJsxCanvas render renders fragments correctly 2`] = `
 Object {
   "eee/fff:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -12451,6 +12511,7 @@ export var storyboard = (
     },
   },
   "eee/fff:aaa/ddd": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12609,6 +12670,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
 exports[`UiJsxCanvas render renders img tag 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -12750,6 +12812,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:aaa/bbb": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12913,6 +12976,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
 exports[`UiJsxCanvas render respects a jsx pragma 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13026,13 +13090,13 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div data-uid=\\"aaa\\">
-      <div data-uid=\\"bbb-1\\" data-utopia-original-uid=\\"bbb\\">
+      <div data-uid=\\"bbb~~~1\\" data-utopia-original-uid=\\"bbb\\">
         <div data-uid=\\"ccc\\">1</div>
       </div>
-      <div data-uid=\\"bbb-2\\" data-utopia-original-uid=\\"bbb\\">
+      <div data-uid=\\"bbb~~~2\\" data-utopia-original-uid=\\"bbb\\">
         <div data-uid=\\"ccc\\">2</div>
       </div>
-      <div data-uid=\\"bbb-3\\" data-utopia-original-uid=\\"bbb\\">
+      <div data-uid=\\"bbb~~~3\\" data-utopia-original-uid=\\"bbb\\">
         <div data-uid=\\"ccc\\">3</div>
       </div>
     </div>
@@ -13044,6 +13108,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
 exports[`UiJsxCanvas render supports passing down the scope to children of components 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13339,6 +13404,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
 exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElement 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:zzz": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -13499,6 +13565,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/cloner": Object {
+    "attributeMetadatada": Object {},
     "children": Array [
       Object {
         "element": Array [
@@ -13633,6 +13700,7 @@ Object {
     },
   },
   "utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13770,6 +13838,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
 exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13896,6 +13965,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
 exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 2`] = `
 Object {
   "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
     "computedStyle": Object {},

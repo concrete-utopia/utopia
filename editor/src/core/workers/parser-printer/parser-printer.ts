@@ -605,7 +605,6 @@ function printUtopiaJSXComponent(
       elementNode = TS.createVariableStatement(modifiers, varDecList)
     }
 
-    addCommentsToNode(elementNode, element.comments)
     return elementNode
   } else {
     throw new Error(
@@ -678,10 +677,7 @@ function printRawComment(comment: Comment): string {
 }
 
 function printArbitraryJSBlock(block: ArbitraryJSBlock): TS.Node {
-  const leadingComments = block.comments.leadingComments.map(printRawComment).join('\n')
-  const trailingComments = block.comments.trailingComments.map(printRawComment).join('\n')
-  const rawText = `${leadingComments}${block.javascript}${trailingComments}`
-  return TS.createUnparsedSourceFile(rawText)
+  return TS.createUnparsedSourceFile(block.javascript)
 }
 
 export const printCode = memoize(printCodeImpl, {
@@ -793,7 +789,6 @@ function printCodeImpl(
         importClause,
         TS.createStringLiteral(importOrigin),
       )
-      addCommentsToNode(importDeclaration, importForClause.comments)
       pushImportDeclaration(importDeclaration)
     }
 
@@ -812,7 +807,6 @@ function printCodeImpl(
         wildcardClause,
         TS.createStringLiteral(importOrigin),
       )
-      addCommentsToNode(importDeclaration, importForClause.comments)
       pushImportDeclaration(importDeclaration)
     }
   })
@@ -1199,14 +1193,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
 
           // this import looks like `import Cat from './src/cats'`
           const importedWithName = optionalMap((n) => n.getText(sourceFile), importClause?.name)
-          imports = addImport(
-            importFrom,
-            importedWithName,
-            importedFromWithin,
-            importedAs,
-            emptyComments,
-            imports,
-          )
+          imports = addImport(importFrom, importedWithName, importedFromWithin, importedAs, imports)
           const rawImportStatement = importStatement(
             topLevelElement.getText(sourceFile),
             importedAs != null,
@@ -1315,7 +1302,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
                 contents.elements[0].value,
                 contents.arbitraryJSBlock,
                 false,
-                emptyComments,
                 contents.returnStatementComments,
               )
 
@@ -1386,7 +1372,6 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             topLevelElement.rootElement,
             topLevelElement.arbitraryJSBlock,
             true,
-            emptyComments,
             emptyComments,
           )
         } else {

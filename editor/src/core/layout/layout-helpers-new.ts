@@ -2,7 +2,7 @@ import { FramePin, FlexLength, LayoutSystem, FramePoint } from 'utopia-api'
 import { PropertyPath, PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { ElementInstanceMetadata } from '../shared/element-template'
-import { ParsedCSSProperties } from '../../components/inspector/common/css-utils'
+import { CSSNumber, ParsedCSSProperties } from '../../components/inspector/common/css-utils'
 
 export type LayoutDimension = 'Width' | 'Height'
 
@@ -40,6 +40,7 @@ export type StyleLayoutProp =
   | 'alignItems'
   | 'alignContent'
   | 'justifyContent'
+  | 'padding'
   | 'paddingTop'
   | 'paddingRight'
   | 'paddingBottom'
@@ -152,6 +153,7 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
   marginRight: ['style', 'marginRight'],
   marginBottom: ['style', 'marginBottom'],
   marginLeft: ['style', 'marginLeft'],
+  padding: ['style', 'padding'],
   paddingTop: ['style', 'paddingTop'],
   paddingRight: ['style', 'paddingRight'],
   paddingBottom: ['style', 'paddingBottom'],
@@ -162,6 +164,23 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
 export interface LayoutPropertyTypes {
   LayoutSystem: LayoutSystem | undefined
 
+  Width: CSSNumber | undefined
+  Height: CSSNumber | undefined
+
+  FlexGap: number
+  FlexFlexBasis: CSSNumber | undefined
+  FlexCrossBasis: CSSNumber | undefined
+
+  PinnedLeft: CSSNumber | undefined
+  PinnedTop: CSSNumber | undefined
+  PinnedRight: CSSNumber | undefined
+  PinnedBottom: CSSNumber | undefined
+  PinnedCenterX: CSSNumber | undefined
+  PinnedCenterY: CSSNumber | undefined
+}
+
+export interface LayoutPropertyTypesAndCSSPropertyTypes extends ParsedCSSProperties {
+  LayoutSystem: LayoutSystem | undefined
   Width: FramePin | undefined
   Height: FramePin | undefined
 
@@ -176,10 +195,6 @@ export interface LayoutPropertyTypes {
   PinnedCenterX: FramePin | undefined
   PinnedCenterY: FramePin | undefined
 }
-
-export interface LayoutPropertyTypesAndCSSPropertyTypes
-  extends LayoutPropertyTypes,
-    ParsedCSSProperties {}
 
 export function createLayoutPropertyPath(layoutProp: LayoutProp | StyleLayoutProp): PropertyPath {
   return PP.create(LayoutPathMap[layoutProp])

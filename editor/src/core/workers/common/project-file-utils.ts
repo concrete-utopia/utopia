@@ -19,11 +19,6 @@ import { ErrorMessage } from '../../shared/error-messages'
 
 import { printCode, printCodeOptions } from '../parser-printer/parser-printer'
 import { ArbitraryJSBlock, Comment, TopLevelElement } from '../../shared/element-template'
-import {
-  mergeParsedComments,
-  parsedComments,
-  ParsedComments,
-} from '../parser-printer/parser-printer-comments'
 
 export function codeNeedsPrinting(revisionsState: RevisionsState): boolean {
   return revisionsState === RevisionsState.ParsedAhead
@@ -76,7 +71,6 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
     importedWithName: importedWithName,
     importedFromWithin: importedFromWithin,
     importedAs: importedAs,
-    comments: mergeParsedComments(first.comments, second.comments),
   }
 }
 
@@ -111,7 +105,6 @@ export function addImport(
   importedWithName: string | null,
   importedFromWithin: Array<ImportAlias>,
   importedAs: string | null,
-  comments: ParsedComments,
   imports: Imports,
 ): Imports {
   const toAdd: Imports = {
@@ -119,7 +112,6 @@ export function addImport(
       importedWithName: importedWithName,
       importedFromWithin: importedFromWithin,
       importedAs: importedAs,
-      comments: comments,
     },
   }
   return mergeImports(imports, toAdd)

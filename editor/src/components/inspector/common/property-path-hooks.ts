@@ -33,6 +33,7 @@ import {
   ParsedPropertiesValues,
   printCSSValue,
   cssNumber,
+  isTrivialDefaultValue,
 } from '../../../components/inspector/common/css-utils'
 import {
   createLayoutPropertyPath,
@@ -71,6 +72,8 @@ import {
   UtopiaJSXComponent,
   ComputedStyle,
   getJSXAttribute,
+  StyleAttributeMetadata,
+  StyleAttributeMetadataEntry,
 } from '../../../core/shared/element-template'
 import {
   GetModifiableAttributeResult,
@@ -99,6 +102,7 @@ export interface InspectorPropsContextData {
   targetPath: readonly string[]
   spiedProps: ReadonlyArray<{ [key: string]: any }>
   computedStyles: ReadonlyArray<ComputedStyle>
+  selectedAttributeMetadatas: ReadonlyArray<StyleAttributeMetadata>
 }
 
 export interface InspectorCallbackContextData {
@@ -113,6 +117,7 @@ export const InspectorPropsContext = createContext<InspectorPropsContextData>({
   targetPath: [],
   spiedProps: [],
   computedStyles: [],
+  selectedAttributeMetadatas: [],
 })
 
 export const InspectorCallbackContext = React.createContext<InspectorCallbackContextData>({
@@ -169,6 +174,15 @@ function getComputedStyleValues(
   return selectedComputedStyles[key] ?? []
 }
 
+function getAttributeMetadatas(
+  key: string,
+  selectedAttributeMetadatas: {
+    [key: string]: ReadonlyArray<StyleAttributeMetadataEntry>
+  },
+): ReadonlyArray<StyleAttributeMetadataEntry> {
+  return selectedAttributeMetadatas[key] ?? []
+}
+
 // TODO also memoize me!
 export function useInspectorInfoFromMultiselectMultiStyleAttribute<
   PropertiesToControl extends ParsedPropertiesKeys
@@ -176,12 +190,16 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
   multiselectAtProps: MultiselectAtProps<PropertiesToControl>,
   selectedProps: { [key in PropertiesToControl]: ReadonlyArray<any> },
   selectedComputedStyles: { [key in PropertiesToControl]: ReadonlyArray<string> },
+  selectedAttributeMetadatas: {
+    [key in PropertiesToControl]: ReadonlyArray<StyleAttributeMetadataEntry>
+  },
 ): {
   [key in PropertiesToControl]: {
     simpleValues: ReadonlyArray<Either<string, any>>
     rawValues: ReadonlyArray<Either<string, ModifiableAttribute>>
     spiedValues: ReadonlyArray<any>
     computedValues: ReadonlyArray<string>
+    attributeMetadatas: ReadonlyArray<StyleAttributeMetadataEntry>
   }
 } {
   const multiselectLength = useContextSelector(InspectorPropsContext, (c) => {
@@ -200,6 +218,7 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
             rawValues: [left('Nothing selected')],
             spiedValues: [undefined],
             computedValues: [],
+            attributeMetadatas: [],
           }
         }
 
@@ -209,12 +228,14 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
         )
         const spiedValues = getSpiedValues(key, selectedProps)
         const computedValues = getComputedStyleValues(key, selectedComputedStyles)
+        const attributeMetadatas = getAttributeMetadatas(key, selectedAttributeMetadatas)
 
         return {
           simpleValues,
           rawValues,
           spiedValues,
           computedValues,
+          attributeMetadatas,
         }
       },
     )
@@ -351,10 +372,13 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   rawValue: Either<string, ModifiableAttribute>,
   spiedValue: any,
   computedValue: string | undefined,
+  attributeMetadataEntry: StyleAttributeMetadataEntry | undefined,
 ): {
   finalValue: ParsedPropertiesValues
   isUnknown: boolean
+  trivialDefault: boolean
   usesComputedFallback: boolean
+  setFromCssStyleSheet: boolean
 } {
   const simpleValueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
@@ -366,25 +390,37 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
     return {
       finalValue: parsedValue.value,
       isUnknown: isCSSUnknownFunctionParameters(parsedValue.value),
+      trivialDefault: false,
       usesComputedFallback: false,
+      setFromCssStyleSheet: false,
     }
   } else if (isRight(parsedSpiedValue)) {
     return {
       finalValue: parsedSpiedValue.value,
       isUnknown: simpleValueAsMaybe != null,
+      trivialDefault: false,
       usesComputedFallback: false,
+      setFromCssStyleSheet: false,
     }
   } else if (isRight(parsedComputedValue)) {
+    const detectedComputedValue = parsedComputedValue.value
+    const trivialDefault = isTrivialDefaultValue(property, detectedComputedValue)
     return {
-      finalValue: parsedComputedValue.value,
+      finalValue: detectedComputedValue,
       isUnknown: simpleValueAsMaybe != null,
+      trivialDefault: trivialDefault,
       usesComputedFallback: true,
+      setFromCssStyleSheet: attributeMetadataEntry?.fromStyleSheet ?? false,
     }
   } else {
+    const defaultValue = emptyValues[property]
+    const trivialDefault = isTrivialDefaultValue(property, defaultValue)
     return {
       finalValue: emptyValues[property],
       isUnknown: simpleValueAsMaybe != null,
+      trivialDefault: trivialDefault,
       usesComputedFallback: false,
+      setFromCssStyleSheet: false,
     }
   }
 }
@@ -422,69 +458,24 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   pathMappingFn: PathMappingFn<P>,
 ): InspectorInfo<T> {
   const propKeys = useMemoizedPropKeys(propKeysIn)
-  const multiselectAtProps: MultiselectAtProps<P> = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P) =>
-          contextData.editedMultiSelectedProps.map((props) => {
-            return getModifiableJSXAttributeAtPath(
-              props,
-              pathMappingFn(propKey, contextData.targetPath),
-            )
-          })
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
-      deepEqual,
-    ),
+  const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
+    pathMappingFn,
+    propKeys,
   )
 
-  const selectedProps = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P) => {
-          return contextData.spiedProps.map((props) => {
-            return ObjectPath.get(
-              props,
-              PP.getElements(pathMappingFn(propKey, contextData.targetPath)),
-            )
-          })
-        }
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
-      deepEqual,
-    ),
-  )
+  const selectedProps = useGetSpiedProps<P>(pathMappingFn, propKeys)
 
-  const selectedComputedStyles = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P): string[] => {
-          const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
-          const isStylePath = path[0] === 'style' || path[0] === 'css'
-          if (isStylePath && path.length === 2) {
-            return contextData.computedStyles.map((computedStyle) => {
-              return ObjectPath.get(computedStyle, path[1])
-            })
-          } else {
-            return []
-          }
-        }
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
-      deepEqual,
-    ),
-  )
+  const selectedComputedStyles = useGetSelectedComputedStyles<P>(pathMappingFn, propKeys)
+
+  const selectedAttributeMetadatas: {
+    [key in P]: StyleAttributeMetadataEntry[]
+  } = useGetSelectedAttributeMetadatas<P>(pathMappingFn, propKeys)
 
   const simpleAndRawValues = useInspectorInfoFromMultiselectMultiStyleAttribute(
     multiselectAtProps,
     selectedProps,
     selectedComputedStyles,
+    selectedAttributeMetadatas,
   )
 
   const propertyStatus = calculateMultiPropertyStatusForSelection(
@@ -492,74 +483,9 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     simpleAndRawValues,
   )
 
-  let isUnknown = false
-  const values = Utils.mapArrayToDictionary(
-    propKeys,
-    (propKey) => propKey,
-    (propKey) => {
-      const { simpleValues, rawValues, spiedValues, computedValues } = simpleAndRawValues[propKey]
-      if (propertyStatus.identical) {
-        const simpleValue: Either<string, any> = Utils.defaultIfNull(
-          left('Simple value missing'),
-          simpleValues[0],
-        )
-        const rawValue: Either<string, ModifiableAttribute> = Utils.defaultIfNull(
-          left('Raw value missing'),
-          rawValues[0],
-        )
-        const spiedValue: any = spiedValues[0]
-        const computedValue = computedValues[0]
-        const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
-          propKey,
-          simpleValue,
-          rawValue,
-          spiedValue,
-          computedValue,
-        )
-        isUnknown = isUnknown || pathIsUnknown
-        // setting the status to detected because it uses the fallback value
-        propertyStatus.detected = usesComputedFallback
-        return finalValue
-      } else {
-        let firstFinalValue: ParsedPropertiesValues
-        simpleValues.forEach((simpleValue, i) => {
-          const rawValue: Either<string, ModifiableAttribute> = Utils.defaultIfNull(
-            left('Raw value missing'),
-            rawValues[i],
-          )
-          const spiedValue: any = spiedValues[i]
-          const computedValue = computedValues[i]
-          const { finalValue, isUnknown: pathIsUnknown, usesComputedFallback } = parseFinalValue(
-            propKey,
-            simpleValue,
-            rawValue,
-            spiedValue,
-            computedValue,
-          )
-          if (i === 0) {
-            firstFinalValue = finalValue
-          }
-          isUnknown = isUnknown || pathIsUnknown
-          // setting the status to detected because it uses the fallback value
-          propertyStatus.detected = propertyStatus.detected || usesComputedFallback
-        })
-        return firstFinalValue
-      }
-    },
-  ) as ParsedValues<P>
+  const { values, isUnknown } = getParsedValues(propKeys, simpleAndRawValues, propertyStatus)
 
-  let controlStatus: ControlStatus = getControlStatusFromPropertyStatus(propertyStatus)
-  if (isUnknown) {
-    if (controlStatus === 'simple') {
-      controlStatus = 'simple-unknown-css'
-    } else if (
-      controlStatus === 'multiselect-identical-simple' ||
-      controlStatus === 'multiselect-identical-unset' ||
-      controlStatus === 'multiselect-mixed-simple-or-unset'
-    ) {
-      controlStatus = 'multiselect-simple-unknown-css'
-    }
-  }
+  const controlStatus = calculateControlStatusWithUnknown(propertyStatus, isUnknown)
 
   const {
     onContextSubmitValue: onSingleSubmitValue,
@@ -574,23 +500,13 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   }, [onUnsetValue, propKeys, pathMappingFn, target])
 
   const transformedValue = transformValue(values)
-  const onSubmitValue: (newValue: T, transient?: boolean) => void = React.useCallback(
-    (newValue, transient = false) => {
-      const untransformedValue = untransformValue(newValue)
-      propKeys.forEach((propKey) => {
-        const propertyPath = pathMappingFn(propKey, target)
-        const valueToPrint = untransformedValue[propKey]
-        if (valueToPrint != null) {
-          const printedProperty = printCSSValue(propKey, valueToPrint as ParsedProperties[P])
-          onSingleSubmitValue(printedProperty, propertyPath, transient)
-        } else {
-          onUnsetValue(propertyPath)
-        }
-      })
-    },
-    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
+  const onSubmitValue: (newValue: T, transient?: boolean) => void = useCreateOnSubmitValue<P, T>(
+    untransformValue,
+    propKeys,
+    pathMappingFn,
+    target,
+    onSingleSubmitValue,
+    onUnsetValue,
   )
 
   const onTransientSubmitValue: (newValue: T) => void = React.useCallback(
@@ -613,6 +529,250 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
     onUnsetValues,
     useSubmitValueFactory,
   }
+}
+
+function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProperties[P]>(
+  untransformValue: UntransformInspectorInfo<P, T>,
+  propKeys: P[],
+  pathMappingFn: PathMappingFn<P>,
+  target: readonly string[],
+  onSingleSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void,
+  onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void,
+): (newValue: T, transient?: boolean | undefined) => void {
+  return React.useCallback(
+    (newValue, transient = false) => {
+      const untransformedValue = untransformValue(newValue)
+      propKeys.forEach((propKey) => {
+        const propertyPath = pathMappingFn(propKey, target)
+        const valueToPrint = untransformedValue[propKey]
+        if (valueToPrint != null) {
+          const printedProperty = printCSSValue(propKey, valueToPrint as ParsedProperties[P])
+          onSingleSubmitValue(printedProperty, propertyPath, transient)
+        } else {
+          onUnsetValue(propertyPath)
+        }
+      })
+    },
+    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
+  )
+}
+
+// TODO INTRODUCE UNKNOWN TO PROPERTY STATUS, ROLL THIS TO `getControlStatusFromPropertyStatus` PROPER
+function calculateControlStatusWithUnknown(propertyStatus: PropertyStatus, isUnknown: boolean) {
+  let controlStatus: ControlStatus = getControlStatusFromPropertyStatus(propertyStatus)
+  if (isUnknown) {
+    if (controlStatus === 'simple') {
+      controlStatus = 'simple-unknown-css'
+    } else if (
+      controlStatus === 'multiselect-identical-simple' ||
+      controlStatus === 'multiselect-identical-unset' ||
+      controlStatus === 'multiselect-mixed-simple-or-unset'
+    ) {
+      controlStatus = 'multiselect-simple-unknown-css'
+    }
+  }
+  return controlStatus
+}
+
+function useGetSelectedAttributeMetadatas<P extends ParsedPropertiesKeys>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: P[],
+): { [key in P]: StyleAttributeMetadataEntry[] } {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const keyFn = (propKey: P) => propKey
+        const mapFn = (propKey: P): StyleAttributeMetadataEntry[] => {
+          const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
+          const isStylePath = path[0] === 'style' || path[0] === 'css'
+          if (isStylePath && path.length === 2) {
+            return contextData.selectedAttributeMetadatas.map((attributeMetadata) => {
+              return ObjectPath.get(attributeMetadata, path[1])
+            })
+          } else {
+            return []
+          }
+        }
+        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+      },
+      deepEqual,
+    ),
+  )
+}
+
+function useGetSelectedComputedStyles<P extends ParsedPropertiesKeys>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: P[],
+) {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const keyFn = (propKey: P) => propKey
+        const mapFn = (propKey: P): string[] => {
+          const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
+          const isStylePath = path[0] === 'style' || path[0] === 'css'
+          if (isStylePath && path.length === 2) {
+            return contextData.computedStyles.map((computedStyle) => {
+              return ObjectPath.get(computedStyle, path[1])
+            })
+          } else {
+            return []
+          }
+        }
+        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+      },
+      deepEqual,
+    ),
+  )
+}
+
+function useGetSpiedProps<P extends ParsedPropertiesKeys>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: P[],
+) {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const keyFn = (propKey: P) => propKey
+        const mapFn = (propKey: P) => {
+          return contextData.spiedProps.map((props) => {
+            return ObjectPath.get(
+              props,
+              PP.getElements(pathMappingFn(propKey, contextData.targetPath)),
+            )
+          })
+        }
+        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+      },
+      deepEqual,
+    ),
+  )
+}
+
+function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: P[],
+): MultiselectAtProps<P> {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const keyFn = (propKey: P) => propKey
+        const mapFn = (propKey: P) =>
+          contextData.editedMultiSelectedProps.map((props) => {
+            return getModifiableJSXAttributeAtPath(
+              props,
+              pathMappingFn(propKey, contextData.targetPath),
+            )
+          })
+        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+      },
+      deepEqual,
+    ),
+  )
+}
+
+function getParsedValues<P extends ParsedPropertiesKeys>(
+  propKeys: P[],
+  simpleAndRawValues: {
+    [key in P]: {
+      simpleValues: readonly Either<string, any>[]
+      rawValues: readonly Either<string, ModifiableAttribute>[]
+      spiedValues: readonly any[]
+      computedValues: readonly string[]
+      attributeMetadatas: readonly StyleAttributeMetadataEntry[]
+    }
+  },
+  propertyStatus: PropertyStatus,
+): { values: ParsedValues<P>; isUnknown: boolean } {
+  let isUnknownInner = false
+  const valuesInner = Utils.mapArrayToDictionary(
+    propKeys,
+    (propKey) => propKey,
+    (propKey) => {
+      const {
+        simpleValues,
+        rawValues,
+        spiedValues,
+        computedValues,
+        attributeMetadatas,
+      } = simpleAndRawValues[propKey]
+      if (propertyStatus.identical) {
+        const simpleValue: Either<string, any> = Utils.defaultIfNull(
+          left('Simple value missing'),
+          simpleValues[0],
+        )
+        const rawValue: Either<string, ModifiableAttribute> = Utils.defaultIfNull(
+          left('Raw value missing'),
+          rawValues[0],
+        )
+        const spiedValue: any = spiedValues[0]
+        const computedValue = computedValues[0]
+        const attributeMetadata = attributeMetadatas[0]
+        const {
+          finalValue,
+          isUnknown: pathIsUnknown,
+          usesComputedFallback,
+          setFromCssStyleSheet,
+          trivialDefault,
+        } = parseFinalValue(
+          propKey,
+          simpleValue,
+          rawValue,
+          spiedValue,
+          computedValue,
+          attributeMetadata,
+        )
+        isUnknownInner = isUnknownInner || pathIsUnknown
+        // setting the status to detected because it uses the fallback value
+        propertyStatus.detected = usesComputedFallback
+        propertyStatus.fromCssStyleSheet = setFromCssStyleSheet
+        propertyStatus.trivialDefault = trivialDefault
+        return finalValue
+      } else {
+        let firstFinalValue: ParsedPropertiesValues
+        simpleValues.forEach((simpleValue, i) => {
+          const rawValue: Either<string, ModifiableAttribute> = Utils.defaultIfNull(
+            left('Raw value missing'),
+            rawValues[i],
+          )
+          const spiedValue: any = spiedValues[i]
+          const computedValue = computedValues[i]
+          const attributeMetadata = attributeMetadatas[i]
+          const {
+            finalValue,
+            isUnknown: pathIsUnknown,
+            usesComputedFallback,
+            setFromCssStyleSheet,
+            trivialDefault,
+          } = parseFinalValue(
+            propKey,
+            simpleValue,
+            rawValue,
+            spiedValue,
+            computedValue,
+            attributeMetadata,
+          )
+          if (i === 0) {
+            firstFinalValue = finalValue
+          }
+          isUnknownInner = isUnknownInner || pathIsUnknown
+          // setting the status to detected because it uses the fallback value
+          propertyStatus.detected = propertyStatus.detected || usesComputedFallback
+          propertyStatus.fromCssStyleSheet =
+            propertyStatus.fromCssStyleSheet || setFromCssStyleSheet
+          propertyStatus.trivialDefault = propertyStatus.trivialDefault && trivialDefault
+        })
+        return firstFinalValue
+      }
+    },
+  ) as ParsedValues<P>
+  return { isUnknown: isUnknownInner, values: valuesInner }
 }
 
 // TODO: Warning, this is just copy pasted code from useInspectorInfo. We needed a hook which

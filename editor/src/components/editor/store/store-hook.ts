@@ -1,8 +1,8 @@
 import * as React from 'react'
 import type { EditorStore } from './editor-state'
 import { UseStore, StoreApi, EqualityChecker } from 'zustand'
-import utils from '../../../utils/utils'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 type StateSelector<T, U> = (state: T) => U
 
@@ -19,7 +19,7 @@ type StateSelector<T, U> = (state: T) => U
 export const useEditorState = <U>(
   selector: StateSelector<EditorStore, U>,
   selectorName: string,
-  equalityFn: (oldSlice: U, newSlice: U) => boolean = utils.shallowEqual,
+  equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
 ): U => {
   const context = React.useContext(EditorStateContext)
 
@@ -89,27 +89,34 @@ export const useRefEditorState = <U>(
   // https://github.com/pmndrs/zustand/blob/d82e103cc6702ed10a404a587163e42fc3ac1338/src/index.ts#L161
   sliceRef.current = selector(api.getState()) // ensure that callers of this always have the latest data
   if (explainMe) {
-    console.info('reading useEditorState', sliceRef.current)
+    console.info('useRefEditorState: reading editor state', sliceRef.current)
   }
   React.useEffect(() => {
+    sliceRef.current = selectorRef.current(api.getState()) // the state might have changed between the render and this Effect being called
     if (explainMe) {
-      console.info('subscribing to the api')
+      console.info(
+        'useRefEditorState: re-reading editor state in useEffect, just in case it changed since the hook was called',
+        sliceRef.current,
+      )
+    }
+    if (explainMe) {
+      console.info('useRefEditorState: subscribing to the zustand api')
     }
     const unsubscribe = api.subscribe(
       (newSlice) => {
         if (newSlice) {
           if (explainMe) {
-            console.info('new slice arrived', newSlice)
+            console.info('useRefEditorState: new state slice arrived', newSlice)
           }
           sliceRef.current = newSlice
         }
       },
       (store: EditorStore) => selectorRef.current(store),
-      utils.shallowEqual,
+      shallowEqual,
     )
     return function cleanup() {
       if (explainMe) {
-        console.info('unsubscribing from the api')
+        console.info('useRefEditorState: unsubscribing from the zustand api')
       }
       unsubscribe()
     }
@@ -131,7 +138,7 @@ EditorStateContext.displayName = 'EditorStateContext'
 export function useSelectorWithCallback<U>(
   selector: StateSelector<EditorStore, U>,
   callback: (newValue: U) => void,
-  equalityFn: (oldSlice: U, newSlice: U) => boolean = utils.shallowEqual,
+  equalityFn: (oldSlice: U, newSlice: U) => boolean = shallowEqual,
   explainMe: boolean = false,
 ): void {
   const context = React.useContext(EditorStateContext)

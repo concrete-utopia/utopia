@@ -161,12 +161,10 @@ const radiusTypeOptions: OptionsType<SelectOption> = [
   },
 ]
 
-function getSliderMax(widthPin: FramePin | undefined, heightPin: FramePin | undefined): number {
+function getSliderMax(widthPin: CSSNumber | undefined, heightPin: CSSNumber | undefined): number {
   const defaultMax = 100
-  const parsedWidth = framePinToCSSNumber(widthPin)
-  const parsedHeight = framePinToCSSNumber(heightPin)
-  const width = utils.defaultIfNull(defaultMax, getCSSNumberValue(parsedWidth))
-  const height = utils.defaultIfNull(defaultMax, getCSSNumberValue(parsedHeight))
+  const width = utils.defaultIfNull(defaultMax, getCSSNumberValue(widthPin))
+  const height = utils.defaultIfNull(defaultMax, getCSSNumberValue(heightPin))
   return Math.min(width, height)
 }
 
@@ -266,6 +264,8 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onSubmitValue: onBorderRadiusTLSubmitValue,
                   onTransientSubmitValue: onBorderRadiusTLTransientSubmitValue,
                   controlStatus: controlStatus,
+                  testId: 'border-radius-tl',
+                  defaultUnitToHide: 'px',
                 },
                 {
                   numberType: 'LengthPercent',
@@ -273,6 +273,8 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onSubmitValue: onBorderRadiusTRSubmitValue,
                   onTransientSubmitValue: onBorderRadiusTRTransientSubmitValue,
                   controlStatus: controlStatus,
+                  testId: 'border-radius-tr',
+                  defaultUnitToHide: 'px',
                 },
                 {
                   numberType: 'LengthPercent',
@@ -280,6 +282,8 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onSubmitValue: onBorderRadiusBLSubmitValue,
                   onTransientSubmitValue: onBorderRadiusBLTransientSubmitValue,
                   controlStatus: controlStatus,
+                  testId: 'border-radius-bl',
+                  defaultUnitToHide: 'px',
                 },
                 {
                   numberType: 'LengthPercent',
@@ -287,6 +291,8 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
                   onSubmitValue: onBorderRadiusBRSubmitValue,
                   onTransientSubmitValue: onBorderRadiusBRTransientSubmitValue,
                   controlStatus: controlStatus,
+                  testId: 'border-radius-br',
+                  defaultUnitToHide: 'px',
                 },
               ]}
             />
@@ -296,6 +302,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
             <SliderControl
               id='radius-all-slider'
               key='radius-all-slider'
+              testId='radius-all-slider'
               value={borderRadiusValue.value.value}
               DEPRECATED_controlOptions={{
                 minimum: 0,
@@ -310,11 +317,13 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
             <NumberInput
               value={borderRadiusValue.value}
               id='radius-all-number-input'
+              testId='radius-all-number-input'
               onSubmitValue={wrappedOnSubmitValue}
               onTransientSubmitValue={wrappedOnTransientSubmitValue}
               controlStatus={controlStatus}
               minimum={0}
-              numberType='UnitlessPercent'
+              numberType='Length'
+              defaultUnitToHide={'px'}
             />
           </GridRow>
         )}

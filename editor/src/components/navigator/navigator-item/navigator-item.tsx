@@ -270,6 +270,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
           {preview}
           <ItemLabel
             key={`label-${label}`}
+            testId={`navigator-item-label-${label}`}
             name={label}
             isDynamic={isDynamic}
             target={templatePath}

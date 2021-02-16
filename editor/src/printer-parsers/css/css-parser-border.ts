@@ -13,7 +13,7 @@ import { parseLineStyle } from './css-parser-border-style'
 import { getLexerPropertyMatches, parseDoubleBar, parseLexedColor } from './css-parser-utils'
 
 export function parseBorder(value: unknown): Either<string, CSSBorder> {
-  const lexer = getLexerPropertyMatches('border', value, ['line-style', 'line-width', 'color'])
+  const lexer = getLexerPropertyMatches('border', value, '', ['line-style', 'line-width', 'color'])
   if (isRight(lexer)) {
     const parsed = parseDoubleBar<CSSColor | CSSLineWidth | CSSLineStyle>(3, [
       parseLexedColor,

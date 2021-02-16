@@ -216,6 +216,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
           <ColorControl
             id='boxShadow-Color'
             key='boxShadow-Color'
+            testId='boxShadow-Color'
             value={props.value.color}
             onSubmitValue={colorSubmitValue}
             onTransientSubmitValue={colorTransientSubmitValue}
@@ -235,6 +236,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
               controlStatus: props.controlStatus,
               numberType: 'Length',
               defaultUnitToHide: 'px',
+              testId: 'boxShadow-x',
             },
             {
               value: props.value.offsetY,
@@ -244,6 +246,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
               controlStatus: props.controlStatus,
               numberType: 'Length',
               defaultUnitToHide: 'px',
+              testId: 'boxShadow-y',
             },
             {
               value: props.value.blurRadius.value,
@@ -253,6 +256,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
               controlStatus: props.controlStatus,
               numberType: 'Length',
               defaultUnitToHide: 'px',
+              testId: 'boxShadow-blur',
             },
             {
               value: props.value.spreadRadius.value,
@@ -262,6 +266,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
               controlStatus: props.controlStatus,
               numberType: 'Length',
               defaultUnitToHide: 'px',
+              testId: 'boxShadow-spread',
             },
           ]}
         />

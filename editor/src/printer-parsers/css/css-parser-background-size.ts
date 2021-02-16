@@ -13,7 +13,12 @@ import {
   mapEither,
   sequenceEither,
 } from '../../core/shared/either'
-import { descriptionParseError, parseAlternative, Parser } from '../../utils/value-parser-utils'
+import {
+  descriptionParseError,
+  getParseErrorDetails,
+  parseAlternative,
+  Parser,
+} from '../../utils/value-parser-utils'
 import {
   getLexerTypeMatches,
   isLexerMatch,
@@ -69,7 +74,7 @@ export function parseBackgroundSize(value: unknown): Either<string, CSSBackgroun
         if (isRight(lexerMatch)) {
           const parsed = parseBGSize(lexerMatch.value)
           return bimapEither(
-            (l) => l.type,
+            (l) => getParseErrorDetails(l).description,
             (r) => {
               r.enabled = layer.enabled
               return r

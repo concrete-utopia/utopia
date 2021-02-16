@@ -20,6 +20,7 @@ export type OnSubmitValueOrUnknownOrEmpty<T> = (
 
 export interface DEPRECATEDControlProps<T> {
   id: string
+  testId: string
   key: string
   value: T
   onSubmitValue: OnSubmitValue<T>
@@ -51,6 +52,7 @@ export interface DEPRECATEDControlProps<T> {
 export interface InspectorControlProps {
   style?: React.CSSProperties
   id?: string
+  testId: string
   className?: string
   controlStatus?: ControlStatus
   DEPRECATED_labelBelow?: React.ReactChild

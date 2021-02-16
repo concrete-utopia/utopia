@@ -420,7 +420,6 @@ export class InsertModeControlContainer extends React.Component<
             ) ?? element.props,
         }
       }
-
       this.props.dispatch(
         [
           EditorActions.updateEditorMode(
@@ -568,7 +567,6 @@ export class InsertModeControlContainer extends React.Component<
           closestGuidelines,
         )
         const dragVector = Utils.vectorFromPoints(this.props.dragState.start, snappedMousePoint)
-
         this.props.dispatch(
           [
             EditorActions.updateEditorMode(

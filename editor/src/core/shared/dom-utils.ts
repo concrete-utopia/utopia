@@ -244,7 +244,7 @@ export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = tru
   document.getElementsByTagName('head')[0].appendChild(cssElement)
 }
 
-function appendHash(url: string): string {
+export function appendHash(url: string): string {
   return `${url}?hash=${URL_HASH}`
 }
 

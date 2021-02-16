@@ -3,6 +3,7 @@ import { parseBorder } from './css-parser-border'
 import { parseBorderColor } from './css-parser-border-color'
 import { parseBorderSize } from './css-parser-border-size'
 import { parseBorderStyle } from './css-parser-border-style'
+import { parsePadding } from './css-parser-padding'
 import {
   parseAlphaValue,
   parseAngle,
@@ -30,6 +31,7 @@ export const syntaxParsers = {
   '<length-percentage>': parseLengthPercentage,
   '<length>': parseLength,
   '<number>': parseNumber,
+  '<padding>': parsePadding,
   '<percentage>': parsePercentage,
   '<rgb()>': parseRGBColor,
   '<rgba()>': parseRGBColor,
