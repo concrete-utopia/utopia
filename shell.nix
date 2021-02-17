@@ -198,16 +198,25 @@ let
   withServerRunScripts = withEditorRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
 
   vscodeDevScripts = [
+    (pkgs.writeScriptBin "build-vscode" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      ${pkgs.yarn}/bin/yarn
+      ${pkgs.yarn}/bin/yarn run build
+    '')
     (pkgs.writeScriptBin "watch-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
+      ${node}/bin/npm --scripts-prepend-node-path=true install
       ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
+      ${node}/bin/npm --scripts-prepend-node-path=true install
       ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
