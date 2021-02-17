@@ -56,7 +56,10 @@ export async function readFile(path: string): Promise<Uint8Array> {
   })
 }
 
-export async function readFileWithEncoding(path: string, encoding: string): Promise<string> {
+export async function readFileWithEncoding(
+  path: string,
+  encoding: string = 'utf-8',
+): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     fs.readFile(path, encoding, wrappedCallback(resolve, reject))
   })
@@ -71,6 +74,16 @@ export async function exists(path: string): Promise<boolean> {
 export async function writeFile(path: string, content: Uint8Array): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     fs.writeFile(path, uint8Array2Buffer(content), wrappedOneArgCallback(resolve, reject))
+  })
+}
+
+export async function writeFileWithEncoding(
+  path: string,
+  content: string,
+  encoding: string = 'utf-8',
+): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    fs.writeFile(path, content, encoding, wrappedOneArgCallback(resolve, reject))
   })
 }
 
