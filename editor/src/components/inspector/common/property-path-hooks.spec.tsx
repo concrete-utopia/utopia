@@ -1170,6 +1170,7 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
         paddingRight: { unit: 'px', value: 15 },
         paddingTop: { unit: 'px', value: 15 },
       },
+      paddingLeft: { unit: 'px', value: 15 },
     })
     expect(hookResult.orderedPropKeys).toEqual([['padding']])
   })
@@ -1266,6 +1267,7 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
         paddingRight: { unit: 'px', value: 15 },
         paddingTop: { unit: 'px', value: 15 },
       },
+      paddingLeft: { unit: 'px', value: 15 },
     })
     expect(hookResult.orderedPropKeys).toEqual([['padding'], ['padding']])
   })
