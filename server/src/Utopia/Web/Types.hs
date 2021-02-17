@@ -145,6 +145,8 @@ type WebpackSockJSAPI = "sockjs-node" :> RawM
 
 type WebsiteAssetsAPI = "static" :> RawM
 
+type VSCodeAssetsAPI = "vscode" :> RawM
+
 type SSLAPI = ".well-known" :> RawM
 
 type WebsiteAPI = RawM
@@ -192,6 +194,7 @@ type Unprotected = AuthenticateAPI
               :<|> EditorAssetsAPI
               :<|> WebpackSockJSAPI
               :<|> WebsiteAssetsAPI
+              :<|> VSCodeAssetsAPI
               :<|> SSLAPI
               :<|> WebsiteAPI
 
