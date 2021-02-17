@@ -513,6 +513,8 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
                       onSubmitValue={updateCodeEditorFontSize}
                       onTransientSubmitValue={updateCodeEditorFontSize}
                       onForcedSubmitValue={updateCodeEditorFontSize}
+                      defaultUnitToHide={'px'}
+                      testId={''}
                     />
                     <SquareButton spotlight onClick={decreaseCodeEditorFontSize}>
                       -
