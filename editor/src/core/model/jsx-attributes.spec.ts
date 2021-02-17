@@ -24,6 +24,7 @@ import {
 } from '../shared/element-template'
 import {
   dropKeyFromNestedObject,
+  getAllPathsFromAttributes,
   getModifiableJSXAttributeAtPath,
   jsxAttributesToProps,
   jsxSimpleAttributeToValue,
@@ -702,5 +703,101 @@ describe('simplifyAttributeIfPossible', () => {
     const expectedValue = jsxAttributeValue('test', emptyComments)
     const actualValue = simplifyAttributeIfPossible(expectedValue)
     expect(actualValue).toBe(expectedValue)
+  })
+})
+
+describe('getAllPathsFromAttributes', () => {
+  it('works for a simple case', () => {
+    const result = getAllPathsFromAttributes(
+      jsxAttributesFromMap({ cica: jsxAttributeValue('hello!', emptyComments) }),
+    )
+    expect(result).toEqual([PP.create(['cica'])])
+  })
+
+  it('works for a nested object', () => {
+    const result = getAllPathsFromAttributes(
+      jsxAttributesFromMap({
+        cica: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            deep: jsxAttributeNestedObjectSimple(
+              jsxAttributesFromMap({ path: jsxAttributeValue(5, emptyComments) }),
+              emptyComments,
+            ),
+          }),
+          emptyComments,
+        ),
+      }),
+    )
+    expect(result).toEqual([
+      PP.create(['cica']),
+      PP.create(['cica', 'deep']),
+      PP.create(['cica', 'deep', 'path']),
+    ])
+  })
+
+  it('works with spread assignment', () => {
+    const result = getAllPathsFromAttributes(
+      jsxAttributesFromMap({
+        cica: jsxAttributeNestedObject(
+          [
+            jsxSpreadAssignment(
+              jsxAttributeNestedObjectSimple(
+                jsxAttributesFromMap({ path: jsxAttributeValue(5, emptyComments) }),
+                emptyComments,
+              ),
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+      }),
+    )
+    expect(result).toEqual([{ propertyElements: ['cica'] }, { propertyElements: ['cica', 'path'] }])
+  })
+
+  it('works for a nested array', () => {
+    const result = getAllPathsFromAttributes(
+      jsxAttributesFromMap({
+        cica: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            deep: jsxAttributeNestedArraySimple([jsxAttributeValue(5, emptyComments)]),
+          }),
+          emptyComments,
+        ),
+      }),
+    )
+    expect(result).toEqual([
+      PP.create(['cica']),
+      PP.create(['cica', 'deep']),
+      PP.create(['cica', 'deep', '0']),
+    ])
+  })
+
+  it('does not drill into function parameters', () => {
+    const result = getAllPathsFromAttributes(
+      jsxAttributesFromMap({
+        cica: jsxAttributeNestedObjectSimple(
+          jsxAttributesFromMap({
+            deep: jsxAttributeFunctionCall('functionName', [
+              jsxAttributeValue(5, emptyComments),
+              jsxAttributeValue({ objectKey: 'hello' }, emptyComments),
+            ]),
+          }),
+          emptyComments,
+        ),
+      }),
+    )
+    expect(result).toEqual([PP.create(['cica']), PP.create(['cica', 'deep'])])
+  })
+
+  it('drills into paths of object values too', () => {
+    const result = getAllPathsFromAttributes(
+      jsxAttributesFromMap({ cica: jsxAttributeValue({ deep: { path: 5 } }, emptyComments) }),
+    )
+    expect(result).toEqual([
+      PP.create(['cica']),
+      PP.create(['cica', 'deep']),
+      PP.create(['cica', 'deep', 'path']),
+    ])
   })
 })

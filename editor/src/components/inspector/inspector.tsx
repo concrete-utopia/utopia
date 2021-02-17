@@ -379,9 +379,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       return (
         <React.Fragment>
           <AlignmentButtons numberOfTargets={instancePaths.length} />
-          <ClassNameSubsection />
-          <StyleSection />
-          <WarningSubsection />
           <RenderedLayoutSection
             anyHTMLElements={anyHTMLElements}
             layout={props.input.layout}
@@ -393,6 +390,9 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             toggleAspectRatioLock={toggleAspectRatioLock}
             position={props.input.position}
           />
+          <ClassNameSubsection />
+          <StyleSection />
+          <WarningSubsection />
           {anyComponents ? <ComponentSection isScene={false} /> : null}
           <ImgSection />
           <TargetSelectorSection
@@ -418,6 +418,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       )
     }
   }
+  //first
   return (
     <div
       id='inspector'
@@ -831,9 +832,16 @@ export const InspectorContextProvider = betterReactMemo<{
            */
           return
         }
-
         const jsxElement = findElementAtPath(path, rootComponents)
-        const jsxAttributes = jsxElement != null && isJSXElement(jsxElement) ? jsxElement.props : []
+        if (jsxElement == null) {
+          /**
+           * This early return will cause the inspector to render with empty fields.
+           * With missing jsxElement manipulating style props is not possible.
+           */
+          return
+        }
+
+        const jsxAttributes = isJSXElement(jsxElement) ? jsxElement.props : []
         newEditedMultiSelectedProps.push(jsxAttributes)
         newSpiedProps.push(elementMetadata.props)
         newComputedStyles.push(elementMetadata.computedStyle)

@@ -245,7 +245,9 @@ export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = tru
 }
 
 export function appendHash(url: string): string {
-  return `${url}?hash=${URL_HASH}`
+  const asUrl = new URL(url)
+  asUrl.searchParams.append('hash', URL_HASH)
+  return asUrl.toString()
 }
 
 export function addScriptToPage(

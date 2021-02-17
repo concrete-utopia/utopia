@@ -273,6 +273,8 @@ innerServerExecutor (GetPathToServe defaultPathToServe possibleBranchName action
                    ("./editor", (Just branchName), (Just downloads))  -> liftIO $ getBranchBundleFolder downloads branchName
                    _                                                  -> return defaultPathToServe
   return $ action pathToServe
+innerServerExecutor (GetVSCodeAssetRoot action) = do
+  return $ action "../vscode-build/dist/"
 innerServerExecutor (GetUserConfiguration user action) = do
   pool <- fmap _projectPool ask
   metrics <- fmap _databaseMetrics ask

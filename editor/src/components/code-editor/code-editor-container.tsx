@@ -60,6 +60,7 @@ import {
   useUpdateOnRuntimeErrors,
 } from '../../core/shared/runtime-report-logs'
 import { createIframeUrl } from '../../core/shared/utils'
+import { forceNotNull } from '../../core/shared/optional-utils'
 
 const CodeEditorIframeID = 'code-editor-iframe'
 
@@ -98,6 +99,33 @@ const CodeEditorIframeContainer = betterReactMemo<{ propsToSend: JSONStringified
   },
 )
 
+const VSCodeIframeContainer = betterReactMemo(
+  'VSCodeIframeContainer',
+  (props: { projectID: string }) => {
+    const projectID = props.projectID
+    const baseIframeSrc = createIframeUrl(
+      MONACO_EDITOR_IFRAME_BASE_URL,
+      'vscode-editor-outer-iframe',
+    )
+    const url = new URL(baseIframeSrc)
+    url.searchParams.append('project_id', projectID)
+
+    return (
+      <iframe
+        key={'vscode-editor'}
+        id={'vscode-editor'}
+        src={url.toString()}
+        allow='autoplay'
+        style={{
+          flex: 1,
+          backgroundColor: 'transparent',
+          borderWidth: 0,
+        }}
+      />
+    )
+  },
+)
+
 export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) => {
   const selectedProps = useEditorState((store) => {
     const openEditorTab = getOpenEditorTab(store.editor)
@@ -125,6 +153,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
       codeEditorTheme: store.editor.codeEditor.codeEditorTheme,
       fontSize: store.editor.codeEditor.currentFontSize,
       selectedViews: store.editor.selectedViews,
+      projectID: store.editor.id,
     }
   }, 'CodeEditorWrapper')
 
@@ -172,10 +201,21 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     npmDependencies: npmDependencies,
   }
 
-  if (isFeatureEnabled('iFrame Code Editor')) {
-    return <CodeEditorIframeContainer propsToSend={propsToSend} />
+  if (isFeatureEnabled('VSCode Code Editor')) {
+    return (
+      <VSCodeIframeContainer
+        projectID={forceNotNull(
+          'Project ID must be set when launching the code editor',
+          selectedProps.projectID,
+        )}
+      />
+    )
   } else {
-    return <CodeEditorNonIframeEntryPoint propsFromMainEditor={propsToSend} dispatch={dispatch} />
+    if (isFeatureEnabled('iFrame Code Editor')) {
+      return <CodeEditorIframeContainer propsToSend={propsToSend} />
+    } else {
+      return <CodeEditorNonIframeEntryPoint propsFromMainEditor={propsToSend} dispatch={dispatch} />
+    }
   }
 })
 

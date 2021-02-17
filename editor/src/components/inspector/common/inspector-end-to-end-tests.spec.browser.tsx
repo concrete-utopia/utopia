@@ -575,7 +575,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
   })
   it('Style props strings using px', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1385,6 +1385,12 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
+    await act(async () => {
+      await screen.findByTestId('toggle-min-max-button')
+      fireEvent.click(screen.getByTestId('toggle-min-max-button'))
+      await screen.findByTestId('position-maxWidth-number-input')
+    })
+
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
@@ -1415,7 +1421,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"trivial-default"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
@@ -1478,6 +1484,12 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
+    await act(async () => {
+      await screen.findByTestId('toggle-min-max-button')
+      fireEvent.click(screen.getByTestId('toggle-min-max-button'))
+      await screen.findByTestId('position-maxWidth-number-input')
+    })
+
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
@@ -1508,7 +1520,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"trivial-default"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)

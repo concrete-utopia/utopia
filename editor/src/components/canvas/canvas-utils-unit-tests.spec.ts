@@ -52,7 +52,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, height: 340, width: 310 }}
+          style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 310, height: 340 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
@@ -98,7 +98,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, height: 30, width: 296 }}
+          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 296, height: 30 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
@@ -148,9 +148,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
             backgroundColor: '#0091FFAA',
             left: 52,
             top: 61,
+            width: 306,
             height: 252,
             bottom: 87,
-            width: 306,
             right: 43,
           }}
           layout={{ layoutSystem: 'pinSystem' }}
@@ -199,7 +199,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', right: 50, bottom: 20, top: 41, left: 2 }}
+          style={{ backgroundColor: '#0091FFAA', left: 2, top: 41, right: 50, bottom: 20 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
@@ -245,7 +245,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, bottom: 30, right: -30 }}
+          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, right: -30, bottom: 30 }}
           layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
@@ -292,8 +292,8 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       makeTestProjectCodeWithSnippet(
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', top: 31, left: 12 }}
-          layout={{ layoutSystem: 'pinSystem', centerY: 85, centerX: 80 }}
+          style={{ backgroundColor: '#0091FFAA', left: 12, top: 31 }}
+          layout={{ layoutSystem: 'pinSystem', centerX: 80, centerY: 85 }}
           data-uid='bbb'
         />
       </View>`,
@@ -339,7 +339,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
         `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
         <View
           style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
-          layout={{ layoutSystem: 'pinSystem', centerY: 115, centerX: 120 }}
+          layout={{ layoutSystem: 'pinSystem', centerX: 120, centerY: 115 }}
           data-uid='bbb'
         />
       </View>`,

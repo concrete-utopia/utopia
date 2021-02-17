@@ -9,6 +9,7 @@ export type FeatureName =
   | 'Re-parse Project Button'
   | 'iFrame Code Editor'
   | 'Performance Test Triggers'
+  | 'VSCode Code Editor'
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
   // 'Dragging Shows Overlay', // Removing this option so that we can experiment on this later
@@ -17,6 +18,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Re-parse Project Button',
   'iFrame Code Editor',
   'Performance Test Triggers',
+  'VSCode Code Editor',
 ]
 
 let FeatureSwitches: { [feature: string]: boolean } = {
@@ -27,6 +29,7 @@ let FeatureSwitches: { [feature: string]: boolean } = {
   'Re-parse Project Button': false,
   'iFrame Code Editor': false,
   'Performance Test Triggers': true,
+  'VSCode Code Editor': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {
@@ -51,7 +54,7 @@ export function isFeatureEnabled(featureName: FeatureName): boolean {
   return FeatureSwitches[featureName] ?? false
 }
 
-export function toggleFeatureEnabled(featureName: FeatureName) {
+export function toggleFeatureEnabled(featureName: FeatureName): void {
   const newValue = !isFeatureEnabled(featureName)
   FeatureSwitches[featureName] = newValue
   if (isBrowserEnvironment) {

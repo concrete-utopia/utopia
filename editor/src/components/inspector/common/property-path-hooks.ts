@@ -458,68 +458,129 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   pathMappingFn: PathMappingFn<P>,
 ): InspectorInfo<T> {
   const propKeys = useMemoizedPropKeys(propKeysIn)
-  const multiselectAtProps: MultiselectAtProps<P> = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P) =>
-          contextData.editedMultiSelectedProps.map((props) => {
-            return getModifiableJSXAttributeAtPath(
-              props,
-              pathMappingFn(propKey, contextData.targetPath),
-            )
-          })
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
-      deepEqual,
-    ),
+  const multiselectAtProps: MultiselectAtProps<P> = useGetMultiselectedProps<P>(
+    pathMappingFn,
+    propKeys,
   )
 
-  const selectedProps = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P) => {
-          return contextData.spiedProps.map((props) => {
-            return ObjectPath.get(
-              props,
-              PP.getElements(pathMappingFn(propKey, contextData.targetPath)),
-            )
-          })
-        }
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
-      deepEqual,
-    ),
-  )
+  const selectedProps = useGetSpiedProps<P>(pathMappingFn, propKeys)
 
-  const selectedComputedStyles = useKeepReferenceEqualityIfPossible(
-    useContextSelector(
-      InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P): string[] => {
-          const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
-          const isStylePath = path[0] === 'style' || path[0] === 'css'
-          if (isStylePath && path.length === 2) {
-            return contextData.computedStyles.map((computedStyle) => {
-              return ObjectPath.get(computedStyle, path[1])
-            })
-          } else {
-            return []
-          }
-        }
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
-      deepEqual,
-    ),
-  )
+  const selectedComputedStyles = useGetSelectedComputedStyles<P>(pathMappingFn, propKeys)
 
   const selectedAttributeMetadatas: {
     [key in P]: StyleAttributeMetadataEntry[]
-  } = useKeepReferenceEqualityIfPossible(
+  } = useGetSelectedAttributeMetadatas<P>(pathMappingFn, propKeys)
+
+  const simpleAndRawValues = useInspectorInfoFromMultiselectMultiStyleAttribute(
+    multiselectAtProps,
+    selectedProps,
+    selectedComputedStyles,
+    selectedAttributeMetadatas,
+  )
+
+  const propertyStatus = calculateMultiPropertyStatusForSelection(
+    multiselectAtProps,
+    simpleAndRawValues,
+  )
+
+  const { values, isUnknown } = getParsedValues(propKeys, simpleAndRawValues, propertyStatus)
+
+  const controlStatus = calculateControlStatusWithUnknown(propertyStatus, isUnknown)
+
+  const {
+    onContextSubmitValue: onSingleSubmitValue,
+    onContextUnsetValue: onUnsetValue,
+  } = useInspectorContext()
+
+  const target = useKeepReferenceEqualityIfPossible(
+    useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
+  )
+  const onUnsetValues = React.useCallback(() => {
+    onUnsetValue(propKeys.map((propKey) => pathMappingFn(propKey, target)))
+  }, [onUnsetValue, propKeys, pathMappingFn, target])
+
+  const transformedValue = transformValue(values)
+  const onSubmitValue: (newValue: T, transient?: boolean) => void = useCreateOnSubmitValue<P, T>(
+    untransformValue,
+    propKeys,
+    pathMappingFn,
+    target,
+    onSingleSubmitValue,
+    onUnsetValue,
+  )
+
+  const onTransientSubmitValue: (newValue: T) => void = React.useCallback(
+    (newValue) => onSubmitValue(newValue, true),
+    [onSubmitValue],
+  )
+
+  const useSubmitValueFactory = useCallbackFactory(transformedValue, onSubmitValue)
+
+  const controlStyles = getControlStyles(controlStatus)
+  const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
+
+  return {
+    value: transformedValue,
+    controlStatus,
+    propertyStatus: propertyStatusToReturn,
+    controlStyles,
+    onSubmitValue,
+    onTransientSubmitValue,
+    onUnsetValues,
+    useSubmitValueFactory,
+  }
+}
+
+function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProperties[P]>(
+  untransformValue: UntransformInspectorInfo<P, T>,
+  propKeys: P[],
+  pathMappingFn: PathMappingFn<P>,
+  target: readonly string[],
+  onSingleSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void,
+  onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>) => void,
+): (newValue: T, transient?: boolean | undefined) => void {
+  return React.useCallback(
+    (newValue, transient = false) => {
+      const untransformedValue = untransformValue(newValue)
+      propKeys.forEach((propKey) => {
+        const propertyPath = pathMappingFn(propKey, target)
+        const valueToPrint = untransformedValue[propKey]
+        if (valueToPrint != null) {
+          const printedProperty = printCSSValue(propKey, valueToPrint as ParsedProperties[P])
+          onSingleSubmitValue(printedProperty, propertyPath, transient)
+        } else {
+          onUnsetValue(propertyPath)
+        }
+      })
+    },
+    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
+  )
+}
+
+// TODO INTRODUCE UNKNOWN TO PROPERTY STATUS, ROLL THIS TO `getControlStatusFromPropertyStatus` PROPER
+function calculateControlStatusWithUnknown(propertyStatus: PropertyStatus, isUnknown: boolean) {
+  let controlStatus: ControlStatus = getControlStatusFromPropertyStatus(propertyStatus)
+  if (isUnknown) {
+    if (controlStatus === 'simple') {
+      controlStatus = 'simple-unknown-css'
+    } else if (
+      controlStatus === 'multiselect-identical-simple' ||
+      controlStatus === 'multiselect-identical-unset' ||
+      controlStatus === 'multiselect-mixed-simple-or-unset'
+    ) {
+      controlStatus = 'multiselect-simple-unknown-css'
+    }
+  }
+  return controlStatus
+}
+
+function useGetSelectedAttributeMetadatas<P extends ParsedPropertiesKeys>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: P[],
+): { [key in P]: StyleAttributeMetadataEntry[] } {
+  return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
       (contextData) => {
@@ -540,21 +601,97 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
       deepEqual,
     ),
   )
+}
 
-  const simpleAndRawValues = useInspectorInfoFromMultiselectMultiStyleAttribute(
-    multiselectAtProps,
-    selectedProps,
-    selectedComputedStyles,
-    selectedAttributeMetadatas,
+function useGetSelectedComputedStyles<P extends ParsedPropertiesKeys>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: P[],
+) {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const keyFn = (propKey: P) => propKey
+        const mapFn = (propKey: P): string[] => {
+          const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
+          const isStylePath = path[0] === 'style' || path[0] === 'css'
+          if (isStylePath && path.length === 2) {
+            return contextData.computedStyles.map((computedStyle) => {
+              return ObjectPath.get(computedStyle, path[1])
+            })
+          } else {
+            return []
+          }
+        }
+        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+      },
+      deepEqual,
+    ),
   )
+}
 
-  const propertyStatus = calculateMultiPropertyStatusForSelection(
-    multiselectAtProps,
-    simpleAndRawValues,
+function useGetSpiedProps<P extends ParsedPropertiesKeys>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: P[],
+) {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const keyFn = (propKey: P) => propKey
+        const mapFn = (propKey: P) => {
+          return contextData.spiedProps.map((props) => {
+            return ObjectPath.get(
+              props,
+              PP.getElements(pathMappingFn(propKey, contextData.targetPath)),
+            )
+          })
+        }
+        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+      },
+      deepEqual,
+    ),
   )
+}
 
-  let isUnknown = false
-  const values = Utils.mapArrayToDictionary(
+function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: P[],
+): MultiselectAtProps<P> {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        const keyFn = (propKey: P) => propKey
+        const mapFn = (propKey: P) =>
+          contextData.editedMultiSelectedProps.map((props) => {
+            return getModifiableJSXAttributeAtPath(
+              props,
+              pathMappingFn(propKey, contextData.targetPath),
+            )
+          })
+        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+      },
+      deepEqual,
+    ),
+  )
+}
+
+function getParsedValues<P extends ParsedPropertiesKeys>(
+  propKeys: P[],
+  simpleAndRawValues: {
+    [key in P]: {
+      simpleValues: readonly Either<string, any>[]
+      rawValues: readonly Either<string, ModifiableAttribute>[]
+      spiedValues: readonly any[]
+      computedValues: readonly string[]
+      attributeMetadatas: readonly StyleAttributeMetadataEntry[]
+    }
+  },
+  propertyStatus: PropertyStatus,
+): { values: ParsedValues<P>; isUnknown: boolean } {
+  let isUnknownInner = false
+  const valuesInner = Utils.mapArrayToDictionary(
     propKeys,
     (propKey) => propKey,
     (propKey) => {
@@ -591,7 +728,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           computedValue,
           attributeMetadata,
         )
-        isUnknown = isUnknown || pathIsUnknown
+        isUnknownInner = isUnknownInner || pathIsUnknown
         // setting the status to detected because it uses the fallback value
         propertyStatus.detected = usesComputedFallback
         propertyStatus.fromCssStyleSheet = setFromCssStyleSheet
@@ -624,7 +761,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
           if (i === 0) {
             firstFinalValue = finalValue
           }
-          isUnknown = isUnknown || pathIsUnknown
+          isUnknownInner = isUnknownInner || pathIsUnknown
           // setting the status to detected because it uses the fallback value
           propertyStatus.detected = propertyStatus.detected || usesComputedFallback
           propertyStatus.fromCssStyleSheet =
@@ -635,72 +772,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
       }
     },
   ) as ParsedValues<P>
-
-  let controlStatus: ControlStatus = getControlStatusFromPropertyStatus(propertyStatus)
-  if (isUnknown) {
-    if (controlStatus === 'simple') {
-      controlStatus = 'simple-unknown-css'
-    } else if (
-      controlStatus === 'multiselect-identical-simple' ||
-      controlStatus === 'multiselect-identical-unset' ||
-      controlStatus === 'multiselect-mixed-simple-or-unset'
-    ) {
-      controlStatus = 'multiselect-simple-unknown-css'
-    }
-  }
-
-  const {
-    onContextSubmitValue: onSingleSubmitValue,
-    onContextUnsetValue: onUnsetValue,
-  } = useInspectorContext()
-
-  const target = useKeepReferenceEqualityIfPossible(
-    useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
-  )
-  const onUnsetValues = React.useCallback(() => {
-    onUnsetValue(propKeys.map((propKey) => pathMappingFn(propKey, target)))
-  }, [onUnsetValue, propKeys, pathMappingFn, target])
-
-  const transformedValue = transformValue(values)
-  const onSubmitValue: (newValue: T, transient?: boolean) => void = React.useCallback(
-    (newValue, transient = false) => {
-      const untransformedValue = untransformValue(newValue)
-      propKeys.forEach((propKey) => {
-        const propertyPath = pathMappingFn(propKey, target)
-        const valueToPrint = untransformedValue[propKey]
-        if (valueToPrint != null) {
-          const printedProperty = printCSSValue(propKey, valueToPrint as ParsedProperties[P])
-          onSingleSubmitValue(printedProperty, propertyPath, transient)
-        } else {
-          onUnsetValue(propertyPath)
-        }
-      })
-    },
-    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
-  )
-
-  const onTransientSubmitValue: (newValue: T) => void = React.useCallback(
-    (newValue) => onSubmitValue(newValue, true),
-    [onSubmitValue],
-  )
-
-  const useSubmitValueFactory = useCallbackFactory(transformedValue, onSubmitValue)
-
-  const controlStyles = getControlStyles(controlStatus)
-  const propertyStatusToReturn = useKeepReferenceEqualityIfPossible(propertyStatus)
-
-  return {
-    value: transformedValue,
-    controlStatus,
-    propertyStatus: propertyStatusToReturn,
-    controlStyles,
-    onSubmitValue,
-    onTransientSubmitValue,
-    onUnsetValues,
-    useSubmitValueFactory,
-  }
+  return { isUnknown: isUnknownInner, values: valuesInner }
 }
 
 // TODO: Warning, this is just copy pasted code from useInspectorInfo. We needed a hook which
