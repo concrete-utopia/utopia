@@ -14,9 +14,11 @@
     "url": "https://github.com/concrete-utopia/utopia"
   },
   "scripts": {
-    "compile": "webpack-cli --mode production",
+    "build": "webpack-cli",
+    "production": "webpack-cli --mode production",
     "watch": "webpack-cli --mode production --watch --info-verbosity verbose",
-    "watch-dev": "webpack-cli --watch --info-verbosity verbose"
+    "watch-dev": "webpack-cli --watch --info-verbosity verbose",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "browserfs": "2.0"
