@@ -2,7 +2,13 @@ import { ProjectContentTreeRoot, walkContentsTreeAsync } from '../../components/
 import { EditorDispatch } from '../../components/editor/action-types'
 import { deleteFile, updateFromWorker } from '../../components/editor/actions/action-creators'
 import { isDirectory } from '../model/project-file-utils'
-import { writeFile, ensureDirectoryExists, watch, readFileWithEncoding } from 'utopia-vscode-common'
+import {
+  initializeBrowserFS,
+  writeFile,
+  ensureDirectoryExists,
+  watch,
+  readFileWithEncoding,
+} from 'utopia-vscode-common'
 import {
   isTextFile,
   ProjectFile,
@@ -55,6 +61,7 @@ export async function writeProjectContents(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
 ): Promise<void> {
+  await initializeBrowserFS()
   await walkContentsTreeAsync(projectContents, (fullPath, file) => {
     if (isTextFile(file) || isDirectory(file)) {
       return writeProjectFile(projectID, fullPath, file)

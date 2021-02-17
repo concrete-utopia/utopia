@@ -123,7 +123,6 @@ export class UtopiaFSExtension
   }
 
   async readDirectory(uri: Uri): Promise<[string, FileType][]> {
-    debugger
     const path = fromUtopiaURI(uri)
     const children = await readdir(path)
     const result: Promise<[string, FileType]>[] = children.map((childName) =>
@@ -224,7 +223,6 @@ export class UtopiaFSExtension
     options: FileSearchOptions,
     _token: CancellationToken,
   ): Promise<Uri[]> {
-    debugger
     // TODO Support all search options
     const { result: foundPaths } = await this.filterFilePaths(query.pattern, options.maxResults)
     return foundPaths.map(toUtopiaURI)
