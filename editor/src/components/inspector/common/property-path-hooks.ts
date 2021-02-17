@@ -747,6 +747,9 @@ function useGetSelectedComputedStyles<P extends ParsedPropertiesKeys>(
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const NoPropFoundToken = () => {}
+
 function useGetSpiedProps<P extends ParsedPropertiesKeys>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: P[],
@@ -757,12 +760,18 @@ function useGetSpiedProps<P extends ParsedPropertiesKeys>(
       (contextData) => {
         const keyFn = (propKey: P) => propKey
         const mapFn = (propKey: P) => {
-          return contextData.spiedProps.map((props) => {
-            return ObjectPath.get(
+          let sparseArray = new Array(contextData.spiedProps.length)
+          contextData.spiedProps.forEach((props, i) => {
+            const result = ObjectPath.get(
               props,
               PP.getElements(pathMappingFn(propKey, contextData.targetPath)),
+              NoPropFoundToken,
             )
+            if (result !== NoPropFoundToken) {
+              sparseArray[i] = result
+            }
           })
+          return sparseArray
         }
         return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
       },
@@ -853,7 +862,8 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
           rawValues[0],
         )
         const spiedValue: Either<string, any> =
-          spiedValues.length === 0 ? left('Spied value not found') : right(spiedValues[0])
+          0 in spiedValues ? right(spiedValues[0]) : left('Spied value not found')
+
         const computedValue = computedValues[0]
         const attributeMetadata = attributeMetadatas[0]
         const {
