@@ -464,16 +464,17 @@ export type PathMappingFn<P> = (propKey: P, targetPath: readonly string[]) => Pr
 export type TransformInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
   parsedValues: ParsedValues<P>,
 ) => T
+export type TransformInspectorInfoPartial<
+  P extends ParsedPropertiesKeys,
+  T = ParsedProperties[P]
+> = (parsedValues: Partial<ParsedValues<P>>) => T
 export type UntransformInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
   transformedType: T,
 ) => Partial<ParsedValues<P>>
 
-export function useInspectorInfoNoDefaults<
-  P extends ParsedPropertiesKeys,
-  T = ParsedProperties[P] | undefined
->(
+export function useInspectorInfoNoDefaults<P extends ParsedPropertiesKeys, T = ParsedProperties[P]>(
   propKeysIn: Array<P>,
-  transformValue: TransformInspectorInfo<P, T>,
+  transformValue: TransformInspectorInfoPartial<P, T>,
   untransformValue: UntransformInspectorInfo<P, T>,
   pathMappingFn: PathMappingFn<P>,
 ): InspectorInfo<T, P> {
