@@ -1,6 +1,7 @@
 import { ApiError } from 'browserfs/dist/node/core/api_error'
 import { FileSystemError } from 'vscode'
-import { toUtopiaPath } from './path-utils'
+import { toUtopiaPath } from './common/path-utils'
+import { setErrorHandler } from './common/browserfs-utils'
 
 export function useFileSystemProviderErrors(): void {
   setErrorHandler(toFileSystemProviderError)

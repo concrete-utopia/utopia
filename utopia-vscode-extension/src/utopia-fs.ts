@@ -24,26 +24,22 @@ import {
   workspace,
 } from 'vscode'
 import {
-  createDirectory,
-  deletePath,
-  exists,
-  getDescendentPaths,
-  pathIsDirectory,
-  readdir,
-  readFile,
-  readFileWithEncoding,
-  rename,
-  stat,
-  stopWatching,
   watch,
+  stopWatching,
+  stat,
+  readdir,
+  pathIsDirectory,
+  createDirectory,
+  readFile,
+  exists,
   writeFile,
-  appendToPath,
-  dirname,
-  fromUtopiaURI,
-  Scheme,
-  stripRootPrefix,
-  toUtopiaURI,
-} from 'utopia-vscode-common'
+  deletePath,
+  rename,
+  readFileWithEncoding,
+  getDescendentPaths,
+} from './common/browserfs-utils'
+import { appendToPath, dirname, Scheme, stripRootPrefix } from './common/path-utils'
+import { toUtopiaURI, fromUtopiaURI } from './path-utils'
 
 export class UtopiaFSExtension
   implements FileSystemProvider, FileSearchProvider, TextSearchProvider, Disposable {
