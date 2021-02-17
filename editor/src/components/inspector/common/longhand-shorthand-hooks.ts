@@ -109,11 +109,14 @@ export function useInspectorInfoLonghandShorthand<
   const onSubmitValue = (
     newTransformedValues: ParsedProperties[LonghandKey] | undefined,
     transient?: boolean | undefined,
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
   ) => {}
+
   const onTransientSubmitValue = (
     newTransformedValues: ParsedProperties[LonghandKey] | undefined,
   ) => onSubmitValue(newTransformedValues, true)
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const onUnsetValues = () => {}
 
   return {
