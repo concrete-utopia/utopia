@@ -197,6 +197,38 @@ let
 
   withServerRunScripts = withEditorRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
 
+  vscodeDevScripts = [
+    (pkgs.writeScriptBin "watch-utopia-vscode-common" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
+      ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
+    '')
+    (pkgs.writeScriptBin "watch-utopia-vscode-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
+      ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
+    '')
+    (pkgs.writeScriptBin "update-vscode-build-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      ${pkgs.yarn}/bin/yarn run pull-utopia-extension
+    '')
+    (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      ${pkgs.nodePackages.nodemon}/bin/nodemon --watch ../utopia-vscode-extension/dist/browser/extension.js --exec update-vscode-build-extension
+    '')
+    (pkgs.writeScriptBin "watch-vscode-dev" ''
+      #!/usr/bin/env bash
+      set -e
+      ${pkgs.parallel}/bin/parallel --line-buffer --tag ::: watch-utopia-vscode-common watch-utopia-vscode-extension watch-vscode-build-extension-only
+    '')
+  ];
+
   # For the useful scripts in our dev environments
   customDevScripts = [
     (pkgs.writeScriptBin "start-website-server" ''
@@ -222,7 +254,7 @@ let
       install-editor
       ${pkgs.parallel}/bin/parallel --tagstring '\033[30;3{=$_=++$::color%8=}m[{/}]' --line-buffer --tag ::: watch-server watch-editor-cowboy-danger-hot watch-website redis-server
     '')    
-  ];
+  ] ++ vscodeDevScripts;
 
   withCustomDevScripts = withServerRunScripts ++ (lib.optionals includeRunLocallySupport customDevScripts);
 
