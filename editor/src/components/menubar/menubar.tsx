@@ -119,6 +119,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
   )
 
   const onDoubleClick = React.useCallback(() => {
+    // TODO KILL ME
+    console.log('doubleclick left panel')
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
