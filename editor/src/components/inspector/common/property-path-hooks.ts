@@ -55,6 +55,7 @@ import {
 } from '../../../core/property-controls/property-controls-utils'
 import { addUniquely, SkipValueToken, stripNulls } from '../../../core/shared/array-utils'
 import {
+  bimapEither,
   defaultEither,
   Either,
   eitherToMaybe,
@@ -63,6 +64,7 @@ import {
   isRight,
   left,
   mapEither,
+  right,
 } from '../../../core/shared/either'
 import {
   getJSXElementNameLastPart,
@@ -74,6 +76,7 @@ import {
   getJSXAttribute,
   StyleAttributeMetadata,
   StyleAttributeMetadataEntry,
+  isJSXAttributeNotFound,
 } from '../../../core/shared/element-template'
 import {
   getAllPathsFromAttributes,
@@ -86,7 +89,7 @@ import { forEachOptional, optionalMap } from '../../../core/shared/optional-util
 import type { PropertyPath, TemplatePath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
-import { fastForEach } from '../../../core/shared/utils'
+import { fastForEach, ValueOf } from '../../../core/shared/utils'
 import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import {
   keepDeepReferenceEqualityIfPossible,
@@ -372,7 +375,7 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   property: PropertiesToControl,
   simpleValue: Either<string, any>,
   rawValue: Either<string, ModifiableAttribute>,
-  spiedValue: any,
+  spiedValue: Either<string, any>,
   computedValue: string | undefined,
   attributeMetadataEntry: StyleAttributeMetadataEntry | undefined,
   emptyValue: ParsedProperties[PropertiesToControl] | SkipValueToken,
@@ -386,8 +389,20 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   const simpleValueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
 
-  const parsedValue = parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
-  const parsedSpiedValue = parseAnyParseableValue(property, spiedValue, null)
+  const leftOrNotFound = bimapEither(
+    () => true,
+    (r) => isJSXAttributeNotFound(r),
+    rawValue,
+  )
+
+  const parsedValue: Either<string, ValueOf<ParsedProperties>> = leftOrNotFound
+    ? left('Attribute not found')
+    : parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
+
+  const parsedSpiedValue: Either<string, ValueOf<ParsedProperties>> = flatMapEither(
+    (spv) => parseAnyParseableValue(property, spv, null),
+    spiedValue,
+  )
   const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
   if (isRight(parsedValue)) {
     return {
@@ -837,7 +852,8 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
           left('Raw value missing'),
           rawValues[0],
         )
-        const spiedValue: any = spiedValues[0]
+        const spiedValue: Either<string, any> =
+          spiedValues.length === 0 ? left('Spied value not found') : right(spiedValues[0])
         const computedValue = computedValues[0]
         const attributeMetadata = attributeMetadatas[0]
         const {
