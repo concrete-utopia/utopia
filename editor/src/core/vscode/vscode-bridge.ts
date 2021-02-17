@@ -1,8 +1,8 @@
-import { ProjectContentTreeRoot, walkContentsTree } from '../../components/assets'
+import { ProjectContentTreeRoot, walkContentsTreeAsync } from '../../components/assets'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { deleteFile, updateFromWorker } from '../../components/editor/actions/action-creators'
 import { isDirectory } from '../model/project-file-utils'
-import { writeFile, ensureDirectoryExists, watch } from 'utopia-vscode-common'
+import { writeFile, ensureDirectoryExists, watch, readFileWithEncoding } from 'utopia-vscode-common'
 import {
   isTextFile,
   ProjectFile,
@@ -31,19 +31,19 @@ export function fromFSPath(projectID: string, fsPath: string): string {
   }
 }
 
-export function writeProjectFile(projectID: string, projectPath: string, file: ProjectFile): void {
+export async function writeProjectFile(
+  projectID: string,
+  projectPath: string,
+  file: ProjectFile,
+): Promise<void> {
   switch (file.type) {
-    case 'DIRECTORY':
-      {
-        ensureDirectoryExists(toFSPath(projectID, projectPath))
-      }
-      break
-    case 'TEXT_FILE':
-      {
-        const fileContents = Buffer.from(file.fileContents.code, 'utf-8')
-        writeFile(toFSPath(projectID, projectPath), fileContents)
-      }
-      break
+    case 'DIRECTORY': {
+      return ensureDirectoryExists(toFSPath(projectID, projectPath))
+    }
+    case 'TEXT_FILE': {
+      const fileContents = Buffer.from(file.fileContents.code, 'utf-8')
+      return writeFile(toFSPath(projectID, projectPath), fileContents)
+    }
     case 'ASSET_FILE':
       throw new Error(`Can't handle asset file at ${projectPath}`)
     case 'IMAGE_FILE':
@@ -51,13 +51,15 @@ export function writeProjectFile(projectID: string, projectPath: string, file: P
   }
 }
 
-export function writeProjectContents(
+export async function writeProjectContents(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
-): void {
-  walkContentsTree(projectContents, (fullPath, file) => {
+): Promise<void> {
+  await walkContentsTreeAsync(projectContents, (fullPath, file) => {
     if (isTextFile(file) || isDirectory(file)) {
-      writeProjectFile(projectID, fullPath, file)
+      return writeProjectFile(projectID, fullPath, file)
+    } else {
+      return Promise.resolve()
     }
   })
 }

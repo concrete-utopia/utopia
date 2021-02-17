@@ -209,6 +209,32 @@ export function walkContentsTree(
   })
 }
 
+export async function walkContentsTreeAsync(
+  tree: ProjectContentTreeRoot,
+  onElement: (fullPath: string, file: ProjectFile) => Promise<void>,
+): Promise<void> {
+  const treeKeys = Object.keys(tree)
+  treeKeys.sort()
+  for (const treeKey of treeKeys) {
+    const treeElement = tree[treeKey]
+    switch (treeElement.type) {
+      case 'PROJECT_CONTENT_FILE':
+        // eslint-disable-next-line no-await-in-loop
+        await onElement(treeElement.fullPath, treeElement.content)
+        break
+      case 'PROJECT_CONTENT_DIRECTORY':
+        // eslint-disable-next-line no-await-in-loop
+        await onElement(treeElement.fullPath, treeElement.directory)
+        // eslint-disable-next-line no-await-in-loop
+        await walkContentsTreeAsync(treeElement.children, onElement)
+        break
+      default:
+        const _exhaustiveCheck: never = treeElement
+        throw new Error(`Unhandled tree element ${JSON.stringify(treeElement)}`)
+    }
+  }
+}
+
 // FIXME A lot of these files should be moved to a more relevant file
 export function getContentsTreeFileFromElements(
   tree: ProjectContentTreeRoot,

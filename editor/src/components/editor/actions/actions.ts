@@ -1409,8 +1409,10 @@ export const UPDATE_FNS = {
       },
     )
     if (action.projectId != null) {
-      writeProjectContents(action.projectId, parsedProjectFiles)
-      watchForChanges(action.projectId, dispatch)
+      const nonNullProjectID = action.projectId
+      writeProjectContents(nonNullProjectID, parsedProjectFiles).then(() => {
+        watchForChanges(nonNullProjectID, dispatch)
+      })
     }
     const parsedModel = {
       ...migratedModel,

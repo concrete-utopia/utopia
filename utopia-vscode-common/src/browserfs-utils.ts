@@ -50,77 +50,45 @@ export function initializeBrowserFS(): Promise<void> {
   })
 }
 
-// Used to chain promises and BrowserFS started on import.
-let currentPromise: Promise<unknown> = initializeBrowserFS()
-
-function chainOntoCurrent<T>(promise: () => Promise<T>): Promise<T> {
-  const newPromise = currentPromise.then(promise).catch(promise)
-  currentPromise = newPromise
-  return newPromise
-}
-
-export async function waitForCurrentJobsToFinish(): Promise<void> {
-  return chainOntoCurrent(() => Promise.resolve())
-}
-
 export async function readFile(path: string): Promise<Uint8Array> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<Uint8Array>((resolve, reject) => {
-        fs.readFile(path, wrappedCallback(resolve, reject))
-      }),
-  )
+  return new Promise<Uint8Array>((resolve, reject) => {
+    fs.readFile(path, wrappedCallback(resolve, reject))
+  })
 }
 
 export async function readFileWithEncoding(path: string, encoding: string): Promise<string> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<string>((resolve, reject) => {
-        fs.readFile(path, encoding, wrappedCallback(resolve, reject))
-      }),
-  )
+  return new Promise<string>((resolve, reject) => {
+    fs.readFile(path, encoding, wrappedCallback(resolve, reject))
+  })
 }
 
 export async function exists(path: string): Promise<boolean> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<boolean>((resolve) => {
-        fs.exists(path, (exists) => resolve(exists))
-      }),
-  )
+  return new Promise<boolean>((resolve) => {
+    fs.exists(path, (exists) => resolve(exists))
+  })
 }
 
 export async function writeFile(path: string, content: Uint8Array): Promise<void> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<void>((resolve, reject) => {
-        fs.writeFile(path, uint8Array2Buffer(content), wrappedOneArgCallback(resolve, reject))
-      }),
-  )
+  return new Promise<void>((resolve, reject) => {
+    fs.writeFile(path, uint8Array2Buffer(content), wrappedOneArgCallback(resolve, reject))
+  })
 }
 
 export async function rename(oldPath: string, newPath: string): Promise<void> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<void>((resolve, reject) => {
-        fs.rename(oldPath, newPath, wrappedOneArgCallback(resolve, reject))
-      }),
-  )
+  return new Promise<void>((resolve, reject) => {
+    fs.rename(oldPath, newPath, wrappedOneArgCallback(resolve, reject))
+  })
 }
 
 export async function stat(path: string): Promise<Stats> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<Stats>((resolve, reject) => {
-        fs.stat(path, wrappedCallback(resolve, reject))
-      }),
-  )
+  return new Promise<Stats>((resolve, reject) => {
+    fs.stat(path, wrappedCallback(resolve, reject))
+  })
 }
 
 export async function pathIsDirectory(path: string): Promise<boolean> {
-  return chainOntoCurrent(() => stat(path)).then((stats) => {
-    return stats.isDirectory()
-  })
+  const stats = await stat(path)
+  return stats.isDirectory()
 }
 
 export async function deletePath(path: string, recursive: boolean): Promise<string[]> {
@@ -144,21 +112,15 @@ async function _deletePath(path: string): Promise<void> {
 }
 
 async function rmdir(path: string): Promise<void> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<void>((resolve, reject) => {
-        fs.rmdir(path, wrappedOneArgCallback(resolve, reject))
-      }),
-  )
+  return new Promise<void>((resolve, reject) => {
+    fs.rmdir(path, wrappedOneArgCallback(resolve, reject))
+  })
 }
 
 async function unlink(path: string): Promise<void> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<void>((resolve, reject) => {
-        fs.unlink(path, wrappedOneArgCallback(resolve, reject))
-      }),
-  )
+  return new Promise<void>((resolve, reject) => {
+    fs.unlink(path, wrappedOneArgCallback(resolve, reject))
+  })
 }
 
 export async function ensureDirectoryExists(path: string): Promise<void> {
@@ -169,22 +131,15 @@ export async function ensureDirectoryExists(path: string): Promise<void> {
 }
 
 export async function createDirectory(path: string): Promise<void> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<void>((resolve, reject) => {
-        console.log('mkdir', path)
-        fs.mkdir(path, 777, wrappedOneArgCallback(resolve, reject))
-      }),
-  )
+  return new Promise<void>((resolve, reject) => {
+    fs.mkdir(path, 777, wrappedOneArgCallback(resolve, reject))
+  })
 }
 
 export async function readdir(path: string): Promise<string[]> {
-  return chainOntoCurrent(
-    () =>
-      new Promise<string[]>((resolve, reject) => {
-        fs.readdir(path, wrappedCallback(resolve, reject))
-      }),
-  )
+  return new Promise<string[]>((resolve, reject) => {
+    fs.readdir(path, wrappedCallback(resolve, reject))
+  })
 }
 
 export async function childPaths(path: string): Promise<string[]> {
