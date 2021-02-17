@@ -676,6 +676,15 @@ export function printCSSNumberWithDefaultUnit(
 
 export const parseCSSLength = (input: unknown) => parseCSSNumber(input, 'Length')
 export const parseCSSLengthPercent = (input: unknown) => parseCSSNumber(input, 'LengthPercent')
+export const parseCSSLengthPercentNone = (
+  input: unknown,
+): Either<string, CSSNumber | undefined> => {
+  if (typeof input === 'string' && input === 'none') {
+    return right(undefined)
+  } else {
+    return parseCSSNumber(input, 'LengthPercent')
+  }
+}
 export const parseCSSAngle = (input: unknown) => parseCSSNumber(input, 'Angle')
 export const parseCSSAnglePercent = (input: unknown) => parseCSSNumber(input, 'AnglePercent')
 export const parseCSSPercent = (input: unknown) => parseCSSNumber(input, 'Percent', '%')
@@ -4161,9 +4170,9 @@ const cssParsers: CSSParsers = {
   right: parseCSSLengthPercent,
   bottom: parseCSSLengthPercent,
   minWidth: parseCSSLengthPercent,
-  maxWidth: parseCSSLengthPercent,
+  maxWidth: parseCSSLengthPercentNone,
   minHeight: parseCSSLengthPercent,
-  maxHeight: parseCSSLengthPercent,
+  maxHeight: parseCSSLengthPercentNone,
   marginTop: parseCSSLengthPercent,
   marginRight: parseCSSLengthPercent,
   marginBottom: parseCSSLengthPercent,
@@ -4882,12 +4891,12 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     value: 0,
     unit: 'px',
   },
-  maxWidth: undefined, // should be `none`
+  maxWidth: undefined,
   minHeight: {
     value: 0,
     unit: 'px',
   },
-  maxHeight: undefined, // should be `none`
+  maxHeight: undefined,
   marginTop: {
     value: 0,
     unit: 'px',
