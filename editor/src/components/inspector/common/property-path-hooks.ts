@@ -55,8 +55,6 @@ import {
 } from '../../../core/property-controls/property-controls-utils'
 import { addUniquely, SkipValueToken, stripNulls } from '../../../core/shared/array-utils'
 import {
-  bimapEither,
-  defaultEither,
   Either,
   eitherToMaybe,
   flatMapEither,
@@ -389,15 +387,16 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   const simpleValueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
 
-  const leftOrNotFound = foldEither(
-    () => true,
-    (r) => isJSXAttributeNotFound(r),
+  const parsedValue: Either<string, ValueOf<ParsedProperties>> = flatMapEither(
+    (modifiableAttribute: ModifiableAttribute) => {
+      if (isJSXAttributeNotFound(modifiableAttribute)) {
+        return left('Attribute not found')
+      } else {
+        return parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
+      }
+    },
     rawValue,
   )
-
-  const parsedValue: Either<string, ValueOf<ParsedProperties>> = leftOrNotFound
-    ? left('Attribute not found')
-    : parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
 
   const parsedSpiedValue: Either<string, ValueOf<ParsedProperties>> = flatMapEither(
     (spv) => parseAnyParseableValue(property, spv, null),
@@ -465,16 +464,17 @@ export type PathMappingFn<P> = (propKey: P, targetPath: readonly string[]) => Pr
 export type TransformInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
   parsedValues: ParsedValues<P>,
 ) => T
+export type TransformInspectorInfoPartial<
+  P extends ParsedPropertiesKeys,
+  T = ParsedProperties[P]
+> = (parsedValues: Partial<ParsedValues<P>>) => T
 export type UntransformInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedProperties[P]> = (
   transformedType: T,
 ) => Partial<ParsedValues<P>>
 
-export function useInspectorInfoNoDefaults<
-  P extends ParsedPropertiesKeys,
-  T = ParsedProperties[P] | undefined
->(
+export function useInspectorInfoNoDefaults<P extends ParsedPropertiesKeys, T = ParsedProperties[P]>(
   propKeysIn: Array<P>,
-  transformValue: TransformInspectorInfo<P, T>,
+  transformValue: TransformInspectorInfoPartial<P, T>,
   untransformValue: UntransformInspectorInfo<P, T>,
   pathMappingFn: PathMappingFn<P>,
 ): InspectorInfo<T, P> {
