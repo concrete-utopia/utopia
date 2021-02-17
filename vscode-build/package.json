@@ -1,0 +1,24 @@
+{
+  "name": "utopia-vscode",
+  "version": "1.53.0",
+  "description": "",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "build": "node build.js",
+    "pull-utopia-extension": "node pull-utopia-extension.js",
+    "make-patch": "cd vscode && git add . && git diff --staged > ../vscode.patch && git restore --staged ."
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "express": "4.17.1",
+    "fs-extra": "9.0.1",
+    "glob": "7.1.6",
+    "rimraf": "3.0.2",
+    "semver-umd": "5.5.7",
+    "vscode-oniguruma": "1.4.0",
+    "vscode-textmate": "5.2.0"
+  },
+  "dependencies": {}
+}

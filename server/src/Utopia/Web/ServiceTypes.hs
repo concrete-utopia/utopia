@@ -116,6 +116,7 @@ data ServiceCallsF a = NotFound
                      | AccessControlAllowOrigin (Maybe Text) (Maybe Text -> a)
                      | GetSiteRoot (Text -> a)
                      | GetPathToServe FilePath (Maybe Text) (FilePath -> a)
+                     | GetVSCodeAssetRoot (FilePath -> a)
                      | GetUserConfiguration Text (Maybe DecodedUserConfiguration -> a)
                      | SaveUserConfiguration Text (Maybe Value) a
                      | ClearBranchCache Text a
