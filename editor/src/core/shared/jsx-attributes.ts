@@ -1,7 +1,7 @@
 import * as ObjectPath from 'object-path'
 import { MapLike } from 'typescript'
 import { UtopiaUtils } from 'utopia-api'
-import { findLastIndex } from './array-utils'
+import { findLastIndex, uniqBy } from './array-utils'
 import { Either, isLeft, left, mapEither, reduceWithEither, right, sequenceEither } from './either'
 import {
   isArraySpread,
@@ -25,12 +25,15 @@ import {
   getJSXAttribute,
   deleteJSXAttribute,
   setJSXAttributesAttribute,
+  isJSXAttributeValue,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'
 import * as PP from './property-path'
 import { fastForEach } from './utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { defaultIfNull, optionalMap } from './optional-utils'
+import { getAllObjectPaths } from './object-utils'
 
 export type AnyMap = { [key: string]: any }
 
@@ -470,17 +473,30 @@ export function setJSXValueInAttributeAtPath(
           const attributeKey = PP.firstPart(path)
           const tailPath = PP.tail(path)
           const key = `${attributeKey}`
-          const newProps = dropKeyFromNestedObject(attribute, key).content
           if (lastPartOfPath) {
-            return right(
-              jsxAttributeNestedObject(
-                newProps.concat(
-                  jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments),
+            let updatedExistingProperty = false
+            let updatedContent = attribute.content.map((attr) => {
+              if (attr.type === 'PROPERTY_ASSIGNMENT' && attr.key === key) {
+                updatedExistingProperty = true
+                return jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments)
+              } else {
+                return attr
+              }
+            })
+            if (updatedExistingProperty) {
+              return right(jsxAttributeNestedObject(updatedContent, emptyComments))
+            } else {
+              return right(
+                jsxAttributeNestedObject(
+                  attribute.content.concat(
+                    jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments),
+                  ),
+                  emptyComments,
                 ),
-                emptyComments,
-              ),
-            )
+              )
+            }
           } else {
+            const newProps = dropKeyFromNestedObject(attribute, key).content
             const existingAttribute = nestedObjectValueForKey(attribute, key)
             const updatedNestedAttribute: Either<string, JSXAttribute> =
               existingAttribute.type === 'ATTRIBUTE_NOT_FOUND'
@@ -764,25 +780,47 @@ export function unsetJSXValueAtPath(
   }
 }
 
-export function walkAttribute(attribute: JSXAttribute, walk: (a: JSXAttribute) => void): void {
-  walk(attribute)
+export function walkAttribute(
+  attribute: JSXAttribute,
+  path: PropertyPath | null,
+  walk: (a: JSXAttribute, path: PropertyPath | null) => void,
+): void {
+  walk(attribute, path)
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
-      fastForEach(attribute.content, (elem) => {
-        walkAttribute(elem.value, walk)
+      fastForEach(attribute.content, (elem, index) => {
+        walkAttribute(
+          elem.value,
+          optionalMap((p) => PP.appendPropertyPathElems(p, [index]), path),
+          walk,
+        )
       })
       break
     case 'ATTRIBUTE_FUNCTION_CALL':
       fastForEach(attribute.parameters, (param) => {
-        walkAttribute(param, walk)
+        walkAttribute(param, null, walk)
       })
       break
     case 'ATTRIBUTE_NESTED_OBJECT':
       fastForEach(attribute.content, (elem) => {
-        walkAttribute(elem.value, walk)
+        switch (elem.type) {
+          case 'PROPERTY_ASSIGNMENT':
+            walkAttribute(
+              elem.value,
+              optionalMap((p) => PP.appendPropertyPathElems(p, [elem.key]), path),
+              walk,
+            )
+            break
+          case 'SPREAD_ASSIGNMENT':
+            walkAttribute(elem.value, path, walk)
+            break
+          default:
+            const _exhaustiveCheck: never = elem
+            throw new Error(`Unhandled attribute ${JSON.stringify(elem)}`)
+        }
       })
       break
     default:
@@ -793,9 +831,26 @@ export function walkAttribute(attribute: JSXAttribute, walk: (a: JSXAttribute) =
 
 export function walkAttributes(
   attributes: JSXAttributes,
-  walk: (attribute: JSXAttribute) => void,
+  walk: (attribute: JSXAttribute, path: PropertyPath | null) => void,
 ): void {
   fastForEach(attributes, (attr) => {
-    walkAttribute(attr.value, walk)
+    walkAttribute(attr.value, PP.create([attr.key]), walk)
   })
+}
+
+export function getAllPathsFromAttributes(attributes: JSXAttributes): Array<PropertyPath> {
+  let paths: Array<PropertyPath> = []
+  walkAttributes(attributes, (attribute, path) => {
+    if (path != null) {
+      paths.push(path)
+      if (isJSXAttributeValue(attribute) && typeof attribute.value === 'object') {
+        paths.push(
+          ...getAllObjectPaths(attribute.value).map((p) =>
+            PP.create([...path.propertyElements, ...p]),
+          ),
+        )
+      }
+    }
+  })
+  return uniqBy(paths, PP.pathsEqual)
 }

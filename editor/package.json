@@ -68,6 +68,10 @@
       "eslint --quiet",
       "git add"
     ],
+    "*.{html}": [
+      "prettier --write",
+      "git add"
+    ],
     "../utopia-api/src/**/*.{js,ts,tsx}": [
       "prettier --write",
       "git add"
@@ -105,7 +109,7 @@
     "clipboard-polyfill": "2.4.6",
     "console-feed": "2.8.8",
     "create-react-class": "15.6.3",
-    "css-tree": "1.0.0-alpha.39",
+    "css-tree": "1.1.2",
     "draft-js": "git://github.com/concrete-utopia/draft-js.git#6b21131",
     "draft-js-custom-styles": "2.0.1",
     "eases": "1.0.8",

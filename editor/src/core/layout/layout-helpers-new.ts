@@ -40,6 +40,7 @@ export type StyleLayoutProp =
   | 'alignItems'
   | 'alignContent'
   | 'justifyContent'
+  | 'padding'
   | 'paddingTop'
   | 'paddingRight'
   | 'paddingBottom'
@@ -152,6 +153,7 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
   marginRight: ['style', 'marginRight'],
   marginBottom: ['style', 'marginBottom'],
   marginLeft: ['style', 'marginLeft'],
+  padding: ['style', 'padding'],
   paddingTop: ['style', 'paddingTop'],
   paddingRight: ['style', 'paddingRight'],
   paddingBottom: ['style', 'paddingBottom'],
