@@ -80,7 +80,6 @@ import {
   GetModifiableAttributeResult,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-  jsxSimpleAttributeToValueNoUndefined,
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
 import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
@@ -135,7 +134,7 @@ function extractSimpleValueFromMultiSelectAttribute(
   if (attrs == null) {
     return left('Unknown attributes.')
   } else {
-    return flatMapEither(jsxSimpleAttributeToValueNoUndefined, attrs)
+    return flatMapEither(jsxSimpleAttributeToValue, attrs)
   }
 }
 
@@ -384,9 +383,10 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   usesComputedFallback: boolean
   setFromCssStyleSheet: boolean
 } {
-  const simpleValueAsMaybe = flatMapEither((v) => v, simpleValue)
+  const simpleValueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
-  const parsedValue = parseAnyParseableValue(property, simpleValue, rawValueAsMaybe)
+
+  const parsedValue = parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
   const parsedSpiedValue = parseAnyParseableValue(property, spiedValue, null)
   const parsedComputedValue = parseAnyParseableValue(property, computedValue, null)
   if (isRight(parsedValue)) {

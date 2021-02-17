@@ -61,25 +61,6 @@ export function dropKeyFromNestedObject(
   )
 }
 
-export function jsxSimpleAttributeToValueNoUndefined(
-  attribute: ModifiableAttribute,
-): Either<string, any> {
-  switch (attribute.type) {
-    case 'ATTRIBUTE_NOT_FOUND':
-      return left('Attribute not found.')
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-    case 'ATTRIBUTE_VALUE':
-    case 'PART_OF_ATTRIBUTE_VALUE':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-      return jsxSimpleAttributeToValue(attribute)
-    default:
-      const _exhaustiveCheck: never = attribute
-      throw new Error(`Unhandled attribute ${JSON.stringify(attribute)}`)
-  }
-}
-
 export function jsxSimpleAttributeToValue(attribute: ModifiableAttribute): Either<string, any> {
   switch (attribute.type) {
     case 'ATTRIBUTE_NOT_FOUND':
