@@ -18,13 +18,13 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
     attributeMetadatas: Array<StyleAttributeMetadata>,
   ) {
     const props = styleObjectExpressions.map(
-      (styleExpression) => getPropsForStyleProp(styleExpression, ['myStyleOuter', 'myStyleInner'])!,
+      (styleExpression) => getPropsForStyleProp(styleExpression, ['style'])!,
     )
 
     const contextProvider = makeInspectorHookContextProvider(
       [],
       props,
-      ['myStyleOuter', 'myStyleInner'],
+      ['style'],
       spiedProps,
       computedStyles,
       attributeMetadatas,
@@ -66,7 +66,7 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
       [],
     )
-    expect(hookResult.value).toEqual({ unit: null, value: 15 })
+    expect(hookResult.value).toEqual({ unit: 'px', value: 15 })
     expect(hookResult.orderedPropKeys).toEqual([['paddingLeft', 'padding']])
   })
 
@@ -92,7 +92,7 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       [{ paddingTop: '15px', paddingRight: '20px', paddingBottom: '15px', paddingLeft: '15px' }],
       [],
     )
-    expect(hookResult.value).toEqual({ unit: null, value: 15 })
+    expect(hookResult.value).toEqual({ unit: 'px', value: 15 })
     expect(hookResult.orderedPropKeys).toEqual([['paddingLeft', 'padding']])
   })
 
@@ -105,7 +105,7 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       [{ paddingTop: '0px', paddingRight: '0px', paddingBottom: '0px', paddingLeft: '10px' }],
       [],
     )
-    expect(hookResult.value).toEqual({ unit: null, value: 10 })
+    expect(hookResult.value).toEqual({ unit: 'px', value: 10 })
     expect(hookResult.orderedPropKeys).toEqual([['paddingLeft']])
     expect(hookResult.controlStatus).toEqual('controlled')
   })
@@ -135,7 +135,7 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
     )
     expect(hookResult.value).toEqual({ unit: null, value: 5 })
     expect(hookResult.orderedPropKeys).toEqual([['padding', 'paddingLeft']])
-    expect(hookResult.controlStatus).toEqual('set')
+    expect(hookResult.controlStatus).toEqual('simple')
   })
 
   it('paddingLeft controlled, padding', () => {
