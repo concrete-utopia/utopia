@@ -55,8 +55,6 @@ import {
 } from '../../../core/property-controls/property-controls-utils'
 import { addUniquely, SkipValueToken, stripNulls } from '../../../core/shared/array-utils'
 import {
-  bimapEither,
-  defaultEither,
   Either,
   eitherToMaybe,
   flatMapEither,
@@ -389,15 +387,16 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   const simpleValueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
 
-  const leftOrNotFound = foldEither(
-    () => true,
-    (r) => isJSXAttributeNotFound(r),
+  const parsedValue: Either<string, ValueOf<ParsedProperties>> = flatMapEither(
+    (modifiableAttribute: ModifiableAttribute) => {
+      if (isJSXAttributeNotFound(modifiableAttribute)) {
+        return left('Attribute not found')
+      } else {
+        return parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
+      }
+    },
     rawValue,
   )
-
-  const parsedValue: Either<string, ValueOf<ParsedProperties>> = leftOrNotFound
-    ? left('Attribute not found')
-    : parseAnyParseableValue(property, simpleValueAsMaybe, rawValueAsMaybe)
 
   const parsedSpiedValue: Either<string, ValueOf<ParsedProperties>> = flatMapEither(
     (spv) => parseAnyParseableValue(property, spv, null),
