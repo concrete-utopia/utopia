@@ -1,8 +1,5 @@
-import * as BrowserFS from 'browserfs'
-import { FSModule } from 'browserfs/dist/node/core/FS'
-import { forceNotNull } from '../shared/optional-utils'
 import { ProjectFile } from '../shared/project-file-types'
-import { createDirectory, writeFile } from './common/browserfs-utils'
+import { createDirectory, writeFile } from 'utopia-vscode-common'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`

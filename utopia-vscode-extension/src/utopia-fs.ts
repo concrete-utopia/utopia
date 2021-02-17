@@ -39,11 +39,10 @@ import {
   writeFile,
   appendToPath,
   dirname,
-  fromUtopiaURI,
   Scheme,
   stripRootPrefix,
-  toUtopiaURI,
 } from 'utopia-vscode-common'
+import { fromUtopiaURI, toUtopiaURI } from './path-utils'
 
 export class UtopiaFSExtension
   implements FileSystemProvider, FileSearchProvider, TextSearchProvider, Disposable {
