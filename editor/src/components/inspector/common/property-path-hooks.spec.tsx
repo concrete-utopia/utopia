@@ -955,6 +955,7 @@ describe('Integration Test: opacity property', () => {
     )
     const expectedControlStatus: ControlStatus = 'controlled'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
+    expect(hookResult.value).toEqual({ unit: null, value: 1 })
   })
 
   it('parses a multiselect-controlled control status', () => {
@@ -966,6 +967,7 @@ describe('Integration Test: opacity property', () => {
     )
     const expectedControlStatus: ControlStatus = 'multiselect-controlled'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
+    expect(hookResult.value).toEqual({ unit: null, value: 1 })
   })
 
   xit('parses an unoverwritable control status', () => {
@@ -1114,13 +1116,13 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
     attributeMetadatas: Array<StyleAttributeMetadata>,
   ) {
     const props = styleObjectExpressions.map(
-      (styleExpression) => getPropsForStyleProp(styleExpression, ['myStyleOuter', 'myStyleInner'])!,
+      (styleExpression) => getPropsForStyleProp(styleExpression, ['style'])!,
     )
 
     const contextProvider = makeInspectorHookContextProvider(
       [],
       props,
-      ['myStyleOuter', 'myStyleInner'],
+      ['style'],
       spiedProps,
       computedStyles,
       attributeMetadatas,
@@ -1230,6 +1232,20 @@ describe('useInspectorInfo: padding shorthand and longhands', () => {
       paddingLeft: { unit: null, value: 5 },
     })
     expect(hookResult.orderedPropKeys).toEqual([['padding', 'paddingLeft']])
+  })
+
+  it('works with controlled longhand', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5 + 5 }`],
+      [{ paddingLeft: 10 }],
+      [{ paddingLeft: '10px' }],
+      [],
+    )
+    expect(hookResult.value).toEqual({
+      paddingLeft: { unit: 'px', value: 10 },
+    })
+    expect(hookResult.orderedPropKeys).toEqual([['paddingLeft']])
   })
 
   it('keeps the order of props for multi select 1', () => {
