@@ -489,7 +489,11 @@ import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
-import { writeProjectFile } from '../../../core/vscode/vscode-bridge'
+import {
+  watchForChanges,
+  writeProjectContents,
+  writeProjectFile,
+} from '../../../core/vscode/vscode-bridge'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1405,7 +1409,8 @@ export const UPDATE_FNS = {
       },
     )
     if (action.projectId != null) {
-      const nonNullProjectId = action.projectId
+      writeProjectContents(action.projectId, parsedProjectFiles)
+      watchForChanges(action.projectId, dispatch)
     }
     const parsedModel = {
       ...migratedModel,

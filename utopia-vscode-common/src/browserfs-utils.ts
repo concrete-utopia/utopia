@@ -54,9 +54,13 @@ export function initializeBrowserFS(): Promise<void> {
 let currentPromise: Promise<unknown> = initializeBrowserFS()
 
 function chainOntoCurrent<T>(promise: () => Promise<T>): Promise<T> {
-  const newPromise = currentPromise.then(promise)
+  const newPromise = currentPromise.then(promise).catch(promise)
   currentPromise = newPromise
   return newPromise
+}
+
+export async function waitForCurrentJobsToFinish(): Promise<void> {
+  return chainOntoCurrent(() => Promise.resolve())
 }
 
 export async function readFile(path: string): Promise<Uint8Array> {
@@ -168,6 +172,7 @@ export async function createDirectory(path: string): Promise<void> {
   return chainOntoCurrent(
     () =>
       new Promise<void>((resolve, reject) => {
+        console.log('mkdir', path)
         fs.mkdir(path, 777, wrappedOneArgCallback(resolve, reject))
       }),
   )
