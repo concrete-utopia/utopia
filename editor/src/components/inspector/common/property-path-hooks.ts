@@ -389,7 +389,7 @@ function parseFinalValue<PropertiesToControl extends ParsedPropertiesKeys>(
   const simpleValueAsMaybe = eitherToMaybe(simpleValue)
   const rawValueAsMaybe = eitherToMaybe(rawValue)
 
-  const leftOrNotFound = bimapEither(
+  const leftOrNotFound = foldEither(
     () => true,
     (r) => isJSXAttributeNotFound(r),
     rawValue,
