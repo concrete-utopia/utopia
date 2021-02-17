@@ -221,7 +221,7 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
           return {
             simpleValues: [left('No value')],
             rawValues: [left('Nothing selected')],
-            spiedValues: [undefined],
+            spiedValues: [],
             computedValues: [],
             attributeMetadatas: [],
           }
@@ -274,7 +274,7 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
           return {
             simpleValues: [left('No value')],
             rawValues: [left('Nothing selected')],
-            spiedValues: [undefined],
+            spiedValues: [],
           }
         }
 
@@ -884,7 +884,7 @@ function getParsedValues<P extends ParsedPropertiesKeys>(
             left('Raw value missing'),
             rawValues[i],
           )
-          const spiedValue: any = spiedValues[i]
+          const spiedValue: any = i in spiedValues ? spiedValues[i] : left('Spied value not found')
           const computedValue = computedValues[i]
           const attributeMetadata = attributeMetadatas[i]
           const {
