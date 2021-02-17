@@ -50,12 +50,13 @@ import {
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { createIframeUrl } from '../../core/shared/utils'
+import { useDelayedValueHook } from '../editor/hook-utils'
 
 interface NumberSize {
   width: number
   height: number
 }
-//test
+
 export interface EditorProps {
   propertyControlsInfoSupported: boolean
 }
@@ -155,6 +156,9 @@ export const EditorComponentInner = betterReactMemo(
       (store) => store.editor.leftMenu.expanded,
       'EditorComponentInner leftMenuExpanded',
     )
+
+    const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
+
     const saveError = useEditorState(
       (store) => store.editor.saveError,
       'EditorComponentInner saveError',
@@ -265,21 +269,20 @@ export const EditorComponentInner = betterReactMemo(
                 <OpenFileEditor />
               </SimpleFlexRow>
               {/* insert more columns here */}
-              {
-                <div
-                  className='LeftPaneShell'
-                  style={{
-                    transition: 'all .1s linear',
-                    position: 'absolute',
-                    height: '100% !important',
-                    width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
-                    overflowX: 'scroll',
-                    backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
-                  }}
-                >
-                  <LeftPaneComponent />
-                </div>
-              }
+
+              <div
+                className='LeftPaneShell'
+                style={{
+                  transition: 'all .1s linear',
+                  position: 'absolute',
+                  height: '100% !important',
+                  width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
+                  overflowX: 'scroll',
+                  backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
+                }}
+              >
+                {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
+              </div>
               {previewVisible ? (
                 <ResizableFlexColumn
                   style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}

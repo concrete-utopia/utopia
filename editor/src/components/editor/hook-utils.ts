@@ -26,3 +26,22 @@ export function useForceUpdate() {
   const [, forceUpdate] = React.useReducer((c) => c + 1, 0)
   return forceUpdate
 }
+
+export function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
+  const [returnValue, setReturnValue] = React.useState(inputValue)
+  React.useEffect(() => {
+    let timerID: any = undefined
+    if (inputValue) {
+      // we do not delay the toggling if the input value is true
+      setReturnValue(true)
+    } else {
+      timerID = setTimeout(() => {
+        setReturnValue(false)
+      }, delayMs)
+    }
+    return function cleanup() {
+      clearTimeout(timerID)
+    }
+  }, [inputValue, delayMs])
+  return returnValue
+}
