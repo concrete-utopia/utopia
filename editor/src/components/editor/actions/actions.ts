@@ -1406,11 +1406,6 @@ export const UPDATE_FNS = {
     )
     if (action.projectId != null) {
       const nonNullProjectId = action.projectId
-      walkContentsTree(parsedProjectFiles, (fullPath, file) => {
-        if (isTextFile(file) || isDirectory(file)) {
-          writeProjectFile(nonNullProjectId, fullPath, file)
-        }
-      })
     }
     const parsedModel = {
       ...migratedModel,

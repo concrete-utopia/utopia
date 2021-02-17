@@ -75,6 +75,10 @@
     "../utopia-api/src/**/*.{js,ts,tsx}": [
       "prettier --write",
       "git add"
+    ],
+    "../utopia-vscode-extension/src/**/*.{js,ts,tsx}": [
+      "prettier --write",
+      "git add"
     ]
   },
   "dependencies": {

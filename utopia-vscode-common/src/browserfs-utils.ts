@@ -1,5 +1,5 @@
 import * as BrowserFS from 'browserfs'
-import {ApiError} from 'browserfs/dist/node/core/api_error'
+import { ApiError } from 'browserfs/dist/node/core/api_error'
 import { BFSCallback, BFSOneArgCallback } from 'browserfs/dist/node/core/file_system'
 import { FSModule } from 'browserfs/dist/node/core/FS'
 import Stats from 'browserfs/dist/node/core/node_fs_stats'
@@ -60,56 +60,74 @@ function chainOntoCurrent<T>(promise: () => Promise<T>): Promise<T> {
 }
 
 export async function readFile(path: string): Promise<Uint8Array> {
-  return chainOntoCurrent(() => new Promise<Uint8Array>((resolve, reject) => {
-    fs.readFile(path, wrappedCallback(resolve, reject))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<Uint8Array>((resolve, reject) => {
+        fs.readFile(path, wrappedCallback(resolve, reject))
+      }),
+  )
 }
 
 export async function readFileWithEncoding(path: string, encoding: string): Promise<string> {
-  return chainOntoCurrent(() => new Promise<string>((resolve, reject) => {
-    fs.readFile(path, encoding, wrappedCallback(resolve, reject))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<string>((resolve, reject) => {
+        fs.readFile(path, encoding, wrappedCallback(resolve, reject))
+      }),
+  )
 }
 
 export async function exists(path: string): Promise<boolean> {
-  return chainOntoCurrent(() => new Promise<boolean>((resolve) => {
-    fs.exists(path, (exists) => resolve(exists))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<boolean>((resolve) => {
+        fs.exists(path, (exists) => resolve(exists))
+      }),
+  )
 }
 
 export async function writeFile(path: string, content: Uint8Array): Promise<void> {
-  return chainOntoCurrent(() => new Promise<void>((resolve, reject) => {
-    fs.writeFile(path, uint8Array2Buffer(content), wrappedOneArgCallback(resolve, reject))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        fs.writeFile(path, uint8Array2Buffer(content), wrappedOneArgCallback(resolve, reject))
+      }),
+  )
 }
 
 export async function rename(oldPath: string, newPath: string): Promise<void> {
-  return chainOntoCurrent(() => new Promise<void>((resolve, reject) => {
-    fs.rename(oldPath, newPath, wrappedOneArgCallback(resolve, reject))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        fs.rename(oldPath, newPath, wrappedOneArgCallback(resolve, reject))
+      }),
+  )
 }
 
 export async function stat(path: string): Promise<Stats> {
-  return chainOntoCurrent(() => new Promise<Stats>((resolve, reject) => {
-    fs.stat(path, wrappedCallback(resolve, reject))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<Stats>((resolve, reject) => {
+        fs.stat(path, wrappedCallback(resolve, reject))
+      }),
+  )
 }
 
 export async function pathIsDirectory(path: string): Promise<boolean> {
-  return chainOntoCurrent(() => stat(path)).then(stats => {
+  return chainOntoCurrent(() => stat(path)).then((stats) => {
     return stats.isDirectory()
   })
 }
 
 export async function deletePath(path: string, recursive: boolean): Promise<string[]> {
-    const targetPaths = recursive ? await getDescendentPaths(path, true) : [path]
-    const pathsToDelete = [...targetPaths].reverse() // Delete all paths in reverse order
+  const targetPaths = recursive ? await getDescendentPaths(path, true) : [path]
+  const pathsToDelete = [...targetPaths].reverse() // Delete all paths in reverse order
 
-    for (const pathToDelete of pathsToDelete) {
-      await _deletePath(pathToDelete)
-    }
+  for (const pathToDelete of pathsToDelete) {
+    await _deletePath(pathToDelete)
+  }
 
-    return targetPaths
+  return targetPaths
 }
 
 async function _deletePath(path: string): Promise<void> {
@@ -122,15 +140,21 @@ async function _deletePath(path: string): Promise<void> {
 }
 
 async function rmdir(path: string): Promise<void> {
-  return chainOntoCurrent(() => new Promise<void>((resolve, reject) => {
-    fs.rmdir(path, wrappedOneArgCallback(resolve, reject))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        fs.rmdir(path, wrappedOneArgCallback(resolve, reject))
+      }),
+  )
 }
 
 async function unlink(path: string): Promise<void> {
-  return chainOntoCurrent(() => new Promise<void>((resolve, reject) => {
-    fs.unlink(path, wrappedOneArgCallback(resolve, reject))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        fs.unlink(path, wrappedOneArgCallback(resolve, reject))
+      }),
+  )
 }
 
 export async function ensureDirectoryExists(path: string): Promise<void> {
@@ -141,15 +165,21 @@ export async function ensureDirectoryExists(path: string): Promise<void> {
 }
 
 export async function createDirectory(path: string): Promise<void> {
-  return chainOntoCurrent(() => new Promise<void>((resolve, reject) => {
-    fs.mkdir(path, 777, wrappedOneArgCallback(resolve, reject))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        fs.mkdir(path, 777, wrappedOneArgCallback(resolve, reject))
+      }),
+  )
 }
 
 export async function readdir(path: string): Promise<string[]> {
-  return chainOntoCurrent(() => new Promise<string[]>((resolve, reject) => {
-    fs.readdir(path, wrappedCallback(resolve, reject))
-  }))
+  return chainOntoCurrent(
+    () =>
+      new Promise<string[]>((resolve, reject) => {
+        fs.readdir(path, wrappedCallback(resolve, reject))
+      }),
+  )
 }
 
 export async function childPaths(path: string): Promise<string[]> {
@@ -267,7 +297,10 @@ export async function stopWatching(target: string, recursive: boolean) {
   }
 }
 
-function wrappedCallback<T>(resolve: (t: T | undefined) => void, reject: (e: Error) => void): BFSCallback<T> {
+function wrappedCallback<T>(
+  resolve: (t: T | undefined) => void,
+  reject: (e: Error) => void,
+): BFSCallback<T> {
   return (e, v) => {
     if (e == null) {
       resolve(v)
@@ -286,4 +319,3 @@ function wrappedOneArgCallback(resolve: () => void, reject: (e: Error) => void):
     }
   }
 }
- 
