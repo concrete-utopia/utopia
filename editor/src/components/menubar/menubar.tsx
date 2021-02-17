@@ -118,11 +118,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
     [dispatch, selectedTab],
   )
 
-  const onDoubleClick = React.useCallback(() => {
-    // TODO KILL ME
-    dispatch([togglePanel('leftmenu')])
-  }, [dispatch])
-
   const onClickStructureTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.ProjectStructure)
   }, [onClickTab])
