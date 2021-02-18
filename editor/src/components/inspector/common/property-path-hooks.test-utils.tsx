@@ -7,8 +7,9 @@ import {
   StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
 import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
+import { NO_OP } from '../../../core/shared/utils'
 import { testParseCode } from '../../../core/workers/parser-printer/parser-printer.test-utils'
-import { InspectorPropsContext } from './property-path-hooks'
+import { InspectorCallbackContext, InspectorPropsContext } from './property-path-hooks'
 
 export const makeInspectorHookContextProvider = (
   selectedViews: Array<TemplatePath>,
@@ -26,18 +27,26 @@ export const makeInspectorHookContextProvider = (
     }, realInnerValue)
   })
   return (
-    <InspectorPropsContext.Provider
+    <InspectorCallbackContext.Provider
       value={{
-        selectedViews: selectedViews,
-        editedMultiSelectedProps: multiselectAttributes,
-        targetPath,
-        spiedProps: spiedPropsWrappedInTargetPath,
-        computedStyles: computedStyles,
-        selectedAttributeMetadatas: attributeMetadatas,
+        selectedViewsRef: { current: selectedViews },
+        onSubmitValue: NO_OP,
+        onUnsetValue: NO_OP,
       }}
     >
-      {children}
-    </InspectorPropsContext.Provider>
+      <InspectorPropsContext.Provider
+        value={{
+          selectedViews: selectedViews,
+          editedMultiSelectedProps: multiselectAttributes,
+          targetPath,
+          spiedProps: spiedPropsWrappedInTargetPath,
+          computedStyles: computedStyles,
+          selectedAttributeMetadatas: attributeMetadatas,
+        }}
+      >
+        {children}
+      </InspectorPropsContext.Provider>
+    </InspectorCallbackContext.Provider>
   )
 }
 

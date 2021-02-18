@@ -1,22 +1,27 @@
-import { last } from '../../../core/shared/array-utils'
+import * as deepEqual from 'fast-deep-equal'
+import { useContextSelector } from 'use-context-selector'
+import { flatMapArray, last } from '../../../core/shared/array-utils'
 import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { create } from '../../../core/shared/property-path'
-import { instancePath } from '../../../core/shared/template-path'
+import { instancePath, isInstancePath } from '../../../core/shared/template-path'
 import { arrayEquals } from '../../../core/shared/utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
   PropertyStatus,
 } from '../../../uuiui-deps'
-import { setProp_UNSAFE } from '../../editor/actions/action-creators'
+import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
-import { ParsedProperties, ParsedPropertiesKeys } from './css-utils'
+import { ParsedProperties, ParsedPropertiesKeys, printCSSValue } from './css-utils'
 import {
   InspectorInfo,
+  InspectorPropsContext,
   ParsedValues,
   PathMappingFn,
   useGetOrderedPropertyKeys,
+  useInspectorContext,
   useInspectorInfo,
 } from './property-path-hooks'
 
@@ -93,6 +98,10 @@ export function useInspectorInfoLonghandShorthand<
     (store) => store.dispatch,
     'useInspectorInfoLonghandShorthand dispatch',
   )
+  const inspectorTargetPath = useKeepReferenceEqualityIfPossible(
+    useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
+  )
+  const { selectedViewsRef } = useInspectorContext()
   const orderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [longhand, shorthand])
   const longhandInfo = useInspectorInfo(
     [longhand],
@@ -125,13 +134,69 @@ export function useInspectorInfoLonghandShorthand<
     transient?: boolean | undefined,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
   ) => {
-    dispatch([
-      setProp_UNSAFE(
-        instancePath([], ['hello', 'eni']),
-        create(['what', 'up']),
-        jsxAttributeValue(newTransformedValues, emptyComments),
-      ),
-    ])
+    const allPropKeysEqual = orderedPropKeys.every((propKeys) => {
+      return arrayEquals(propKeys, orderedPropKeys[0])
+    })
+    if (!allPropKeysEqual || newTransformedValues == null) {
+      // we do nothing for now. we cannot ensure that we can make a sensible update and surface it on the UI as well
+      return
+    }
+    const propkeysToUse = orderedPropKeys[0]
+
+    const doWeHaveToRemoveAShadowedLonghand =
+      propkeysToUse.length === 2 && propkeysToUse[0] === longhand
+
+    const dominantPropKey = last(propkeysToUse)
+    if (dominantPropKey === shorthand && !shorthandInfo.propertyStatus.controlled) {
+      // the shorthand key is the dominant, and it _can_ be updated
+      // let's figure out the new value for the prop
+      const currentValue = shorthandInfo.value
+      const updatedValue = ({
+        ...(currentValue[shorthand] as any),
+        [longhand]: newTransformedValues, // VERY IMPORTANT here we assume that the longhand key is a valid key in the parsed shorthand value!!
+      } as any) as ParsedProperties[ShorthandKey]
+      const longhandPropertyPath = pathMappingFn(longhand, inspectorTargetPath)
+      const shorthandPropertyPath = pathMappingFn(shorthand, inspectorTargetPath)
+      const printedValue = printCSSValue(shorthand, updatedValue)
+      dispatch(
+        flatMapArray((sv) => {
+          if (isInstancePath(sv)) {
+            return [
+              ...(doWeHaveToRemoveAShadowedLonghand
+                ? [unsetProperty(sv, longhandPropertyPath)]
+                : []),
+              setProp_UNSAFE(
+                sv, // who is sv?
+                shorthandPropertyPath,
+                printedValue,
+              ),
+            ]
+          } else {
+            return []
+          }
+        }, selectedViewsRef.current),
+      )
+    } else {
+      // we either have a dominant longhand key, or we need to append a new one
+      const propertyPath = pathMappingFn(longhand, inspectorTargetPath)
+      const printedValue = printCSSValue(longhand, newTransformedValues)
+      dispatch(
+        flatMapArray((sv) => {
+          if (isInstancePath(sv)) {
+            return [
+              ...(doWeHaveToRemoveAShadowedLonghand ? [unsetProperty(sv, propertyPath)] : []),
+              setProp_UNSAFE(
+                sv, // who is sv?
+                propertyPath,
+                printedValue,
+              ),
+            ]
+          } else {
+            return []
+          }
+        }, selectedViewsRef.current),
+      )
+    }
   }
 
   const onTransientSubmitValue = (

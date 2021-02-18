@@ -256,7 +256,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            { propertyElements: ['style', 'paddingLeft'] },
+            PP.create(['style', 'paddingLeft']),
             jsxAttributeValue('100px', emptyComments),
           ),
         ],
