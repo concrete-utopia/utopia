@@ -3,6 +3,7 @@ import {
   createDirectory,
   deletePath,
   exists,
+  readdir,
   readFileWithEncoding,
   writeFileWithEncoding,
 } from './browserfs-utils'
@@ -12,18 +13,13 @@ import { appendToPath } from './path-utils'
 type Mailbox = 'VSCODE_MAILBOX' | 'UTOPIA_MAILBOX'
 export const VSCodeInbox: Mailbox = 'VSCODE_MAILBOX'
 export const UtopiaInbox: Mailbox = 'UTOPIA_MAILBOX'
-const MailboxReadyMessageName = 'READY'
-
-// FIXME there are a few issues here:
-// 1 - remounting will trigger the mailbox to blind initialise
-// 2 - opening the project in another tab will create a race condition around who reads the messages
-// Fix both of these by having the mailbox clear itself on init and track the last message number consumed
-// rather than deleting them when consuming them
 
 let inbox: Mailbox
 let outbox: Mailbox
 let onMessageCallback: (message: UtopiaVSCodeMessage) => void
 let counter: number = 0
+let lastConsumedMessage: number = -1
+let queuedMessages: UtopiaVSCodeMessage[] = []
 const POLLING_TIMEOUT = 100
 
 function pathForMailbox(mailbox: Mailbox): string {
@@ -43,8 +39,7 @@ function generateMessageName(): string {
 
 export async function sendMessage(message: UtopiaVSCodeMessage): Promise<void> {
   if (outbox == null) {
-    // TODO Queue messages we're trying to send if the mailbox hasn't been initialised yet
-    throw new Error(`Messaging system hasn't been initialised`)
+    queuedMessages.push(message)
   }
   return sendNamedMessage(generateMessageName(), JSON.stringify(message))
 }
@@ -55,36 +50,36 @@ async function sendNamedMessage(messageName: string, content: string): Promise<v
 
 async function initOutbox(outboxToUse: Mailbox): Promise<void> {
   outbox = outboxToUse
-  const outboxPath = pathForMailbox(outbox)
-  await deletePath(outboxPath, true)
-  await createDirectory(outboxPath)
-  await sendNamedMessage(MailboxReadyMessageName, '')
-}
-
-async function waitUntilInboxReady(): Promise<void> {
-  const readyMessagePath = pathForInboxMessage(MailboxReadyMessageName)
-  let isReady = await exists(readyMessagePath)
-  if (isReady) {
-    await deletePath(readyMessagePath, false)
-  } else {
-    await new Promise((resolve) => setTimeout(resolve, 100))
-    return waitUntilInboxReady()
+  if (queuedMessages.length > 0) {
+    queuedMessages.forEach(sendMessage)
+    queuedMessages = []
   }
 }
 
-async function receiveMessage(messagePath: string): Promise<UtopiaVSCodeMessage> {
+async function receiveMessage(messageName: string): Promise<UtopiaVSCodeMessage> {
+  const messagePath = pathForInboxMessage(messageName)
   const content = await readFileWithEncoding(messagePath)
-  await deletePath(messagePath, false)
   return parseMessage(content)
 }
 
 async function pollInbox(): Promise<void> {
-  const messagePaths = await childPaths(pathForMailbox(inbox))
-  if (messagePaths.length > 0) {
-    const messages = await Promise.all(messagePaths.map(receiveMessage))
+  const allMessages = await readdir(pathForMailbox(inbox))
+  const messagesToProcess = allMessages.filter(
+    (messageName) => Number.parseInt(messageName) > lastConsumedMessage,
+  )
+  if (messagesToProcess.length > 0) {
+    const messages = await Promise.all(messagesToProcess.map(receiveMessage))
+    lastConsumedMessage = Math.max(
+      ...messagesToProcess.map((messageName) => Number.parseInt(messageName)),
+    )
     messages.forEach(onMessageCallback)
   }
   setTimeout(pollInbox, POLLING_TIMEOUT)
+}
+
+async function clearMailbox(mailbox: Mailbox): Promise<void> {
+  const messagePaths = await childPaths(pathForMailbox(mailbox))
+  await Promise.all(messagePaths.map((messagePath) => deletePath(messagePath, false)))
 }
 
 async function initInbox(
@@ -92,8 +87,8 @@ async function initInbox(
   onMessage: (message: UtopiaVSCodeMessage) => void,
 ): Promise<void> {
   inbox = inboxToUse
+  await clearMailbox(inboxToUse)
   onMessageCallback = onMessage
-  await waitUntilInboxReady()
   pollInbox()
 }
 
