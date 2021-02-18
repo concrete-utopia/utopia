@@ -162,15 +162,13 @@ export function useInspectorInfoLonghandShorthand<
       const longhandPropertyPath = pathMappingFn(longhand, inspectorTargetPath)
       const shorthandPropertyPath = pathMappingFn(shorthand, inspectorTargetPath)
       const printedValue = printCSSValue(shorthand, updatedValue)
-      const actionsToDispatch = flatMapArray((sv) => {
-        if (isInstancePath(sv)) {
+      const actionsToDispatch = flatMapArray((selectedView) => {
+        if (isInstancePath(selectedView)) {
           return [
-            ...(doWeHaveToRemoveAShadowedLonghand ? [unsetProperty(sv, longhandPropertyPath)] : []),
-            setProp_UNSAFE(
-              sv, // who is sv?
-              shorthandPropertyPath,
-              printedValue,
-            ),
+            ...(doWeHaveToRemoveAShadowedLonghand
+              ? [unsetProperty(selectedView, longhandPropertyPath)]
+              : []),
+            setProp_UNSAFE(selectedView, shorthandPropertyPath, printedValue),
           ]
         } else {
           return []
@@ -181,15 +179,13 @@ export function useInspectorInfoLonghandShorthand<
       // we either have a dominant longhand key, or we need to append a new one
       const propertyPath = pathMappingFn(longhand, inspectorTargetPath)
       const printedValue = printCSSValue(longhand, newTransformedValues)
-      const actionsToDispatch = flatMapArray((sv) => {
-        if (isInstancePath(sv)) {
+      const actionsToDispatch = flatMapArray((selectedView) => {
+        if (isInstancePath(selectedView)) {
           return [
-            ...(doWeHaveToRemoveAShadowedLonghand ? [unsetProperty(sv, propertyPath)] : []),
-            setProp_UNSAFE(
-              sv, // who is sv?
-              propertyPath,
-              printedValue,
-            ),
+            ...(doWeHaveToRemoveAShadowedLonghand
+              ? [unsetProperty(selectedView, propertyPath)]
+              : []),
+            setProp_UNSAFE(selectedView, propertyPath, printedValue),
           ]
         } else {
           return []
