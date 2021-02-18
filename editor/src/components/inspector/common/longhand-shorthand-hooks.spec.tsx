@@ -119,6 +119,19 @@ describe('useInspectorInfo: reading padding shorthand and longhands', () => {
     expect(hookResult.orderedPropKeys).toEqual([['padding', 'paddingLeft']])
   })
 
+  it('padding, undefined paddingLeft', () => {
+    const { hookResult } = getPaddingHookResult(
+      'paddingLeft',
+      'padding',
+      [`{ padding: 15, paddingLeft: undefined }`],
+      [{ padding: 15, paddingLeft: undefined }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '0px' }],
+      [],
+    )
+    expect(hookResult.value).toEqual({ unit: 'px', value: 0 })
+    expect(hookResult.orderedPropKeys).toEqual([['padding', 'paddingLeft']])
+  })
+
   it('paddingLeft, padding, paddingRight', () => {
     const { hookResult } = getPaddingHookResult(
       'paddingLeft',
