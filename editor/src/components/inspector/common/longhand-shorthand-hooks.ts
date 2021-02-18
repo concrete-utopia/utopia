@@ -1,10 +1,16 @@
 import { last } from '../../../core/shared/array-utils'
+import { jsxAttributeValue } from '../../../core/shared/element-template'
+import { create } from '../../../core/shared/property-path'
+import { instancePath } from '../../../core/shared/template-path'
 import { arrayEquals } from '../../../core/shared/utils'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
   PropertyStatus,
 } from '../../../uuiui-deps'
+import { setProp_UNSAFE } from '../../editor/actions/action-creators'
+import { useEditorState } from '../../editor/store/store-hook'
 import { ParsedProperties, ParsedPropertiesKeys } from './css-utils'
 import {
   InspectorInfo,
@@ -83,6 +89,10 @@ export function useInspectorInfoLonghandShorthand<
 ): Omit<InspectorInfo<ParsedProperties[LonghandKey] | undefined>, 'useSubmitValueFactory'> & {
   orderedPropKeys: Array<Array<LonghandKey | ShorthandKey>>
 } {
+  const dispatch = useEditorState(
+    (store) => store.dispatch,
+    'useInspectorInfoLonghandShorthand dispatch',
+  )
   const orderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [longhand, shorthand])
   const longhandInfo = useInspectorInfo(
     [longhand],
@@ -114,7 +124,15 @@ export function useInspectorInfoLonghandShorthand<
     newTransformedValues: ParsedProperties[LonghandKey] | undefined,
     transient?: boolean | undefined,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-  ) => {}
+  ) => {
+    dispatch([
+      setProp_UNSAFE(
+        instancePath([], ['hello', 'eni']),
+        create(['what', 'up']),
+        jsxAttributeValue(newTransformedValues, emptyComments),
+      ),
+    ])
+  }
 
   const onTransientSubmitValue = (
     newTransformedValues: ParsedProperties[LonghandKey] | undefined,
