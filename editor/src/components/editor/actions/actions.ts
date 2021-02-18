@@ -491,6 +491,7 @@ import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 import {
   initVSCodeBridge,
+  sendOpenFileMessage,
   watchForChanges,
   writeProjectContents,
   writeProjectFile,
@@ -3257,6 +3258,9 @@ export const UPDATE_FNS = {
     const focusedPanel: EditorPanel = fileOpensInCanvas ? 'canvas' : 'misccodeeditor'
 
     const keepSelectedViews = R.equals(currentOpenFile, action.editorTab)
+    if (isOpenFileTab(action.editorTab)) {
+      sendOpenFileMessage(action.editorTab.filename)
+    }
 
     return setLeftMenuTabFromFocusedPanel({
       ...editor,

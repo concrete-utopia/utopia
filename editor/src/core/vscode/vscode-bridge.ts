@@ -9,6 +9,8 @@ import {
   watch,
   readFileWithEncoding,
   initMailbox,
+  openFileMessage,
+  sendMessage,
   UtopiaInbox,
   UtopiaVSCodeMessage,
 } from 'utopia-vscode-common'
@@ -107,4 +109,8 @@ export async function initVSCodeBridge(
   })
   await writeProjectContents(projectID, projectContents)
   watchForChanges(projectID, dispatch)
+}
+
+export async function sendOpenFileMessage(filePath: string): Promise<void> {
+  return sendMessage(openFileMessage(filePath))
 }

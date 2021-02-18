@@ -3,16 +3,17 @@ export const RootDir = `/${Scheme}`
 export const URIPrefix = `${Scheme}:/`
 
 export function appendToPath(path: string, elem: string): string {
-  const joinChar = path.endsWith('/') ? '' : '/'
-  return `${path}${joinChar}${elem}`
+  const left = path.endsWith('/') ? path.slice(0, -1) : path
+  const right = elem.startsWith('/') ? elem.slice(1) : elem
+  return `${left}/${right}`
 }
 
 export function stripRootPrefix(path: string): string {
-  return path == null ? '' : path.slice(RootDir.length + 1)
+  return path.startsWith(RootDir) ? path.slice(RootDir.length + 1) : path
 }
 
 export function toUtopiaPath(path: string): string {
-  const result = `${URIPrefix}${stripRootPrefix(path)}`
+  const result = appendToPath(URIPrefix, stripRootPrefix(path))
   return result
 }
 

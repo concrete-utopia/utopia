@@ -14,6 +14,12 @@ export const VSCodeInbox: Mailbox = 'VSCODE_MAILBOX'
 export const UtopiaInbox: Mailbox = 'UTOPIA_MAILBOX'
 const MailboxReadyMessageName = 'READY'
 
+// FIXME there are a few issues here:
+// 1 - remounting will trigger the mailbox to blind initialise
+// 2 - opening the project in another tab will create a race condition around who reads the messages
+// Fix both of these by having the mailbox clear itself on init and track the last message number consumed
+// rather than deleting them when consuming them
+
 let inbox: Mailbox
 let outbox: Mailbox
 let onMessageCallback: (message: UtopiaVSCodeMessage) => void
@@ -36,6 +42,10 @@ function generateMessageName(): string {
 }
 
 export async function sendMessage(message: UtopiaVSCodeMessage): Promise<void> {
+  if (outbox == null) {
+    // TODO Queue messages we're trying to send if the mailbox hasn't been initialised yet
+    throw new Error(`Messaging system hasn't been initialised`)
+  }
   return sendNamedMessage(generateMessageName(), JSON.stringify(message))
 }
 

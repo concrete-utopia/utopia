@@ -4,10 +4,11 @@ import {
   initializeBrowserFS,
   RootDir,
   initMailbox,
+  isOpenFileMessage,
   VSCodeInbox,
   UtopiaVSCodeMessage,
 } from 'utopia-vscode-common'
-import { fromUtopiaURI } from './path-utils'
+import { fromUtopiaURI, toUtopiaURI } from './path-utils'
 import { UtopiaFSExtension } from './utopia-fs'
 import { useFileSystemProviderErrors } from './browserfs-utils'
 
@@ -20,11 +21,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   await ensureDirectoryExists(workspaceRootPath)
   const utopiaFS = new UtopiaFSExtension(workspaceRootPath)
   context.subscriptions.push(utopiaFS)
-  initMessaging()
+  initMessaging(workspaceRootUri)
 }
 
-function initMessaging(): void {
+function initMessaging(workspaceRootUri: vscode.Uri): void {
+  function handleMessage(message: UtopiaVSCodeMessage): void {
+    if (isOpenFileMessage(message)) {
+      vscode.commands.executeCommand(
+        'vscode.open',
+        vscode.Uri.joinPath(workspaceRootUri, message.filePath),
+      )
+    } else {
+      console.log(`Unhandled message type ${message.type}`)
+    }
+  }
+
   initMailbox(VSCodeInbox, handleMessage)
 }
-
-function handleMessage(message: UtopiaVSCodeMessage): void {}
