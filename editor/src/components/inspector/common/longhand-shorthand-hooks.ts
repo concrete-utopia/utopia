@@ -32,7 +32,13 @@ function getShadowedLonghandShorthandValue<
   if (!allPropKeysEqual) {
     return {
       value: undefined,
-      propertyStatus: longhandPropertyStatus,
+      propertyStatus: {
+        ...longhandPropertyStatus,
+        set: true,
+        controlled: true,
+        overwritable: false,
+        identical: false,
+      },
     }
   }
 
