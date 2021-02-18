@@ -1,6 +1,10 @@
 import { last } from '../../../core/shared/array-utils'
 import { arrayEquals } from '../../../core/shared/utils'
-import { getControlStatusFromPropertyStatus, PropertyStatus } from '../../../uuiui-deps'
+import {
+  getControlStatusFromPropertyStatus,
+  getControlStyles,
+  PropertyStatus,
+} from '../../../uuiui-deps'
 import { ParsedProperties, ParsedPropertiesKeys } from './css-utils'
 import {
   InspectorInfo,
@@ -18,7 +22,8 @@ function getShadowedLonghandShorthandValue<
   shorthand: ShorthandKey,
   longhandPropertyStatus: PropertyStatus,
   shorthandPropertyStatus: PropertyStatus,
-  values: Partial<ParsedValues<LonghandKey | ShorthandKey>>,
+  longhandValue: ParsedValues<LonghandKey>,
+  shorthandValue: ParsedValues<ShorthandKey>,
   orderedPropKeys: (LonghandKey | ShorthandKey)[][], // multiselect
 ): { value: ParsedProperties[LonghandKey] | undefined; propertyStatus: PropertyStatus } {
   const allPropKeysEqual = orderedPropKeys.every((propKeys) => {
@@ -41,16 +46,16 @@ function getShadowedLonghandShorthandValue<
   } else {
     if (lastKey === longhand) {
       return {
-        value: values[lastKey],
+        value: longhandValue[longhand],
         propertyStatus: longhandPropertyStatus,
       }
     } else {
       // Important: we ASSUME that the transformed shorthand value is an object,
       // where the keys are the longhand keys and the values are the individual longhand values
-      const shorthandValue = values[shorthand] as any
-      if (longhand in shorthandValue) {
+      const propValue = shorthandValue[shorthand] as any
+      if (longhand in propValue) {
         return {
-          value: shorthandValue?.[longhand] as ParsedProperties[LonghandKey] | undefined,
+          value: propValue?.[longhand] as ParsedProperties[LonghandKey] | undefined,
           propertyStatus: shorthandPropertyStatus,
         }
       } else {
@@ -73,37 +78,29 @@ export function useInspectorInfoLonghandShorthand<
   orderedPropKeys: Array<Array<LonghandKey | ShorthandKey>>
 } {
   const orderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [longhand, shorthand])
-  let inspectorInfo = useInspectorInfo(
-    [longhand, shorthand],
-    (v) => v,
-    () => {
-      return null as any
-    },
-    pathMappingFn,
-  )
-
-  const longhandPropertyStatus = useInspectorInfo(
+  const longhandInfo = useInspectorInfo(
     [longhand],
     (v) => v,
     () => {
       return null as any
     },
     pathMappingFn,
-  ).propertyStatus
-  const shorthandPropertyStatus = useInspectorInfo(
+  )
+  const shorthandInfo = useInspectorInfo(
     [shorthand],
     (v) => v,
     () => {
       return null as any
     },
     pathMappingFn,
-  ).propertyStatus
+  )
   const { value, propertyStatus } = getShadowedLonghandShorthandValue(
     longhand,
     shorthand,
-    longhandPropertyStatus,
-    shorthandPropertyStatus,
-    inspectorInfo.value,
+    longhandInfo.propertyStatus,
+    shorthandInfo.propertyStatus,
+    longhandInfo.value,
+    shorthandInfo.value,
     orderedPropKeys,
   )
 
@@ -120,11 +117,12 @@ export function useInspectorInfoLonghandShorthand<
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   const onUnsetValues = () => {}
 
+  const controlStatus = getControlStatusFromPropertyStatus(propertyStatus)
   return {
     value: value,
-    controlStatus: getControlStatusFromPropertyStatus(propertyStatus),
     propertyStatus: propertyStatus,
-    controlStyles: inspectorInfo.controlStyles,
+    controlStatus: controlStatus,
+    controlStyles: getControlStyles(controlStatus),
     onSubmitValue: onSubmitValue,
     onTransientSubmitValue: onTransientSubmitValue,
     onUnsetValues: onUnsetValues,
