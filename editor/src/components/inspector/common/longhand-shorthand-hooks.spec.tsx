@@ -141,7 +141,7 @@ describe('useInspectorInfo: reading padding shorthand and longhands', () => {
       [{ paddingTop: '0px', paddingRight: '0px', paddingBottom: '0px', paddingLeft: '10px' }],
       [],
     )
-    expect(hookResult.value).toEqual({ unit: 'px', value: 10 })
+    expect(hookResult.value).toEqual({ unit: null, value: 10 })
     expect(hookResult.orderedPropKeys).toEqual([['paddingLeft']])
     expect(hookResult.controlStatus).toEqual('controlled')
   })
