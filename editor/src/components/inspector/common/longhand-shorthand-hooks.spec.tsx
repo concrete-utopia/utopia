@@ -32,7 +32,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys>(
   // eslint-disable-next-line @typescript-eslint/ban-types
   const contextProvider: React.FunctionComponent<{}> = ({ children }) => {
     const InspectorContextProvider = makeInspectorHookContextProvider(
-      [],
+      [TestSelectedComponent],
       props,
       ['style'],
       spiedProps,
