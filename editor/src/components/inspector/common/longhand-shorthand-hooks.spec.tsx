@@ -1,6 +1,10 @@
 import * as React from 'react'
 import { renderHook } from '@testing-library/react-hooks'
-import { ComputedStyle, StyleAttributeMetadata } from '../../../core/shared/element-template'
+import {
+  ComputedStyle,
+  jsxAttributeValue,
+  StyleAttributeMetadata,
+} from '../../../core/shared/element-template'
 import { cssNumber, ParsedPropertiesKeys } from './css-utils'
 import { useInspectorInfoLonghandShorthand } from './longhand-shorthand-hooks'
 import { stylePropPathMappingFn } from './property-path-hooks'
@@ -12,7 +16,9 @@ import { EditorStore } from '../../editor/store/editor-state'
 import create from 'zustand'
 import { EditorStateContext } from '../../editor/store/store-hook'
 import * as TP from '../../../core/shared/template-path'
+import * as PP from '../../../core/shared/property-path'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
+import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
 const TestSelectedComponent = TP.instancePath(['scene1'], ['aaa', 'bbb'])
 
@@ -251,11 +257,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             { propertyElements: ['style', 'paddingLeft'] },
-            {
-              comments: { leadingComments: [], trailingComments: [] },
-              type: 'ATTRIBUTE_VALUE',
-              value: { unit: 'px', value: 100 },
-            },
+            jsxAttributeValue({ unit: 'px', value: 100 }, emptyComments),
           ),
         ],
       ],
@@ -276,17 +278,16 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            { propertyElements: ['style', 'padding'] },
-            {
-              comments: { leadingComments: [], trailingComments: [] },
-              type: 'ATTRIBUTE_VALUE',
-              value: {
+            PP.create(['style', 'padding']),
+            jsxAttributeValue(
+              {
                 paddingTop: { unit: 'px', value: 8 },
                 paddingRight: { unit: 'px', value: 8 },
                 paddingBottom: { unit: 'px', value: 8 },
                 paddingLeft: { unit: 'px', value: 50 },
               },
-            },
+              emptyComments,
+            ),
           ),
         ],
       ],
@@ -307,12 +308,8 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            { propertyElements: ['style', 'paddingRight'] },
-            {
-              comments: { leadingComments: [], trailingComments: [] },
-              type: 'ATTRIBUTE_VALUE',
-              value: { unit: 'px', value: 5 },
-            },
+            PP.create(['style', 'paddingRight']),
+            jsxAttributeValue({ unit: 'px', value: 5 }, emptyComments),
           ),
         ],
       ],
@@ -333,12 +330,8 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            { propertyElements: ['style', 'paddingLeft'] },
-            {
-              comments: { leadingComments: [], trailingComments: [] },
-              type: 'ATTRIBUTE_VALUE',
-              value: { unit: 'px', value: 8 },
-            },
+            PP.create(['style', 'paddingLeft']),
+            jsxAttributeValue({ unit: 'px', value: 8 }, emptyComments),
           ),
         ],
       ],
@@ -359,12 +352,8 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           setProp_UNSAFE(
             TestSelectedComponent,
-            { propertyElements: ['style', 'paddingLeft'] },
-            {
-              comments: { leadingComments: [], trailingComments: [] },
-              type: 'ATTRIBUTE_VALUE',
-              value: { unit: 'px', value: 8 },
-            },
+            PP.create(['style', 'paddingLeft']),
+            jsxAttributeValue({ unit: 'px', value: 8 }, emptyComments),
           ),
         ],
       ],
@@ -379,19 +368,15 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
       [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '4px' }],
       [],
     )
-    hookResult.onSubmitValue(cssNumber(8, 'px'))
+    hookResult.onSubmitValue(cssNumber(16, 'px'))
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
           unsetProperty(TestSelectedComponent, { propertyElements: ['style', 'paddingLeft'] }),
           setProp_UNSAFE(
             TestSelectedComponent,
-            { propertyElements: ['style', 'paddingLeft'] },
-            {
-              comments: { leadingComments: [], trailingComments: [] },
-              type: 'ATTRIBUTE_VALUE',
-              value: { unit: 'px', value: 8 },
-            },
+            PP.create(['style', 'paddingLeft']),
+            jsxAttributeValue({ unit: 'px', value: 16 }, emptyComments),
           ),
         ],
       ],
@@ -413,17 +398,16 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           unsetProperty(TestSelectedComponent, { propertyElements: ['style', 'paddingLeft'] }),
           setProp_UNSAFE(
             TestSelectedComponent,
-            { propertyElements: ['style', 'padding'] },
-            {
-              comments: { leadingComments: [], trailingComments: [] },
-              type: 'ATTRIBUTE_VALUE',
-              value: {
+            PP.create(['style', 'padding']),
+            jsxAttributeValue(
+              {
                 paddingTop: { unit: 'px', value: 4 },
                 paddingRight: { unit: 'px', value: 8 },
                 paddingBottom: { unit: 'px', value: 4 },
                 paddingLeft: { unit: 'px', value: 18 },
               },
-            },
+              emptyComments,
+            ),
           ),
         ],
       ],
