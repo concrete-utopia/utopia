@@ -450,18 +450,11 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
 function getBackgroundColorHookResult(
   backgroundColorExpressions: Array<string>,
   targetPath: string[],
-  realInnerValues: Array<any>,
+  spiedProps: Array<any>,
 ) {
   const propses = backgroundColorExpressions.map(
     (expression) => getPropsForStyleProp(expression, ['myStyleOuter', 'myStyleInner'])!,
   )
-  const spiedProps = realInnerValues.map((realInnerValue) => {
-    return targetPath.reduceRight((working, pathPart) => {
-      return {
-        [pathPart]: working,
-      }
-    }, realInnerValue)
-  })
 
   const contextProvider = makeInspectorHookContextProvider(
     [],

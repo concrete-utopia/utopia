@@ -17,20 +17,29 @@ export const makeInspectorHookContextProvider = (
   spiedProps: Array<{ [key: string]: any }>,
   computedStyles: Array<ComputedStyle>,
   attributeMetadatas: Array<StyleAttributeMetadata>,
-) => ({ children }: any) => (
-  <InspectorPropsContext.Provider
-    value={{
-      selectedViews: selectedViews,
-      editedMultiSelectedProps: multiselectAttributes,
-      targetPath,
-      spiedProps: spiedProps,
-      computedStyles: computedStyles,
-      selectedAttributeMetadatas: attributeMetadatas,
-    }}
-  >
-    {children}
-  </InspectorPropsContext.Provider>
-)
+) => ({ children }: any) => {
+  const spiedPropsWrappedInTargetPath = spiedProps.map((realInnerValue) => {
+    return targetPath.reduceRight((working, pathPart) => {
+      return {
+        [pathPart]: working,
+      }
+    }, realInnerValue)
+  })
+  return (
+    <InspectorPropsContext.Provider
+      value={{
+        selectedViews: selectedViews,
+        editedMultiSelectedProps: multiselectAttributes,
+        targetPath,
+        spiedProps: spiedPropsWrappedInTargetPath,
+        computedStyles: computedStyles,
+        selectedAttributeMetadatas: attributeMetadatas,
+      }}
+    >
+      {children}
+    </InspectorPropsContext.Provider>
+  )
+}
 
 export function getPropsForStyleProp(
   targetPropExpression: string,
