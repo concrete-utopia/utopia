@@ -203,8 +203,22 @@ export function useInspectorInfoLonghandShorthand<
     newTransformedValues: ParsedProperties[LonghandKey] | undefined,
   ) => onSubmitValue(newTransformedValues, true)
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const onUnsetValues = () => {}
+  const onUnsetValues = () => {
+    const longhandPropertyPath = pathMappingFn(longhand, inspectorTargetPath)
+    const shorthandPropertyPath = pathMappingFn(shorthand, inspectorTargetPath)
+
+    const actionsToDispatch = flatMapArray((selectedView) => {
+      if (isInstancePath(selectedView)) {
+        return [
+          unsetProperty(selectedView, longhandPropertyPath),
+          unsetProperty(selectedView, shorthandPropertyPath),
+        ]
+      } else {
+        return []
+      }
+    }, selectedViewsRef.current)
+    dispatch(actionsToDispatch)
+  }
 
   const controlStatus = getControlStatusFromPropertyStatus(propertyStatus)
   return {
