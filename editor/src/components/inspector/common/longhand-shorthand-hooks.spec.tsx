@@ -11,6 +11,9 @@ import {
 import { EditorStore } from '../../editor/store/editor-state'
 import create from 'zustand'
 import { EditorStateContext } from '../../editor/store/store-hook'
+import * as TP from '../../../core/shared/template-path'
+
+const TestSelectedComponent = TP.instancePath(['scene1'], ['aaa', 'bbb'])
 
 function getPaddingHookResult<P extends ParsedPropertiesKeys>(
   longhand: P,
@@ -131,7 +134,7 @@ describe('useInspectorInfo: reading padding shorthand and longhands', () => {
       [{ paddingTop: '0px', paddingRight: '0px', paddingBottom: '0px', paddingLeft: '10px' }],
       [],
     )
-    expect(hookResult.value).toEqual({ unit: null, value: 10 })
+    expect(hookResult.value).toEqual({ unit: 'px', value: 10 })
     expect(hookResult.orderedPropKeys).toEqual([['paddingLeft']])
     expect(hookResult.controlStatus).toEqual('controlled')
   })
@@ -231,7 +234,7 @@ describe('useInspectorInfo: reading padding shorthand and longhands', () => {
 })
 
 describe('useInspectorInfo: updating padding shorthand and longhands', () => {
-  it('updates paddingLeft', () => {
+  it('updates an existing longhand', () => {
     const { hookResult, mockDispatch } = getPaddingHookResult(
       'paddingLeft',
       'padding',
@@ -246,15 +249,200 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
         [
           {
             action: 'SET_PROP',
-            propertyPath: { propertyElements: ['what', 'up'] },
-            target: {
-              element: ['hello', 'eni'],
-              scene: { sceneElementPath: [], type: 'scenepath' },
-            },
+            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
+            target: TestSelectedComponent,
             value: {
               comments: { leadingComments: [], trailingComments: [] },
               type: 'ATTRIBUTE_VALUE',
               value: { unit: 'px', value: 100 },
+            },
+          },
+        ],
+      ],
+    ])
+  })
+  it('updates an existing shorthand', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      'paddingLeft',
+      'padding',
+      [`{ padding: "8px 8px 8px 8px" }`],
+      [{ padding: 8 }],
+      [{ paddingTop: '8px', paddingRight: '8px', paddingBottom: '8px', paddingLeft: '8px' }],
+      [],
+    )
+    hookResult.onSubmitValue(cssNumber(50, 'px'))
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          {
+            action: 'SET_PROP',
+            propertyPath: { propertyElements: ['style', 'padding'] },
+            target: TestSelectedComponent,
+            value: {
+              comments: { leadingComments: [], trailingComments: [] },
+              type: 'ATTRIBUTE_VALUE',
+              value: {
+                paddingTop: { unit: 'px', value: 8 },
+                paddingRight: { unit: 'px', value: 8 },
+                paddingBottom: { unit: 'px', value: 8 },
+                paddingLeft: { unit: 'px', value: 50 },
+              },
+            },
+          },
+        ],
+      ],
+    ])
+  })
+  it('updates a controlled padding shorthand by appending a longhand', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      'paddingRight',
+      'padding',
+      [`{ padding: 10+10 }`],
+      [{ padding: 20 }],
+      [{ paddingTop: '20px', paddingRight: '20px', paddingBottom: '20px', paddingLeft: '20px' }],
+      [],
+    )
+    hookResult.onSubmitValue(cssNumber(5, 'px'))
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          {
+            action: 'SET_PROP',
+            propertyPath: { propertyElements: ['style', 'paddingRight'] },
+            target: TestSelectedComponent,
+            value: {
+              comments: { leadingComments: [], trailingComments: [] },
+              type: 'ATTRIBUTE_VALUE',
+              value: { unit: 'px', value: 5 },
+            },
+          },
+        ],
+      ],
+    ])
+  })
+  it('updates an existing longhand overriding the existing controlled shorthand by changing the longhand', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      'paddingLeft',
+      'padding',
+      [`{ padding: 10+5, paddingLeft: 6 }`],
+      [{ padding: 15, paddingLeft: 6 }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '6px' }],
+      [],
+    )
+    hookResult.onSubmitValue(cssNumber(8, 'px'))
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          {
+            action: 'SET_PROP',
+            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
+            target: TestSelectedComponent,
+            value: {
+              comments: { leadingComments: [], trailingComments: [] },
+              type: 'ATTRIBUTE_VALUE',
+              value: { unit: 'px', value: 8 },
+            },
+          },
+        ],
+      ],
+    ])
+  })
+  it('updates an existing longhand overriding the existing shorthand by changing the longhand', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      'paddingLeft',
+      'padding',
+      [`{ padding: "10px", paddingLeft: 6 }`],
+      [{ padding: 10, paddingLeft: 6 }],
+      [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '6px' }],
+      [],
+    )
+    hookResult.onSubmitValue(cssNumber(8, 'px'))
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          {
+            action: 'SET_PROP',
+            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
+            target: TestSelectedComponent,
+            value: {
+              comments: { leadingComments: [], trailingComments: [] },
+              type: 'ATTRIBUTE_VALUE',
+              value: { unit: 'px', value: 8 },
+            },
+          },
+        ],
+      ],
+    ])
+  })
+  it('updates a longhand that was shadowed by a expression shorthand, the shadowed longhand is deleted', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      'paddingLeft',
+      'padding',
+      [`{ paddingLeft: 4, padding: 4 + 6 }`],
+      [{ paddingLeft: 4, padding: 10 }],
+      [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '4px' }],
+      [],
+    )
+    hookResult.onSubmitValue(cssNumber(8, 'px'))
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          {
+            action: 'UNSET_PROPERTY',
+            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
+            target: {
+              element: ['hello', 'eni'],
+              scene: { sceneElementPath: [], type: 'scenepath' },
+            },
+          },
+          {
+            action: 'SET_PROP',
+            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
+            target: TestSelectedComponent,
+            value: {
+              comments: { leadingComments: [], trailingComments: [] },
+              type: 'ATTRIBUTE_VALUE',
+              value: { unit: 'px', value: 8 },
+            },
+          },
+        ],
+      ],
+    ])
+  })
+  it('updates a longhand that was shadowed by a shorthand, the shadowed longhand is deleted', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      'paddingLeft',
+      'padding',
+      [`{ paddingLeft: 6, padding: "4px 8px 4px 8px" }`],
+      [{ paddingLeft: 6, padding: '4px 8px 4px 8px' }],
+      [{ paddingTop: '4px', paddingRight: '8px', paddingBottom: '4px', paddingLeft: '8px' }],
+      [],
+    )
+    hookResult.onSubmitValue(cssNumber(18, 'px'))
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          {
+            action: 'UNSET_PROPERTY',
+            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
+            target: {
+              element: ['hello', 'eni'],
+              scene: { sceneElementPath: [], type: 'scenepath' },
+            },
+          },
+          {
+            action: 'SET_PROP',
+            propertyPath: { propertyElements: ['style', 'padding'] },
+            target: TestSelectedComponent,
+            value: {
+              comments: { leadingComments: [], trailingComments: [] },
+              type: 'ATTRIBUTE_VALUE',
+              value: {
+                paddingTop: { unit: 'px', value: 4 },
+                paddingRight: { unit: 'px', value: 8 },
+                paddingBottom: { unit: 'px', value: 4 },
+                paddingLeft: { unit: 'px', value: 18 },
+              },
             },
           },
         ],
