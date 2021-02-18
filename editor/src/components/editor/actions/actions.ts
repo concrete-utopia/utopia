@@ -105,6 +105,7 @@ import {
   updateParsedTextFileHighlightBounds,
   assetFile,
   applyToAllUIJSFiles,
+  updateFileContents,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -150,6 +151,7 @@ import {
   textFileContents,
   textFile,
   codeFile,
+  unparsed,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -354,6 +356,7 @@ import {
   AddStoryboardFile,
   SendLinterRequestMessage,
   UpdateChildText,
+  UpdateFromCodeEditor,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -3476,6 +3479,27 @@ export const UPDATE_FNS = {
       },
       parseOrPrintInFlight: false, // only ever clear it here
     }
+  },
+  UPDATE_FROM_CODE_EDITOR: (
+    action: UpdateFromCodeEditor,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+    let updatedFile: ProjectFile
+
+    if (existing == null || !isTextFile(existing)) {
+      updatedFile = textFile(
+        textFileContents(action.fileContents, unparsed, RevisionsState.CodeAhead),
+        null,
+        Date.now(),
+      )
+    } else {
+      updatedFile = updateFileContents(action.fileContents, existing, true)
+    }
+
+    const updateAction = updateFile(action.filePath, updatedFile, true)
+    return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch)
   },
   CLEAR_PARSE_OR_PRINT_IN_FLIGHT: (
     action: ClearParseOrPrintInFlight,

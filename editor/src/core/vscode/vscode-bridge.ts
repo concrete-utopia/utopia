@@ -1,6 +1,13 @@
-import { ProjectContentTreeRoot, walkContentsTreeAsync } from '../../components/assets'
+import {
+  getProjectFileFromTree,
+  isProjectContentFile,
+  ProjectContentsTree,
+  ProjectContentTreeRoot,
+  walkContentsTreeAsync,
+  zipContentsTreeAsync,
+} from '../../components/assets'
 import { EditorDispatch } from '../../components/editor/action-types'
-import { deleteFile, updateFromWorker } from '../../components/editor/actions/action-creators'
+import { deleteFile, updateFromCodeEditor } from '../../components/editor/actions/action-creators'
 import { isDirectory } from '../model/project-file-utils'
 import {
   initializeBrowserFS,
@@ -13,15 +20,9 @@ import {
   sendMessage,
   UtopiaInbox,
   UtopiaVSCodeMessage,
+  deletePath,
 } from 'utopia-vscode-common'
-import {
-  isTextFile,
-  ProjectFile,
-  RevisionsState,
-  textFile,
-  textFileContents,
-  unparsed,
-} from '../shared/project-file-types'
+import { isTextFile, ProjectFile } from '../shared/project-file-types'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -56,9 +57,9 @@ export async function writeProjectFile(
       return writeFile(toFSPath(projectID, projectPath), fileContents)
     }
     case 'ASSET_FILE':
-      throw new Error(`Can't handle asset file at ${projectPath}`)
+      return Promise.resolve()
     case 'IMAGE_FILE':
-      throw new Error(`Can't handle image file at ${projectPath}`)
+      return Promise.resolve()
   }
 }
 
@@ -78,12 +79,7 @@ export async function writeProjectContents(
 export function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
   function onCreated(fsPath: string): void {
     readFileWithEncoding(fsPath, 'utf-8').then((text) => {
-      const file = textFile(
-        textFileContents(text, unparsed, RevisionsState.CodeAhead),
-        null,
-        Date.now(),
-      )
-      const action = updateFromWorker(fromFSPath(projectID, fsPath), file, 'Code')
+      const action = updateFromCodeEditor(fromFSPath(projectID, fsPath), text)
       dispatch([action], 'everyone')
     })
   }
@@ -113,4 +109,79 @@ export async function initVSCodeBridge(
 
 export async function sendOpenFileMessage(filePath: string): Promise<void> {
   return sendMessage(openFileMessage(filePath))
+}
+
+export async function applyProjectContentChanges(
+  projectID: string,
+  oldContents: ProjectContentTreeRoot,
+  newContents: ProjectContentTreeRoot,
+): Promise<void> {
+  async function applyChanges(
+    fullPath: string,
+    firstContents: ProjectContentsTree,
+    secondContents: ProjectContentsTree,
+  ): Promise<boolean> {
+    const fsPath = toFSPath(projectID, fullPath)
+    if (isProjectContentFile(firstContents)) {
+      if (isProjectContentFile(secondContents)) {
+        if (firstContents.content === secondContents.content) {
+          // Do nothing, no change.
+        } else if (isTextFile(firstContents.content) && isTextFile(secondContents.content)) {
+          // We need to be careful around only sending this across if the text has been updated.
+          const firstTextContent = firstContents.content
+          const secondTextContent = secondContents.content
+          if (firstTextContent.fileContents.code === secondTextContent.fileContents.code) {
+            // Do nothing, no change.
+          } else {
+            await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
+          }
+        } else {
+          await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
+        }
+      } else {
+        await deletePath(fsPath, true)
+        await ensureDirectoryExists(fsPath)
+      }
+    } else {
+      if (isProjectContentFile(secondContents)) {
+        await deletePath(fsPath, true)
+        await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
+      } else {
+        // Do nothing, both sides are a directory.
+      }
+    }
+
+    return Promise.resolve(true)
+  }
+
+  async function onElement(
+    fullPath: string,
+    firstContents: ProjectContentsTree | null,
+    secondContents: ProjectContentsTree | null,
+  ): Promise<boolean> {
+    const fsPath = toFSPath(projectID, fullPath)
+    if (firstContents == null) {
+      if (secondContents == null) {
+        // Do nothing, nothing exists.
+        return Promise.resolve(false)
+      } else {
+        await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
+        return Promise.resolve(true)
+      }
+    } else {
+      if (secondContents == null) {
+        // Value does not exist, delete it.
+        await deletePath(fsPath, true)
+        return Promise.resolve(false)
+      } else {
+        if (firstContents === secondContents) {
+          // Same value, stop here.
+          return Promise.resolve(false)
+        } else {
+          return applyChanges(fullPath, firstContents, secondContents)
+        }
+      }
+    }
+  }
+  await zipContentsTreeAsync(oldContents, newContents, onElement)
 }

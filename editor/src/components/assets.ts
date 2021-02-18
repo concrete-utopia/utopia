@@ -11,6 +11,7 @@ import Utils from '../utils/utils'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { fastForEach } from '../core/shared/utils'
 import { mapValues } from '../core/shared/object-utils'
+import { emptySet } from '../core/shared/set-utils'
 
 interface ImageAsset {
   assetPath: string
@@ -75,6 +76,18 @@ export function projectContentFile(
 }
 
 export type ProjectContentsTree = ProjectContentDirectory | ProjectContentFile
+
+export function isProjectContentDirectory(
+  projectContentsTree: ProjectContentsTree,
+): projectContentsTree is ProjectContentDirectory {
+  return projectContentsTree.type === 'PROJECT_CONTENT_DIRECTORY'
+}
+
+export function isProjectContentFile(
+  projectContentsTree: ProjectContentsTree,
+): projectContentsTree is ProjectContentFile {
+  return projectContentsTree.type === 'PROJECT_CONTENT_FILE'
+}
 
 export function getProjectFileFromTree(tree: ProjectContentsTree): ProjectFile {
   switch (tree.type) {
@@ -231,6 +244,39 @@ export async function walkContentsTreeAsync(
       default:
         const _exhaustiveCheck: never = treeElement
         throw new Error(`Unhandled tree element ${JSON.stringify(treeElement)}`)
+    }
+  }
+}
+
+export async function zipContentsTreeAsync(
+  firstTree: ProjectContentTreeRoot,
+  secondTree: ProjectContentTreeRoot,
+  onElement: (
+    fullPath: string,
+    firstContents: ProjectContentsTree | null,
+    secondContents: ProjectContentsTree | null,
+  ) => Promise<boolean>,
+): Promise<void> {
+  let keys: Set<string> = emptySet()
+  Object.keys(firstTree).forEach(keys.add, keys)
+  Object.keys(secondTree).forEach(keys.add, keys)
+  for (const key of keys) {
+    const firstContents = firstTree[key] ?? null
+    const secondContents = secondTree[key] ?? null
+    if (firstContents == null && secondContents == null) {
+      throw new Error(`Invalid state of both elements being false reached.`)
+    } else {
+      const fullPath = firstContents?.fullPath ?? secondContents?.fullPath
+      // eslint-disable-next-line no-await-in-loop
+      const shouldContinueDeeper = await onElement(fullPath, firstContents, secondContents)
+      if (
+        isProjectContentDirectory(firstContents) &&
+        isProjectContentDirectory(secondContents) &&
+        shouldContinueDeeper
+      ) {
+        // eslint-disable-next-line no-await-in-loop
+        await zipContentsTreeAsync(firstContents.children, secondContents.children, onElement)
+      }
     }
   }
 }

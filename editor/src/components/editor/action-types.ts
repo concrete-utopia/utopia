@@ -563,6 +563,12 @@ export interface UpdateFromWorker {
   codeOrModel: 'Code' | 'Model'
 }
 
+export interface UpdateFromCodeEditor {
+  action: 'UPDATE_FROM_CODE_EDITOR'
+  filePath: string
+  fileContents: string
+}
+
 export interface ClearParseOrPrintInFlight {
   action: 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT'
 }
@@ -858,6 +864,7 @@ export type EditorAction =
   | ReorderEditorTabs
   | UpdateFile
   | UpdateFromWorker
+  | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight
   | ClearImageFileBlob
   | AddFolder

@@ -196,6 +196,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch)
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, derivedState)
+    case 'UPDATE_FROM_CODE_EDITOR':
+      return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(action, state, dispatch)
     case 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT':
       return UPDATE_FNS.CLEAR_PARSE_OR_PRINT_IN_FLIGHT(action, state)
     case 'ADD_FOLDER':

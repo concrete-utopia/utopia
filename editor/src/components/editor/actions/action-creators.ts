@@ -177,6 +177,7 @@ import type {
   UpdateThumbnailGenerated,
   WrapInLayoutable,
   WrapInView,
+  UpdateFromCodeEditor,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -886,6 +887,14 @@ export function updateFromWorker(
     filePath: filePath,
     file: file,
     codeOrModel: codeOrModel,
+  }
+}
+
+export function updateFromCodeEditor(filePath: string, fileContents: string): UpdateFromCodeEditor {
+  return {
+    action: 'UPDATE_FROM_CODE_EDITOR',
+    filePath: filePath,
+    fileContents: fileContents,
   }
 }
 

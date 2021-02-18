@@ -69,6 +69,7 @@ import {
   walkContentsTree,
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
+import { applyProjectContentChanges } from '../../../core/vscode/vscode-bridge'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -408,6 +409,13 @@ export function editorDispatch(
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
     saveStoredState(storedState.editor.id, stateToStore)
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
+  }
+  if (storedState.editor.id != null) {
+    applyProjectContentChanges(
+      storedState.editor.id,
+      storedState.editor.projectContents,
+      frozenEditorState.projectContents,
+    )
   }
 
   if (nameUpdated && frozenEditorState.id != null) {
