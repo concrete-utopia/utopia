@@ -1,21 +1,24 @@
 import {
+  childPaths,
   createDirectory,
   deletePath,
   exists,
   readFileWithEncoding,
-  watch,
   writeFileWithEncoding,
 } from './browserfs-utils'
+import { parseMessage, UtopiaVSCodeMessage } from './messages'
 import { appendToPath } from './path-utils'
 
-type Mailbox = 'VSCODE_INBOX' | 'UTOPIA_INBOX'
-const VSCodeInbox: Mailbox = 'VSCODE_INBOX'
-const UtopiaInbox: Mailbox = 'UTOPIA_INBOX'
+type Mailbox = 'VSCODE_MAILBOX' | 'UTOPIA_MAILBOX'
+export const VSCodeInbox: Mailbox = 'VSCODE_MAILBOX'
+export const UtopiaInbox: Mailbox = 'UTOPIA_MAILBOX'
 const MailboxReadyMessageName = 'READY'
 
 let inbox: Mailbox
 let outbox: Mailbox
+let onMessageCallback: (message: UtopiaVSCodeMessage) => void
 let counter: number = 0
+const POLLING_TIMEOUT = 100
 
 function pathForMailbox(mailbox: Mailbox): string {
   return `/${mailbox}`
@@ -32,11 +35,11 @@ function generateMessageName(): string {
   return `${counter++}`
 }
 
-export async function sendMessageWithContent(content: string): Promise<void> {
-  return sendMessage(generateMessageName(), content)
+export async function sendMessage(message: UtopiaVSCodeMessage): Promise<void> {
+  return sendNamedMessage(generateMessageName(), JSON.stringify(message))
 }
 
-async function sendMessage(messageName: string, content: string): Promise<void> {
+async function sendNamedMessage(messageName: string, content: string): Promise<void> {
   return writeFileWithEncoding(pathForOutboxMessage(messageName), content)
 }
 
@@ -45,7 +48,7 @@ async function initOutbox(outboxToUse: Mailbox): Promise<void> {
   const outboxPath = pathForMailbox(outbox)
   await deletePath(outboxPath, true)
   await createDirectory(outboxPath)
-  await sendMessage(MailboxReadyMessageName, '')
+  await sendNamedMessage(MailboxReadyMessageName, '')
 }
 
 async function waitUntilInboxReady(): Promise<void> {
@@ -59,32 +62,37 @@ async function waitUntilInboxReady(): Promise<void> {
   }
 }
 
-async function readAndDeleteMessage(messagePath: string): Promise<string> {
+async function receiveMessage(messagePath: string): Promise<UtopiaVSCodeMessage> {
   const content = await readFileWithEncoding(messagePath)
   await deletePath(messagePath, false)
-  return content
+  return parseMessage(content)
 }
 
-async function initInbox(inboxToUse: Mailbox, onMessage: (content: string) => void): Promise<void> {
-  inbox = inboxToUse
-  const inboxPath = pathForMailbox(inbox)
-  let inboxReady = false
-  await waitUntilInboxReady()
-  const onNewMessage = (newMessagePath: string) =>
-    readAndDeleteMessage(newMessagePath).then(onMessage)
-  watch(
-    inboxPath,
-    true,
-    onNewMessage,
-    () => {},
-    () => {},
-  )
+async function pollInbox(): Promise<void> {
+  const messagePaths = await childPaths(pathForMailbox(inbox))
+  if (messagePaths.length > 0) {
+    const messages = await Promise.all(messagePaths.map(receiveMessage))
+    messages.forEach(onMessageCallback)
+  }
+  setTimeout(pollInbox, POLLING_TIMEOUT)
 }
 
-export async function init(
+async function initInbox(
   inboxToUse: Mailbox,
-  onMessage: (content: string) => void,
+  onMessage: (message: UtopiaVSCodeMessage) => void,
+): Promise<void> {
+  inbox = inboxToUse
+  onMessageCallback = onMessage
+  await waitUntilInboxReady()
+  pollInbox()
+}
+
+export async function initMailbox(
+  inboxToUse: Mailbox,
+  onMessage: (message: UtopiaVSCodeMessage) => void,
 ): Promise<void> {
   await initOutbox(inboxToUse === VSCodeInbox ? UtopiaInbox : VSCodeInbox)
   await initInbox(inboxToUse, onMessage)
 }
+
+// TODO Do we need an unsubscribe feature?

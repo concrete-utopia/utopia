@@ -105,14 +105,19 @@ export async function pathIsDirectory(path: string): Promise<boolean> {
 }
 
 export async function deletePath(path: string, recursive: boolean): Promise<string[]> {
-  const targetPaths = recursive ? await getDescendentPaths(path, true) : [path]
-  const pathsToDelete = [...targetPaths].reverse() // Delete all paths in reverse order
+  const pathExists = await exists(path)
+  if (pathExists) {
+    const targetPaths = recursive ? await getDescendentPaths(path, true) : [path]
+    const pathsToDelete = [...targetPaths].reverse() // Delete all paths in reverse order
 
-  for (const pathToDelete of pathsToDelete) {
-    await _deletePath(pathToDelete)
+    for (const pathToDelete of pathsToDelete) {
+      await _deletePath(pathToDelete)
+    }
+
+    return targetPaths
+  } else {
+    return [path]
   }
-
-  return targetPaths
 }
 
 async function _deletePath(path: string): Promise<void> {

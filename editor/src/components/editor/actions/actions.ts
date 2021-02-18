@@ -490,6 +490,7 @@ import { emptyComments } from '../../../core/workers/parser-printer/parser-print
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 import {
+  initVSCodeBridge,
   watchForChanges,
   writeProjectContents,
   writeProjectFile,
@@ -1410,9 +1411,7 @@ export const UPDATE_FNS = {
     )
     if (action.projectId != null) {
       const nonNullProjectID = action.projectId
-      writeProjectContents(nonNullProjectID, parsedProjectFiles).then(() => {
-        watchForChanges(nonNullProjectID, dispatch)
-      })
+      initVSCodeBridge(nonNullProjectID, parsedProjectFiles, dispatch)
     }
     const parsedModel = {
       ...migratedModel,

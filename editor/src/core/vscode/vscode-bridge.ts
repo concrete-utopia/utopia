@@ -8,6 +8,9 @@ import {
   ensureDirectoryExists,
   watch,
   readFileWithEncoding,
+  initMailbox,
+  UtopiaInbox,
+  UtopiaVSCodeMessage,
 } from 'utopia-vscode-common'
 import {
   isTextFile,
@@ -61,7 +64,6 @@ export async function writeProjectContents(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
 ): Promise<void> {
-  await initializeBrowserFS()
   await walkContentsTreeAsync(projectContents, (fullPath, file) => {
     if (isTextFile(file) || isDirectory(file)) {
       return writeProjectFile(projectID, fullPath, file)
@@ -92,4 +94,17 @@ export function watchForChanges(projectID: string, dispatch: EditorDispatch): vo
     dispatch([action], 'everyone')
   }
   watch(toFSPath(projectID, '/'), true, onCreated, onModified, onDeleted)
+}
+
+export async function initVSCodeBridge(
+  projectID: string,
+  projectContents: ProjectContentTreeRoot,
+  dispatch: EditorDispatch,
+): Promise<void> {
+  await initializeBrowserFS()
+  initMailbox(UtopiaInbox, (message: UtopiaVSCodeMessage) => {
+    /* Do nothing */
+  })
+  await writeProjectContents(projectID, projectContents)
+  watchForChanges(projectID, dispatch)
 }
