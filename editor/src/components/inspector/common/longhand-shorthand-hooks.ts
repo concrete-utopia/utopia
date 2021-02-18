@@ -37,47 +37,50 @@ function getShadowedLonghandShorthandValue<
   shorthand: ShorthandKey,
   longhandPropertyStatus: PropertyStatus,
   shorthandPropertyStatus: PropertyStatus,
-  longhandValue: ParsedValues<LonghandKey>,
-  shorthandValue: ParsedValues<ShorthandKey>,
+  longhandValue: ParsedProperties[LonghandKey],
+  shorthandValue: ParsedProperties[ShorthandKey],
   orderedPropKeys: (LonghandKey | ShorthandKey)[][], // multiselect
-): { value: ParsedProperties[LonghandKey] | undefined; propertyStatus: PropertyStatus } {
+): { value: ParsedProperties[LonghandKey]; propertyStatus: PropertyStatus } {
   const allPropKeysEqual = orderedPropKeys.every((propKeys) => {
     return arrayEquals(propKeys, orderedPropKeys[0])
   })
-  if (!allPropKeysEqual) {
-    return {
-      value: undefined,
-      propertyStatus: {
-        ...longhandPropertyStatus,
-        set: true,
-        controlled: true,
-        overwritable: false,
-        identical: false,
-      },
-    }
-  }
 
   const propKeys = orderedPropKeys[0] ?? []
   const lastKey = last(propKeys)
   if (lastKey == null) {
     return {
-      value: undefined,
+      value: longhandValue,
       propertyStatus: longhandPropertyStatus,
     }
   } else {
     if (lastKey === longhand) {
       return {
-        value: longhandValue[longhand],
-        propertyStatus: longhandPropertyStatus,
+        value: longhandValue,
+        propertyStatus: allPropKeysEqual
+          ? longhandPropertyStatus
+          : {
+              ...longhandPropertyStatus,
+              set: true,
+              controlled: true,
+              overwritable: false,
+              identical: false,
+            },
       }
     } else {
       // Important: we ASSUME that the transformed shorthand value is an object,
       // where the keys are the longhand keys and the values are the individual longhand values
-      const propValue = shorthandValue[shorthand] as any
-      if (longhand in propValue) {
+      if (longhand in shorthandValue) {
         return {
-          value: propValue?.[longhand] as ParsedProperties[LonghandKey] | undefined,
-          propertyStatus: shorthandPropertyStatus,
+          value: (shorthandValue as any)?.[longhand] as ParsedProperties[LonghandKey],
+          propertyStatus: allPropKeysEqual
+            ? shorthandPropertyStatus
+            : {
+                ...shorthandPropertyStatus,
+                set: true,
+                controlled: true,
+                overwritable: false,
+                identical: false,
+              },
         }
       } else {
         throw new Error(
@@ -95,7 +98,7 @@ export function useInspectorInfoLonghandShorthand<
   longhand: LonghandKey,
   shorthand: ShorthandKey,
   pathMappingFn: PathMappingFn<LonghandKey | ShorthandKey>,
-): Omit<InspectorInfo<ParsedProperties[LonghandKey] | undefined>, 'useSubmitValueFactory'> & {
+): Omit<InspectorInfo<ParsedProperties[LonghandKey]>, 'useSubmitValueFactory'> & {
   orderedPropKeys: Array<Array<LonghandKey | ShorthandKey>>
 } {
   const dispatch = useEditorState(
@@ -109,7 +112,7 @@ export function useInspectorInfoLonghandShorthand<
   const orderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [longhand, shorthand])
   const longhandInfo = useInspectorInfo(
     [longhand],
-    (v) => v,
+    (v) => v[longhand],
     () => {
       return null as any
     },
@@ -117,7 +120,7 @@ export function useInspectorInfoLonghandShorthand<
   )
   const shorthandInfo = useInspectorInfo(
     [shorthand],
-    (v) => v,
+    (v) => v[shorthand],
     () => {
       return null as any
     },
@@ -134,14 +137,14 @@ export function useInspectorInfoLonghandShorthand<
   )
 
   const onSubmitValue = (
-    newTransformedValues: ParsedProperties[LonghandKey] | undefined,
+    newTransformedValues: ParsedProperties[LonghandKey],
     transient?: boolean | undefined,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
   ) => {
     const allPropKeysEqual = orderedPropKeys.every((propKeys) => {
       return arrayEquals(propKeys, orderedPropKeys[0])
     })
-    if (!allPropKeysEqual || newTransformedValues == null) {
+    if (!allPropKeysEqual) {
       // we do nothing for now. we cannot ensure that we can make a sensible update and surface it on the UI as well
       return
     }
@@ -160,7 +163,7 @@ export function useInspectorInfoLonghandShorthand<
       // let's figure out the new value for the prop
       const currentValue = shorthandInfo.value
       const updatedValue = ({
-        ...(currentValue[shorthand] as any),
+        ...(currentValue as any),
         [longhand]: newTransformedValues, // VERY IMPORTANT here we assume that the longhand key is a valid key in the parsed shorthand value!!
       } as any) as ParsedProperties[ShorthandKey]
       const longhandPropertyPath = pathMappingFn(longhand, inspectorTargetPath)
@@ -199,9 +202,8 @@ export function useInspectorInfoLonghandShorthand<
     }
   }
 
-  const onTransientSubmitValue = (
-    newTransformedValues: ParsedProperties[LonghandKey] | undefined,
-  ) => onSubmitValue(newTransformedValues, true)
+  const onTransientSubmitValue = (newTransformedValues: ParsedProperties[LonghandKey]) =>
+    onSubmitValue(newTransformedValues, true)
 
   const onUnsetValues = () => {
     const longhandPropertyPath = pathMappingFn(longhand, inspectorTargetPath)

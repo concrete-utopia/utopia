@@ -210,14 +210,14 @@ describe('useInspectorInfo: reading padding shorthand and longhands', () => {
       'paddingLeft',
       'padding',
       [`{ paddingLeft: 5 }`, `{ padding: 5, paddingLeft: 5 }`],
-      [{ paddingLeft: 5 }, { paddingLeft: 5 }],
+      [{ paddingLeft: 5 }, { padding: 5, paddingLeft: 5 }],
       [
         { paddingTop: '0px', paddingRight: '0px', paddingBottom: '0px', paddingLeft: '5px' },
         { paddingTop: '0px', paddingRight: '0px', paddingBottom: '0px', paddingLeft: '5px' },
       ],
       [],
     )
-    expect(hookResult.value).toEqual(undefined)
+    expect(hookResult.value).toEqual({ unit: null, value: 5 })
     expect(hookResult.orderedPropKeys).toEqual([['paddingLeft'], ['padding', 'paddingLeft']])
     expect(hookResult.controlStatus).toEqual('multiselect-unoverwritable')
   })
@@ -234,7 +234,7 @@ describe('useInspectorInfo: reading padding shorthand and longhands', () => {
       ],
       [],
     )
-    expect(hookResult.value).toEqual(undefined)
+    expect(hookResult.value).toEqual({ unit: null, value: 5 })
     expect(hookResult.orderedPropKeys).toEqual([['paddingLeft'], ['paddingLeft', 'padding']])
     expect(hookResult.controlStatus).toEqual('multiselect-unoverwritable')
   })
