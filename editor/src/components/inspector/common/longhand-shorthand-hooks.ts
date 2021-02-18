@@ -151,8 +151,12 @@ export function useInspectorInfoLonghandShorthand<
       propkeysToUse.length === 2 && propkeysToUse[0] === longhand
 
     const dominantPropKey = last(propkeysToUse)
-    if (dominantPropKey === shorthand && !shorthandInfo.propertyStatus.controlled) {
-      // the shorthand key is the dominant, and it _can_ be updated
+    if (
+      dominantPropKey === shorthand &&
+      !shorthandInfo.propertyStatus.controlled &&
+      shorthandInfo.propertyStatus.overwritable
+    ) {
+      // the shorthand key is the dominant AND it can be updated
       // let's figure out the new value for the prop
       const currentValue = shorthandInfo.value
       const updatedValue = ({
