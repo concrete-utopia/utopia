@@ -12,7 +12,11 @@ import {
   getControlStyles,
   PropertyStatus,
 } from '../../../uuiui-deps'
-import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
+import {
+  setProp_UNSAFE,
+  transientActions,
+  unsetProperty,
+} from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 import { ParsedProperties, ParsedPropertiesKeys, printCSSValue } from './css-utils'
 import {
@@ -158,44 +162,40 @@ export function useInspectorInfoLonghandShorthand<
       const longhandPropertyPath = pathMappingFn(longhand, inspectorTargetPath)
       const shorthandPropertyPath = pathMappingFn(shorthand, inspectorTargetPath)
       const printedValue = printCSSValue(shorthand, updatedValue)
-      dispatch(
-        flatMapArray((sv) => {
-          if (isInstancePath(sv)) {
-            return [
-              ...(doWeHaveToRemoveAShadowedLonghand
-                ? [unsetProperty(sv, longhandPropertyPath)]
-                : []),
-              setProp_UNSAFE(
-                sv, // who is sv?
-                shorthandPropertyPath,
-                printedValue,
-              ),
-            ]
-          } else {
-            return []
-          }
-        }, selectedViewsRef.current),
-      )
+      const actionsToDispatch = flatMapArray((sv) => {
+        if (isInstancePath(sv)) {
+          return [
+            ...(doWeHaveToRemoveAShadowedLonghand ? [unsetProperty(sv, longhandPropertyPath)] : []),
+            setProp_UNSAFE(
+              sv, // who is sv?
+              shorthandPropertyPath,
+              printedValue,
+            ),
+          ]
+        } else {
+          return []
+        }
+      }, selectedViewsRef.current)
+      dispatch(transient ? [transientActions(actionsToDispatch)] : actionsToDispatch)
     } else {
       // we either have a dominant longhand key, or we need to append a new one
       const propertyPath = pathMappingFn(longhand, inspectorTargetPath)
       const printedValue = printCSSValue(longhand, newTransformedValues)
-      dispatch(
-        flatMapArray((sv) => {
-          if (isInstancePath(sv)) {
-            return [
-              ...(doWeHaveToRemoveAShadowedLonghand ? [unsetProperty(sv, propertyPath)] : []),
-              setProp_UNSAFE(
-                sv, // who is sv?
-                propertyPath,
-                printedValue,
-              ),
-            ]
-          } else {
-            return []
-          }
-        }, selectedViewsRef.current),
-      )
+      const actionsToDispatch = flatMapArray((sv) => {
+        if (isInstancePath(sv)) {
+          return [
+            ...(doWeHaveToRemoveAShadowedLonghand ? [unsetProperty(sv, propertyPath)] : []),
+            setProp_UNSAFE(
+              sv, // who is sv?
+              propertyPath,
+              printedValue,
+            ),
+          ]
+        } else {
+          return []
+        }
+      }, selectedViewsRef.current)
+      dispatch(transient ? [transientActions(actionsToDispatch)] : actionsToDispatch)
     }
   }
 
