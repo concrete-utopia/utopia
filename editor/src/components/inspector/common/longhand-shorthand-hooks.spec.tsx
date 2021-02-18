@@ -12,6 +12,7 @@ import { EditorStore } from '../../editor/store/editor-state'
 import create from 'zustand'
 import { EditorStateContext } from '../../editor/store/store-hook'
 import * as TP from '../../../core/shared/template-path'
+import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 
 const TestSelectedComponent = TP.instancePath(['scene1'], ['aaa', 'bbb'])
 
@@ -247,16 +248,15 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          {
-            action: 'SET_PROP',
-            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
-            target: TestSelectedComponent,
-            value: {
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            { propertyElements: ['style', 'paddingLeft'] },
+            {
               comments: { leadingComments: [], trailingComments: [] },
               type: 'ATTRIBUTE_VALUE',
               value: { unit: 'px', value: 100 },
             },
-          },
+          ),
         ],
       ],
     ])
@@ -274,11 +274,10 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          {
-            action: 'SET_PROP',
-            propertyPath: { propertyElements: ['style', 'padding'] },
-            target: TestSelectedComponent,
-            value: {
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            { propertyElements: ['style', 'padding'] },
+            {
               comments: { leadingComments: [], trailingComments: [] },
               type: 'ATTRIBUTE_VALUE',
               value: {
@@ -288,7 +287,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
                 paddingLeft: { unit: 'px', value: 50 },
               },
             },
-          },
+          ),
         ],
       ],
     ])
@@ -306,16 +305,15 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          {
-            action: 'SET_PROP',
-            propertyPath: { propertyElements: ['style', 'paddingRight'] },
-            target: TestSelectedComponent,
-            value: {
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            { propertyElements: ['style', 'paddingRight'] },
+            {
               comments: { leadingComments: [], trailingComments: [] },
               type: 'ATTRIBUTE_VALUE',
               value: { unit: 'px', value: 5 },
             },
-          },
+          ),
         ],
       ],
     ])
@@ -333,16 +331,15 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          {
-            action: 'SET_PROP',
-            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
-            target: TestSelectedComponent,
-            value: {
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            { propertyElements: ['style', 'paddingLeft'] },
+            {
               comments: { leadingComments: [], trailingComments: [] },
               type: 'ATTRIBUTE_VALUE',
               value: { unit: 'px', value: 8 },
             },
-          },
+          ),
         ],
       ],
     ])
@@ -360,16 +357,15 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          {
-            action: 'SET_PROP',
-            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
-            target: TestSelectedComponent,
-            value: {
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            { propertyElements: ['style', 'paddingLeft'] },
+            {
               comments: { leadingComments: [], trailingComments: [] },
               type: 'ATTRIBUTE_VALUE',
               value: { unit: 'px', value: 8 },
             },
-          },
+          ),
         ],
       ],
     ])
@@ -387,24 +383,16 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          {
-            action: 'UNSET_PROPERTY',
-            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
-            target: {
-              element: ['hello', 'eni'],
-              scene: { sceneElementPath: [], type: 'scenepath' },
-            },
-          },
-          {
-            action: 'SET_PROP',
-            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
-            target: TestSelectedComponent,
-            value: {
+          unsetProperty(TestSelectedComponent, { propertyElements: ['style', 'paddingLeft'] }),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            { propertyElements: ['style', 'paddingLeft'] },
+            {
               comments: { leadingComments: [], trailingComments: [] },
               type: 'ATTRIBUTE_VALUE',
               value: { unit: 'px', value: 8 },
             },
-          },
+          ),
         ],
       ],
     ])
@@ -422,19 +410,11 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          {
-            action: 'UNSET_PROPERTY',
-            propertyPath: { propertyElements: ['style', 'paddingLeft'] },
-            target: {
-              element: ['hello', 'eni'],
-              scene: { sceneElementPath: [], type: 'scenepath' },
-            },
-          },
-          {
-            action: 'SET_PROP',
-            propertyPath: { propertyElements: ['style', 'padding'] },
-            target: TestSelectedComponent,
-            value: {
+          unsetProperty(TestSelectedComponent, { propertyElements: ['style', 'paddingLeft'] }),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            { propertyElements: ['style', 'padding'] },
+            {
               comments: { leadingComments: [], trailingComments: [] },
               type: 'ATTRIBUTE_VALUE',
               value: {
@@ -444,7 +424,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
                 paddingLeft: { unit: 'px', value: 18 },
               },
             },
-          },
+          ),
         ],
       ],
     ])
