@@ -139,7 +139,6 @@ export function useInspectorInfoLonghandShorthand<
   const onSubmitValue = (
     newTransformedValues: ParsedProperties[LonghandKey],
     transient?: boolean | undefined,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
   ) => {
     const allPropKeysEqual = orderedPropKeys.every((propKeys) => {
       return arrayEquals(propKeys, orderedPropKeys[0])
