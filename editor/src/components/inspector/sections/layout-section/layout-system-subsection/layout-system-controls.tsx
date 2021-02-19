@@ -31,6 +31,7 @@ import {
   FunctionIcons,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
+import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -158,6 +159,7 @@ const layoutSystemOptions = [
 ]
 
 export const paddingPropsToUnset = [
+  createLayoutPropertyPath('padding'),
   createLayoutPropertyPath('paddingLeft'),
   createLayoutPropertyPath('paddingTop'),
   createLayoutPropertyPath('paddingRight'),
@@ -165,10 +167,26 @@ export const paddingPropsToUnset = [
 ]
 
 export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
-  const flexPaddingTop = useInspectorLayoutInfo('paddingTop')
-  const flexPaddingRight = useInspectorLayoutInfo('paddingRight')
-  const flexPaddingBottom = useInspectorLayoutInfo('paddingBottom')
-  const flexPaddingLeft = useInspectorLayoutInfo('paddingLeft')
+  const flexPaddingTop = useInspectorInfoLonghandShorthand(
+    'paddingTop',
+    'padding',
+    createLayoutPropertyPath,
+  )
+  const flexPaddingRight = useInspectorInfoLonghandShorthand(
+    'paddingRight',
+    'padding',
+    createLayoutPropertyPath,
+  )
+  const flexPaddingBottom = useInspectorInfoLonghandShorthand(
+    'paddingBottom',
+    'padding',
+    createLayoutPropertyPath,
+  )
+  const flexPaddingLeft = useInspectorInfoLonghandShorthand(
+    'paddingLeft',
+    'padding',
+    createLayoutPropertyPath,
+  )
 
   const flexPaddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     flexPaddingTop.onSubmitValue,

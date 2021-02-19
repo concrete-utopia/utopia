@@ -3898,7 +3898,7 @@ function isNumberParser(simpleValue: unknown): Either<string, number> {
   }
 }
 
-type DOMEventHandlerMetadata = ModifiableAttribute
+type DOMEventHandlerMetadata = JSXAttribute
 
 export function parseDOMEventHandlerMetadata(
   _: unknown,
@@ -3914,7 +3914,7 @@ export function parseDOMEventHandlerMetadata(
   }
 }
 
-export function printDOMEventHandlerMetadata(value: ModifiableAttribute): ModifiableAttribute {
+export function printDOMEventHandlerMetadata(value: JSXAttribute): JSXAttribute {
   return value
 }
 
@@ -4691,7 +4691,7 @@ export function parseAnyParseableValue<K extends keyof ParsedProperties>(
 }
 
 // hmmmm
-type PrintedValue = ModifiableAttribute
+type PrintedValue = JSXAttribute
 
 type Printer<V extends ValueOf<ParsedProperties>> = (value: V) => PrintedValue
 
