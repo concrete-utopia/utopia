@@ -114,7 +114,7 @@ export function useInspectorInfoLonghandShorthand<
     [longhand],
     (v) => v[longhand],
     () => {
-      return null as any
+      throw new Error(`do not use useInspectorInfo's built-in onSubmitValue!`)
     },
     pathMappingFn,
   )
@@ -122,7 +122,7 @@ export function useInspectorInfoLonghandShorthand<
     [shorthand],
     (v) => v[shorthand],
     () => {
-      return null as any
+      throw new Error(`do not use useInspectorInfo's built-in onSubmitValue!`)
     },
     pathMappingFn,
   )
