@@ -52,6 +52,7 @@ import {
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
+  getHighlightBoundsForTemplatePath,
   getOpenTextFile,
   getOpenTextFileKey,
   getOpenUtopiaJSXComponentsFromState,
@@ -69,7 +70,11 @@ import {
   walkContentsTree,
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
-import { applyProjectContentChanges } from '../../../core/vscode/vscode-bridge'
+import {
+  applyProjectContentChanges,
+  sendUpdateDecorationsMessage,
+} from '../../../core/vscode/vscode-bridge'
+import { DecorationRange, decorationRange, DecorationRangeType } from 'utopia-vscode-common'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -290,6 +295,48 @@ function maybeRequestModelUpdateOnEditor(
   }
 }
 
+async function applyVSCodeChanges(
+  oldStoredState: EditorStore,
+  newEditorState: EditorState,
+): Promise<void> {
+  // Update the file system that is shared between Utopia and VS Code.
+  if (oldStoredState.editor.id != null) {
+    await applyProjectContentChanges(
+      oldStoredState.editor.id,
+      oldStoredState.editor.projectContents,
+      newEditorState.projectContents,
+    )
+  }
+
+  // Keep the decorations synchronised from Utopia to VS Code.
+  let decorations: Array<DecorationRange> = []
+  function addRange(filename: string, rangeType: DecorationRangeType, path: TemplatePath): void {
+    const highlightBounds = getHighlightBoundsForTemplatePath(path, newEditorState)
+    if (highlightBounds != null) {
+      decorations.push(
+        decorationRange(
+          rangeType,
+          filename,
+          highlightBounds.startLine,
+          highlightBounds.startCol,
+          highlightBounds.endLine,
+          highlightBounds.endCol,
+        ),
+      )
+    }
+  }
+  const openFilename = getOpenTextFileKey(newEditorState)
+  if (openFilename != null) {
+    newEditorState.selectedViews.forEach((selectedView) => {
+      addRange(openFilename, 'selection', selectedView)
+    })
+    newEditorState.highlightedViews.forEach((highlightedView) => {
+      addRange(openFilename, 'highlight', highlightedView)
+    })
+  }
+  await sendUpdateDecorationsMessage(decorations)
+}
+
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
@@ -410,13 +457,9 @@ export function editorDispatch(
     saveStoredState(storedState.editor.id, stateToStore)
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
   }
-  if (storedState.editor.id != null) {
-    applyProjectContentChanges(
-      storedState.editor.id,
-      storedState.editor.projectContents,
-      frozenEditorState.projectContents,
-    )
-  }
+  applyVSCodeChanges(storedState, frozenEditorState).catch((error) => {
+    console.error('Error sending updates to VS Code', error)
+  })
 
   if (nameUpdated && frozenEditorState.id != null) {
     pushProjectURLToBrowserHistory(

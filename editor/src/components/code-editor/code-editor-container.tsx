@@ -21,6 +21,7 @@ import {
   ConsoleLog,
   EditorStore,
   getAllLintErrors,
+  getHighlightBoundsForTemplatePath,
   getOpenEditorTab,
   getOpenFile,
   getOpenUIJSFile,
@@ -160,7 +161,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     useEditorState((store) => {
       return Utils.stripNulls(
         store.editor.selectedViews.map((selectedView) =>
-          getHighlightBoundsForTemplatePath(selectedView, store),
+          getHighlightBoundsForTemplatePath(selectedView, store.editor),
         ),
       )
     }, 'CodeEditorWrapper selectedViewBounds'),
@@ -170,7 +171,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     useEditorState((store) => {
       return Utils.stripNulls(
         store.editor.highlightedViews.map((highlightedView) =>
-          getHighlightBoundsForTemplatePath(highlightedView, store),
+          getHighlightBoundsForTemplatePath(highlightedView, store.editor),
         ),
       )
     }, 'CodeEditorWrapper highlightBounds'),
@@ -216,20 +217,3 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     }
   }
 })
-
-function getHighlightBoundsForTemplatePath(path: TemplatePath, store: EditorStore) {
-  const selectedFile = getOpenFile(store.editor)
-  if (isTextFile(selectedFile) && isParseSuccess(selectedFile.fileContents.parsed)) {
-    const parseSuccess = selectedFile.fileContents.parsed
-    if (TP.isInstancePath(path)) {
-      const highlightedUID = Utils.optionalMap(
-        TP.toUid,
-        MetadataUtils.dynamicPathToStaticPath(path),
-      )
-      if (highlightedUID != null) {
-        return parseSuccess.highlightBounds[highlightedUID]
-      }
-    }
-  }
-  return null
-}
