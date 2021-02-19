@@ -755,6 +755,12 @@ export interface CSSGap {
   columnGap: CSSNumber
 }
 
+export interface CSSFlex {
+  flexGrow: number | undefined
+  flexShrink: number | undefined
+  flexBasis: CSSNumber | undefined
+}
+
 // For matching CSS Dimensions (lengths, angles etc.) as they are always specified as a number
 // immediately followed by an optional unit (with no space between them)
 const DimensionRegex = /(\-?[\d.]+)([a-zA-Z\%]*)/
