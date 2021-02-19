@@ -448,6 +448,13 @@ export function isNamedSyntaxType<T extends string>(
   return syntax.type === 'Type' && names.includes(syntax.name as T)
 }
 
+export function isNamedSyntaxProperty<T extends string>(
+  syntax: csstreemissing.Syntax.SyntaxItem,
+  names: ReadonlyArray<T>,
+): syntax is csstreemissing.Syntax.Type<T> {
+  return syntax.type === 'Property' && names.includes(syntax.name as T)
+}
+
 export interface PreparsedLayer {
   type: 'PREPARSED_LAYER'
   value: string

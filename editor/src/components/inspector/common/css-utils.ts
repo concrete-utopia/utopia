@@ -756,9 +756,17 @@ export interface CSSGap {
 }
 
 export interface CSSFlex {
-  flexGrow: number | undefined
-  flexShrink: number | undefined
-  flexBasis: CSSNumber | undefined
+  flexGrow: number
+  flexShrink: number
+  flexBasis: CSSNumber
+}
+
+export function cssFlex(flexGrow: number, flexShrink: number, flexBasis: CSSNumber): CSSFlex {
+  return {
+    flexGrow: flexGrow,
+    flexShrink: flexShrink,
+    flexBasis: flexBasis,
+  }
 }
 
 // For matching CSS Dimensions (lengths, angles etc.) as they are always specified as a number

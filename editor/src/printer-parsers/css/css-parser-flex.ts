@@ -1,5 +1,6 @@
 import {
   CSSFlex,
+  cssNumber,
   CSSNumber,
   printCSSNumber,
   printCSSNumberWithDefaultUnit,
@@ -9,57 +10,51 @@ import { JSXAttributeValue, jsxAttributeValue } from '../../core/shared/element-
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { descriptionParseError, Parser } from '../../utils/value-parser-utils'
 import {
-  canUseOneValueSyntax,
-  canUseThreeValueSyntax,
-  canUseTwoValueSyntax,
-} from './css-parser-padding'
-import {
   getLexerPropertyMatches,
   parseLengthPercentage,
   parseCSSArray,
   parseNumber,
   isLexerMatch,
-  isNamedSyntaxType,
-  parseDoubleBar,
+  isNamedSyntaxProperty,
 } from './css-parser-utils'
 
+export const AssumedFlexDefaults: CSSFlex = {
+  flexGrow: 1,
+  flexShrink: 1,
+  flexBasis: cssNumber(0),
+}
 export const parseFlex = (value: unknown): Either<string, CSSFlex> => {
   const lexer = getLexerPropertyMatches('flex', value, '')
   if (isRight(lexer)) {
-    const parseResult = parseDoubleBar<CSSFlexGrow | CSSFlexShrink | CSSFlexBasis>(3, [
+    const parseResult = parseCSSArray<CSSFlexGrow | CSSFlexShrink | CSSFlexBasis>([
       parseFlexGrow,
       parseFlexShrink,
       parseFlexBasis,
     ])(lexer.value)
     if (isRight(parseResult)) {
-      const flexResult = parseResult.value.value.reduce(
-        (working, target) => {
-          if (isCSSFlexBasis(target)) {
-            return { ...working, flexBasis: target.value } as CSSFlex
-          } else if (isCSSFlexGrow(target)) {
-            return { ...working, flexGrow: printCSSNumber(target.value) } as CSSFlex
-          } else if (isCSSFlexShrink(target)) {
-            return { ...working, flexShrink: printCSSNumber(target.value) } as CSSFlex
-          } else {
-            return working
-          }
-        },
-        {
-          flexGrow: undefined,
-          flexShrink: undefined,
-          flexBasis: undefined,
-        } as CSSFlex,
-      )
+      const flexResult = parseResult.value.reduce((working, target) => {
+        if (isCSSFlexBasis(target)) {
+          return { ...working, flexBasis: target.value } as CSSFlex
+        } else if (isCSSFlexGrow(target)) {
+          return { ...working, flexGrow: printCSSNumber(target.value) } as CSSFlex
+        } else if (isCSSFlexShrink(target)) {
+          return { ...working, flexShrink: printCSSNumber(target.value) } as CSSFlex
+        } else {
+          return working
+        }
+      }, AssumedFlexDefaults)
       return right(flexResult)
     } else {
-      return left(`Value ${JSON.stringify(value)} is not a valid flex, ${parseResult.value}`)
+      return left(
+        `Value ${JSON.stringify(value)} is not a valid flex, ${JSON.stringify(parseResult)}`,
+      )
     }
   }
   return left('Value was not lexer match array')
 }
 
 export const parseFlexGrow: Parser<CSSFlexGrow> = (value: unknown) => {
-  if (isLexerMatch(value) && isNamedSyntaxType(value.syntax, ['flex-grow'])) {
+  if (isLexerMatch(value) && isNamedSyntaxProperty(value.syntax, ['flex-grow'])) {
     const parsed = parseNumber(value.match[0])
     return mapEither(cssFlexGrow, parsed)
   } else {
@@ -67,7 +62,7 @@ export const parseFlexGrow: Parser<CSSFlexGrow> = (value: unknown) => {
   }
 }
 export const parseFlexShrink: Parser<CSSFlexShrink> = (value: unknown) => {
-  if (isLexerMatch(value) && isNamedSyntaxType(value.syntax, ['flex-shrink'])) {
+  if (isLexerMatch(value) && isNamedSyntaxProperty(value.syntax, ['flex-shrink'])) {
     const parsed = parseNumber(value.match[0])
     return mapEither(cssFlexShrink, parsed)
   } else {
@@ -75,8 +70,13 @@ export const parseFlexShrink: Parser<CSSFlexShrink> = (value: unknown) => {
   }
 }
 export const parseFlexBasis: Parser<CSSFlexBasis> = (value: unknown) => {
-  if (isLexerMatch(value) && isNamedSyntaxType(value.syntax, ['flex-basis'])) {
-    const parsed = parseLengthPercentage(value.match[0])
+  if (
+    isLexerMatch(value) &&
+    isNamedSyntaxProperty(value.syntax, ['flex-basis']) &&
+    isLexerMatch(value.match[0]) &&
+    isNamedSyntaxProperty(value.match[0].syntax, ['width', 'height'])
+  ) {
+    const parsed = parseLengthPercentage(value.match[0].match[0])
     return mapEither(cssFlexBasis, parsed)
   } else {
     return left(descriptionParseError('Value is not a flex-basis>'))
