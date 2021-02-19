@@ -74,7 +74,6 @@ import {
   parseMargin,
   printMarginAsAttributeValue,
 } from '../../../printer-parsers/css/css-parser-margin'
-import { parseGap, printGapAsAttributeValue } from '../../../printer-parsers/css/css-parser-gap'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -748,11 +747,6 @@ export interface CSSMargin {
   marginRight: CSSNumber
   marginBottom: CSSNumber
   marginLeft: CSSNumber
-}
-
-export interface CSSGap {
-  rowGap: CSSNumber
-  columnGap: CSSNumber
 }
 
 export interface CSSFlex {
