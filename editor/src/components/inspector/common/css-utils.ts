@@ -70,6 +70,10 @@ import {
   parsePadding,
   printPaddingAsAttributeValue,
 } from '../../../printer-parsers/css/css-parser-padding'
+import {
+  parseMargin,
+  printMarginAsAttributeValue,
+} from '../../../printer-parsers/css/css-parser-margin'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -736,6 +740,13 @@ export interface CSSPadding {
   paddingRight: CSSNumber
   paddingBottom: CSSNumber
   paddingLeft: CSSNumber
+}
+
+export interface CSSMargin {
+  marginTop: CSSNumber
+  marginRight: CSSNumber
+  marginBottom: CSSNumber
+  marginLeft: CSSNumber
 }
 
 // For matching CSS Dimensions (lengths, angles etc.) as they are always specified as a number
@@ -3950,6 +3961,7 @@ export interface ParsedCSSProperties {
   paddingRight: CSSNumber
   paddingBottom: CSSNumber
   paddingLeft: CSSNumber
+  margin: CSSMargin
   marginTop: CSSNumber
   marginRight: CSSNumber
   marginBottom: CSSNumber
@@ -4173,6 +4185,7 @@ const cssParsers: CSSParsers = {
   maxWidth: parseCSSLengthPercentNone,
   minHeight: parseCSSLengthPercent,
   maxHeight: parseCSSLengthPercentNone,
+  margin: parseMargin,
   marginTop: parseCSSLengthPercent,
   marginRight: parseCSSLengthPercent,
   marginBottom: parseCSSLengthPercent,
@@ -4236,6 +4249,7 @@ const cssPrinters: CSSPrinters = {
   maxWidth: printCSSNumberOrUndefinedAsAttributeValue,
   minHeight: printCSSNumberOrUndefinedAsAttributeValue,
   maxHeight: printCSSNumberOrUndefinedAsAttributeValue,
+  margin: printMarginAsAttributeValue,
   marginTop: printCSSNumberAsAttributeValue,
   marginRight: printCSSNumberAsAttributeValue,
   marginBottom: printCSSNumberAsAttributeValue,

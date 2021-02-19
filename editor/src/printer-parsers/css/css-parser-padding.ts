@@ -61,31 +61,44 @@ export const printPaddingAsAttributeValue = (
   const paddingBottom = printCSSNumberWithDefaultUnit(value.paddingBottom, 'px')
   const paddingLeft = printCSSNumberWithDefaultUnit(value.paddingLeft, 'px')
 
-  function canUseOneValueSyntax(): boolean {
-    return paddingTop === paddingRight && paddingTop === paddingBottom && paddingTop === paddingLeft
-  }
-
-  function canUseTwoValueSyntax(): boolean {
-    return (
-      paddingTop !== paddingLeft && paddingTop === paddingBottom && paddingLeft === paddingRight
-    )
-  }
-
-  function canUseThreeValueSyntax(): boolean {
-    return paddingTop !== paddingBottom && paddingLeft === paddingRight
-  }
-
-  if (canUseOneValueSyntax()) {
+  if (canUseOneValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
     const paddingValue = printCSSNumber(value.paddingTop)
     return jsxAttributeValue(paddingValue, emptyComments)
-  } else if (canUseTwoValueSyntax()) {
+  } else if (canUseTwoValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
     const paddingValue = `${paddingTop} ${paddingLeft}`
     return jsxAttributeValue(paddingValue, emptyComments)
-  } else if (canUseThreeValueSyntax()) {
+  } else if (canUseThreeValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
     const paddingValue = `${paddingTop} ${paddingLeft} ${paddingBottom}`
     return jsxAttributeValue(paddingValue, emptyComments)
   } else {
     const paddingValue = `${paddingTop} ${paddingRight} ${paddingBottom} ${paddingLeft}`
     return jsxAttributeValue(paddingValue, emptyComments)
   }
+}
+
+export function canUseOneValueSyntax(
+  topValue: string,
+  rightValue: string,
+  bottomValue: string,
+  leftValue: string,
+): boolean {
+  return topValue === rightValue && topValue === bottomValue && topValue === leftValue
+}
+
+export function canUseTwoValueSyntax(
+  topValue: string,
+  rightValue: string,
+  bottomValue: string,
+  leftValue: string,
+): boolean {
+  return topValue !== leftValue && topValue === bottomValue && leftValue === rightValue
+}
+
+export function canUseThreeValueSyntax(
+  topValue: string,
+  rightValue: string,
+  bottomValue: string,
+  leftValue: string,
+): boolean {
+  return topValue !== bottomValue && leftValue === rightValue
 }
