@@ -16,7 +16,10 @@ export const parsePadding = (value: unknown): Either<string, CSSPadding> => {
     const parseResult = parseCSSArray([parseLengthPercentage])(lexer.value)
     if (isRight(parseResult)) {
       const resultArray = parseResult.value
-      let paddingTop, paddingRight, paddingBottom, paddingLeft
+      let paddingTop: CSSNumber,
+        paddingRight: CSSNumber,
+        paddingBottom: CSSNumber,
+        paddingLeft: CSSNumber
       if (resultArray.length === 0 || resultArray.length > 4) {
         return left(`Value ${JSON.stringify(value)} is not a valid padding`)
       } else if (resultArray.length === 1) {

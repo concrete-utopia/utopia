@@ -1,5 +1,6 @@
 import {
   CSSMargin,
+  CSSNumber,
   printCSSNumber,
   printCSSNumberWithDefaultUnit,
 } from '../../components/inspector/common/css-utils'
@@ -19,7 +20,10 @@ export const parseMargin = (value: unknown): Either<string, CSSMargin> => {
     const parseResult = parseCSSArray([parseLengthPercentage])(lexer.value)
     if (isRight(parseResult)) {
       const resultArray = parseResult.value
-      let marginTop, marginRight, marginBottom, marginLeft
+      let marginTop: CSSNumber,
+        marginRight: CSSNumber,
+        marginBottom: CSSNumber,
+        marginLeft: CSSNumber
       if (resultArray.length === 0 || resultArray.length > 4) {
         return left(`Value ${JSON.stringify(value)} is not a valid margin`)
       } else if (resultArray.length === 1) {

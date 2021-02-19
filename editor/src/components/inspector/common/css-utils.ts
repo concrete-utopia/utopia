@@ -74,6 +74,7 @@ import {
   parseMargin,
   printMarginAsAttributeValue,
 } from '../../../printer-parsers/css/css-parser-margin'
+import { parseGap, printGapAsAttributeValue } from '../../../printer-parsers/css/css-parser-gap'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -747,6 +748,11 @@ export interface CSSMargin {
   marginRight: CSSNumber
   marginBottom: CSSNumber
   marginLeft: CSSNumber
+}
+
+export interface CSSGap {
+  rowGap: CSSNumber
+  columnGap: CSSNumber
 }
 
 // For matching CSS Dimensions (lengths, angles etc.) as they are always specified as a number
@@ -4112,6 +4118,24 @@ export const cssEmptyValues: ParsedCSSProperties = {
   maxWidth: undefined,
   minHeight: undefined,
   maxHeight: undefined,
+  margin: {
+    marginTop: {
+      value: 0,
+      unit: null,
+    },
+    marginRight: {
+      value: 0,
+      unit: null,
+    },
+    marginBottom: {
+      value: 0,
+      unit: null,
+    },
+    marginLeft: {
+      value: 0,
+      unit: null,
+    },
+  },
   marginTop: {
     value: 0,
     unit: null,
@@ -4911,6 +4935,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     unit: 'px',
   },
   maxHeight: undefined,
+  margin: nontrivial,
   marginTop: {
     value: 0,
     unit: 'px',
