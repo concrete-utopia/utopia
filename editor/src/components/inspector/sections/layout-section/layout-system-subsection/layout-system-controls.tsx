@@ -159,6 +159,7 @@ const layoutSystemOptions = [
 ]
 
 export const paddingPropsToUnset = [
+  createLayoutPropertyPath('padding'),
   createLayoutPropertyPath('paddingLeft'),
   createLayoutPropertyPath('paddingTop'),
   createLayoutPropertyPath('paddingRight'),
