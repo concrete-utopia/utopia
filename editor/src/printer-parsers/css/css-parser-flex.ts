@@ -130,19 +130,14 @@ function isCSSFlexBasis(value: CSSFlexGrow | CSSFlexShrink | CSSFlexBasis): valu
 export const printFlexAsAttributeValue = (value: CSSFlex): JSXAttributeValue<number | string> => {
   const flexGrow = value.flexGrow
   const flexShrink = value.flexShrink
-  const flexBasis =
-    value.flexBasis == null ? value.flexBasis : printCSSNumberWithDefaultUnit(value.flexBasis, 'px')
+  const flexBasis = printCSSNumber(value.flexBasis)
 
-  if (flexBasis == null) {
-    if (flexShrink == null) {
+  if (flexBasis == printCSSNumber(AssumedFlexDefaults.flexBasis)) {
+    if (flexShrink == AssumedFlexDefaults.flexShrink) {
       return jsxAttributeValue(`${flexGrow}`, emptyComments)
     } else {
       return jsxAttributeValue(`${flexGrow} ${flexShrink}`, emptyComments)
     }
-  } else if (flexGrow == null && flexShrink == null) {
-    return jsxAttributeValue(`${flexBasis}`, emptyComments)
-  } else if (flexGrow === flexShrink) {
-    return jsxAttributeValue(`${flexGrow} ${flexBasis}`, emptyComments)
   } else {
     return jsxAttributeValue(`${flexGrow} ${flexShrink} ${flexBasis}`, emptyComments)
   }
