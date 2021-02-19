@@ -21,7 +21,8 @@
     "postinstall": "npm run build"
   },
   "dependencies": {
-    "browserfs": "2.0"
+    "browserfs": "2.0",
+    "localforage": "1.9.0"
   },
   "devDependencies": {
     "ts-loader": "5.3.3",

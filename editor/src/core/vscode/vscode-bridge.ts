@@ -11,7 +11,7 @@ import { deleteFile, updateFromCodeEditor } from '../../components/editor/action
 import { isDirectory } from '../model/project-file-utils'
 import {
   initializeBrowserFS,
-  writeFile,
+  writeFileWithEncoding,
   ensureDirectoryExists,
   watch,
   readFileWithEncoding,
@@ -53,8 +53,7 @@ export async function writeProjectFile(
       return ensureDirectoryExists(toFSPath(projectID, projectPath))
     }
     case 'TEXT_FILE': {
-      const fileContents = Buffer.from(file.fileContents.code, 'utf-8')
-      return writeFile(toFSPath(projectID, projectPath), fileContents)
+      return writeFileWithEncoding(toFSPath(projectID, projectPath), file.fileContents.code)
     }
     case 'ASSET_FILE':
       return Promise.resolve()
@@ -78,7 +77,7 @@ export async function writeProjectContents(
 
 export function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
   function onCreated(fsPath: string): void {
-    readFileWithEncoding(fsPath, 'utf-8').then((text) => {
+    readFileWithEncoding(fsPath).then((text) => {
       const action = updateFromCodeEditor(fromFSPath(projectID, fsPath), text)
       dispatch([action], 'everyone')
     })
