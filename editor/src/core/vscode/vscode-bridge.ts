@@ -21,6 +21,8 @@ import {
   UtopiaInbox,
   UtopiaVSCodeMessage,
   deletePath,
+  DecorationRange,
+  updateDecorationsMessage,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile } from '../shared/project-file-types'
 
@@ -108,6 +110,12 @@ export async function initVSCodeBridge(
 
 export async function sendOpenFileMessage(filePath: string): Promise<void> {
   return sendMessage(openFileMessage(filePath))
+}
+
+export async function sendUpdateDecorationsMessage(
+  decorations: Array<DecorationRange>,
+): Promise<void> {
+  return sendMessage(updateDecorationsMessage(decorations))
 }
 
 export async function applyProjectContentChanges(

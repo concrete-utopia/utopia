@@ -10,48 +10,50 @@ export function openFileMessage(filePath: string): OpenFileMessage {
   }
 }
 
-export interface HighlightRange {
+export type DecorationRangeType = 'selection' | 'highlight'
+
+export interface DecorationRange {
+  rangeType: DecorationRangeType
+  filePath: string
   startLine: number
   startCol: number
   endLine: number
   endCol: number
 }
 
-export interface SelectElementMessage {
-  type: 'SELECT_ELEMENT'
-  filePath: string
-  range: HighlightRange
-}
-
-export function selectElementMessage(
+export function decorationRange(
+  rangeType: DecorationRangeType,
   filePath: string,
-  highlightRange: HighlightRange,
-): SelectElementMessage {
+  startLine: number,
+  startCol: number,
+  endLine: number,
+  endCol: number,
+): DecorationRange {
   return {
-    type: 'SELECT_ELEMENT',
+    rangeType: rangeType,
     filePath: filePath,
-    range: highlightRange,
+    startLine: startLine,
+    startCol: startCol,
+    endLine: endLine,
+    endCol: endCol,
   }
 }
 
-export interface HighlightElementMessage {
-  type: 'HIGHLIGHT_ELEMENT'
-  filePath: string
-  range: HighlightRange
+export interface UpdateDecorationsMessage {
+  type: 'UPDATE_DECORATIONS'
+  decorations: Array<DecorationRange>
 }
 
-export function highlightElementMessage(
-  filePath: string,
-  highlightRange: HighlightRange,
-): HighlightElementMessage {
+export function updateDecorationsMessage(
+  decorations: Array<DecorationRange>,
+): UpdateDecorationsMessage {
   return {
-    type: 'HIGHLIGHT_ELEMENT',
-    filePath: filePath,
-    range: highlightRange,
+    type: 'UPDATE_DECORATIONS',
+    decorations: decorations,
   }
 }
 
-export type UtopiaVSCodeMessage = OpenFileMessage | SelectElementMessage | HighlightElementMessage
+export type UtopiaVSCodeMessage = OpenFileMessage | UpdateDecorationsMessage
 
 export function isOpenFileMessage(message: unknown): message is OpenFileMessage {
   return (
@@ -59,29 +61,17 @@ export function isOpenFileMessage(message: unknown): message is OpenFileMessage 
   )
 }
 
-export function isSelectElementMessage(message: unknown): message is SelectElementMessage {
+export function isUpdateDecorationsMessage(message: unknown): message is UpdateDecorationsMessage {
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
-    (message as any).type === 'SELECT_ELEMENT'
-  )
-}
-
-export function isHighlightElementMessage(message: unknown): message is HighlightElementMessage {
-  return (
-    typeof message === 'object' &&
-    !Array.isArray(message) &&
-    (message as any).type === 'HIGHLIGHT_ELEMENT'
+    (message as any).type === 'UPDATE_DECORATIONS'
   )
 }
 
 export function parseMessage(unparsed: string): UtopiaVSCodeMessage {
   const message = JSON.parse(unparsed)
-  if (
-    isOpenFileMessage(message) ||
-    isSelectElementMessage(message) ||
-    isHighlightElementMessage(message)
-  ) {
+  if (isOpenFileMessage(message) || isUpdateDecorationsMessage(message)) {
     return message
   } else {
     // FIXME This should return an Either

@@ -54,6 +54,7 @@ import {
   isParseFailure,
   isParsedTextFile,
   EmptyExportsDetail,
+  HighlightBounds,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -1695,4 +1696,22 @@ export function getStoryboardTemplatePathFromEditorState(
 ): StaticTemplatePath | null {
   const openComponents = getOpenUtopiaJSXComponentsFromState(editorState)
   return getStoryboardTemplatePath(openComponents)
+}
+
+export function getHighlightBoundsForTemplatePath(
+  path: TemplatePath,
+  editorState: EditorState,
+): HighlightBounds | null {
+  if (isInstancePath(path)) {
+    const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
+    if (staticPath != null) {
+      const selectedFile = getOpenFile(editorState)
+      if (isTextFile(selectedFile)) {
+        const highlightBounds = getHighlightBoundsFromParseResult(selectedFile.fileContents.parsed)
+        const highlightedUID = toUid(staticPath)
+        return highlightBounds[highlightedUID]
+      }
+    }
+  }
+  return null
 }
