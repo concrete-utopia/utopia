@@ -6,6 +6,11 @@ export interface FSNode {
   mtime: number
 }
 
+export interface FSNodeWithPath {
+  path: string
+  node: FSNode
+}
+
 export interface FSStat extends FSNode {
   size: number
 }

@@ -1,4 +1,5 @@
 import * as localforage from 'localforage'
+import { appendToPath } from '../path-utils'
 import {
   FSError,
   FSErrorHandler,
@@ -11,10 +12,9 @@ import {
   enotdir,
   FSStat,
   FSDirectory,
-  FSFile,
   fsFile,
-  fsDirectory,
   newFSDirectory,
+  FSNodeWithPath,
 } from './fs-types'
 
 const encoder = new TextEncoder()
@@ -33,13 +33,20 @@ const existingFileError = (path: string) => handleError(eexist(path))
 const isDirectoryError = (path: string) => handleError(eisdir(path))
 const isNotDirectoryError = (path: string) => handleError(enotdir(path))
 
-// FIXME Should this be wrapped in an init function?
-// FIXME This needs to ensure the root directory exists
-const store = localforage.createInstance({
-  name: 'utopia',
-  storeName: 'utopia-vscode',
-  driver: localforage.INDEXEDDB,
-})
+let store: LocalForage
+
+export async function initializeFS(
+  storeName: string,
+  driver: string = localforage.INDEXEDDB,
+): Promise<void> {
+  store = localforage.createInstance({
+    name: 'utopia',
+    storeName: storeName,
+    driver: driver,
+  })
+
+  await simpleCreateDirectoryIfMissing('/')
+}
 
 export async function exists(path: string): Promise<boolean> {
   const value = await store.getItem(path)
@@ -93,10 +100,19 @@ export async function getDescendentPaths(path: string): Promise<string[]> {
   return allPaths.filter((k) => k != path && k.startsWith(path))
 }
 
-function directoryOfPath(path: string): string {
+async function targetsForOperation(path: string, recursive: boolean): Promise<string[]> {
+  if (recursive) {
+    const allDescendents = await getDescendentPaths(path)
+    return [path, ...allDescendents]
+  } else {
+    return [path]
+  }
+}
+
+function directoryOfPath(path: string): string | null {
   const target = path.endsWith('/') ? path.slice(0, -1) : path
   const lastSlashIndex = target.lastIndexOf('/')
-  return lastSlashIndex >= 0 ? path.slice(0, lastSlashIndex + 1) : '/'
+  return lastSlashIndex >= 0 ? path.slice(0, lastSlashIndex + 1) : null
 }
 
 function filenameOfPath(path: string): string {
@@ -120,29 +136,80 @@ async function getDirectory(path: string): Promise<FSDirectory> {
   }
 }
 
+async function getParent(path: string): Promise<FSNodeWithPath | null> {
+  // null signifies we're already at the root
+  const parentPath = directoryOfPath(path)
+  if (parentPath == null) {
+    return null
+  } else {
+    const parentDir = await getDirectory(parentPath)
+    return {
+      path: parentPath,
+      node: parentDir,
+    }
+  }
+}
+
 export async function readDirectory(path: string): Promise<string[]> {
-  await getDirectory(path) // Ensure the directory exists
+  await getDirectory(path) // Ensure the path exists and is a directory
   const children = await childPaths(path)
   return children.map(filenameOfPath)
 }
 
 export async function createDirectory(path: string): Promise<void> {
-  const parentPath = directoryOfPath(path)
-  const parent = await getDirectory(parentPath)
+  const parent = await getParent(path)
   const pathExists = await store.getItem<FSNode>(path)
   if (pathExists != null) {
     return Promise.reject(existingFileError(path))
   }
 
   await store.setItem(path, newFSDirectory())
-  await store.setItem(parentPath, markModified(parent))
+  if (parent != null) {
+    await markModified(parent)
+  }
 }
 
-// export async function ensureDirectoryExists(path: string): Promise<void>
+function allPathsUpToPath(path: string): string[] {
+  const directories = path.split('/')
+  const { paths } = directories.reduce(
+    ({ paths, workingPath }, next) => {
+      const nextPath = appendToPath(workingPath, next)
+      return {
+        paths: paths.concat(nextPath),
+        workingPath: nextPath,
+      }
+    },
+    { paths: ['/'], workingPath: '/' },
+  )
+  return paths
+}
+
+async function simpleCreateDirectoryIfMissing(path: string): Promise<void> {
+  const existingNode = await store.getItem<FSNode>(path)
+  if (existingNode == null) {
+    await store.setItem(path, newFSDirectory())
+
+    // Attempt to mark the parent as modified, but don't fail if it doesn't exist
+    // since it might not have been created yet
+    const parentPath = directoryOfPath(path)
+    if (parentPath != null) {
+      const parentNode = await store.getItem<FSNode>(parentPath)
+      if (parentNode != null) {
+        await markModified({ path: parentPath, node: parentNode })
+      }
+    }
+  } else if (isFile(existingNode)) {
+    return Promise.reject(isNotDirectoryError(path))
+  }
+}
+
+export async function ensureDirectoryExists(path: string): Promise<void> {
+  const allPaths = allPathsUpToPath(path)
+  await Promise.all(allPaths.map(simpleCreateDirectoryIfMissing))
+}
 
 export async function writeFile(path: string, content: Uint8Array): Promise<void> {
-  const parentPath = directoryOfPath(path)
-  const parent = await getDirectory(parentPath)
+  const parent = await getParent(path)
   const maybeExistingFile = await store.getItem<FSNode>(path)
   if (maybeExistingFile != null && isDirectory(maybeExistingFile)) {
     return Promise.reject(isDirectoryError(path))
@@ -152,42 +219,156 @@ export async function writeFile(path: string, content: Uint8Array): Promise<void
   const fileCTime = maybeExistingFile == null ? now : maybeExistingFile.ctime
   const fileToWrite = fsFile(content, fileCTime, now)
   await store.setItem(path, fileToWrite)
-  await store.setItem(parentPath, markModified(parent))
+  if (parent != null) {
+    await markModified(parent)
+  }
 }
 
 export async function writeFileAsUTF8(path: string, content: string): Promise<void> {
   return writeFile(path, encoder.encode(content))
 }
 
-function markModified(node: FSNode): FSNode {
+function updateMTime(node: FSNode): FSNode {
   return {
     ...node,
     mtime: Date.now(),
   }
 }
 
+async function markModified(nodeWithPath: FSNodeWithPath): Promise<void> {
+  await store.setItem(nodeWithPath.path, updateMTime(nodeWithPath.node))
+}
+
 async function uncheckedMove(oldPath: string, newPath: string): Promise<void> {
   const node = await getNode(oldPath)
-  await store.setItem(newPath, markModified(node))
+  await store.setItem(newPath, updateMTime(node))
   await store.removeItem(oldPath)
 }
 
 export async function rename(oldPath: string, newPath: string): Promise<void> {
-  const oldParentPath = directoryOfPath(oldPath)
-  const newParentPath = directoryOfPath(newPath)
-  const oldParent = await getDirectory(oldParentPath)
-  const newParent = await getDirectory(newParentPath)
+  const oldParent = await getParent(oldPath)
+  const newParent = await getParent(newPath)
 
-  const allDescendents = await getDescendentPaths(oldPath)
-  const pathsToMove = [oldPath, ...allDescendents]
+  const pathsToMove = await targetsForOperation(oldPath, true)
   const toNewPath = (p: string) => `${newPath}${p.slice(0, oldPath.length)}`
   await Promise.all(
     pathsToMove.map((pathToMove) => uncheckedMove(pathToMove, toNewPath(pathToMove))),
   )
-  await store.setItem(oldParentPath, markModified(oldParent))
-  await store.setItem(newParentPath, markModified(newParent))
+  if (oldParent != null) {
+    await markModified(oldParent)
+  }
+  if (newParent != null) {
+    await markModified(newParent)
+  }
 }
 
-// export async function deletePath(path: string, recursive: boolean): Promise<string[]>
-// export async function watch(target: string, recursive: boolean, onCreated: (path: string) => void, onModified: (path: string) => void, onDeleted: (path: string) => void): Promise<void>
-// export async function stopWatching(target: string, recursive: boolean): Promise<void>
+export async function deletePath(path: string, recursive: boolean): Promise<string[]> {
+  const parent = await getParent(path)
+  const targets = await targetsForOperation(path, recursive)
+
+  // Really this should fail if recursive isn't set to true when trying to delete a
+  // non-empty directory, but for some reason VSCode doesn't provide an error suitable for that
+  await Promise.all(targets.map((p) => store.removeItem(p)))
+
+  if (parent != null) {
+    await markModified(parent)
+  }
+  return targets
+}
+
+interface WatchConfig {
+  recursive: boolean
+  onCreated: (path: string) => void
+  onModified: (path: string) => void
+  onDeleted: (path: string) => void
+}
+
+let watchTimeout: number | null = null
+let watchedPaths: Map<string, WatchConfig> = new Map()
+let lastModifiedTSs: Map<string, number> = new Map()
+const POLLING_TIMEOUT = 100
+
+function watchPath(path: string, config: WatchConfig) {
+  watchedPaths.set(path, config)
+  lastModifiedTSs.set(path, Date.now())
+}
+
+async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
+  const { recursive, onCreated, onModified, onDeleted } = config
+
+  try {
+    const node = await store.getItem<FSNode>(path)
+    if (node == null) {
+      watchedPaths.delete(path)
+      lastModifiedTSs.delete(path)
+      onDeleted(path)
+    } else {
+      const stats = fsStatForNode(node)
+
+      const modifiedTS = stats.mtime
+      const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
+
+      if (recursive && isDirectory(node) && wasModified) {
+        const children = await childPaths(path)
+        const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
+        unsupervisedChildren.forEach((childPath) => {
+          watchPath(childPath, config)
+          onCreated(childPath)
+        })
+      }
+
+      if (wasModified) {
+        lastModifiedTSs.set(path, modifiedTS)
+        onModified(path)
+      }
+    }
+  } catch (e) {
+    // Something was changed mid-poll, likely the file or its parent was deleted. We'll catch it on the next poll.
+  }
+}
+
+async function polledWatch(): Promise<void> {
+  let promises: Array<Promise<void>> = []
+  watchedPaths.forEach((config, path) => {
+    promises.push(onPolledWatch(path, config))
+  })
+
+  await Promise.all(promises)
+  watchTimeout = setTimeout(polledWatch, POLLING_TIMEOUT) as any
+}
+
+export async function watch(
+  target: string,
+  recursive: boolean,
+  onCreated: (path: string) => void,
+  onModified: (path: string) => void,
+  onDeleted: (path: string) => void,
+): Promise<void> {
+  const fileExists = await exists(target)
+  if (fileExists) {
+    // This has the limitation that calling `watch` on a path will replace any existing subscriber
+    const startWatchingPath = (path: string) =>
+      watchPath(path, {
+        recursive: recursive,
+        onCreated: onCreated,
+        onModified: onModified,
+        onDeleted: onDeleted,
+      })
+
+    const targets = await targetsForOperation(target, recursive)
+    targets.forEach(startWatchingPath)
+
+    if (watchTimeout == null) {
+      watchTimeout = setTimeout(polledWatch, POLLING_TIMEOUT) as any
+    }
+  }
+}
+
+export async function stopWatching(target: string, recursive: boolean) {
+  const stopWatchingPath = (path: string) => {
+    watchedPaths.delete(path)
+  }
+
+  const targets = await targetsForOperation(target, recursive)
+  targets.forEach(stopWatchingPath)
+}
