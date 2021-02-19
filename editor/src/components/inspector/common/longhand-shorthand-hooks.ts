@@ -38,7 +38,7 @@ function getShadowedLonghandShorthandValue<
   longhandPropertyStatus: PropertyStatus,
   shorthandPropertyStatus: PropertyStatus,
   longhandValue: ParsedProperties[LonghandKey],
-  shorthandValue: ParsedProperties[ShorthandKey],
+  shorthandValueObject: ParsedProperties[ShorthandKey], // the shorthand value has to be an object where the keys are longhand property names and the types are same as the longhand values
   orderedPropKeys: (LonghandKey | ShorthandKey)[][], // multiselect
 ): { value: ParsedProperties[LonghandKey]; propertyStatus: PropertyStatus } {
   const allPropKeysEqual = orderedPropKeys.every((propKeys) => {
@@ -67,11 +67,11 @@ function getShadowedLonghandShorthandValue<
             },
       }
     } else {
-      // Important: we ASSUME that the transformed shorthand value is an object,
+      // Important: we assume that shorthandValue is an object
       // where the keys are the longhand keys and the values are the individual longhand values
-      if (longhand in shorthandValue) {
+      if (longhand in shorthandValueObject) {
         return {
-          value: (shorthandValue as any)?.[longhand] as ParsedProperties[LonghandKey],
+          value: (shorthandValueObject as any)?.[longhand] as ParsedProperties[LonghandKey],
           propertyStatus: allPropKeysEqual
             ? shorthandPropertyStatus
             : {
