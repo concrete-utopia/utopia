@@ -132,8 +132,8 @@ export const printFlexAsAttributeValue = (value: CSSFlex): JSXAttributeValue<num
   const flexShrink = value.flexShrink
   const flexBasis = printCSSNumber(value.flexBasis)
 
-  if (flexBasis == printCSSNumber(AssumedFlexDefaults.flexBasis)) {
-    if (flexShrink == AssumedFlexDefaults.flexShrink) {
+  if (flexBasis === printCSSNumber(AssumedFlexDefaults.flexBasis)) {
+    if (flexShrink === AssumedFlexDefaults.flexShrink) {
       return jsxAttributeValue(`${flexGrow}`, emptyComments)
     } else {
       return jsxAttributeValue(`${flexGrow} ${flexShrink}`, emptyComments)
