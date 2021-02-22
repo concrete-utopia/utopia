@@ -198,6 +198,13 @@ let
   withServerRunScripts = withEditorRunScripts ++ (lib.optionals includeRunLocallySupport serverRunScripts);
 
   vscodeDevScripts = [
+    (pkgs.writeScriptBin "update-vscode-patch" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      ${pkgs.yarn}/bin/yarn
+      ${pkgs.yarn}/bin/yarn run make-patch
+    '')
     (pkgs.writeScriptBin "build-vscode" ''
       #!/usr/bin/env bash
       set -e

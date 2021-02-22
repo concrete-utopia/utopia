@@ -8,6 +8,7 @@
   "enableProposedApi": true,
   "private": true,
   "activationEvents": [
+    "onFileSystem:utopia",
     "onStartupFinished",
     "*"
   ],

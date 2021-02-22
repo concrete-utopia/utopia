@@ -189,7 +189,7 @@ index 9cddae242a..35400d5d59 100644
 +  }
  }
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 1ed7feec97..80e9753bba 100644
+index 1ed7feec97..114403d3e0 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
 @@ -1,532 +1,95 @@
@@ -1314,6 +1314,18 @@ index 380122d251..f979c43887 100644
  				'description': localize('workbench.startupEditor', "Controls which editor is shown at startup, if none are restored from the previous session.")
  			},
  		}
+diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+index c3aab1b7d0..0a524d6cb7 100644
+--- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
++++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
+@@ -116,6 +116,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
+ 		// help the file service to activate providers by activating extensions by file system event
+ 		this._register(this._fileService.onWillActivateFileSystemProvider(e => {
+ 			e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
++			e.join(this.activateByEvent(`onFileSystem:utopia`));
+ 		}));
+ 
+ 		this._registry = new ExtensionDescriptionRegistry([]);
 diff --git a/src/vs/workbench/services/workspaces/browser/workspaces.ts b/src/vs/workbench/services/workspaces/browser/workspaces.ts
 index 3b90080dc3..a2228f49e9 100644
 --- a/src/vs/workbench/services/workspaces/browser/workspaces.ts
