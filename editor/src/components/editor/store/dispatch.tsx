@@ -53,6 +53,7 @@ import {
   getAllErrorsFromFiles,
   getAllLintErrors,
   getHighlightBoundsForTemplatePath,
+  getHighlightBoundsForUids,
   getOpenTextFile,
   getOpenTextFileKey,
   getOpenUtopiaJSXComponentsFromState,
@@ -295,6 +296,46 @@ function maybeRequestModelUpdateOnEditor(
   }
 }
 
+async function applyVSCodeDecorations(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): Promise<void> {
+  const oldHighlightBounds = getHighlightBoundsForUids(oldEditorState)
+  const newHighlightBounds = getHighlightBoundsForUids(newEditorState)
+  if (
+    oldEditorState.selectedViews !== newEditorState.selectedViews ||
+    oldEditorState.highlightedViews !== newEditorState.highlightedViews ||
+    oldHighlightBounds !== newHighlightBounds
+  ) {
+    let decorations: Array<DecorationRange> = []
+    function addRange(filename: string, rangeType: DecorationRangeType, path: TemplatePath): void {
+      const highlightBounds = getHighlightBoundsForTemplatePath(path, newEditorState)
+      if (highlightBounds != null) {
+        decorations.push(
+          decorationRange(
+            rangeType,
+            filename,
+            highlightBounds.startLine,
+            highlightBounds.startCol,
+            highlightBounds.endLine,
+            highlightBounds.endCol,
+          ),
+        )
+      }
+    }
+    const openFilename = getOpenTextFileKey(newEditorState)
+    if (openFilename != null) {
+      newEditorState.selectedViews.forEach((selectedView) => {
+        addRange(openFilename, 'selection', selectedView)
+      })
+      newEditorState.highlightedViews.forEach((highlightedView) => {
+        addRange(openFilename, 'highlight', highlightedView)
+      })
+    }
+    await sendUpdateDecorationsMessage(decorations)
+  }
+}
+
 async function applyVSCodeChanges(
   oldStoredState: EditorStore,
   newEditorState: EditorState,
@@ -309,32 +350,7 @@ async function applyVSCodeChanges(
   }
 
   // Keep the decorations synchronised from Utopia to VS Code.
-  let decorations: Array<DecorationRange> = []
-  function addRange(filename: string, rangeType: DecorationRangeType, path: TemplatePath): void {
-    const highlightBounds = getHighlightBoundsForTemplatePath(path, newEditorState)
-    if (highlightBounds != null) {
-      decorations.push(
-        decorationRange(
-          rangeType,
-          filename,
-          highlightBounds.startLine,
-          highlightBounds.startCol,
-          highlightBounds.endLine,
-          highlightBounds.endCol,
-        ),
-      )
-    }
-  }
-  const openFilename = getOpenTextFileKey(newEditorState)
-  if (openFilename != null) {
-    newEditorState.selectedViews.forEach((selectedView) => {
-      addRange(openFilename, 'selection', selectedView)
-    })
-    newEditorState.highlightedViews.forEach((highlightedView) => {
-      addRange(openFilename, 'highlight', highlightedView)
-    })
-  }
-  await sendUpdateDecorationsMessage(decorations)
+  await applyVSCodeDecorations(oldStoredState.editor, newEditorState)
 }
 
 export function editorDispatch(

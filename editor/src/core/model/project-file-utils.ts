@@ -197,16 +197,18 @@ export const getUtopiaJSXComponentsFromSuccess = Utils.memoize(
   getUtopiaJSXComponentsFromSuccessInner,
 )
 
-export function getHighlightBoundsFromParseResult(result: ParsedTextFile): HighlightBoundsForUids {
-  return foldParsedTextFile<HighlightBoundsForUids>(
+export function getHighlightBoundsFromParseResult(
+  result: ParsedTextFile,
+): HighlightBoundsForUids | null {
+  return foldParsedTextFile<HighlightBoundsForUids | null>(
     (_) => {
-      return {}
+      return null
     },
     (success) => {
       return success.highlightBounds
     },
     (_) => {
-      return {}
+      return null
     },
     result,
   )
@@ -214,12 +216,12 @@ export function getHighlightBoundsFromParseResult(result: ParsedTextFile): Highl
 
 export function updateParsedTextFileHighlightBounds(
   result: ParsedTextFile,
-  highlightBounds: HighlightBoundsForUids,
+  highlightBounds: HighlightBoundsForUids | null,
 ): ParsedTextFile {
   return foldParsedTextFile<ParsedTextFile>(
     (failure) => failure,
     (success) => {
-      return { ...success, highlightBounds: highlightBounds }
+      return { ...success, highlightBounds: highlightBounds ?? {} }
     },
     (unparsedResult) => unparsedResult,
     result,
