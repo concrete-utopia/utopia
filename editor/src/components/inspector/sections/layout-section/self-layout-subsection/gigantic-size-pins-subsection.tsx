@@ -203,12 +203,16 @@ export const FlexShorthandNumberControl = betterReactMemo(
 interface FlexShorthandCSSNumberControlProps {
   label: string
   styleProp: LayoutFlexElementNumericProp
-  shorthandProp: ParsedCSSPropertiesKeys
+  shorthandProp: StyleLayoutProp
 }
 export const FlexShorthandCSSNumberControl = betterReactMemo(
   'FlexStyleNumberControl',
   (props: FlexShorthandCSSNumberControlProps) => {
-    const layoutPropInfo = useInspectorLayoutInfo(props.styleProp)
+    const layoutPropInfo = useInspectorInfoLonghandShorthand(
+      props.styleProp,
+      props.shorthandProp,
+      createLayoutPropertyPath,
+    )
     const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       layoutPropInfo.onSubmitValue,
       layoutPropInfo.onUnsetValues,
@@ -350,12 +354,12 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
       case 'horizontal':
       case null:
         widthControl = (
-          <FlexShorthandCSSNumberControl label='W' styleProp='FlexFlexBasis' shorthandProp='flex' />
+          <FlexShorthandCSSNumberControl label='W' styleProp='flexBasis' shorthandProp='flex' />
         )
         break
       case 'vertical':
         heightControl = (
-          <FlexShorthandCSSNumberControl label='H' styleProp='FlexFlexBasis' shorthandProp='flex' />
+          <FlexShorthandCSSNumberControl label='H' styleProp='flexBasis' shorthandProp='flex' />
         )
         break
       default:

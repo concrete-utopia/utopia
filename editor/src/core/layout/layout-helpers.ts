@@ -112,7 +112,7 @@ export type FixedAndBases = {
 
 export type TopLeftWidthHeight = Pick<FullFrame, 'top' | 'left' | 'width' | 'height'>
 
-export const FlexBasisPath = createLayoutPropertyPath('FlexFlexBasis')
+export const FlexBasisPath = createLayoutPropertyPath('flexBasis')
 
 export const FlexLayoutHelpers = {
   updateLayoutPropsToFlexWithFrame(
@@ -350,13 +350,13 @@ export const LayoutHelpers = {
     if (element.specialSizeMeasurements.parentLayoutSystem === 'flex') {
       if (element.specialSizeMeasurements.parentFlexDirection === 'row') {
         return {
-          horizontal: createLayoutPropertyPath('FlexFlexBasis'),
+          horizontal: createLayoutPropertyPath('flexBasis'),
           vertical: createLayoutPropertyPath('Height'),
         }
       } else {
         return {
           horizontal: createLayoutPropertyPath('Width'),
-          vertical: createLayoutPropertyPath('FlexFlexBasis'),
+          vertical: createLayoutPropertyPath('flexBasis'),
         }
       }
     } else {

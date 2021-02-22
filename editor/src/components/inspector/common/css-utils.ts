@@ -4619,7 +4619,7 @@ const layoutEmptyValuesNew: LayoutPropertyTypes = {
   Height: undefined,
 
   FlexGap: 0,
-  FlexFlexBasis: undefined,
+  flexBasis: undefined,
   FlexCrossBasis: undefined,
 
   PinnedLeft: undefined,
@@ -4641,7 +4641,7 @@ const layoutParsersNew: LayoutParsersNew = {
   Height: parseFramePin,
 
   FlexGap: isNumberParser,
-  FlexFlexBasis: parseFramePin,
+  flexBasis: parseFramePin,
   FlexCrossBasis: parseFramePin,
 
   PinnedLeft: parseFramePin,
@@ -4663,7 +4663,7 @@ const layoutPrintersNew: LayoutPrintersNew = {
   Height: printCSSNumberOrUndefinedAsAttributeValue,
 
   FlexGap: jsxAttributeValueWithNoComments,
-  FlexFlexBasis: printCSSNumberOrUndefinedAsAttributeValue,
+  flexBasis: printCSSNumberOrUndefinedAsAttributeValue,
   FlexCrossBasis: printCSSNumberOrUndefinedAsAttributeValue,
 
   PinnedLeft: printCSSNumberOrUndefinedAsAttributeValue,
@@ -5011,7 +5011,6 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   Width: undefined,
   Height: undefined,
   FlexGap: 0,
-  FlexFlexBasis: undefined,
   FlexCrossBasis: undefined,
   PinnedLeft: undefined,
   PinnedTop: undefined,

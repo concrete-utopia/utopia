@@ -8,7 +8,7 @@ export type LayoutDimension = 'Width' | 'Height'
 
 export type LayoutFlexContainerProp = LayoutDimension | 'FlexGap'
 
-export type LayoutFlexElementNumericProp = 'Width' | 'Height' | 'FlexFlexBasis' | 'FlexCrossBasis'
+export type LayoutFlexElementNumericProp = 'Width' | 'Height' | 'flexBasis' | 'FlexCrossBasis'
 
 export type LayoutFlexElementProp = LayoutFlexElementNumericProp
 
@@ -125,7 +125,7 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
 
   // TODO FIXME 'style' here should point to the inspector target selector's current target instead of always pointing to style
   FlexGap: ['style', 'gap'],
-  FlexFlexBasis: ['style', 'flexBasis'],
+  flexBasis: ['style', 'flexBasis'],
   PinnedLeft: ['style', 'left'],
   PinnedTop: ['style', 'top'],
   Width: ['style', 'width'],
@@ -170,7 +170,7 @@ export interface LayoutPropertyTypes {
   Height: CSSNumber | undefined
 
   FlexGap: number
-  FlexFlexBasis: CSSNumber | undefined
+  flexBasis: CSSNumber | undefined
   FlexCrossBasis: CSSNumber | undefined
 
   PinnedLeft: CSSNumber | undefined
@@ -187,7 +187,7 @@ export interface LayoutPropertyTypesAndCSSPropertyTypes extends ParsedCSSPropert
   Height: FramePin | undefined
 
   FlexGap: number
-  FlexFlexBasis: FlexLength
+  flexBasis: FlexLength
   FlexCrossBasis: FlexLength
 
   PinnedLeft: FramePin | undefined
