@@ -53,7 +53,7 @@ import {
   removeIgnored,
   getPropertyControlsForTargetFromEditor,
 } from '../../../core/property-controls/property-controls-utils'
-import { addUniquely } from '../../../core/shared/array-utils'
+import { addUniquely, stripNulls } from '../../../core/shared/array-utils'
 import {
   defaultEither,
   Either,
@@ -76,6 +76,7 @@ import {
   StyleAttributeMetadataEntry,
 } from '../../../core/shared/element-template'
 import {
+  getAllPathsFromAttributes,
   GetModifiableAttributeResult,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
@@ -1135,4 +1136,27 @@ export function useSelectedViews() {
 export function useRefSelectedViews() {
   const { selectedViewsRef } = React.useContext(InspectorCallbackContext)
   return selectedViewsRef
+}
+
+export function useGetOrderedPropertyKeys<P>(
+  pathMappingFn: PathMappingFn<P>,
+  propKeys: Readonly<Array<P>>,
+): Array<Array<P>> {
+  return useKeepReferenceEqualityIfPossible(
+    useContextSelector(
+      InspectorPropsContext,
+      (contextData) => {
+        return contextData.editedMultiSelectedProps.map((props) =>
+          stripNulls(
+            getAllPathsFromAttributes(props).map((path) =>
+              propKeys.find((propKey) =>
+                PP.pathsEqual(path, pathMappingFn(propKey, contextData.targetPath)),
+              ),
+            ),
+          ),
+        )
+      },
+      deepEqual,
+    ),
+  )
 }
