@@ -74,6 +74,7 @@ import {
   parseMargin,
   printMarginAsAttributeValue,
 } from '../../../printer-parsers/css/css-parser-margin'
+import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/css/css-parser-flex'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -3997,6 +3998,7 @@ export interface ParsedCSSProperties {
   maxHeight: CSSNumber | undefined
   flexGrow: CSSNumber
   flexShrink: CSSNumber
+  flex: CSSFlex
   display: string
 }
 
@@ -4160,6 +4162,14 @@ export const cssEmptyValues: ParsedCSSProperties = {
     value: 0,
     unit: null,
   },
+  flex: {
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: {
+      value: 0,
+      unit: null,
+    },
+  },
   flexGrow: cssUnitlessLength(0),
   flexShrink: cssUnitlessLength(1),
   display: 'block',
@@ -4224,6 +4234,7 @@ const cssParsers: CSSParsers = {
   marginLeft: parseCSSLengthPercent,
   flexGrow: parseCSSUnitless,
   flexShrink: parseCSSUnitless,
+  flex: parseFlex,
   display: parseDisplay,
 }
 
@@ -4288,6 +4299,7 @@ const cssPrinters: CSSPrinters = {
   marginLeft: printCSSNumberAsAttributeValue,
   flexGrow: printCSSNumberAsAttributeValue,
   flexShrink: printCSSNumberAsAttributeValue,
+  flex: printFlexAsAttributeValue,
   display: printStringAsAttributeValue,
 }
 
@@ -4960,6 +4972,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     value: 0,
     unit: 'px',
   },
+  flex: nontrivial,
   flexGrow: nontrivial,
   flexShrink: nontrivial,
   display: 'block',

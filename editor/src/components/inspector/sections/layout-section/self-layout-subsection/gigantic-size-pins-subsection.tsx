@@ -10,9 +10,14 @@ import Utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { FullFrame, getFullFrame } from '../../../../frame'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import { CSSNumber, cssNumberToFramePin, framePinToCSSNumber } from '../../../common/css-utils'
+import {
+  CSSNumber,
+  cssNumberToFramePin,
+  framePinToCSSNumber,
+  ParsedCSSPropertiesKeys,
+} from '../../../common/css-utils'
 import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
-import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
+import { stylePropPathMappingFn, useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
 import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
@@ -26,6 +31,7 @@ import {
   FlexColumn,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
+import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -128,6 +134,54 @@ export const FlexStyleNumberControl = betterReactMemo(
           id={`position-${props.styleProp}-number-input`}
           testId={`position-${props.styleProp}-number-input`}
           value={layoutPropInfo.value}
+          onSubmitValue={wrappedOnSubmitValue}
+          onTransientSubmitValue={wrappedOnTransientSubmitValue}
+          controlStatus={layoutPropInfo.controlStatus}
+          numberType={'UnitlessPercent'}
+          labelInner={props.label}
+          defaultUnitToHide={'px'}
+        />
+      </InspectorContextMenuWrapper>
+    )
+  },
+)
+
+interface FlexShorthandNumberControlProps {
+  label: string
+  styleProp: StyleLayoutNumberProp
+  shorthandProp: ParsedCSSPropertiesKeys
+}
+
+export const FlexShorthandNumberControl = betterReactMemo(
+  'FlexShorthandNumberControl',
+  (props: FlexShorthandNumberControlProps) => {
+    const layoutPropInfo = useInspectorInfoLonghandShorthand(
+      props.styleProp,
+      props.shorthandProp,
+      stylePropPathMappingFn,
+    )
+    const value =
+      layoutPropInfo.value != null && typeof layoutPropInfo.value === 'number'
+        ? { value: layoutPropInfo.value, unit: null }
+        : undefined
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onTransientSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    return (
+      <InspectorContextMenuWrapper
+        id={`position-${props.styleProp}-context-menu`}
+        items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
+        data={{}}
+      >
+        <NumberInput
+          id={`position-${props.styleProp}-number-input`}
+          testId={`position-${props.styleProp}-number-input`}
+          value={value}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           controlStatus={layoutPropInfo.controlStatus}
@@ -374,9 +428,9 @@ const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
     <GridRow padded={true} type='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexGrowShrinkProps}>Flex</PropertyLabel>
       <GridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
-        {flexStyleNumberControl('G', 'flexGrow')}
+        <FlexShorthandNumberControl label='G' styleProp='flexGrow' shorthandProp='flex' />
         {spacingButton}
-        {flexStyleNumberControl('S', 'flexShrink')}
+        <FlexShorthandNumberControl label='S' styleProp='flexShrink' shorthandProp='flex' />
         {spacingButton}
       </GridRow>
     </GridRow>
