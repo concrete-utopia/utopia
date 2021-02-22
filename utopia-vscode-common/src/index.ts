@@ -1,6 +1,5 @@
-export * from './browserfs-utils'
 export * from './path-utils'
 export * from './mailbox'
 export * from './messages'
-export * as fsTypes from './fs/fs-types'
-export * as fsUtils from './fs/fs-utils'
+export * from './fs/fs-types'
+export * from './fs/fs-utils'

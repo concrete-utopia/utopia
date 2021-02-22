@@ -27,7 +27,6 @@ import {
   watch,
   stopWatching,
   stat,
-  readdir,
   pathIsDirectory,
   createDirectory,
   readFile,
@@ -39,8 +38,10 @@ import {
   stripRootPrefix,
   deletePath,
   rename,
-  readFileWithEncoding,
+  readFileAsUTF8,
   getDescendentPaths,
+  isDirectory,
+  readDirectory,
 } from 'utopia-vscode-common'
 import { fromUtopiaURI, toUtopiaURI } from './path-utils'
 
@@ -112,7 +113,7 @@ export class UtopiaFSExtension
   async stat(uri: Uri): Promise<FileStat> {
     const path = fromUtopiaURI(uri)
     const stats = await stat(path)
-    const fileType = stats.isDirectory() ? FileType.Directory : FileType.File
+    const fileType = isDirectory(stats) ? FileType.Directory : FileType.File
 
     return {
       type: fileType,
@@ -124,7 +125,7 @@ export class UtopiaFSExtension
 
   async readDirectory(uri: Uri): Promise<[string, FileType][]> {
     const path = fromUtopiaURI(uri)
-    const children = await readdir(path)
+    const children = await readDirectory(path)
     const result: Promise<[string, FileType]>[] = children.map((childName) =>
       pathIsDirectory(appendToPath(path, childName)).then((isDirectory) => [
         childName,
@@ -245,7 +246,7 @@ export class UtopiaFSExtension
           break
         }
 
-        const content = await readFileWithEncoding(filePath, options.encoding || 'utf8')
+        const content = await readFileAsUTF8(filePath)
 
         const lines = splitIntoLines(content)
         for (let i = 0; i < lines.length; i++) {
@@ -311,7 +312,7 @@ export class UtopiaFSExtension
 
   async getAllPaths(): Promise<string[]> {
     if (this.allFilePaths == null) {
-      const result = await getDescendentPaths(this.workspaceRootPath, false)
+      const result = await getDescendentPaths(this.workspaceRootPath)
       this.allFilePaths = result
       return result
     } else {

@@ -10,11 +10,11 @@ import { EditorDispatch } from '../../components/editor/action-types'
 import { deleteFile, updateFromCodeEditor } from '../../components/editor/actions/action-creators'
 import { isDirectory } from '../model/project-file-utils'
 import {
-  initializeBrowserFS,
-  writeFileWithEncoding,
+  initializeFS,
+  writeFileAsUTF8,
   ensureDirectoryExists,
   watch,
-  readFileWithEncoding,
+  readFileAsUTF8,
   initMailbox,
   openFileMessage,
   sendMessage,
@@ -23,19 +23,20 @@ import {
   deletePath,
   DecorationRange,
   updateDecorationsMessage,
+  appendToPath,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile } from '../shared/project-file-types'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
 
-export function toFSPath(projectID: string, projectPath: string): string {
-  const fsPath = `${RootDir}/${projectID}${projectPath}`
+function toFSPath(projectPath: string): string {
+  const fsPath = appendToPath(RootDir, projectPath)
   return fsPath
 }
 
-export function fromFSPath(projectID: string, fsPath: string): string {
-  const prefix = `${RootDir}/${projectID}`
+function fromFSPath(fsPath: string): string {
+  const prefix = RootDir
   const prefixIndex = fsPath.indexOf(prefix)
   if (prefixIndex === 0) {
     const projectPath = fsPath.slice(prefix.length)
@@ -52,10 +53,10 @@ export async function writeProjectFile(
 ): Promise<void> {
   switch (file.type) {
     case 'DIRECTORY': {
-      return ensureDirectoryExists(toFSPath(projectID, projectPath))
+      return ensureDirectoryExists(toFSPath(projectPath))
     }
     case 'TEXT_FILE': {
-      return writeFileWithEncoding(toFSPath(projectID, projectPath), file.fileContents.code)
+      return writeFileAsUTF8(toFSPath(projectPath), file.fileContents.code)
     }
     case 'ASSET_FILE':
       return Promise.resolve()
@@ -79,8 +80,8 @@ export async function writeProjectContents(
 
 export function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
   function onCreated(fsPath: string): void {
-    readFileWithEncoding(fsPath).then((text) => {
-      const action = updateFromCodeEditor(fromFSPath(projectID, fsPath), text)
+    readFileAsUTF8(fsPath).then((text) => {
+      const action = updateFromCodeEditor(fromFSPath(fsPath), text)
       dispatch([action], 'everyone')
     })
   }
@@ -88,11 +89,11 @@ export function watchForChanges(projectID: string, dispatch: EditorDispatch): vo
     onCreated(fsPath)
   }
   function onDeleted(fsPath: string): void {
-    const projectPath = fromFSPath(projectID, fsPath)
+    const projectPath = fromFSPath(fsPath)
     const action = deleteFile(projectPath)
     dispatch([action], 'everyone')
   }
-  watch(toFSPath(projectID, '/'), true, onCreated, onModified, onDeleted)
+  watch(toFSPath('/'), true, onCreated, onModified, onDeleted)
 }
 
 export async function initVSCodeBridge(
@@ -100,7 +101,7 @@ export async function initVSCodeBridge(
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
 ): Promise<void> {
-  await initializeBrowserFS()
+  await initializeFS(projectID)
   initMailbox(UtopiaInbox, (message: UtopiaVSCodeMessage) => {
     /* Do nothing */
   })
@@ -128,7 +129,7 @@ export async function applyProjectContentChanges(
     firstContents: ProjectContentsTree,
     secondContents: ProjectContentsTree,
   ): Promise<boolean> {
-    const fsPath = toFSPath(projectID, fullPath)
+    const fsPath = toFSPath(fullPath)
     if (isProjectContentFile(firstContents)) {
       if (isProjectContentFile(secondContents)) {
         if (firstContents.content === secondContents.content) {
@@ -166,7 +167,7 @@ export async function applyProjectContentChanges(
     firstContents: ProjectContentsTree | null,
     secondContents: ProjectContentsTree | null,
   ): Promise<boolean> {
-    const fsPath = toFSPath(projectID, fullPath)
+    const fsPath = toFSPath(fullPath)
     if (firstContents == null) {
       if (secondContents == null) {
         // Do nothing, nothing exists.

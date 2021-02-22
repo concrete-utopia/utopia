@@ -1,12 +1,11 @@
 import {
   childPaths,
-  createDirectory,
   deletePath,
-  exists,
-  readdir,
-  readFileWithEncoding,
-  writeFileWithEncoding,
-} from './browserfs-utils'
+  ensureDirectoryExists,
+  readDirectory,
+  readFileAsUTF8,
+  writeFileAsUTF8,
+} from './fs/fs-utils'
 import { parseMessage, UtopiaVSCodeMessage } from './messages'
 import { appendToPath } from './path-utils'
 
@@ -40,16 +39,18 @@ function generateMessageName(): string {
 export async function sendMessage(message: UtopiaVSCodeMessage): Promise<void> {
   if (outbox == null) {
     queuedMessages.push(message)
+  } else {
+    return sendNamedMessage(generateMessageName(), JSON.stringify(message))
   }
-  return sendNamedMessage(generateMessageName(), JSON.stringify(message))
 }
 
 async function sendNamedMessage(messageName: string, content: string): Promise<void> {
-  return writeFileWithEncoding(pathForOutboxMessage(messageName), content)
+  // return writeFileAsUTF8(pathForOutboxMessage(messageName), content)
 }
 
 async function initOutbox(outboxToUse: Mailbox): Promise<void> {
   outbox = outboxToUse
+  await ensureMailboxExists(outboxToUse)
   if (queuedMessages.length > 0) {
     queuedMessages.forEach(sendMessage)
     queuedMessages = []
@@ -58,12 +59,12 @@ async function initOutbox(outboxToUse: Mailbox): Promise<void> {
 
 async function receiveMessage(messageName: string): Promise<UtopiaVSCodeMessage> {
   const messagePath = pathForInboxMessage(messageName)
-  const content = await readFileWithEncoding(messagePath)
+  const content = await readFileAsUTF8(messagePath)
   return parseMessage(content)
 }
 
 async function pollInbox(): Promise<void> {
-  const allMessages = await readdir(pathForMailbox(inbox))
+  const allMessages = await readDirectory(pathForMailbox(inbox))
   const messagesToProcess = allMessages.filter(
     (messageName) => Number.parseInt(messageName) > lastConsumedMessage,
   )
@@ -77,6 +78,10 @@ async function pollInbox(): Promise<void> {
   setTimeout(pollInbox, POLLING_TIMEOUT)
 }
 
+async function ensureMailboxExists(mailbox: Mailbox): Promise<void> {
+  await ensureDirectoryExists(pathForMailbox(mailbox))
+}
+
 async function clearMailbox(mailbox: Mailbox): Promise<void> {
   const messagePaths = await childPaths(pathForMailbox(mailbox))
   await Promise.all(messagePaths.map((messagePath) => deletePath(messagePath, false)))
@@ -87,6 +92,7 @@ async function initInbox(
   onMessage: (message: UtopiaVSCodeMessage) => void,
 ): Promise<void> {
   inbox = inboxToUse
+  await ensureMailboxExists(inboxToUse)
   await clearMailbox(inboxToUse)
   onMessageCallback = onMessage
   pollInbox()

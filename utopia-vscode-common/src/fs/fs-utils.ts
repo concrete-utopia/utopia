@@ -21,7 +21,7 @@ const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
 let handleError: FSErrorHandler = (e: FSError) => {
-  return Error(`FS Error: ${e}`)
+  return Error(`FS Error: ${JSON.stringify(e)}`)
 }
 
 export function setErrorHandler(handler: FSErrorHandler): void {
@@ -112,7 +112,7 @@ async function targetsForOperation(path: string, recursive: boolean): Promise<st
 function directoryOfPath(path: string): string | null {
   const target = path.endsWith('/') ? path.slice(0, -1) : path
   const lastSlashIndex = target.lastIndexOf('/')
-  return lastSlashIndex >= 0 ? path.slice(0, lastSlashIndex + 1) : null
+  return lastSlashIndex >= 0 ? path.slice(0, lastSlashIndex) : null
 }
 
 function filenameOfPath(path: string): string {
@@ -121,7 +121,7 @@ function filenameOfPath(path: string): string {
   return lastSlashIndex >= 0 ? path.slice(lastSlashIndex + 1) : path
 }
 
-async function childPaths(path: string): Promise<string[]> {
+export async function childPaths(path: string): Promise<string[]> {
   const allDescendents = await getDescendentPaths(path)
   const pathAsDir = path.endsWith('/') ? path : `${path}/`
   return allDescendents.filter((k) => directoryOfPath(k) === pathAsDir)

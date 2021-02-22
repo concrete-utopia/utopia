@@ -1,7 +1,6 @@
 import * as vscode from 'vscode'
 import {
   ensureDirectoryExists,
-  initializeBrowserFS,
   RootDir,
   initMailbox,
   isOpenFileMessage,
@@ -10,16 +9,20 @@ import {
   isUpdateDecorationsMessage,
   DecorationRange,
   DecorationRangeType,
+  setErrorHandler,
+  FSError,
+  toUtopiaPath,
+  initializeFS,
 } from 'utopia-vscode-common'
 import { fromUtopiaURI, toUtopiaURI } from './path-utils'
 import { UtopiaFSExtension } from './utopia-fs'
-import { useFileSystemProviderErrors } from './browserfs-utils'
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   useFileSystemProviderErrors()
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
+  const projectID = workspaceRootUri.path
   const workspaceRootPath = fromUtopiaURI(workspaceRootUri)
-  await initializeBrowserFS()
+  await initializeFS(projectID)
   await ensureDirectoryExists(RootDir)
   await ensureDirectoryExists(workspaceRootPath)
   const utopiaFS = new UtopiaFSExtension(workspaceRootPath)
@@ -137,5 +140,27 @@ function updateDecorations(decorations: Array<DecorationRange>): void {
       const vsCodeRanges = decorationsForType.map(getVSCodeRange)
       visibleEditor.setDecorations(vsCodeDecorationType, vsCodeRanges)
     }
+  }
+}
+
+function useFileSystemProviderErrors(): void {
+  setErrorHandler(toFileSystemProviderError)
+}
+
+function toFileSystemProviderError(error: FSError): vscode.FileSystemError {
+  const { path: unadjustedPath, code } = error
+  const path = toUtopiaPath(unadjustedPath)
+  switch (code) {
+    case 'ENOENT':
+      return vscode.FileSystemError.FileNotFound(path)
+    case 'EISDIR':
+      return vscode.FileSystemError.FileIsADirectory(path)
+    case 'ENOTDIR':
+      return vscode.FileSystemError.FileNotADirectory(path)
+    case 'EEXIST':
+      return vscode.FileSystemError.FileExists(path)
+    default:
+      const _exhaustiveCheck: never = code
+      throw new Error(`Unhandled FS Error ${JSON.stringify(error)}`)
   }
 }
