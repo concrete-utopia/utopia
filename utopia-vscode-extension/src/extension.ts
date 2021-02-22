@@ -13,6 +13,9 @@ import {
   FSError,
   toUtopiaPath,
   initializeFS,
+  isSelectedElementChanged,
+  BoundsInFile,
+  Bounds,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 
@@ -56,6 +59,8 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
     } else if (isUpdateDecorationsMessage(message)) {
       currentDecorations = message.decorations
       updateDecorations(currentDecorations)
+    } else if (isSelectedElementChanged(message)) {
+      revealRangeIfPossible(message.boundsInFile)
     } else {
       console.error(`Unhandled message type ${JSON.stringify(message)}`)
     }
@@ -68,6 +73,16 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       updateDecorations(currentDecorations)
     }),
   )
+}
+
+function revealRangeIfPossible(boundsInFile: BoundsInFile): void {
+  const visibleEditors = vscode.window.visibleTextEditors
+  for (const visibleEditor of visibleEditors) {
+    const filename = visibleEditor.document.uri.path
+    if (boundsInFile.filePath === filename) {
+      visibleEditor.revealRange(getVSCodeRange(boundsInFile))
+    }
+  }
 }
 
 type DecorationsByType = { [key: string]: Array<DecorationRange> }
@@ -115,10 +130,10 @@ function getDecorationsByFilenameAndType(
   return result
 }
 
-function getVSCodeRange(decorationRange: DecorationRange): vscode.Range {
+function getVSCodeRange(bounds: Bounds): vscode.Range {
   return new vscode.Range(
-    new vscode.Position(decorationRange.startLine, decorationRange.startCol),
-    new vscode.Position(decorationRange.endLine, decorationRange.endCol),
+    new vscode.Position(bounds.startLine, bounds.startCol),
+    new vscode.Position(bounds.endLine, bounds.endCol),
   )
 }
 

@@ -73,9 +73,15 @@ import {
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import {
   applyProjectContentChanges,
+  sendSelectedElementChangedMessage,
   sendUpdateDecorationsMessage,
 } from '../../../core/vscode/vscode-bridge'
-import { DecorationRange, decorationRange, DecorationRangeType } from 'utopia-vscode-common'
+import {
+  boundsInFile,
+  DecorationRange,
+  decorationRange,
+  DecorationRangeType,
+} from 'utopia-vscode-common'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -336,6 +342,33 @@ async function applyVSCodeDecorations(
   }
 }
 
+async function updateSelectedElementChanged(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): Promise<void> {
+  if (
+    oldEditorState.selectedViews !== newEditorState.selectedViews &&
+    newEditorState.selectedViews.length > 0
+  ) {
+    const openFilename = getOpenTextFileKey(newEditorState)
+    if (openFilename != null) {
+      const selectedView = newEditorState.selectedViews[0]
+      const highlightBounds = getHighlightBoundsForTemplatePath(selectedView, newEditorState)
+      if (highlightBounds != null) {
+        sendSelectedElementChangedMessage(
+          boundsInFile(
+            openFilename,
+            highlightBounds.startLine,
+            highlightBounds.startCol,
+            highlightBounds.endLine,
+            highlightBounds.endCol,
+          ),
+        )
+      }
+    }
+  }
+}
+
 async function applyVSCodeChanges(
   oldStoredState: EditorStore,
   newEditorState: EditorState,
@@ -351,6 +384,9 @@ async function applyVSCodeChanges(
 
   // Keep the decorations synchronised from Utopia to VS Code.
   await applyVSCodeDecorations(oldStoredState.editor, newEditorState)
+
+  // Handle the selected element having changed to inform the user what is going on.
+  await updateSelectedElementChanged(oldStoredState.editor, newEditorState)
 }
 
 export function editorDispatch(
