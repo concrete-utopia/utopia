@@ -12,13 +12,35 @@ export function openFileMessage(filePath: string): OpenFileMessage {
 
 export type DecorationRangeType = 'selection' | 'highlight'
 
-export interface DecorationRange {
-  rangeType: DecorationRangeType
-  filePath: string
+export interface Bounds {
   startLine: number
   startCol: number
   endLine: number
   endCol: number
+}
+
+export interface BoundsInFile extends Bounds {
+  filePath: string
+}
+
+export function boundsInFile(
+  filePath: string,
+  startLine: number,
+  startCol: number,
+  endLine: number,
+  endCol: number,
+): BoundsInFile {
+  return {
+    filePath: filePath,
+    startLine: startLine,
+    startCol: startCol,
+    endLine: endLine,
+    endCol: endCol,
+  }
+}
+
+export interface DecorationRange extends BoundsInFile {
+  rangeType: DecorationRangeType
 }
 
 export function decorationRange(
@@ -53,7 +75,19 @@ export function updateDecorationsMessage(
   }
 }
 
-export type UtopiaVSCodeMessage = OpenFileMessage | UpdateDecorationsMessage
+export interface SelectedElementChanged {
+  type: 'SELECTED_ELEMENT_CHANGED'
+  boundsInFile: BoundsInFile
+}
+
+export function selectedElementChanged(boundsInFile: BoundsInFile): SelectedElementChanged {
+  return {
+    type: 'SELECTED_ELEMENT_CHANGED',
+    boundsInFile: boundsInFile
+  }
+}
+
+export type UtopiaVSCodeMessage = OpenFileMessage | UpdateDecorationsMessage | SelectedElementChanged
 
 export function isOpenFileMessage(message: unknown): message is OpenFileMessage {
   return (
@@ -69,9 +103,17 @@ export function isUpdateDecorationsMessage(message: unknown): message is UpdateD
   )
 }
 
+export function isSelectedElementChanged(message: unknown): message is SelectedElementChanged {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'SELECTED_ELEMENT_CHANGED'
+  )
+}
+
 export function parseMessage(unparsed: string): UtopiaVSCodeMessage {
   const message = JSON.parse(unparsed)
-  if (isOpenFileMessage(message) || isUpdateDecorationsMessage(message)) {
+  if (isOpenFileMessage(message) || isUpdateDecorationsMessage(message) || isSelectedElementChanged(message)) {
     return message
   } else {
     // FIXME This should return an Either

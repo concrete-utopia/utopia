@@ -26,6 +26,8 @@ import {
   updateDecorationsMessage,
   appendToPath,
   stat,
+  BoundsInFile,
+  selectedElementChanged,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile } from '../shared/project-file-types'
 
@@ -124,6 +126,10 @@ export async function sendUpdateDecorationsMessage(
   decorations: Array<DecorationRange>,
 ): Promise<void> {
   return sendMessage(updateDecorationsMessage(decorations))
+}
+
+export async function sendSelectedElementChangedMessage(boundsInFile: BoundsInFile): Promise<void> {
+  return sendMessage(selectedElementChanged(boundsInFile))
 }
 
 export async function applyProjectContentChanges(
