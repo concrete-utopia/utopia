@@ -103,5 +103,7 @@ export function canUseThreeValueSyntax(
   bottomValue: string,
   leftValue: string,
 ): boolean {
-  return topValue !== bottomValue && leftValue === rightValue
+  // not using the real 3-value shorthand because it is very uncommon
+  // return topValue !== bottomValue && leftValue === rightValue
+  return false
 }
