@@ -14,7 +14,6 @@ import {
   toUtopiaPath,
   initializeFS,
 } from 'utopia-vscode-common'
-import { fromUtopiaURI } from './path-utils'
 import { UtopiaFSExtension } from './utopia-fs'
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
@@ -127,7 +126,7 @@ function updateDecorations(decorations: Array<DecorationRange>): void {
   const visibleEditors = vscode.window.visibleTextEditors
   const decorationsByFilenameAndType = getDecorationsByFilenameAndType(decorations)
   for (const visibleEditor of visibleEditors) {
-    const filename = fromUtopiaURI(visibleEditor.document.uri)
+    const filename = visibleEditor.document.uri.path
     // Default in the possible value we have received for a filename.
     const decorations = decorationsByFilenameAndType[filename] ?? {}
     for (const rangeType of allDecorationRangeTypes) {

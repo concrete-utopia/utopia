@@ -24,6 +24,7 @@ import {
   DecorationRange,
   updateDecorationsMessage,
   appendToPath,
+  stat,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile } from '../shared/project-file-types'
 
@@ -80,9 +81,13 @@ export async function writeProjectContents(
 
 export function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
   function onCreated(fsPath: string): void {
-    readFileAsUTF8(fsPath).then((text) => {
-      const action = updateFromCodeEditor(fromFSPath(fsPath), text)
-      dispatch([action], 'everyone')
+    stat(fsPath).then((fsStat) => {
+      if (fsStat.type === 'FILE') {
+        readFileAsUTF8(fsPath).then((text) => {
+          const action = updateFromCodeEditor(fromFSPath(fsPath), text)
+          dispatch([action], 'everyone')
+        })
+      }
     })
   }
   function onModified(fsPath: string): void {

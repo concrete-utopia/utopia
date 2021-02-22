@@ -55,6 +55,7 @@ import {
   isParsedTextFile,
   EmptyExportsDetail,
   HighlightBounds,
+  HighlightBoundsForUids,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -1698,6 +1699,15 @@ export function getStoryboardTemplatePathFromEditorState(
   return getStoryboardTemplatePath(openComponents)
 }
 
+export function getHighlightBoundsForUids(editorState: EditorState): HighlightBoundsForUids | null {
+  const selectedFile = getOpenFile(editorState)
+  if (isTextFile(selectedFile)) {
+    return getHighlightBoundsFromParseResult(selectedFile.fileContents.parsed)
+  }
+
+  return null
+}
+
 export function getHighlightBoundsForTemplatePath(
   path: TemplatePath,
   editorState: EditorState,
@@ -1705,9 +1715,8 @@ export function getHighlightBoundsForTemplatePath(
   if (isInstancePath(path)) {
     const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
     if (staticPath != null) {
-      const selectedFile = getOpenFile(editorState)
-      if (isTextFile(selectedFile)) {
-        const highlightBounds = getHighlightBoundsFromParseResult(selectedFile.fileContents.parsed)
+      const highlightBounds = getHighlightBoundsForUids(editorState)
+      if (highlightBounds != null) {
         const highlightedUID = toUid(staticPath)
         return highlightBounds[highlightedUID]
       }
