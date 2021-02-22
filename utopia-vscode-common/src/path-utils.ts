@@ -1,8 +1,16 @@
 export const RootDir = `/utopia`
 
+export function stripTrailingSlash(path: string): string {
+  return path.endsWith('/') ? path.slice(0, -1) : path
+}
+
+export function stripLeadingSlash(path: string): string {
+  return path.startsWith('/') ? path.slice(1) : path
+}
+
 export function appendToPath(path: string, elem: string): string {
-  const left = path.endsWith('/') ? path.slice(0, -1) : path
-  const right = elem.startsWith('/') ? elem.slice(1) : elem
+  const left = stripTrailingSlash(path)
+  const right = stripLeadingSlash(elem)
   return `${left}/${right}`
 }
 

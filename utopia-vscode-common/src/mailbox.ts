@@ -45,7 +45,7 @@ export async function sendMessage(message: UtopiaVSCodeMessage): Promise<void> {
 }
 
 async function sendNamedMessage(messageName: string, content: string): Promise<void> {
-  // return writeFileAsUTF8(pathForOutboxMessage(messageName), content)
+  return writeFileAsUTF8(pathForOutboxMessage(messageName), content)
 }
 
 async function initOutbox(outboxToUse: Mailbox): Promise<void> {

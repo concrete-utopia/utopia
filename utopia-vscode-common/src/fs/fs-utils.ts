@@ -1,5 +1,6 @@
-import * as localforage from 'localforage'
+import { INDEXEDDB } from 'localforage'
 import { appendToPath } from '../path-utils'
+import { getItem, initializeStore, keys, removeItem, setItem } from './fs-core'
 import {
   FSError,
   FSErrorHandler,
@@ -33,33 +34,23 @@ const existingFileError = (path: string) => handleError(eexist(path))
 const isDirectoryError = (path: string) => handleError(eisdir(path))
 const isNotDirectoryError = (path: string) => handleError(enotdir(path))
 
-let store: LocalForage
-
-export async function initializeFS(
-  storeName: string,
-  driver: string = localforage.INDEXEDDB,
-): Promise<void> {
-  store = localforage.createInstance({
-    name: 'utopia',
-    storeName: storeName,
-    driver: driver,
-  })
-
+export async function initializeFS(storeName: string, driver: string = INDEXEDDB): Promise<void> {
+  await initializeStore(storeName, driver)
   await simpleCreateDirectoryIfMissing('/')
 }
 
 export async function exists(path: string): Promise<boolean> {
-  const value = await store.getItem(path)
+  const value = await getItem(path)
   return value != null
 }
 
 export async function pathIsDirectory(path: string): Promise<boolean> {
-  const node = await store.getItem<FSNode>(path)
+  const node = await getItem(path)
   return node != null && isDirectory(node)
 }
 
 async function getNode(path: string): Promise<FSNode> {
-  const node = await store.getItem<FSNode>(path)
+  const node = await getItem(path)
   if (node == null) {
     return Promise.reject(missingFileError(path))
   } else {
@@ -96,7 +87,7 @@ export async function stat(path: string): Promise<FSStat> {
 }
 
 export async function getDescendentPaths(path: string): Promise<string[]> {
-  const allPaths = await store.keys()
+  const allPaths = await keys()
   return allPaths.filter((k) => k != path && k.startsWith(path))
 }
 
@@ -112,7 +103,7 @@ async function targetsForOperation(path: string, recursive: boolean): Promise<st
 function directoryOfPath(path: string): string | null {
   const target = path.endsWith('/') ? path.slice(0, -1) : path
   const lastSlashIndex = target.lastIndexOf('/')
-  return lastSlashIndex >= 0 ? path.slice(0, lastSlashIndex) : null
+  return lastSlashIndex >= 0 ? path.slice(0, lastSlashIndex + 1) : null
 }
 
 function filenameOfPath(path: string): string {
@@ -158,12 +149,12 @@ export async function readDirectory(path: string): Promise<string[]> {
 
 export async function createDirectory(path: string): Promise<void> {
   const parent = await getParent(path)
-  const pathExists = await store.getItem<FSNode>(path)
+  const pathExists = await getItem(path)
   if (pathExists != null) {
     return Promise.reject(existingFileError(path))
   }
 
-  await store.setItem(path, newFSDirectory())
+  await setItem(path, newFSDirectory())
   if (parent != null) {
     await markModified(parent)
   }
@@ -185,15 +176,15 @@ function allPathsUpToPath(path: string): string[] {
 }
 
 async function simpleCreateDirectoryIfMissing(path: string): Promise<void> {
-  const existingNode = await store.getItem<FSNode>(path)
+  const existingNode = await getItem(path)
   if (existingNode == null) {
-    await store.setItem(path, newFSDirectory())
+    await setItem(path, newFSDirectory())
 
     // Attempt to mark the parent as modified, but don't fail if it doesn't exist
     // since it might not have been created yet
     const parentPath = directoryOfPath(path)
     if (parentPath != null) {
-      const parentNode = await store.getItem<FSNode>(parentPath)
+      const parentNode = await getItem(parentPath)
       if (parentNode != null) {
         await markModified({ path: parentPath, node: parentNode })
       }
@@ -210,7 +201,7 @@ export async function ensureDirectoryExists(path: string): Promise<void> {
 
 export async function writeFile(path: string, content: Uint8Array): Promise<void> {
   const parent = await getParent(path)
-  const maybeExistingFile = await store.getItem<FSNode>(path)
+  const maybeExistingFile = await getItem(path)
   if (maybeExistingFile != null && isDirectory(maybeExistingFile)) {
     return Promise.reject(isDirectoryError(path))
   }
@@ -218,7 +209,7 @@ export async function writeFile(path: string, content: Uint8Array): Promise<void
   const now = Date.now()
   const fileCTime = maybeExistingFile == null ? now : maybeExistingFile.ctime
   const fileToWrite = fsFile(content, fileCTime, now)
-  await store.setItem(path, fileToWrite)
+  await setItem(path, fileToWrite)
   if (parent != null) {
     await markModified(parent)
   }
@@ -236,13 +227,13 @@ function updateMTime(node: FSNode): FSNode {
 }
 
 async function markModified(nodeWithPath: FSNodeWithPath): Promise<void> {
-  await store.setItem(nodeWithPath.path, updateMTime(nodeWithPath.node))
+  await setItem(nodeWithPath.path, updateMTime(nodeWithPath.node))
 }
 
 async function uncheckedMove(oldPath: string, newPath: string): Promise<void> {
   const node = await getNode(oldPath)
-  await store.setItem(newPath, updateMTime(node))
-  await store.removeItem(oldPath)
+  await setItem(newPath, updateMTime(node))
+  await removeItem(oldPath)
 }
 
 export async function rename(oldPath: string, newPath: string): Promise<void> {
@@ -268,7 +259,7 @@ export async function deletePath(path: string, recursive: boolean): Promise<stri
 
   // Really this should fail if recursive isn't set to true when trying to delete a
   // non-empty directory, but for some reason VSCode doesn't provide an error suitable for that
-  await Promise.all(targets.map((p) => store.removeItem(p)))
+  await Promise.all(targets.map((p) => removeItem(p)))
 
   if (parent != null) {
     await markModified(parent)
@@ -297,7 +288,7 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
   const { recursive, onCreated, onModified, onDeleted } = config
 
   try {
-    const node = await store.getItem<FSNode>(path)
+    const node = await getItem(path)
     if (node == null) {
       watchedPaths.delete(path)
       lastModifiedTSs.delete(path)
