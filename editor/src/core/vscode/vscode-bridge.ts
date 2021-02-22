@@ -15,6 +15,7 @@ import {
   ensureDirectoryExists,
   watch,
   readFileAsUTF8,
+  clearBothMailboxes,
   initMailbox,
   openFileMessage,
   sendMessage,
@@ -107,10 +108,11 @@ export async function initVSCodeBridge(
   dispatch: EditorDispatch,
 ): Promise<void> {
   await initializeFS(projectID)
+  await clearBothMailboxes()
+  await writeProjectContents(projectID, projectContents)
   initMailbox(UtopiaInbox, (message: UtopiaVSCodeMessage) => {
     /* Do nothing */
   })
-  await writeProjectContents(projectID, projectContents)
   watchForChanges(projectID, dispatch)
 }
 

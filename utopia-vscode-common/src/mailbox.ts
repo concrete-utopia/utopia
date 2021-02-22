@@ -97,7 +97,8 @@ async function clearMailbox(mailbox: Mailbox): Promise<void> {
   const messagePaths = await childPaths(pathForMailbox(mailbox))
   await Promise.all(messagePaths.map((messagePath) => deletePath(messagePath, false)))
 }
-async function clearBothMailboxes(): Promise<void> {
+
+export async function clearBothMailboxes(): Promise<void> {
   await ensureMailboxExists(UtopiaInbox)
   await clearMailbox(UtopiaInbox)
   await ensureMailboxExists(VSCodeInbox)
@@ -108,10 +109,6 @@ export async function initMailbox(
   inboxToUse: Mailbox,
   onMessage: (message: UtopiaVSCodeMessage) => void,
 ): Promise<void> {
-  if (inboxToUse === UtopiaInbox) {
-    // We're going with the assumption that Utopia is up and running before the VSCode extension
-    await clearBothMailboxes()
-  }
   await initOutbox(inboxToUse === VSCodeInbox ? UtopiaInbox : VSCodeInbox)
   await initInbox(inboxToUse, onMessage)
 }
