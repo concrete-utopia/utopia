@@ -4,9 +4,10 @@ import { SelectOption, SelectControl } from '../../../controls/select-control'
 import { OptionChainOption, OptionChainControl } from '../../../controls/option-chain-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
+import { stylePropPathMappingFn, useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { useWrappedEmptyOrUnknownOnSubmitValue, ChainedNumberInput } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
+import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 
 export const PositionControl = betterReactMemo('PositionControl', () => {
   const position = useInspectorLayoutInfo('position')
@@ -106,10 +107,22 @@ export const AlignSelfControl = betterReactMemo('AlignSelfControl', () => {
 })
 
 export const MarginControl = betterReactMemo('MarginControl', () => {
-  const marginTop = useInspectorLayoutInfo('marginTop')
-  const marginRight = useInspectorLayoutInfo('marginRight')
-  const marginBottom = useInspectorLayoutInfo('marginBottom')
-  const marginLeft = useInspectorLayoutInfo('marginLeft')
+  const marginTop = useInspectorInfoLonghandShorthand('marginTop', 'margin', stylePropPathMappingFn)
+  const marginRight = useInspectorInfoLonghandShorthand(
+    'marginRight',
+    'margin',
+    stylePropPathMappingFn,
+  )
+  const marginBottom = useInspectorInfoLonghandShorthand(
+    'marginBottom',
+    'margin',
+    stylePropPathMappingFn,
+  )
+  const marginLeft = useInspectorInfoLonghandShorthand(
+    'marginLeft',
+    'margin',
+    stylePropPathMappingFn,
+  )
 
   const wrappedMarginTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginTop.onSubmitValue,
