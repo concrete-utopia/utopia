@@ -1413,10 +1413,7 @@ export const UPDATE_FNS = {
         )
       },
     )
-    if (action.projectId != null) {
-      const nonNullProjectID = action.projectId
-      initVSCodeBridge(nonNullProjectID, parsedProjectFiles, dispatch)
-    }
+    initVSCodeBridge(action.projectId, parsedProjectFiles, dispatch)
     const parsedModel = {
       ...migratedModel,
       projectContents: parsedProjectFiles,
@@ -3072,6 +3069,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
+    initVSCodeBridge(action.id, editor.projectContents, dispatch)
     return {
       ...editor,
       id: action.id,
@@ -4509,7 +4507,7 @@ export async function load(
   dispatch: EditorDispatch,
   model: PersistentModel,
   title: string,
-  projectId: string | null,
+  projectId: string,
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
   retryFetchNodeModules: boolean = true,
@@ -4554,8 +4552,7 @@ export async function load(
 
   const storedState = await loadStoredState(projectId)
 
-  const safeMode =
-    projectId != null ? await localforage.getItem<boolean>(getProjectLockedKey(projectId)) : false
+  const safeMode = await localforage.getItem<boolean>(getProjectLockedKey(projectId))
 
   renderEditorRoot()
 

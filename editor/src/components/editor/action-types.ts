@@ -251,7 +251,7 @@ export type Load = {
   packageResult: PackageStatusMap
   codeResultCache: CodeResultCache
   title: string
-  projectId: string | null
+  projectId: string
   storedState: StoredEditorState | null
   safeMode: boolean
 }
