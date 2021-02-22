@@ -78,6 +78,17 @@ async function pollInbox(): Promise<void> {
   setTimeout(pollInbox, POLLING_TIMEOUT)
 }
 
+
+async function initInbox(
+  inboxToUse: Mailbox,
+  onMessage: (message: UtopiaVSCodeMessage) => void,
+): Promise<void> {
+  inbox = inboxToUse
+  await ensureMailboxExists(inboxToUse)
+  onMessageCallback = onMessage
+  pollInbox()
+}
+
 async function ensureMailboxExists(mailbox: Mailbox): Promise<void> {
   await ensureDirectoryExists(pathForMailbox(mailbox))
 }
@@ -86,22 +97,21 @@ async function clearMailbox(mailbox: Mailbox): Promise<void> {
   const messagePaths = await childPaths(pathForMailbox(mailbox))
   await Promise.all(messagePaths.map((messagePath) => deletePath(messagePath, false)))
 }
-
-async function initInbox(
-  inboxToUse: Mailbox,
-  onMessage: (message: UtopiaVSCodeMessage) => void,
-): Promise<void> {
-  inbox = inboxToUse
-  await ensureMailboxExists(inboxToUse)
-  await clearMailbox(inboxToUse)
-  onMessageCallback = onMessage
-  pollInbox()
+async function clearBothMailboxes(): Promise<void> {
+  await ensureMailboxExists(UtopiaInbox)
+  await clearMailbox(UtopiaInbox)
+  await ensureMailboxExists(VSCodeInbox)
+  await clearMailbox(VSCodeInbox)
 }
 
 export async function initMailbox(
   inboxToUse: Mailbox,
   onMessage: (message: UtopiaVSCodeMessage) => void,
 ): Promise<void> {
+  if (inboxToUse === UtopiaInbox) {
+    // We're going with the assumption that Utopia is up and running before the VSCode extension
+    await clearBothMailboxes()
+  }
   await initOutbox(inboxToUse === VSCodeInbox ? UtopiaInbox : VSCodeInbox)
   await initInbox(inboxToUse, onMessage)
 }
