@@ -699,6 +699,14 @@ export const parseCSSTimePercent = (input: unknown) => parseCSSNumber(input, 'Ti
 export const parseCSSUnitless = (input: unknown) => parseCSSNumber(input, 'Unitless')
 export const parseCSSUnitlessPercent = (input: unknown) => parseCSSNumber(input, 'UnitlessPercent')
 export const parseCSSAnyValidNumber = (input: unknown) => parseCSSNumber(input, 'AnyValid')
+export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number> => {
+  const parsed = parseCSSNumber(input, 'Unitless')
+  if (isRight(parsed)) {
+    return right(parsed.value.value)
+  } else {
+    return parsed
+  }
+}
 
 export const parseCSSNumber = (
   input: unknown,
@@ -3996,9 +4004,9 @@ export interface ParsedCSSProperties {
   maxWidth: CSSNumber | undefined
   minHeight: CSSNumber | undefined
   maxHeight: CSSNumber | undefined
-  flexGrow: CSSNumber
-  flexShrink: CSSNumber
   flex: CSSFlex
+  flexGrow: number
+  flexShrink: number
   display: string
 }
 
@@ -4170,8 +4178,8 @@ export const cssEmptyValues: ParsedCSSProperties = {
       unit: null,
     },
   },
-  flexGrow: cssUnitlessLength(0),
-  flexShrink: cssUnitlessLength(1),
+  flexGrow: 0,
+  flexShrink: 1,
   display: 'block',
 }
 
@@ -4232,9 +4240,9 @@ const cssParsers: CSSParsers = {
   marginRight: parseCSSLengthPercent,
   marginBottom: parseCSSLengthPercent,
   marginLeft: parseCSSLengthPercent,
-  flexGrow: parseCSSUnitless,
-  flexShrink: parseCSSUnitless,
   flex: parseFlex,
+  flexGrow: parseCSSUnitlessAsNumber,
+  flexShrink: parseCSSUnitlessAsNumber,
   display: parseDisplay,
 }
 
@@ -4297,9 +4305,9 @@ const cssPrinters: CSSPrinters = {
   marginRight: printCSSNumberAsAttributeValue,
   marginBottom: printCSSNumberAsAttributeValue,
   marginLeft: printCSSNumberAsAttributeValue,
-  flexGrow: printCSSNumberAsAttributeValue,
-  flexShrink: printCSSNumberAsAttributeValue,
   flex: printFlexAsAttributeValue,
+  flexGrow: jsxAttributeValueWithNoComments,
+  flexShrink: jsxAttributeValueWithNoComments,
   display: printStringAsAttributeValue,
 }
 

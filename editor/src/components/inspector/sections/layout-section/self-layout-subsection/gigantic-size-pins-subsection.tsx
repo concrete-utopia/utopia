@@ -4,6 +4,8 @@ import {
   framePointForPinnedProp,
   LayoutFlexElementNumericProp,
   LayoutPinnedProp,
+  LayoutProp,
+  StyleLayoutProp,
 } from '../../../../../core/layout/layout-helpers-new'
 import { LocalRectangle } from '../../../../../core/shared/math-utils'
 import Utils from '../../../../../utils/utils'
@@ -14,6 +16,7 @@ import {
   CSSNumber,
   cssNumberToFramePin,
   framePinToCSSNumber,
+  isCSSNumber,
   ParsedCSSPropertiesKeys,
 } from '../../../common/css-utils'
 import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
@@ -29,6 +32,7 @@ import {
   SquareButton,
   Icons,
   FlexColumn,
+  SimpleNumberInput,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
@@ -115,55 +119,11 @@ export const FlexStyleNumberControl = betterReactMemo(
   'FlexStyleNumberControl',
   (props: FlexStyleNumberControlProps) => {
     const layoutPropInfo = useInspectorLayoutInfo(props.styleProp)
-
-    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      layoutPropInfo.onSubmitValue,
-      layoutPropInfo.onUnsetValues,
-    )
-    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
-      layoutPropInfo.onTransientSubmitValue,
-      layoutPropInfo.onUnsetValues,
-    )
-    return (
-      <InspectorContextMenuWrapper
-        id={`position-${props.styleProp}-context-menu`}
-        items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
-        data={{}}
-      >
-        <NumberInput
-          id={`position-${props.styleProp}-number-input`}
-          testId={`position-${props.styleProp}-number-input`}
-          value={layoutPropInfo.value}
-          onSubmitValue={wrappedOnSubmitValue}
-          onTransientSubmitValue={wrappedOnTransientSubmitValue}
-          controlStatus={layoutPropInfo.controlStatus}
-          numberType={'UnitlessPercent'}
-          labelInner={props.label}
-          defaultUnitToHide={'px'}
-        />
-      </InspectorContextMenuWrapper>
-    )
-  },
-)
-
-interface FlexShorthandNumberControlProps {
-  label: string
-  styleProp: StyleLayoutNumberProp
-  shorthandProp: ParsedCSSPropertiesKeys
-}
-
-export const FlexShorthandNumberControl = betterReactMemo(
-  'FlexShorthandNumberControl',
-  (props: FlexShorthandNumberControlProps) => {
-    const layoutPropInfo = useInspectorInfoLonghandShorthand(
-      props.styleProp,
-      props.shorthandProp,
-      stylePropPathMappingFn,
-    )
     const value =
-      layoutPropInfo.value != null && typeof layoutPropInfo.value === 'number'
-        ? { value: layoutPropInfo.value, unit: null }
+      isCSSNumber(layoutPropInfo.value) || layoutPropInfo.value == null
+        ? layoutPropInfo.value
         : undefined
+
     const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       layoutPropInfo.onSubmitValue,
       layoutPropInfo.onUnsetValues,
@@ -182,6 +142,91 @@ export const FlexShorthandNumberControl = betterReactMemo(
           id={`position-${props.styleProp}-number-input`}
           testId={`position-${props.styleProp}-number-input`}
           value={value}
+          onSubmitValue={wrappedOnSubmitValue}
+          onTransientSubmitValue={wrappedOnTransientSubmitValue}
+          controlStatus={layoutPropInfo.controlStatus}
+          numberType={'UnitlessPercent'}
+          labelInner={props.label}
+          defaultUnitToHide={'px'}
+        />
+      </InspectorContextMenuWrapper>
+    )
+  },
+)
+
+interface FlexShorthandNumberControlProps {
+  label: string
+  styleProp: StyleLayoutProp
+  shorthandProp: StyleLayoutProp
+}
+
+export const FlexShorthandNumberControl = betterReactMemo(
+  'FlexShorthandNumberControl',
+  (props: FlexShorthandNumberControlProps) => {
+    const layoutPropInfo = useInspectorInfoLonghandShorthand(
+      props.styleProp,
+      props.shorthandProp,
+      createLayoutPropertyPath,
+    )
+    const value = typeof layoutPropInfo.value === 'number' ? layoutPropInfo.value : undefined
+
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onTransientSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    return (
+      <InspectorContextMenuWrapper
+        id={`position-${props.styleProp}-context-menu`}
+        items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
+        data={{}}
+      >
+        <SimpleNumberInput
+          id={`position-${props.styleProp}-number-input`}
+          testId={`position-${props.styleProp}-number-input`}
+          value={value}
+          onForcedSubmitValue={wrappedOnSubmitValue}
+          onSubmitValue={wrappedOnSubmitValue}
+          onTransientSubmitValue={wrappedOnTransientSubmitValue}
+          controlStatus={layoutPropInfo.controlStatus}
+          labelInner={props.label}
+          defaultUnitToHide={'px'}
+        />
+      </InspectorContextMenuWrapper>
+    )
+  },
+)
+
+interface FlexShorthandCSSNumberControlProps {
+  label: string
+  styleProp: LayoutFlexElementNumericProp
+  shorthandProp: ParsedCSSPropertiesKeys
+}
+export const FlexShorthandCSSNumberControl = betterReactMemo(
+  'FlexStyleNumberControl',
+  (props: FlexShorthandCSSNumberControlProps) => {
+    const layoutPropInfo = useInspectorLayoutInfo(props.styleProp)
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onTransientSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    return (
+      <InspectorContextMenuWrapper
+        id={`position-${props.styleProp}-context-menu`}
+        items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
+        data={{}}
+      >
+        <NumberInput
+          id={`position-${props.styleProp}-number-input`}
+          testId={`position-${props.styleProp}-number-input`}
+          value={layoutPropInfo.value}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           controlStatus={layoutPropInfo.controlStatus}
@@ -304,10 +349,14 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
     switch (parentFlexAxis) {
       case 'horizontal':
       case null:
-        widthControl = flexLayoutNumberControl('W', 'FlexFlexBasis')
+        widthControl = (
+          <FlexShorthandCSSNumberControl label='W' styleProp='FlexFlexBasis' shorthandProp='flex' />
+        )
         break
       case 'vertical':
-        heightControl = flexLayoutNumberControl('H', 'FlexFlexBasis')
+        heightControl = (
+          <FlexShorthandCSSNumberControl label='H' styleProp='FlexFlexBasis' shorthandProp='flex' />
+        )
         break
       default:
         break

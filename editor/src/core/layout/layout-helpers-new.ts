@@ -33,6 +33,7 @@ export const LayoutPinnedProps: Array<LayoutPinnedProp> = [
 ]
 
 export type StyleLayoutProp =
+  | 'flex'
   | 'flexWrap'
   | 'flexDirection'
   | 'flexGrow'
@@ -135,6 +136,7 @@ const LayoutPathMap: { [key in LayoutProp | StyleLayoutProp]: Array<PropertyPath
   alignSelf: ['style', 'alignSelf'],
   flexWrap: ['style', 'wrap'],
   flexDirection: ['style', 'flexDirection'],
+  flex: ['style', 'flex'],
   flexGrow: ['style', 'flexGrow'],
   flexShrink: ['style', 'flexShrink'],
   alignItems: ['style', 'alignItems'],
