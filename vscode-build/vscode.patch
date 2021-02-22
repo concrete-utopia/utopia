@@ -797,9 +797,9 @@ index 1ed7feec97..80e9753bba 100644
 +  let config = {
 +    ...loadedConfig,
 +    folderUri: {
-+      scheme: 'utopia',
++      scheme: projectID,
 +      authority: '',
-+      path: `/${projectID}`,
++      path: `/`,
 +      query: '',
 +      fragment: '',
 +    },

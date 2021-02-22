@@ -14,18 +14,16 @@ import {
   toUtopiaPath,
   initializeFS,
 } from 'utopia-vscode-common'
-import { fromUtopiaURI, toUtopiaURI } from './path-utils'
+import { fromUtopiaURI } from './path-utils'
 import { UtopiaFSExtension } from './utopia-fs'
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-  useFileSystemProviderErrors()
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
-  const projectID = workspaceRootUri.path
-  const workspaceRootPath = fromUtopiaURI(workspaceRootUri)
+  const projectID = workspaceRootUri.scheme
+  useFileSystemProviderErrors(projectID)
   await initializeFS(projectID)
   await ensureDirectoryExists(RootDir)
-  await ensureDirectoryExists(workspaceRootPath)
-  const utopiaFS = new UtopiaFSExtension(workspaceRootPath)
+  const utopiaFS = new UtopiaFSExtension(projectID)
   context.subscriptions.push(utopiaFS)
   initMessaging(context, workspaceRootUri)
 }
@@ -143,13 +141,13 @@ function updateDecorations(decorations: Array<DecorationRange>): void {
   }
 }
 
-function useFileSystemProviderErrors(): void {
-  setErrorHandler(toFileSystemProviderError)
+function useFileSystemProviderErrors(projectID: string): void {
+  setErrorHandler((e) => toFileSystemProviderError(projectID, e))
 }
 
-function toFileSystemProviderError(error: FSError): vscode.FileSystemError {
+function toFileSystemProviderError(projectID: string, error: FSError): vscode.FileSystemError {
   const { path: unadjustedPath, code } = error
-  const path = toUtopiaPath(unadjustedPath)
+  const path = toUtopiaPath(projectID, unadjustedPath)
   switch (code) {
     case 'ENOENT':
       return vscode.FileSystemError.FileNotFound(path)

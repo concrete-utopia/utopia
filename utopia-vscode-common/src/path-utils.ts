@@ -1,6 +1,4 @@
-export const Scheme = 'utopia'
-export const RootDir = `/${Scheme}`
-export const URIPrefix = `${Scheme}:/`
+export const RootDir = `/utopia`
 
 export function appendToPath(path: string, elem: string): string {
   const left = path.endsWith('/') ? path.slice(0, -1) : path
@@ -12,8 +10,8 @@ export function stripRootPrefix(path: string): string {
   return path.startsWith(RootDir) ? path.slice(RootDir.length + 1) : path
 }
 
-export function toUtopiaPath(path: string): string {
-  const result = appendToPath(URIPrefix, stripRootPrefix(path))
+export function toUtopiaPath(projectID: string, path: string): string {
+  const result = appendToPath(`${projectID}:/`, stripRootPrefix(path))
   return result
 }
 

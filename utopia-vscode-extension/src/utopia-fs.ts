@@ -34,7 +34,6 @@ import {
   writeFile,
   appendToPath,
   dirname,
-  Scheme,
   stripRootPrefix,
   deletePath,
   rename,
@@ -42,6 +41,7 @@ import {
   getDescendentPaths,
   isDirectory,
   readDirectory,
+  RootDir,
 } from 'utopia-vscode-common'
 import { fromUtopiaURI, toUtopiaURI } from './path-utils'
 
@@ -53,11 +53,11 @@ export class UtopiaFSExtension
   private emitEventHandle: number | null = null
   private allFilePaths: string[] | null = null
 
-  constructor(private workspaceRootPath: string) {
+  constructor(private projectID: string) {
     this.disposable = Disposable.from(
-      workspace.registerFileSystemProvider(Scheme, this, { isCaseSensitive: true }),
-      workspace.registerFileSearchProvider(Scheme, this),
-      workspace.registerTextSearchProvider(Scheme, this),
+      workspace.registerFileSystemProvider(projectID, this, { isCaseSensitive: true }),
+      workspace.registerFileSearchProvider(projectID, this),
+      workspace.registerTextSearchProvider(projectID, this),
     )
   }
 
@@ -84,15 +84,24 @@ export class UtopiaFSExtension
   }
 
   private notifyFileChanged(path: string): void {
-    this.queueFileChangeEvent({ type: FileChangeType.Changed, uri: toUtopiaURI(path) })
+    this.queueFileChangeEvent({
+      type: FileChangeType.Changed,
+      uri: toUtopiaURI(this.projectID, path),
+    })
   }
 
   private notifyFileCreated(path: string): void {
-    this.queueFileChangeEvent({ type: FileChangeType.Created, uri: toUtopiaURI(path) })
+    this.queueFileChangeEvent({
+      type: FileChangeType.Created,
+      uri: toUtopiaURI(this.projectID, path),
+    })
   }
 
   private notifyFileDeleted(path: string): void {
-    this.queueFileChangeEvent({ type: FileChangeType.Deleted, uri: toUtopiaURI(path) })
+    this.queueFileChangeEvent({
+      type: FileChangeType.Deleted,
+      uri: toUtopiaURI(this.projectID, path),
+    })
   }
 
   watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): Disposable {
@@ -201,7 +210,7 @@ export class UtopiaFSExtension
     const destinationParentDirExists = await exists(destinationParentDir)
 
     if (!destinationParentDirExists) {
-      throw FileSystemError.FileNotFound(toUtopiaURI(destinationParentDir))
+      throw FileSystemError.FileNotFound(toUtopiaURI(this.projectID, destinationParentDir))
     }
 
     if (!options.overwrite) {
@@ -226,7 +235,7 @@ export class UtopiaFSExtension
   ): Promise<Uri[]> {
     // TODO Support all search options
     const { result: foundPaths } = await this.filterFilePaths(query.pattern, options.maxResults)
-    return foundPaths.map(toUtopiaURI)
+    return foundPaths.map((p) => toUtopiaURI(this.projectID, p))
   }
 
   // TextSearchProvider
@@ -254,7 +263,7 @@ export class UtopiaFSExtension
           const index = line.indexOf(query.pattern)
           if (index !== -1) {
             progress.report({
-              uri: toUtopiaURI(filePath),
+              uri: toUtopiaURI(this.projectID, filePath),
               ranges: new Range(
                 new Position(i, index),
                 new Position(i, index + query.pattern.length),
@@ -312,7 +321,7 @@ export class UtopiaFSExtension
 
   async getAllPaths(): Promise<string[]> {
     if (this.allFilePaths == null) {
-      const result = await getDescendentPaths(this.workspaceRootPath)
+      const result = await getDescendentPaths(RootDir)
       this.allFilePaths = result
       return result
     } else {
