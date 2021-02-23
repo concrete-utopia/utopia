@@ -70,6 +70,10 @@ import {
   parsePadding,
   printPaddingAsAttributeValue,
 } from '../../../printer-parsers/css/css-parser-padding'
+import {
+  parseMargin,
+  printMarginAsAttributeValue,
+} from '../../../printer-parsers/css/css-parser-margin'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -676,6 +680,15 @@ export function printCSSNumberWithDefaultUnit(
 
 export const parseCSSLength = (input: unknown) => parseCSSNumber(input, 'Length')
 export const parseCSSLengthPercent = (input: unknown) => parseCSSNumber(input, 'LengthPercent')
+export const parseCSSLengthPercentNone = (
+  input: unknown,
+): Either<string, CSSNumber | undefined> => {
+  if (typeof input === 'string' && input === 'none') {
+    return right(undefined)
+  } else {
+    return parseCSSNumber(input, 'LengthPercent')
+  }
+}
 export const parseCSSAngle = (input: unknown) => parseCSSNumber(input, 'Angle')
 export const parseCSSAnglePercent = (input: unknown) => parseCSSNumber(input, 'AnglePercent')
 export const parseCSSPercent = (input: unknown) => parseCSSNumber(input, 'Percent', '%')
@@ -727,6 +740,27 @@ export interface CSSPadding {
   paddingRight: CSSNumber
   paddingBottom: CSSNumber
   paddingLeft: CSSNumber
+}
+
+export interface CSSMargin {
+  marginTop: CSSNumber
+  marginRight: CSSNumber
+  marginBottom: CSSNumber
+  marginLeft: CSSNumber
+}
+
+export interface CSSFlex {
+  flexGrow: number
+  flexShrink: number
+  flexBasis: CSSNumber
+}
+
+export function cssFlex(flexGrow: number, flexShrink: number, flexBasis: CSSNumber): CSSFlex {
+  return {
+    flexGrow: flexGrow,
+    flexShrink: flexShrink,
+    flexBasis: flexBasis,
+  }
 }
 
 // For matching CSS Dimensions (lengths, angles etc.) as they are always specified as a number
@@ -3889,7 +3923,7 @@ function isNumberParser(simpleValue: unknown): Either<string, number> {
   }
 }
 
-type DOMEventHandlerMetadata = ModifiableAttribute
+type DOMEventHandlerMetadata = JSXAttribute
 
 export function parseDOMEventHandlerMetadata(
   _: unknown,
@@ -3905,7 +3939,7 @@ export function parseDOMEventHandlerMetadata(
   }
 }
 
-export function printDOMEventHandlerMetadata(value: ModifiableAttribute): ModifiableAttribute {
+export function printDOMEventHandlerMetadata(value: JSXAttribute): JSXAttribute {
   return value
 }
 
@@ -3941,6 +3975,7 @@ export interface ParsedCSSProperties {
   paddingRight: CSSNumber
   paddingBottom: CSSNumber
   paddingLeft: CSSNumber
+  margin: CSSMargin
   marginTop: CSSNumber
   marginRight: CSSNumber
   marginBottom: CSSNumber
@@ -4091,6 +4126,24 @@ export const cssEmptyValues: ParsedCSSProperties = {
   maxWidth: undefined,
   minHeight: undefined,
   maxHeight: undefined,
+  margin: {
+    marginTop: {
+      value: 0,
+      unit: null,
+    },
+    marginRight: {
+      value: 0,
+      unit: null,
+    },
+    marginBottom: {
+      value: 0,
+      unit: null,
+    },
+    marginLeft: {
+      value: 0,
+      unit: null,
+    },
+  },
   marginTop: {
     value: 0,
     unit: null,
@@ -4161,9 +4214,10 @@ const cssParsers: CSSParsers = {
   right: parseCSSLengthPercent,
   bottom: parseCSSLengthPercent,
   minWidth: parseCSSLengthPercent,
-  maxWidth: parseCSSLengthPercent,
+  maxWidth: parseCSSLengthPercentNone,
   minHeight: parseCSSLengthPercent,
-  maxHeight: parseCSSLengthPercent,
+  maxHeight: parseCSSLengthPercentNone,
+  margin: parseMargin,
   marginTop: parseCSSLengthPercent,
   marginRight: parseCSSLengthPercent,
   marginBottom: parseCSSLengthPercent,
@@ -4227,6 +4281,7 @@ const cssPrinters: CSSPrinters = {
   maxWidth: printCSSNumberOrUndefinedAsAttributeValue,
   minHeight: printCSSNumberOrUndefinedAsAttributeValue,
   maxHeight: printCSSNumberOrUndefinedAsAttributeValue,
+  margin: printMarginAsAttributeValue,
   marginTop: printCSSNumberAsAttributeValue,
   marginRight: printCSSNumberAsAttributeValue,
   marginBottom: printCSSNumberAsAttributeValue,
@@ -4682,7 +4737,7 @@ export function parseAnyParseableValue<K extends keyof ParsedProperties>(
 }
 
 // hmmmm
-type PrintedValue = ModifiableAttribute
+type PrintedValue = JSXAttribute
 
 type Printer<V extends ValueOf<ParsedProperties>> = (value: V) => PrintedValue
 
@@ -4882,12 +4937,13 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     value: 0,
     unit: 'px',
   },
-  maxWidth: undefined, // should be `none`
+  maxWidth: undefined,
   minHeight: {
     value: 0,
     unit: 'px',
   },
-  maxHeight: undefined, // should be `none`
+  maxHeight: undefined,
+  margin: nontrivial,
   marginTop: {
     value: 0,
     unit: 'px',

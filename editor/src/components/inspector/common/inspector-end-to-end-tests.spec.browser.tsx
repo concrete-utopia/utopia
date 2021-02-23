@@ -62,7 +62,7 @@ describe('inspector tests with real metadata', () => {
     expect(flexPaddingTopControl.value).toMatchInlineSnapshot(`"20"`)
     expect(
       flexPaddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     // Padding left is coming from the `paddingLeft` value.
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"15px"`)
@@ -446,7 +446,7 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"12"`)
     expect(
@@ -545,10 +545,10 @@ describe('inspector tests with real metadata', () => {
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple-unknown-css"`)
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
@@ -575,7 +575,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
   })
   it('Style props strings using px', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -652,7 +652,7 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"8"`)
     expect(
@@ -736,10 +736,10 @@ describe('inspector tests with real metadata', () => {
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4%"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"8%"`)
     expect(
@@ -826,12 +826,12 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"44"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"42"`)
     expect(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(radiusControl.value).toMatchInlineSnapshot(`"15%"`)
     expect(
@@ -913,7 +913,7 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"controlled"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"5"`)
     expect(
@@ -1038,7 +1038,7 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"5"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"controlled"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"10"`)
     expect(
@@ -1385,6 +1385,12 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
+    await act(async () => {
+      await screen.findByTestId('toggle-min-max-button')
+      fireEvent.click(screen.getByTestId('toggle-min-max-button'))
+      await screen.findByTestId('position-maxWidth-number-input')
+    })
+
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
@@ -1415,7 +1421,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"trivial-default"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
@@ -1478,6 +1484,12 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
+    await act(async () => {
+      await screen.findByTestId('toggle-min-max-button')
+      fireEvent.click(screen.getByTestId('toggle-min-max-button'))
+      await screen.findByTestId('position-maxWidth-number-input')
+    })
+
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
@@ -1508,7 +1520,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"trivial-default"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)

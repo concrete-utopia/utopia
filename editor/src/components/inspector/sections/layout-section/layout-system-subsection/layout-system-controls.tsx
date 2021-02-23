@@ -31,6 +31,7 @@ import {
   FunctionIcons,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
+import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 
 function useDefaultedLayoutSystemInfo(): {
   value: LayoutSystem | 'flow'
@@ -158,6 +159,7 @@ const layoutSystemOptions = [
 ]
 
 export const paddingPropsToUnset = [
+  createLayoutPropertyPath('padding'),
   createLayoutPropertyPath('paddingLeft'),
   createLayoutPropertyPath('paddingTop'),
   createLayoutPropertyPath('paddingRight'),
@@ -165,10 +167,26 @@ export const paddingPropsToUnset = [
 ]
 
 export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
-  const flexPaddingTop = useInspectorLayoutInfo('paddingTop')
-  const flexPaddingRight = useInspectorLayoutInfo('paddingRight')
-  const flexPaddingBottom = useInspectorLayoutInfo('paddingBottom')
-  const flexPaddingLeft = useInspectorLayoutInfo('paddingLeft')
+  const flexPaddingTop = useInspectorInfoLonghandShorthand(
+    'paddingTop',
+    'padding',
+    createLayoutPropertyPath,
+  )
+  const flexPaddingRight = useInspectorInfoLonghandShorthand(
+    'paddingRight',
+    'padding',
+    createLayoutPropertyPath,
+  )
+  const flexPaddingBottom = useInspectorInfoLonghandShorthand(
+    'paddingBottom',
+    'padding',
+    createLayoutPropertyPath,
+  )
+  const flexPaddingLeft = useInspectorInfoLonghandShorthand(
+    'paddingLeft',
+    'padding',
+    createLayoutPropertyPath,
+  )
 
   const flexPaddingTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     flexPaddingTop.onSubmitValue,
@@ -214,7 +232,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onSubmitValue: flexPaddingTopOnSubmitValue,
           onTransientSubmitValue: flexPaddingTopOnTransientSubmitValue,
           controlStatus: flexPaddingTop.controlStatus,
-          numberType: 'UnitlessPercent',
+          numberType: 'LengthPercent',
           defaultUnitToHide: 'px',
           testId: 'flexPadding-T',
         },
@@ -225,7 +243,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onSubmitValue: flexPaddingRightOnSubmitValue,
           onTransientSubmitValue: flexPaddingRightOnTransientSubmitValue,
           controlStatus: flexPaddingRight.controlStatus,
-          numberType: 'UnitlessPercent',
+          numberType: 'LengthPercent',
           defaultUnitToHide: 'px',
           testId: 'flexPadding-R',
         },
@@ -236,7 +254,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onSubmitValue: flexPaddingBottomOnSubmitValue,
           onTransientSubmitValue: flexPaddingBottomOnTransientSubmitValue,
           controlStatus: flexPaddingBottom.controlStatus,
-          numberType: 'UnitlessPercent',
+          numberType: 'LengthPercent',
           defaultUnitToHide: 'px',
           testId: 'flexPadding-B',
         },
@@ -247,7 +265,7 @@ export const FlexPaddingControl = betterReactMemo('FlexPaddingControl', () => {
           onSubmitValue: flexPaddingLeftOnSubmitValue,
           onTransientSubmitValue: flexPaddingLeftOnTransientSubmitValue,
           controlStatus: flexPaddingLeft.controlStatus,
-          numberType: 'UnitlessPercent',
+          numberType: 'LengthPercent',
           defaultUnitToHide: 'px',
           testId: 'flexPadding-L',
         },

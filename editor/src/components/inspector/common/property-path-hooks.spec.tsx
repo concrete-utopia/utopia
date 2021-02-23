@@ -33,6 +33,8 @@ import {
   defaultLinearGradientBackgroundLayer,
   printCSSNumber,
   cssSolidBackgroundLayer,
+  ParsedPropertiesKeys,
+  ParsedCSSPropertiesKeys,
 } from './css-utils'
 import {
   InspectorCallbackContext,
@@ -41,12 +43,17 @@ import {
   InspectorPropsContextData,
   stylePropPathMappingFn,
   useCallbackFactory,
+  useGetOrderedPropertyKeys,
   useInspectorInfo,
   useInspectorStyleInfo,
 } from './property-path-hooks'
 import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
 import { betterReactMemo } from '../../../utils/react-performance'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import {
+  getPropsForStyleProp,
+  makeInspectorHookContextProvider,
+} from './property-path-hooks.test-utils'
 
 interface RenderTestHookProps<T> {
   value: T
@@ -440,95 +447,14 @@ describe('useInspectorMetadataForPropsObject memoization', () => {
   })
 })
 
-function getPropsForStyleProp(
-  targetPropExpression: string,
-  target: string[],
-): JSXAttributes | null {
-  // this test starts with real code, and uses the parser
-  // the aim here is to capture a vertical understanding from code -> UI
-
-  const targetExprPrefix1 = `${target[0]}={`
-  const targetExprPrefix2 = target
-    .slice(1)
-    .map((t) => `{${t}:`)
-    .join('\n')
-
-  const targetExprPostfix = target.map((t) => `}`).join('\n')
-  const code = `import * as React from "react";
-  import {
-    Ellipse,
-    Image,
-    Rectangle,
-    Text,
-    View
-  } from "utopia-api";
-  import { cake } from 'cake'
-  
-  export var App = (props) => {
-    return (
-      <View
-        uid={'aaa'} 
-        ${targetExprPrefix1}
-        ${targetExprPrefix2}
-          ${targetPropExpression}
-        ${targetExprPostfix}
-      />
-    )
-  }`
-
-  const parseResult = testParseCode(code)
-  if (!isParseSuccess(parseResult)) {
-    fail('expected parseResult to be Right')
-  }
-  const appComponent = parseResult.topLevelElements.find(isUtopiaJSXComponent)
-
-  if (appComponent == null || !isUtopiaJSXComponent(appComponent) || appComponent.name !== `App`) {
-    fail('expected the second topLevelElement to be the App component')
-  }
-  if (!isJSXElement(appComponent.rootElement)) {
-    fail(`expected the App component's root element to be a JSXElement`)
-  }
-
-  return appComponent.rootElement.props
-}
-
-const makeInspectorHookContextProvider = (
-  selectedViews: Array<TemplatePath>,
-  multiselectAttributes: JSXAttributes[],
-  targetPath: string[],
-  spiedProps: Array<{ [key: string]: any }>,
-  computedStyles: Array<ComputedStyle>,
-  attributeMetadatas: Array<StyleAttributeMetadata>,
-) => ({ children }: any) => (
-  <InspectorPropsContext.Provider
-    value={{
-      selectedViews: selectedViews,
-      editedMultiSelectedProps: multiselectAttributes,
-      targetPath,
-      spiedProps: spiedProps,
-      computedStyles: computedStyles,
-      selectedAttributeMetadatas: attributeMetadatas,
-    }}
-  >
-    {children}
-  </InspectorPropsContext.Provider>
-)
-
 function getBackgroundColorHookResult(
   backgroundColorExpressions: Array<string>,
   targetPath: string[],
-  realInnerValues: Array<any>,
+  spiedProps: Array<any>,
 ) {
   const propses = backgroundColorExpressions.map(
     (expression) => getPropsForStyleProp(expression, ['myStyleOuter', 'myStyleInner'])!,
   )
-  const spiedProps = realInnerValues.map((realInnerValue) => {
-    return targetPath.reduceRight((working, pathPart) => {
-      return {
-        [pathPart]: working,
-      }
-    }, realInnerValue)
-  })
 
   const contextProvider = makeInspectorHookContextProvider(
     [],
@@ -1099,5 +1025,166 @@ describe('Integration Test: boxShadow property', () => {
     )
     const expectedControlStatus: ControlStatus = 'multiselect-controlled'
     expect(hookResult.controlStatus).toEqual(expectedControlStatus)
+  })
+})
+
+describe('useGetOrderedPropertyKeys', () => {
+  function getPaddingHookResult<P extends ParsedCSSPropertiesKeys>(
+    propsKeys: Array<P>,
+    styleObjectExpressions: Array<string>,
+    spiedProps: Array<any>,
+    computedStyles: Array<ComputedStyle>,
+    attributeMetadatas: Array<StyleAttributeMetadata>,
+  ) {
+    const props = styleObjectExpressions.map(
+      (styleExpression) => getPropsForStyleProp(styleExpression, ['style'])!,
+    )
+
+    const contextProvider = makeInspectorHookContextProvider(
+      [],
+      props,
+      ['style'],
+      spiedProps,
+      computedStyles,
+      attributeMetadatas,
+    )
+
+    const { result } = renderHook(
+      () => useGetOrderedPropertyKeys<P>(stylePropPathMappingFn, propsKeys),
+      {
+        wrapper: contextProvider,
+      },
+    )
+    return result.current
+  }
+
+  it('does not contain entry for nonexistent prop 1', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5 }`],
+      [{ paddingLeft: 5 }],
+      [{ paddingTop: '0px', paddingRight: '0px', paddingBottom: '0px', paddingLeft: '15px' }],
+      [],
+    )
+    expect(hookResult).toEqual([['paddingLeft']])
+  })
+
+  it('does not contain entry for nonexistent prop 2', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15 }`],
+      [{ padding: 15 }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
+      [],
+    )
+    expect(hookResult).toEqual([['padding']])
+  })
+
+  it('does contain entry for prop explicitly set to undefined', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15, paddingLeft: undefined }`],
+      [{ padding: 15, paddingLeft: undefined }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
+      [],
+    )
+    expect(hookResult).toEqual([['padding', 'paddingLeft']])
+  })
+
+  it('keeps the order of props for single select 1', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5, padding: 15 }`],
+      [{ paddingLeft: 5, padding: 15 }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' }],
+      [],
+    )
+    expect(hookResult).toEqual([['paddingLeft', 'padding']])
+  })
+
+  it('keeps the order of props for single select 2', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15, paddingLeft: 5 }`],
+      [{ padding: 15, paddingLeft: 5 }],
+      [{ paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '5px' }],
+      [],
+    )
+    expect(hookResult).toEqual([['padding', 'paddingLeft']])
+  })
+
+  it('works with controlled longhand', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5 + 5 }`],
+      [{ paddingLeft: 10 }],
+      [{ paddingLeft: '10px' }],
+      [],
+    )
+    expect(hookResult).toEqual([['paddingLeft']])
+  })
+
+  it('keeps the order of props for multi select 1', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15 }`, `{ padding: 15 }`],
+      [{ padding: 15 }, { padding: 15 }],
+      [
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+      ],
+      [],
+    )
+    expect(hookResult).toEqual([['padding'], ['padding']])
+  })
+
+  it('keeps the order of props for multi select 2', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5, padding: 15 }`, `{ paddingLeft: 5, padding: 15 }`],
+      [
+        { paddingLeft: 5, padding: 15 },
+        { paddingLeft: 5, padding: 15 },
+      ],
+      [
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+      ],
+      [],
+    )
+
+    expect(hookResult).toEqual([
+      ['paddingLeft', 'padding'],
+      ['paddingLeft', 'padding'],
+    ])
+  })
+
+  it('multiselect: the paddings are in different order 1', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ paddingLeft: 5, padding: 15 }`, `{ padding: 15 }`],
+      [{ paddingLeft: 5, padding: 15 }, { padding: 15 }],
+      [
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+      ],
+      [],
+    )
+
+    expect(hookResult).toEqual([['paddingLeft', 'padding'], ['padding']])
+  })
+
+  it('multiselect: the paddings are in different order 2', () => {
+    const hookResult = getPaddingHookResult(
+      ['paddingLeft', 'padding'],
+      [`{ padding: 15, paddingLeft: 5 }`, `{ padding: 15 }`],
+      [{ padding: 15, paddingLeft: 5 }, { padding: 15 }],
+      [
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '5px' },
+        { paddingTop: '15px', paddingRight: '15px', paddingBottom: '15px', paddingLeft: '15px' },
+      ],
+      [],
+    )
+    expect(hookResult).toEqual([['padding', 'paddingLeft'], ['padding']])
   })
 })
