@@ -31,7 +31,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const utopiaFS = new UtopiaFSExtension(projectID)
   context.subscriptions.push(utopiaFS)
   initMessaging(context, workspaceRootUri)
-  vscode.window.activeTextEditor.selection.active
 }
 
 const selectionDecorationType = vscode.window.createTextEditorDecorationType({
