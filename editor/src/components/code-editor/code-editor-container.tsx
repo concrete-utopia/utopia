@@ -154,6 +154,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
       codeEditorTheme: store.editor.codeEditorTheme,
       selectedViews: store.editor.selectedViews,
       projectID: store.editor.id,
+      vscodeBridgeReady: store.editor.vscodeBridgeReady,
     }
   }, 'CodeEditorWrapper')
 
@@ -201,14 +202,18 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
   }
 
   if (isFeatureEnabled('VSCode Code Editor')) {
-    return (
-      <VSCodeIframeContainer
-        projectID={forceNotNull(
-          'Project ID must be set when launching the code editor',
-          selectedProps.projectID,
-        )}
-      />
-    )
+    if (selectedProps.vscodeBridgeReady) {
+      return (
+        <VSCodeIframeContainer
+          projectID={forceNotNull(
+            'Project ID must be set when launching the code editor',
+            selectedProps.projectID,
+          )}
+        />
+      )
+    } else {
+      return <div>Loading...</div>
+    }
   } else {
     if (isFeatureEnabled('iFrame Code Editor')) {
       return <CodeEditorIframeContainer propsToSend={propsToSend} />

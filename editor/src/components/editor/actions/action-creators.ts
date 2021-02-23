@@ -178,6 +178,7 @@ import type {
   WrapInLayoutable,
   WrapInView,
   UpdateFromCodeEditor,
+  MarkVSCodeBridgeReady,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1218,5 +1219,11 @@ export function updateChildText(target: InstancePath, text: string): UpdateChild
     action: 'UPDATE_CHILD_TEXT',
     target: target,
     text: text,
+  }
+}
+
+export function markVSCodeBridgeReady(): MarkVSCodeBridgeReady {
+  return {
+    action: 'MARK_VSCODE_BRIDGE_READY',
   }
 }

@@ -357,6 +357,7 @@ import {
   SendLinterRequestMessage,
   UpdateChildText,
   UpdateFromCodeEditor,
+  MarkVSCodeBridgeReady,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1016,6 +1017,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     codeEditorTheme: poppedEditor.codeEditorTheme,
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
+    vscodeBridgeReady: currentEditor.vscodeBridgeReady,
   }
 }
 
@@ -4248,6 +4250,12 @@ export const UPDATE_FNS = {
       },
       editor,
     )
+  },
+  MARK_VSCODE_BRIDGE_READY: (_action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      vscodeBridgeReady: true,
+    }
   },
 }
 

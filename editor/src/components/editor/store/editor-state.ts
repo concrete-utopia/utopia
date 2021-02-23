@@ -341,6 +341,7 @@ export interface EditorState {
   codeEditorTheme: CodeEditorTheme
   safeMode: boolean
   saveError: boolean
+  vscodeBridgeReady: boolean
 }
 
 export interface StoredEditorState {
@@ -1137,6 +1138,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     codeEditorTheme: DefaultTheme,
     safeMode: false,
     saveError: false,
+    vscodeBridgeReady: false,
   }
 }
 
@@ -1381,6 +1383,7 @@ export function editorModelFromPersistentModel(
       minimised: persistentModel.fileBrowser.minimised,
     },
     codeEditorErrors: persistentModel.codeEditorErrors,
+    vscodeBridgeReady: false,
   }
   return editor
 }

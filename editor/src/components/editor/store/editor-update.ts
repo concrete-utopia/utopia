@@ -290,6 +290,8 @@ export function runSimpleLocalEditorAction(
       // side effect ☢️
       workers.sendLinterRequestMessage(action.filePath, action.content)
       return state
+    case 'MARK_VSCODE_BRIDGE_READY':
+      return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(action, state)
     default:
       return state
   }

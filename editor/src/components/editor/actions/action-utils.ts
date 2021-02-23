@@ -80,6 +80,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
     case 'PROPERTY_CONTROLS_IFRAME_READY':
     case 'SEND_LINTER_REQUEST_MESSAGE':
+    case 'MARK_VSCODE_BRIDGE_READY':
       return true
 
     case 'NEW':

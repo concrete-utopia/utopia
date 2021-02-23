@@ -7,7 +7,11 @@ import {
   zipContentsTreeAsync,
 } from '../../components/assets'
 import { EditorDispatch } from '../../components/editor/action-types'
-import { deleteFile, updateFromCodeEditor } from '../../components/editor/actions/action-creators'
+import {
+  deleteFile,
+  markVSCodeBridgeReady,
+  updateFromCodeEditor,
+} from '../../components/editor/actions/action-creators'
 import { isDirectory } from '../model/project-file-utils'
 import {
   initializeFS,
@@ -120,6 +124,8 @@ export async function initVSCodeBridge(
     })
     watchForChanges(projectID, dispatch)
   }
+
+  dispatch([markVSCodeBridgeReady()], 'everyone')
 }
 
 export async function sendOpenFileMessage(filePath: string): Promise<void> {

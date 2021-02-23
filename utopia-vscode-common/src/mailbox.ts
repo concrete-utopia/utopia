@@ -19,7 +19,7 @@ let onMessageCallback: (message: any) => void
 let counter: number = 0
 let lastConsumedMessage: number = -1
 let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
-const POLLING_TIMEOUT = 100
+const POLLING_TIMEOUT = 8
 
 function pathForMailbox(mailbox: Mailbox): string {
   return `/${mailbox}`

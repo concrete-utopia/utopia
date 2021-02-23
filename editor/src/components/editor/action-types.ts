@@ -779,6 +779,10 @@ export interface UpdateChildText {
   text: string
 }
 
+export interface MarkVSCodeBridgeReady {
+  action: 'MARK_VSCODE_BRIDGE_READY'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -908,6 +912,7 @@ export type EditorAction =
   | PropertyControlsIFrameReady
   | AddStoryboardFile
   | UpdateChildText
+  | MarkVSCodeBridgeReady
 
 export type DispatchPriority =
   | 'everyone'
