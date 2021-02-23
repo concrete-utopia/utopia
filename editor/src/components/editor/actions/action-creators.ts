@@ -179,6 +179,7 @@ import type {
   WrapInView,
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
+  SelectFromFileAndPosition,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1225,5 +1226,18 @@ export function updateChildText(target: InstancePath, text: string): UpdateChild
 export function markVSCodeBridgeReady(): MarkVSCodeBridgeReady {
   return {
     action: 'MARK_VSCODE_BRIDGE_READY',
+  }
+}
+
+export function selectFromFileAndPosition(
+  filePath: string,
+  line: number,
+  column: number,
+): SelectFromFileAndPosition {
+  return {
+    action: 'SELECT_FROM_FILE_AND_POSITION',
+    filePath: filePath,
+    line: line,
+    column: column,
   }
 }

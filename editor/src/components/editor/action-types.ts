@@ -783,6 +783,13 @@ export interface MarkVSCodeBridgeReady {
   action: 'MARK_VSCODE_BRIDGE_READY'
 }
 
+export interface SelectFromFileAndPosition {
+  action: 'SELECT_FROM_FILE_AND_POSITION'
+  filePath: string
+  line: number
+  column: number
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -913,6 +920,7 @@ export type EditorAction =
   | AddStoryboardFile
   | UpdateChildText
   | MarkVSCodeBridgeReady
+  | SelectFromFileAndPosition
 
 export type DispatchPriority =
   | 'everyone'

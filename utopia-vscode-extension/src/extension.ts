@@ -17,6 +17,8 @@ import {
   Bounds,
   ToVSCodeMessage,
   parseToVSCodeMessage,
+  sendMessage,
+  editorCursorPositionChanged,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 
@@ -29,6 +31,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const utopiaFS = new UtopiaFSExtension(projectID)
   context.subscriptions.push(utopiaFS)
   initMessaging(context, workspaceRootUri)
+  vscode.window.activeTextEditor.selection.active
 }
 
 const selectionDecorationType = vscode.window.createTextEditorDecorationType({
@@ -69,13 +72,21 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
 
   initMailbox(VSCodeInbox, parseToVSCodeMessage, handleMessage)
 
-  vscode.window.onDidOpenTerminal
-
   context.subscriptions.push(
     vscode.window.onDidChangeOpenEditors(() => {
       updateDecorations(currentDecorations)
     }),
+    vscode.window.onDidChangeTextEditorSelection((event) => {
+      cursorPositionChanged(event)
+    }),
   )
+}
+
+function cursorPositionChanged(event: vscode.TextEditorSelectionChangeEvent): void {
+  const editor = event.textEditor
+  const filename = editor.document.uri.path
+  const position = editor.selection.active
+  sendMessage(editorCursorPositionChanged(filename, position.line, position.character))
 }
 
 function revealRangeIfPossible(boundsInFile: BoundsInFile): void {

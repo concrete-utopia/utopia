@@ -81,6 +81,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'PROPERTY_CONTROLS_IFRAME_READY':
     case 'SEND_LINTER_REQUEST_MESSAGE':
     case 'MARK_VSCODE_BRIDGE_READY':
+    case 'SELECT_FROM_FILE_AND_POSITION':
       return true
 
     case 'NEW':

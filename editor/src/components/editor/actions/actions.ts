@@ -358,6 +358,7 @@ import {
   UpdateChildText,
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
+  SelectFromFileAndPosition,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -428,6 +429,8 @@ import {
   addSceneToJSXComponents,
   UserState,
   UserConfiguration,
+  getHighlightBoundsForUids,
+  getTemplatePathsInBounds,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -488,6 +491,7 @@ import {
   setPackageStatus,
   updateNodeModulesContents,
   finishCheckpointTimer,
+  selectComponents,
 } from './action-creators'
 import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
@@ -4256,6 +4260,17 @@ export const UPDATE_FNS = {
       ...editor,
       vscodeBridgeReady: true,
     }
+  },
+  SELECT_FROM_FILE_AND_POSITION: (
+    action: SelectFromFileAndPosition,
+    editor: EditorModel,
+    derived: DerivedState,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const allTemplatePaths = derived.navigatorTargets
+    const highlightBoundsForUids = getHighlightBoundsForUids(editor)
+    const whatevs = getTemplatePathsInBounds(action.line, highlightBoundsForUids, allTemplatePaths)
+    return UPDATE_FNS.SELECT_COMPONENTS(selectComponents(whatevs, false), editor, dispatch)
   },
 }
 

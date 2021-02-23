@@ -129,6 +129,7 @@ import {
   isInstancePath,
   toUid,
   toString,
+  dynamicPathToStaticPath,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notice'
@@ -1726,4 +1727,34 @@ export function getHighlightBoundsForTemplatePath(
     }
   }
   return null
+}
+
+export function getTemplatePathsInBounds(
+  line: number,
+  parsedHighlightBounds: HighlightBoundsForUids | null,
+  allTemplatePaths: Array<TemplatePath>,
+): Array<TemplatePath> {
+  if (parsedHighlightBounds == null) {
+    return []
+  } else {
+    let highlightBounds = Object.values(parsedHighlightBounds).filter((bounds) => {
+      return line >= bounds.startLine && line <= bounds.endLine
+    })
+    // Put the lowest possible start line first.
+    highlightBounds.sort((a, b) => b.startLine - a.startLine)
+    let paths: Array<TemplatePath> = []
+    if (highlightBounds.length > 0) {
+      const target = highlightBounds[0].uid
+      Utils.fastForEach(allTemplatePaths, (path) => {
+        if (isInstancePath(path)) {
+          const staticPath = dynamicPathToStaticPath(path)
+          const uid = staticPath != null ? toUid(staticPath) : null
+          if (uid === target) {
+            paths.push(path)
+          }
+        }
+      })
+    }
+    return paths
+  }
 }
