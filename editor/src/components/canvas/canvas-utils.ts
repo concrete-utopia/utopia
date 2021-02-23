@@ -512,7 +512,7 @@ export function updateFramesOfScenesAndComponents(
                   const { flexBasis, width, height } = flexProps
                   if (flexBasis != null) {
                     propsToSet.push({
-                      path: createLayoutPropertyPath('FlexFlexBasis'),
+                      path: createLayoutPropertyPath('flexBasis'),
                       value: jsxAttributeValue(flexBasis, emptyComments),
                     })
                   }
