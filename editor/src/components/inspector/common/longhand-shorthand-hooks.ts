@@ -91,7 +91,7 @@ function getShadowedLonghandShorthandValue<
   }
 }
 
-type InspectorInfoWithPropKeys<
+export type InspectorInfoWithPropKeys<
   LonghandKey extends ParsedPropertiesKeys,
   ShorthandKey extends ParsedPropertiesKeys
 > = Omit<InspectorInfo<ParsedProperties[LonghandKey]>, 'useSubmitValueFactory'> & {
