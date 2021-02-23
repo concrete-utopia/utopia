@@ -25,8 +25,7 @@ export async function initializeStore(
     driver: localforage.INDEXEDDB,
   })
 
-  updateLastAccessed()
-  dropOldStores()
+  updateLastAccessed().then(dropOldStores)
 }
 
 export async function keys(): Promise<string[]> {
@@ -73,6 +72,7 @@ async function dropOldStores(): Promise<void> {
     const storeNamesToDrop = storesToDrop.map(v => v.store)
     console.log(`Dropping stores ${JSON.stringify(storeNamesToDrop)}`)
     storeNamesToDrop.forEach(storeName => {
+      storesLastAccessedStore.removeItem(storeName)
       localforage.dropInstance({
         name: 'utopia',
         storeName: storeName
