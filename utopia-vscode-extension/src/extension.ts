@@ -5,7 +5,6 @@ import {
   initMailbox,
   isOpenFileMessage,
   VSCodeInbox,
-  UtopiaVSCodeMessage,
   isUpdateDecorationsMessage,
   DecorationRange,
   DecorationRangeType,
@@ -16,6 +15,8 @@ import {
   isSelectedElementChanged,
   BoundsInFile,
   Bounds,
+  ToVSCodeMessage,
+  parseToVSCodeMessage,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 
@@ -50,7 +51,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
   // State that needs to be stored between messages.
   let currentDecorations: Array<DecorationRange> = []
 
-  function handleMessage(message: UtopiaVSCodeMessage): void {
+  function handleMessage(message: ToVSCodeMessage): void {
     if (isOpenFileMessage(message)) {
       vscode.commands.executeCommand(
         'vscode.open',
@@ -66,7 +67,9 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
     }
   }
 
-  initMailbox(VSCodeInbox, handleMessage)
+  initMailbox(VSCodeInbox, parseToVSCodeMessage, handleMessage)
+
+  vscode.window.onDidOpenTerminal
 
   context.subscriptions.push(
     vscode.window.onDidChangeOpenEditors(() => {
