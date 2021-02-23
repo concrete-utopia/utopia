@@ -7,7 +7,11 @@ import {
   zipContentsTreeAsync,
 } from '../../components/assets'
 import { EditorDispatch } from '../../components/editor/action-types'
-import { deleteFile, updateFromCodeEditor } from '../../components/editor/actions/action-creators'
+import {
+  deleteFile,
+  selectFromFileAndPosition,
+  updateFromCodeEditor,
+} from '../../components/editor/actions/action-creators'
 import { isDirectory } from '../model/project-file-utils'
 import {
   initializeFS,
@@ -29,9 +33,11 @@ import {
   BoundsInFile,
   selectedElementChanged,
   parseFromVSCodeMessage,
+  isEditorCursorPositionChanged,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
+import { getTemplatePathsInBounds } from '../../components/editor/store/editor-state'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -116,7 +122,14 @@ export async function initVSCodeBridge(
     await clearBothMailboxes()
     await writeProjectContents(projectID, projectContents)
     initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
-      /* Do nothing */
+      if (isEditorCursorPositionChanged(message)) {
+        dispatch(
+          [selectFromFileAndPosition(message.filePath, message.line, message.column)],
+          'everyone',
+        )
+      } else {
+        console.error(`Unhandled message type ${JSON.stringify(message)}`)
+      }
     })
     watchForChanges(projectID, dispatch)
   }

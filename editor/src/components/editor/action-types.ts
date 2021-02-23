@@ -779,6 +779,13 @@ export interface UpdateChildText {
   text: string
 }
 
+export interface SelectFromFileAndPosition {
+  action: 'SELECT_FROM_FILE_AND_POSITION'
+  filePath: string
+  line: number
+  column: number
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -908,6 +915,7 @@ export type EditorAction =
   | PropertyControlsIFrameReady
   | AddStoryboardFile
   | UpdateChildText
+  | SelectFromFileAndPosition
 
 export type DispatchPriority =
   | 'everyone'

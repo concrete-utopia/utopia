@@ -128,6 +128,15 @@ export interface EditorCursorPositionChanged {
   column: number
 }
 
+export function editorCursorPositionChanged(filePath: string, line: number, column: number): EditorCursorPositionChanged {
+  return {
+    type: 'EDITOR_CURSOR_POSITION_CHANGED',
+    filePath: filePath,
+    line: line,
+    column: column
+  }
+}
+
 export type FromVSCodeMessage = EditorCursorPositionChanged
 
 export function isEditorCursorPositionChanged(message: unknown): message is EditorCursorPositionChanged {

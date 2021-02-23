@@ -178,6 +178,7 @@ import type {
   WrapInLayoutable,
   WrapInView,
   UpdateFromCodeEditor,
+  SelectFromFileAndPosition,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1218,5 +1219,18 @@ export function updateChildText(target: InstancePath, text: string): UpdateChild
     action: 'UPDATE_CHILD_TEXT',
     target: target,
     text: text,
+  }
+}
+
+export function selectFromFileAndPosition(
+  filePath: string,
+  line: number,
+  column: number,
+): SelectFromFileAndPosition {
+  return {
+    action: 'SELECT_FROM_FILE_AND_POSITION',
+    filePath: filePath,
+    line: line,
+    column: column,
   }
 }

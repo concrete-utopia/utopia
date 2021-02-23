@@ -286,6 +286,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
     case 'UPDATE_CHILD_TEXT':
       return UPDATE_FNS.UPDATE_CHILD_TEXT(action, state)
+    case 'SELECT_FROM_FILE_AND_POSITION':
+      return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, derivedState, dispatch)
     case 'SEND_LINTER_REQUEST_MESSAGE':
       // side effect ☢️
       workers.sendLinterRequestMessage(action.filePath, action.content)
