@@ -6,6 +6,7 @@ import * as EditorActions from '../editor/actions/action-creators'
 import { betterReactMemo } from '../../uuiui-deps'
 import * as TP from '../../core/shared/template-path'
 import { FormulaBar } from '../canvas/controls/formula-bar'
+import { ComponentOrInstanceIndicator } from './ComponentButton/componentButton'
 
 export const TopMenu = betterReactMemo('TopMenu', () => {
   const dispatch = useEditorState((store) => store.dispatch, 'TopMenu dispatch')
@@ -34,6 +35,7 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
           onClick={onClickNavigateTab}
         />
       </Tooltip>
+      <ComponentOrInstanceIndicator />
       <FormulaBar key={formulaBarKey} />
     </SimpleFlexRow>
   )
