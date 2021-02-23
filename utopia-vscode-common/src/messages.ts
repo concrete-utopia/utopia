@@ -87,7 +87,7 @@ export function selectedElementChanged(boundsInFile: BoundsInFile): SelectedElem
   }
 }
 
-export type UtopiaVSCodeMessage = OpenFileMessage | UpdateDecorationsMessage | SelectedElementChanged
+export type ToVSCodeMessage = OpenFileMessage | UpdateDecorationsMessage | SelectedElementChanged
 
 export function isOpenFileMessage(message: unknown): message is OpenFileMessage {
   return (
@@ -111,9 +111,36 @@ export function isSelectedElementChanged(message: unknown): message is SelectedE
   )
 }
 
-export function parseMessage(unparsed: string): UtopiaVSCodeMessage {
+export function parseToVSCodeMessage(unparsed: string): ToVSCodeMessage {
   const message = JSON.parse(unparsed)
   if (isOpenFileMessage(message) || isUpdateDecorationsMessage(message) || isSelectedElementChanged(message)) {
+    return message
+  } else {
+    // FIXME This should return an Either
+    throw new Error(`Invalid message type ${JSON.stringify(message)}`)
+  }
+}
+
+export interface EditorCursorPositionChanged {
+  type: 'EDITOR_CURSOR_POSITION_CHANGED'
+  filePath: string
+  line: number
+  column: number
+}
+
+export type FromVSCodeMessage = EditorCursorPositionChanged
+
+export function isEditorCursorPositionChanged(message: unknown): message is EditorCursorPositionChanged {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'EDITOR_CURSOR_POSITION_CHANGED'
+  )
+}
+
+export function parseFromVSCodeMessage(unparsed: string): FromVSCodeMessage {
+  const message = JSON.parse(unparsed)
+  if (isEditorCursorPositionChanged(message)) {
     return message
   } else {
     // FIXME This should return an Either

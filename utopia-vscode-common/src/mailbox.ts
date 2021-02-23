@@ -6,7 +6,7 @@ import {
   readFileAsUTF8,
   writeFileAsUTF8,
 } from './fs/fs-utils'
-import { parseMessage, UtopiaVSCodeMessage } from './messages'
+import { FromVSCodeMessage, parseToVSCodeMessage, ToVSCodeMessage } from './messages'
 import { appendToPath } from './path-utils'
 
 type Mailbox = 'VSCODE_MAILBOX' | 'UTOPIA_MAILBOX'
@@ -15,10 +15,10 @@ export const UtopiaInbox: Mailbox = 'UTOPIA_MAILBOX'
 
 let inbox: Mailbox
 let outbox: Mailbox
-let onMessageCallback: (message: UtopiaVSCodeMessage) => void
+let onMessageCallback: (message: any) => void
 let counter: number = 0
 let lastConsumedMessage: number = -1
-let queuedMessages: UtopiaVSCodeMessage[] = []
+let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
 const POLLING_TIMEOUT = 100
 
 function pathForMailbox(mailbox: Mailbox): string {
@@ -36,7 +36,7 @@ function generateMessageName(): string {
   return `${counter++}`
 }
 
-export async function sendMessage(message: UtopiaVSCodeMessage): Promise<void> {
+export async function sendMessage(message: ToVSCodeMessage | FromVSCodeMessage): Promise<void> {
   if (outbox == null) {
     queuedMessages.push(message)
   } else {
@@ -57,36 +57,37 @@ async function initOutbox(outboxToUse: Mailbox): Promise<void> {
   }
 }
 
-async function receiveMessage(messageName: string): Promise<UtopiaVSCodeMessage> {
+async function receiveMessage<T>(messageName: string, parseMessage: (msg: string) => T): Promise<T> {
   const messagePath = pathForInboxMessage(messageName)
   const content = await readFileAsUTF8(messagePath)
   return parseMessage(content)
 }
 
-async function pollInbox(): Promise<void> {
+async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
   const allMessages = await readDirectory(pathForMailbox(inbox))
   const messagesToProcess = allMessages.filter(
     (messageName) => Number.parseInt(messageName) > lastConsumedMessage,
   )
   if (messagesToProcess.length > 0) {
-    const messages = await Promise.all(messagesToProcess.map(receiveMessage))
+    const messages = await Promise.all(messagesToProcess.map(m => receiveMessage(m, parseMessage)))
     lastConsumedMessage = Math.max(
       ...messagesToProcess.map((messageName) => Number.parseInt(messageName)),
     )
     messages.forEach(onMessageCallback)
   }
-  setTimeout(pollInbox, POLLING_TIMEOUT)
+  setTimeout(() => pollInbox(parseMessage), POLLING_TIMEOUT)
 }
 
 
-async function initInbox(
+async function initInbox<T>(
   inboxToUse: Mailbox,
-  onMessage: (message: UtopiaVSCodeMessage) => void,
+  parseMessage: (msg: string) => T,
+  onMessage: (message: T) => void,
 ): Promise<void> {
   inbox = inboxToUse
   await ensureMailboxExists(inboxToUse)
   onMessageCallback = onMessage
-  pollInbox()
+  pollInbox(parseMessage)
 }
 
 async function ensureMailboxExists(mailbox: Mailbox): Promise<void> {
@@ -105,12 +106,13 @@ export async function clearBothMailboxes(): Promise<void> {
   await clearMailbox(VSCodeInbox)
 }
 
-export async function initMailbox(
+export async function initMailbox<T>(
   inboxToUse: Mailbox,
-  onMessage: (message: UtopiaVSCodeMessage) => void,
+  parseMessage: (msg: string) => T,
+  onMessage: (message: T) => void,
 ): Promise<void> {
   await initOutbox(inboxToUse === VSCodeInbox ? UtopiaInbox : VSCodeInbox)
-  await initInbox(inboxToUse, onMessage)
+  await initInbox(inboxToUse, parseMessage, onMessage)
 }
 
 // TODO Do we need an unsubscribe feature?

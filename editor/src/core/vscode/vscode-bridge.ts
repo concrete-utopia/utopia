@@ -20,7 +20,7 @@ import {
   openFileMessage,
   sendMessage,
   UtopiaInbox,
-  UtopiaVSCodeMessage,
+  FromVSCodeMessage,
   deletePath,
   DecorationRange,
   updateDecorationsMessage,
@@ -28,6 +28,7 @@ import {
   stat,
   BoundsInFile,
   selectedElementChanged,
+  parseFromVSCodeMessage,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
@@ -114,7 +115,7 @@ export async function initVSCodeBridge(
     await initializeFS(projectID)
     await clearBothMailboxes()
     await writeProjectContents(projectID, projectContents)
-    initMailbox(UtopiaInbox, (message: UtopiaVSCodeMessage) => {
+    initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
       /* Do nothing */
     })
     watchForChanges(projectID, dispatch)
