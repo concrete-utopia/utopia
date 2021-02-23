@@ -21,7 +21,10 @@ import {
 export const AssumedFlexDefaults: CSSFlex = {
   flexGrow: 1,
   flexShrink: 1,
-  flexBasis: cssNumber(0),
+  flexBasis: {
+    value: 0,
+    unit: null,
+  },
 }
 export const parseFlex = (value: unknown): Either<string, CSSFlex> => {
   const lexer = getLexerPropertyMatches('flex', value, '')
