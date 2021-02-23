@@ -107,19 +107,8 @@ export const AlignSelfControl = betterReactMemo('AlignSelfControl', () => {
 })
 
 export const MarginControl = betterReactMemo('MarginControl', () => {
-  const marginTop = useInspectorInfoLonghandShorthand('marginTop', 'margin', stylePropPathMappingFn)
-  const marginRight = useInspectorInfoLonghandShorthand(
-    'marginRight',
-    'margin',
-    stylePropPathMappingFn,
-  )
-  const marginBottom = useInspectorInfoLonghandShorthand(
-    'marginBottom',
-    'margin',
-    stylePropPathMappingFn,
-  )
-  const marginLeft = useInspectorInfoLonghandShorthand(
-    'marginLeft',
+  const { marginTop, marginRight, marginBottom, marginLeft } = useInspectorInfoLonghandShorthand(
+    ['marginTop', 'marginRight', 'marginBottom', 'marginLeft'],
     'margin',
     stylePropPathMappingFn,
   )
