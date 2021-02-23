@@ -4319,6 +4319,7 @@ const cssPrinters: CSSPrinters = {
   marginRight: printCSSNumberAsAttributeValue('px'),
   marginBottom: printCSSNumberAsAttributeValue('px'),
   marginLeft: printCSSNumberAsAttributeValue('px'),
+  flex: printFlexAsAttributeValue,
   flexGrow: jsxAttributeValueWithNoComments,
   flexShrink: jsxAttributeValueWithNoComments,
   display: printStringAsAttributeValue,
