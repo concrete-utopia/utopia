@@ -69,7 +69,7 @@ export const printMarginAsAttributeValue = (
   const marginLeft = printCSSNumberWithDefaultUnit(value.marginLeft, 'px')
 
   if (canUseOneValueSyntax(marginTop, marginRight, marginBottom, marginLeft)) {
-    const marginValue = printCSSNumber(value.marginTop)
+    const marginValue = printCSSNumber(value.marginTop, 'px')
     return jsxAttributeValue(marginValue, emptyComments)
   } else if (canUseTwoValueSyntax(marginTop, marginRight, marginBottom, marginLeft)) {
     const marginValue = `${marginTop} ${marginLeft}`
