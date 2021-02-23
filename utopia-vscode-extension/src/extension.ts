@@ -39,7 +39,7 @@ const selectionDecorationType = vscode.window.createTextEditorDecorationType({
 })
 
 const highlightDecorationType = vscode.window.createTextEditorDecorationType({
-  borderColor: '#007aff',
+  borderColor: '#007aff11',
   borderStyle: 'solid',
   borderWidth: '0 0 0 3px',
   isWholeLine: true,
