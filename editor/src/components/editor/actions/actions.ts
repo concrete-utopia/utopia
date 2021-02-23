@@ -492,13 +492,7 @@ import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
-import {
-  initVSCodeBridge,
-  sendOpenFileMessage,
-  watchForChanges,
-  writeProjectContents,
-  writeProjectFile,
-} from '../../../core/vscode/vscode-bridge'
+import { initVSCodeBridge, sendOpenFileMessage } from '../../../core/vscode/vscode-bridge'
 
 function applyUpdateToJSXElement(
   element: JSXElement,

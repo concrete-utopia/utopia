@@ -71,6 +71,8 @@ process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
 })
 
+jest.mock('../../core/vscode/vscode-bridge')
+
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const renderCountBaseline = renderCount
 

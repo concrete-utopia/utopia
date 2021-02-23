@@ -30,6 +30,7 @@ import {
   selectedElementChanged,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile } from '../shared/project-file-types'
+import { isBrowserEnvironment } from '../shared/utils'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -50,7 +51,7 @@ function fromFSPath(fsPath: string): string {
   }
 }
 
-export async function writeProjectFile(
+async function writeProjectFile(
   projectID: string,
   projectPath: string,
   file: ProjectFile,
@@ -69,7 +70,7 @@ export async function writeProjectFile(
   }
 }
 
-export async function writeProjectContents(
+async function writeProjectContents(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
 ): Promise<void> {
@@ -82,7 +83,7 @@ export async function writeProjectContents(
   })
 }
 
-export function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
+function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
   function onCreated(fsPath: string): void {
     stat(fsPath).then((fsStat) => {
       if (fsStat.type === 'FILE') {
@@ -109,13 +110,15 @@ export async function initVSCodeBridge(
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
 ): Promise<void> {
-  await initializeFS(projectID)
-  await clearBothMailboxes()
-  await writeProjectContents(projectID, projectContents)
-  initMailbox(UtopiaInbox, (message: UtopiaVSCodeMessage) => {
-    /* Do nothing */
-  })
-  watchForChanges(projectID, dispatch)
+  if (isBrowserEnvironment) {
+    await initializeFS(projectID)
+    await clearBothMailboxes()
+    await writeProjectContents(projectID, projectContents)
+    initMailbox(UtopiaInbox, (message: UtopiaVSCodeMessage) => {
+      /* Do nothing */
+    })
+    watchForChanges(projectID, dispatch)
+  }
 }
 
 export async function sendOpenFileMessage(filePath: string): Promise<void> {
@@ -204,5 +207,7 @@ export async function applyProjectContentChanges(
       }
     }
   }
-  await zipContentsTreeAsync(oldContents, newContents, onElement)
+  if (isBrowserEnvironment) {
+    await zipContentsTreeAsync(oldContents, newContents, onElement)
+  }
 }
