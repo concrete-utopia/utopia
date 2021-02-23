@@ -462,6 +462,7 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
           unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
           setProp_UNSAFE(
             TestSelectedComponent,
@@ -497,10 +498,11 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingLeft']),
-            jsxAttributeValue('undefined', emptyComments),
+            jsxAttributeValue(undefined, emptyComments),
           ),
         ],
       ],
@@ -521,8 +523,8 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
           unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingTop']),
@@ -557,8 +559,8 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
           unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingTop']),
@@ -593,10 +595,11 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingLeft']),
-            jsxAttributeValue('undefined', emptyComments),
+            jsxAttributeValue(undefined, emptyComments),
           ),
         ],
       ],
@@ -621,7 +624,7 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingLeft']),
-            jsxAttributeValue('undefined', emptyComments),
+            jsxAttributeValue(undefined, emptyComments),
           ),
         ],
       ],
@@ -642,12 +645,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
           unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingTop']),
             jsxAttributeValue('10px', emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingRight']),
+            jsxAttributeValue(25, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
@@ -659,7 +667,7 @@ describe('useInspectorInfo: onUnsetValues', () => {
     ])
   })
 
-  it('an unrelated longhand shadowed by the shorthand has to be deleted', () => {
+  it('an unrelated longhand shadowed by the shorthand has to be overwritten', () => {
     const { hookResult, mockDispatch } = getPaddingHookResult(
       ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
       'padding',
@@ -673,9 +681,8 @@ describe('useInspectorInfo: onUnsetValues', () => {
     expect(mockDispatch.mock.calls).toEqual([
       [
         [
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
-          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingRight'])),
           unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingTop']),
