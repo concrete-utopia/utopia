@@ -467,17 +467,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingTop']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingRight']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingBottom']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
         ],
       ],
@@ -528,17 +528,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingTop']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingRight']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingBottom']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
         ],
       ],
@@ -564,17 +564,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingTop']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingRight']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingBottom']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
         ],
       ],
@@ -650,7 +650,7 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingTop']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
@@ -660,7 +660,7 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingBottom']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
         ],
       ],
@@ -686,17 +686,17 @@ describe('useInspectorInfo: onUnsetValues', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingTop']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingRight']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingBottom']),
-            jsxAttributeValue('10px', emptyComments),
+            jsxAttributeValue(10, emptyComments),
           ),
         ],
       ],
