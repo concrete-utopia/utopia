@@ -4269,8 +4269,16 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const allTemplatePaths = derived.navigatorTargets
     const highlightBoundsForUids = getHighlightBoundsForUids(editor)
-    const whatevs = getTemplatePathsInBounds(action.line, highlightBoundsForUids, allTemplatePaths)
-    return UPDATE_FNS.SELECT_COMPONENTS(selectComponents(whatevs, false), editor, dispatch)
+    const newlySelectedElements = getTemplatePathsInBounds(
+      action.line,
+      highlightBoundsForUids,
+      allTemplatePaths,
+    )
+    return UPDATE_FNS.SELECT_COMPONENTS(
+      selectComponents(newlySelectedElements, false),
+      editor,
+      dispatch,
+    )
   },
 }
 
