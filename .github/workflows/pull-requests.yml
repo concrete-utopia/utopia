@@ -125,4 +125,4 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Speed test: ${{ steps.run-performance-test.outputs.perf-result }}
+            Performance: ${{ steps.run-performance-test.outputs.perf-result }}
