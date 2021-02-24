@@ -2,9 +2,11 @@ import * as deepEqual from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { jsxAttributeValue } from '../../../core/shared/element-template'
+import { objectMap } from '../../../core/shared/object-utils'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 import { create } from '../../../core/shared/property-path'
 import { instancePath, isInstancePath } from '../../../core/shared/template-path'
-import { arrayEquals } from '../../../core/shared/utils'
+import { arrayEquals, NO_OP } from '../../../core/shared/utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import {
@@ -19,6 +21,7 @@ import {
 } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
 import { ParsedProperties, ParsedPropertiesKeys, printCSSValue } from './css-utils'
+import { ReadonlyRef } from './inspector-utils'
 import {
   InspectorInfo,
   InspectorPropsContext,
@@ -126,6 +129,8 @@ export function useInspectorInfoLonghandShorthand<
     pathMappingFn,
   )
 
+  const allOrderedPropKeys = useGetOrderedPropertyKeys(pathMappingFn, [...longhands, shorthand])
+
   const longhandResults = longhands.map((longhand) => {
     // we follow the Rules of Hooks because we know that the length of the longhands array is stable during the lifecycle of this hook
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -220,23 +225,6 @@ export function useInspectorInfoLonghandShorthand<
     const onTransientSubmitValue = (newTransformedValues: ParsedProperties[LonghandKey]) =>
       onSubmitValue(newTransformedValues, true)
 
-    const onUnsetValues = () => {
-      const longhandPropertyPath = pathMappingFn(longhand, inspectorTargetPath)
-      const shorthandPropertyPath = pathMappingFn(shorthand, inspectorTargetPath)
-
-      const actionsToDispatch = flatMapArray((selectedView) => {
-        if (isInstancePath(selectedView)) {
-          return [
-            unsetProperty(selectedView, longhandPropertyPath),
-            unsetProperty(selectedView, shorthandPropertyPath),
-          ]
-        } else {
-          return []
-        }
-      }, selectedViewsRef.current)
-      dispatch(actionsToDispatch)
-    }
-
     const controlStatus = getControlStatusFromPropertyStatus(propertyStatus)
     return {
       value: value,
@@ -245,14 +233,122 @@ export function useInspectorInfoLonghandShorthand<
       controlStyles: getControlStyles(controlStatus),
       onSubmitValue: onSubmitValue,
       onTransientSubmitValue: onTransientSubmitValue,
-      onUnsetValues: onUnsetValues,
+      onUnsetValues: NO_OP,
       orderedPropKeys: orderedPropKeys,
     }
   })
 
-  return mapArrayToDictionary(
+  const longhandResultsDictionary = mapArrayToDictionary(
     longhandResults,
     (_, index) => longhands[index],
     (result) => result,
   )
+
+  const longhandResultsWithUnset = objectMap((longhandResult, longhandToUnset) => {
+    const onUnsetValues = () => {
+      const allPropKeysEqual = allOrderedPropKeys.every((propKeys) => {
+        return arrayEquals(propKeys, allOrderedPropKeys[0])
+      })
+      if (!allPropKeysEqual) {
+        // we do nothing for now. we cannot ensure that we can make a sensible update and surface it on the UI as well
+        return
+      }
+      const propkeysToUse = allOrderedPropKeys[0]
+
+      const actionsToDispatch = createUnsetActions<LonghandKey, ShorthandKey>(
+        pathMappingFn,
+        inspectorTargetPath,
+        selectedViewsRef,
+        propkeysToUse,
+        shorthand,
+        longhands,
+        shorthandInfo,
+        longhandResultsDictionary,
+        longhandToUnset,
+      )
+
+      dispatch(actionsToDispatch)
+    }
+
+    return {
+      ...longhandResult,
+      onUnsetValues: onUnsetValues,
+    }
+  }, longhandResultsDictionary)
+
+  return longhandResultsWithUnset
+}
+
+function createUnsetActions<
+  LonghandKey extends ParsedPropertiesKeys,
+  ShorthandKey extends ParsedPropertiesKeys
+>(
+  pathMappingFn: PathMappingFn<LonghandKey | ShorthandKey>,
+  inspectorTargetPath: readonly string[],
+  selectedViewsRef: ReadonlyRef<TemplatePath[]>,
+  propkeysToUse: (LonghandKey | ShorthandKey)[],
+  shorthand: ShorthandKey,
+  longhands: LonghandKey[],
+  shorthandInfo: InspectorInfo<ParsedProperties[ShorthandKey]>,
+  longhandInfoDictionary: {
+    [longhand in LonghandKey]: InspectorInfoWithPropKeys<LonghandKey, ShorthandKey>
+  },
+  longhandToUnset: LonghandKey,
+) {
+  const shorthandExists = propkeysToUse.includes(shorthand)
+  const longhandPropertyPath = pathMappingFn(longhandToUnset, inspectorTargetPath)
+  const shorthandPropertyPath = pathMappingFn(shorthand, inspectorTargetPath)
+
+  if (shorthandExists) {
+    const shorthandControlled = shorthandInfo.propertyStatus.controlled
+    if (shorthandControlled) {
+      // we want to remove existing uses of the longhand, and append a `{[longhand]: undefined}` at the end of the object
+      return flatMapArray((selectedView) => {
+        if (isInstancePath(selectedView)) {
+          return [
+            unsetProperty(selectedView, longhandPropertyPath),
+            setProp_UNSAFE(
+              selectedView,
+              longhandPropertyPath,
+              jsxAttributeValue(undefined, emptyComments),
+            ),
+          ]
+        } else {
+          return []
+        }
+      }, selectedViewsRef.current)
+    } else {
+      // we have to split the shorthand into longhands 😭
+      return flatMapArray((selectedView) => {
+        if (isInstancePath(selectedView)) {
+          const setPropsForLonghandstoKeep = longhands
+            .filter((lh) => lh !== longhandToUnset)
+            .map((longhandToKeep) => {
+              // for every longhand, we figure out their current value
+              const currentValue = longhandInfoDictionary[longhandToKeep].value
+              const printedValue = printCSSValue(longhandToKeep, currentValue)
+              const pathTouse = pathMappingFn(longhandToKeep, inspectorTargetPath)
+              // we emit a setProperty for all of them. for some this will make a new prop, for others this will leave them in place
+              return setProp_UNSAFE(selectedView, pathTouse, printedValue)
+            })
+
+          return [
+            unsetProperty(selectedView, longhandPropertyPath),
+            unsetProperty(selectedView, shorthandPropertyPath),
+            ...setPropsForLonghandstoKeep,
+          ]
+        } else {
+          return []
+        }
+      }, selectedViewsRef.current)
+    }
+  } else {
+    return flatMapArray((selectedView) => {
+      if (isInstancePath(selectedView)) {
+        return [unsetProperty(selectedView, longhandPropertyPath)]
+      } else {
+        return []
+      }
+    }, selectedViewsRef.current)
+  }
 }

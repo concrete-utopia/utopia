@@ -430,3 +430,276 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
     ])
   })
 })
+
+describe('useInspectorInfo: onUnsetValues', () => {
+  it('unsets a simple longhand', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      [`{ paddingLeft: 6 }`],
+      [{ paddingLeft: 6 }],
+      [{ paddingLeft: '6px' }],
+      [],
+    )
+    const paddingLeft = hookResult.paddingLeft
+    paddingLeft.onUnsetValues()
+    expect(mockDispatch.mock.calls).toEqual([
+      [[unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft']))]],
+    ])
+  })
+
+  it('unsetting a simple shorthand results in the longhand being broken up', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      [`{ padding: 10 }`],
+      [{ padding: 10 }],
+      [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '10px' }],
+      [],
+    )
+    const paddingLeft = hookResult.paddingLeft
+    paddingLeft.onUnsetValues()
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingTop']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingRight']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingBottom']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+        ],
+      ],
+    ])
+  })
+
+  it('unsetting a controlled shorthand means overriding it with an undefined', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      [`{ padding: 5 + 5 }`],
+      [{ padding: 10 }],
+      [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '10px' }],
+      [],
+    )
+    const paddingLeft = hookResult.paddingLeft
+    paddingLeft.onUnsetValues()
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingLeft']),
+            jsxAttributeValue(undefined, emptyComments),
+          ),
+        ],
+      ],
+    ])
+  })
+
+  it('longhand overriding a shorthand', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      [`{ padding: 10, paddingLeft: 5 }`],
+      [{ padding: 10, paddingLeft: 5 }],
+      [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '5px' }],
+      [],
+    )
+    const paddingLeft = hookResult.paddingLeft
+    paddingLeft.onUnsetValues()
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingTop']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingRight']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingBottom']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+        ],
+      ],
+    ])
+  })
+
+  it('shorthand shadowing a longhand', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      [`{ paddingLeft: 5, padding: 10 }`],
+      [{ paddingLeft: 5, padding: 10 }],
+      [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '10px' }],
+      [],
+    )
+    const paddingLeft = hookResult.paddingLeft
+    paddingLeft.onUnsetValues()
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingTop']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingRight']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingBottom']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+        ],
+      ],
+    ])
+  })
+
+  it('longhand overriding a controlled shorthand', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      [`{ padding: 5 + 5, paddingLeft: 5 }`],
+      [{ padding: 10, paddingLeft: 5 }],
+      [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '5px' }],
+      [],
+    )
+    const paddingLeft = hookResult.paddingLeft
+    paddingLeft.onUnsetValues()
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingLeft']),
+            jsxAttributeValue(undefined, emptyComments),
+          ),
+        ],
+      ],
+    ])
+  })
+
+  it('controlled shorthand shadowing a longhand', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      [`{ paddingLeft: 5, padding: 5 + 5 }`],
+      [{ paddingLeft: 5, padding: 10 }],
+      [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '10px' }],
+      [],
+    )
+    const paddingLeft = hookResult.paddingLeft
+    paddingLeft.onUnsetValues()
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingLeft']),
+            jsxAttributeValue(undefined, emptyComments),
+          ),
+        ],
+      ],
+    ])
+  })
+
+  it('an unrelated longhand shadowing the shorthand must be kept alive', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      [`{ paddingLeft: 5, padding: 10, paddingRight: 25 }`],
+      [{ paddingLeft: 5, padding: 10 }],
+      [{ paddingTop: '10px', paddingRight: '25px', paddingBottom: '10px', paddingLeft: '10px' }],
+      [],
+    )
+    const paddingLeft = hookResult.paddingLeft
+    paddingLeft.onUnsetValues()
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingTop']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingRight']),
+            jsxAttributeValue(25, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingBottom']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+        ],
+      ],
+    ])
+  })
+
+  it('an unrelated longhand shadowed by the shorthand has to be overwritten', () => {
+    const { hookResult, mockDispatch } = getPaddingHookResult(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      [`{ paddingLeft: 5, paddingRight: 25, padding: 10 }`],
+      [{ paddingLeft: 5, padding: 10 }],
+      [{ paddingTop: '10px', paddingRight: '10px', paddingBottom: '10px', paddingLeft: '10px' }],
+      [],
+    )
+    const paddingLeft = hookResult.paddingLeft
+    paddingLeft.onUnsetValues()
+    expect(mockDispatch.mock.calls).toEqual([
+      [
+        [
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'paddingLeft'])),
+          unsetProperty(TestSelectedComponent, PP.create(['style', 'padding'])),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingTop']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingRight']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+          setProp_UNSAFE(
+            TestSelectedComponent,
+            PP.create(['style', 'paddingBottom']),
+            jsxAttributeValue(10, emptyComments),
+          ),
+        ],
+      ],
+    ])
+  })
+})
