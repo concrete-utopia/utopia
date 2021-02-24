@@ -1,5 +1,7 @@
+import BreadcrumbSeparator from 'antd/lib/breadcrumb/BreadcrumbSeparator'
 import * as React from 'react'
 import onClickOutside from 'react-onclickoutside'
+import { BreadcrumbTrail } from '../../canvas/controls/breadcrumb-trail'
 import { Icons, OnClickOutsideHOC } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 
@@ -72,7 +74,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
                 whiteSpace: 'nowrap',
               }}
             >
-              Test
+              <BreadcrumbTrail />
             </div>
           </OnClickOutsideHOC>
         ) : null}
