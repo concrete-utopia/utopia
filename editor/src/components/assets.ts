@@ -10,7 +10,7 @@ import { isDirectory, directory, isImageFile } from '../core/model/project-file-
 import Utils from '../utils/utils'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { fastForEach } from '../core/shared/utils'
-import { mapValues } from '../core/shared/object-utils'
+import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 
 interface ImageAsset {
@@ -78,15 +78,15 @@ export function projectContentFile(
 export type ProjectContentsTree = ProjectContentDirectory | ProjectContentFile
 
 export function isProjectContentDirectory(
-  projectContentsTree: ProjectContentsTree,
+  projectContentsTree: ProjectContentsTree | null,
 ): projectContentsTree is ProjectContentDirectory {
-  return projectContentsTree.type === 'PROJECT_CONTENT_DIRECTORY'
+  return projectContentsTree != null && projectContentsTree.type === 'PROJECT_CONTENT_DIRECTORY'
 }
 
 export function isProjectContentFile(
-  projectContentsTree: ProjectContentsTree,
+  projectContentsTree: ProjectContentsTree | null,
 ): projectContentsTree is ProjectContentFile {
-  return projectContentsTree.type === 'PROJECT_CONTENT_FILE'
+  return projectContentsTree != null && projectContentsTree.type === 'PROJECT_CONTENT_FILE'
 }
 
 export function getProjectFileFromTree(tree: ProjectContentsTree): ProjectFile {
@@ -261,12 +261,12 @@ export async function zipContentsTreeAsync(
   Object.keys(firstTree).forEach(keys.add, keys)
   Object.keys(secondTree).forEach(keys.add, keys)
   for (const key of keys) {
-    const firstContents = firstTree[key] ?? null
-    const secondContents = secondTree[key] ?? null
-    if (firstContents == null && secondContents == null) {
+    const firstContents = propOrNull(key, firstTree)
+    const secondContents = propOrNull(key, secondTree)
+    const fullPath = firstContents?.fullPath ?? secondContents?.fullPath
+    if (fullPath == null) {
       throw new Error(`Invalid state of both elements being false reached.`)
     } else {
-      const fullPath = firstContents?.fullPath ?? secondContents?.fullPath
       // eslint-disable-next-line no-await-in-loop
       const shouldContinueDeeper = await onElement(fullPath, firstContents, secondContents)
       if (
