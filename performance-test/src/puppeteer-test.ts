@@ -114,7 +114,7 @@ export const testPerformance = async function () {
   const summaryImage = await uploadSummaryImage([selectionResult, scrollResult, resizeResult])
 
   console.info(
-    `::set-output name=perf-result:: ${scrollResult.title}: fastest ${scrollResult.analytics.frameMin}ms, average ${scrollResult.analytics.frameAvg}ms %0A ${resizeResult.title}: fastest ${resizeResult.analytics.frameMin}ms, average ${resizeResult.analytics.frameAvg}ms %0A ${selectionResult.title}: fastest ${selectionResult.analytics.frameMin}ms, average ${selectionResult.analytics.frameAvg}ms ![SummaryChart](${summaryImage})`,
+    `::set-output name=perf-result:: ${scrollResult.title}: fastest ${scrollResult.analytics.frameMin}ms, average ${scrollResult.analytics.frameAvg}ms | ${resizeResult.title}: fastest ${resizeResult.analytics.frameMin}ms, avg ${resizeResult.analytics.frameAvg}ms | ${selectionResult.title}: fastest ${selectionResult.analytics.frameMin}ms, average ${selectionResult.analytics.frameAvg}ms ![SummaryChart](${summaryImage})`,
   )
 }
 
