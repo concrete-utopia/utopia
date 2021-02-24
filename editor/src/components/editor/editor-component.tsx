@@ -50,7 +50,7 @@ import {
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { createIframeUrl } from '../../core/shared/utils'
-import { useDelayedValueHook } from '../editor/hook-utils'
+//import { useDelayedValueHook } from '../editor/hook-utils'
 
 interface NumberSize {
   width: number
@@ -59,6 +59,25 @@ interface NumberSize {
 
 export interface EditorProps {
   propertyControlsInfoSupported: boolean
+}
+
+function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
+  const [returnValue, setReturnValue] = React.useState(inputValue)
+  React.useEffect(() => {
+    let timerID: any = undefined
+    if (inputValue) {
+      // we do not delay the toggling if the input value is true
+      setReturnValue(true)
+    } else {
+      timerID = setTimeout(() => {
+        setReturnValue(false)
+      }, delayMs)
+    }
+    return function cleanup() {
+      clearTimeout(timerID)
+    }
+  }, [inputValue, delayMs])
+  return returnValue
 }
 
 export const EditorComponentInner = betterReactMemo(
