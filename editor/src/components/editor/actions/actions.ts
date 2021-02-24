@@ -3567,6 +3567,7 @@ export const UPDATE_FNS = {
         renamingTarget: newFileKey,
       },
     }
+    sendOpenFileMessage(newFileKey)
     return updatedEditor
   },
   DELETE_FILE: (

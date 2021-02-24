@@ -30,7 +30,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   await ensureDirectoryExists(RootDir)
   const utopiaFS = new UtopiaFSExtension(projectID)
   context.subscriptions.push(utopiaFS)
-  initMessaging(context, workspaceRootUri)
+  initMessaging(utopiaFS, context, workspaceRootUri)
 }
 
 const selectionDecorationType = vscode.window.createTextEditorDecorationType({
@@ -49,16 +49,17 @@ const highlightDecorationType = vscode.window.createTextEditorDecorationType({
 
 const allDecorationRangeTypes: Array<DecorationRangeType> = ['highlight', 'selection']
 
-function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
+function initMessaging(
+  utopiaFS: UtopiaFSExtension,
+  context: vscode.ExtensionContext,
+  workspaceRootUri: vscode.Uri,
+): void {
   // State that needs to be stored between messages.
   let currentDecorations: Array<DecorationRange> = []
 
   function handleMessage(message: ToVSCodeMessage): void {
     if (isOpenFileMessage(message)) {
-      vscode.commands.executeCommand(
-        'vscode.open',
-        vscode.Uri.joinPath(workspaceRootUri, message.filePath),
-      )
+      openFile(utopiaFS, vscode.Uri.joinPath(workspaceRootUri, message.filePath))
     } else if (isUpdateDecorationsMessage(message)) {
       currentDecorations = message.decorations
       updateDecorations(currentDecorations)
@@ -79,6 +80,19 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       cursorPositionChanged(event)
     }),
   )
+}
+
+async function openFile(
+  utopiaFS: UtopiaFSExtension,
+  fileUri: vscode.Uri,
+  retries: number = 5,
+): Promise<void> {
+  const fileExists = await utopiaFS.exists(fileUri)
+  if (fileExists) {
+    vscode.commands.executeCommand('vscode.open', fileUri)
+  } else {
+    setTimeout(() => openFile(utopiaFS, fileUri, retries - 1), 100)
+  }
 }
 
 function cursorPositionChanged(event: vscode.TextEditorSelectionChangeEvent): void {

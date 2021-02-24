@@ -119,6 +119,11 @@ export class UtopiaFSExtension
     })
   }
 
+  async exists(uri: Uri): Promise<boolean> {
+    const path = fromUtopiaURI(uri)
+    return exists(path)
+  }
+
   async stat(uri: Uri): Promise<FileStat> {
     const path = fromUtopiaURI(uri)
     const stats = await stat(path)
