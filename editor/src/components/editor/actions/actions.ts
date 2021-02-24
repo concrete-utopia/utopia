@@ -4267,18 +4267,23 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const allTemplatePaths = derived.navigatorTargets
-    const highlightBoundsForUids = getHighlightBoundsForUids(editor)
-    const newlySelectedElements = getTemplatePathsInBounds(
-      action.line,
-      highlightBoundsForUids,
-      allTemplatePaths,
-    )
-    return UPDATE_FNS.SELECT_COMPONENTS(
-      selectComponents(newlySelectedElements, false),
-      editor,
-      dispatch,
-    )
+    const currentlyOpenFile = getOpenTextFileKey(editor)
+    if (currentlyOpenFile === action.filePath) {
+      const allTemplatePaths = derived.navigatorTargets
+      const highlightBoundsForUids = getHighlightBoundsForUids(editor)
+      const newlySelectedElements = getTemplatePathsInBounds(
+        action.line,
+        highlightBoundsForUids,
+        allTemplatePaths,
+      )
+      return UPDATE_FNS.SELECT_COMPONENTS(
+        selectComponents(newlySelectedElements, false),
+        editor,
+        dispatch,
+      )
+    } else {
+      return editor
+    }
   },
 }
 
