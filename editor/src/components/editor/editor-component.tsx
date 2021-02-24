@@ -60,6 +60,25 @@ export interface EditorProps {
   propertyControlsInfoSupported: boolean
 }
 
+function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
+  const [returnValue, setReturnValue] = React.useState(inputValue)
+  React.useEffect(() => {
+    let timerID: any = undefined
+    if (inputValue) {
+      // we do not delay the toggling if the input value is true
+      setReturnValue(true)
+    } else {
+      timerID = setTimeout(() => {
+        setReturnValue(false)
+      }, delayMs)
+    }
+    return function cleanup() {
+      clearTimeout(timerID)
+    }
+  }, [inputValue, delayMs])
+  return returnValue
+}
+
 export const EditorComponentInner = betterReactMemo(
   'EditorComponentInner',
   (props: EditorProps) => {
@@ -155,6 +174,9 @@ export const EditorComponentInner = betterReactMemo(
       (store) => store.editor.leftMenu.expanded,
       'EditorComponentInner leftMenuExpanded',
     )
+
+    const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
+
     const saveError = useEditorState(
       (store) => store.editor.saveError,
       'EditorComponentInner saveError',
@@ -265,20 +287,20 @@ export const EditorComponentInner = betterReactMemo(
                 <OpenFileEditor />
               </SimpleFlexRow>
               {/* insert more columns here */}
-              {leftMenuExpanded ? (
-                <div
-                  className='LeftPaneShell'
-                  style={{
-                    position: 'absolute',
-                    height: '100% !important',
-                    width: LeftPaneDefaultWidth,
-                    overflowX: 'scroll',
-                    backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
-                  }}
-                >
-                  <LeftPaneComponent />
-                </div>
-              ) : null}
+
+              <div
+                className='LeftPaneShell'
+                style={{
+                  transition: 'all .1s linear',
+                  position: 'absolute',
+                  height: '100% !important',
+                  width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
+                  overflowX: 'scroll',
+                  backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
+                }}
+              >
+                {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
+              </div>
               {previewVisible ? (
                 <ResizableFlexColumn
                   style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
