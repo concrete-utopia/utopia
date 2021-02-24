@@ -258,15 +258,7 @@ export function useInspectorInfoLonghandShorthand<
         const longhandPropertyPath = pathMappingFn(longhandToUnset, inspectorTargetPath)
         const shorthandPropertyPath = pathMappingFn(shorthand, inspectorTargetPath)
 
-        if (!shorthandExists) {
-          return flatMapArray((selectedView) => {
-            if (isInstancePath(selectedView)) {
-              return [unsetProperty(selectedView, longhandPropertyPath)]
-            } else {
-              return []
-            }
-          }, selectedViewsRef.current)
-        } else {
+        if (shorthandExists) {
           const shorthandControlled = shorthandInfo.propertyStatus.controlled
           if (shorthandControlled) {
             // we want to remove existing uses of the longhand, and append a `{[longhand]: undefined}` at the end of the object
@@ -288,27 +280,38 @@ export function useInspectorInfoLonghandShorthand<
             // we have to split the shorthand into longhands 😭
             return flatMapArray((selectedView) => {
               if (isInstancePath(selectedView)) {
+                const setPropsForLonghandstoKeep = longhands
+                  .filter((lh) => lh !== longhandToUnset)
+                  .map((longhandToKeep) => {
+                    // for every longhand, we figure out their current value
+                    const currentValue = longhandResultsDictionary[longhandToKeep].value
+                    const printedValue = printCSSValue(longhandToKeep, currentValue)
+                    const pathTouse = pathMappingFn(longhandToKeep, inspectorTargetPath)
+                    // we emit a setProperty for all of them. for some this will make a new prop, for others this will leave them in place
+                    return setProp_UNSAFE(selectedView, pathTouse, printedValue)
+                  })
+
                 return [
                   unsetProperty(selectedView, longhandPropertyPath),
                   unsetProperty(selectedView, shorthandPropertyPath),
-                  ...longhands
-                    .filter((lh) => lh !== longhandToUnset)
-                    .map((longhandToKeep) => {
-                      // for every longhand, we figure out their current value
-                      const currentValue = longhandResultsDictionary[longhandToKeep].value
-                      const printedValue = printCSSValue(longhandToKeep, currentValue)
-                      const pathTouse = pathMappingFn(longhandToKeep, inspectorTargetPath)
-                      // we emit a setProperty for all of them. for some this will make a new prop, for others this will leave them in place
-                      return setProp_UNSAFE(selectedView, pathTouse, printedValue)
-                    }),
+                  ...setPropsForLonghandstoKeep,
                 ]
               } else {
                 return []
               }
             }, selectedViewsRef.current)
           }
+        } else {
+          return flatMapArray((selectedView) => {
+            if (isInstancePath(selectedView)) {
+              return [unsetProperty(selectedView, longhandPropertyPath)]
+            } else {
+              return []
+            }
+          }, selectedViewsRef.current)
         }
       })()
+
       dispatch(actionsToDispatch)
     }
 
