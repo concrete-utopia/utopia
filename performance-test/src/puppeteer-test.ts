@@ -270,7 +270,7 @@ async function createSummaryPng(
   const layout = {
     title: 'Automated Performance Test (100 runs, fastest counts)',
     showlegend: false,
-    height: 60 * numberOfTests,
+    height: 50 * numberOfTests,
     width: 720,
     yaxis: {
       automargin: true,
@@ -309,7 +309,7 @@ async function createSummaryPng(
   const imgOpts = {
     format: 'png',
     width: 800,
-    height: 600,
+    height: 300,
   }
   const figure = { data: processedData, layout: layout }
 
