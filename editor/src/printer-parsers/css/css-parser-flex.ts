@@ -39,9 +39,9 @@ export const parseFlex = (value: unknown): Either<string, CSSFlex> => {
         if (isCSSFlexBasis(target)) {
           return { ...working, flexBasis: target.value } as CSSFlex
         } else if (isCSSFlexGrow(target)) {
-          return { ...working, flexGrow: printCSSNumber(target.value) } as CSSFlex
+          return { ...working, flexGrow: printCSSNumber(target.value, null) } as CSSFlex
         } else if (isCSSFlexShrink(target)) {
-          return { ...working, flexShrink: printCSSNumber(target.value) } as CSSFlex
+          return { ...working, flexShrink: printCSSNumber(target.value, null) } as CSSFlex
         } else {
           return working
         }
@@ -133,9 +133,9 @@ function isCSSFlexBasis(value: CSSFlexGrow | CSSFlexShrink | CSSFlexBasis): valu
 export const printFlexAsAttributeValue = (value: CSSFlex): JSXAttributeValue<number | string> => {
   const flexGrow = value.flexGrow
   const flexShrink = value.flexShrink
-  const flexBasis = printCSSNumber(value.flexBasis)
+  const flexBasis = printCSSNumber(value.flexBasis, null)
 
-  if (flexBasis === printCSSNumber(AssumedFlexDefaults.flexBasis)) {
+  if (flexBasis === printCSSNumber(AssumedFlexDefaults.flexBasis, null)) {
     if (flexShrink === AssumedFlexDefaults.flexShrink) {
       return jsxAttributeValue(`${flexGrow}`, emptyComments)
     } else {

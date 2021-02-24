@@ -283,7 +283,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingLeft']),
-            jsxAttributeValue('100px', emptyComments),
+            jsxAttributeValue(100, emptyComments),
           ),
         ],
       ],
@@ -329,7 +329,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingRight']),
-            jsxAttributeValue('5px', emptyComments),
+            jsxAttributeValue(5, emptyComments),
           ),
         ],
       ],
@@ -352,7 +352,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingLeft']),
-            jsxAttributeValue('8px', emptyComments),
+            jsxAttributeValue(8, emptyComments),
           ),
         ],
       ],
@@ -375,7 +375,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingLeft']),
-            jsxAttributeValue('8px', emptyComments),
+            jsxAttributeValue(8, emptyComments),
           ),
         ],
       ],
@@ -399,7 +399,7 @@ describe('useInspectorInfo: updating padding shorthand and longhands', () => {
           setProp_UNSAFE(
             TestSelectedComponent,
             PP.create(['style', 'paddingLeft']),
-            jsxAttributeValue('16px', emptyComments),
+            jsxAttributeValue(16, emptyComments),
           ),
         ],
       ],

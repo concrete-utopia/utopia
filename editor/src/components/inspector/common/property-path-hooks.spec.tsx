@@ -203,7 +203,7 @@ describe('useCallbackFactory', () => {
 const WellBehavedInspectorSubsection = betterReactMemo('WellBehavedInspectorSubsection', () => {
   const { value, onSubmitValue } = useInspectorStyleInfo('opacity')
   onSubmitValue(cssNumber(0.9))
-  return <div onClick={() => onSubmitValue(cssNumber(0.5))}>{printCSSNumber(value)}</div>
+  return <div onClick={() => onSubmitValue(cssNumber(0.5))}>{printCSSNumber(value, null)}</div>
 })
 enableWhyDidYouRenderOnComponent(WellBehavedInspectorSubsection)
 
