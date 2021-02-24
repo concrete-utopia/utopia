@@ -271,7 +271,7 @@ async function createSummaryPng(
     margin: {
       l: 50,
       r: 50,
-      b: 40,
+      b: 60,
       t: 10,
       pad: 4,
     },
