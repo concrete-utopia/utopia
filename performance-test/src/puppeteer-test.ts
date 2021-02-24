@@ -268,6 +268,13 @@ async function createSummaryPng(
   const processedData = results.map((result) => boxPlotConfig(result.title, result.timeSeries))
 
   const layout = {
+    margin: {
+      l: 50,
+      r: 50,
+      b: 40,
+      t: 10,
+      pad: 4,
+    },
     showlegend: false,
     height: 50 * numberOfTests,
     width: 720,
