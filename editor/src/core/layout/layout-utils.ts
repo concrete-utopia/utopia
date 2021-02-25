@@ -248,9 +248,9 @@ function getLayoutFunction(
   }
 }
 
-export const PinningAndFlexPoints = [...AllFramePoints, 'FlexFlexBasis']
+export const PinningAndFlexPoints = [...AllFramePoints, 'flexBasis']
 
-export const PinningAndFlexPointsExceptSize = [...AllFramePointsExceptSize, 'FlexFlexBasis']
+export const PinningAndFlexPointsExceptSize = [...AllFramePointsExceptSize, 'flexBasis']
 
 function keepLayoutProps(
   target: InstancePath,
@@ -333,7 +333,7 @@ export function switchPinnedChildToFlex(
       const { flexBasis, width, height } = flexProps
       if (flexBasis != null) {
         propsToAdd.push({
-          path: createLayoutPropertyPath('FlexFlexBasis'),
+          path: createLayoutPropertyPath('flexBasis'),
           value: jsxAttributeValue(flexBasis, emptyComments),
         })
       }
@@ -701,7 +701,7 @@ function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
     'PinnedRight',
     'PinnedCenterX',
     'PinnedCenterY',
-    'FlexFlexBasis',
+    'flexBasis',
     'FlexCrossBasis',
   ]
 
@@ -743,7 +743,7 @@ function removeFlexAndAddPinnedPropsToComponent(
       value: jsxAttributeValue('absolute', emptyComments),
     },
   ]
-  const propsToRemove: Array<LayoutProp | StyleLayoutProp> = ['FlexFlexBasis', 'FlexCrossBasis']
+  const propsToRemove: Array<LayoutProp | StyleLayoutProp> = ['flexBasis', 'FlexCrossBasis']
 
   return transformElementAtPath(components, target, (e: JSXElement) => {
     const flexPropsRemoved = unsetJSXValuesAtPaths(
@@ -808,7 +808,7 @@ function changePinsToDefaultOnComponent(
 const propertiesToRound: Array<PropertyPath> = [
   createLayoutPropertyPath('PinnedCenterX'),
   createLayoutPropertyPath('PinnedCenterY'),
-  createLayoutPropertyPath('FlexFlexBasis'),
+  createLayoutPropertyPath('flexBasis'),
   createLayoutPropertyPath('FlexCrossBasis'),
   createLayoutPropertyPath('PinnedLeft'),
   createLayoutPropertyPath('PinnedTop'),

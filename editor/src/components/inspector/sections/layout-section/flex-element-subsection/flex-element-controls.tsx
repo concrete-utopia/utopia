@@ -4,9 +4,10 @@ import { SelectOption, SelectControl } from '../../../controls/select-control'
 import { OptionChainOption, OptionChainControl } from '../../../controls/option-chain-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addSetProperty, unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
+import { stylePropPathMappingFn, useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { useWrappedEmptyOrUnknownOnSubmitValue, ChainedNumberInput } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
+import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 
 export const PositionControl = betterReactMemo('PositionControl', () => {
   const position = useInspectorLayoutInfo('position')
@@ -106,10 +107,11 @@ export const AlignSelfControl = betterReactMemo('AlignSelfControl', () => {
 })
 
 export const MarginControl = betterReactMemo('MarginControl', () => {
-  const marginTop = useInspectorLayoutInfo('marginTop')
-  const marginRight = useInspectorLayoutInfo('marginRight')
-  const marginBottom = useInspectorLayoutInfo('marginBottom')
-  const marginLeft = useInspectorLayoutInfo('marginLeft')
+  const { marginTop, marginRight, marginBottom, marginLeft } = useInspectorInfoLonghandShorthand(
+    ['marginTop', 'marginRight', 'marginBottom', 'marginLeft'],
+    'margin',
+    stylePropPathMappingFn,
+  )
 
   const wrappedMarginTopOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
     marginTop.onSubmitValue,
@@ -154,7 +156,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           controlStatus: marginTop.controlStatus,
           onSubmitValue: wrappedMarginTopOnSubmitValue,
           onTransientSubmitValue: wrappedMarginTopOnTransientSubmitValue,
-          numberType: 'UnitlessPercent',
+          numberType: 'LengthPercent',
           testId: 'margin-T',
           defaultUnitToHide: 'px',
         },
@@ -164,7 +166,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           controlStatus: marginRight.controlStatus,
           onSubmitValue: wrappedMarginRightOnSubmitValue,
           onTransientSubmitValue: wrappedMarginRightOnTransientSubmitValue,
-          numberType: 'UnitlessPercent',
+          numberType: 'LengthPercent',
           testId: 'margin-R',
           defaultUnitToHide: 'px',
         },
@@ -174,7 +176,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           controlStatus: marginBottom.controlStatus,
           onSubmitValue: wrappedMarginBottomOnSubmitValue,
           onTransientSubmitValue: wrappedMarginBottomOnTransientSubmitValue,
-          numberType: 'UnitlessPercent',
+          numberType: 'LengthPercent',
           testId: 'margin-B',
           defaultUnitToHide: 'px',
         },
@@ -184,7 +186,7 @@ export const MarginControl = betterReactMemo('MarginControl', () => {
           controlStatus: marginLeft.controlStatus,
           onSubmitValue: wrappedMarginLeftOnSubmitValue,
           onTransientSubmitValue: wrappedMarginLeftOnTransientSubmitValue,
-          numberType: 'UnitlessPercent',
+          numberType: 'LengthPercent',
           testId: 'margin-L',
           defaultUnitToHide: 'px',
         },

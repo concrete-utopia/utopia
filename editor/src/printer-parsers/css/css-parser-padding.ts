@@ -16,7 +16,10 @@ export const parsePadding = (value: unknown): Either<string, CSSPadding> => {
     const parseResult = parseCSSArray([parseLengthPercentage])(lexer.value)
     if (isRight(parseResult)) {
       const resultArray = parseResult.value
-      let paddingTop, paddingRight, paddingBottom, paddingLeft
+      let paddingTop: CSSNumber,
+        paddingRight: CSSNumber,
+        paddingBottom: CSSNumber,
+        paddingLeft: CSSNumber
       if (resultArray.length === 0 || resultArray.length > 4) {
         return left(`Value ${JSON.stringify(value)} is not a valid padding`)
       } else if (resultArray.length === 1) {
@@ -61,31 +64,46 @@ export const printPaddingAsAttributeValue = (
   const paddingBottom = printCSSNumberWithDefaultUnit(value.paddingBottom, 'px')
   const paddingLeft = printCSSNumberWithDefaultUnit(value.paddingLeft, 'px')
 
-  function canUseOneValueSyntax(): boolean {
-    return paddingTop === paddingRight && paddingTop === paddingBottom && paddingTop === paddingLeft
-  }
-
-  function canUseTwoValueSyntax(): boolean {
-    return (
-      paddingTop !== paddingLeft && paddingTop === paddingBottom && paddingLeft === paddingRight
-    )
-  }
-
-  function canUseThreeValueSyntax(): boolean {
-    return paddingTop !== paddingBottom && paddingLeft === paddingRight
-  }
-
-  if (canUseOneValueSyntax()) {
-    const paddingValue = printCSSNumber(value.paddingTop)
+  if (canUseOneValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
+    const paddingValue = printCSSNumber(value.paddingTop, 'px')
     return jsxAttributeValue(paddingValue, emptyComments)
-  } else if (canUseTwoValueSyntax()) {
+  } else if (canUseTwoValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
     const paddingValue = `${paddingTop} ${paddingLeft}`
     return jsxAttributeValue(paddingValue, emptyComments)
-  } else if (canUseThreeValueSyntax()) {
+  } else if (canUseThreeValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
     const paddingValue = `${paddingTop} ${paddingLeft} ${paddingBottom}`
     return jsxAttributeValue(paddingValue, emptyComments)
   } else {
     const paddingValue = `${paddingTop} ${paddingRight} ${paddingBottom} ${paddingLeft}`
     return jsxAttributeValue(paddingValue, emptyComments)
   }
+}
+
+export function canUseOneValueSyntax(
+  topValue: string,
+  rightValue: string,
+  bottomValue: string,
+  leftValue: string,
+): boolean {
+  return topValue === rightValue && topValue === bottomValue && topValue === leftValue
+}
+
+export function canUseTwoValueSyntax(
+  topValue: string,
+  rightValue: string,
+  bottomValue: string,
+  leftValue: string,
+): boolean {
+  return topValue !== leftValue && topValue === bottomValue && leftValue === rightValue
+}
+
+export function canUseThreeValueSyntax(
+  topValue: string,
+  rightValue: string,
+  bottomValue: string,
+  leftValue: string,
+): boolean {
+  // not using the real 3-value shorthand because it is very uncommon
+  // return topValue !== bottomValue && leftValue === rightValue
+  return false
 }

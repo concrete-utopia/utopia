@@ -70,6 +70,11 @@ import {
   parsePadding,
   printPaddingAsAttributeValue,
 } from '../../../printer-parsers/css/css-parser-padding'
+import {
+  parseMargin,
+  printMarginAsAttributeValue,
+} from '../../../printer-parsers/css/css-parser-margin'
+import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/css/css-parser-flex'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -651,9 +656,12 @@ function fixNumber(n: number): number {
   return Number(n.toFixed(11))
 }
 
-export function printCSSNumber(input: CSSNumber): string | number {
+export function printCSSNumber(
+  input: CSSNumber,
+  defaultUnitToSkip: string | null,
+): string | number {
   const { value, unit } = input
-  if (unit == null) {
+  if (unit == null || unit === defaultUnitToSkip) {
     return fixNumber(value)
   } else {
     return `${fixNumber(value)}${unit}`
@@ -661,7 +669,7 @@ export function printCSSNumber(input: CSSNumber): string | number {
 }
 
 export function cssNumberToString(input: CSSNumber, showUnit: boolean = true): string {
-  const printed = showUnit ? printCSSNumber(input) : fixNumber(input.value)
+  const printed = showUnit ? printCSSNumber(input, null) : fixNumber(input.value)
   return `${printed}`
 }
 
@@ -676,6 +684,15 @@ export function printCSSNumberWithDefaultUnit(
 
 export const parseCSSLength = (input: unknown) => parseCSSNumber(input, 'Length')
 export const parseCSSLengthPercent = (input: unknown) => parseCSSNumber(input, 'LengthPercent')
+export const parseCSSLengthPercentNone = (
+  input: unknown,
+): Either<string, CSSNumber | undefined> => {
+  if (typeof input === 'string' && input === 'none') {
+    return right(undefined)
+  } else {
+    return parseCSSNumber(input, 'LengthPercent')
+  }
+}
 export const parseCSSAngle = (input: unknown) => parseCSSNumber(input, 'Angle')
 export const parseCSSAnglePercent = (input: unknown) => parseCSSNumber(input, 'AnglePercent')
 export const parseCSSPercent = (input: unknown) => parseCSSNumber(input, 'Percent', '%')
@@ -685,6 +702,14 @@ export const parseCSSTimePercent = (input: unknown) => parseCSSNumber(input, 'Ti
 export const parseCSSUnitless = (input: unknown) => parseCSSNumber(input, 'Unitless')
 export const parseCSSUnitlessPercent = (input: unknown) => parseCSSNumber(input, 'UnitlessPercent')
 export const parseCSSAnyValidNumber = (input: unknown) => parseCSSNumber(input, 'AnyValid')
+export const parseCSSUnitlessAsNumber = (input: unknown): Either<string, number> => {
+  const parsed = parseCSSNumber(input, 'Unitless')
+  if (isRight(parsed)) {
+    return right(parsed.value.value)
+  } else {
+    return parsed
+  }
+}
 
 export const parseCSSNumber = (
   input: unknown,
@@ -718,7 +743,7 @@ export function cssNumberToFramePin(value: CSSNumber): FramePin {
   if (value.unit == null) {
     return value.value
   } else {
-    return printCSSNumber(value)
+    return printCSSNumber(value, 'px')
   }
 }
 
@@ -727,6 +752,27 @@ export interface CSSPadding {
   paddingRight: CSSNumber
   paddingBottom: CSSNumber
   paddingLeft: CSSNumber
+}
+
+export interface CSSMargin {
+  marginTop: CSSNumber
+  marginRight: CSSNumber
+  marginBottom: CSSNumber
+  marginLeft: CSSNumber
+}
+
+export interface CSSFlex {
+  flexGrow: number
+  flexShrink: number
+  flexBasis: CSSNumber
+}
+
+export function cssFlex(flexGrow: number, flexShrink: number, flexBasis: CSSNumber): CSSFlex {
+  return {
+    flexGrow: flexGrow,
+    flexShrink: flexShrink,
+    flexBasis: flexBasis,
+  }
 }
 
 // For matching CSS Dimensions (lengths, angles etc.) as they are always specified as a number
@@ -980,10 +1026,12 @@ export function printBoxShadow(boxShadows: CSSBoxShadows): JSXAttributeValue<str
         const { inset, offsetX, offsetY, blurRadius, spreadRadius, color } = boxShadow
         const parts = Utils.stripNulls([
           inset ? 'inset' : null,
-          printCSSNumber(offsetX),
-          printCSSNumber(offsetY),
-          blurRadius.default && spreadRadius.default ? null : printCSSNumber(blurRadius.value),
-          spreadRadius.default ? null : printCSSNumber(spreadRadius.value),
+          printCSSNumber(offsetX, null),
+          printCSSNumber(offsetY, null),
+          blurRadius.default && spreadRadius.default
+            ? null
+            : printCSSNumber(blurRadius.value, null),
+          spreadRadius.default ? null : printCSSNumber(spreadRadius.value, null),
           printColor(color),
         ])
         return printEnabled(printComma(`${parts.join(' ')}`, comma), boxShadow.enabled)
@@ -1548,19 +1596,20 @@ export function parseTransform(transform: unknown): Either<string, CSSTransforms
 function printCSSTransformItem(cssTransform: CSSTransformItem): string {
   if (isCSSTransformSingleItem(cssTransform)) {
     return printEnabled(
-      `${cssTransform.type}(${printCSSNumber(cssTransform.value)})`,
+      `${cssTransform.type}(${printCSSNumber(cssTransform.value, null)})`,
       cssTransform.enabled,
     )
   } else if (isCSSTransformDoubleItem(cssTransform)) {
     if (cssTransform.values[1].default) {
       return printEnabled(
-        `${cssTransform.type}(${printCSSNumber(cssTransform.values[0])})`,
+        `${cssTransform.type}(${printCSSNumber(cssTransform.values[0], null)})`,
         cssTransform.enabled,
       )
     } else {
       return printEnabled(
-        `${cssTransform.type}(${printCSSNumber(cssTransform.values[0])}, ${printCSSNumber(
+        `${cssTransform.type}(${printCSSNumber(cssTransform.values[0], null)}, ${printCSSNumber(
           cssTransform.values[1].value,
+          null,
         )})`,
         cssTransform.enabled,
       )
@@ -1877,11 +1926,14 @@ export function printBorderRadius(
   borderRadius: CSSBorderRadius,
 ): JSXAttributeValue<string | number> {
   if (isLeft(borderRadius)) {
-    return printCSSNumberAsAttributeValue(borderRadius.value)
+    return printCSSNumberAsAttributeValue('px')(borderRadius.value)
   } else {
     const { tl, tr, br, bl } = borderRadius.value
     return jsxAttributeValue(
-      `${printCSSNumber(tl)} ${printCSSNumber(tr)} ${printCSSNumber(br)} ${printCSSNumber(bl)}`,
+      `${printCSSNumber(tl, null)} ${printCSSNumber(tr, null)} ${printCSSNumber(
+        br,
+        null,
+      )} ${printCSSNumber(bl, null)}`,
       emptyComments,
     )
   }
@@ -3295,7 +3347,7 @@ export function printBackgroundSize(value: CSSBackgroundSize): JSXAttributeValue
                 bgSize.size.value.value
                   .map((item) => {
                     if (isCSSNumber(item)) {
-                      return printCSSNumber(item)
+                      return printCSSNumber(item, null)
                     } else {
                       return printCSSKeyword(item)
                     }
@@ -3434,9 +3486,9 @@ function printTextShadow(textShadows: CSSTextShadows): JSXAttributeValue<string>
         const comma = indexOfLastEnabledLayer > i && textShadow.enabled
         const { offsetX, offsetY, blurRadius, color } = textShadow
         const parts = Utils.stripNulls([
-          printCSSNumber(offsetX),
-          printCSSNumber(offsetY),
-          blurRadius == null ? null : printCSSNumber(blurRadius.value),
+          printCSSNumber(offsetX, null),
+          printCSSNumber(offsetY, null),
+          blurRadius == null ? null : printCSSNumber(blurRadius.value, null),
           printColor(color),
         ])
         return printEnabled(printComma(`${parts.join(' ')}`, comma), textShadow.enabled)
@@ -3547,7 +3599,7 @@ function printLetterSpacing(
   if (cssLetterSpacing === 'normal') {
     return jsxAttributeValue(cssLetterSpacing, emptyComments)
   } else {
-    return printCSSNumberAsAttributeValue(cssLetterSpacing)
+    return printCSSNumberAsAttributeValue(null)(cssLetterSpacing)
   }
 }
 
@@ -3565,7 +3617,7 @@ function printLineHeight(
   if (cssLineHeight === 'normal') {
     return jsxAttributeValue(cssLineHeight, emptyComments)
   } else {
-    return printCSSNumberAsAttributeValue(cssLineHeight)
+    return printCSSNumberAsAttributeValue(null)(cssLineHeight)
   }
 }
 
@@ -3768,16 +3820,21 @@ export function toggleStylePropPaths(toggleFn: (attribute: JSXAttribute) => JSXA
   }
 }
 
-function printCSSNumberAsAttributeValue(value: CSSNumber): JSXAttributeValue<string | number> {
-  return jsxAttributeValue(printCSSNumber(value), emptyComments)
+function printCSSNumberAsAttributeValue(
+  defaultUnitToSkip: string | null,
+): (value: CSSNumber) => JSXAttributeValue<string | number> {
+  return (value: CSSNumber) =>
+    jsxAttributeValue(printCSSNumber(value, defaultUnitToSkip), emptyComments)
 }
 
 function printCSSNumberOrUndefinedAsAttributeValue(
-  value: CSSNumber | undefined,
-): JSXAttributeValue<string | number | undefined> {
-  return value != null
-    ? printCSSNumberAsAttributeValue(value)
-    : jsxAttributeValue(undefined, emptyComments)
+  defaultUnitToSkip: string | null,
+): (value: CSSNumber | undefined) => JSXAttributeValue<string | number | undefined> {
+  return (value: CSSNumber | undefined) => {
+    return value != null
+      ? printCSSNumberAsAttributeValue(defaultUnitToSkip)(value)
+      : jsxAttributeValue(undefined, emptyComments)
+  }
 }
 
 function parseString(value: unknown): Either<string, string> {
@@ -3889,7 +3946,7 @@ function isNumberParser(simpleValue: unknown): Either<string, number> {
   }
 }
 
-type DOMEventHandlerMetadata = ModifiableAttribute
+type DOMEventHandlerMetadata = JSXAttribute
 
 export function parseDOMEventHandlerMetadata(
   _: unknown,
@@ -3905,7 +3962,7 @@ export function parseDOMEventHandlerMetadata(
   }
 }
 
-export function printDOMEventHandlerMetadata(value: ModifiableAttribute): ModifiableAttribute {
+export function printDOMEventHandlerMetadata(value: JSXAttribute): JSXAttribute {
   return value
 }
 
@@ -3941,6 +3998,7 @@ export interface ParsedCSSProperties {
   paddingRight: CSSNumber
   paddingBottom: CSSNumber
   paddingLeft: CSSNumber
+  margin: CSSMargin
   marginTop: CSSNumber
   marginRight: CSSNumber
   marginBottom: CSSNumber
@@ -3960,8 +4018,9 @@ export interface ParsedCSSProperties {
   maxWidth: CSSNumber | undefined
   minHeight: CSSNumber | undefined
   maxHeight: CSSNumber | undefined
-  flexGrow: CSSNumber
-  flexShrink: CSSNumber
+  flex: CSSFlex
+  flexGrow: number
+  flexShrink: number
   display: string
 }
 
@@ -4091,6 +4150,24 @@ export const cssEmptyValues: ParsedCSSProperties = {
   maxWidth: undefined,
   minHeight: undefined,
   maxHeight: undefined,
+  margin: {
+    marginTop: {
+      value: 0,
+      unit: null,
+    },
+    marginRight: {
+      value: 0,
+      unit: null,
+    },
+    marginBottom: {
+      value: 0,
+      unit: null,
+    },
+    marginLeft: {
+      value: 0,
+      unit: null,
+    },
+  },
   marginTop: {
     value: 0,
     unit: null,
@@ -4107,8 +4184,16 @@ export const cssEmptyValues: ParsedCSSProperties = {
     value: 0,
     unit: null,
   },
-  flexGrow: cssUnitlessLength(0),
-  flexShrink: cssUnitlessLength(1),
+  flex: {
+    flexGrow: 0,
+    flexShrink: 1,
+    flexBasis: {
+      value: 0,
+      unit: null,
+    },
+  },
+  flexGrow: 0,
+  flexShrink: 1,
   display: 'block',
 }
 
@@ -4161,15 +4246,17 @@ const cssParsers: CSSParsers = {
   right: parseCSSLengthPercent,
   bottom: parseCSSLengthPercent,
   minWidth: parseCSSLengthPercent,
-  maxWidth: parseCSSLengthPercent,
+  maxWidth: parseCSSLengthPercentNone,
   minHeight: parseCSSLengthPercent,
-  maxHeight: parseCSSLengthPercent,
+  maxHeight: parseCSSLengthPercentNone,
+  margin: parseMargin,
   marginTop: parseCSSLengthPercent,
   marginRight: parseCSSLengthPercent,
   marginBottom: parseCSSLengthPercent,
   marginLeft: parseCSSLengthPercent,
-  flexGrow: parseCSSUnitless,
-  flexShrink: parseCSSUnitless,
+  flex: parseFlex,
+  flexGrow: parseCSSUnitlessAsNumber,
+  flexShrink: parseCSSUnitlessAsNumber,
   display: parseDisplay,
 }
 
@@ -4189,12 +4276,12 @@ const cssPrinters: CSSPrinters = {
   boxShadow: printBoxShadow,
   color: printColorToJsx,
   fontFamily: printFontFamily,
-  fontSize: printCSSNumberAsAttributeValue,
+  fontSize: printCSSNumberAsAttributeValue(null),
   fontStyle: printFontStyle,
   fontWeight: printFontWeight,
   letterSpacing: printLetterSpacing,
   lineHeight: printLineHeight,
-  opacity: printCSSNumberAsAttributeValue,
+  opacity: printCSSNumberAsAttributeValue(null),
   overflow: printOverflow,
   textAlign: printTextAlign,
   textDecorationColor: printColorToJsx,
@@ -4212,27 +4299,29 @@ const cssPrinters: CSSPrinters = {
   alignContent: jsxAttributeValueWithNoComments,
   justifyContent: jsxAttributeValueWithNoComments,
   padding: printPaddingAsAttributeValue,
-  paddingTop: printCSSNumberAsAttributeValue,
-  paddingRight: printCSSNumberAsAttributeValue,
-  paddingBottom: printCSSNumberAsAttributeValue,
-  paddingLeft: printCSSNumberAsAttributeValue,
+  paddingTop: printCSSNumberAsAttributeValue('px'),
+  paddingRight: printCSSNumberAsAttributeValue('px'),
+  paddingBottom: printCSSNumberAsAttributeValue('px'),
+  paddingLeft: printCSSNumberAsAttributeValue('px'),
 
   alignSelf: jsxAttributeValueWithNoComments,
   position: jsxAttributeValueWithNoComments,
-  left: printCSSNumberOrUndefinedAsAttributeValue,
-  top: printCSSNumberOrUndefinedAsAttributeValue,
-  right: printCSSNumberOrUndefinedAsAttributeValue,
-  bottom: printCSSNumberOrUndefinedAsAttributeValue,
-  minWidth: printCSSNumberOrUndefinedAsAttributeValue,
-  maxWidth: printCSSNumberOrUndefinedAsAttributeValue,
-  minHeight: printCSSNumberOrUndefinedAsAttributeValue,
-  maxHeight: printCSSNumberOrUndefinedAsAttributeValue,
-  marginTop: printCSSNumberAsAttributeValue,
-  marginRight: printCSSNumberAsAttributeValue,
-  marginBottom: printCSSNumberAsAttributeValue,
-  marginLeft: printCSSNumberAsAttributeValue,
-  flexGrow: printCSSNumberAsAttributeValue,
-  flexShrink: printCSSNumberAsAttributeValue,
+  left: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  top: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  right: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  bottom: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  minWidth: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  maxWidth: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  minHeight: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  maxHeight: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  margin: printMarginAsAttributeValue,
+  marginTop: printCSSNumberAsAttributeValue('px'),
+  marginRight: printCSSNumberAsAttributeValue('px'),
+  marginBottom: printCSSNumberAsAttributeValue('px'),
+  marginLeft: printCSSNumberAsAttributeValue('px'),
+  flex: printFlexAsAttributeValue,
+  flexGrow: jsxAttributeValueWithNoComments,
+  flexShrink: jsxAttributeValueWithNoComments,
   display: printStringAsAttributeValue,
 }
 
@@ -4544,7 +4633,7 @@ const layoutEmptyValuesNew: LayoutPropertyTypes = {
   Height: undefined,
 
   FlexGap: 0,
-  FlexFlexBasis: undefined,
+  flexBasis: undefined,
   FlexCrossBasis: undefined,
 
   PinnedLeft: undefined,
@@ -4566,7 +4655,7 @@ const layoutParsersNew: LayoutParsersNew = {
   Height: parseFramePin,
 
   FlexGap: isNumberParser,
-  FlexFlexBasis: parseFramePin,
+  flexBasis: parseFramePin,
   FlexCrossBasis: parseFramePin,
 
   PinnedLeft: parseFramePin,
@@ -4584,19 +4673,19 @@ type LayoutPrintersNew = {
 const layoutPrintersNew: LayoutPrintersNew = {
   LayoutSystem: jsxAttributeValueWithNoComments,
 
-  Width: printCSSNumberOrUndefinedAsAttributeValue,
-  Height: printCSSNumberOrUndefinedAsAttributeValue,
+  Width: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  Height: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
   FlexGap: jsxAttributeValueWithNoComments,
-  FlexFlexBasis: printCSSNumberOrUndefinedAsAttributeValue,
-  FlexCrossBasis: printCSSNumberOrUndefinedAsAttributeValue,
+  flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  FlexCrossBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
 
-  PinnedLeft: printCSSNumberOrUndefinedAsAttributeValue,
-  PinnedTop: printCSSNumberOrUndefinedAsAttributeValue,
-  PinnedRight: printCSSNumberOrUndefinedAsAttributeValue,
-  PinnedBottom: printCSSNumberOrUndefinedAsAttributeValue,
-  PinnedCenterX: printCSSNumberOrUndefinedAsAttributeValue,
-  PinnedCenterY: printCSSNumberOrUndefinedAsAttributeValue,
+  PinnedLeft: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  PinnedTop: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  PinnedRight: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  PinnedBottom: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  PinnedCenterX: printCSSNumberOrUndefinedAsAttributeValue('px'),
+  PinnedCenterY: printCSSNumberOrUndefinedAsAttributeValue('px'),
 }
 
 export interface ParsedProperties
@@ -4682,7 +4771,7 @@ export function parseAnyParseableValue<K extends keyof ParsedProperties>(
 }
 
 // hmmmm
-type PrintedValue = ModifiableAttribute
+type PrintedValue = JSXAttribute
 
 type Printer<V extends ValueOf<ParsedProperties>> = (value: V) => PrintedValue
 
@@ -4882,12 +4971,13 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     value: 0,
     unit: 'px',
   },
-  maxWidth: undefined, // should be `none`
+  maxWidth: undefined,
   minHeight: {
     value: 0,
     unit: 'px',
   },
-  maxHeight: undefined, // should be `none`
+  maxHeight: undefined,
+  margin: nontrivial,
   marginTop: {
     value: 0,
     unit: 'px',
@@ -4904,6 +4994,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     value: 0,
     unit: 'px',
   },
+  flex: nontrivial,
   flexGrow: nontrivial,
   flexShrink: nontrivial,
   display: 'block',
@@ -4934,7 +5025,6 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   Width: undefined,
   Height: undefined,
   FlexGap: 0,
-  FlexFlexBasis: undefined,
   FlexCrossBasis: undefined,
   PinnedLeft: undefined,
   PinnedTop: undefined,

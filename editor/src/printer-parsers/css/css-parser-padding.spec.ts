@@ -318,7 +318,7 @@ describe('print padding', () => {
       }
     `)
   })
-  it('left and right is the same, 3-value-syntax', () => {
+  it('left and right is the same, BUT we DO NOT use the 3-value-syntax', () => {
     const cssPadding = {
       paddingTop: {
         value: 4,
@@ -345,7 +345,7 @@ describe('print padding', () => {
           "trailingComments": Array [],
         },
         "type": "ATTRIBUTE_VALUE",
-        "value": "4px 8px 12px",
+        "value": "4px 8px 12px 8px",
       }
     `)
   })

@@ -118,10 +118,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
     [dispatch, selectedTab],
   )
 
-  const onDoubleClick = React.useCallback(() => {
-    dispatch([togglePanel('leftmenu')])
-  }, [dispatch])
-
   const onClickStructureTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.ProjectStructure)
   }, [onClickTab])
@@ -144,10 +140,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
     <FlexColumn
       id='leftMenuBar'
       style={{
-        cursor: 'pointer',
         flexGrow: 1,
       }}
-      onDoubleClick={onDoubleClick}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
         <Tooltip title={'Project Structure'} placement={'right'}>
@@ -157,6 +151,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Menu />}
               onClick={onClickStructureTab}
+              style={{ cursor: 'pointer' }}
             />
           </span>
         </Tooltip>
@@ -175,6 +170,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={false}
               icon={<LargerIcons.PreviewPane />}
               onClick={togglePreviewPaneVisible}
+              style={{ cursor: 'pointer' }}
             />
           </span>
         </Tooltip>

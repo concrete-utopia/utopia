@@ -137,6 +137,4 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            These are the results of the :racing_car: **SPEED TEST** that runs right after the test editor was deployed
-
-            ${{ steps.run-performance-test.outputs.perf-result }}
+            Performance: ${{ steps.run-performance-test.outputs.perf-result }}

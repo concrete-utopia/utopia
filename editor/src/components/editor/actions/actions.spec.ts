@@ -735,7 +735,7 @@ describe('moveTemplate', () => {
     expect(isUtopiaJSXComponent(updatedRoot1)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot1)).toHaveLength(1)
     const actual: any = Utils.path(['rootElement', 'children', 0], updatedRoot1)
-    expect(getLayoutPropertyOr(undefined, 'FlexFlexBasis', right(actual.props))).toBeDefined()
+    expect(getLayoutPropertyOr(undefined, 'flexBasis', right(actual.props))).toBeDefined()
     expect(getLayoutPropertyOr(undefined, 'FlexCrossBasis', right(actual.props))).toBeDefined()
     expect(getLayoutPropertyOr(undefined, 'PinnedLeft', right(actual.props))).not.toBeDefined()
     expect(getLayoutPropertyOr(undefined, 'PinnedTop', right(actual.props))).not.toBeDefined()

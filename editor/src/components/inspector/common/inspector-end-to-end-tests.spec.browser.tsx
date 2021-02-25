@@ -62,7 +62,7 @@ describe('inspector tests with real metadata', () => {
     expect(flexPaddingTopControl.value).toMatchInlineSnapshot(`"20"`)
     expect(
       flexPaddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     // Padding left is coming from the `paddingLeft` value.
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"15px"`)
@@ -446,7 +446,7 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"12"`)
     expect(
@@ -545,10 +545,10 @@ describe('inspector tests with real metadata', () => {
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple-unknown-css"`)
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"trivial-default"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"0"`)
     expect(
@@ -575,7 +575,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
   })
   it('Style props strings using px', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -652,7 +652,7 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"8"`)
     expect(
@@ -736,10 +736,10 @@ describe('inspector tests with real metadata', () => {
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
 
-    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"16"`)
+    expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4%"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"8%"`)
     expect(
@@ -826,12 +826,12 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"44"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"42"`)
     expect(
       paddingRightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"simple-unknown-css"`)
+    ).toMatchInlineSnapshot(`"simple"`)
 
     expect(radiusControl.value).toMatchInlineSnapshot(`"15%"`)
     expect(
@@ -913,7 +913,7 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"4"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"controlled"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"5"`)
     expect(
@@ -1038,7 +1038,7 @@ describe('inspector tests with real metadata', () => {
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`"5"`)
     expect(
       paddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"detected"`)
+    ).toMatchInlineSnapshot(`"controlled"`)
 
     expect(paddingRightControl.value).toMatchInlineSnapshot(`"10"`)
     expect(
@@ -1385,6 +1385,12 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
+    await act(async () => {
+      await screen.findByTestId('toggle-min-max-button')
+      fireEvent.click(screen.getByTestId('toggle-min-max-button'))
+      await screen.findByTestId('position-maxWidth-number-input')
+    })
+
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
@@ -1415,7 +1421,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"trivial-default"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
@@ -1478,6 +1484,12 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
+    await act(async () => {
+      await screen.findByTestId('toggle-min-max-button')
+      fireEvent.click(screen.getByTestId('toggle-min-max-button'))
+      await screen.findByTestId('position-maxWidth-number-input')
+    })
+
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
@@ -1508,7 +1520,7 @@ describe('inspector tests with real metadata', () => {
     expect(maxWidthControl.value).toMatchInlineSnapshot(`""`)
     expect(
       maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-    ).toMatchInlineSnapshot(`"unset"`)
+    ).toMatchInlineSnapshot(`"trivial-default"`)
 
     expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"0px"`)
     expect(paddingLeftControl.value).toMatchInlineSnapshot(`""`)
@@ -1564,5 +1576,110 @@ describe('inspector tests with real metadata', () => {
     expect(
       fontSizeControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"detected"`)
+  })
+  it('Flex shorthand properties', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            display: 'flex',
+          }}
+          data-uid={'aaa'}
+        >
+          <div data-uid={'bbb'} style={{flex: '1 0 15px'}}>hello</div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
+    ]
+
+    const flexBasis = (await renderResult.renderedDOM.findByTestId(
+      'position-flexBasis-number-input',
+    )) as HTMLInputElement
+    const flexGrow = (await renderResult.renderedDOM.findByTestId(
+      'position-flexGrow-number-input',
+    )) as HTMLInputElement
+    const flexShrink = (await renderResult.renderedDOM.findByTestId(
+      'position-flexShrink-number-input',
+    )) as HTMLInputElement
+
+    expect(metadata.computedStyle?.['flexBasis']).toMatchInlineSnapshot(`"15px"`)
+    expect(flexBasis.value).toMatchInlineSnapshot(`"15"`)
+    expect(
+      flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+    expect(metadata.computedStyle?.['flexGrow']).toMatchInlineSnapshot(`"1"`)
+    expect(flexGrow.value).toMatchInlineSnapshot(`"1"`)
+    expect(
+      flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+    expect(metadata.computedStyle?.['flexShrink']).toMatchInlineSnapshot(`"0"`)
+    expect(flexShrink.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+  })
+  it('Flex longhand properties', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            display: 'flex',
+          }}
+          data-uid={'aaa'}
+        >
+          <div
+            data-uid={'bbb'}
+            style={{
+              flexGrow: 1,
+              flexShrink: 0,
+              flexBasis: '15px',
+            }}
+          >hello</div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
+    ]
+
+    const flexBasis = (await renderResult.renderedDOM.findByTestId(
+      'position-flexBasis-number-input',
+    )) as HTMLInputElement
+    const flexGrow = (await renderResult.renderedDOM.findByTestId(
+      'position-flexGrow-number-input',
+    )) as HTMLInputElement
+    const flexShrink = (await renderResult.renderedDOM.findByTestId(
+      'position-flexShrink-number-input',
+    )) as HTMLInputElement
+
+    expect(metadata.computedStyle?.['flexBasis']).toMatchInlineSnapshot(`"15px"`)
+    expect(flexBasis.value).toMatchInlineSnapshot(`"15"`)
+    expect(
+      flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+    expect(metadata.computedStyle?.['flexGrow']).toMatchInlineSnapshot(`"1"`)
+    expect(flexGrow.value).toMatchInlineSnapshot(`"1"`)
+    expect(
+      flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+    expect(metadata.computedStyle?.['flexShrink']).toMatchInlineSnapshot(`"0"`)
+    expect(flexShrink.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
   })
 })
