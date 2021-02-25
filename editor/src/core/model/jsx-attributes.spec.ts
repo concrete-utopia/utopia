@@ -431,6 +431,73 @@ describe('jsxAttributesToProps', () => {
     )
     expect(compiledProps).toEqual(expectedCompiledProps)
   })
+
+  it('even supports irregular duplicated property inside a JSX_ATTRIBUTE_VALUE', () => {
+    const attributes = jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          paddingLeft: 5,
+          padding: 5,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          paddingLeft: 15,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          paddingLeft: 23,
+        },
+        emptyComments,
+      ),
+    })
+    const compiledProps = jsxAttributesToProps({}, attributes, {})
+
+    expect(compiledProps).toEqual({ style: { paddingLeft: 23, padding: 5 } })
+    expect(Object.entries(compiledProps.style)).toEqual([
+      ['paddingLeft', 23],
+      ['padding', 5],
+    ])
+  })
+
+  it('even supports irregular duplicated property inside a JSX_ATTRIBUTE_NESTED_OBJECT', () => {
+    const attributes = jsxAttributesFromMap({
+      style: jsxAttributeNestedObject(
+        [
+          jsxPropertyAssignment(
+            'paddingLeft',
+            jsxAttributeValue(5, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'padding',
+            jsxAttributeValue(5, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'paddingLeft',
+            jsxAttributeValue(15, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'paddingLeft',
+            jsxAttributeValue(23, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+        ],
+        emptyComments,
+      ),
+    })
+
+    const compiledProps = jsxAttributesToProps({}, attributes, {})
+
+    expect(compiledProps).toEqual({ style: { paddingLeft: 23, padding: 5 } })
+    expect(Object.entries(compiledProps.style)).toEqual([
+      ['paddingLeft', 23],
+      ['padding', 5],
+    ])
+  })
 })
 
 describe('getModifiableJSXAttributeAtPath', () => {
