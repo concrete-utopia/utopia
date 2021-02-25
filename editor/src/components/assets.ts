@@ -10,7 +10,8 @@ import { isDirectory, directory, isImageFile } from '../core/model/project-file-
 import Utils from '../utils/utils'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { fastForEach } from '../core/shared/utils'
-import { mapValues } from '../core/shared/object-utils'
+import { mapValues, propOrNull } from '../core/shared/object-utils'
+import { emptySet } from '../core/shared/set-utils'
 
 interface ImageAsset {
   assetPath: string
@@ -75,6 +76,18 @@ export function projectContentFile(
 }
 
 export type ProjectContentsTree = ProjectContentDirectory | ProjectContentFile
+
+export function isProjectContentDirectory(
+  projectContentsTree: ProjectContentsTree | null,
+): projectContentsTree is ProjectContentDirectory {
+  return projectContentsTree != null && projectContentsTree.type === 'PROJECT_CONTENT_DIRECTORY'
+}
+
+export function isProjectContentFile(
+  projectContentsTree: ProjectContentsTree | null,
+): projectContentsTree is ProjectContentFile {
+  return projectContentsTree != null && projectContentsTree.type === 'PROJECT_CONTENT_FILE'
+}
 
 export function getProjectFileFromTree(tree: ProjectContentsTree): ProjectFile {
   switch (tree.type) {
@@ -207,6 +220,65 @@ export function walkContentsTree(
         throw new Error(`Unhandled tree element ${JSON.stringify(treeElement)}`)
     }
   })
+}
+
+export async function walkContentsTreeAsync(
+  tree: ProjectContentTreeRoot,
+  onElement: (fullPath: string, file: ProjectFile) => Promise<void>,
+): Promise<void> {
+  const treeKeys = Object.keys(tree)
+  treeKeys.sort()
+  for (const treeKey of treeKeys) {
+    const treeElement = tree[treeKey]
+    switch (treeElement.type) {
+      case 'PROJECT_CONTENT_FILE':
+        // eslint-disable-next-line no-await-in-loop
+        await onElement(treeElement.fullPath, treeElement.content)
+        break
+      case 'PROJECT_CONTENT_DIRECTORY':
+        // eslint-disable-next-line no-await-in-loop
+        await onElement(treeElement.fullPath, treeElement.directory)
+        // eslint-disable-next-line no-await-in-loop
+        await walkContentsTreeAsync(treeElement.children, onElement)
+        break
+      default:
+        const _exhaustiveCheck: never = treeElement
+        throw new Error(`Unhandled tree element ${JSON.stringify(treeElement)}`)
+    }
+  }
+}
+
+export async function zipContentsTreeAsync(
+  firstTree: ProjectContentTreeRoot,
+  secondTree: ProjectContentTreeRoot,
+  onElement: (
+    fullPath: string,
+    firstContents: ProjectContentsTree | null,
+    secondContents: ProjectContentsTree | null,
+  ) => Promise<boolean>,
+): Promise<void> {
+  let keys: Set<string> = emptySet()
+  Object.keys(firstTree).forEach(keys.add, keys)
+  Object.keys(secondTree).forEach(keys.add, keys)
+  for (const key of keys) {
+    const firstContents = propOrNull(key, firstTree)
+    const secondContents = propOrNull(key, secondTree)
+    const fullPath = firstContents?.fullPath ?? secondContents?.fullPath
+    if (fullPath == null) {
+      throw new Error(`Invalid state of both elements being false reached.`)
+    } else {
+      // eslint-disable-next-line no-await-in-loop
+      const shouldContinueDeeper = await onElement(fullPath, firstContents, secondContents)
+      if (
+        isProjectContentDirectory(firstContents) &&
+        isProjectContentDirectory(secondContents) &&
+        shouldContinueDeeper
+      ) {
+        // eslint-disable-next-line no-await-in-loop
+        await zipContentsTreeAsync(firstContents.children, secondContents.children, onElement)
+      }
+    }
+  }
 }
 
 // FIXME A lot of these files should be moved to a more relevant file

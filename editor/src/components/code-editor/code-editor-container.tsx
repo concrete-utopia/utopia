@@ -21,6 +21,7 @@ import {
   ConsoleLog,
   EditorStore,
   getAllLintErrors,
+  getHighlightBoundsForTemplatePath,
   getOpenEditorTab,
   getOpenFile,
   getOpenUIJSFile,
@@ -153,6 +154,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
       codeEditorTheme: store.editor.codeEditorTheme,
       selectedViews: store.editor.selectedViews,
       projectID: store.editor.id,
+      vscodeBridgeReady: store.editor.vscodeBridgeReady,
     }
   }, 'CodeEditorWrapper')
 
@@ -160,7 +162,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     useEditorState((store) => {
       return Utils.stripNulls(
         store.editor.selectedViews.map((selectedView) =>
-          getHighlightBoundsForTemplatePath(selectedView, store),
+          getHighlightBoundsForTemplatePath(selectedView, store.editor),
         ),
       )
     }, 'CodeEditorWrapper selectedViewBounds'),
@@ -170,7 +172,7 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     useEditorState((store) => {
       return Utils.stripNulls(
         store.editor.highlightedViews.map((highlightedView) =>
-          getHighlightBoundsForTemplatePath(highlightedView, store),
+          getHighlightBoundsForTemplatePath(highlightedView, store.editor),
         ),
       )
     }, 'CodeEditorWrapper highlightBounds'),
@@ -200,14 +202,18 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
   }
 
   if (isFeatureEnabled('VSCode Code Editor')) {
-    return (
-      <VSCodeIframeContainer
-        projectID={forceNotNull(
-          'Project ID must be set when launching the code editor',
-          selectedProps.projectID,
-        )}
-      />
-    )
+    if (selectedProps.vscodeBridgeReady) {
+      return (
+        <VSCodeIframeContainer
+          projectID={forceNotNull(
+            'Project ID must be set when launching the code editor',
+            selectedProps.projectID,
+          )}
+        />
+      )
+    } else {
+      return <div>Loading...</div>
+    }
   } else {
     if (isFeatureEnabled('iFrame Code Editor')) {
       return <CodeEditorIframeContainer propsToSend={propsToSend} />
@@ -216,20 +222,3 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', (props) =>
     }
   }
 })
-
-function getHighlightBoundsForTemplatePath(path: TemplatePath, store: EditorStore) {
-  const selectedFile = getOpenFile(store.editor)
-  if (isTextFile(selectedFile) && isParseSuccess(selectedFile.fileContents.parsed)) {
-    const parseSuccess = selectedFile.fileContents.parsed
-    if (TP.isInstancePath(path)) {
-      const highlightedUID = Utils.optionalMap(
-        TP.toUid,
-        MetadataUtils.dynamicPathToStaticPath(path),
-      )
-      if (highlightedUID != null) {
-        return parseSuccess.highlightBounds[highlightedUID]
-      }
-    }
-  }
-  return null
-}

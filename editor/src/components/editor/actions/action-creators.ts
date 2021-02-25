@@ -177,6 +177,9 @@ import type {
   UpdateThumbnailGenerated,
   WrapInLayoutable,
   WrapInView,
+  UpdateFromCodeEditor,
+  MarkVSCodeBridgeReady,
+  SelectFromFileAndPosition,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -889,6 +892,14 @@ export function updateFromWorker(
   }
 }
 
+export function updateFromCodeEditor(filePath: string, fileContents: string): UpdateFromCodeEditor {
+  return {
+    action: 'UPDATE_FROM_CODE_EDITOR',
+    filePath: filePath,
+    fileContents: fileContents,
+  }
+}
+
 export function clearParseOrPrintInFlight(): ClearParseOrPrintInFlight {
   return {
     action: 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT',
@@ -1209,5 +1220,25 @@ export function updateChildText(target: InstancePath, text: string): UpdateChild
     action: 'UPDATE_CHILD_TEXT',
     target: target,
     text: text,
+  }
+}
+
+export function markVSCodeBridgeReady(ready: boolean): MarkVSCodeBridgeReady {
+  return {
+    action: 'MARK_VSCODE_BRIDGE_READY',
+    ready: ready,
+  }
+}
+
+export function selectFromFileAndPosition(
+  filePath: string,
+  line: number,
+  column: number,
+): SelectFromFileAndPosition {
+  return {
+    action: 'SELECT_FROM_FILE_AND_POSITION',
+    filePath: filePath,
+    line: line,
+    column: column,
   }
 }

@@ -105,6 +105,7 @@ import {
   updateParsedTextFileHighlightBounds,
   assetFile,
   applyToAllUIJSFiles,
+  updateFileContents,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -150,6 +151,7 @@ import {
   textFileContents,
   textFile,
   codeFile,
+  unparsed,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -178,6 +180,7 @@ import {
   ProjectContentTreeRoot,
   removeFromProjectContents,
   treeToContents,
+  walkContentsTree,
 } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import {
@@ -353,6 +356,9 @@ import {
   AddStoryboardFile,
   SendLinterRequestMessage,
   UpdateChildText,
+  UpdateFromCodeEditor,
+  MarkVSCodeBridgeReady,
+  SelectFromFileAndPosition,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -423,6 +429,8 @@ import {
   addSceneToJSXComponents,
   UserState,
   UserConfiguration,
+  getHighlightBoundsForUids,
+  getTemplatePathsInBounds,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -483,11 +491,14 @@ import {
   setPackageStatus,
   updateNodeModulesContents,
   finishCheckpointTimer,
+  selectComponents,
+  markVSCodeBridgeReady,
 } from './action-creators'
 import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
+import { initVSCodeBridge, sendOpenFileMessage } from '../../../core/vscode/vscode-bridge'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1011,6 +1022,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     codeEditorTheme: poppedEditor.codeEditorTheme,
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
+    vscodeBridgeReady: currentEditor.vscodeBridgeReady,
   }
 }
 
@@ -1402,6 +1414,7 @@ export const UPDATE_FNS = {
         )
       },
     )
+    initVSCodeBridge(action.projectId, parsedProjectFiles, dispatch)
     const parsedModel = {
       ...migratedModel,
       projectContents: parsedProjectFiles,
@@ -1423,6 +1436,7 @@ export const UPDATE_FNS = {
       action.storedState,
       newModel,
     )
+
     return loadModel(newModelMergedWithStoredState, oldEditor)
   },
   SET_HIGHLIGHTED_VIEW: (action: SetHighlightedView, editor: EditorModel): EditorModel => {
@@ -3056,10 +3070,11 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    return {
+    initVSCodeBridge(action.id, editor.projectContents, dispatch)
+    return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(markVSCodeBridgeReady(false), {
       ...editor,
       id: action.id,
-    }
+    })
   },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {
     return {
@@ -3245,6 +3260,9 @@ export const UPDATE_FNS = {
     const focusedPanel: EditorPanel = fileOpensInCanvas ? 'canvas' : 'misccodeeditor'
 
     const keepSelectedViews = R.equals(currentOpenFile, action.editorTab)
+    if (isOpenFileTab(action.editorTab)) {
+      sendOpenFileMessage(action.editorTab.filename)
+    }
 
     return setLeftMenuTabFromFocusedPanel({
       ...editor,
@@ -3461,6 +3479,27 @@ export const UPDATE_FNS = {
       parseOrPrintInFlight: false, // only ever clear it here
     }
   },
+  UPDATE_FROM_CODE_EDITOR: (
+    action: UpdateFromCodeEditor,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+    let updatedFile: ProjectFile
+
+    if (existing == null || !isTextFile(existing)) {
+      updatedFile = textFile(
+        textFileContents(action.fileContents, unparsed, RevisionsState.CodeAhead),
+        null,
+        Date.now(),
+      )
+    } else {
+      updatedFile = updateFileContents(action.fileContents, existing, true)
+    }
+
+    const updateAction = updateFile(action.filePath, updatedFile, true)
+    return UPDATE_FNS.UPDATE_FILE(updateAction, editor, dispatch)
+  },
   CLEAR_PARSE_OR_PRINT_IN_FLIGHT: (
     action: ClearParseOrPrintInFlight,
     editor: EditorModel,
@@ -3529,6 +3568,7 @@ export const UPDATE_FNS = {
         renamingTarget: newFileKey,
       },
     }
+    sendOpenFileMessage(newFileKey)
     return updatedEditor
   },
   DELETE_FILE: (
@@ -4217,6 +4257,36 @@ export const UPDATE_FNS = {
       editor,
     )
   },
+  MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      vscodeBridgeReady: action.ready,
+    }
+  },
+  SELECT_FROM_FILE_AND_POSITION: (
+    action: SelectFromFileAndPosition,
+    editor: EditorModel,
+    derived: DerivedState,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const currentlyOpenFile = getOpenTextFileKey(editor)
+    if (currentlyOpenFile === action.filePath) {
+      const allTemplatePaths = derived.navigatorTargets
+      const highlightBoundsForUids = getHighlightBoundsForUids(editor)
+      const newlySelectedElements = getTemplatePathsInBounds(
+        action.line,
+        highlightBoundsForUids,
+        allTemplatePaths,
+      )
+      return UPDATE_FNS.SELECT_COMPONENTS(
+        selectComponents(newlySelectedElements, false),
+        editor,
+        dispatch,
+      )
+    } else {
+      return editor
+    }
+  },
 }
 
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
@@ -4469,7 +4539,7 @@ export async function load(
   dispatch: EditorDispatch,
   model: PersistentModel,
   title: string,
-  projectId: string | null,
+  projectId: string,
   workers: UtopiaTsWorkers,
   renderEditorRoot: () => void,
   retryFetchNodeModules: boolean = true,
@@ -4514,8 +4584,7 @@ export async function load(
 
   const storedState = await loadStoredState(projectId)
 
-  const safeMode =
-    projectId != null ? await localforage.getItem<boolean>(getProjectLockedKey(projectId)) : false
+  const safeMode = await localforage.getItem<boolean>(getProjectLockedKey(projectId))
 
   renderEditorRoot()
 

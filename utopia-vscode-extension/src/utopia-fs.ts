@@ -24,28 +24,26 @@ import {
   workspace,
 } from 'vscode'
 import {
-  createDirectory,
-  deletePath,
-  exists,
-  getDescendentPaths,
-  pathIsDirectory,
-  readdir,
-  readFile,
-  readFileWithEncoding,
-  rename,
-  stat,
-  stopWatching,
   watch,
+  stopWatching,
+  stat,
+  pathIsDirectory,
+  createDirectory,
+  readFile,
+  exists,
   writeFile,
-} from './browserfs-utils'
-import {
   appendToPath,
   dirname,
-  fromUtopiaURI,
-  Scheme,
   stripRootPrefix,
-  toUtopiaURI,
-} from './path-utils'
+  deletePath,
+  rename,
+  readFileAsUTF8,
+  getDescendentPaths,
+  isDirectory,
+  readDirectory,
+  RootDir,
+} from 'utopia-vscode-common'
+import { fromUtopiaURI, toUtopiaURI } from './path-utils'
 
 export class UtopiaFSExtension
   implements FileSystemProvider, FileSearchProvider, TextSearchProvider, Disposable {
@@ -55,11 +53,11 @@ export class UtopiaFSExtension
   private emitEventHandle: number | null = null
   private allFilePaths: string[] | null = null
 
-  constructor(private workspaceRootPath: string) {
+  constructor(private projectID: string) {
     this.disposable = Disposable.from(
-      workspace.registerFileSystemProvider(Scheme, this, { isCaseSensitive: true }),
-      workspace.registerFileSearchProvider(Scheme, this),
-      workspace.registerTextSearchProvider(Scheme, this),
+      workspace.registerFileSystemProvider(projectID, this, { isCaseSensitive: true }),
+      workspace.registerFileSearchProvider(projectID, this),
+      workspace.registerTextSearchProvider(projectID, this),
     )
   }
 
@@ -86,15 +84,24 @@ export class UtopiaFSExtension
   }
 
   private notifyFileChanged(path: string): void {
-    this.queueFileChangeEvent({ type: FileChangeType.Changed, uri: toUtopiaURI(path) })
+    this.queueFileChangeEvent({
+      type: FileChangeType.Changed,
+      uri: toUtopiaURI(this.projectID, path),
+    })
   }
 
   private notifyFileCreated(path: string): void {
-    this.queueFileChangeEvent({ type: FileChangeType.Created, uri: toUtopiaURI(path) })
+    this.queueFileChangeEvent({
+      type: FileChangeType.Created,
+      uri: toUtopiaURI(this.projectID, path),
+    })
   }
 
   private notifyFileDeleted(path: string): void {
-    this.queueFileChangeEvent({ type: FileChangeType.Deleted, uri: toUtopiaURI(path) })
+    this.queueFileChangeEvent({
+      type: FileChangeType.Deleted,
+      uri: toUtopiaURI(this.projectID, path),
+    })
   }
 
   watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): Disposable {
@@ -112,10 +119,15 @@ export class UtopiaFSExtension
     })
   }
 
+  async exists(uri: Uri): Promise<boolean> {
+    const path = fromUtopiaURI(uri)
+    return exists(path)
+  }
+
   async stat(uri: Uri): Promise<FileStat> {
     const path = fromUtopiaURI(uri)
     const stats = await stat(path)
-    const fileType = stats.isDirectory() ? FileType.Directory : FileType.File
+    const fileType = isDirectory(stats) ? FileType.Directory : FileType.File
 
     return {
       type: fileType,
@@ -127,7 +139,7 @@ export class UtopiaFSExtension
 
   async readDirectory(uri: Uri): Promise<[string, FileType][]> {
     const path = fromUtopiaURI(uri)
-    const children = await readdir(path)
+    const children = await readDirectory(path)
     const result: Promise<[string, FileType]>[] = children.map((childName) =>
       pathIsDirectory(appendToPath(path, childName)).then((isDirectory) => [
         childName,
@@ -203,7 +215,7 @@ export class UtopiaFSExtension
     const destinationParentDirExists = await exists(destinationParentDir)
 
     if (!destinationParentDirExists) {
-      throw FileSystemError.FileNotFound(toUtopiaURI(destinationParentDir))
+      throw FileSystemError.FileNotFound(toUtopiaURI(this.projectID, destinationParentDir))
     }
 
     if (!options.overwrite) {
@@ -228,7 +240,7 @@ export class UtopiaFSExtension
   ): Promise<Uri[]> {
     // TODO Support all search options
     const { result: foundPaths } = await this.filterFilePaths(query.pattern, options.maxResults)
-    return foundPaths.map(toUtopiaURI)
+    return foundPaths.map((p) => toUtopiaURI(this.projectID, p))
   }
 
   // TextSearchProvider
@@ -248,7 +260,7 @@ export class UtopiaFSExtension
           break
         }
 
-        const content = await readFileWithEncoding(filePath, options.encoding || 'utf8')
+        const content = await readFileAsUTF8(filePath)
 
         const lines = splitIntoLines(content)
         for (let i = 0; i < lines.length; i++) {
@@ -256,7 +268,7 @@ export class UtopiaFSExtension
           const index = line.indexOf(query.pattern)
           if (index !== -1) {
             progress.report({
-              uri: toUtopiaURI(filePath),
+              uri: toUtopiaURI(this.projectID, filePath),
               ranges: new Range(
                 new Position(i, index),
                 new Position(i, index + query.pattern.length),
@@ -314,7 +326,7 @@ export class UtopiaFSExtension
 
   async getAllPaths(): Promise<string[]> {
     if (this.allFilePaths == null) {
-      const result = await getDescendentPaths(this.workspaceRootPath, false)
+      const result = await getDescendentPaths(RootDir)
       this.allFilePaths = result
       return result
     } else {

@@ -196,6 +196,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch)
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, derivedState)
+    case 'UPDATE_FROM_CODE_EDITOR':
+      return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(action, state, dispatch)
     case 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT':
       return UPDATE_FNS.CLEAR_PARSE_OR_PRINT_IN_FLIGHT(action, state)
     case 'ADD_FOLDER':
@@ -284,10 +286,14 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
     case 'UPDATE_CHILD_TEXT':
       return UPDATE_FNS.UPDATE_CHILD_TEXT(action, state)
+    case 'SELECT_FROM_FILE_AND_POSITION':
+      return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, derivedState, dispatch)
     case 'SEND_LINTER_REQUEST_MESSAGE':
       // side effect ☢️
       workers.sendLinterRequestMessage(action.filePath, action.content)
       return state
+    case 'MARK_VSCODE_BRIDGE_READY':
+      return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(action, state)
     default:
       return state
   }

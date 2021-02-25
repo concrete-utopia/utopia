@@ -80,6 +80,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
     case 'PROPERTY_CONTROLS_IFRAME_READY':
     case 'SEND_LINTER_REQUEST_MESSAGE':
+    case 'MARK_VSCODE_BRIDGE_READY':
+    case 'SELECT_FROM_FILE_AND_POSITION':
       return true
 
     case 'NEW':
@@ -118,6 +120,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_FILE':
     case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
+    case 'UPDATE_FROM_CODE_EDITOR':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
     case 'SET_SCENE_PROP':

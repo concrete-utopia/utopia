@@ -25,7 +25,7 @@
     "postinstall": "npm run download-api"
   },
   "dependencies": {
-    "browserfs": "1.4.3"
+    "utopia-vscode-common": "file:../utopia-vscode-common"
   },
   "devDependencies": {
     "ts-loader": "5.3.3",

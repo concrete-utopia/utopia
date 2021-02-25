@@ -197,16 +197,18 @@ export const getUtopiaJSXComponentsFromSuccess = Utils.memoize(
   getUtopiaJSXComponentsFromSuccessInner,
 )
 
-export function getHighlightBoundsFromParseResult(result: ParsedTextFile): HighlightBoundsForUids {
-  return foldParsedTextFile<HighlightBoundsForUids>(
+export function getHighlightBoundsFromParseResult(
+  result: ParsedTextFile,
+): HighlightBoundsForUids | null {
+  return foldParsedTextFile<HighlightBoundsForUids | null>(
     (_) => {
-      return {}
+      return null
     },
     (success) => {
       return success.highlightBounds
     },
     (_) => {
-      return {}
+      return null
     },
     result,
   )
@@ -214,12 +216,12 @@ export function getHighlightBoundsFromParseResult(result: ParsedTextFile): Highl
 
 export function updateParsedTextFileHighlightBounds(
   result: ParsedTextFile,
-  highlightBounds: HighlightBoundsForUids,
+  highlightBounds: HighlightBoundsForUids | null,
 ): ParsedTextFile {
   return foldParsedTextFile<ParsedTextFile>(
     (failure) => failure,
     (success) => {
-      return { ...success, highlightBounds: highlightBounds }
+      return { ...success, highlightBounds: highlightBounds ?? {} }
     },
     (unparsedResult) => unparsedResult,
     result,
@@ -558,4 +560,33 @@ export function applyToAllUIJSFiles(
       return tree
     }
   })
+}
+
+export function updateFileContents(
+  contents: string,
+  file: ProjectFile,
+  manualSave: boolean,
+): ProjectFile {
+  switch (file.type) {
+    case 'DIRECTORY':
+    case 'IMAGE_FILE':
+    case 'ASSET_FILE':
+      return file
+    case 'TEXT_FILE':
+      const uiJsLastSavedContents = updateLastSavedContents(
+        file.fileContents,
+        file.lastSavedContents,
+        manualSave,
+      )
+
+      const newParsed = updateParsedTextFileHighlightBounds(
+        file.fileContents.parsed,
+        getHighlightBoundsFromParseResult(file.fileContents.parsed), // here we just update the code without updating the highlights!
+      )
+      const newContents = textFileContents(contents, newParsed, RevisionsState.CodeAhead)
+      return textFile(newContents, uiJsLastSavedContents, Date.now())
+    default:
+      const _exhaustiveCheck: never = file
+      throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
+  }
 }

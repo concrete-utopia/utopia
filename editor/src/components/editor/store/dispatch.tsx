@@ -52,6 +52,8 @@ import {
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
+  getHighlightBoundsForTemplatePath,
+  getHighlightBoundsForUids,
   getOpenTextFile,
   getOpenTextFileKey,
   getOpenUtopiaJSXComponentsFromState,
@@ -69,6 +71,17 @@ import {
   walkContentsTree,
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
+import {
+  applyProjectContentChanges,
+  sendSelectedElementChangedMessage,
+  sendUpdateDecorationsMessage,
+} from '../../../core/vscode/vscode-bridge'
+import {
+  boundsInFile,
+  DecorationRange,
+  decorationRange,
+  DecorationRangeType,
+} from 'utopia-vscode-common'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -289,6 +302,93 @@ function maybeRequestModelUpdateOnEditor(
   }
 }
 
+async function applyVSCodeDecorations(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): Promise<void> {
+  const oldHighlightBounds = getHighlightBoundsForUids(oldEditorState)
+  const newHighlightBounds = getHighlightBoundsForUids(newEditorState)
+  if (
+    oldEditorState.selectedViews !== newEditorState.selectedViews ||
+    oldEditorState.highlightedViews !== newEditorState.highlightedViews ||
+    oldHighlightBounds !== newHighlightBounds
+  ) {
+    let decorations: Array<DecorationRange> = []
+    function addRange(filename: string, rangeType: DecorationRangeType, path: TemplatePath): void {
+      const highlightBounds = getHighlightBoundsForTemplatePath(path, newEditorState)
+      if (highlightBounds != null) {
+        decorations.push(
+          decorationRange(
+            rangeType,
+            filename,
+            highlightBounds.startLine,
+            highlightBounds.startCol,
+            highlightBounds.endLine,
+            highlightBounds.endCol,
+          ),
+        )
+      }
+    }
+    const openFilename = getOpenTextFileKey(newEditorState)
+    if (openFilename != null) {
+      newEditorState.selectedViews.forEach((selectedView) => {
+        addRange(openFilename, 'selection', selectedView)
+      })
+      newEditorState.highlightedViews.forEach((highlightedView) => {
+        addRange(openFilename, 'highlight', highlightedView)
+      })
+    }
+    await sendUpdateDecorationsMessage(decorations)
+  }
+}
+
+async function updateSelectedElementChanged(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): Promise<void> {
+  if (
+    oldEditorState.selectedViews !== newEditorState.selectedViews &&
+    newEditorState.selectedViews.length > 0
+  ) {
+    const openFilename = getOpenTextFileKey(newEditorState)
+    if (openFilename != null) {
+      const selectedView = newEditorState.selectedViews[0]
+      const highlightBounds = getHighlightBoundsForTemplatePath(selectedView, newEditorState)
+      if (highlightBounds != null) {
+        sendSelectedElementChangedMessage(
+          boundsInFile(
+            openFilename,
+            highlightBounds.startLine,
+            highlightBounds.startCol,
+            highlightBounds.endLine,
+            highlightBounds.endCol,
+          ),
+        )
+      }
+    }
+  }
+}
+
+async function applyVSCodeChanges(
+  oldStoredState: EditorStore,
+  newEditorState: EditorState,
+): Promise<void> {
+  // Update the file system that is shared between Utopia and VS Code.
+  if (oldStoredState.editor.id != null) {
+    await applyProjectContentChanges(
+      oldStoredState.editor.id,
+      oldStoredState.editor.projectContents,
+      newEditorState.projectContents,
+    )
+  }
+
+  // Keep the decorations synchronised from Utopia to VS Code.
+  await applyVSCodeDecorations(oldStoredState.editor, newEditorState)
+
+  // Handle the selected element having changed to inform the user what is going on.
+  await updateSelectedElementChanged(oldStoredState.editor, newEditorState)
+}
+
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
@@ -409,6 +509,9 @@ export function editorDispatch(
     saveStoredState(storedState.editor.id, stateToStore)
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
   }
+  applyVSCodeChanges(storedState, frozenEditorState).catch((error) => {
+    console.error('Error sending updates to VS Code', error)
+  })
 
   if (nameUpdated && frozenEditorState.id != null) {
     pushProjectURLToBrowserHistory(

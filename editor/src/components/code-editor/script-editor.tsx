@@ -5,6 +5,7 @@ import { betterReactMemo } from '../../utils/react-performance'
 import { ComponentMetadata } from '../../core/shared/element-template'
 import {
   getHighlightBoundsFromParseResult,
+  updateFileContents,
   updateLastSavedContents,
   updateParsedTextFileHighlightBounds,
 } from '../../core/model/project-file-utils'
@@ -74,31 +75,6 @@ function getFileContents(file: ProjectFile): string {
 
 function fileIsLocked(file: ProjectFile): boolean {
   return isTextFile(file) && codeNeedsPrinting(file.fileContents.revisionsState)
-}
-
-function updateFileContents(contents: string, file: ProjectFile, manualSave: boolean): ProjectFile {
-  switch (file.type) {
-    case 'DIRECTORY':
-    case 'IMAGE_FILE':
-    case 'ASSET_FILE':
-      return file
-    case 'TEXT_FILE':
-      const uiJsLastSavedContents = updateLastSavedContents(
-        file.fileContents,
-        file.lastSavedContents,
-        manualSave,
-      )
-
-      const newParsed = updateParsedTextFileHighlightBounds(
-        file.fileContents.parsed,
-        getHighlightBoundsFromParseResult(file.fileContents.parsed), // here we just update the code without updating the highlights!
-      )
-      const newContents = textFileContents(contents, newParsed, RevisionsState.CodeAhead)
-      return textFile(newContents, uiJsLastSavedContents, Date.now())
-    default:
-      const _exhaustiveCheck: never = file
-      throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
-  }
 }
 
 function getTemplatePathsInBounds(

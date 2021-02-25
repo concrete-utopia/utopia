@@ -75,6 +75,10 @@
     "../utopia-api/src/**/*.{js,ts,tsx}": [
       "prettier --write",
       "git add"
+    ],
+    "../utopia-vscode-extension/src/**/*.{js,ts,tsx}": [
+      "prettier --write",
+      "git add"
     ]
   },
   "dependencies": {
@@ -184,6 +188,7 @@
     "url-join": "4.0.1",
     "use-context-selector": "git://github.com/dai-shi/use-context-selector.git#3f1df8f",
     "utopia-api": "file:../utopia-api",
+    "utopia-vscode-common": "file:../utopia-vscode-common",
     "uuid": "3.0.1",
     "xstate": "4.6.7",
     "zustand": "3.1.3"

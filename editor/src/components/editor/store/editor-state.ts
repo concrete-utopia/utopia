@@ -54,6 +54,8 @@ import {
   isParseFailure,
   isParsedTextFile,
   EmptyExportsDetail,
+  HighlightBounds,
+  HighlightBoundsForUids,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -127,6 +129,7 @@ import {
   isInstancePath,
   toUid,
   toString,
+  dynamicPathToStaticPath,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notice'
@@ -339,6 +342,7 @@ export interface EditorState {
   codeEditorTheme: CodeEditorTheme
   safeMode: boolean
   saveError: boolean
+  vscodeBridgeReady: boolean
 }
 
 export interface StoredEditorState {
@@ -1135,6 +1139,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     codeEditorTheme: DefaultTheme,
     safeMode: false,
     saveError: false,
+    vscodeBridgeReady: false,
   }
 }
 
@@ -1379,6 +1384,7 @@ export function editorModelFromPersistentModel(
       minimised: persistentModel.fileBrowser.minimised,
     },
     codeEditorErrors: persistentModel.codeEditorErrors,
+    vscodeBridgeReady: false,
   }
   return editor
 }
@@ -1695,4 +1701,60 @@ export function getStoryboardTemplatePathFromEditorState(
 ): StaticTemplatePath | null {
   const openComponents = getOpenUtopiaJSXComponentsFromState(editorState)
   return getStoryboardTemplatePath(openComponents)
+}
+
+export function getHighlightBoundsForUids(editorState: EditorState): HighlightBoundsForUids | null {
+  const selectedFile = getOpenFile(editorState)
+  if (isTextFile(selectedFile)) {
+    return getHighlightBoundsFromParseResult(selectedFile.fileContents.parsed)
+  }
+
+  return null
+}
+
+export function getHighlightBoundsForTemplatePath(
+  path: TemplatePath,
+  editorState: EditorState,
+): HighlightBounds | null {
+  if (isInstancePath(path)) {
+    const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
+    if (staticPath != null) {
+      const highlightBounds = getHighlightBoundsForUids(editorState)
+      if (highlightBounds != null) {
+        const highlightedUID = toUid(staticPath)
+        return highlightBounds[highlightedUID]
+      }
+    }
+  }
+  return null
+}
+
+export function getTemplatePathsInBounds(
+  line: number,
+  parsedHighlightBounds: HighlightBoundsForUids | null,
+  allTemplatePaths: Array<TemplatePath>,
+): Array<TemplatePath> {
+  if (parsedHighlightBounds == null) {
+    return []
+  } else {
+    let highlightBounds = Object.values(parsedHighlightBounds).filter((bounds) => {
+      return line >= bounds.startLine && line <= bounds.endLine
+    })
+    // Put the lowest possible start line first.
+    highlightBounds.sort((a, b) => b.startLine - a.startLine)
+    let paths: Array<TemplatePath> = []
+    if (highlightBounds.length > 0) {
+      const target = highlightBounds[0].uid
+      Utils.fastForEach(allTemplatePaths, (path) => {
+        if (isInstancePath(path)) {
+          const staticPath = dynamicPathToStaticPath(path)
+          const uid = staticPath != null ? toUid(staticPath) : null
+          if (uid === target) {
+            paths.push(path)
+          }
+        }
+      })
+    }
+    return paths
+  }
 }

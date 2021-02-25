@@ -251,7 +251,7 @@ export type Load = {
   packageResult: PackageStatusMap
   codeResultCache: CodeResultCache
   title: string
-  projectId: string | null
+  projectId: string
   storedState: StoredEditorState | null
   safeMode: boolean
 }
@@ -563,6 +563,12 @@ export interface UpdateFromWorker {
   codeOrModel: 'Code' | 'Model'
 }
 
+export interface UpdateFromCodeEditor {
+  action: 'UPDATE_FROM_CODE_EDITOR'
+  filePath: string
+  fileContents: string
+}
+
 export interface ClearParseOrPrintInFlight {
   action: 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT'
 }
@@ -773,6 +779,18 @@ export interface UpdateChildText {
   text: string
 }
 
+export interface MarkVSCodeBridgeReady {
+  action: 'MARK_VSCODE_BRIDGE_READY'
+  ready: boolean
+}
+
+export interface SelectFromFileAndPosition {
+  action: 'SELECT_FROM_FILE_AND_POSITION'
+  filePath: string
+  line: number
+  column: number
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -858,6 +876,7 @@ export type EditorAction =
   | ReorderEditorTabs
   | UpdateFile
   | UpdateFromWorker
+  | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight
   | ClearImageFileBlob
   | AddFolder
@@ -901,6 +920,8 @@ export type EditorAction =
   | PropertyControlsIFrameReady
   | AddStoryboardFile
   | UpdateChildText
+  | MarkVSCodeBridgeReady
+  | SelectFromFileAndPosition
 
 export type DispatchPriority =
   | 'everyone'

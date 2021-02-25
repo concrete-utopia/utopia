@@ -91,7 +91,7 @@ module.exports = {
   projects: [
     '../utopia-api',
     {
-      testEnvironment: 'jest-environment-jsdom-global',
+      testEnvironment: './jest-environment',
       preset: 'ts-jest',
       testPathIgnorePatterns: ['/lib/', '/node_modules/', '/.github-test-projects/'],
       testRegex: 'src/.*\\.spec\\.(jsx?|tsx?)$',
