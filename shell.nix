@@ -25,6 +25,7 @@ let
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
       ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${node}/bin/npm --scripts-prepend-node-path=true build
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true install
     '')
