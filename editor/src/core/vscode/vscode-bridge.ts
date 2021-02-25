@@ -123,6 +123,7 @@ export async function initVSCodeBridge(
   dispatch: EditorDispatch,
 ): Promise<void> {
   async function innerInit(): Promise<void> {
+    dispatch([markVSCodeBridgeReady(false)], 'everyone')
     if (isBrowserEnvironment) {
       stopWatchingAll()
       stopPollingMailbox()
@@ -137,12 +138,11 @@ export async function initVSCodeBridge(
       })
       watchForChanges(projectID, dispatch)
     }
+    dispatch([markVSCodeBridgeReady(true)], 'everyone')
   }
 
   // Prevent multiple initialisations from driving over each other.
   currentInit = currentInit.then(innerInit)
-
-  dispatch([markVSCodeBridgeReady(true)], 'everyone')
 }
 
 export async function sendOpenFileMessage(filePath: string): Promise<void> {
