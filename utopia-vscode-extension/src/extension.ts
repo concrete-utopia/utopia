@@ -3,16 +3,13 @@ import {
   ensureDirectoryExists,
   RootDir,
   initMailbox,
-  isOpenFileMessage,
   VSCodeInbox,
-  isUpdateDecorationsMessage,
   DecorationRange,
   DecorationRangeType,
   setErrorHandler,
   FSError,
   toUtopiaPath,
   initializeFS,
-  isSelectedElementChanged,
   BoundsInFile,
   Bounds,
   ToVSCodeMessage,
@@ -58,15 +55,20 @@ function initMessaging(
   let currentDecorations: Array<DecorationRange> = []
 
   function handleMessage(message: ToVSCodeMessage): void {
-    if (isOpenFileMessage(message)) {
-      openFile(utopiaFS, vscode.Uri.joinPath(workspaceRootUri, message.filePath))
-    } else if (isUpdateDecorationsMessage(message)) {
-      currentDecorations = message.decorations
-      updateDecorations(currentDecorations)
-    } else if (isSelectedElementChanged(message)) {
-      revealRangeIfPossible(message.boundsInFile)
-    } else {
-      console.error(`Unhandled message type ${JSON.stringify(message)}`)
+    switch (message.type) {
+      case 'OPEN_FILE':
+        openFile(utopiaFS, vscode.Uri.joinPath(workspaceRootUri, message.filePath))
+        break
+      case 'UPDATE_DECORATIONS':
+        currentDecorations = message.decorations
+        updateDecorations(currentDecorations)
+        break
+      case 'SELECTED_ELEMENT_CHANGED':
+        revealRangeIfPossible(message.boundsInFile)
+        break
+      default:
+        const _exhaustiveCheck: never = message
+        console.error(`Unhandled message type ${JSON.stringify(message)}`)
     }
   }
 

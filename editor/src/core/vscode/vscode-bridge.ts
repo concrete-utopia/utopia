@@ -123,14 +123,10 @@ export async function initVSCodeBridge(
     await clearBothMailboxes()
     await writeProjectContents(projectID, projectContents)
     initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
-      if (isEditorCursorPositionChanged(message)) {
-        dispatch(
-          [selectFromFileAndPosition(message.filePath, message.line, message.column)],
-          'everyone',
-        )
-      } else {
-        console.error(`Unhandled message type ${JSON.stringify(message)}`)
-      }
+      dispatch(
+        [selectFromFileAndPosition(message.filePath, message.line, message.column)],
+        'everyone',
+      )
     })
     watchForChanges(projectID, dispatch)
   }
