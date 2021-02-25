@@ -21,6 +21,7 @@ let counter: number = 0
 let lastConsumedMessage: number = -1
 let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
 const POLLING_TIMEOUT = 8
+let pollTimeout: number | null = null
 
 function lastConsumedMessageKey(mailbox: Mailbox): string {
   return `/${mailbox}_LAST_CONSUMED`
@@ -81,7 +82,7 @@ async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
     await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
     messages.forEach(onMessageCallback)
   }
-  setTimeout(() => pollInbox(parseMessage), POLLING_TIMEOUT)
+  pollTimeout = setTimeout(() => pollInbox(parseMessage), POLLING_TIMEOUT)
 }
 
 
@@ -133,6 +134,15 @@ export async function clearBothMailboxes(): Promise<void> {
   await clearLastConsumedMessageFile(VSCodeInbox)
 }
 
+export function stopPollingMailbox(): void {
+  if (pollTimeout != null) {
+    clearTimeout(pollTimeout)
+    pollTimeout = null
+    lastConsumedMessage = -1
+    counter = 0
+  }
+}
+
 export async function initMailbox<T>(
   inboxToUse: Mailbox,
   parseMessage: (msg: string) => T,
@@ -141,5 +151,3 @@ export async function initMailbox<T>(
   await initOutbox(inboxToUse === VSCodeInbox ? UtopiaInbox : VSCodeInbox)
   await initInbox(inboxToUse, parseMessage, onMessage)
 }
-
-// TODO Do we need an unsubscribe feature?

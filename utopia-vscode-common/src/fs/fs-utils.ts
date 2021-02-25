@@ -363,3 +363,12 @@ export async function stopWatching(target: string, recursive: boolean) {
   const targets = await targetsForOperation(target, recursive)
   targets.forEach(stopWatchingPath)
 }
+
+export function stopWatchingAll() {
+  if (watchTimeout != null) {
+    clearTimeout(watchTimeout)
+    watchTimeout = null
+  }
+  watchedPaths = new Map()
+  lastModifiedTSs = new Map()
+}

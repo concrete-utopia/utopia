@@ -19,6 +19,8 @@ import {
   writeFileAsUTF8,
   ensureDirectoryExists,
   watch,
+  stopWatchingAll,
+  stopPollingMailbox,
   readFileAsUTF8,
   clearBothMailboxes,
   initMailbox,
@@ -122,6 +124,8 @@ export async function initVSCodeBridge(
 ): Promise<void> {
   async function innerInit(): Promise<void> {
     if (isBrowserEnvironment) {
+      stopWatchingAll()
+      stopPollingMailbox()
       await initializeFS(projectID)
       await clearBothMailboxes()
       await writeProjectContents(projectID, projectContents)
