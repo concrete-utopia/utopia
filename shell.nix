@@ -86,6 +86,34 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true run staging
     '')
+    (pkgs.writeScriptBin "build-utopia-vscode-common" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
+      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${node}/bin/npm --scripts-prepend-node-path=true run build
+    '')
+    (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      build-utopia-vscode-common
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
+      ${pkgs.yarn}/bin/yarn
+      ${pkgs.yarn}/bin/yarn run build
+    '')
+    (pkgs.writeScriptBin "build-vscode" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      ${pkgs.yarn}/bin/yarn
+      ${pkgs.yarn}/bin/yarn run build
+    '')
+    (pkgs.writeScriptBin "build-vscode-with-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      build-utopia-vscode-extension
+      build-vscode
+    '')
   ];
 
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
@@ -214,13 +242,6 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
       ${pkgs.yarn}/bin/yarn
       ${pkgs.yarn}/bin/yarn run make-patch
-    '')
-    (pkgs.writeScriptBin "build-vscode" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${pkgs.yarn}/bin/yarn
-      ${pkgs.yarn}/bin/yarn run build
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-common" ''
       #!/usr/bin/env bash
