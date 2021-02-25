@@ -492,6 +492,7 @@ import {
   updateNodeModulesContents,
   finishCheckpointTimer,
   selectComponents,
+  markVSCodeBridgeReady,
 } from './action-creators'
 import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
@@ -3070,10 +3071,10 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     initVSCodeBridge(action.id, editor.projectContents, dispatch)
-    return {
+    return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(markVSCodeBridgeReady(false), {
       ...editor,
       id: action.id,
-    }
+    })
   },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {
     return {
@@ -4256,10 +4257,10 @@ export const UPDATE_FNS = {
       editor,
     )
   },
-  MARK_VSCODE_BRIDGE_READY: (_action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
+  MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      vscodeBridgeReady: true,
+      vscodeBridgeReady: action.ready,
     }
   },
   SELECT_FROM_FILE_AND_POSITION: (

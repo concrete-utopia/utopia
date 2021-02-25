@@ -113,25 +113,32 @@ function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
   watch(toFSPath('/'), true, onCreated, onModified, onDeleted)
 }
 
+let currentInit: Promise<void> = Promise.resolve()
+
 export async function initVSCodeBridge(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
   dispatch: EditorDispatch,
 ): Promise<void> {
-  if (isBrowserEnvironment) {
-    await initializeFS(projectID)
-    await clearBothMailboxes()
-    await writeProjectContents(projectID, projectContents)
-    initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
-      dispatch(
-        [selectFromFileAndPosition(message.filePath, message.line, message.column)],
-        'everyone',
-      )
-    })
-    watchForChanges(projectID, dispatch)
+  async function innerInit(): Promise<void> {
+    if (isBrowserEnvironment) {
+      await initializeFS(projectID)
+      await clearBothMailboxes()
+      await writeProjectContents(projectID, projectContents)
+      await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
+        dispatch(
+          [selectFromFileAndPosition(message.filePath, message.line, message.column)],
+          'everyone',
+        )
+      })
+      watchForChanges(projectID, dispatch)
+    }
   }
 
-  dispatch([markVSCodeBridgeReady()], 'everyone')
+  // Prevent multiple initialisations from driving over each other.
+  currentInit = currentInit.then(innerInit)
+
+  dispatch([markVSCodeBridgeReady(true)], 'everyone')
 }
 
 export async function sendOpenFileMessage(filePath: string): Promise<void> {

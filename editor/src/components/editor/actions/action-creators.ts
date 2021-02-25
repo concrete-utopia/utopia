@@ -1223,9 +1223,10 @@ export function updateChildText(target: InstancePath, text: string): UpdateChild
   }
 }
 
-export function markVSCodeBridgeReady(): MarkVSCodeBridgeReady {
+export function markVSCodeBridgeReady(ready: boolean): MarkVSCodeBridgeReady {
   return {
     action: 'MARK_VSCODE_BRIDGE_READY',
+    ready: ready,
   }
 }
 

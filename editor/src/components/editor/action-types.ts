@@ -781,6 +781,7 @@ export interface UpdateChildText {
 
 export interface MarkVSCodeBridgeReady {
   action: 'MARK_VSCODE_BRIDGE_READY'
+  ready: boolean
 }
 
 export interface SelectFromFileAndPosition {
