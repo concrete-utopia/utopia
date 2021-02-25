@@ -25,7 +25,6 @@
     "postinstall": "npm run download-api"
   },
   "dependencies": {
-    "browserfs": "2.0",
     "utopia-vscode-common": "file:../utopia-vscode-common"
   },
   "devDependencies": {
