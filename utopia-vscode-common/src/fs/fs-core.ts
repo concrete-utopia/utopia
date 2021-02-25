@@ -2,30 +2,32 @@ import * as localforage from 'localforage'
 import { stripTrailingSlash } from '../path-utils'
 import { FSNode } from './fs-types'
 
-let storesLastAccessedStore: LocalForage // There is no way to request a list of existing stores, so we have to explicitly track them
+let dbHeartbeatsStore: LocalForage // There is no way to request a list of existing stores, so we have to explicitly track them
 
 let store: LocalForage
-let thisStoreName: string
+let thisDBName: string
 
 export async function initializeStore(
   storeName: string,
   driver: string = localforage.INDEXEDDB,
 ): Promise<void> {
-  thisStoreName = storeName
+  thisDBName = `utopia-project-${storeName}`
 
   store = localforage.createInstance({
-    name: 'utopia',
-    storeName: storeName,
+    name: thisDBName,
     driver: driver,
   })
 
-  storesLastAccessedStore = localforage.createInstance({
-    name: 'utopia',
-    storeName: 'AllStoresLastAccessedTSs',
+  await store.ready()
+
+  dbHeartbeatsStore = localforage.createInstance({
+    name: 'utopia-all-store-heartbeats',
     driver: localforage.INDEXEDDB,
   })
 
-  updateLastAccessed().then(dropOldStores)
+  await dbHeartbeatsStore.ready()
+
+  triggerHeartbeat().then(dropOldStores)
 }
 
 export async function keys(): Promise<string[]> {
@@ -47,36 +49,29 @@ export async function removeItem(path: string): Promise<void> {
 const ONE_HOUR = 1000 * 60 * 60 
 const ONE_DAY = ONE_HOUR * 24
 
-async function updateLastAccessed(): Promise<void> {
-  await storesLastAccessedStore.setItem(thisStoreName, Date.now())
-  setTimeout(updateLastAccessed, ONE_HOUR)
-}
-
-export async function checkLastAccessed(): Promise<number> {
-  const lastAccessedFile = await storesLastAccessedStore.getItem<number>(thisStoreName)
-  return lastAccessedFile ?? 0
+async function triggerHeartbeat(): Promise<void> {
+  await dbHeartbeatsStore.setItem(thisDBName, Date.now())
+  setTimeout(triggerHeartbeat, ONE_HOUR)
 }
 
 async function dropOldStores(): Promise<void> {
   const now = Date.now()
-  const allStores = await storesLastAccessedStore.keys()
-  const allStoresWithLastAccessedTS = await Promise.all(allStores.map(async k => {
-    const ts = await storesLastAccessedStore.getItem<number>(k)
+  const allStores = await dbHeartbeatsStore.keys()
+  const allDBsWithLastHeartbeatTS = await Promise.all(allStores.map(async k => {
+    const ts = await dbHeartbeatsStore.getItem<number>(k)
     return {
-      store: k,
+      dbName: k,
       ts: ts ?? now
     }
   }))
-  const storesToDrop = allStoresWithLastAccessedTS.filter(v => (now - v.ts) > ONE_DAY)
-  if (storesToDrop.length > 0) {
-    const storeNamesToDrop = storesToDrop.map(v => v.store)
-    console.log(`Dropping stores ${JSON.stringify(storeNamesToDrop)}`)
-    storeNamesToDrop.forEach(storeName => {
-      storesLastAccessedStore.removeItem(storeName)
+  const dbsToDrop = allDBsWithLastHeartbeatTS.filter(v => (now - v.ts) > ONE_DAY)
+  if (dbsToDrop.length > 0) {
+    const dbNamesToDrop = dbsToDrop.map(v => v.dbName)
+    dbNamesToDrop.forEach(dbName => {
+      dbHeartbeatsStore.removeItem(dbName)
       localforage.dropInstance({
-        name: 'utopia',
-        storeName: storeName
-      }).then(() => console.log(`Dropped ${storeName}`))
+        name: dbName,
+      })
     })
   }
 }
