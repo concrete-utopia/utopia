@@ -475,12 +475,16 @@ export function setJSXValueInAttributeAtPath(
           const key = `${attributeKey}`
           if (lastPartOfPath) {
             let updatedExistingProperty = false
-            let updatedContent = attribute.content.map((attr) => {
+            let updatedContent = attribute.content.flatMap((attr) => {
               if (attr.type === 'PROPERTY_ASSIGNMENT' && attr.key === key) {
-                updatedExistingProperty = true
-                return jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments)
+                if (updatedExistingProperty) {
+                  return []
+                } else {
+                  updatedExistingProperty = true
+                  return [jsxPropertyAssignment(key, newAttrib, emptyComments, emptyComments)]
+                }
               } else {
-                return attr
+                return [attr]
               }
             })
             if (updatedExistingProperty) {
