@@ -37,6 +37,13 @@ jobs:
           key: ${{ runner.os }}-node-utopia-api-master-2-${{ hashFiles('utopia-api/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-utopia-api-master-2-
+      - name: Cache utopia-vscode-common modules
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/node_modules
+          key: ${{ runner.os }}-utopia-vscode-common-master-node-modules-${{ hashFiles('utopia-vscode-common/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-utopia-vscode-common-master-node-modules-
       - name: Cache website modules
         uses: actions/cache@v2
         with:

@@ -79,6 +79,13 @@ let
       check-editor-ci
       test-website
     '')
+    (pkgs.writeScriptBin "build-editor-staging" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${node}/bin/npm --scripts-prepend-node-path=true run staging
+    '')
   ];
 
   withBaseEditorScripts = lib.optionals includeEditorBuildSupport baseEditorScripts;
