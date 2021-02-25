@@ -306,6 +306,120 @@ describe('setJSXValueAtPath', () => {
     expect(result2.type).toBe('LEFT')
     expect(result3.type).toBe('LEFT')
   })
+
+  it('when setting an irregular duplicated property inside a JSX_ATTRIBUTE_VALUE, deduplicate it', () => {
+    const attributes = jsxAttributesFromMap({
+      style: jsxAttributeValue(
+        {
+          paddingLeft: 5,
+          padding: 5,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          paddingLeft: 15,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          paddingLeft: 23,
+        },
+        emptyComments,
+      ),
+    })
+
+    const result = setJSXValueAtPath(
+      attributes,
+      PP.create(['style', 'paddingLeft']),
+      jsxAttributeValue(100, emptyComments),
+    )
+    if (isLeft(result)) {
+      fail(`result is LEFT`)
+    }
+
+    expect(result.value).toEqual(
+      jsxAttributesFromMap({
+        style: jsxAttributeNestedObject(
+          [
+            jsxPropertyAssignment(
+              'paddingLeft',
+              jsxAttributeValue(100, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'padding',
+              jsxAttributeValue(5, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+      }),
+    )
+  })
+
+  it('when setting an irregular duplicated property inside a JSX_ATTRIBUTE_NESTED_OBJECT, deduplicate it', () => {
+    const attributes = jsxAttributesFromMap({
+      style: jsxAttributeNestedObject(
+        [
+          jsxPropertyAssignment(
+            'paddingLeft',
+            jsxAttributeValue(5, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'padding',
+            jsxAttributeValue(5, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'paddingLeft',
+            jsxAttributeValue(15, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+          jsxPropertyAssignment(
+            'paddingLeft',
+            jsxAttributeValue(23, emptyComments),
+            emptyComments,
+            emptyComments,
+          ),
+        ],
+        emptyComments,
+      ),
+    })
+
+    const result = setJSXValueAtPath(
+      attributes,
+      PP.create(['style', 'paddingLeft']),
+      jsxAttributeValue(100, emptyComments),
+    )
+    if (isLeft(result)) {
+      fail(`result is LEFT`)
+    }
+
+    expect(result.value).toEqual(
+      jsxAttributesFromMap({
+        style: jsxAttributeNestedObject(
+          [
+            jsxPropertyAssignment(
+              'paddingLeft',
+              jsxAttributeValue(100, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+            jsxPropertyAssignment(
+              'padding',
+              jsxAttributeValue(5, emptyComments),
+              emptyComments,
+              emptyComments,
+            ),
+          ],
+          emptyComments,
+        ),
+      }),
+    )
+  })
 })
 
 describe('jsxAttributesToProps', () => {
