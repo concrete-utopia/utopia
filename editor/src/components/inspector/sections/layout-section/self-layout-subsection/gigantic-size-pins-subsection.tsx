@@ -20,7 +20,11 @@ import {
   ParsedCSSPropertiesKeys,
 } from '../../../common/css-utils'
 import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
-import { stylePropPathMappingFn, useInspectorLayoutInfo } from '../../../common/property-path-hooks'
+import {
+  InspectorInfo,
+  stylePropPathMappingFn,
+  useInspectorLayoutInfo,
+} from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
 import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
@@ -565,6 +569,14 @@ interface GiganticSizePinsSubsectionProps {
   toggleAspectRatioLock: () => void
 }
 
+function isNotUnsetOrDefault(info: InspectorInfo<CSSNumber | undefined>): boolean {
+  return (
+    info.controlStatus !== 'unset' &&
+    info.controlStatus !== 'trivial-default' &&
+    info.controlStatus !== 'off'
+  )
+}
+
 export const GiganticSizePinsSubsection = betterReactMemo(
   'GiganticSizePinsSubsection',
   (props: GiganticSizePinsSubsectionProps) => {
@@ -577,11 +589,10 @@ export const GiganticSizePinsSubsection = betterReactMemo(
     const maxHeight = useInspectorLayoutInfo('maxHeight')
 
     const hasMinMaxValues =
-      (minWidth.controlStatus !== 'unset' && minWidth.controlStatus !== 'trivial-default') ||
-      (maxWidth.controlStatus !== 'unset' && maxWidth.controlStatus !== 'trivial-default') ||
-      (minHeight.controlStatus !== 'unset' && minHeight.controlStatus !== 'trivial-default') ||
-      (maxHeight.controlStatus !== 'unset' && maxHeight.controlStatus !== 'trivial-default')
-
+      isNotUnsetOrDefault(minWidth) ||
+      isNotUnsetOrDefault(maxWidth) ||
+      isNotUnsetOrDefault(minHeight) ||
+      isNotUnsetOrDefault(maxHeight)
     const [minMaxToggled, setMinMaxToggled] = React.useState<boolean>(hasMinMaxValues)
     const toggleMinMax = React.useCallback(() => {
       setMinMaxToggled(!minMaxToggled)
