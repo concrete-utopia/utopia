@@ -2,6 +2,7 @@ import {
   childPaths,
   deletePath,
   ensureDirectoryExists,
+  exists,
   readDirectory,
   readFileAsUTF8,
   writeFileAsUTF8,
@@ -20,6 +21,10 @@ let counter: number = 0
 let lastConsumedMessage: number = -1
 let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
 const POLLING_TIMEOUT = 8
+
+function lastConsumedMessageKey(mailbox: Mailbox): string {
+  return `/${mailbox}_LAST_CONSUMED`
+}
 
 function pathForMailbox(mailbox: Mailbox): string {
   return `/${mailbox}`
@@ -73,6 +78,7 @@ async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
     lastConsumedMessage = Math.max(
       ...messagesToProcess.map((messageName) => Number.parseInt(messageName)),
     )
+    await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
     messages.forEach(onMessageCallback)
   }
   setTimeout(() => pollInbox(parseMessage), POLLING_TIMEOUT)
@@ -86,6 +92,7 @@ async function initInbox<T>(
 ): Promise<void> {
   inbox = inboxToUse
   await ensureMailboxExists(inboxToUse)
+  lastConsumedMessage = await getLastConsumedMessageNumber(inbox)
   onMessageCallback = onMessage
   pollInbox(parseMessage)
 }
@@ -99,11 +106,31 @@ async function clearMailbox(mailbox: Mailbox): Promise<void> {
   await Promise.all(messagePaths.map((messagePath) => deletePath(messagePath, false)))
 }
 
+async function clearLastConsumedMessageFile(mailbox: Mailbox): Promise<void> {
+  await deletePath(lastConsumedMessageKey(mailbox), false)
+}
+
+async function updateLastConsumedMessageFile(mailbox: Mailbox, value: number): Promise<void> {
+  await writeFileAsUTF8(lastConsumedMessageKey(mailbox), `${value}`)
+}
+
+async function getLastConsumedMessageNumber(mailbox: Mailbox): Promise<number> {
+  const lastConsumedMessageValueExists = await exists(lastConsumedMessageKey(mailbox))
+  if (lastConsumedMessageValueExists) {
+    const lastConsumedMessageName = await readFileAsUTF8(lastConsumedMessageKey(mailbox))
+    return Number.parseInt(lastConsumedMessageName)
+  } else {
+    return -1
+  }
+}
+
 export async function clearBothMailboxes(): Promise<void> {
   await ensureMailboxExists(UtopiaInbox)
   await clearMailbox(UtopiaInbox)
   await ensureMailboxExists(VSCodeInbox)
   await clearMailbox(VSCodeInbox)
+  await clearLastConsumedMessageFile(UtopiaInbox)
+  await clearLastConsumedMessageFile(VSCodeInbox)
 }
 
 export async function initMailbox<T>(
