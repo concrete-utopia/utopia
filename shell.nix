@@ -23,6 +23,8 @@ let
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
+      ${node}/bin/npm --scripts-prepend-node-path=true install
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true install
     '')
