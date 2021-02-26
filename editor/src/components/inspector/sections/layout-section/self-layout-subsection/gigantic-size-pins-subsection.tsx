@@ -43,6 +43,7 @@ import {
   InspectorInfoWithPropKeys,
   useInspectorInfoLonghandShorthand,
 } from '../../../common/longhand-shorthand-hooks'
+import { isNotUnsetOrDefault } from '../../../common/control-status'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -569,14 +570,6 @@ interface GiganticSizePinsSubsectionProps {
   toggleAspectRatioLock: () => void
 }
 
-function isNotUnsetOrDefault(info: InspectorInfo<CSSNumber | undefined>): boolean {
-  return (
-    info.controlStatus !== 'unset' &&
-    info.controlStatus !== 'trivial-default' &&
-    info.controlStatus !== 'off'
-  )
-}
-
 export const GiganticSizePinsSubsection = betterReactMemo(
   'GiganticSizePinsSubsection',
   (props: GiganticSizePinsSubsectionProps) => {
@@ -589,10 +582,10 @@ export const GiganticSizePinsSubsection = betterReactMemo(
     const maxHeight = useInspectorLayoutInfo('maxHeight')
 
     const hasMinMaxValues =
-      isNotUnsetOrDefault(minWidth) ||
-      isNotUnsetOrDefault(maxWidth) ||
-      isNotUnsetOrDefault(minHeight) ||
-      isNotUnsetOrDefault(maxHeight)
+      isNotUnsetOrDefault(minWidth.controlStatus) ||
+      isNotUnsetOrDefault(maxWidth.controlStatus) ||
+      isNotUnsetOrDefault(minHeight.controlStatus) ||
+      isNotUnsetOrDefault(maxHeight.controlStatus)
     const [minMaxToggled, setMinMaxToggled] = React.useState<boolean>(hasMinMaxValues)
     const toggleMinMax = React.useCallback(() => {
       setMinMaxToggled(!minMaxToggled)

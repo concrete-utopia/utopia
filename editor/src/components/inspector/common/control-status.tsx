@@ -16,8 +16,8 @@ import {
 } from '../../../core/shared/jsx-attributes'
 import { isLeft, isRight, Either } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
-import { ParsedPropertiesKeys } from './css-utils'
-import { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
+import { CSSNumber, ParsedPropertiesKeys } from './css-utils'
+import { InspectorInfo, MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
 import { fastForEach } from '../../../core/shared/utils'
 
 export interface ControlStyles {
@@ -638,4 +638,8 @@ export function calculateMultiStringPropertyStatusForSelection(
     fromCssStyleSheet,
     trivialDefault,
   }
+}
+
+export function isNotUnsetOrDefault(controlStatus: ControlStatus): boolean {
+  return controlStatus !== 'unset' && controlStatus !== 'trivial-default' && controlStatus !== 'off'
 }
