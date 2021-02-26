@@ -15,27 +15,33 @@ export interface FSStat extends FSNode {
   size: number
 }
 
-export interface FSFile extends FSNode {
-  type: 'FILE'
+export interface FileContent {
   content: Uint8Array
+  unsavedContent: Uint8Array | null
 }
 
-export function fsFile(content: Uint8Array, ctime: number, mtime: number): FSFile {
+export interface FSFile extends FSNode, FileContent {
+  type: 'FILE'
+}
+
+export function fsFile(content: Uint8Array, unsavedContent: Uint8Array | null, ctime: number, mtime: number): FSFile {
   return {
     type: 'FILE',
     ctime: ctime,
     mtime: mtime,
     content: content,
+    unsavedContent: unsavedContent,
   }
 }
 
-export function newFSFile(content: Uint8Array): FSFile {
+export function newFSFile(content: Uint8Array, unsavedContent: Uint8Array | null): FSFile {
   const now = Date.now()
   return {
     type: 'FILE',
     ctime: now,
     mtime: now,
     content: content,
+    unsavedContent: unsavedContent,
   }
 }
 

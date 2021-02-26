@@ -71,7 +71,9 @@ async function writeProjectFile(
       return ensureDirectoryExists(toFSPath(projectPath))
     }
     case 'TEXT_FILE': {
-      return writeFileAsUTF8(toFSPath(projectPath), file.fileContents.code)
+      const savedContent = file.lastSavedContents?.code ?? file.fileContents.code
+      const unsavedContent = file.lastSavedContents == null ? null : file.fileContents.code
+      return writeFileAsUTF8(toFSPath(projectPath), savedContent, unsavedContent)
     }
     case 'ASSET_FILE':
       return Promise.resolve()
@@ -97,9 +99,10 @@ function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
   function onCreated(fsPath: string): void {
     stat(fsPath).then((fsStat) => {
       if (fsStat.type === 'FILE') {
-        readFileAsUTF8(fsPath).then((text) => {
-          const action = updateFromCodeEditor(fromFSPath(fsPath), text)
-          dispatch([action], 'everyone')
+        readFileAsUTF8(fsPath).then((fileContent) => {
+          // FIXME this needs to take saved and unsaved content
+          // const action = updateFromCodeEditor(fromFSPath(fsPath), fileContent.content)
+          // dispatch([action], 'everyone')
         })
       }
     })

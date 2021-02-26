@@ -16,6 +16,8 @@ import {
   fsFile,
   newFSDirectory,
   FSNodeWithPath,
+  FSFile,
+  FileContent,
 } from './fs-types'
 
 const encoder = new TextEncoder()
@@ -58,18 +60,45 @@ async function getNode(path: string): Promise<FSNode> {
   }
 }
 
-export async function readFile(path: string): Promise<Uint8Array> {
+async function getFile(path: string): Promise<FSFile> {
   const node = await getNode(path)
   if (isFile(node)) {
-    return node.content
+    return node
   } else {
     return Promise.reject(isDirectoryError(path))
   }
 }
 
-export async function readFileAsUTF8(path: string): Promise<string> {
-  const rawData = await readFile(path)
-  return decoder.decode(rawData)
+export async function readFile(path: string): Promise<FileContent> {
+  return getFile(path)
+}
+
+export async function readFileSavedContent(path: string): Promise<Uint8Array> {
+  const fileNode = await getFile(path)
+  return fileNode.content
+}
+
+export async function readFileUnsavedContent(path: string): Promise<Uint8Array | null> {
+  const fileNode = await getFile(path)
+  return fileNode.unsavedContent
+}
+
+export async function readFileAsUTF8(path: string): Promise<{content: string, unsavedContent: string | null}> {
+  const { content, unsavedContent } = await getFile(path)
+  return {
+    content: decoder.decode(content),
+    unsavedContent: unsavedContent == null ? null : decoder.decode(unsavedContent)
+  }
+}
+
+export async function readFileSavedContentAsUTF8(path: string): Promise<string> {
+  const { content } = await readFileAsUTF8(path)
+  return content
+}
+
+export async function readFileUnsavedContentAsUTF8(path: string): Promise<string | null> {
+  const { unsavedContent } = await readFileAsUTF8(path)
+  return unsavedContent
 }
 
 function fsStatForNode(node: FSNode): FSStat {
@@ -199,7 +228,7 @@ export async function ensureDirectoryExists(path: string): Promise<void> {
   await Promise.all(allPaths.map(simpleCreateDirectoryIfMissing))
 }
 
-export async function writeFile(path: string, content: Uint8Array): Promise<void> {
+export async function writeFile(path: string, content: Uint8Array, unsavedContent: Uint8Array | null): Promise<void> {
   const parent = await getParent(path)
   const maybeExistingFile = await getItem(path)
   if (maybeExistingFile != null && isDirectory(maybeExistingFile)) {
@@ -208,15 +237,19 @@ export async function writeFile(path: string, content: Uint8Array): Promise<void
 
   const now = Date.now()
   const fileCTime = maybeExistingFile == null ? now : maybeExistingFile.ctime
-  const fileToWrite = fsFile(content, fileCTime, now)
+  const fileToWrite = fsFile(content, unsavedContent, fileCTime, now)
   await setItem(path, fileToWrite)
   if (parent != null) {
     await markModified(parent)
   }
 }
 
-export async function writeFileAsUTF8(path: string, content: string): Promise<void> {
-  return writeFile(path, encoder.encode(content))
+export async function writeFileSavedContent(path: string, content: Uint8Array): Promise<void> {
+  return writeFile(path, content, null)
+}
+
+export async function writeFileAsUTF8(path: string, content: string, unsavedContent: string | null): Promise<void> {
+  return writeFile(path, encoder.encode(content), unsavedContent == null ? null : encoder.encode(unsavedContent))
 }
 
 function updateMTime(node: FSNode): FSNode {

@@ -16,8 +16,11 @@ import {
   parseToVSCodeMessage,
   sendMessage,
   editorCursorPositionChanged,
+  readFileUnsavedContentAsUTF8,
+  readFileAsUTF8,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
+import { fromUtopiaURI } from './path-utils'
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
@@ -30,12 +33,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   initMessaging(utopiaFS, context, workspaceRootUri)
   context.subscriptions.push(
     vscode.window.onDidChangeVisibleTextEditors((editors) => {
-      updateDirtyFiles(editors, utopiaFS)
+      updateDirtyFiles(editors)
     }),
   )
   utopiaFS.onDidChangeFile((changes) => {
     if (changes.some((change) => change.type === vscode.FileChangeType.Changed)) {
-      updateDirtyFiles(vscode.window.visibleTextEditors, utopiaFS)
+      updateDirtyFiles(vscode.window.visibleTextEditors)
     }
   })
 }
@@ -94,22 +97,19 @@ function initMessaging(
   )
 }
 
-const decoder = new TextDecoder()
-
-async function updateDirtyFiles(
-  editors: vscode.TextEditor[],
-  utopiaFS: UtopiaFSExtension,
-): Promise<void> {
+async function updateDirtyFiles(editors: vscode.TextEditor[]): Promise<void> {
   for (const visibleEditor of editors) {
     const visibleDoc = visibleEditor.document
-    const filePath = visibleDoc.uri
-    const storedFile = await utopiaFS.readFile(filePath)
-    const storedFileContents = decoder.decode(storedFile)
-    if (visibleDoc.getText() != storedFileContents) {
+    const filePath = fromUtopiaURI(visibleDoc.uri)
+    const { content: savedContent, unsavedContent } = await readFileAsUTF8(filePath)
+    const docText = visibleDoc.getText()
+    if (unsavedContent != null && docText !== unsavedContent) {
       const firstLine = visibleDoc.lineAt(0)
       const lastLine = visibleDoc.lineAt(visibleDoc.lineCount - 1)
       const entireRange = new vscode.Range(firstLine.range.start, lastLine.range.end)
-      visibleEditor.edit((builder) => builder.replace(entireRange, storedFileContents))
+      visibleEditor.edit((builder) => builder.replace(entireRange, unsavedContent))
+    } else if (docText === savedContent && visibleDoc.isDirty) {
+      visibleDoc.save()
     }
   }
 }

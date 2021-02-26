@@ -4,10 +4,10 @@ import {
   ensureDirectoryExists,
   exists,
   readDirectory,
-  readFileAsUTF8,
+  readFileSavedContentAsUTF8,
   writeFileAsUTF8,
 } from './fs/fs-utils'
-import { FromVSCodeMessage, parseToVSCodeMessage, ToVSCodeMessage } from './messages'
+import { FromVSCodeMessage, ToVSCodeMessage } from './messages'
 import { appendToPath } from './path-utils'
 
 type Mailbox = 'VSCODE_MAILBOX' | 'UTOPIA_MAILBOX'
@@ -51,7 +51,7 @@ export async function sendMessage(message: ToVSCodeMessage | FromVSCodeMessage):
 }
 
 async function sendNamedMessage(messageName: string, content: string): Promise<void> {
-  return writeFileAsUTF8(pathForOutboxMessage(messageName), content)
+  return writeFileAsUTF8(pathForOutboxMessage(messageName), content, null)
 }
 
 async function initOutbox(outboxToUse: Mailbox): Promise<void> {
@@ -65,7 +65,7 @@ async function initOutbox(outboxToUse: Mailbox): Promise<void> {
 
 async function receiveMessage<T>(messageName: string, parseMessage: (msg: string) => T): Promise<T> {
   const messagePath = pathForInboxMessage(messageName)
-  const content = await readFileAsUTF8(messagePath)
+  const content = await readFileSavedContentAsUTF8(messagePath)
   return parseMessage(content)
 }
 
@@ -112,13 +112,13 @@ async function clearLastConsumedMessageFile(mailbox: Mailbox): Promise<void> {
 }
 
 async function updateLastConsumedMessageFile(mailbox: Mailbox, value: number): Promise<void> {
-  await writeFileAsUTF8(lastConsumedMessageKey(mailbox), `${value}`)
+  await writeFileAsUTF8(lastConsumedMessageKey(mailbox), `${value}`, null)
 }
 
 async function getLastConsumedMessageNumber(mailbox: Mailbox): Promise<number> {
   const lastConsumedMessageValueExists = await exists(lastConsumedMessageKey(mailbox))
   if (lastConsumedMessageValueExists) {
-    const lastConsumedMessageName = await readFileAsUTF8(lastConsumedMessageKey(mailbox))
+    const lastConsumedMessageName = await readFileSavedContentAsUTF8(lastConsumedMessageKey(mailbox))
     return Number.parseInt(lastConsumedMessageName)
   } else {
     return -1

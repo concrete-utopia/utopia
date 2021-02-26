@@ -37,11 +37,13 @@ import {
   stripRootPrefix,
   deletePath,
   rename,
-  readFileAsUTF8,
   getDescendentPaths,
   isDirectory,
   readDirectory,
   RootDir,
+  readFileSavedContent,
+  writeFileSavedContent,
+  readFileSavedContentAsUTF8,
 } from 'utopia-vscode-common'
 import { fromUtopiaURI, toUtopiaURI } from './path-utils'
 
@@ -160,7 +162,7 @@ export class UtopiaFSExtension
 
   async readFile(uri: Uri): Promise<Uint8Array> {
     const path = fromUtopiaURI(uri)
-    return readFile(path)
+    return readFileSavedContent(path)
   }
 
   async writeFile(
@@ -178,7 +180,7 @@ export class UtopiaFSExtension
       }
     }
 
-    await writeFile(path, content)
+    await writeFileSavedContent(path, content)
     this.notifyFileChanged(path)
   }
 
@@ -225,8 +227,8 @@ export class UtopiaFSExtension
       }
     }
 
-    const contents = await readFile(sourcePath)
-    await writeFile(destinationPath, contents)
+    const { content, unsavedContent } = await readFile(sourcePath)
+    await writeFile(destinationPath, content, unsavedContent)
 
     this.notifyFileCreated(destinationPath)
   }
@@ -260,7 +262,7 @@ export class UtopiaFSExtension
           break
         }
 
-        const content = await readFileAsUTF8(filePath)
+        const content = await readFileSavedContentAsUTF8(filePath)
 
         const lines = splitIntoLines(content)
         for (let i = 0; i < lines.length; i++) {
