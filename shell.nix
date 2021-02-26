@@ -98,8 +98,8 @@ let
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${pkgs.yarn}/bin/yarn
-      ${pkgs.yarn}/bin/yarn run build
+      ${node}/bin/npm --scripts-prepend-node-path=true install
+      ${node}/bin/npm --scripts-prepend-node-path=true run build
     '')
     (pkgs.writeScriptBin "build-vscode" ''
       #!/usr/bin/env bash
