@@ -49,7 +49,7 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
           {layoutSectionOpen && <DeleteAllLayoutSystemConfigButton />}
           <SquareButton highlight onClick={toggleSection}>
             <ExpandableIndicator
-              testId='target-selector'
+              testId='layout-system-expand'
               visible
               collapsed={!layoutSectionOpen}
               selected={false}

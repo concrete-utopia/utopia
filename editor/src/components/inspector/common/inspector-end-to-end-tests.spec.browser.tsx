@@ -1389,6 +1389,9 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
+      await screen.findByTestId('layout-system-expand')
+      fireEvent.click(screen.getByTestId('layout-system-expand'))
+      await screen.findByTestId('flexPadding-L')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
@@ -1488,6 +1491,9 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
+      await screen.findByTestId('layout-system-expand')
+      fireEvent.click(screen.getByTestId('layout-system-expand'))
+      await screen.findByTestId('flexPadding-L')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
