@@ -28,6 +28,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const utopiaFS = new UtopiaFSExtension(projectID)
   context.subscriptions.push(utopiaFS)
   initMessaging(utopiaFS, context, workspaceRootUri)
+  context.subscriptions.push(
+    vscode.window.onDidChangeVisibleTextEditors((editors) => {
+      updateDirtyFiles(editors, utopiaFS)
+    }),
+  )
+  utopiaFS.onDidChangeFile((changes) => {
+    if (changes.some((change) => change.type === vscode.FileChangeType.Changed)) {
+      updateDirtyFiles(vscode.window.visibleTextEditors, utopiaFS)
+    }
+  })
 }
 
 const selectionDecorationType = vscode.window.createTextEditorDecorationType({
@@ -82,6 +92,26 @@ function initMessaging(
       cursorPositionChanged(event)
     }),
   )
+}
+
+const decoder = new TextDecoder()
+
+async function updateDirtyFiles(
+  editors: vscode.TextEditor[],
+  utopiaFS: UtopiaFSExtension,
+): Promise<void> {
+  for (const visibleEditor of editors) {
+    const visibleDoc = visibleEditor.document
+    const filePath = visibleDoc.uri
+    const storedFile = await utopiaFS.readFile(filePath)
+    const storedFileContents = decoder.decode(storedFile)
+    if (visibleDoc.getText() != storedFileContents) {
+      const firstLine = visibleDoc.lineAt(0)
+      const lastLine = visibleDoc.lineAt(visibleDoc.lineCount - 1)
+      const entireRange = new vscode.Range(firstLine.range.start, lastLine.range.end)
+      visibleEditor.edit((builder) => builder.replace(entireRange, storedFileContents))
+    }
+  }
 }
 
 async function openFile(
