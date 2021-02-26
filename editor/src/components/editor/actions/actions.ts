@@ -3485,6 +3485,12 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+
+    if (isTextFile(existing) && existing.fileContents.code === action.fileContents) {
+      // the text part of the text file did not change, skip updating the editor
+      return editor
+    }
+
     let updatedFile: ProjectFile
 
     if (existing == null || !isTextFile(existing)) {
