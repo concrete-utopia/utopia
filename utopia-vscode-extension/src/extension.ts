@@ -123,7 +123,9 @@ async function openFile(
   if (fileExists) {
     vscode.commands.executeCommand('vscode.open', fileUri)
   } else {
-    setTimeout(() => openFile(utopiaFS, fileUri, retries - 1), 100)
+    if (retries > 0) {
+      setTimeout(() => openFile(utopiaFS, fileUri, retries - 1), 100)
+    }
   }
 }
 
