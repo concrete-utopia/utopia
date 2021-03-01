@@ -51,6 +51,11 @@ export async function pathIsDirectory(path: string): Promise<boolean> {
   return node != null && isDirectory(node)
 }
 
+export async function pathIsFile(path: string): Promise<boolean> {
+  const node = await getItem(path)
+  return node != null && isFile(node)
+}
+
 async function getNode(path: string): Promise<FSNode> {
   const node = await getItem(path)
   if (node == null) {

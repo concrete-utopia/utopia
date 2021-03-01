@@ -1288,6 +1288,49 @@ index 03297afe7f..dcf30dd1ef 100644
  			},
  			'window.openFilesInNewWindow': {
  				'type': 'string',
+diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
+index ef6eb4dd9b..1ec36e7137 100644
+--- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
++++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
+@@ -546,6 +546,38 @@ CommandsRegistry.registerCommand({
+ 	}
+ });
+ 
++CommandsRegistry.registerCommand({
++	id: 'workbench.action.files.revertResource',
++	handler: async (accessor, resource: URI) => {
++		const notificationService = accessor.get(INotificationService);
++		const editorGroupService = accessor.get(IEditorGroupsService);
++		const editorService = accessor.get(IEditorService);
++
++		// Retrieve editors for resource
++		const resourceAsString = resource.toString()
++		const matchesTarget = (uri: URI | undefined) => uri != null && uri.toString() === resourceAsString
++		let editors: IEditorIdentifier[] = []
++		
++		editorGroupService.groups.forEach(editorGroup => {
++			editorGroup.editors.forEach(editor => {
++				if (matchesTarget(editor.resource)) {
++					editors.push({ groupId: editorGroup.id, editor: editor })
++				}
++			})
++		})
++
++		if (!editors || editors.length === 0) {
++			return; // nothing to revert
++		}
++
++		try {
++			await editorService.revert(editors.filter(({ editor }) => !editor.isUntitled() /* all except untitled */), { force: true });
++		} catch (error) {
++			notificationService.error(nls.localize('genericRevertError', "Failed to revert '{0}': {1}", editors.map(({ editor }) => editor.getName()).join(', '), toErrorMessage(error, false)));
++		}
++	}
++});
++
+ CommandsRegistry.registerCommand({
+ 	id: REMOVE_ROOT_FOLDER_COMMAND_ID,
+ 	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 index f4b223bf4c..3f6fe449ef 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts

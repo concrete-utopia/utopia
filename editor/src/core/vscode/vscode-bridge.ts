@@ -181,7 +181,10 @@ export async function applyProjectContentChanges(
           // We need to be careful around only sending this across if the text has been updated.
           const firstTextContent = firstContents.content
           const secondTextContent = secondContents.content
-          if (firstTextContent.fileContents.code === secondTextContent.fileContents.code) {
+          if (
+            firstTextContent.fileContents.code === secondTextContent.fileContents.code &&
+            firstTextContent.lastSavedContents?.code === secondTextContent.lastSavedContents?.code
+          ) {
             // Do nothing, no change.
           } else {
             await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
