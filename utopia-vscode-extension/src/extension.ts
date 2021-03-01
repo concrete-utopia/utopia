@@ -32,11 +32,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const utopiaFS = new UtopiaFSExtension(projectID)
   context.subscriptions.push(utopiaFS)
   initMessaging(utopiaFS, context, workspaceRootUri)
-  context.subscriptions.push(
-    vscode.window.onDidChangeVisibleTextEditors((editors) => {
-      updateVisibleEditors(editors)
-    }),
-  )
+
   utopiaFS.onDidChangeFile((changes) => {
     changes.forEach((change) => {
       if (change.type === vscode.FileChangeType.Changed) {
@@ -100,19 +96,12 @@ function initMessaging(
   )
 }
 
-// 1 Change from Utopia
-// [x] Via FS we can see there is unsaved content for resource
-// [x] Find any active editor tabs for resource and update content
-// [ ] Find any open editor tabs for resource and mark dirty
-// 2 VS Code switches tab
-// [x] Check if newly active editor's resource has unsaved content
-//   [x] if yes, update content
-// 3 Save from Utopia
-// [x] Via FS we can see there is now no unsaved content for resource
-// [x] trigger command to revert any open editors for that resource
-// 4 Change from VS Code
-// [x] Update file in FS
-// [x] Update Utopia
+function entireDocRange() {
+  return new vscode.Range(
+    new vscode.Position(-1, -1),
+    new vscode.Position(Number.MAX_VALUE, Number.MAX_VALUE),
+  )
+}
 
 async function updateDirtyFlags(resource: vscode.Uri): Promise<void> {
   const filePath = fromUtopiaURI(resource)
@@ -122,34 +111,10 @@ async function updateDirtyFlags(resource: vscode.Uri): Promise<void> {
     if (unsavedContent == null) {
       vscode.commands.executeCommand('workbench.action.files.revertResource', resource)
     } else {
-      const resourceAsString = resource.toString()
-      vscode.window.visibleTextEditors.forEach((editor) => {
-        if (editor.document.uri.toString() === resourceAsString) {
-          updateVisibleEditorWithUnsavedContent(editor, unsavedContent)
-        }
-      })
-      // Find any open editor tabs for resource and mark dirty
+      const workspaceEdit = new vscode.WorkspaceEdit()
+      workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
+      vscode.workspace.applyEdit(workspaceEdit)
     }
-  }
-}
-
-async function updateVisibleEditors(editors: vscode.TextEditor[]): Promise<void> {
-  for (const editor of editors) {
-    const filePath = fromUtopiaURI(editor.document.uri)
-    const { unsavedContent } = await readFileAsUTF8(filePath)
-    if (unsavedContent != null) {
-      updateVisibleEditorWithUnsavedContent(editor, unsavedContent)
-    }
-  }
-}
-
-function updateVisibleEditorWithUnsavedContent(editor: vscode.TextEditor, unsavedContent: string) {
-  const textDocument = editor.document
-  if (textDocument.getText() !== unsavedContent) {
-    const firstLine = textDocument.lineAt(0)
-    const lastLine = textDocument.lineAt(textDocument.lineCount - 1)
-    const entireRange = new vscode.Range(firstLine.range.start, lastLine.range.end)
-    editor.edit((builder) => builder.replace(entireRange, unsavedContent))
   }
 }
 
