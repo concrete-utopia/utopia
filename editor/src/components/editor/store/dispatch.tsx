@@ -82,6 +82,7 @@ import {
   decorationRange,
   DecorationRangeType,
 } from 'utopia-vscode-common'
+import { TemplatePathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -755,15 +756,24 @@ function removeNonExistingViewReferencesFromState(
   const oldAllPaths = MetadataUtils.getAllPaths(oldRootComponents)
   const rootComponents = editorState.jsxMetadataKILLME
   const allPaths = MetadataUtils.getAllPaths(rootComponents)
-  const updatedSelectedViews = editorState.selectedViews.flatMap((selectedView) =>
-    findMatchingTemplatePath(oldAllPaths, allPaths, selectedView),
-  )
-  const updatedHighlightedViews = editorState.highlightedViews.flatMap((highlightedView) =>
-    findMatchingTemplatePath(oldAllPaths, allPaths, highlightedView),
-  )
-  const updatedHiddenInstances = editorState.hiddenInstances.flatMap((hiddenInstance) =>
-    findMatchingTemplatePath(oldAllPaths, allPaths, hiddenInstance),
-  )
+  const updatedSelectedViews = TemplatePathArrayKeepDeepEquality(
+    editorState.selectedViews,
+    editorState.selectedViews.flatMap((selectedView) =>
+      findMatchingTemplatePath(oldAllPaths, allPaths, selectedView),
+    ),
+  ).value
+  const updatedHighlightedViews = TemplatePathArrayKeepDeepEquality(
+    editorState.highlightedViews,
+    editorState.highlightedViews.flatMap((highlightedView) =>
+      findMatchingTemplatePath(oldAllPaths, allPaths, highlightedView),
+    ),
+  ).value
+  const updatedHiddenInstances = TemplatePathArrayKeepDeepEquality(
+    editorState.hiddenInstances,
+    editorState.hiddenInstances.flatMap((hiddenInstance) =>
+      findMatchingTemplatePath(oldAllPaths, allPaths, hiddenInstance),
+    ),
+  ).value
   return {
     ...editorState,
     selectedViews: updatedSelectedViews,
