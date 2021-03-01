@@ -175,6 +175,7 @@ import { openFileTab } from '../editor/store/editor-tabs'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from './dom-lookup'
 import { WindowMousePositionRaw } from '../../templates/editor-canvas'
+import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -810,23 +811,38 @@ function updateFrameValueForProp(
 ): ValueAtPath | null {
   if (delta !== 0) {
     const existingProp = frameProps[framePoint]
-    const pinIsPercentage = existingProp == null ? false : isPercentPin(existingProp)
-    let valueToUse: string | number
-    if (existingProp != null && pinIsPercentage) {
-      const percentValue = numberPartOfPin(existingProp)
-      if (parentFrame != null) {
-        const referenceSize = isHorizontalPoint(framePoint) ? parentFrame.width : parentFrame.height
-        const deltaAsPercentValue = (delta / referenceSize) * 100
-        valueToUse = `${percentValue + deltaAsPercentValue}%`
-      } else {
-        valueToUse = `${percentValue + delta}%`
+    if (existingProp == null) {
+      return {
+        path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+        value: jsxAttributeValue(delta, emptyComments),
       }
-    } else {
-      valueToUse = existingProp == null ? delta : Number(existingProp) + delta
     }
-    return {
-      path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
-      value: jsxAttributeValue(valueToUse, emptyComments),
+    const parsedProp = parseCSSLengthPercent(existingProp)
+    if (isRight(parsedProp)) {
+      const pinIsPercentage = parsedProp.value.unit === '%'
+      const pinIsUnitlessOrPx = parsedProp.value.unit == null || parsedProp.value.unit === 'px'
+      let valueToUse: string | number
+      if (pinIsPercentage) {
+        const percentValue = parsedProp.value.value
+        if (parentFrame != null) {
+          const referenceSize = isHorizontalPoint(framePoint)
+            ? parentFrame.width
+            : parentFrame.height
+          const deltaAsPercentValue = (delta / referenceSize) * 100
+          valueToUse = `${percentValue + deltaAsPercentValue}%`
+        } else {
+          valueToUse = `${percentValue + delta}%`
+        }
+        return {
+          path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+          value: jsxAttributeValue(valueToUse, emptyComments),
+        }
+      } else if (pinIsUnitlessOrPx) {
+        return {
+          path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+          value: jsxAttributeValue(parsedProp.value.value + delta, emptyComments),
+        }
+      }
     }
   }
   return null
