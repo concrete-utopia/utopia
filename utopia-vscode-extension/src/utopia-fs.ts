@@ -156,8 +156,6 @@ export class UtopiaFSExtension
     await createDirectory(path)
 
     const parentDir = dirname(path)
-    this.notifyFileChanged(parentDir)
-    this.notifyFileCreated(path)
   }
 
   async readFile(uri: Uri): Promise<Uint8Array> {
@@ -181,16 +179,11 @@ export class UtopiaFSExtension
     }
 
     await writeFileSavedContent(path, content)
-    this.notifyFileChanged(path)
   }
 
   async delete(uri: Uri, options: { recursive: boolean }): Promise<void> {
     const path = fromUtopiaURI(uri)
-    const parentDir = dirname(path)
-    const deletedPaths = await deletePath(path, options.recursive)
-
-    this.notifyFileChanged(parentDir)
-    deletedPaths.forEach(this.notifyFileDeleted, this)
+    await deletePath(path, options.recursive)
   }
 
   async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): Promise<void> {
@@ -205,9 +198,6 @@ export class UtopiaFSExtension
     }
 
     await rename(oldPath, newPath)
-
-    this.notifyFileDeleted(oldPath)
-    this.notifyFileCreated(newPath)
   }
 
   async copy(source: Uri, destination: Uri, options: { overwrite: boolean }): Promise<void> {
@@ -229,8 +219,6 @@ export class UtopiaFSExtension
 
     const { content, unsavedContent } = await readFile(sourcePath)
     await writeFile(destinationPath, content, unsavedContent)
-
-    this.notifyFileCreated(destinationPath)
   }
 
   // FileSearchProvider

@@ -18,6 +18,9 @@ import {
   editorCursorPositionChanged,
   readFileAsUTF8,
   pathIsFile,
+  exists,
+  writeFileUnsavedContentAsUTF8,
+  clearFileUnsavedContent,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
@@ -26,19 +29,98 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
   const projectID = workspaceRootUri.scheme
   useFileSystemProviderErrors(projectID)
+
+  await initFS(projectID)
+  const utopiaFS = initUtopiaFSProvider(projectID, context)
+  initMessaging(context, workspaceRootUri)
+
+  // Update VS Code with unsaved changes from Utopia
+  watchForChangesFromFS(utopiaFS)
+  watchForChangesFromVSCode(context)
+}
+
+async function initFS(projectID: string): Promise<void> {
   await initializeFS(projectID)
   await ensureDirectoryExists(RootDir)
+}
+
+function initUtopiaFSProvider(
+  projectID: string,
+  context: vscode.ExtensionContext,
+): UtopiaFSExtension {
   const utopiaFS = new UtopiaFSExtension(projectID)
   context.subscriptions.push(utopiaFS)
-  initMessaging(utopiaFS, context, workspaceRootUri)
+  return utopiaFS
+}
 
+function watchForChangesFromFS(utopiaFS: UtopiaFSExtension) {
   utopiaFS.onDidChangeFile((changes) => {
     changes.forEach((change) => {
       if (change.type === vscode.FileChangeType.Changed) {
-        updateDirtyFlags(change.uri)
+        const path = fromUtopiaURI(change.uri)
+        if (outgoingFileChanges.has(path)) {
+          outgoingFileChanges.delete(path)
+          // console.log(`Ignoring change coming from self`)
+        } else {
+          updateDirtyFlags(change.uri)
+        }
       }
     })
   })
+}
+
+// [x] Subscribe to VS Code changes
+// [x] Write unsaved content to FS
+// [/] Ensure we're only writing changes coming from VS Code
+// [ ] Multiple writes to fs will trigger multiple watch callbacks
+// [/] Ensure we revert when VS Code reverts
+
+let dirtyFiles: Set<string> = new Set()
+let incomingFileChanges: Set<string> = new Set()
+let outgoingFileChanges: Set<string> = new Set()
+
+function watchForChangesFromVSCode(context: vscode.ExtensionContext) {
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event.document.isUntitled) {
+        /* Do nothing with untitled documents */
+      } else {
+        const resource = event.document.uri
+        const path = fromUtopiaURI(resource)
+        if (event.document.isDirty) {
+          // New unsaved change
+          dirtyFiles.add(path)
+          if (incomingFileChanges.has(path)) {
+            // Change came from Utopia
+            incomingFileChanges.delete(path)
+            console.log(`Ignoring change to ${path} from utopia`)
+          } else {
+            outgoingFileChanges.add(path)
+            const fullText = event.document.getText()
+            writeFileUnsavedContentAsUTF8(path, fullText)
+            // console.log(`Writing unsaved change to ${path} from utopia`)
+          }
+        }
+      }
+    }),
+    vscode.workspace.onWillSaveTextDocument((event) => {
+      const path = fromUtopiaURI(event.document.uri)
+      outgoingFileChanges.add(path)
+      dirtyFiles.delete(path)
+    }),
+    vscode.workspace.onDidCloseTextDocument((document) => {
+      const path = fromUtopiaURI(document.uri)
+      if (dirtyFiles.has(path)) {
+        console.log(`Reverted ${path}`)
+        clearFileUnsavedContent(path)
+      } else {
+        console.log(`Didn't revert ${path}`)
+      }
+      dirtyFiles.delete(path)
+      incomingFileChanges.delete(path)
+      outgoingFileChanges.delete(path)
+    }),
+  )
 }
 
 const selectionDecorationType = vscode.window.createTextEditorDecorationType({
@@ -57,18 +139,14 @@ const highlightDecorationType = vscode.window.createTextEditorDecorationType({
 
 const allDecorationRangeTypes: Array<DecorationRangeType> = ['highlight', 'selection']
 
-function initMessaging(
-  utopiaFS: UtopiaFSExtension,
-  context: vscode.ExtensionContext,
-  workspaceRootUri: vscode.Uri,
-): void {
+function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
   // State that needs to be stored between messages.
   let currentDecorations: Array<DecorationRange> = []
 
   function handleMessage(message: ToVSCodeMessage): void {
     switch (message.type) {
       case 'OPEN_FILE':
-        openFile(utopiaFS, vscode.Uri.joinPath(workspaceRootUri, message.filePath))
+        openFile(vscode.Uri.joinPath(workspaceRootUri, message.filePath))
         break
       case 'UPDATE_DECORATIONS':
         currentDecorations = message.decorations
@@ -97,7 +175,7 @@ function initMessaging(
 
 function entireDocRange() {
   return new vscode.Range(
-    new vscode.Position(-1, -1),
+    new vscode.Position(0, 0),
     new vscode.Position(Number.MAX_VALUE, Number.MAX_VALUE),
   )
 }
@@ -106,10 +184,13 @@ async function updateDirtyFlags(resource: vscode.Uri): Promise<void> {
   const filePath = fromUtopiaURI(resource)
   const isFile = await pathIsFile(filePath)
   if (isFile) {
+    console.log(`Processing change for ${filePath}`)
     const { unsavedContent } = await readFileAsUTF8(filePath)
     if (unsavedContent == null) {
       vscode.commands.executeCommand('workbench.action.files.revertResource', resource)
     } else {
+      console.log(`Updating dirty file ${filePath}`)
+      incomingFileChanges.add(filePath)
       const workspaceEdit = new vscode.WorkspaceEdit()
       workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
       vscode.workspace.applyEdit(workspaceEdit)
@@ -117,17 +198,14 @@ async function updateDirtyFlags(resource: vscode.Uri): Promise<void> {
   }
 }
 
-async function openFile(
-  utopiaFS: UtopiaFSExtension,
-  fileUri: vscode.Uri,
-  retries: number = 5,
-): Promise<void> {
-  const fileExists = await utopiaFS.exists(fileUri)
+async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<void> {
+  const filePath = fromUtopiaURI(fileUri)
+  const fileExists = await exists(filePath)
   if (fileExists) {
     vscode.commands.executeCommand('vscode.open', fileUri)
   } else {
     if (retries > 0) {
-      setTimeout(() => openFile(utopiaFS, fileUri, retries - 1), 100)
+      setTimeout(() => openFile(fileUri, retries - 1), 100)
     }
   }
 }
