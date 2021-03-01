@@ -83,6 +83,7 @@ import {
   DecorationRangeType,
 } from 'utopia-vscode-common'
 import { TemplatePathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -758,20 +759,23 @@ function removeNonExistingViewReferencesFromState(
   const allPaths = MetadataUtils.getAllPaths(rootComponents)
   const updatedSelectedViews = TemplatePathArrayKeepDeepEquality(
     editorState.selectedViews,
-    editorState.selectedViews.flatMap((selectedView) =>
-      findMatchingTemplatePath(oldAllPaths, allPaths, selectedView),
+    mapDropNulls(
+      (selectedView) => findMatchingTemplatePath(oldAllPaths, allPaths, selectedView),
+      editorState.selectedViews,
     ),
   ).value
   const updatedHighlightedViews = TemplatePathArrayKeepDeepEquality(
     editorState.highlightedViews,
-    editorState.highlightedViews.flatMap((highlightedView) =>
-      findMatchingTemplatePath(oldAllPaths, allPaths, highlightedView),
+    mapDropNulls(
+      (highlightedView) => findMatchingTemplatePath(oldAllPaths, allPaths, highlightedView),
+      editorState.highlightedViews,
     ),
   ).value
   const updatedHiddenInstances = TemplatePathArrayKeepDeepEquality(
     editorState.hiddenInstances,
-    editorState.hiddenInstances.flatMap((hiddenInstance) =>
-      findMatchingTemplatePath(oldAllPaths, allPaths, hiddenInstance),
+    mapDropNulls(
+      (hiddenInstance) => findMatchingTemplatePath(oldAllPaths, allPaths, hiddenInstance),
+      editorState.hiddenInstances,
     ),
   ).value
   return {
@@ -786,10 +790,10 @@ function findMatchingTemplatePath(
   oldAllPaths: Array<TemplatePath>,
   newAllPaths: Array<TemplatePath>,
   pathToUpdate: TemplatePath,
-): [TemplatePath] | [] {
+): TemplatePath | null {
   const pathStillExists = newAllPaths.findIndex((p) => TP.pathsEqual(p, pathToUpdate)) > -1
   if (pathStillExists) {
-    return [pathToUpdate]
+    return pathToUpdate
   }
   const parentPath = TP.parentPath(pathToUpdate)
   const parentPathStillExists = newAllPaths.findIndex((p) => TP.pathsEqual(p, parentPath)) > -1
@@ -798,7 +802,7 @@ function findMatchingTemplatePath(
     const oldChildIndex = oldChildren.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
     const newChildren = newAllPaths.filter((p) => TP.isChildOf(p, parentPath))
     const potentialNewPath = newChildren[oldChildIndex]
-    return potentialNewPath == null ? [] : [potentialNewPath]
+    return potentialNewPath ?? null
   }
-  return []
+  return null
 }
