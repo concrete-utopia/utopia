@@ -27,15 +27,16 @@ const iframeStyle = {
   'z-index': 2147483647,
 }
 
-const overlayStyle = {
-  position: 'absolute',
-  height: '100%',
-  right: 0,
-  left: 0,
-  bottom: 0,
-  top: 0,
-  backgroundColor: colorTheme.neutralBackground.value,
-} as const
+const overlayStyle = (overlayOffset: number) =>
+  ({
+    position: 'absolute',
+    height: '100%',
+    right: 0,
+    left: overlayOffset,
+    bottom: 0,
+    top: 0,
+    backgroundColor: colorTheme.neutralBackground.value,
+  } as const)
 
 const primaryErrorStyle = {
   'background-color': lightRed,
