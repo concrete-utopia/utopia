@@ -799,5 +799,6 @@ function findMatchingTemplatePath(
     const newChildren = newAllPaths.filter((p) => TP.isChildOf(p, parentPath))
     const potentialNewPath = newChildren[oldChildIndex]
     return potentialNewPath == null ? [] : [potentialNewPath]
-  } else return []
+  }
+  return []
 }
