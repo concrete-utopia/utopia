@@ -16,7 +16,6 @@ import {
   parseToVSCodeMessage,
   sendMessage,
   editorCursorPositionChanged,
-  readFileUnsavedContentAsUTF8,
   readFileAsUTF8,
   pathIsFile,
 } from 'utopia-vscode-common'
