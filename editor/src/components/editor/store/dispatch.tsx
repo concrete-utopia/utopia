@@ -5,7 +5,7 @@ import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import { ComponentMetadata, JSXMetadata } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import {
   fileTypeFromFileName,
@@ -20,6 +20,7 @@ import {
   textFile,
   textFileContents,
   RevisionsState,
+  InstancePath,
 } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -754,27 +755,27 @@ function removeNonExistingViewReferencesFromState(
   editorState: EditorState,
 ): EditorState {
   const oldRootComponents = oldEditorState.jsxMetadataKILLME
-  const oldAllPaths = MetadataUtils.getAllPaths(oldRootComponents)
   const rootComponents = editorState.jsxMetadataKILLME
-  const allPaths = MetadataUtils.getAllPaths(rootComponents)
   const updatedSelectedViews = TemplatePathArrayKeepDeepEquality(
     editorState.selectedViews,
     mapDropNulls(
-      (selectedView) => findMatchingTemplatePath(oldAllPaths, allPaths, selectedView),
+      (selectedView) => findMatchingTemplatePath(oldRootComponents, rootComponents, selectedView),
       editorState.selectedViews,
     ),
   ).value
   const updatedHighlightedViews = TemplatePathArrayKeepDeepEquality(
     editorState.highlightedViews,
     mapDropNulls(
-      (highlightedView) => findMatchingTemplatePath(oldAllPaths, allPaths, highlightedView),
+      (highlightedView) =>
+        findMatchingTemplatePath(oldRootComponents, rootComponents, highlightedView),
       editorState.highlightedViews,
     ),
   ).value
   const updatedHiddenInstances = TemplatePathArrayKeepDeepEquality(
     editorState.hiddenInstances,
     mapDropNulls(
-      (hiddenInstance) => findMatchingTemplatePath(oldAllPaths, allPaths, hiddenInstance),
+      (hiddenInstance) =>
+        findMatchingTemplatePath(oldRootComponents, rootComponents, hiddenInstance),
       editorState.hiddenInstances,
     ),
   ).value
@@ -787,22 +788,33 @@ function removeNonExistingViewReferencesFromState(
 }
 
 function findMatchingTemplatePath(
-  oldAllPaths: Array<TemplatePath>,
-  newAllPaths: Array<TemplatePath>,
+  oldComponents: JSXMetadata,
+  newComponents: JSXMetadata,
   pathToUpdate: TemplatePath,
 ): TemplatePath | null {
-  const pathStillExists = newAllPaths.findIndex((p) => TP.pathsEqual(p, pathToUpdate)) > -1
+  const pathStillExists =
+    MetadataUtils.getElementByInstancePathMaybe(
+      newComponents.elements,
+      pathToUpdate as InstancePath,
+    ) != null
   if (pathStillExists) {
     return pathToUpdate
   }
+
   const parentPath = TP.parentPath(pathToUpdate)
-  const parentPathStillExists = newAllPaths.findIndex((p) => TP.pathsEqual(p, parentPath)) > -1
-  if (parentPathStillExists) {
-    const oldChildren = oldAllPaths.filter((p) => TP.isChildOf(p, parentPath))
-    const oldChildIndex = oldChildren.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
-    const newChildren = newAllPaths.filter((p) => TP.isChildOf(p, parentPath))
-    const potentialNewPath = newChildren[oldChildIndex]
+  const oldParent = MetadataUtils.getElementByInstancePathMaybe(
+    oldComponents.elements,
+    parentPath as InstancePath,
+  )
+  const newParent = MetadataUtils.getElementByInstancePathMaybe(
+    newComponents.elements,
+    parentPath as InstancePath,
+  )
+  if (oldParent != null && newParent != null) {
+    const oldChildIndex = oldParent.children.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
+    const potentialNewPath = newParent.children[oldChildIndex]
     return potentialNewPath ?? null
   }
+
   return null
 }
