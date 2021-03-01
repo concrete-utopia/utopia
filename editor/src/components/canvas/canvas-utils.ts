@@ -817,13 +817,17 @@ function updateFrameValueForProp(
         value: jsxAttributeValue(delta, emptyComments),
       }
     }
-    const parsedProp = parseCSSLengthPercent(existingProp)
-    if (isRight(parsedProp)) {
-      const pinIsPercentage = parsedProp.value.unit === '%'
-      const pinIsUnitlessOrPx = parsedProp.value.unit == null || parsedProp.value.unit === 'px'
+    const parsedProp = foldEither(
+      (_) => null,
+      (r) => r,
+      parseCSSLengthPercent(existingProp),
+    )
+    if (parsedProp != null) {
+      const pinIsPercentage = parsedProp.unit === '%'
+      const pinIsUnitlessOrPx = parsedProp.unit == null || parsedProp.unit === 'px'
       let valueToUse: string | number
       if (pinIsPercentage) {
-        const percentValue = parsedProp.value.value
+        const percentValue = parsedProp.value
         if (parentFrame != null) {
           const referenceSize = isHorizontalPoint(framePoint)
             ? parentFrame.width
@@ -840,7 +844,7 @@ function updateFrameValueForProp(
       } else if (pinIsUnitlessOrPx) {
         return {
           path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
-          value: jsxAttributeValue(parsedProp.value.value + delta, emptyComments),
+          value: jsxAttributeValue(parsedProp.value + delta, emptyComments),
         }
       }
     }
