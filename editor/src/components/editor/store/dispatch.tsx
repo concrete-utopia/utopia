@@ -610,7 +610,7 @@ function editorDispatchInner(
     }
 
     const cleanedEditor = metadataChanged
-      ? removeNonExistingViewReferencesFromState(result.editor)
+      ? removeNonExistingViewReferencesFromState(storedState.editor, result.editor)
       : result.editor
 
     let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
@@ -747,12 +747,23 @@ function notifyTsWorker(
   }
 }
 
-function removeNonExistingViewReferencesFromState(editorState: EditorState): EditorState {
+function removeNonExistingViewReferencesFromState(
+  oldEditorState: EditorState,
+  editorState: EditorState,
+): EditorState {
+  const oldRootComponents = oldEditorState.jsxMetadataKILLME
+  const oldAllPaths = MetadataUtils.getAllPaths(oldRootComponents)
   const rootComponents = editorState.jsxMetadataKILLME
   const allPaths = MetadataUtils.getAllPaths(rootComponents)
-  const updatedSelectedViews = filterNonExistingViews(allPaths, editorState.selectedViews)
-  const updatedHighlightedViews = filterNonExistingViews(allPaths, editorState.highlightedViews)
-  const updatedHiddenInstances = filterNonExistingViews(allPaths, editorState.hiddenInstances)
+  const updatedSelectedViews = editorState.selectedViews.flatMap((selectedView) =>
+    findMatchingTemplatePath(oldAllPaths, allPaths, selectedView),
+  )
+  const updatedHighlightedViews = editorState.highlightedViews.flatMap((highlightedView) =>
+    findMatchingTemplatePath(oldAllPaths, allPaths, highlightedView),
+  )
+  const updatedHiddenInstances = editorState.hiddenInstances.flatMap((hiddenInstance) =>
+    findMatchingTemplatePath(oldAllPaths, allPaths, hiddenInstance),
+  )
   return {
     ...editorState,
     selectedViews: updatedSelectedViews,
@@ -761,14 +772,22 @@ function removeNonExistingViewReferencesFromState(editorState: EditorState): Edi
   }
 }
 
-function filterNonExistingViews(
-  allPaths: Array<TemplatePath>,
-  views: Array<TemplatePath>,
-): Array<TemplatePath> {
-  const filtered = views.filter((path) => TP.containsPath(path, allPaths))
-  if (filtered.length !== views.length) {
-    return filtered
-  } else {
-    return views
+function findMatchingTemplatePath(
+  oldAllPaths: Array<TemplatePath>,
+  newAllPaths: Array<TemplatePath>,
+  pathToUpdate: TemplatePath,
+): [TemplatePath] | [] {
+  const pathStillExists = newAllPaths.findIndex((p) => TP.pathsEqual(p, pathToUpdate)) > -1
+  if (pathStillExists) {
+    return [pathToUpdate]
   }
+  const parentPath = TP.parentPath(pathToUpdate)
+  const parentPathStillExists = newAllPaths.findIndex((p) => TP.pathsEqual(p, parentPath)) > -1
+  if (parentPathStillExists) {
+    const oldChildren = oldAllPaths.filter((p) => TP.isChildOf(p, parentPath))
+    const oldChildIndex = oldChildren.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
+    const newChildren = newAllPaths.filter((p) => TP.isChildOf(p, parentPath))
+    const potentialNewPath = newChildren[oldChildIndex]
+    return potentialNewPath == null ? [] : [potentialNewPath]
+  } else return []
 }
