@@ -792,12 +792,14 @@ function findMatchingTemplatePath(
   newComponents: JSXMetadata,
   pathToUpdate: TemplatePath,
 ): TemplatePath | null {
+  const scenePathStillExists =
+    MetadataUtils.findSceneByTemplatePath(newComponents.components, pathToUpdate) != null
   const pathStillExists =
     MetadataUtils.getElementByInstancePathMaybe(
       newComponents.elements,
       pathToUpdate as InstancePath,
     ) != null
-  if (pathStillExists) {
+  if (pathStillExists || scenePathStillExists) {
     return pathToUpdate
   }
 
