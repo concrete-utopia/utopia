@@ -98,9 +98,12 @@ function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
     stat(fsPath).then((fsStat) => {
       if (fsStat.type === 'FILE') {
         readFileAsUTF8(fsPath).then((fileContent) => {
-          // FIXME this needs to take saved and unsaved content
-          // const action = updateFromCodeEditor(fromFSPath(fsPath), fileContent.content)
-          // dispatch([action], 'everyone')
+          const action = updateFromCodeEditor(
+            fromFSPath(fsPath),
+            fileContent.content,
+            fileContent.unsavedContent,
+          )
+          dispatch([action], 'everyone')
         })
       }
     })

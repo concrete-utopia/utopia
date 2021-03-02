@@ -257,14 +257,8 @@ export async function writeFile(path: string, content: Uint8Array, unsavedConten
   const lastSavedTime = unsavedContent == null || maybeExistingFile == null ? now : maybeExistingFile.lastSavedTime
   const fileToWrite = fsFile(content, unsavedContent, fileCTime, now, lastSavedTime, fsUser)
   await setItem(path, fileToWrite)
-  if (fsUser === 'UTOPIA' && !path.startsWith('/VSCODE_MAILBOX/')) {
-    console.log(`Utopia wrote change to ${path}`)
-  }
   if (parent != null) {
     await markModified(parent)
-    if (fsUser === 'UTOPIA' && !path.startsWith('/VSCODE_MAILBOX/')) {
-      console.log(`Utopia marked parent modified ${parent.path}`)
-    }
   }
 }
 

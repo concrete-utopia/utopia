@@ -566,7 +566,8 @@ export interface UpdateFromWorker {
 export interface UpdateFromCodeEditor {
   action: 'UPDATE_FROM_CODE_EDITOR'
   filePath: string
-  fileContents: string
+  savedContent: string
+  unsavedContent: string | null
 }
 
 export interface ClearParseOrPrintInFlight {

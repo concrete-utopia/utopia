@@ -179,3 +179,16 @@ export function isParsedModelUpdate(action: EditorAction): boolean {
       return false
   }
 }
+
+export function isFromVSCode(action: EditorAction): boolean {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return R.any(isFromVSCode, action.transientActions)
+    case 'ATOMIC':
+      return R.any(isFromVSCode, action.actions)
+    case 'UPDATE_FROM_CODE_EDITOR':
+      return true
+    default:
+      return false
+  }
+}

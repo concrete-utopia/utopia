@@ -38,7 +38,12 @@ import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import * as TP from '../../../core/shared/template-path'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
-import { isTransientAction, isUndoOrRedo, isParsedModelUpdate } from '../actions/action-utils'
+import {
+  isTransientAction,
+  isUndoOrRedo,
+  isParsedModelUpdate,
+  isFromVSCode,
+} from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
@@ -372,9 +377,10 @@ async function updateSelectedElementChanged(
 async function applyVSCodeChanges(
   oldStoredState: EditorStore,
   newEditorState: EditorState,
+  updateCameFromVSCode: boolean,
 ): Promise<void> {
   // Update the file system that is shared between Utopia and VS Code.
-  if (oldStoredState.editor.id != null) {
+  if (oldStoredState.editor.id != null && !updateCameFromVSCode) {
     await applyProjectContentChanges(
       oldStoredState.editor.id,
       oldStoredState.editor.projectContents,
@@ -509,7 +515,16 @@ export function editorDispatch(
     saveStoredState(storedState.editor.id, stateToStore)
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
   }
-  applyVSCodeChanges(storedState, frozenEditorState).catch((error) => {
+
+  const updatedFromVSCode = dispatchedActions.some(isFromVSCode)
+  if (updatedFromVSCode && !dispatchedActions.every(isFromVSCode)) {
+    console.error(
+      `VS Code actions mixed with Utopia actions`,
+      simpleStringifyActions(dispatchedActions),
+    )
+  }
+
+  applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
     console.error('Error sending updates to VS Code', error)
   })
 

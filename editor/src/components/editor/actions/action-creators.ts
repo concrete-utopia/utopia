@@ -892,11 +892,16 @@ export function updateFromWorker(
   }
 }
 
-export function updateFromCodeEditor(filePath: string, fileContents: string): UpdateFromCodeEditor {
+export function updateFromCodeEditor(
+  filePath: string,
+  savedContent: string,
+  unsavedContent: string | null,
+): UpdateFromCodeEditor {
   return {
     action: 'UPDATE_FROM_CODE_EDITOR',
     filePath: filePath,
-    fileContents: fileContents,
+    savedContent: savedContent,
+    unsavedContent: unsavedContent,
   }
 }
 
