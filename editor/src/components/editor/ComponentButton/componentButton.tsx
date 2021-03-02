@@ -1,11 +1,19 @@
-import BreadcrumbSeparator from 'antd/lib/breadcrumb/BreadcrumbSeparator'
 import * as React from 'react'
+import BreadcrumbSeparator from 'antd/lib/breadcrumb/BreadcrumbSeparator'
 import onClickOutside from 'react-onclickoutside'
 import { BreadcrumbTrail } from '../../canvas/controls/breadcrumb-trail'
 import { Icons, OnClickOutsideHOC } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
+import { NameRow, NameRowInnerProps } from '../../../components/inspector/sections/header-section/name-row'
+import { LayoutWrapperRow, LayoutWrapperCoreProps, LayoutWrapperRowProps } from '../../../components/inspector/sections/header-section/layout-wrapper-section'
+import { JSXElementName } from '../../../core/shared/element-template'
+import { NameRowCrumbs } from '../../../components/canvas/controls/namerowcrumbs'
 
-interface ComponentOrInstanceIndicatorProps {
+
+interface ComponentOrInstanceIndicatorProps extends
+  NameRowInnerProps,
+  LayoutWrapperCoreProps,
+  LayoutWrapperRowProps {
   label: string
   component: boolean
   instance: boolean
@@ -35,9 +43,8 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
           // make the menu button slightly darker if the menu is open
           background: isOpen ? '#4842EE' : '#5852FE',
           cursor: 'pointer',
-          boxShadow: `0px 0px 0px 1px ${
-            props.component ? '#' : props.instance ? '#5852FE' : '#888'
-          }`,
+          boxShadow: `0px 0px 0px 1px ${props.component ? '#' : props.instance ? '#5852FE' : '#888'
+            }`,
           color: props.component ? 'white' : props.instance ? '#5852FE' : 'inherit',
         }}
       >
@@ -75,9 +82,13 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
               }}
             >
               <BreadcrumbTrail />
+              <NameRowCrumbs />
+              <LayoutWrapperRow onWrap={props.onWrap} onUnwrap={props.onUnwrap} value={props.value} />
+
             </div>
           </OnClickOutsideHOC>
         ) : null}
+
       </div>
     )
   },

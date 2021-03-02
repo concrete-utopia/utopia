@@ -12,8 +12,6 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { FlexRow, Icons } from '../../../uuiui'
 
-//test
-
 export const BreadcrumbTrail = () => {
   const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
     return {
