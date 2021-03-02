@@ -825,8 +825,8 @@ function updateFrameValueForProp(
     if (parsedProp != null) {
       const pinIsPercentage = parsedProp.unit === '%'
       const pinIsUnitlessOrPx = parsedProp.unit == null || parsedProp.unit === 'px'
-      let valueToUse: string | number
       if (pinIsPercentage) {
+        let valueToUse: string | number
         const percentValue = parsedProp.value
         if (parentFrame != null) {
           const referenceSize = isHorizontalPoint(framePoint)
