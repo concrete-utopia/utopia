@@ -121,6 +121,7 @@ function fsStatForNode(node: FSNode): FSStat {
     type: node.type,
     ctime: node.ctime,
     mtime: node.mtime,
+    lastSavedTime: node.lastSavedTime,
     size: isFile(node) ? node.content.length : 0,
     sourceOfLastChange: node.sourceOfLastChange,
   }
@@ -253,7 +254,8 @@ export async function writeFile(path: string, content: Uint8Array, unsavedConten
 
   const now = Date.now()
   const fileCTime = maybeExistingFile == null ? now : maybeExistingFile.ctime
-  const fileToWrite = fsFile(content, unsavedContent, fileCTime, now, fsUser)
+  const lastSavedTime = unsavedContent == null || maybeExistingFile == null ? now : maybeExistingFile.lastSavedTime
+  const fileToWrite = fsFile(content, unsavedContent, fileCTime, now, lastSavedTime, fsUser)
   await setItem(path, fileToWrite)
   if (fsUser === 'UTOPIA' && !path.startsWith('/VSCODE_MAILBOX/')) {
     console.log(`Utopia wrote change to ${path}`)
@@ -289,10 +291,12 @@ export async function writeFileAsUTF8(path: string, content: string, unsavedCont
 }
 
 function updateMTime(node: FSNode): FSNode {
+  const now = Date.now()
   if (isFile(node)) {
-    return fsFile(node.content, node.unsavedContent, node.ctime, Date.now(), fsUser)
+    const lastSavedTime = node.unsavedContent == null ? now : node.lastSavedTime
+    return fsFile(node.content, node.unsavedContent, node.ctime, now, lastSavedTime, fsUser)
   } else {
-    return fsDirectory(node.ctime, Date.now(), fsUser)
+    return fsDirectory(node.ctime, now, fsUser)
   }
 }
 
@@ -340,7 +344,7 @@ export async function deletePath(path: string, recursive: boolean): Promise<stri
 interface WatchConfig {
   recursive: boolean
   onCreated: (path: string) => void
-  onModified: (path: string) => void
+  onModified: (path: string, modifiedBySelf: boolean) => void
   onDeleted: (path: string) => void
 }
 
@@ -367,7 +371,8 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
       const stats = fsStatForNode(node)
 
       const modifiedTS = stats.mtime
-      const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0) && stats.sourceOfLastChange !== fsUser
+      const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
+      const modifiedBySelf = stats.sourceOfLastChange === fsUser
 
       if (wasModified) {
         if (isDirectory(node)) {
@@ -379,11 +384,11 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
               onCreated(childPath)
             })
             if (unsupervisedChildren.length > 0) {
-              onModified(path)
+              onModified(path, modifiedBySelf)
             }
           }
         } else {
-          onModified(path)
+          onModified(path, modifiedBySelf)
         }
 
         lastModifiedTSs.set(path, modifiedTS)
@@ -408,7 +413,7 @@ export async function watch(
   target: string,
   recursive: boolean,
   onCreated: (path: string) => void,
-  onModified: (path: string) => void,
+  onModified: (path: string, modifiedBySelf: boolean) => void,
   onDeleted: (path: string) => void,
 ): Promise<void> {
   const fileExists = await exists(target)

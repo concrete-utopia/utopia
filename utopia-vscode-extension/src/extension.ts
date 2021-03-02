@@ -59,11 +59,9 @@ function watchForUnsavedContentChangesFromFS(utopiaFS: UtopiaFSExtension) {
       updateDirtyContent(uri)
     })
   })
-  utopiaFS.onDidChangeFile((changes) => {
-    changes.forEach((change) => {
-      if (change.type === vscode.FileChangeType.Changed) {
-        clearDirtyFlags(change.uri)
-      }
+  utopiaFS.onDidChangeSavedContent((uris) => {
+    uris.forEach((uri) => {
+      clearDirtyFlags(uri)
     })
   })
 }

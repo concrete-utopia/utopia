@@ -54,9 +54,15 @@ export class UtopiaFSExtension
   private emitter = new EventEmitter<FileChangeEvent[]>()
   private eventQueue: FileChangeEvent[] = []
   private emitEventHandle: number | null = null
+
+  private savedChangeEmitter = new EventEmitter<Uri[]>()
+  private savedChangeQueue: Uri[] = []
+  private emitSavedChangeHandle: number | null = null
+
   private unsavedChangeEmitter = new EventEmitter<Uri[]>()
   private unsavedChangeQueue: Uri[] = []
   private emitUnsavedChangeHandle: number | null = null
+
   private allFilePaths: string[] | null = null
 
   constructor(private projectID: string) {
@@ -74,6 +80,7 @@ export class UtopiaFSExtension
   // FileSystemProvider
 
   readonly onDidChangeFile: Event<FileChangeEvent[]> = this.emitter.event
+  readonly onDidChangeSavedContent: Event<Uri[]> = this.savedChangeEmitter.event
   readonly onDidChangeUnsavedContent: Event<Uri[]> = this.unsavedChangeEmitter.event
 
   private queueFileChangeEvent(event: FileChangeEvent): void {
@@ -90,6 +97,19 @@ export class UtopiaFSExtension
     }, 5)
   }
 
+  private queueSavedChangeEvent(resource: Uri): void {
+    this.savedChangeQueue.push(resource)
+
+    if (this.emitSavedChangeHandle != null) {
+      clearTimeout(this.emitSavedChangeHandle)
+    }
+
+    this.emitSavedChangeHandle = setTimeout(() => {
+      this.savedChangeEmitter.fire(this.savedChangeQueue)
+      this.savedChangeQueue = []
+    }, 5)
+  }
+
   private queueUnsavedChangeEvent(resource: Uri): void {
     this.unsavedChangeQueue.push(resource)
 
@@ -103,17 +123,22 @@ export class UtopiaFSExtension
     }, 5)
   }
 
-  private async notifyFileChanged(path: string): Promise<void> {
+  private async notifyFileChanged(path: string, modifiedBySelf: boolean): Promise<void> {
     const uri = toUtopiaURI(this.projectID, path)
     const hasUnsavedContent = await pathIsFileWithUnsavedContent(path)
     if (hasUnsavedContent) {
-      this.queueUnsavedChangeEvent(uri)
+      if (!modifiedBySelf) {
+        this.queueUnsavedChangeEvent(uri)
+      }
     } else {
       console.log(`Notifying of saved content update ${path}`)
       this.queueFileChangeEvent({
         type: FileChangeType.Changed,
         uri: uri,
       })
+      if (!modifiedBySelf) {
+        this.queueSavedChangeEvent(uri)
+      }
     }
   }
 
@@ -159,7 +184,7 @@ export class UtopiaFSExtension
     return {
       type: fileType,
       ctime: stats.ctime.valueOf(),
-      mtime: stats.mtime.valueOf(),
+      mtime: stats.lastSavedTime.valueOf(),
       size: stats.size,
     }
   }

@@ -5,6 +5,7 @@ export interface FSNode {
   type: FSNodeType
   ctime: number
   mtime: number
+  lastSavedTime: number
   sourceOfLastChange: FSUser
 }
 
@@ -26,23 +27,12 @@ export interface FSFile extends FSNode, FileContent {
   type: 'FILE'
 }
 
-export function fsFile(content: Uint8Array, unsavedContent: Uint8Array | null, ctime: number, mtime: number, sourceOfLastChange: FSUser): FSFile {
+export function fsFile(content: Uint8Array, unsavedContent: Uint8Array | null, ctime: number, mtime: number, lastSavedTime: number, sourceOfLastChange: FSUser): FSFile {
   return {
     type: 'FILE',
     ctime: ctime,
     mtime: mtime,
-    content: content,
-    unsavedContent: unsavedContent,
-    sourceOfLastChange: sourceOfLastChange,
-  }
-}
-
-export function newFSFile(content: Uint8Array, unsavedContent: Uint8Array | null, sourceOfLastChange: FSUser): FSFile {
-  const now = Date.now()
-  return {
-    type: 'FILE',
-    ctime: now,
-    mtime: now,
+    lastSavedTime: lastSavedTime,
     content: content,
     unsavedContent: unsavedContent,
     sourceOfLastChange: sourceOfLastChange,
@@ -58,6 +48,7 @@ export function fsDirectory(ctime: number, mtime: number, sourceOfLastChange: FS
     type: 'DIRECTORY',
     ctime: ctime,
     mtime: mtime,
+    lastSavedTime: mtime,
     sourceOfLastChange: sourceOfLastChange,
   }
 }
@@ -68,6 +59,7 @@ export function newFSDirectory(sourceOfLastChange: FSUser): FSDirectory {
     type: 'DIRECTORY',
     ctime: now,
     mtime: now,
+    lastSavedTime: now,
     sourceOfLastChange: sourceOfLastChange,
   }
 }

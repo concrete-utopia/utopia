@@ -105,8 +105,10 @@ function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
       }
     })
   }
-  function onModified(fsPath: string): void {
-    onCreated(fsPath)
+  function onModified(fsPath: string, modifiedBySelf: boolean): void {
+    if (!modifiedBySelf) {
+      onCreated(fsPath)
+    }
   }
   function onDeleted(fsPath: string): void {
     const projectPath = fromFSPath(fsPath)
