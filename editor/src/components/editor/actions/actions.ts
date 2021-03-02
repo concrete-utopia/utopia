@@ -1224,7 +1224,7 @@ function updateNavigatorCollapsedState(
   })
 }
 
-function getNavigatorPositionNextState(editor: EditorState): 'hidden' | 'left' | 'right' {
+export function getNavigatorPositionNextState(editor: EditorState): 'hidden' | 'left' | 'right' {
   switch (editor.navigator.position) {
     case 'hidden':
       return 'right'

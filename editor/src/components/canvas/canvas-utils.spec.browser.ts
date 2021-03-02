@@ -1957,7 +1957,7 @@ describe('moveTemplate', () => {
               style={{
                 backgroundColor: '#0091FFAA',
                 position: 'absolute',
-                left: 100,
+                left: -160,
                 top: -60,
                 width: 60,
                 height: 50,
