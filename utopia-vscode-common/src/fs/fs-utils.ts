@@ -18,10 +18,14 @@ import {
   FSNodeWithPath,
   FSFile,
   FileContent,
+  FSUser,
+  fsDirectory,
 } from './fs-types'
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
+
+let fsUser: FSUser // Used to determine if changes came from this user or another
 
 let handleError: FSErrorHandler = (e: FSError) => {
   return Error(`FS Error: ${JSON.stringify(e)}`)
@@ -36,7 +40,8 @@ const existingFileError = (path: string) => handleError(eexist(path))
 const isDirectoryError = (path: string) => handleError(eisdir(path))
 const isNotDirectoryError = (path: string) => handleError(enotdir(path))
 
-export async function initializeFS(storeName: string, driver: string = INDEXEDDB): Promise<void> {
+export async function initializeFS(storeName: string, user: FSUser, driver: string = INDEXEDDB): Promise<void> {
+  fsUser = user
   await initializeStore(storeName, driver)
   await simpleCreateDirectoryIfMissing('/')
 }
@@ -54,6 +59,11 @@ export async function pathIsDirectory(path: string): Promise<boolean> {
 export async function pathIsFile(path: string): Promise<boolean> {
   const node = await getItem(path)
   return node != null && isFile(node)
+}
+
+export async function pathIsFileWithUnsavedContent(path: string): Promise<boolean> {
+  const node = await getItem(path)
+  return node != null && isFile(node) && node.unsavedContent != null
 }
 
 async function getNode(path: string): Promise<FSNode> {
@@ -112,6 +122,7 @@ function fsStatForNode(node: FSNode): FSStat {
     ctime: node.ctime,
     mtime: node.mtime,
     size: isFile(node) ? node.content.length : 0,
+    sourceOfLastChange: node.sourceOfLastChange,
   }
 }
 
@@ -188,7 +199,7 @@ export async function createDirectory(path: string): Promise<void> {
     return Promise.reject(existingFileError(path))
   }
 
-  await setItem(path, newFSDirectory())
+  await setItem(path, newFSDirectory(fsUser))
   if (parent != null) {
     await markModified(parent)
   }
@@ -212,7 +223,7 @@ function allPathsUpToPath(path: string): string[] {
 async function simpleCreateDirectoryIfMissing(path: string): Promise<void> {
   const existingNode = await getItem(path)
   if (existingNode == null) {
-    await setItem(path, newFSDirectory())
+    await setItem(path, newFSDirectory(fsUser))
 
     // Attempt to mark the parent as modified, but don't fail if it doesn't exist
     // since it might not have been created yet
@@ -242,10 +253,16 @@ export async function writeFile(path: string, content: Uint8Array, unsavedConten
 
   const now = Date.now()
   const fileCTime = maybeExistingFile == null ? now : maybeExistingFile.ctime
-  const fileToWrite = fsFile(content, unsavedContent, fileCTime, now)
+  const fileToWrite = fsFile(content, unsavedContent, fileCTime, now, fsUser)
   await setItem(path, fileToWrite)
+  if (fsUser === 'UTOPIA' && !path.startsWith('/VSCODE_MAILBOX/')) {
+    console.log(`Utopia wrote change to ${path}`)
+  }
   if (parent != null) {
     await markModified(parent)
+    if (fsUser === 'UTOPIA' && !path.startsWith('/VSCODE_MAILBOX/')) {
+      console.log(`Utopia marked parent modified ${parent.path}`)
+    }
   }
 }
 
@@ -272,9 +289,10 @@ export async function writeFileAsUTF8(path: string, content: string, unsavedCont
 }
 
 function updateMTime(node: FSNode): FSNode {
-  return {
-    ...node,
-    mtime: Date.now(),
+  if (isFile(node)) {
+    return fsFile(node.content, node.unsavedContent, node.ctime, Date.now(), fsUser)
+  } else {
+    return fsDirectory(node.ctime, Date.now(), fsUser)
   }
 }
 
@@ -349,20 +367,26 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
       const stats = fsStatForNode(node)
 
       const modifiedTS = stats.mtime
-      const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
-
-      if (recursive && isDirectory(node) && wasModified) {
-        const children = await childPaths(path)
-        const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
-        unsupervisedChildren.forEach((childPath) => {
-          watchPath(childPath, config)
-          onCreated(childPath)
-        })
-      }
+      const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0) && stats.sourceOfLastChange !== fsUser
 
       if (wasModified) {
+        if (isDirectory(node)) {
+          if (recursive) {
+            const children = await childPaths(path)
+            const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
+            unsupervisedChildren.forEach((childPath) => {
+              watchPath(childPath, config)
+              onCreated(childPath)
+            })
+            if (unsupervisedChildren.length > 0) {
+              onModified(path)
+            }
+          }
+        } else {
+          onModified(path)
+        }
+
         lastModifiedTSs.set(path, modifiedTS)
-        onModified(path)
       }
     }
   } catch (e) {

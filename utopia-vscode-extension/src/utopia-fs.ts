@@ -44,6 +44,7 @@ import {
   readFileSavedContent,
   writeFileSavedContent,
   readFileSavedContentAsUTF8,
+  pathIsFileWithUnsavedContent,
 } from 'utopia-vscode-common'
 import { fromUtopiaURI, toUtopiaURI } from './path-utils'
 
@@ -53,6 +54,9 @@ export class UtopiaFSExtension
   private emitter = new EventEmitter<FileChangeEvent[]>()
   private eventQueue: FileChangeEvent[] = []
   private emitEventHandle: number | null = null
+  private unsavedChangeEmitter = new EventEmitter<Uri[]>()
+  private unsavedChangeQueue: Uri[] = []
+  private emitUnsavedChangeHandle: number | null = null
   private allFilePaths: string[] | null = null
 
   constructor(private projectID: string) {
@@ -70,6 +74,7 @@ export class UtopiaFSExtension
   // FileSystemProvider
 
   readonly onDidChangeFile: Event<FileChangeEvent[]> = this.emitter.event
+  readonly onDidChangeUnsavedContent: Event<Uri[]> = this.unsavedChangeEmitter.event
 
   private queueFileChangeEvent(event: FileChangeEvent): void {
     this.clearCachedFiles()
@@ -85,11 +90,31 @@ export class UtopiaFSExtension
     }, 5)
   }
 
-  private notifyFileChanged(path: string): void {
-    this.queueFileChangeEvent({
-      type: FileChangeType.Changed,
-      uri: toUtopiaURI(this.projectID, path),
-    })
+  private queueUnsavedChangeEvent(resource: Uri): void {
+    this.unsavedChangeQueue.push(resource)
+
+    if (this.emitUnsavedChangeHandle != null) {
+      clearTimeout(this.emitUnsavedChangeHandle)
+    }
+
+    this.emitUnsavedChangeHandle = setTimeout(() => {
+      this.unsavedChangeEmitter.fire(this.unsavedChangeQueue)
+      this.unsavedChangeQueue = []
+    }, 5)
+  }
+
+  private async notifyFileChanged(path: string): Promise<void> {
+    const uri = toUtopiaURI(this.projectID, path)
+    const hasUnsavedContent = await pathIsFileWithUnsavedContent(path)
+    if (hasUnsavedContent) {
+      this.queueUnsavedChangeEvent(uri)
+    } else {
+      console.log(`Notifying of saved content update ${path}`)
+      this.queueFileChangeEvent({
+        type: FileChangeType.Changed,
+        uri: uri,
+      })
+    }
   }
 
   private notifyFileCreated(path: string): void {

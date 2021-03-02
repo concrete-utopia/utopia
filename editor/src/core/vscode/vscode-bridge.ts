@@ -36,11 +36,9 @@ import {
   BoundsInFile,
   selectedElementChanged,
   parseFromVSCodeMessage,
-  isEditorCursorPositionChanged,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
-import { getTemplatePathsInBounds } from '../../components/editor/store/editor-state'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -130,7 +128,7 @@ export async function initVSCodeBridge(
     if (isBrowserEnvironment) {
       stopWatchingAll()
       stopPollingMailbox()
-      await initializeFS(projectID)
+      await initializeFS(projectID, 'UTOPIA')
       await clearBothMailboxes()
       await writeProjectContents(projectID, projectContents)
       await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {

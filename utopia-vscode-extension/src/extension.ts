@@ -35,12 +35,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   initMessaging(context, workspaceRootUri)
 
   // Update VS Code with unsaved changes from Utopia
-  watchForChangesFromFS(utopiaFS)
+  watchForUnsavedContentChangesFromFS(utopiaFS)
   watchForChangesFromVSCode(context)
 }
 
 async function initFS(projectID: string): Promise<void> {
-  await initializeFS(projectID)
+  await initializeFS(projectID, 'VSCODE')
   await ensureDirectoryExists(RootDir)
 }
 
@@ -53,17 +53,16 @@ function initUtopiaFSProvider(
   return utopiaFS
 }
 
-function watchForChangesFromFS(utopiaFS: UtopiaFSExtension) {
+function watchForUnsavedContentChangesFromFS(utopiaFS: UtopiaFSExtension) {
+  utopiaFS.onDidChangeUnsavedContent((uris) => {
+    uris.forEach((uri) => {
+      updateDirtyContent(uri)
+    })
+  })
   utopiaFS.onDidChangeFile((changes) => {
     changes.forEach((change) => {
       if (change.type === vscode.FileChangeType.Changed) {
-        const path = fromUtopiaURI(change.uri)
-        if (outgoingFileChanges.has(path)) {
-          outgoingFileChanges.delete(path)
-          // console.log(`Ignoring change coming from self`)
-        } else {
-          updateDirtyFlags(change.uri)
-        }
+        clearDirtyFlags(change.uri)
       }
     })
   })
@@ -77,7 +76,6 @@ function watchForChangesFromFS(utopiaFS: UtopiaFSExtension) {
 
 let dirtyFiles: Set<string> = new Set()
 let incomingFileChanges: Set<string> = new Set()
-let outgoingFileChanges: Set<string> = new Set()
 
 function watchForChangesFromVSCode(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -93,20 +91,23 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext) {
           if (incomingFileChanges.has(path)) {
             // Change came from Utopia
             incomingFileChanges.delete(path)
-            console.log(`Ignoring change to ${path} from utopia`)
+            console.log(`Not rewriting unsaved change to ${path} from utopia`)
           } else {
-            outgoingFileChanges.add(path)
             const fullText = event.document.getText()
             writeFileUnsavedContentAsUTF8(path, fullText)
-            // console.log(`Writing unsaved change to ${path} from utopia`)
+            console.log(`Writing unsaved change to ${path} from vs code`)
           }
         }
       }
     }),
     vscode.workspace.onWillSaveTextDocument((event) => {
       const path = fromUtopiaURI(event.document.uri)
-      outgoingFileChanges.add(path)
+      console.log(`Will save ${path}`)
       dirtyFiles.delete(path)
+    }),
+    vscode.workspace.onDidSaveTextDocument((document) => {
+      const path = fromUtopiaURI(document.uri)
+      console.log(`Did save ${path}`)
     }),
     vscode.workspace.onDidCloseTextDocument((document) => {
       const path = fromUtopiaURI(document.uri)
@@ -118,7 +119,6 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext) {
       }
       dirtyFiles.delete(path)
       incomingFileChanges.delete(path)
-      outgoingFileChanges.delete(path)
     }),
   )
 }
@@ -180,21 +180,23 @@ function entireDocRange() {
   )
 }
 
-async function updateDirtyFlags(resource: vscode.Uri): Promise<void> {
+async function clearDirtyFlags(resource: vscode.Uri): Promise<void> {
   const filePath = fromUtopiaURI(resource)
-  const isFile = await pathIsFile(filePath)
-  if (isFile) {
-    console.log(`Processing change for ${filePath}`)
-    const { unsavedContent } = await readFileAsUTF8(filePath)
-    if (unsavedContent == null) {
-      vscode.commands.executeCommand('workbench.action.files.revertResource', resource)
-    } else {
-      console.log(`Updating dirty file ${filePath}`)
-      incomingFileChanges.add(filePath)
-      const workspaceEdit = new vscode.WorkspaceEdit()
-      workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
-      vscode.workspace.applyEdit(workspaceEdit)
-    }
+  console.log(`Reverting file ${filePath}`)
+  vscode.commands.executeCommand('workbench.action.files.revertResource', resource)
+}
+
+async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
+  const filePath = fromUtopiaURI(resource)
+  const { unsavedContent } = await readFileAsUTF8(filePath)
+  if (unsavedContent != null) {
+    console.log(`Updating dirty file ${filePath}`)
+    incomingFileChanges.add(filePath)
+    const workspaceEdit = new vscode.WorkspaceEdit()
+    workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
+    vscode.workspace
+      .applyEdit(workspaceEdit)
+      .then((wentThrough) => console.log(`Applied edit? ${wentThrough}`))
   }
 }
 

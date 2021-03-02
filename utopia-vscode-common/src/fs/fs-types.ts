@@ -1,9 +1,11 @@
 type FSNodeType = 'FILE' | 'DIRECTORY'
+export type FSUser = 'UTOPIA' | 'VSCODE'
 
 export interface FSNode {
   type: FSNodeType
   ctime: number
   mtime: number
+  sourceOfLastChange: FSUser
 }
 
 export interface FSNodeWithPath {
@@ -24,17 +26,18 @@ export interface FSFile extends FSNode, FileContent {
   type: 'FILE'
 }
 
-export function fsFile(content: Uint8Array, unsavedContent: Uint8Array | null, ctime: number, mtime: number): FSFile {
+export function fsFile(content: Uint8Array, unsavedContent: Uint8Array | null, ctime: number, mtime: number, sourceOfLastChange: FSUser): FSFile {
   return {
     type: 'FILE',
     ctime: ctime,
     mtime: mtime,
     content: content,
     unsavedContent: unsavedContent,
+    sourceOfLastChange: sourceOfLastChange,
   }
 }
 
-export function newFSFile(content: Uint8Array, unsavedContent: Uint8Array | null): FSFile {
+export function newFSFile(content: Uint8Array, unsavedContent: Uint8Array | null, sourceOfLastChange: FSUser): FSFile {
   const now = Date.now()
   return {
     type: 'FILE',
@@ -42,6 +45,7 @@ export function newFSFile(content: Uint8Array, unsavedContent: Uint8Array | null
     mtime: now,
     content: content,
     unsavedContent: unsavedContent,
+    sourceOfLastChange: sourceOfLastChange,
   }
 }
 
@@ -49,20 +53,22 @@ export interface FSDirectory extends FSNode {
   type: 'DIRECTORY'
 }
 
-export function fsDirectory(ctime: number, mtime: number): FSDirectory {
+export function fsDirectory(ctime: number, mtime: number, sourceOfLastChange: FSUser): FSDirectory {
   return {
     type: 'DIRECTORY',
     ctime: ctime,
     mtime: mtime,
+    sourceOfLastChange: sourceOfLastChange,
   }
 }
 
-export function newFSDirectory(): FSDirectory {
+export function newFSDirectory(sourceOfLastChange: FSUser): FSDirectory {
   const now = Date.now()
   return {
     type: 'DIRECTORY',
     ctime: now,
     mtime: now,
+    sourceOfLastChange: sourceOfLastChange,
   }
 }
 
