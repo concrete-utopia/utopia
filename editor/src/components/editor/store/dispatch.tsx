@@ -5,7 +5,7 @@ import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import { ComponentMetadata, JSXMetadata } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import {
   fileTypeFromFileName,
@@ -20,6 +20,7 @@ import {
   textFile,
   textFileContents,
   RevisionsState,
+  InstancePath,
 } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -82,6 +83,8 @@ import {
   decorationRange,
   DecorationRangeType,
 } from 'utopia-vscode-common'
+import { TemplatePathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -610,7 +613,7 @@ function editorDispatchInner(
     }
 
     const cleanedEditor = metadataChanged
-      ? removeNonExistingViewReferencesFromState(result.editor)
+      ? removeNonExistingViewReferencesFromState(storedState.editor, result.editor)
       : result.editor
 
     let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
@@ -747,12 +750,35 @@ function notifyTsWorker(
   }
 }
 
-function removeNonExistingViewReferencesFromState(editorState: EditorState): EditorState {
+function removeNonExistingViewReferencesFromState(
+  oldEditorState: EditorState,
+  editorState: EditorState,
+): EditorState {
+  const oldRootComponents = oldEditorState.jsxMetadataKILLME
   const rootComponents = editorState.jsxMetadataKILLME
-  const allPaths = MetadataUtils.getAllPaths(rootComponents)
-  const updatedSelectedViews = filterNonExistingViews(allPaths, editorState.selectedViews)
-  const updatedHighlightedViews = filterNonExistingViews(allPaths, editorState.highlightedViews)
-  const updatedHiddenInstances = filterNonExistingViews(allPaths, editorState.hiddenInstances)
+  const updatedSelectedViews = TemplatePathArrayKeepDeepEquality(
+    editorState.selectedViews,
+    mapDropNulls(
+      (selectedView) => findMatchingTemplatePath(oldRootComponents, rootComponents, selectedView),
+      editorState.selectedViews,
+    ),
+  ).value
+  const updatedHighlightedViews = TemplatePathArrayKeepDeepEquality(
+    editorState.highlightedViews,
+    mapDropNulls(
+      (highlightedView) =>
+        findMatchingTemplatePath(oldRootComponents, rootComponents, highlightedView),
+      editorState.highlightedViews,
+    ),
+  ).value
+  const updatedHiddenInstances = TemplatePathArrayKeepDeepEquality(
+    editorState.hiddenInstances,
+    mapDropNulls(
+      (hiddenInstance) =>
+        findMatchingTemplatePath(oldRootComponents, rootComponents, hiddenInstance),
+      editorState.hiddenInstances,
+    ),
+  ).value
   return {
     ...editorState,
     selectedViews: updatedSelectedViews,
@@ -761,14 +787,36 @@ function removeNonExistingViewReferencesFromState(editorState: EditorState): Edi
   }
 }
 
-function filterNonExistingViews(
-  allPaths: Array<TemplatePath>,
-  views: Array<TemplatePath>,
-): Array<TemplatePath> {
-  const filtered = views.filter((path) => TP.containsPath(path, allPaths))
-  if (filtered.length !== views.length) {
-    return filtered
-  } else {
-    return views
+function findMatchingTemplatePath(
+  oldComponents: JSXMetadata,
+  newComponents: JSXMetadata,
+  pathToUpdate: TemplatePath,
+): TemplatePath | null {
+  const scenePathStillExists =
+    MetadataUtils.findSceneByTemplatePath(newComponents.components, pathToUpdate) != null
+  const pathStillExists =
+    MetadataUtils.getElementByInstancePathMaybe(
+      newComponents.elements,
+      pathToUpdate as InstancePath,
+    ) != null
+  if (pathStillExists || scenePathStillExists) {
+    return pathToUpdate
   }
+
+  const parentPath = TP.parentPath(pathToUpdate)
+  const oldParent = MetadataUtils.getElementByInstancePathMaybe(
+    oldComponents.elements,
+    parentPath as InstancePath,
+  )
+  const newParent = MetadataUtils.getElementByInstancePathMaybe(
+    newComponents.elements,
+    parentPath as InstancePath,
+  )
+  if (oldParent != null && newParent != null) {
+    const oldChildIndex = oldParent.children.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
+    const potentialNewPath = newParent.children[oldChildIndex]
+    return potentialNewPath ?? null
+  }
+
+  return null
 }
