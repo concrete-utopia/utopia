@@ -11,6 +11,7 @@ import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-s
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { FlexRow, Icons } from '../../../uuiui'
+import { GridRow } from '../../../components/inspector/widgets/grid-row'
 
 export const BreadcrumbTrail = () => {
   const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
@@ -82,7 +83,7 @@ export const BreadcrumbTrail = () => {
     })
 
     return (
-      <FlexRow>
+      <FlexRow style={{ paddingLeft: 6, paddingTop: 4 }}>
         <Icons.Component />
         {elements}
       </FlexRow>
@@ -90,9 +91,6 @@ export const BreadcrumbTrail = () => {
   })
 
   return (
-    <div>
-      Hello Breadcrumb
-      <ElementPathButtons />
-    </div>
+    <ElementPathButtons />
   )
 }

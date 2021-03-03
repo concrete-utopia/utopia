@@ -56,7 +56,7 @@ export const NameRow = betterReactMemo('NameRow', (props: NameRowInnerProps) => 
 const constrolStatus = 'simple'
 const controlStyles = getControlStyles(constrolStatus)
 
-const typeOptions: ReadonlyArray<SelectOption> = [
+export const typeOptions: ReadonlyArray<SelectOption> = [
   {
     value: 'View',
     label: 'View',

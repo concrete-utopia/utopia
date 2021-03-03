@@ -1,5 +1,9 @@
 import * as React from 'react'
-import { getOpenImportsFromState, getOpenUtopiaJSXComponentsFromState, isOpenFileUiJs } from '../../../components/editor/store/editor-state'
+import {
+    getOpenImportsFromState,
+    getOpenUtopiaJSXComponentsFromState,
+    isOpenFileUiJs,
+} from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../../components/inspector/common/inspector-utils'
 import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
@@ -11,12 +15,7 @@ import { PopupList } from '../../../uuiui'
 import { typeOptions } from '../../../components/inspector/sections/header-section/name-row'
 import { JSXElementName, jsxElementName } from '../../../core/shared/element-template'
 
-
-
-
-
 export const NameRowCrumbs = () => {
-
     const selectedViews = useEditorState(
         (store) => store.editor.selectedViews,
         'InspectorEntryPoint selectedViews',
@@ -33,7 +32,6 @@ export const NameRowCrumbs = () => {
             rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
         }
     }, 'InspectorContextProvider')
-
 
     function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
         let result: Array<InstancePath> = []
@@ -58,7 +56,6 @@ export const NameRowCrumbs = () => {
 
     const label: string = 'Test'
     const type: string = 'TestType'
-
 
     const constrolStatus = 'simple'
     const controlStyles = getControlStyles(constrolStatus)
@@ -87,7 +84,7 @@ export const NameRowCrumbs = () => {
                     }}
                 >
                     Render as
-                </span>
+        </span>
                 {type == null ? null : (
                     <PopupList
                         disabled={!controlStyles.interactive}
