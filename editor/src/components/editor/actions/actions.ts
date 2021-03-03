@@ -3486,16 +3486,10 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
 
-    if (isTextFile(existing) && existing.fileContents.code === action.fileContents) {
-      // the text part of the text file did not change, skip updating the editor
-      return editor
-    }
-
-    let updatedFile: ProjectFile
-
     const manualSave = action.unsavedContent == null
     const code = action.unsavedContent ?? action.savedContent
 
+    let updatedFile: ProjectFile
     if (existing == null || !isTextFile(existing)) {
       const contents = textFileContents(code, unparsed, RevisionsState.CodeAhead)
       const lastSavedContents = manualSave
