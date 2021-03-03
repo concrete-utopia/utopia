@@ -3488,18 +3488,17 @@ export const UPDATE_FNS = {
     let updatedFile: ProjectFile
 
     const manualSave = action.unsavedContent == null
-    const mainContents = action.unsavedContent ?? action.savedContent
+    const code = action.unsavedContent ?? action.savedContent
 
     if (existing == null || !isTextFile(existing)) {
-      updatedFile = textFile(
-        textFileContents(mainContents, unparsed, RevisionsState.CodeAhead),
-        manualSave
-          ? null
-          : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead),
-        Date.now(),
-      )
+      const contents = textFileContents(code, unparsed, RevisionsState.CodeAhead)
+      const lastSavedContents = manualSave
+        ? null
+        : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead)
+
+      updatedFile = textFile(contents, lastSavedContents, Date.now())
     } else {
-      updatedFile = updateFileContents(mainContents, existing, manualSave)
+      updatedFile = updateFileContents(code, existing, manualSave)
     }
 
     const updateAction = updateFile(action.filePath, updatedFile, true)
