@@ -52,12 +52,12 @@ function initUtopiaFSProvider(
 }
 
 function watchForUnsavedContentChangesFromFS(utopiaFS: UtopiaFSExtension) {
-  utopiaFS.onDidChangeUnsavedContent((uris) => {
+  utopiaFS.onUtopiaDidChangeUnsavedContent((uris) => {
     uris.forEach((uri) => {
       updateDirtyContent(uri)
     })
   })
-  utopiaFS.onDidChangeSavedContent((uris) => {
+  utopiaFS.onUtopiaDidChangeSavedContent((uris) => {
     uris.forEach((uri) => {
       clearDirtyFlags(uri)
     })

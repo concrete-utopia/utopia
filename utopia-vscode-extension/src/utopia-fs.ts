@@ -48,20 +48,27 @@ import {
 } from 'utopia-vscode-common'
 import { fromUtopiaURI, toUtopiaURI } from './path-utils'
 
+interface EventQueue<T> {
+  queue: T[]
+  emitter: EventEmitter<T[]>
+  handle: number | null
+}
+
+function newEventQueue<T>(): EventQueue<T> {
+  return {
+    queue: [],
+    emitter: new EventEmitter<T[]>(),
+    handle: null,
+  }
+}
+
 export class UtopiaFSExtension
   implements FileSystemProvider, FileSearchProvider, TextSearchProvider, Disposable {
   private disposable: Disposable
-  private emitter = new EventEmitter<FileChangeEvent[]>()
-  private eventQueue: FileChangeEvent[] = []
-  private emitEventHandle: number | null = null
 
-  private savedChangeEmitter = new EventEmitter<Uri[]>()
-  private savedChangeQueue: Uri[] = []
-  private emitSavedChangeHandle: number | null = null
-
-  private unsavedChangeEmitter = new EventEmitter<Uri[]>()
-  private unsavedChangeQueue: Uri[] = []
-  private emitUnsavedChangeHandle: number | null = null
+  private fileChangeEventQueue = newEventQueue<FileChangeEvent>()
+  private utopiaSavedChangeEventQueue = newEventQueue<Uri>()
+  private utopiaUnsavedChangeEventQueue = newEventQueue<Uri>()
 
   private allFilePaths: string[] | null = null
 
@@ -78,66 +85,57 @@ export class UtopiaFSExtension
   }
 
   // FileSystemProvider
+  readonly onDidChangeFile: Event<FileChangeEvent[]> = this.fileChangeEventQueue.emitter.event
+  readonly onUtopiaDidChangeSavedContent: Event<Uri[]> = this.utopiaSavedChangeEventQueue.emitter
+    .event
+  readonly onUtopiaDidChangeUnsavedContent: Event<Uri[]> = this.utopiaUnsavedChangeEventQueue
+    .emitter.event
 
-  readonly onDidChangeFile: Event<FileChangeEvent[]> = this.emitter.event
-  readonly onDidChangeSavedContent: Event<Uri[]> = this.savedChangeEmitter.event
-  readonly onDidChangeUnsavedContent: Event<Uri[]> = this.unsavedChangeEmitter.event
+  private queueEvent<T>(event: T, eventQueue: EventQueue<T>): void {
+    eventQueue.queue.push(event)
+
+    if (eventQueue.handle != null) {
+      clearTimeout(eventQueue.handle)
+    }
+
+    eventQueue.handle = setTimeout(() => {
+      eventQueue.emitter.fire(eventQueue.queue)
+      eventQueue.queue = []
+    }, 5)
+  }
 
   private queueFileChangeEvent(event: FileChangeEvent): void {
     this.clearCachedFiles()
-    this.eventQueue.push(event)
-
-    if (this.emitEventHandle != null) {
-      clearTimeout(this.emitEventHandle)
-    }
-
-    this.emitEventHandle = setTimeout(() => {
-      this.emitter.fire(this.eventQueue)
-      this.eventQueue = []
-    }, 5)
+    this.queueEvent(event, this.fileChangeEventQueue)
   }
 
-  private queueSavedChangeEvent(resource: Uri): void {
-    this.savedChangeQueue.push(resource)
-
-    if (this.emitSavedChangeHandle != null) {
-      clearTimeout(this.emitSavedChangeHandle)
-    }
-
-    this.emitSavedChangeHandle = setTimeout(() => {
-      this.savedChangeEmitter.fire(this.savedChangeQueue)
-      this.savedChangeQueue = []
-    }, 5)
+  private queueUtopiaSavedChangeEvent(resource: Uri): void {
+    this.queueEvent(resource, this.utopiaSavedChangeEventQueue)
   }
 
-  private queueUnsavedChangeEvent(resource: Uri): void {
-    this.unsavedChangeQueue.push(resource)
-
-    if (this.emitUnsavedChangeHandle != null) {
-      clearTimeout(this.emitUnsavedChangeHandle)
-    }
-
-    this.emitUnsavedChangeHandle = setTimeout(() => {
-      this.unsavedChangeEmitter.fire(this.unsavedChangeQueue)
-      this.unsavedChangeQueue = []
-    }, 5)
+  private queueUtopiaUnsavedChangeEvent(resource: Uri): void {
+    this.queueEvent(resource, this.utopiaUnsavedChangeEventQueue)
   }
 
   private async notifyFileChanged(path: string, modifiedBySelf: boolean): Promise<void> {
     const uri = toUtopiaURI(this.projectID, path)
     const hasUnsavedContent = await pathIsFileWithUnsavedContent(path)
-    if (hasUnsavedContent) {
-      if (!modifiedBySelf) {
-        this.queueUnsavedChangeEvent(uri)
-      }
-    } else {
-      console.log(`Notifying of saved content update ${path}`)
+    const fileWasSaved = !hasUnsavedContent
+
+    if (fileWasSaved) {
+      // Notify VS Code of updates to the saved content
       this.queueFileChangeEvent({
         type: FileChangeType.Changed,
         uri: uri,
       })
-      if (!modifiedBySelf) {
-        this.queueSavedChangeEvent(uri)
+    }
+
+    if (!modifiedBySelf) {
+      // Notify our extension of changes coming from Utopia only
+      if (fileWasSaved) {
+        this.queueUtopiaSavedChangeEvent(uri)
+      } else {
+        this.queueUtopiaUnsavedChangeEvent(uri)
       }
     }
   }
