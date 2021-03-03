@@ -37,7 +37,7 @@ import {
   selectedElementChanged,
   parseFromVSCodeMessage,
 } from 'utopia-vscode-common'
-import { isTextFile, ProjectFile } from '../shared/project-file-types'
+import { isTextFile, ProjectFile, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
 
 const Scheme = 'utopia'
@@ -165,6 +165,14 @@ export async function sendSelectedElementChangedMessage(boundsInFile: BoundsInFi
   return sendMessage(selectedElementChanged(boundsInFile))
 }
 
+function getSavedCodeFromTextFile(textFile: TextFile): string {
+  return textFile.lastSavedContents?.code ?? textFile.fileContents.code
+}
+
+function getUnsavedCodeFromTextFile(textFile: TextFile): string | null {
+  return textFile.lastSavedContents == null ? null : textFile.fileContents.code
+}
+
 export async function applyProjectContentChanges(
   projectID: string,
   oldContents: ProjectContentTreeRoot,
@@ -182,24 +190,22 @@ export async function applyProjectContentChanges(
           // Do nothing, no change.
         } else if (isTextFile(firstContents.content) && isTextFile(secondContents.content)) {
           // We need to be careful around only sending this across if the text has been updated.
-          const firstTextContent = firstContents.content
-          const secondTextContent = secondContents.content
-          const unsavedContentChanged =
-            firstTextContent.lastSavedContents?.code !== secondTextContent.lastSavedContents?.code
-          const wasPreviouslySaved =
-            unsavedContentChanged && firstTextContent.lastSavedContents == null
-          const unsavedContentMatchesSaved =
-            secondTextContent.lastSavedContents?.code === firstTextContent.fileContents.code
-          const actuallyUnsavedContentChanged = wasPreviouslySaved
-            ? !unsavedContentMatchesSaved
-            : unsavedContentChanged
+          const firstSavedContent = getSavedCodeFromTextFile(firstContents.content)
+          const firstUnsavedContent = getUnsavedCodeFromTextFile(firstContents.content)
+          const secondSavedContent = getSavedCodeFromTextFile(secondContents.content)
+          const secondUnsavedContent = getUnsavedCodeFromTextFile(secondContents.content)
 
-          if (
-            firstTextContent.fileContents.code === secondTextContent.fileContents.code &&
-            !actuallyUnsavedContentChanged
-          ) {
-            // Do nothing, no change.
-          } else {
+          const savedContentChanged = firstSavedContent !== secondSavedContent
+          const unsavedContentChanged = firstUnsavedContent !== secondUnsavedContent
+          // When a parsed model is updated but that change hasn't been reflected in the code yet, we end up with a file
+          // that has no code change, so we don't want to write that to the FS for VS Code to act on it until the new code
+          // has been generated
+          const fileMarkedDirtyButNoCodeChangeYet =
+            firstUnsavedContent == null && secondUnsavedContent === firstSavedContent
+          const fileShouldBeWritten =
+            savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet)
+
+          if (fileShouldBeWritten) {
             await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
           }
         } else {
