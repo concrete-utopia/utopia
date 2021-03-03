@@ -17,7 +17,7 @@ export const UtopiaInbox: Mailbox = 'UTOPIA_MAILBOX'
 let inbox: Mailbox
 let outbox: Mailbox
 let onMessageCallback: (message: any) => void
-let counter: number = 0
+let lastSentMessage: number = 0
 let lastConsumedMessage: number = -1
 let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
 const POLLING_TIMEOUT = 8
@@ -39,7 +39,7 @@ const pathForInboxMessage = (messageName: string) => pathForMessage(messageName,
 const pathForOutboxMessage = (messageName: string) => pathForMessage(messageName, outbox)
 
 function generateMessageName(): string {
-  return `${counter++}`
+  return `${lastSentMessage++}`
 }
 
 export async function sendMessage(message: ToVSCodeMessage | FromVSCodeMessage): Promise<void> {
@@ -54,9 +54,16 @@ async function sendNamedMessage(messageName: string, content: string): Promise<v
   return writeFileSavedContentAsUTF8(pathForOutboxMessage(messageName), content)
 }
 
+function maxMessageNumber(messageNames: Array<string>, minValue: number = 0): number {
+  return Math.max(minValue, ...messageNames.map((messageName) => Number.parseInt(messageName)))
+}
+
 async function initOutbox(outboxToUse: Mailbox): Promise<void> {
-  outbox = outboxToUse
   await ensureMailboxExists(outboxToUse)
+  const previouslySentMessages = await readDirectory(pathForMailbox(outboxToUse))
+  lastSentMessage = maxMessageNumber(previouslySentMessages)
+
+  outbox = outboxToUse
   if (queuedMessages.length > 0) {
     queuedMessages.forEach(sendMessage)
     queuedMessages = []
@@ -76,9 +83,7 @@ async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
   )
   if (messagesToProcess.length > 0) {
     const messages = await Promise.all(messagesToProcess.map(m => receiveMessage(m, parseMessage)))
-    lastConsumedMessage = Math.max(
-      ...messagesToProcess.map((messageName) => Number.parseInt(messageName)),
-    )
+    lastConsumedMessage = maxMessageNumber(messagesToProcess, lastConsumedMessage)
     await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
     messages.forEach(onMessageCallback)
   }
@@ -139,7 +144,7 @@ export function stopPollingMailbox(): void {
     clearTimeout(pollTimeout)
     pollTimeout = null
     lastConsumedMessage = -1
-    counter = 0
+    lastSentMessage = 0
   }
 }
 
