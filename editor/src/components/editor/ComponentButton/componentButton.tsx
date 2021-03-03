@@ -1,8 +1,10 @@
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import BreadcrumbSeparator from 'antd/lib/breadcrumb/BreadcrumbSeparator'
 import onClickOutside from 'react-onclickoutside'
 import { BreadcrumbTrail } from '../../canvas/controls/breadcrumb-trail'
-import { colorTheme, Icons, OnClickOutsideHOC, UtopiaTheme } from '../../../uuiui'
+import { colorTheme, FlexRow, Icons, OnClickOutsideHOC, UtopiaTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import {
   NameRow,
@@ -18,9 +20,9 @@ import { NameRowCrumbs } from '../../../components/canvas/controls/namerowcrumbs
 
 interface ComponentOrInstanceIndicatorProps
   extends NameRowInnerProps,
-  LayoutWrapperCoreProps,
-  LayoutWrapperRowProps {
-  gap: 8,
+    LayoutWrapperCoreProps,
+    LayoutWrapperRowProps {
+  gap: 8
   label: string
   component: boolean
   instance: boolean
@@ -34,64 +36,103 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
       setIsOpen(!isOpen)
     }, [isOpen])
 
-    const closePopup = React.useCallback(() => setIsOpen(false), [])
+    const closeAndEatEvent = React.useCallback(
+      (e: MouseEvent) => {
+        setIsOpen(false)
+        e.stopPropagation()
+        e.preventDefault()
+      },
+      [setIsOpen],
+    )
 
     return (
       <div
-        id={'ComponentView'}
-        onClick={toggleOpen}
+        role='compositeButton'
         style={{
           position: 'relative',
           display: 'flex',
-          gap: 8,
-          maxWidth: 130,
-          padding: '5px 8px',
+          alignItems: 'stretch',
+          height: 22,
           borderRadius: UtopiaTheme.inputBorderRadius,
-          borderColor: UtopiaTheme.color.aboveNeutralBackground.value,
-          // make the menu button slightly darker if the menu is open
-          background: isOpen ? '#4842EE' : UtopiaTheme.color.brandPurple.value,
-          cursor: 'pointer',
-          boxShadow: `0px 0px 0px 1px ${props.component ? '#' : props.instance ? '#5852FE' : '#888'
-            }`,
+
+          maxWidth: 130,
+          // overflow: 'hidden',
+          boxShadow: '0px 0px 0px 1px #ccc',
         }}
       >
-        <Icons.Component color="white" />
-        <span
-          style={{
-            whiteSpace: 'nowrap',
+        <FlexRow
+          css={{
+            flexGrow: 1,
+            flexShrink: 1,
             overflow: 'hidden',
-            textOverflow: 'Ellipsis',
-            color: 'white', //props.component ? 'white' : props.instance ? '#5852FE' : 'inherit',
-            paddingTop: 2
+            gap: 8,
+            paddingLeft: 8,
+            cursor: 'pointer',
+            background: UtopiaTheme.color.neutralBackground.value,
+            '&:hover': {
+              filter: 'brightness(.98)',
+            },
+            '&:active': {
+              filter: 'brightness(.95)',
+            },
           }}
         >
-          {props.label}
-          ComponentName
-        </span>
-        {/* rotate the expansion arrow up when the menu is open */}
-        <Icons.ExpansionArrow style={{ transform: isOpen ? 'rotate(180deg)' : undefined }} />
+          <Icons.Component color='purple' style={{ flexGrow: 1, flexShrink: 0 }} />
+          <span
+            style={{
+              flexGrow: 1,
+              flexShrink: 1,
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            TODO REPLACE ME WITH PROPS LABEL
+          </span>
+        </FlexRow>
+
+        <div
+          role='expansionButton'
+          css={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexGrow: 0,
+            flexShrink: 0,
+            flexBasis: '20',
+            background: UtopiaTheme.color.neutralBackground.value,
+            '&:hover': {
+              filter: 'brightness(.98)',
+            },
+            '&:active': {
+              filter: 'brightness(.95)',
+            },
+          }}
+          onClick={toggleOpen}
+        >
+          <Icons.ExpansionArrow style={{ transform: isOpen ? 'rotate(180deg)' : undefined }} />
+        </div>
+
         {isOpen ? (
-          <OnClickOutsideHOC onClickOutside={closePopup}>
+          <OnClickOutsideHOC onClickOutside={closeAndEatEvent}>
             <div
               style={{
                 position: 'absolute',
                 left: 0,
                 top: 30,
-                borderRadius: 5,
+                borderRadius: 2,
                 zIndex: 99999,
-                width: 270,
+                width: UtopiaTheme.layout.inspectorWidth,
                 height: 100,
-                border: '1px solid grey',
                 background: UtopiaTheme.color.neutralBackground.value,
-                boxShadow: 'inset 0px 0px 0px .5px lightgrey, 0px 2px 5px 0px lightgrey',
+                boxShadow: 'inset 0px 0px 0px .5px hsl(0,0%,80%), 0px 2px 5px 0px hsl(0,0%,80%)',
                 display: 'flex',
                 flexDirection: 'column',
-                color: '#333',
-                overflow: 'ellipsis',
-                whiteSpace: 'nowrap',
                 alignContent: 'flex-start',
-                pointerEvents: 'none'
               }}
+              onClick={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
             >
               <BreadcrumbTrail />
               <NameRowCrumbs />
