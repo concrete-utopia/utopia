@@ -1224,7 +1224,7 @@ function updateNavigatorCollapsedState(
   })
 }
 
-function getNavigatorPositionNextState(editor: EditorState): 'hidden' | 'left' | 'right' {
+export function getNavigatorPositionNextState(editor: EditorState): 'hidden' | 'left' | 'right' {
   switch (editor.navigator.position) {
     case 'hidden':
       return 'right'
@@ -3485,6 +3485,12 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+
+    if (isTextFile(existing) && existing.fileContents.code === action.fileContents) {
+      // the text part of the text file did not change, skip updating the editor
+      return editor
+    }
+
     let updatedFile: ProjectFile
 
     const manualSave = action.unsavedContent == null

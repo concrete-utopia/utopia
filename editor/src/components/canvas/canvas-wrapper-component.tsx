@@ -28,6 +28,7 @@ import { betterReactMemo } from '../../uuiui-deps'
 import { TemplatePath } from '../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
+import { LeftPaneDefaultWidth } from '../navigator/left-pane'
 
 interface CanvasWrapperComponentProps {}
 
@@ -118,11 +119,17 @@ const ErrorOverlayComponent = betterReactMemo(
       [dispatch],
     )
 
+    const isHiddenUnderNavigator = useEditorState(
+      (store) => store.editor.navigator.position === 'right',
+      'ErrorOverlayComponent isOverlappingWithNavigator',
+    )
+
     return (
       <ReactErrorOverlay
         currentBuildErrorRecords={errorRecords}
         currentRuntimeErrorRecords={overlayErrors}
         onOpenFile={onOpenFile}
+        overlayOffset={isHiddenUnderNavigator ? LeftPaneDefaultWidth : 0}
       />
     )
   },

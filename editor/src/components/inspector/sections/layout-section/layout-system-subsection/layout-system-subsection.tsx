@@ -12,8 +12,13 @@ import {
   DetectedLayoutSystem,
   SpecialSizeMeasurements,
 } from '../../../../../core/shared/element-template'
-import { InspectorSubsectionHeader } from '../../../../../uuiui'
+import { InspectorSubsectionHeader, SquareButton } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
+import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
+import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
+import { isNotUnsetOrDefault } from '../../../common/control-status'
+import { ExpandableIndicator } from '../../../../navigator/navigator-item/expandable-indicator'
+import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 
 interface LayoutSystemSubsectionProps {
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -22,32 +27,58 @@ interface LayoutSystemSubsectionProps {
 export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProps>(
   'LayoutSystemSubsection',
   (props) => {
-    const layoutSystem = props.specialSizeMeasurements.layoutSystemForChildren
+    const isFlexParent = props.specialSizeMeasurements.layoutSystemForChildren === 'flex'
+    const paddings = useInspectorInfoLonghandShorthand(
+      ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'],
+      'padding',
+      createLayoutPropertyPath,
+    )
+    const hasAnyLayoutProps =
+      isFlexParent || Object.values(paddings).some((i) => isNotUnsetOrDefault(i.controlStatus))
+    const [layoutSectionOpen, setLayoutSectionOpen] = usePropControlledStateV2(hasAnyLayoutProps)
+
+    const toggleSection = React.useCallback(() => setLayoutSectionOpen(!layoutSectionOpen), [
+      layoutSectionOpen,
+      setLayoutSectionOpen,
+    ])
+
     return (
       <>
         <InspectorSubsectionHeader>
           <span style={{ flexGrow: 1 }}>Layout System</span>
-          <DeleteAllLayoutSystemConfigButton />
+          {layoutSectionOpen && <DeleteAllLayoutSystemConfigButton />}
+          <SquareButton highlight onClick={toggleSection}>
+            <ExpandableIndicator
+              testId='layout-system-expand'
+              visible
+              collapsed={!layoutSectionOpen}
+              selected={false}
+            />
+          </SquareButton>
         </InspectorSubsectionHeader>
-        <GridRow padded={true} type='<-------------1fr------------->'>
-          <LayoutSystemControl
-            layoutSystem={layoutSystem}
-            providesCoordinateSystemForChildren={
-              props.specialSizeMeasurements.providesBoundsForChildren
-            }
-          />
-        </GridRow>
-        {layoutSystem === 'flex' ? <FlexContainerControls seeMoreVisible={true} /> : null}
-        <GridRow tall padded={true} type='<---1fr--->|------172px-------|'>
-          <PropertyLabel
-            target={paddingPropsToUnset}
-            propNamesToUnset={['all paddings']}
-            style={{ paddingBottom: 12 }}
-          >
-            Padding
-          </PropertyLabel>
-          <FlexPaddingControl />
-        </GridRow>
+        {layoutSectionOpen ? (
+          <>
+            <GridRow padded={true} type='<-------------1fr------------->'>
+              <LayoutSystemControl
+                layoutSystem={props.specialSizeMeasurements.layoutSystemForChildren}
+                providesCoordinateSystemForChildren={
+                  props.specialSizeMeasurements.providesBoundsForChildren
+                }
+              />
+            </GridRow>
+            {isFlexParent ? <FlexContainerControls seeMoreVisible={true} /> : null}
+            <GridRow tall padded={true} type='<---1fr--->|------172px-------|'>
+              <PropertyLabel
+                target={paddingPropsToUnset}
+                propNamesToUnset={['all paddings']}
+                style={{ paddingBottom: 12 }}
+              >
+                Padding
+              </PropertyLabel>
+              <FlexPaddingControl />
+            </GridRow>
+          </>
+        ) : null}
       </>
     )
   },

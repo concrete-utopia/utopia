@@ -346,4 +346,136 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
       ),
     )
   })
+  it('a simple TLWH pin change with values in string pixels', async () => {
+    const testProject = getTestParseSuccess(
+      makeTestProjectCodeWithSnippet(`
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: '250px', height: '350px' }}
+        data-uid='bbb'
+      />
+    </View>
+    `),
+    )
+
+    const pinChange = singleResizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      { x: 1, y: 1 } as EdgePosition,
+      { x: 60, y: 40 } as CanvasVector,
+    )
+
+    const transformedComponents = updateFramesOfScenesAndComponents(
+      getComponentsFromTopLevelElements(testProject.topLevelElements),
+      createFakeMetadataForParseSuccess(testProject),
+      [pinChange],
+      canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    )
+
+    const updatedProject: ParseSuccess = {
+      ...testProject,
+      topLevelElements: applyUtopiaJSXComponentsChanges(
+        testProject.topLevelElements,
+        transformedComponents,
+      ),
+    }
+
+    expect(testPrintCode(updatedProject)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50px', top: '50px', width: 310, height: 390 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('a simple TLWH pin change with expression, the expression is not changed', async () => {
+    const testProject = getTestParseSuccess(
+      makeTestProjectCodeWithSnippet(`
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200 + 50, height: 300 }}
+        data-uid='bbb'
+      />
+    </View>
+    `),
+    )
+
+    const pinChange = singleResizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      { x: 1, y: 1 } as EdgePosition,
+      { x: 60, y: 40 } as CanvasVector,
+    )
+
+    const transformedComponents = updateFramesOfScenesAndComponents(
+      getComponentsFromTopLevelElements(testProject.topLevelElements),
+      createFakeMetadataForParseSuccess(testProject),
+      [pinChange],
+      canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    )
+
+    const updatedProject: ParseSuccess = {
+      ...testProject,
+      topLevelElements: applyUtopiaJSXComponentsChanges(
+        testProject.topLevelElements,
+        transformedComponents,
+      ),
+    }
+
+    expect(testPrintCode(updatedProject)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200 + 50, height: 340 }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
+  it('a simple TLWH pin change with values in exotic units', async () => {
+    const testProject = getTestParseSuccess(
+      makeTestProjectCodeWithSnippet(`
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50pt', top: '5em', width: '50vw', height: '10cm' }}
+        data-uid='bbb'
+      />
+    </View>
+    `),
+    )
+
+    const pinChange = singleResizeChange(
+      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      { x: 1, y: 1 } as EdgePosition,
+      { x: 60, y: 40 } as CanvasVector,
+    )
+
+    const transformedComponents = updateFramesOfScenesAndComponents(
+      getComponentsFromTopLevelElements(testProject.topLevelElements),
+      createFakeMetadataForParseSuccess(testProject),
+      [pinChange],
+      canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
+    )
+
+    const updatedProject: ParseSuccess = {
+      ...testProject,
+      topLevelElements: applyUtopiaJSXComponentsChanges(
+        testProject.topLevelElements,
+        transformedComponents,
+      ),
+    }
+
+    expect(testPrintCode(updatedProject)).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+        <View
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '50pt', top: '5em', width: '50vw', height: '10cm' }}
+          data-uid='bbb'
+        />
+      </View>`,
+      ),
+    )
+  })
 })
