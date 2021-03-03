@@ -92,6 +92,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
         </FlexRow>
 
         <div
+          className='ignore-react-onclickoutside'
           role='expansionButton'
           css={{
             display: 'flex',
