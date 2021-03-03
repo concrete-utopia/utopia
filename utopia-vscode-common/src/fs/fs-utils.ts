@@ -271,6 +271,14 @@ export async function writeFileUnsavedContent(path: string, unsavedContent: Uint
   return writeFile(path, savedContent, unsavedContent)
 }
 
+export async function writeFileAsUTF8(path: string, content: string, unsavedContent: string | null): Promise<void> {
+  return writeFile(path, encoder.encode(content), unsavedContent == null ? null : encoder.encode(unsavedContent))
+}
+
+export async function writeFileSavedContentAsUTF8(path: string, savedContent: string): Promise<void> {
+  return writeFileAsUTF8(path, savedContent, null)
+}
+
 export async function writeFileUnsavedContentAsUTF8(path: string, unsavedContent: string): Promise<void> {
   return writeFileUnsavedContent(path, encoder.encode(unsavedContent))
 }
@@ -278,10 +286,6 @@ export async function writeFileUnsavedContentAsUTF8(path: string, unsavedContent
 export async function clearFileUnsavedContent(path: string): Promise<void> {
   const savedContent = await readFileSavedContent(path)
   return writeFileSavedContent(path, savedContent)
-}
-
-export async function writeFileAsUTF8(path: string, content: string, unsavedContent: string | null): Promise<void> {
-  return writeFile(path, encoder.encode(content), unsavedContent == null ? null : encoder.encode(unsavedContent))
 }
 
 function updateMTime(node: FSNode): FSNode {

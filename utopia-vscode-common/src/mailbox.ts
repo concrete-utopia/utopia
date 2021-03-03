@@ -5,7 +5,7 @@ import {
   exists,
   readDirectory,
   readFileSavedContentAsUTF8,
-  writeFileAsUTF8,
+  writeFileSavedContentAsUTF8,
 } from './fs/fs-utils'
 import { FromVSCodeMessage, ToVSCodeMessage } from './messages'
 import { appendToPath } from './path-utils'
@@ -51,7 +51,7 @@ export async function sendMessage(message: ToVSCodeMessage | FromVSCodeMessage):
 }
 
 async function sendNamedMessage(messageName: string, content: string): Promise<void> {
-  return writeFileAsUTF8(pathForOutboxMessage(messageName), content, null)
+  return writeFileSavedContentAsUTF8(pathForOutboxMessage(messageName), content)
 }
 
 async function initOutbox(outboxToUse: Mailbox): Promise<void> {
@@ -112,7 +112,7 @@ async function clearLastConsumedMessageFile(mailbox: Mailbox): Promise<void> {
 }
 
 async function updateLastConsumedMessageFile(mailbox: Mailbox, value: number): Promise<void> {
-  await writeFileAsUTF8(lastConsumedMessageKey(mailbox), `${value}`, null)
+  await writeFileSavedContentAsUTF8(lastConsumedMessageKey(mailbox), `${value}`)
 }
 
 async function getLastConsumedMessageNumber(mailbox: Mailbox): Promise<number> {
