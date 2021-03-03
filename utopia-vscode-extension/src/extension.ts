@@ -34,7 +34,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   initMessaging(context, workspaceRootUri)
 
   watchForUnsavedContentChangesFromFS(utopiaFS)
-  watchForChangesFromVSCode(context)
+  watchForChangesFromVSCode(context, projectID)
 }
 
 async function initFS(projectID: string): Promise<void> {
@@ -67,37 +67,46 @@ function watchForUnsavedContentChangesFromFS(utopiaFS: UtopiaFSExtension) {
 let dirtyFiles: Set<string> = new Set()
 let incomingFileChanges: Set<string> = new Set()
 
-function watchForChangesFromVSCode(context: vscode.ExtensionContext) {
+function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: string) {
+  function isUtopiaDocument(document: vscode.TextDocument): boolean {
+    return document.uri.scheme === projectID
+  }
+
   context.subscriptions.push(
     vscode.workspace.onDidChangeTextDocument((event) => {
-      if (event.document.isUntitled) {
-        /* Do nothing with untitled documents */
-      } else {
+      if (isUtopiaDocument(event.document)) {
         const resource = event.document.uri
-        const path = fromUtopiaURI(resource)
-        if (event.document.isDirty) {
-          // New unsaved change
-          dirtyFiles.add(path)
-          if (incomingFileChanges.has(path)) {
-            // This change actually came from Utopia, so we don't want to re-write it to the FS
-            incomingFileChanges.delete(path)
-          } else {
-            const fullText = event.document.getText()
-            writeFileUnsavedContentAsUTF8(path, fullText)
+        if (resource.scheme === projectID) {
+          // Don't act on changes to other documents
+          const path = fromUtopiaURI(resource)
+          if (event.document.isDirty) {
+            // New unsaved change
+            dirtyFiles.add(path)
+            if (incomingFileChanges.has(path)) {
+              // This change actually came from Utopia, so we don't want to re-write it to the FS
+              incomingFileChanges.delete(path)
+            } else {
+              const fullText = event.document.getText()
+              writeFileUnsavedContentAsUTF8(path, fullText)
+            }
           }
         }
       }
     }),
     vscode.workspace.onWillSaveTextDocument((event) => {
-      const path = fromUtopiaURI(event.document.uri)
-      dirtyFiles.delete(path)
+      if (isUtopiaDocument(event.document)) {
+        const path = fromUtopiaURI(event.document.uri)
+        dirtyFiles.delete(path)
+      }
     }),
     vscode.workspace.onDidCloseTextDocument((document) => {
-      const path = fromUtopiaURI(document.uri)
-      if (dirtyFiles.has(path)) {
-        // User decided to bin unsaved changes when closing the document
-        clearFileUnsavedContent(path)
-        dirtyFiles.delete(path)
+      if (isUtopiaDocument(document)) {
+        const path = fromUtopiaURI(document.uri)
+        if (dirtyFiles.has(path)) {
+          // User decided to bin unsaved changes when closing the document
+          clearFileUnsavedContent(path)
+          dirtyFiles.delete(path)
+        }
       }
     }),
   )
