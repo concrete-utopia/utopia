@@ -87,7 +87,7 @@ function useCanvasContextMenuItems(
         details: {
           path: path,
         },
-        submenuName: 'Elements',
+        submenuName: 'Select Elements',
         enabled: true,
         action: () => dispatch([selectComponents([path], false)], 'canvas'),
         isHidden: ({ props }: { props: ContextMenuInnerProps }) => {
@@ -101,7 +101,7 @@ function useCanvasContextMenuItems(
         },
       }
     })
-    return [...ElementContextMenuItems, ...elementListSubmenu]
+    return [...elementListSubmenu, ...ElementContextMenuItems]
   } else {
     return ElementContextMenuItems
   }
