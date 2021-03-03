@@ -36,12 +36,14 @@ import {
   BoundsInFile,
   selectedElementChanged,
   parseFromVSCodeMessage,
+  FSUser,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
+const UtopiaFSUser: FSUser = 'UTOPIA'
 
 function toFSPath(projectPath: string): string {
   const fsPath = appendToPath(RootDir, projectPath)
@@ -93,10 +95,10 @@ async function writeProjectContents(
   })
 }
 
-function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
+function watchForChanges(dispatch: EditorDispatch): void {
   function onCreated(fsPath: string): void {
     stat(fsPath).then((fsStat) => {
-      if (fsStat.type === 'FILE') {
+      if (fsStat.type === 'FILE' && fsStat.sourceOfLastChange !== UtopiaFSUser) {
         readFileAsUTF8(fsPath).then((fileContent) => {
           const action = updateFromCodeEditor(
             fromFSPath(fsPath),
@@ -133,7 +135,7 @@ export async function initVSCodeBridge(
     if (isBrowserEnvironment) {
       stopWatchingAll()
       stopPollingMailbox()
-      await initializeFS(projectID, 'UTOPIA')
+      await initializeFS(projectID, UtopiaFSUser)
       await clearBothMailboxes()
       await writeProjectContents(projectID, projectContents)
       await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
@@ -142,7 +144,7 @@ export async function initVSCodeBridge(
           'everyone',
         )
       })
-      watchForChanges(projectID, dispatch)
+      watchForChanges(dispatch)
     }
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
   }
