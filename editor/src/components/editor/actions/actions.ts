@@ -3582,6 +3582,12 @@ export const UPDATE_FNS = {
     userState: UserState,
   ): EditorModel => {
     const file = getContentsTreeFileFromString(editor.projectContents, action.filename)
+
+    // Don't delete package.json, otherwise it will bring about the end of days.
+    if (file == null || action.filename === 'package.json') {
+      return editor
+    }
+
     const updatedProjectContents = removeFromProjectContents(
       editor.projectContents,
       action.filename,
@@ -3599,11 +3605,6 @@ export const UPDATE_FNS = {
             }
           : null
         : editor.selectedFile
-
-    // Don't delete package.json, otherwise it will bring about the end of days.
-    if (file == null || action.filename === 'package.json') {
-      return editor
-    }
 
     switch (file.type) {
       case 'DIRECTORY': {
