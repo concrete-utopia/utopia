@@ -25,12 +25,11 @@ import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { filterScenes } from '../core/shared/template-path'
 import { betterReactMemo } from '../uuiui-deps'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
-import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { getOpenUtopiaJSXComponentsFromState } from './editor/store/editor-state'
 import { EditorDispatch } from './editor/action-types'
 import { selectComponents } from './editor/actions/action-creators'
 import * as TP from '../core/shared/template-path'
 import { TemplatePath } from '../core/shared/project-file-types'
+import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -68,39 +67,31 @@ function useCanvasContextMenuItems(
   contextMenuInstance: ElementContextMenuInstance,
   dispatch: EditorDispatch,
 ): Array<ContextMenuItem<CanvasData>> {
-  const metadata = useEditorState(
-    (store) => store.editor.jsxMetadataKILLME,
-    'ElementContextMenu metadata',
-  )
-  const components = useEditorState(
-    (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
-    'ElementContextMenu components',
-  )
+  const elementNamesAndIcons = useNamesAndIconsAllPaths()
 
   if (contextMenuInstance === 'context-menu-canvas') {
-    const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = MetadataUtils.getAllPaths(
-      metadata,
-    ).map((path) => {
-      const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
-      return {
-        name: elementName?.baseVariable || '',
-        details: {
-          path: path,
-        },
-        submenuName: 'Select Elements',
-        enabled: true,
-        action: () => dispatch([selectComponents([path], false)], 'canvas'),
-        isHidden: ({ props }: { props: ContextMenuInnerProps }) => {
-          if (props.elementsUnderCursor != null && Array.isArray(props.elementsUnderCursor)) {
-            return !props.elementsUnderCursor.some((underCursor: TemplatePath) =>
-              TP.pathsEqual(underCursor, path),
-            )
-          } else {
-            return true
-          }
-        },
-      }
-    })
+    const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = elementNamesAndIcons.map(
+      ({ name, path }) => {
+        return {
+          name: name?.baseVariable || '',
+          details: {
+            path: path,
+          },
+          submenuName: 'Select Elements',
+          enabled: true,
+          action: () => dispatch([selectComponents([path], false)], 'canvas'),
+          isHidden: ({ props }: { props: ContextMenuInnerProps }) => {
+            if (props.elementsUnderCursor != null && Array.isArray(props.elementsUnderCursor)) {
+              return !props.elementsUnderCursor.some((underCursor: TemplatePath) =>
+                TP.pathsEqual(underCursor, path),
+              )
+            } else {
+              return true
+            }
+          },
+        }
+      },
+    )
     return [...elementListSubmenu, ...ElementContextMenuItems]
   } else {
     return ElementContextMenuItems
