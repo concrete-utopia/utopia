@@ -197,11 +197,12 @@ export async function applyProjectContentChanges(
 
           const savedContentChanged = firstSavedContent !== secondSavedContent
           const unsavedContentChanged = firstUnsavedContent !== secondUnsavedContent
+          const fileMarkedDirtyButNoCodeChangeYet =
+            firstUnsavedContent == null && secondUnsavedContent === firstSavedContent
+
           // When a parsed model is updated but that change hasn't been reflected in the code yet, we end up with a file
           // that has no code change, so we don't want to write that to the FS for VS Code to act on it until the new code
           // has been generated
-          const fileMarkedDirtyButNoCodeChangeYet =
-            firstUnsavedContent == null && secondUnsavedContent === firstSavedContent
           const fileShouldBeWritten =
             savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet)
 
