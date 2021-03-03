@@ -182,7 +182,7 @@ export class UtopiaFSExtension
     return {
       type: fileType,
       ctime: stats.ctime.valueOf(),
-      mtime: stats.lastSavedTime.valueOf(),
+      mtime: stats.lastSavedTime.valueOf(), // VS Code is only interested in changes to the saved content
       size: stats.size,
     }
   }
@@ -202,8 +202,6 @@ export class UtopiaFSExtension
   async createDirectory(uri: Uri): Promise<void> {
     const path = fromUtopiaURI(uri)
     await createDirectory(path)
-
-    const parentDir = dirname(path)
   }
 
   async readFile(uri: Uri): Promise<Uint8Array> {
@@ -249,6 +247,8 @@ export class UtopiaFSExtension
   }
 
   async copy(source: Uri, destination: Uri, options: { overwrite: boolean }): Promise<void> {
+    // It's not clear where this will ever be called from, but it seems to be from the side bar
+    // that isn't available in Utopia, so this implementation is "just in case"
     const sourcePath = fromUtopiaURI(source)
     const destinationPath = fromUtopiaURI(destination)
     const destinationParentDir = dirname(destinationPath)
@@ -289,6 +289,7 @@ export class UtopiaFSExtension
     progress: Progress<TextSearchResult>,
     token: CancellationToken,
   ): Promise<TextSearchComplete> {
+    // This appears to only be callable from the side bar that isn't available in Utopia
     // TODO Support all search options
     const { result: filePaths, limitHit } = await this.filterFilePaths(options.includes[0])
 
