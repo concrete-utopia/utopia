@@ -17,7 +17,6 @@ import {
   sendMessage,
   editorCursorPositionChanged,
   readFileAsUTF8,
-  pathIsFile,
   exists,
   writeFileUnsavedContentAsUTF8,
   clearFileUnsavedContent,
@@ -34,7 +33,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const utopiaFS = initUtopiaFSProvider(projectID, context)
   initMessaging(context, workspaceRootUri)
 
-  // Update VS Code with unsaved changes from Utopia
   watchForUnsavedContentChangesFromFS(utopiaFS)
   watchForChangesFromVSCode(context)
 }
@@ -66,12 +64,6 @@ function watchForUnsavedContentChangesFromFS(utopiaFS: UtopiaFSExtension) {
   })
 }
 
-// [x] Subscribe to VS Code changes
-// [x] Write unsaved content to FS
-// [/] Ensure we're only writing changes coming from VS Code
-// [ ] Multiple writes to fs will trigger multiple watch callbacks
-// [/] Ensure we revert when VS Code reverts
-
 let dirtyFiles: Set<string> = new Set()
 let incomingFileChanges: Set<string> = new Set()
 
@@ -87,36 +79,26 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext) {
           // New unsaved change
           dirtyFiles.add(path)
           if (incomingFileChanges.has(path)) {
-            // Change came from Utopia
+            // This change actually came from Utopia, so we don't want to re-write it to the FS
             incomingFileChanges.delete(path)
-            // console.log(`Not rewriting unsaved change to ${path} from utopia`)
           } else {
             const fullText = event.document.getText()
             writeFileUnsavedContentAsUTF8(path, fullText)
-            // console.log(`Writing unsaved change to ${path} from vs code`)
           }
         }
       }
     }),
     vscode.workspace.onWillSaveTextDocument((event) => {
       const path = fromUtopiaURI(event.document.uri)
-      // console.log(`Will save ${path}`)
       dirtyFiles.delete(path)
-    }),
-    vscode.workspace.onDidSaveTextDocument((document) => {
-      const path = fromUtopiaURI(document.uri)
-      // console.log(`Did save ${path}`)
     }),
     vscode.workspace.onDidCloseTextDocument((document) => {
       const path = fromUtopiaURI(document.uri)
       if (dirtyFiles.has(path)) {
-        // console.log(`Reverted ${path}`)
+        // User decided to bin unsaved changes when closing the document
         clearFileUnsavedContent(path)
-      } else {
-        // console.log(`Didn't revert ${path}`)
+        dirtyFiles.delete(path)
       }
-      dirtyFiles.delete(path)
-      incomingFileChanges.delete(path)
     }),
   )
 }
@@ -179,8 +161,8 @@ function entireDocRange() {
 }
 
 async function clearDirtyFlags(resource: vscode.Uri): Promise<void> {
-  const filePath = fromUtopiaURI(resource)
-  // console.log(`Reverting file ${filePath}`)
+  // File saved on Utopia side, so FS has been updated, so we want VS Code to revert
+  // to the now saved version
   vscode.commands.executeCommand('workbench.action.files.revertResource', resource)
 }
 
@@ -188,12 +170,14 @@ async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
   const filePath = fromUtopiaURI(resource)
   const { unsavedContent } = await readFileAsUTF8(filePath)
   if (unsavedContent != null) {
-    // console.log(`Updating dirty file ${filePath}`)
     incomingFileChanges.add(filePath)
     const workspaceEdit = new vscode.WorkspaceEdit()
     workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
-    vscode.workspace.applyEdit(workspaceEdit)
-    // .then((wentThrough) => console.log(`Applied edit? ${wentThrough}`))
+    const editApplied = await vscode.workspace.applyEdit(workspaceEdit)
+    if (!editApplied) {
+      // Something went wrong applying the edit, so we clear the block on unsaved content fs writes
+      incomingFileChanges.delete(filePath)
+    }
   }
 }
 
@@ -203,6 +187,7 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<void>
   if (fileExists) {
     vscode.commands.executeCommand('vscode.open', fileUri)
   } else {
+    // Just in case the message is processed before the file has been written to the FS
     if (retries > 0) {
       setTimeout(() => openFile(fileUri, retries - 1), 100)
     }
