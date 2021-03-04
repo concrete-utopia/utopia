@@ -359,6 +359,7 @@ import {
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
+  SendCodeEditorInitialisation,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -498,7 +499,12 @@ import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
-import { initVSCodeBridge, sendOpenFileMessage } from '../../../core/vscode/vscode-bridge'
+import {
+  initVSCodeBridge,
+  sendCodeEditorDecorations,
+  sendOpenFileMessage,
+  sendSelectedElement,
+} from '../../../core/vscode/vscode-bridge'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -4291,6 +4297,15 @@ export const UPDATE_FNS = {
     } else {
       return editor
     }
+  },
+  SEND_CODE_EDITOR_INITIALISATION: (
+    action: SendCodeEditorInitialisation,
+    editor: EditorModel,
+  ): EditorModel => {
+    // Side effects.
+    sendCodeEditorDecorations(editor)
+    sendSelectedElement(editor)
+    return editor
   },
 }
 

@@ -792,6 +792,10 @@ export interface SelectFromFileAndPosition {
   column: number
 }
 
+export interface SendCodeEditorInitialisation {
+  action: 'SEND_CODE_EDITOR_INITIALISATION'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -923,6 +927,7 @@ export type EditorAction =
   | UpdateChildText
   | MarkVSCodeBridgeReady
   | SelectFromFileAndPosition
+  | SendCodeEditorInitialisation
 
 export type DispatchPriority =
   | 'everyone'

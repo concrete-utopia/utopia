@@ -137,13 +137,31 @@ export function editorCursorPositionChanged(filePath: string, line: number, colu
   }
 }
 
-export type FromVSCodeMessage = EditorCursorPositionChanged
+export interface SendInitialData {
+  type: 'SEND_INITIAL_DATA'
+}
+
+export function sendInitialData(): SendInitialData {
+  return {
+    type: 'SEND_INITIAL_DATA'
+  }
+}
+
+export type FromVSCodeMessage = EditorCursorPositionChanged | SendInitialData
 
 export function isEditorCursorPositionChanged(message: unknown): message is EditorCursorPositionChanged {
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
     (message as any).type === 'EDITOR_CURSOR_POSITION_CHANGED'
+  )
+}
+
+export function isSendInitialData(message: unknown): message is SendInitialData {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'SEND_INITIAL_DATA'
   )
 }
 
