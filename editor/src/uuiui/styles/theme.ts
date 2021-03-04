@@ -5,7 +5,7 @@ const base = {
   blue: createUtopiColor('#00ABFF', 'converted from P3 color space', 'blue'),
   purple: createUtopiColor('#574BE2', 'Brand Purple', 'violet'),
   red: createUtopiColor('#FD003B', 'Pinkish red (eg errors)', 'red'),
-  orange: createUtopiColor('#FF7C32', 'Orange (eg warnings)', 'orange'),
+  orange: createUtopiColor('#FA5E00', 'Orange (eg warnings)', 'orange'),
   neonpink: createUtopiColor('#FF00FF', 'Solid Neon Pink', 'neonpink'),
   neongreen: createUtopiColor('hsl(120, 100%, 37%)', 'Solid Neon Green', 'neongreen'),
   neonyellow: createUtopiColor('#FCFF42', 'Solid Neon Yellow', 'yellow'),
@@ -182,7 +182,7 @@ const light = {
   // interface elements: buttons, segment controls, checkboxes etc
   inputBackground: base.white,
   segmentControlBackground: base.white.shade(90),
-  segmentControlActiveSegmentBackground: base.white.shade(95),
+  segmentControlActiveSegmentBackground: base.white.shade(95).value,
 
   buttonBackground: base.black.shade(0),
   buttonActiveBackground: base.black.shade(3),
