@@ -1,7 +1,9 @@
+/** @jsx jsx */
 import * as React from 'react'
+import { jsx } from '@emotion/react'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { colorTheme, SimpleFlexRow } from '../../../uuiui'
+import { colorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
@@ -88,19 +90,30 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
     <SimpleFlexRow
       style={{
         flexGrow: 1,
-        paddingRight: 10,
-        height: 21,
+        height: UtopiaTheme.layout.inputHeight.default,
       }}
     >
       <input
         type='text'
-        style={{
-          padding: '0px',
+        css={{
+          paddingLeft: 4,
+          paddingRight: 4,
           border: '0px',
           width: '100%',
           height: '100%',
           backgroundColor: colorTheme.canvasBackground.value,
           borderRadius: 5,
+          color: colorTheme.inputColor.value,
+          transition: 'background-color .1s ease-in-out',
+          '&:hover': {
+            '&:not(:disabled)': {
+              boxShadow: 'inset 0px 0px 0px 1px lightgrey',
+            },
+          },
+          '&:focus': {
+            backgroundColor: colorTheme.inputBackground.value,
+            boxShadow: 'inset 0px 0px 0px 1px lightgrey',
+          },
         }}
         onChange={onInputChange}
         value={simpleText}
