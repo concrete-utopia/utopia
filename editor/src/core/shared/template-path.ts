@@ -289,7 +289,7 @@ export function fromString(path: string): TemplatePath {
   }
 }
 
-function allElementPaths(path: ElementPath): Array<ElementPath> {
+export function allElementPaths(path: ElementPath): Array<ElementPath> {
   let paths: Array<ElementPath> = []
   for (var size = 1; size <= path.length; size++) {
     paths.push(path.slice(0, size))

@@ -698,7 +698,11 @@ export function modifyOpenJsxElementAtPath(
     return model
   } else {
     return modifyOpenJSXElements((utopiaComponents) => {
-      return transformJSXComponentAtPath(utopiaComponents, staticPath, transform)
+      const editablePath = MetadataUtils.instancePathToEditableComponentPath(
+        utopiaComponents,
+        staticPath,
+      )
+      return transformJSXComponentAtPath(utopiaComponents, editablePath, transform)
     }, model)
   }
 }

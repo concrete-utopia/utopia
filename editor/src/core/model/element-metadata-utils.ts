@@ -63,6 +63,7 @@ import {
   ElementInstanceMetadataMap,
   jsxMetadata,
   JSXMetadata,
+  TopLevelElement,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -85,16 +86,21 @@ import {
   InstancePath,
   PropertyPath,
   ScenePath,
+  StaticElementPath,
   StaticInstancePath,
   StaticTemplatePath,
   TemplatePath,
 } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as TP from '../shared/template-path'
-import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
+import {
+  findJSXElementChildAtPath,
+  getUtopiaID,
+  getValidTemplatePaths,
+} from './element-template-utils'
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
 import { EmptyScenePathForStoryboard } from './scene-utils'
-import { fastForEach } from '../shared/utils'
+import { arrayEquals, fastForEach } from '../shared/utils'
 import { UTOPIA_ORIGINAL_ID_KEY, UTOPIA_UID_KEY } from './utopia-constants'
 import { extractOriginalUidFromIndexedUid } from '../shared/uid-utils'
 import { forEachValue, omit } from '../shared/object-utils'
@@ -448,6 +454,31 @@ export const MetadataUtils = {
   },
   dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
     return TP.dynamicPathToStaticPath(path)
+  },
+  instancePathToEditableComponentPath(
+    topLevelElements: Array<TopLevelElement>,
+    path: InstancePath,
+  ): StaticInstancePath {
+    const allElementPathsInDocument = topLevelElements
+      .flatMap((tle) => getValidTemplatePaths(tle, TP.scenePath([])))
+      .map(TP.elementPathForPath)
+
+    const staticPath = TP.dynamicPathToStaticPath(path)
+
+    const allPotentialReversedElementPaths: Array<StaticElementPath> = TP.allElementPaths(
+      R.reverse(TP.elementPathForPath(staticPath)),
+    ) as Array<StaticElementPath>
+
+    const firstBackwardsPathThatExists = R.reverse(
+      allPotentialReversedElementPaths.find((reversedPath) => {
+        const potentialPath = R.reverse(reversedPath) as StaticElementPath
+        const pathExists =
+          allElementPathsInDocument.findIndex((p) => arrayEquals(p, potentialPath)) > -1
+        return pathExists
+      }) ?? [],
+    )
+
+    return TP.staticInstancePath([], firstBackwardsPathThatExists)
   },
   shiftGroupFrame(
     metadata: JSXMetadata,
