@@ -14,6 +14,7 @@ import Select, {
   SingleValueProps,
   ValueType,
 } from 'react-select'
+import { IndicatorProps } from 'react-select/src/components/indicators'
 import { MenuPortalProps } from 'react-select/src/components/Menu'
 import { styleFn } from 'react-select/src/styles'
 import { Icn, IcnProps, IcnSpacer } from '../../icn'
@@ -27,6 +28,7 @@ import {
   getControlStyles,
   SelectOption,
 } from '../../../uuiui-deps'
+import { Icons, SmallerIcons } from '../../../uuiui/icons'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -93,7 +95,7 @@ const Option = (props: OptionProps<SelectOption>) => {
         {props.isSelected ? '✓' : ''}
       </FlexRow>
       {props.data.icon == null ? <IcnSpacer /> : <Icn {...props.data.icon} />}
-      {props.children}
+      <span style={{ paddingLeft: 8 }}>{props.children}</span>
     </FlexRow>
   )
 }
@@ -388,15 +390,24 @@ const MenuList = (props: MenuListComponentProps<SelectOption>) => {
   return <components.MenuList {...props} innerRef={ref} />
 }
 
-const DropdownIndicator = () => {
-  return <Icn category='controls/dropdown' type='carats' color='gray' width={11} height={11} />
+const DropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
+  indicatorProps,
+) => {
+  return (
+    components.DropdownIndicator && (
+      <components.DropdownIndicator {...indicatorProps}>
+        <SmallerIcons.ExpansionArrowDown />
+      </components.DropdownIndicator>
+    )
+  )
 }
 
 const SingleValue = (props: SingleValueProps<SelectOption>) => {
+  console.log('single value props', props)
   return (
     <components.SingleValue {...props}>
       {props.data.icon == null ? null : <Icn {...props.data.icon} />}
-      {props.children}
+      <span style={{ paddingLeft: 4 }}>{props.children}</span>
     </components.SingleValue>
   )
 }
@@ -466,31 +477,6 @@ const getContainer = (
   }
 }
 
-const Input = (props: InputProps) => {
-  const inputStyle = React.useMemo(() => {
-    return {
-      label: 'input',
-      background: 0,
-      border: 0,
-      fontSize: 'inherit',
-      opacity: props.isHidden ? 0 : 1,
-      outline: 0,
-      padding: 0,
-      color: 'inherit',
-    }
-  }, [props.isHidden])
-  return (
-    <div>
-      <input
-        className={props.className}
-        style={inputStyle}
-        disabled={props.isDisabled}
-        {...props}
-      />
-    </div>
-  )
-}
-
 export const PopupList = betterReactMemo<PopupListProps>(
   'PopupList',
   ({
@@ -523,8 +509,9 @@ export const PopupList = betterReactMemo<PopupListProps>(
           MenuPortal,
           DropdownIndicator,
           SingleValue,
-          Input,
         }}
+        openMenuOnFocus={true}
+        openMenuOnClick={true}
         value={value}
         onChange={selectOnSubmitValue}
         options={options}
@@ -535,13 +522,24 @@ export const PopupList = betterReactMemo<PopupListProps>(
           container,
           indicatorsContainer: (base) => ({
             ...base,
-            width: 11,
-            height: OptionHeight,
+            width: 14,
+            flexBasis: 14,
+            background: UtopiaTheme.color.inputBackground.shade(102).value,
+            // the control is on top of the input not inside it, so need to make space for input borders
+            height: OptionHeight - 2,
+            marginRight: 1,
+            marginTop: 1,
             padding: 0,
-            marginRight: 6,
+            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
+            '&:hover': {
+              filter: 'brightness(.98)',
+            },
+            '&:active': {
+              filter: 'brightness(.95)',
+            },
           }),
           control: () => ({
             minHeight: OptionHeight,
