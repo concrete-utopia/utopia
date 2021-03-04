@@ -14,6 +14,7 @@ import {
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import * as TP from '../../../core/shared/template-path'
+import * as PP from '../../../core/shared/property-path'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import {
   getOpenImportsFromState,
@@ -49,7 +50,10 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
       if (!shallowEqual(oldResult.iconProps, newResult.iconProps)) {
         return false
       }
-      if (!shallowEqual(oldResult.name, newResult.name)) {
+      if (
+        oldResult.name?.baseVariable !== newResult.name?.baseVariable ||
+        !PP.pathsEqual(oldResult.name?.propertyPath ?? null, newResult.name?.propertyPath ?? null)
+      ) {
         return false
       }
       return true
