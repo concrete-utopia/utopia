@@ -119,24 +119,6 @@ const dynamicSelected: ComputedLook = {
   iconColor: 'white',
 }
 
-const instanceDefaultUnselected: ComputedLook = {
-  style: { background: 'transparent', color: colorTheme.brandPurple.value },
-  iconColor: 'purple',
-}
-const instanceDefaultSelectedStyle: ComputedLook = {
-  style: { background: UtopiaStyles.backgrounds.lightblue, color: colorTheme.white.value },
-  iconColor: 'white',
-}
-
-const instanceDynamicUnselected: ComputedLook = {
-  style: { background: 'transparent', color: colorTheme.brandPurple.value },
-  iconColor: 'purple',
-}
-const instanceDynamicSelected: ComputedLook = {
-  style: { background: UtopiaStyles.backgrounds.lightblue, color: colorTheme.white.value },
-  iconColor: 'purple',
-}
-
 export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = betterReactMemo(
   'NavigatorItem',
   (props) => {
