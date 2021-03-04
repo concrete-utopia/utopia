@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
-import { ElementOriginType, Imports, TemplatePath } from '../../../core/shared/project-file-types'
+import { JSXElementName } from '../../../core/shared/element-template'
+import { ElementOriginType, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
