@@ -53,15 +53,9 @@ export interface NavigatorItemDragAndDropWrapperProps {
   noOfChildren: number
   staticElementName: JSXElementName | null
   label: string
-  isFlexLayoutedContainer: boolean
-  yogaDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
-  yogaWrap: 'wrap' | 'wrap-reverse' | 'nowrap'
   elementOriginType: ElementOriginType
-  componentInstance: boolean
-  isAutosizingView: boolean
   isElementVisible: boolean
   renamingTarget: TemplatePath | null
-  imports: Imports
   elementWarnings: ElementWarnings
   windowStyle: React.CSSProperties
 }
@@ -252,20 +246,14 @@ export class NavigatorItemDndWrapper extends PureComponent<
           index={this.props.index}
           getSelectedViewsInRange={this.props.getSelectedViewsInRange}
           noOfChildren={this.props.noOfChildren}
-          isAutosizingView={this.props.isAutosizingView}
           staticElementName={this.props.staticElementName}
           label={this.props.label}
-          isFlexLayoutedContainer={this.props.isFlexLayoutedContainer}
-          yogaDirection={this.props.yogaDirection}
-          yogaWrap={this.props.yogaWrap}
-          componentInstance={this.props.componentInstance}
           dispatch={this.props.editorDispatch}
           isHighlighted={this.props.highlighted}
           isElementVisible={this.props.isElementVisible}
           renamingTarget={this.props.renamingTarget}
           collapsed={this.props.collapsed}
           selected={this.props.selected}
-          imports={this.props.imports}
           elementOriginType={this.props.elementOriginType}
           elementWarnings={this.props.elementWarnings}
         />

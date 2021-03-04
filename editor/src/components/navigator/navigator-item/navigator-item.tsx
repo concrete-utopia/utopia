@@ -43,20 +43,14 @@ export interface NavigatorItemInnerProps {
   index: number
   getSelectedViewsInRange: (i: number) => Array<TemplatePath> // TODO KILLME
   noOfChildren: number
-  isAutosizingView: boolean
   label: string
-  isFlexLayoutedContainer: boolean
-  yogaDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
-  yogaWrap: 'wrap' | 'wrap-reverse' | 'nowrap'
   staticElementName: JSXElementName | null
-  componentInstance: boolean
   dispatch: EditorDispatch
   isHighlighted: boolean
   collapsed: boolean
   isElementVisible: boolean
   renamingTarget: TemplatePath | null
   selected: boolean
-  imports: Imports
   elementOriginType: ElementOriginType
   elementWarnings: ElementWarnings
 }
@@ -148,22 +142,17 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   (props) => {
     const {
       label,
-      isAutosizingView,
       dispatch,
       isHighlighted,
       isElementVisible,
       renamingTarget,
       selected,
       collapsed,
-      imports,
       elementOriginType,
       templatePath,
       getSelectedViewsInRange,
       index,
       elementWarnings,
-      isFlexLayoutedContainer,
-      yogaDirection,
-      yogaWrap,
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
@@ -214,16 +203,8 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       warningText == null ? (
         <ItemPreview
           key={`preview-${label}`}
-          {...props}
-          isAutosizingView={isAutosizingView}
-          collapsed={collapsed}
-          isFlexLayoutedContainer={isFlexLayoutedContainer}
-          yogaDirection={yogaDirection}
-          yogaWrap={yogaWrap}
           path={templatePath}
           color={resultingStyle.iconColor}
-          selected={selected}
-          imports={imports}
         />
       ) : (
         <WarningIcon tooltipText={warningText} />

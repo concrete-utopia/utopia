@@ -100,6 +100,7 @@ function createIconProps(
   return {
     category: 'element',
     type: getIconTypeForElement(
+      path,
       imports,
       elementName,
       isFlexLayoutedContainer,
@@ -115,6 +116,7 @@ function createIconProps(
 }
 
 export function getIconTypeForElement(
+  path: TemplatePath,
   imports: Imports,
   elementName: JSXElementName | null,
   isFlexLayoutedContainer: boolean,
@@ -124,14 +126,14 @@ export function getIconTypeForElement(
   componentInstance: boolean,
   isGroup: boolean,
 ): string {
-  let role: string = 'default'
+  let role: string = 'scene'
   const flexDirection: 'column' | 'row' =
     originalFlexDirection === 'column' || originalFlexDirection === 'column-reverse'
       ? 'column'
       : 'row'
   const flexWrapped: boolean = flexWrap === 'wrap' || flexWrap === 'wrap-reverse'
 
-  if (elementName == null) {
+  if (TP.isScenePath(path) || elementName == null) {
     role = 'scene'
   } else {
     if (isViewAgainstImports(elementName, imports)) {
