@@ -21,6 +21,7 @@ import {
 } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export interface NameAndIconResult {
   path: TemplatePath
@@ -30,20 +31,30 @@ export interface NameAndIconResult {
 }
 
 export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
-  const metadata = useEditorState(
-    (store) => store.editor.jsxMetadataKILLME,
-    'useNameAndIcon metadata',
+  return useEditorState(
+    (store) => {
+      const metadata = store.editor.jsxMetadataKILLME
+      const components = getOpenUtopiaJSXComponentsFromState(store.editor)
+      const imports = getOpenImportsFromState(store.editor)
+      return getNameAndIconResult(path, components, metadata, imports)
+    },
+    'useNameAndIcon',
+    (oldResult, newResult) => {
+      if (!TP.pathsEqual(oldResult.path, newResult.path)) {
+        return false
+      }
+      if (oldResult.label !== newResult.label) {
+        return false
+      }
+      if (!shallowEqual(oldResult.iconProps, newResult.iconProps)) {
+        return false
+      }
+      if (!shallowEqual(oldResult.name, newResult.name)) {
+        return false
+      }
+      return true
+    },
   )
-  const components = useEditorState(
-    (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
-    'useNameAndIcon components',
-  )
-  const imports = useEditorState(
-    (store) => getOpenImportsFromState(store.editor),
-    'useNameAndIcon imports',
-  )
-
-  return getNameAndIconResult(path, components, metadata, imports)
 }
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
