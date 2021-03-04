@@ -60,6 +60,13 @@ function fromFSPath(fsPath: string): string {
     throw new Error(`Invalid FS path: ${fsPath}`)
   }
 }
+function getSavedCodeFromTextFile(textFile: TextFile): string {
+  return textFile.lastSavedContents?.code ?? textFile.fileContents.code
+}
+
+function getUnsavedCodeFromTextFile(textFile: TextFile): string | null {
+  return textFile.lastSavedContents == null ? null : textFile.fileContents.code
+}
 
 async function writeProjectFile(
   projectID: string,
@@ -71,8 +78,8 @@ async function writeProjectFile(
       return ensureDirectoryExists(toFSPath(projectPath))
     }
     case 'TEXT_FILE': {
-      const savedContent = file.lastSavedContents?.code ?? file.fileContents.code
-      const unsavedContent = file.lastSavedContents == null ? null : file.fileContents.code
+      const savedContent = getSavedCodeFromTextFile(file)
+      const unsavedContent = getUnsavedCodeFromTextFile(file)
       return writeFileAsUTF8(toFSPath(projectPath), savedContent, unsavedContent)
     }
     case 'ASSET_FILE':
@@ -165,14 +172,6 @@ export async function sendUpdateDecorationsMessage(
 
 export async function sendSelectedElementChangedMessage(boundsInFile: BoundsInFile): Promise<void> {
   return sendMessage(selectedElementChanged(boundsInFile))
-}
-
-function getSavedCodeFromTextFile(textFile: TextFile): string {
-  return textFile.lastSavedContents?.code ?? textFile.fileContents.code
-}
-
-function getUnsavedCodeFromTextFile(textFile: TextFile): string | null {
-  return textFile.lastSavedContents == null ? null : textFile.fileContents.code
 }
 
 export async function applyProjectContentChanges(
