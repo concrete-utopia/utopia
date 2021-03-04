@@ -14,6 +14,7 @@ import {
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import * as TP from '../../../core/shared/template-path'
+import * as PP from '../../../core/shared/property-path'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import {
   getOpenImportsFromState,
@@ -21,6 +22,7 @@ import {
 } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export interface NameAndIconResult {
   path: TemplatePath
@@ -30,20 +32,28 @@ export interface NameAndIconResult {
 }
 
 export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
-  const metadata = useEditorState(
-    (store) => store.editor.jsxMetadataKILLME,
-    'useNameAndIcon metadata',
-  )
-  const components = useEditorState(
-    (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
-    'useNameAndIcon components',
-  )
-  const imports = useEditorState(
-    (store) => getOpenImportsFromState(store.editor),
-    'useNameAndIcon imports',
-  )
+  return useEditorState(
+    (store) => {
+      const metadata = store.editor.jsxMetadataKILLME
+      const components = getOpenUtopiaJSXComponentsFromState(store.editor)
+      const imports = getOpenImportsFromState(store.editor)
+      return getNameAndIconResult(path, components, metadata, imports)
+    },
+    'useNameAndIcon',
+    (oldResult, newResult) => {
+      const pathsChanged = !TP.pathsEqual(oldResult.path, newResult.path)
+      const labelChanged = oldResult.label !== newResult.label
+      const iconPropsChanged = !shallowEqual(oldResult.iconProps, newResult.iconProps)
+      const oldNamePath = oldResult.name?.propertyPath != null ? oldResult.name?.propertyPath : null
+      const newNamePath = newResult.name?.propertyPath != null ? newResult.name?.propertyPath : null
+      const namePathChanged = !PP.pathsEqual(oldNamePath, newNamePath)
+      const nameVariableChanged = oldResult.name?.baseVariable !== newResult.name?.baseVariable
 
-  return getNameAndIconResult(path, components, metadata, imports)
+      return (
+        pathsChanged || labelChanged || iconPropsChanged || namePathChanged || nameVariableChanged
+      )
+    },
+  )
 }
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
