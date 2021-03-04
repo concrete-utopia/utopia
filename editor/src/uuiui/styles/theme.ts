@@ -3,10 +3,9 @@ import { createUtopiColor } from './utopi-color-helpers'
 
 const base = {
   blue: createUtopiColor('#00ABFF', 'converted from P3 color space', 'blue'),
-  violet: createUtopiColor('violet', 'Component Violet', 'violet'),
   purple: createUtopiColor('#574BE2', 'Brand Purple', 'violet'),
   red: createUtopiColor('#FD003B', 'Pinkish red (eg errors)', 'red'),
-  orange: createUtopiColor('#FF6300', 'Orange (eg warnings)', 'orange'),
+  orange: createUtopiColor('#FF7C32', 'Orange (eg warnings)', 'orange'),
   neonpink: createUtopiColor('#FF00FF', 'Solid Neon Pink', 'neonpink'),
   neongreen: createUtopiColor('hsl(120, 100%, 37%)', 'Solid Neon Green', 'neongreen'),
   neonyellow: createUtopiColor('#FCFF42', 'Solid Neon Yellow', 'yellow'),
@@ -20,7 +19,8 @@ const base = {
 const lightBase = {
   darkPrimary: base.blue.shade(150),
   primary: base.blue,
-  component: base.violet,
+  component: base.purple,
+  componentChild: base.orange,
   white: base.white,
   transparent: base.transparent,
   brandPurple: base.purple,
@@ -38,7 +38,7 @@ const lightPrimitives = {
   slightlyEmphasizedBackground: createUtopiColor('hsl(0,0%,99.5%)', '', 'offWhite'),
   aboveNeutralBackground: createUtopiColor('hsl(0,0%,99%)', '', ''),
   neutralBackground: createUtopiColor('hsl(0,0%,98%)', 'eg Navigator, Inspector', 'offWhite'),
-  secondaryBackground: createUtopiColor('hsl(0,0%,96%)', 'eg Canvas', 'offWhite'),
+  secondaryBackground: createUtopiColor('hsl(0,0%,95%)', 'eg Canvas', 'offWhite'),
   subtleBackground: createUtopiColor('hsl(0,0%,82%)', 'eg Canvas', 'offWhite'),
   neutralInvertedBackground: createUtopiColor('hsl(0,0%,10%)', 'almost fully inverted', 'black'),
   emphasizedInvertedBackground: createUtopiColor('hsl(0,0%,0%)', 'black', 'black'),
