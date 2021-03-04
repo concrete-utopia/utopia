@@ -41,22 +41,17 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
     },
     'useNameAndIcon',
     (oldResult, newResult) => {
-      if (!TP.pathsEqual(oldResult.path, newResult.path)) {
-        return false
-      }
-      if (oldResult.label !== newResult.label) {
-        return false
-      }
-      if (!shallowEqual(oldResult.iconProps, newResult.iconProps)) {
-        return false
-      }
-      if (
-        oldResult.name?.baseVariable !== newResult.name?.baseVariable ||
-        !PP.pathsEqual(oldResult.name?.propertyPath ?? null, newResult.name?.propertyPath ?? null)
-      ) {
-        return false
-      }
-      return true
+      const pathsChanged = !TP.pathsEqual(oldResult.path, newResult.path)
+      const labelChanged = oldResult.label !== newResult.label
+      const iconPropsChanged = !shallowEqual(oldResult.iconProps, newResult.iconProps)
+      const oldNamePath = oldResult.name?.propertyPath != null ? oldResult.name?.propertyPath : null
+      const newNamePath = newResult.name?.propertyPath != null ? newResult.name?.propertyPath : null
+      const namePathChanged = !PP.pathsEqual(oldNamePath, newNamePath)
+      const nameVariableChanged = oldResult.name?.baseVariable !== newResult.name?.baseVariable
+
+      return (
+        pathsChanged || labelChanged || iconPropsChanged || namePathChanged || nameVariableChanged
+      )
     },
   )
 }
