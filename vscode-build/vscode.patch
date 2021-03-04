@@ -1288,17 +1288,60 @@ index 03297afe7f..dcf30dd1ef 100644
  			},
  			'window.openFilesInNewWindow': {
  				'type': 'string',
+diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
+index ef6eb4dd9b..1ec36e7137 100644
+--- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
++++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
+@@ -546,6 +546,38 @@ CommandsRegistry.registerCommand({
+ 	}
+ });
+ 
++CommandsRegistry.registerCommand({
++	id: 'workbench.action.files.revertResource',
++	handler: async (accessor, resource: URI) => {
++		const notificationService = accessor.get(INotificationService);
++		const editorGroupService = accessor.get(IEditorGroupsService);
++		const editorService = accessor.get(IEditorService);
++
++		// Retrieve editors for resource
++		const resourceAsString = resource.toString()
++		const matchesTarget = (uri: URI | undefined) => uri != null && uri.toString() === resourceAsString
++		let editors: IEditorIdentifier[] = []
++		
++		editorGroupService.groups.forEach(editorGroup => {
++			editorGroup.editors.forEach(editor => {
++				if (matchesTarget(editor.resource)) {
++					editors.push({ groupId: editorGroup.id, editor: editor })
++				}
++			})
++		})
++
++		if (!editors || editors.length === 0) {
++			return; // nothing to revert
++		}
++
++		try {
++			await editorService.revert(editors.filter(({ editor }) => !editor.isUntitled() /* all except untitled */), { force: true });
++		} catch (error) {
++			notificationService.error(nls.localize('genericRevertError', "Failed to revert '{0}': {1}", editors.map(({ editor }) => editor.getName()).join(', '), toErrorMessage(error, false)));
++		}
++	}
++});
++
+ CommandsRegistry.registerCommand({
+ 	id: REMOVE_ROOT_FOLDER_COMMAND_ID,
+ 	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index f4b223bf4c..d9f0ed4ce6 100644
+index f4b223bf4c..4556923fe2 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-@@ -316,11 +316,12 @@ configurationRegistry.registerConfiguration({
+@@ -315,12 +315,12 @@ configurationRegistry.registerConfiguration({
+ 				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onFocusChange' }, "A dirty editor is automatically saved when the editor loses focus."),
  				nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'files.autoSave.onWindowChange' }, "A dirty editor is automatically saved when the window loses focus.")
  			],
- 			'default': platform.isWeb ? AutoSaveConfiguration.AFTER_DELAY : AutoSaveConfiguration.OFF,
--			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of dirty editors. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY)
-+			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of dirty editors. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY),
-+			included: false
+-			'default': platform.isWeb ? AutoSaveConfiguration.AFTER_DELAY : AutoSaveConfiguration.OFF,
++			'default': AutoSaveConfiguration.OFF,
+ 			'markdownDescription': nls.localize({ comment: ['This is the description for a setting. Values surrounded by single quotes are not to be translated.'], key: 'autoSave' }, "Controls auto save of dirty editors. Read more about autosave [here](https://code.visualstudio.com/docs/editor/codebasics#_save-auto-save).", AutoSaveConfiguration.OFF, AutoSaveConfiguration.AFTER_DELAY, AutoSaveConfiguration.ON_FOCUS_CHANGE, AutoSaveConfiguration.ON_WINDOW_CHANGE, AutoSaveConfiguration.AFTER_DELAY)
  		},
  		'files.autoSaveDelay': {
  			'type': 'number',

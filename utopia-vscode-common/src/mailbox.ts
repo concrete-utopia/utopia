@@ -4,10 +4,10 @@ import {
   ensureDirectoryExists,
   exists,
   readDirectory,
-  readFileAsUTF8,
-  writeFileAsUTF8,
+  readFileSavedContentAsUTF8,
+  writeFileSavedContentAsUTF8,
 } from './fs/fs-utils'
-import { FromVSCodeMessage, parseToVSCodeMessage, ToVSCodeMessage } from './messages'
+import { FromVSCodeMessage, ToVSCodeMessage } from './messages'
 import { appendToPath } from './path-utils'
 
 type Mailbox = 'VSCODE_MAILBOX' | 'UTOPIA_MAILBOX'
@@ -17,7 +17,7 @@ export const UtopiaInbox: Mailbox = 'UTOPIA_MAILBOX'
 let inbox: Mailbox
 let outbox: Mailbox
 let onMessageCallback: (message: any) => void
-let counter: number = 0
+let lastSentMessage: number = 0
 let lastConsumedMessage: number = -1
 let queuedMessages: Array<ToVSCodeMessage | FromVSCodeMessage> = []
 const POLLING_TIMEOUT = 8
@@ -39,7 +39,7 @@ const pathForInboxMessage = (messageName: string) => pathForMessage(messageName,
 const pathForOutboxMessage = (messageName: string) => pathForMessage(messageName, outbox)
 
 function generateMessageName(): string {
-  return `${counter++}`
+  return `${lastSentMessage++}`
 }
 
 export async function sendMessage(message: ToVSCodeMessage | FromVSCodeMessage): Promise<void> {
@@ -51,12 +51,19 @@ export async function sendMessage(message: ToVSCodeMessage | FromVSCodeMessage):
 }
 
 async function sendNamedMessage(messageName: string, content: string): Promise<void> {
-  return writeFileAsUTF8(pathForOutboxMessage(messageName), content)
+  return writeFileSavedContentAsUTF8(pathForOutboxMessage(messageName), content)
+}
+
+function maxMessageNumber(messageNames: Array<string>, minValue: number = 0): number {
+  return Math.max(minValue, ...messageNames.map((messageName) => Number.parseInt(messageName)))
 }
 
 async function initOutbox(outboxToUse: Mailbox): Promise<void> {
-  outbox = outboxToUse
   await ensureMailboxExists(outboxToUse)
+  const previouslySentMessages = await readDirectory(pathForMailbox(outboxToUse))
+  lastSentMessage = maxMessageNumber(previouslySentMessages)
+
+  outbox = outboxToUse
   if (queuedMessages.length > 0) {
     queuedMessages.forEach(sendMessage)
     queuedMessages = []
@@ -65,7 +72,7 @@ async function initOutbox(outboxToUse: Mailbox): Promise<void> {
 
 async function receiveMessage<T>(messageName: string, parseMessage: (msg: string) => T): Promise<T> {
   const messagePath = pathForInboxMessage(messageName)
-  const content = await readFileAsUTF8(messagePath)
+  const content = await readFileSavedContentAsUTF8(messagePath)
   return parseMessage(content)
 }
 
@@ -76,9 +83,7 @@ async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
   )
   if (messagesToProcess.length > 0) {
     const messages = await Promise.all(messagesToProcess.map(m => receiveMessage(m, parseMessage)))
-    lastConsumedMessage = Math.max(
-      ...messagesToProcess.map((messageName) => Number.parseInt(messageName)),
-    )
+    lastConsumedMessage = maxMessageNumber(messagesToProcess, lastConsumedMessage)
     await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
     messages.forEach(onMessageCallback)
   }
@@ -112,13 +117,13 @@ async function clearLastConsumedMessageFile(mailbox: Mailbox): Promise<void> {
 }
 
 async function updateLastConsumedMessageFile(mailbox: Mailbox, value: number): Promise<void> {
-  await writeFileAsUTF8(lastConsumedMessageKey(mailbox), `${value}`)
+  await writeFileSavedContentAsUTF8(lastConsumedMessageKey(mailbox), `${value}`)
 }
 
 async function getLastConsumedMessageNumber(mailbox: Mailbox): Promise<number> {
   const lastConsumedMessageValueExists = await exists(lastConsumedMessageKey(mailbox))
   if (lastConsumedMessageValueExists) {
-    const lastConsumedMessageName = await readFileAsUTF8(lastConsumedMessageKey(mailbox))
+    const lastConsumedMessageName = await readFileSavedContentAsUTF8(lastConsumedMessageKey(mailbox))
     return Number.parseInt(lastConsumedMessageName)
   } else {
     return -1
@@ -139,7 +144,7 @@ export function stopPollingMailbox(): void {
     clearTimeout(pollTimeout)
     pollTimeout = null
     lastConsumedMessage = -1
-    counter = 0
+    lastSentMessage = 0
   }
 }
 

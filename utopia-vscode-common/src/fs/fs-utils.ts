@@ -16,10 +16,16 @@ import {
   fsFile,
   newFSDirectory,
   FSNodeWithPath,
+  FSFile,
+  FileContent,
+  FSUser,
+  fsDirectory,
 } from './fs-types'
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
+
+let fsUser: FSUser // Used to determine if changes came from this user or another
 
 let handleError: FSErrorHandler = (e: FSError) => {
   return Error(`FS Error: ${JSON.stringify(e)}`)
@@ -34,7 +40,8 @@ const existingFileError = (path: string) => handleError(eexist(path))
 const isDirectoryError = (path: string) => handleError(eisdir(path))
 const isNotDirectoryError = (path: string) => handleError(enotdir(path))
 
-export async function initializeFS(storeName: string, driver: string = INDEXEDDB): Promise<void> {
+export async function initializeFS(storeName: string, user: FSUser, driver: string = INDEXEDDB): Promise<void> {
+  fsUser = user
   await initializeStore(storeName, driver)
   await simpleCreateDirectoryIfMissing('/')
 }
@@ -49,6 +56,16 @@ export async function pathIsDirectory(path: string): Promise<boolean> {
   return node != null && isDirectory(node)
 }
 
+export async function pathIsFile(path: string): Promise<boolean> {
+  const node = await getItem(path)
+  return node != null && isFile(node)
+}
+
+export async function pathIsFileWithUnsavedContent(path: string): Promise<boolean> {
+  const node = await getItem(path)
+  return node != null && isFile(node) && node.unsavedContent != null
+}
+
 async function getNode(path: string): Promise<FSNode> {
   const node = await getItem(path)
   if (node == null) {
@@ -58,18 +75,45 @@ async function getNode(path: string): Promise<FSNode> {
   }
 }
 
-export async function readFile(path: string): Promise<Uint8Array> {
+async function getFile(path: string): Promise<FSFile> {
   const node = await getNode(path)
   if (isFile(node)) {
-    return node.content
+    return node
   } else {
     return Promise.reject(isDirectoryError(path))
   }
 }
 
-export async function readFileAsUTF8(path: string): Promise<string> {
-  const rawData = await readFile(path)
-  return decoder.decode(rawData)
+export async function readFile(path: string): Promise<FileContent> {
+  return getFile(path)
+}
+
+export async function readFileSavedContent(path: string): Promise<Uint8Array> {
+  const fileNode = await getFile(path)
+  return fileNode.content
+}
+
+export async function readFileUnsavedContent(path: string): Promise<Uint8Array | null> {
+  const fileNode = await getFile(path)
+  return fileNode.unsavedContent
+}
+
+export async function readFileAsUTF8(path: string): Promise<{content: string, unsavedContent: string | null}> {
+  const { content, unsavedContent } = await getFile(path)
+  return {
+    content: decoder.decode(content),
+    unsavedContent: unsavedContent == null ? null : decoder.decode(unsavedContent)
+  }
+}
+
+export async function readFileSavedContentAsUTF8(path: string): Promise<string> {
+  const { content } = await readFileAsUTF8(path)
+  return content
+}
+
+export async function readFileUnsavedContentAsUTF8(path: string): Promise<string | null> {
+  const { unsavedContent } = await readFileAsUTF8(path)
+  return unsavedContent
 }
 
 function fsStatForNode(node: FSNode): FSStat {
@@ -77,7 +121,9 @@ function fsStatForNode(node: FSNode): FSStat {
     type: node.type,
     ctime: node.ctime,
     mtime: node.mtime,
+    lastSavedTime: node.lastSavedTime,
     size: isFile(node) ? node.content.length : 0,
+    sourceOfLastChange: node.sourceOfLastChange,
   }
 }
 
@@ -154,7 +200,7 @@ export async function createDirectory(path: string): Promise<void> {
     return Promise.reject(existingFileError(path))
   }
 
-  await setItem(path, newFSDirectory())
+  await setItem(path, newFSDirectory(fsUser))
   if (parent != null) {
     await markModified(parent)
   }
@@ -178,7 +224,7 @@ function allPathsUpToPath(path: string): string[] {
 async function simpleCreateDirectoryIfMissing(path: string): Promise<void> {
   const existingNode = await getItem(path)
   if (existingNode == null) {
-    await setItem(path, newFSDirectory())
+    await setItem(path, newFSDirectory(fsUser))
 
     // Attempt to mark the parent as modified, but don't fail if it doesn't exist
     // since it might not have been created yet
@@ -199,7 +245,7 @@ export async function ensureDirectoryExists(path: string): Promise<void> {
   await Promise.all(allPaths.map(simpleCreateDirectoryIfMissing))
 }
 
-export async function writeFile(path: string, content: Uint8Array): Promise<void> {
+export async function writeFile(path: string, content: Uint8Array, unsavedContent: Uint8Array | null): Promise<void> {
   const parent = await getParent(path)
   const maybeExistingFile = await getItem(path)
   if (maybeExistingFile != null && isDirectory(maybeExistingFile)) {
@@ -208,21 +254,47 @@ export async function writeFile(path: string, content: Uint8Array): Promise<void
 
   const now = Date.now()
   const fileCTime = maybeExistingFile == null ? now : maybeExistingFile.ctime
-  const fileToWrite = fsFile(content, fileCTime, now)
+  const lastSavedTime = unsavedContent == null || maybeExistingFile == null ? now : maybeExistingFile.lastSavedTime
+  const fileToWrite = fsFile(content, unsavedContent, fileCTime, now, lastSavedTime, fsUser)
   await setItem(path, fileToWrite)
   if (parent != null) {
     await markModified(parent)
   }
 }
 
-export async function writeFileAsUTF8(path: string, content: string): Promise<void> {
-  return writeFile(path, encoder.encode(content))
+export async function writeFileSavedContent(path: string, content: Uint8Array): Promise<void> {
+  return writeFile(path, content, null)
+}
+
+export async function writeFileUnsavedContent(path: string, unsavedContent: Uint8Array): Promise<void> {
+  const savedContent = await readFileSavedContent(path)
+  return writeFile(path, savedContent, unsavedContent)
+}
+
+export async function writeFileAsUTF8(path: string, content: string, unsavedContent: string | null): Promise<void> {
+  return writeFile(path, encoder.encode(content), unsavedContent == null ? null : encoder.encode(unsavedContent))
+}
+
+export async function writeFileSavedContentAsUTF8(path: string, savedContent: string): Promise<void> {
+  return writeFileAsUTF8(path, savedContent, null)
+}
+
+export async function writeFileUnsavedContentAsUTF8(path: string, unsavedContent: string): Promise<void> {
+  return writeFileUnsavedContent(path, encoder.encode(unsavedContent))
+}
+
+export async function clearFileUnsavedContent(path: string): Promise<void> {
+  const savedContent = await readFileSavedContent(path)
+  return writeFileSavedContent(path, savedContent)
 }
 
 function updateMTime(node: FSNode): FSNode {
-  return {
-    ...node,
-    mtime: Date.now(),
+  const now = Date.now()
+  if (isFile(node)) {
+    const lastSavedTime = node.unsavedContent == null ? now : node.lastSavedTime
+    return fsFile(node.content, node.unsavedContent, node.ctime, now, lastSavedTime, fsUser)
+  } else {
+    return fsDirectory(node.ctime, now, fsUser)
   }
 }
 
@@ -270,7 +342,7 @@ export async function deletePath(path: string, recursive: boolean): Promise<stri
 interface WatchConfig {
   recursive: boolean
   onCreated: (path: string) => void
-  onModified: (path: string) => void
+  onModified: (path: string, modifiedBySelf: boolean) => void
   onDeleted: (path: string) => void
 }
 
@@ -298,19 +370,26 @@ async function onPolledWatch(path: string, config: WatchConfig): Promise<void> {
 
       const modifiedTS = stats.mtime
       const wasModified = modifiedTS > (lastModifiedTSs.get(path) ?? 0)
-
-      if (recursive && isDirectory(node) && wasModified) {
-        const children = await childPaths(path)
-        const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
-        unsupervisedChildren.forEach((childPath) => {
-          watchPath(childPath, config)
-          onCreated(childPath)
-        })
-      }
+      const modifiedBySelf = stats.sourceOfLastChange === fsUser
 
       if (wasModified) {
+        if (isDirectory(node)) {
+          if (recursive) {
+            const children = await childPaths(path)
+            const unsupervisedChildren = children.filter((p) => !watchedPaths.has(p))
+            unsupervisedChildren.forEach((childPath) => {
+              watchPath(childPath, config)
+              onCreated(childPath)
+            })
+            if (unsupervisedChildren.length > 0) {
+              onModified(path, modifiedBySelf)
+            }
+          }
+        } else {
+          onModified(path, modifiedBySelf)
+        }
+
         lastModifiedTSs.set(path, modifiedTS)
-        onModified(path)
       }
     }
   } catch (e) {
@@ -332,7 +411,7 @@ export async function watch(
   target: string,
   recursive: boolean,
   onCreated: (path: string) => void,
-  onModified: (path: string) => void,
+  onModified: (path: string, modifiedBySelf: boolean) => void,
   onDeleted: (path: string) => void,
 ): Promise<void> {
   const fileExists = await exists(target)

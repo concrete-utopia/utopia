@@ -16,18 +16,100 @@ import {
   parseToVSCodeMessage,
   sendMessage,
   editorCursorPositionChanged,
+  readFileAsUTF8,
+  exists,
+  writeFileUnsavedContentAsUTF8,
+  clearFileUnsavedContent,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
+import { fromUtopiaURI } from './path-utils'
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
   const projectID = workspaceRootUri.scheme
   useFileSystemProviderErrors(projectID)
-  await initializeFS(projectID)
+
+  await initFS(projectID)
+  const utopiaFS = initUtopiaFSProvider(projectID, context)
+  initMessaging(context, workspaceRootUri)
+
+  watchForUnsavedContentChangesFromFS(utopiaFS)
+  watchForChangesFromVSCode(context, projectID)
+}
+
+async function initFS(projectID: string): Promise<void> {
+  await initializeFS(projectID, 'VSCODE')
   await ensureDirectoryExists(RootDir)
+}
+
+function initUtopiaFSProvider(
+  projectID: string,
+  context: vscode.ExtensionContext,
+): UtopiaFSExtension {
   const utopiaFS = new UtopiaFSExtension(projectID)
   context.subscriptions.push(utopiaFS)
-  initMessaging(utopiaFS, context, workspaceRootUri)
+  return utopiaFS
+}
+
+function watchForUnsavedContentChangesFromFS(utopiaFS: UtopiaFSExtension) {
+  utopiaFS.onUtopiaDidChangeUnsavedContent((uris) => {
+    uris.forEach((uri) => {
+      updateDirtyContent(uri)
+    })
+  })
+  utopiaFS.onUtopiaDidChangeSavedContent((uris) => {
+    uris.forEach((uri) => {
+      clearDirtyFlags(uri)
+    })
+  })
+}
+
+let dirtyFiles: Set<string> = new Set()
+let incomingFileChanges: Set<string> = new Set()
+
+function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: string) {
+  function isUtopiaDocument(document: vscode.TextDocument): boolean {
+    return document.uri.scheme === projectID
+  }
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (isUtopiaDocument(event.document)) {
+        const resource = event.document.uri
+        if (resource.scheme === projectID) {
+          // Don't act on changes to other documents
+          const path = fromUtopiaURI(resource)
+          if (event.document.isDirty) {
+            // New unsaved change
+            dirtyFiles.add(path)
+            if (incomingFileChanges.has(path)) {
+              // This change actually came from Utopia, so we don't want to re-write it to the FS
+              incomingFileChanges.delete(path)
+            } else {
+              const fullText = event.document.getText()
+              writeFileUnsavedContentAsUTF8(path, fullText)
+            }
+          }
+        }
+      }
+    }),
+    vscode.workspace.onWillSaveTextDocument((event) => {
+      if (isUtopiaDocument(event.document)) {
+        const path = fromUtopiaURI(event.document.uri)
+        dirtyFiles.delete(path)
+      }
+    }),
+    vscode.workspace.onDidCloseTextDocument((document) => {
+      if (isUtopiaDocument(document)) {
+        const path = fromUtopiaURI(document.uri)
+        if (dirtyFiles.has(path)) {
+          // User decided to bin unsaved changes when closing the document
+          clearFileUnsavedContent(path)
+          dirtyFiles.delete(path)
+        }
+      }
+    }),
+  )
 }
 
 const selectionDecorationType = vscode.window.createTextEditorDecorationType({
@@ -46,18 +128,14 @@ const highlightDecorationType = vscode.window.createTextEditorDecorationType({
 
 const allDecorationRangeTypes: Array<DecorationRangeType> = ['highlight', 'selection']
 
-function initMessaging(
-  utopiaFS: UtopiaFSExtension,
-  context: vscode.ExtensionContext,
-  workspaceRootUri: vscode.Uri,
-): void {
+function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
   // State that needs to be stored between messages.
   let currentDecorations: Array<DecorationRange> = []
 
   function handleMessage(message: ToVSCodeMessage): void {
     switch (message.type) {
       case 'OPEN_FILE':
-        openFile(utopiaFS, vscode.Uri.joinPath(workspaceRootUri, message.filePath))
+        openFile(vscode.Uri.joinPath(workspaceRootUri, message.filePath))
         break
       case 'UPDATE_DECORATIONS':
         currentDecorations = message.decorations
@@ -84,16 +162,44 @@ function initMessaging(
   )
 }
 
-async function openFile(
-  utopiaFS: UtopiaFSExtension,
-  fileUri: vscode.Uri,
-  retries: number = 5,
-): Promise<void> {
-  const fileExists = await utopiaFS.exists(fileUri)
+function entireDocRange() {
+  return new vscode.Range(
+    new vscode.Position(0, 0),
+    new vscode.Position(Number.MAX_VALUE, Number.MAX_VALUE),
+  )
+}
+
+async function clearDirtyFlags(resource: vscode.Uri): Promise<void> {
+  // File saved on Utopia side, so FS has been updated, so we want VS Code to revert
+  // to the now saved version
+  vscode.commands.executeCommand('workbench.action.files.revertResource', resource)
+}
+
+async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
+  const filePath = fromUtopiaURI(resource)
+  const { unsavedContent } = await readFileAsUTF8(filePath)
+  if (unsavedContent != null) {
+    incomingFileChanges.add(filePath)
+    const workspaceEdit = new vscode.WorkspaceEdit()
+    workspaceEdit.replace(resource, entireDocRange(), unsavedContent)
+    const editApplied = await vscode.workspace.applyEdit(workspaceEdit)
+    if (!editApplied) {
+      // Something went wrong applying the edit, so we clear the block on unsaved content fs writes
+      incomingFileChanges.delete(filePath)
+    }
+  }
+}
+
+async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<void> {
+  const filePath = fromUtopiaURI(fileUri)
+  const fileExists = await exists(filePath)
   if (fileExists) {
     vscode.commands.executeCommand('vscode.open', fileUri)
   } else {
-    setTimeout(() => openFile(utopiaFS, fileUri, retries - 1), 100)
+    // Just in case the message is processed before the file has been written to the FS
+    if (retries > 0) {
+      setTimeout(() => openFile(fileUri, retries - 1), 100)
+    }
   }
 }
 

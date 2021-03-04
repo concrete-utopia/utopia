@@ -36,14 +36,14 @@ import {
   BoundsInFile,
   selectedElementChanged,
   parseFromVSCodeMessage,
-  isEditorCursorPositionChanged,
+  FSUser,
 } from 'utopia-vscode-common'
-import { isTextFile, ProjectFile } from '../shared/project-file-types'
+import { isTextFile, ProjectFile, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
-import { getTemplatePathsInBounds } from '../../components/editor/store/editor-state'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
+const UtopiaFSUser: FSUser = 'UTOPIA'
 
 function toFSPath(projectPath: string): string {
   const fsPath = appendToPath(RootDir, projectPath)
@@ -60,6 +60,13 @@ function fromFSPath(fsPath: string): string {
     throw new Error(`Invalid FS path: ${fsPath}`)
   }
 }
+function getSavedCodeFromTextFile(textFile: TextFile): string {
+  return textFile.lastSavedContents?.code ?? textFile.fileContents.code
+}
+
+function getUnsavedCodeFromTextFile(textFile: TextFile): string | null {
+  return textFile.lastSavedContents == null ? null : textFile.fileContents.code
+}
 
 async function writeProjectFile(
   projectID: string,
@@ -71,7 +78,9 @@ async function writeProjectFile(
       return ensureDirectoryExists(toFSPath(projectPath))
     }
     case 'TEXT_FILE': {
-      return writeFileAsUTF8(toFSPath(projectPath), file.fileContents.code)
+      const savedContent = getSavedCodeFromTextFile(file)
+      const unsavedContent = getUnsavedCodeFromTextFile(file)
+      return writeFileAsUTF8(toFSPath(projectPath), savedContent, unsavedContent)
     }
     case 'ASSET_FILE':
       return Promise.resolve()
@@ -93,19 +102,25 @@ async function writeProjectContents(
   })
 }
 
-function watchForChanges(projectID: string, dispatch: EditorDispatch): void {
+function watchForChanges(dispatch: EditorDispatch): void {
   function onCreated(fsPath: string): void {
     stat(fsPath).then((fsStat) => {
-      if (fsStat.type === 'FILE') {
-        readFileAsUTF8(fsPath).then((text) => {
-          const action = updateFromCodeEditor(fromFSPath(fsPath), text)
+      if (fsStat.type === 'FILE' && fsStat.sourceOfLastChange !== UtopiaFSUser) {
+        readFileAsUTF8(fsPath).then((fileContent) => {
+          const action = updateFromCodeEditor(
+            fromFSPath(fsPath),
+            fileContent.content,
+            fileContent.unsavedContent,
+          )
           dispatch([action], 'everyone')
         })
       }
     })
   }
-  function onModified(fsPath: string): void {
-    onCreated(fsPath)
+  function onModified(fsPath: string, modifiedBySelf: boolean): void {
+    if (!modifiedBySelf) {
+      onCreated(fsPath)
+    }
   }
   function onDeleted(fsPath: string): void {
     const projectPath = fromFSPath(fsPath)
@@ -127,7 +142,7 @@ export async function initVSCodeBridge(
     if (isBrowserEnvironment) {
       stopWatchingAll()
       stopPollingMailbox()
-      await initializeFS(projectID)
+      await initializeFS(projectID, UtopiaFSUser)
       await clearBothMailboxes()
       await writeProjectContents(projectID, projectContents)
       await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
@@ -136,7 +151,7 @@ export async function initVSCodeBridge(
           'everyone',
         )
       })
-      watchForChanges(projectID, dispatch)
+      watchForChanges(dispatch)
     }
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
   }
@@ -176,11 +191,23 @@ export async function applyProjectContentChanges(
           // Do nothing, no change.
         } else if (isTextFile(firstContents.content) && isTextFile(secondContents.content)) {
           // We need to be careful around only sending this across if the text has been updated.
-          const firstTextContent = firstContents.content
-          const secondTextContent = secondContents.content
-          if (firstTextContent.fileContents.code === secondTextContent.fileContents.code) {
-            // Do nothing, no change.
-          } else {
+          const firstSavedContent = getSavedCodeFromTextFile(firstContents.content)
+          const firstUnsavedContent = getUnsavedCodeFromTextFile(firstContents.content)
+          const secondSavedContent = getSavedCodeFromTextFile(secondContents.content)
+          const secondUnsavedContent = getUnsavedCodeFromTextFile(secondContents.content)
+
+          const savedContentChanged = firstSavedContent !== secondSavedContent
+          const unsavedContentChanged = firstUnsavedContent !== secondUnsavedContent
+          const fileMarkedDirtyButNoCodeChangeYet =
+            firstUnsavedContent == null && secondUnsavedContent === firstSavedContent
+
+          // When a parsed model is updated but that change hasn't been reflected in the code yet, we end up with a file
+          // that has no code change, so we don't want to write that to the FS for VS Code to act on it until the new code
+          // has been generated
+          const fileShouldBeWritten =
+            savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet)
+
+          if (fileShouldBeWritten) {
             await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
           }
         } else {

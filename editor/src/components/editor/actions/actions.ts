@@ -3486,21 +3486,19 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
 
-    if (isTextFile(existing) && existing.fileContents.code === action.fileContents) {
-      // the text part of the text file did not change, skip updating the editor
-      return editor
-    }
+    const manualSave = action.unsavedContent == null
+    const code = action.unsavedContent ?? action.savedContent
 
     let updatedFile: ProjectFile
-
     if (existing == null || !isTextFile(existing)) {
-      updatedFile = textFile(
-        textFileContents(action.fileContents, unparsed, RevisionsState.CodeAhead),
-        null,
-        Date.now(),
-      )
+      const contents = textFileContents(code, unparsed, RevisionsState.CodeAhead)
+      const lastSavedContents = manualSave
+        ? null
+        : textFileContents(action.savedContent, unparsed, RevisionsState.CodeAhead)
+
+      updatedFile = textFile(contents, lastSavedContents, Date.now())
     } else {
-      updatedFile = updateFileContents(action.fileContents, existing, true)
+      updatedFile = updateFileContents(code, existing, manualSave)
     }
 
     const updateAction = updateFile(action.filePath, updatedFile, true)
@@ -3584,6 +3582,12 @@ export const UPDATE_FNS = {
     userState: UserState,
   ): EditorModel => {
     const file = getContentsTreeFileFromString(editor.projectContents, action.filename)
+
+    // Don't delete package.json, otherwise it will bring about the end of days.
+    if (file == null || action.filename === 'package.json') {
+      return editor
+    }
+
     const updatedProjectContents = removeFromProjectContents(
       editor.projectContents,
       action.filename,
@@ -3601,11 +3605,6 @@ export const UPDATE_FNS = {
             }
           : null
         : editor.selectedFile
-
-    // Don't delete package.json, otherwise it will bring about the end of days.
-    if (file == null || action.filename === 'package.json') {
-      return editor
-    }
 
     switch (file.type) {
       case 'DIRECTORY': {
