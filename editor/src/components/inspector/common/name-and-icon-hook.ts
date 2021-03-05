@@ -102,8 +102,8 @@ function createIconProps(
     ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
     : null
   const isFlexLayoutedContainer = MetadataUtils.isFlexLayoutedContainer(element)
-  const flexDirection = MetadataUtils.getYogaDirection(element)
-  const flexWrap = MetadataUtils.getYogaWrap(element)
+  const flexDirection = MetadataUtils.getFlexDirection(element)
+  const flexWrap = MetadataUtils.getFlexWrap(element)
   const componentInstance = MetadataUtils.isComponentInstance(path, components, metadata, imports)
   const isAutosizingView = MetadataUtils.isAutoSizingView(element)
 
@@ -152,14 +152,8 @@ export function getIconTypeForElement(
       } else {
         role = 'view'
       }
-    } else if (isEllipseAgainstImports(elementName, imports)) {
-      role = 'ellipse'
-    } else if (isRectangleAgainstImports(elementName, imports)) {
-      role = 'rectangle'
     } else if (isImg(elementName)) {
       role = 'image'
-    } else if (isTextAgainstImports(elementName, imports)) {
-      role = 'text'
     } else if (isAnimatedElementAgainstImports(elementName, imports)) {
       role = 'animated'
     } else if (componentInstance) {
