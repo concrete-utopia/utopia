@@ -4,7 +4,15 @@ import * as React from 'react'
 import BreadcrumbSeparator from 'antd/lib/breadcrumb/BreadcrumbSeparator'
 import onClickOutside from 'react-onclickoutside'
 import { BreadcrumbTrail } from '../../canvas/controls/breadcrumb-trail'
-import { colorTheme, FlexRow, Icons, OnClickOutsideHOC, UtopiaTheme } from '../../../uuiui'
+import {
+  colorTheme,
+  FlexRow,
+  Icn,
+  Icons,
+  OnClickOutsideHOC,
+  SmallerIcons,
+  UtopiaTheme,
+} from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import {
   NameRow,
@@ -17,12 +25,12 @@ import {
 } from '../../../components/inspector/sections/header-section/layout-wrapper-section'
 import { JSXElementName } from '../../../core/shared/element-template'
 import { NameRowCrumbs } from '../../../components/canvas/controls/namerowcrumbs'
+import { Color } from 'src/utils/utils'
 
 interface ComponentOrInstanceIndicatorProps
   extends NameRowInnerProps,
     LayoutWrapperCoreProps,
     LayoutWrapperRowProps {
-  gap: 8
   label: string
   component: boolean
   instance: boolean
@@ -45,6 +53,50 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
       [setIsOpen],
     )
 
+    enum editContext {
+      ELEMENT = 0,
+      COMPONENT_INSTANCE,
+      COMPONENT,
+      COMPONENT_CHILD,
+    }
+
+    const [currentEditContext, setCurrentEditContext] = React.useState(editContext.COMPONENT)
+
+    const TODOREPLACEMEcycleEditContext = () => {
+      const nextEditContext = (currentEditContext + 1) % 4
+      setCurrentEditContext(nextEditContext)
+    }
+
+    const getEditContextStyle = () => {
+      if (currentEditContext === editContext.COMPONENT) {
+        return {
+          color: UtopiaTheme.color.component.value,
+          backgroundColor: UtopiaTheme.color.component.shade(10).value,
+          stroke: UtopiaTheme.color.component.fileNameFragment,
+        }
+      } else if (currentEditContext === editContext.COMPONENT_CHILD) {
+        return {
+          color: UtopiaTheme.color.componentChild.value,
+          backgroundColor: UtopiaTheme.color.componentChild.shade(10).value,
+          stroke: UtopiaTheme.color.componentChild.fileNameFragment,
+        }
+      } else if (currentEditContext === editContext.COMPONENT_INSTANCE) {
+        return {
+          background: UtopiaTheme.color.secondaryBackground.value,
+          color: UtopiaTheme.color.neutralForeground.value,
+          stroke: 'black',
+        }
+      } else {
+        return {
+          background: UtopiaTheme.color.secondaryBackground.value,
+          color: UtopiaTheme.color.neutralForeground.value,
+          stroke: 'black',
+          opacity: 0.5,
+          pointerevents: 'none',
+        }
+      }
+    }
+
     return (
       <div
         role='compositeButton'
@@ -52,32 +104,40 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
           position: 'relative',
           display: 'flex',
           alignItems: 'stretch',
-          height: 22,
-          borderRadius: UtopiaTheme.inputBorderRadius,
-
+          height: UtopiaTheme.layout.inputHeight.default,
           maxWidth: 130,
-          // overflow: 'hidden',
-          boxShadow: '0px 0px 0px 1px #ccc',
         }}
       >
         <FlexRow
+          role='button'
+          onClick={TODOREPLACEMEcycleEditContext}
           css={{
             flexGrow: 1,
             flexShrink: 1,
             overflow: 'hidden',
+            borderTopLeftRadius: UtopiaTheme.inputBorderRadius,
+            borderBottomLeftRadius: UtopiaTheme.inputBorderRadius,
             gap: 8,
-            paddingLeft: 8,
+            paddingLeft: 4,
             cursor: 'pointer',
-            background: UtopiaTheme.color.neutralBackground.value,
+            transition: 'background-color .1s ease-in-out',
+            ...getEditContextStyle(),
             '&:hover': {
-              filter: 'brightness(.98)',
+              filter: 'brightness(1.02  )',
             },
             '&:active': {
-              filter: 'brightness(.95)',
+              filter: 'brightness(1.03)',
             },
           }}
         >
-          <Icons.Component color='purple' style={{ flexGrow: 1, flexShrink: 0 }} />
+          {/* TODO replace me with the real icon */}
+          <Icn
+            category='element'
+            type='ghost'
+            width={18}
+            height={18}
+            color={getEditContextStyle().stroke}
+          />
           <span
             style={{
               flexGrow: 1,
@@ -85,9 +145,12 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
               textOverflow: 'ellipsis',
               overflow: 'hidden',
               whiteSpace: 'nowrap',
+              fontWeight: 500,
+              paddingRight: 8,
             }}
           >
-            TODO REPLACE ME WITH PROPS LABEL
+            {/* TODO replace me with the real icon */}
+            🙃 Element 59 🙃
           </span>
         </FlexRow>
 
@@ -100,18 +163,35 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
             justifyContent: 'center',
             flexGrow: 0,
             flexShrink: 0,
-            flexBasis: '20',
-            background: UtopiaTheme.color.neutralBackground.value,
+            flexBasis: 14,
+            transition: 'background-color .1s ease-in-out',
+            ...getEditContextStyle(),
+            // slightly darker than the button next to it
+            filter: 'brightness(.99)',
+            borderLeft: `1px dashed ${UtopiaTheme.color.secondaryBorder.value}`,
+            cursor: 'pointer',
+            borderTopRightRadius: UtopiaTheme.inputBorderRadius,
+            borderBottomRightRadius: UtopiaTheme.inputBorderRadius,
             '&:hover': {
-              filter: 'brightness(.98)',
+              filter: 'brightness(1.01)',
+            },
+            '&:active > *': {
+              transform: 'translateY(1px)',
             },
             '&:active': {
-              filter: 'brightness(.95)',
+              filter: 'brightness(1.03)',
             },
           }}
           onClick={toggleOpen}
         >
-          <Icons.ExpansionArrow style={{ transform: isOpen ? 'rotate(180deg)' : undefined }} />
+          <SmallerIcons.ExpansionArrowDown
+            color={getEditContextStyle().stroke}
+            style={{
+              flexGrow: 0,
+              flexShrink: 0,
+              transform: isOpen ? 'rotate(180deg)' : undefined,
+            }}
+          />
         </div>
 
         {isOpen ? (
