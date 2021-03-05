@@ -165,6 +165,9 @@ export async function initVSCodeBridge(
               'everyone',
             )
             break
+          default:
+            const _exhaustiveCheck: never = message
+            throw new Error(`Unhandled message type${JSON.stringify(message)}`)
         }
       })
       watchForChanges(dispatch)
