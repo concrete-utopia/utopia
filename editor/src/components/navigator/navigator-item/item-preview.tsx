@@ -18,11 +18,11 @@ export const ItemPreview: React.FunctionComponent<ItemPreviewProps> = betterReac
     // 3 - if it's a component or not
     // 4 - if it's a placeholder or not
     // 5 if it's generated or not
-    const iconProps = useNameAndIcon(props.path).iconProps
+    const nameAndIcon = useNameAndIcon(props.path)
 
     return (
       <div className='w20 h20 flex justify-center items-center relative'>
-        <Icn {...iconProps} color={props.color} />
+        <Icn {...nameAndIcon.iconProps} color={props.color} />
       </div>
     )
   },
