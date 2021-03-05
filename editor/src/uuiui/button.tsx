@@ -16,7 +16,7 @@ export interface ButtonProps {
  * Inline button for UI elements, including small icon buttons on rows
  * @param hidden: invisible
  * @param highlight: should highlight on hover
- * @param spotlight: reduces default brightness, changes it back to 100% on hover
+ * @param spotlight: slightly visible background
  * @param outline: draws borders
  * @param disabled: no interactions, style opacity. Also prevents pointer events
  * @param primary: uses primary color scheme
@@ -25,6 +25,7 @@ export interface ButtonProps {
 
 export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   label: 'button',
+  cursor: 'pointer',
   display: props.hidden ? 'none' : 'flex',
   flexGrow: 0,
   flexShrink: 0,
@@ -36,12 +37,15 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   outline: 'none',
   borderRadius: 1,
   padding: 0,
-  filter: props.spotlight ? 'brightness(90%)' : undefined,
   opacity: props.disabled ? 0.5 : 1,
   pointerEvents: props.disabled ? 'none' : 'initial',
   boxShadow: props.outline ? 'inset 0px 0px 0px 1px hsl(0,0%,90%)' : undefined,
   color: props.primary ? 'white' : 'inherit',
-  background: props.primary ? UtopiaStyles.backgrounds.blue : 'transparent',
+  background: props.primary
+    ? UtopiaStyles.backgrounds.blue
+    : props.spotlight
+    ? UtopiaTheme.color.secondaryBackground.value
+    : undefined,
   '&:hover': {
     background:
       props.primary && props.highlight
@@ -49,12 +53,13 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
         : props.highlight
         ? 'hsl(0,0%,95%)'
         : 'transparent',
-    filter: props.spotlight ? 'brightness(100%)' : undefined,
+    filter: props.highlight ? 'brightness(95%)' : undefined,
   },
   '&:active': {
     outline: 'none',
     border: 'none',
     boxShadow: props.outline ? 'inset 0px 0px 0px 1px  hsl(0,0%,80%)' : undefined,
+    filter: props.highlight ? 'brightness(95%)' : undefined,
   },
 }))
 
