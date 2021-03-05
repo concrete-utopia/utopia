@@ -169,6 +169,8 @@ export function parseFromVSCodeMessage(unparsed: string): FromVSCodeMessage {
   const message = JSON.parse(unparsed)
   if (isEditorCursorPositionChanged(message)) {
     return message
+  } else if (isSendInitialData(message)) {
+    return message
   } else {
     // FIXME This should return an Either
     throw new Error(`Invalid message type ${JSON.stringify(message)}`)

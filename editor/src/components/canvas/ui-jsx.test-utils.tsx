@@ -1,10 +1,3 @@
-// WATCH OUT! We are disabling the imports from monaco here, because it breaks jest
-jest.mock('../code-editor/script-editor', () => ({
-  ScriptEditor: (props: any) => {
-    return <div>hi!</div>
-  },
-}))
-
 jest.mock('../editor/stored-state', () => ({
   loadStoredState: () => Promise.resolve(null),
   saveStoredState: () => Promise.resolve(),
@@ -26,11 +19,6 @@ jest.setTimeout(10000) // in milliseconds
 import { act, render } from '@testing-library/react'
 import * as Prettier from 'prettier'
 import create from 'zustand'
-import {
-  ComponentMetadata,
-  ElementInstanceMetadata,
-  TopLevelElement,
-} from '../../core/shared/element-template'
 import {
   foldParsedTextFile,
   isParseFailure,

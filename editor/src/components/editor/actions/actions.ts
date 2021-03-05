@@ -201,7 +201,6 @@ import {
   updateFramesOfScenesAndComponents,
   cullSpyCollector,
 } from '../../canvas/canvas-utils'
-import { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-wrapper'
 import {
@@ -287,7 +286,6 @@ import {
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
-  SetCodeEditorTheme,
   SetCodeEditorVisibility,
   SetCursorOverlay,
   SetFilebrowserRenamingTarget,
@@ -1025,7 +1023,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     pasteTargetsToIgnore: poppedEditor.pasteTargetsToIgnore,
     codeEditorErrors: currentEditor.codeEditorErrors,
     parseOrPrintInFlight: false,
-    codeEditorTheme: poppedEditor.codeEditorTheme,
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
@@ -3966,12 +3963,6 @@ export const UPDATE_FNS = {
       },
       editor,
     )
-  },
-  SET_CODE_EDITOR_THEME: (action: SetCodeEditorTheme, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      codeEditorTheme: action.value,
-    }
   },
   SET_SAFE_MODE: (action: SetSafeMode, editor: EditorModel): EditorModel => {
     return {

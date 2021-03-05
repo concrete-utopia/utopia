@@ -43,7 +43,6 @@ import type {
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange } from '../../canvas/canvas-types'
 import type { RightMenuTab } from '../../canvas/right-menu'
-import type { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import type { CursorPosition } from '../../code-editor/code-editor-utils'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
@@ -118,7 +117,6 @@ import type {
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
-  SetCodeEditorTheme,
   SetCodeEditorVisibility,
   SetCursorOverlay,
   SetFilebrowserRenamingTarget,
@@ -1089,13 +1087,6 @@ export function setAspectRatioLock(target: InstancePath, locked: boolean): SetAs
 export function toggleCanvasIsLive(): ToggleCanvasIsLive {
   return {
     action: 'TOGGLE_CANVAS_IS_LIVE',
-  }
-}
-
-export function setCodeEditorTheme(value: CodeEditorTheme): SetCodeEditorTheme {
-  return {
-    action: 'SET_CODE_EDITOR_THEME',
-    value: value,
   }
 }
 

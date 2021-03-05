@@ -956,7 +956,6 @@ describe('LOAD', () => {
         buildErrors: {},
         lintErrors: {},
       },
-      codeEditorTheme: '',
       lastUsedFont: null,
       hiddenInstances: [],
       fileBrowser: {
