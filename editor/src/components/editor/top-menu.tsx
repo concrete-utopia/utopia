@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { MenuIcons, SimpleFlexRow, Tooltip } from '../../uuiui'
+import { MenuIcons, SimpleFlexRow, SquareButton, Tooltip } from '../../uuiui'
 import { RightMenuTile } from '../canvas/right-menu'
 import { useEditorState } from './store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -26,14 +26,17 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
   const formulaBarKey = selectedViews.map(TP.toString).join(',')
 
   return (
-    <SimpleFlexRow style={{ flexGrow: 1 }}>
+    <SimpleFlexRow style={{ flexGrow: 1, gap: 12, paddingLeft: 8, paddingRight: 8 }}>
       <Tooltip title={'Toggle outline'} placement={'bottom'}>
-        <RightMenuTile
-          selected={navigatorPosition !== 'hidden'}
-          highlightSelected={false}
-          icon={<MenuIcons.Navigator />}
+        <SquareButton
+          spotlight={false}
+          highlight={true}
+          // selected={navigatorPosition !== 'hidden'}
+          // highlightSelected={false}
           onClick={onClickNavigateTab}
-        />
+        >
+          <MenuIcons.Navigator />
+        </SquareButton>
       </Tooltip>
       <ComponentOrInstanceIndicator />
       <FormulaBar key={formulaBarKey} />
