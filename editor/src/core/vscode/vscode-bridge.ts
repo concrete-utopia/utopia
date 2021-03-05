@@ -12,6 +12,7 @@ import {
   selectFromFileAndPosition,
   markVSCodeBridgeReady,
   updateFromCodeEditor,
+  sendCodeEditorInitialisation,
 } from '../../components/editor/actions/action-creators'
 import { isDirectory } from '../model/project-file-utils'
 import {
@@ -37,9 +38,17 @@ import {
   selectedElementChanged,
   parseFromVSCodeMessage,
   FSUser,
+  decorationRange,
+  DecorationRangeType,
+  boundsInFile,
 } from 'utopia-vscode-common'
-import { isTextFile, ProjectFile, TextFile } from '../shared/project-file-types'
+import { isTextFile, ProjectFile, TemplatePath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
+import {
+  EditorState,
+  getHighlightBoundsForTemplatePath,
+  getOpenTextFileKey,
+} from '../../components/editor/store/editor-state'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -146,10 +155,20 @@ export async function initVSCodeBridge(
       await clearBothMailboxes()
       await writeProjectContents(projectID, projectContents)
       await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
-        dispatch(
-          [selectFromFileAndPosition(message.filePath, message.line, message.column)],
-          'everyone',
-        )
+        switch (message.type) {
+          case 'SEND_INITIAL_DATA':
+            dispatch([sendCodeEditorInitialisation()], 'everyone')
+            break
+          case 'EDITOR_CURSOR_POSITION_CHANGED':
+            dispatch(
+              [selectFromFileAndPosition(message.filePath, message.line, message.column)],
+              'everyone',
+            )
+            break
+          default:
+            const _exhaustiveCheck: never = message
+            throw new Error(`Unhandled message type${JSON.stringify(message)}`)
+        }
       })
       watchForChanges(dispatch)
     }
@@ -170,8 +189,10 @@ export async function sendUpdateDecorationsMessage(
   return sendMessage(updateDecorationsMessage(decorations))
 }
 
-export async function sendSelectedElementChangedMessage(boundsInFile: BoundsInFile): Promise<void> {
-  return sendMessage(selectedElementChanged(boundsInFile))
+export async function sendSelectedElementChangedMessage(
+  boundsForFile: BoundsInFile,
+): Promise<void> {
+  return sendMessage(selectedElementChanged(boundsForFile))
 }
 
 export async function applyProjectContentChanges(
@@ -260,5 +281,53 @@ export async function applyProjectContentChanges(
   }
   if (isBrowserEnvironment) {
     await zipContentsTreeAsync(oldContents, newContents, onElement)
+  }
+}
+
+export async function sendCodeEditorDecorations(editorState: EditorState): Promise<void> {
+  let decorations: Array<DecorationRange> = []
+  function addRange(filename: string, rangeType: DecorationRangeType, path: TemplatePath): void {
+    const highlightBounds = getHighlightBoundsForTemplatePath(path, editorState)
+    if (highlightBounds != null) {
+      decorations.push(
+        decorationRange(
+          rangeType,
+          filename,
+          highlightBounds.startLine,
+          highlightBounds.startCol,
+          highlightBounds.endLine,
+          highlightBounds.endCol,
+        ),
+      )
+    }
+  }
+  const openFilename = getOpenTextFileKey(editorState)
+  if (openFilename != null) {
+    editorState.selectedViews.forEach((selectedView) => {
+      addRange(openFilename, 'selection', selectedView)
+    })
+    editorState.highlightedViews.forEach((highlightedView) => {
+      addRange(openFilename, 'highlight', highlightedView)
+    })
+  }
+  await sendUpdateDecorationsMessage(decorations)
+}
+
+export async function sendSelectedElement(newEditorState: EditorState): Promise<void> {
+  const openFilename = getOpenTextFileKey(newEditorState)
+  if (openFilename != null) {
+    const selectedView = newEditorState.selectedViews[0]
+    const highlightBounds = getHighlightBoundsForTemplatePath(selectedView, newEditorState)
+    if (highlightBounds != null) {
+      await sendSelectedElementChangedMessage(
+        boundsInFile(
+          openFilename,
+          highlightBounds.startLine,
+          highlightBounds.startCol,
+          highlightBounds.endLine,
+          highlightBounds.endCol,
+        ),
+      )
+    }
   }
 }

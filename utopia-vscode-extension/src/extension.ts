@@ -20,6 +20,7 @@ import {
   exists,
   writeFileUnsavedContentAsUTF8,
   clearFileUnsavedContent,
+  sendInitialData,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
@@ -35,6 +36,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   watchForUnsavedContentChangesFromFS(utopiaFS)
   watchForChangesFromVSCode(context, projectID)
+
+  sendMessage(sendInitialData())
 }
 
 async function initFS(projectID: string): Promise<void> {

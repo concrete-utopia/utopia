@@ -79,15 +79,11 @@ import {
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import {
   applyProjectContentChanges,
+  sendCodeEditorDecorations,
+  sendSelectedElement,
   sendSelectedElementChangedMessage,
-  sendUpdateDecorationsMessage,
 } from '../../../core/vscode/vscode-bridge'
-import {
-  boundsInFile,
-  DecorationRange,
-  decorationRange,
-  DecorationRangeType,
-} from 'utopia-vscode-common'
+import { boundsInFile } from 'utopia-vscode-common'
 import { TemplatePathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 
@@ -321,32 +317,7 @@ async function applyVSCodeDecorations(
     oldEditorState.highlightedViews !== newEditorState.highlightedViews ||
     oldHighlightBounds !== newHighlightBounds
   ) {
-    let decorations: Array<DecorationRange> = []
-    function addRange(filename: string, rangeType: DecorationRangeType, path: TemplatePath): void {
-      const highlightBounds = getHighlightBoundsForTemplatePath(path, newEditorState)
-      if (highlightBounds != null) {
-        decorations.push(
-          decorationRange(
-            rangeType,
-            filename,
-            highlightBounds.startLine,
-            highlightBounds.startCol,
-            highlightBounds.endLine,
-            highlightBounds.endCol,
-          ),
-        )
-      }
-    }
-    const openFilename = getOpenTextFileKey(newEditorState)
-    if (openFilename != null) {
-      newEditorState.selectedViews.forEach((selectedView) => {
-        addRange(openFilename, 'selection', selectedView)
-      })
-      newEditorState.highlightedViews.forEach((highlightedView) => {
-        addRange(openFilename, 'highlight', highlightedView)
-      })
-    }
-    await sendUpdateDecorationsMessage(decorations)
+    await sendCodeEditorDecorations(newEditorState)
   }
 }
 
@@ -358,22 +329,7 @@ async function updateSelectedElementChanged(
     oldEditorState.selectedViews !== newEditorState.selectedViews &&
     newEditorState.selectedViews.length > 0
   ) {
-    const openFilename = getOpenTextFileKey(newEditorState)
-    if (openFilename != null) {
-      const selectedView = newEditorState.selectedViews[0]
-      const highlightBounds = getHighlightBoundsForTemplatePath(selectedView, newEditorState)
-      if (highlightBounds != null) {
-        sendSelectedElementChangedMessage(
-          boundsInFile(
-            openFilename,
-            highlightBounds.startLine,
-            highlightBounds.startCol,
-            highlightBounds.endLine,
-            highlightBounds.endCol,
-          ),
-        )
-      }
-    }
+    await sendSelectedElement(newEditorState)
   }
 }
 

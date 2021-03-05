@@ -82,6 +82,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SEND_LINTER_REQUEST_MESSAGE':
     case 'MARK_VSCODE_BRIDGE_READY':
     case 'SELECT_FROM_FILE_AND_POSITION':
+    case 'SEND_CODE_EDITOR_INITIALISATION':
       return true
 
     case 'NEW':

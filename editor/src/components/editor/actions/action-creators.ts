@@ -180,6 +180,7 @@ import type {
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
+  SendCodeEditorInitialisation,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1245,5 +1246,11 @@ export function selectFromFileAndPosition(
     filePath: filePath,
     line: line,
     column: column,
+  }
+}
+
+export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
+  return {
+    action: 'SEND_CODE_EDITOR_INITIALISATION',
   }
 }
