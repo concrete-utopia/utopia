@@ -256,8 +256,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_CANVAS_IS_LIVE(state, derivedState)
     case 'RENAME_PROP_KEY':
       return UPDATE_FNS.RENAME_PROP_KEY(action, state)
-    case 'SET_CODE_EDITOR_THEME':
-      return UPDATE_FNS.SET_CODE_EDITOR_THEME(action, state)
     case 'SET_SAFE_MODE':
       return UPDATE_FNS.SET_SAFE_MODE(action, state)
     case 'SET_SAVE_ERROR':
