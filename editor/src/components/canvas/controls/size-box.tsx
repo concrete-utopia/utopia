@@ -416,6 +416,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           <React.Fragment>
             <ResizeControl
               {...controlProps}
+              key={'resize-control-v-0.5-0.0'}
               cursor={CSSCursor.ResizeNS}
               position={{ x: 0.5, y: 0 }}
               enabledDirection={DirectionVertical}
@@ -431,6 +432,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
             </ResizeControl>
             <ResizeControl
               {...controlProps}
+              key={'resize-control-v-0.5-1.0'}
               cursor={CSSCursor.ResizeNS}
               position={{ x: 0.5, y: 1 }}
               enabledDirection={DirectionVertical}
@@ -452,6 +454,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           <React.Fragment>
             <ResizeControl
               {...controlProps}
+              key={'resize-control-h-0.0-0.5'}
               cursor={CSSCursor.ResizeEW}
               position={{ x: 0, y: 0.5 }}
               enabledDirection={DirectionHorizontal}
@@ -467,6 +470,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
             </ResizeControl>
             <ResizeControl
               {...controlProps}
+              key={'resize-control-h-1.0-0.5'}
               cursor={CSSCursor.ResizeEW}
               position={{ x: 1, y: 0.5 }}
               enabledDirection={DirectionHorizontal}
@@ -493,6 +497,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
         <React.Fragment>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-v-0.5-0.0'}
             cursor={CSSCursor.ResizeNS}
             position={{ x: 0.5, y: 0 }}
             enabledDirection={DirectionVertical}
@@ -506,6 +511,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-v-0.5-1.0'}
             cursor={CSSCursor.ResizeNS}
             position={{ x: 0.5, y: 1 }}
             enabledDirection={DirectionVertical}
@@ -519,6 +525,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-h-0.0-0.5'}
             cursor={CSSCursor.ResizeEW}
             position={{ x: 0, y: 0.5 }}
             enabledDirection={DirectionHorizontal}
@@ -532,6 +539,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-h-1.0-0.5'}
             cursor={CSSCursor.ResizeEW}
             position={{ x: 1, y: 0.5 }}
             enabledDirection={DirectionHorizontal}
@@ -545,6 +553,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-a-0.0-0.0'}
             cursor={CSSCursor.ResizeNWSE}
             position={{ x: 0, y: 0 }}
             enabledDirection={DirectionAll}
@@ -557,6 +566,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-a-1.0-0.0'}
             cursor={CSSCursor.ResizeNESW}
             position={{ x: 1, y: 0 }}
             enabledDirection={DirectionAll}
@@ -569,6 +579,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-a-0.0-1.0'}
             cursor={CSSCursor.ResizeNESW}
             position={{ x: 0, y: 1 }}
             enabledDirection={DirectionAll}
@@ -581,6 +592,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-a-1.0-1.0'}
             cursor={CSSCursor.ResizeNWSE}
             position={{ x: 1, y: 1 }}
             enabledDirection={DirectionAll}
@@ -598,6 +610,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
         <React.Fragment>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-v-0.5-0.0'}
             cursor={CSSCursor.ResizeNS}
             position={{ x: 0.5, y: 0 }}
             enabledDirection={DirectionVertical}
@@ -611,6 +624,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-v-0.5-1.0'}
             cursor={CSSCursor.ResizeNS}
             position={{ x: 0.5, y: 1 }}
             enabledDirection={DirectionVertical}
@@ -624,6 +638,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-h-0.0-0.5'}
             cursor={CSSCursor.ResizeEW}
             position={{ x: 0, y: 0.5 }}
             enabledDirection={DirectionHorizontal}
@@ -637,6 +652,7 @@ export class ResizeRectangle extends React.Component<ResizeRectangleProps> {
           </ResizeControl>
           <ResizeControl
             {...controlProps}
+            key={'resize-control-h-1.0-0.5'}
             cursor={CSSCursor.ResizeEW}
             position={{ x: 1, y: 0.5 }}
             enabledDirection={DirectionHorizontal}

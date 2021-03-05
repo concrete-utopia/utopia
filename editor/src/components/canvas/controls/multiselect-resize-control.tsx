@@ -182,6 +182,7 @@ export class MultiselectResizeControl extends React.Component<
           <>
             <SingleSelectResizeControls
               {...this.props}
+              key={'single-select-resize-controls'}
               obtainOriginalFrames={this.obtainOriginalFrames}
               onResizeStart={this.onResizeStart}
             />
@@ -201,36 +202,35 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
   render() {
     return this.props.selectedViews.map((view, index) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
-      if (frame != null) {
-        return (
-          <>
-            <ResizeRectangle
-              dispatch={this.props.dispatch}
-              scale={this.props.scale}
-              canvasOffset={this.props.canvasOffset}
-              measureSize={frame}
-              visualSize={frame}
-              resizeStatus={this.props.resizeStatus}
-              selectedViews={[view]}
-              elementAspectRatioLocked={this.props.elementAspectRatioLocked}
-              imageMultiplier={this.props.imageMultiplier}
-              sideResizer={false}
-              dragState={
-                this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
-                  ? this.props.dragState
-                  : null
-              }
-              windowToCanvasPosition={this.props.windowToCanvasPosition}
-              getOriginalFrames={this.props.obtainOriginalFrames}
-              metadata={this.props.componentMetadata}
-              onResizeStart={this.props.onResizeStart}
-              testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
-              maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
-            />
-          </>
-        )
+      if (frame == null) {
+        return null
       } else {
-        return <></>
+        return (
+          <ResizeRectangle
+            key={`single-select-resize-controls-rect-${index}`}
+            dispatch={this.props.dispatch}
+            scale={this.props.scale}
+            canvasOffset={this.props.canvasOffset}
+            measureSize={frame}
+            visualSize={frame}
+            resizeStatus={this.props.resizeStatus}
+            selectedViews={[view]}
+            elementAspectRatioLocked={this.props.elementAspectRatioLocked}
+            imageMultiplier={this.props.imageMultiplier}
+            sideResizer={false}
+            dragState={
+              this.props.dragState != null && this.props.dragState.type === 'RESIZE_DRAG_STATE'
+                ? this.props.dragState
+                : null
+            }
+            windowToCanvasPosition={this.props.windowToCanvasPosition}
+            getOriginalFrames={this.props.obtainOriginalFrames}
+            metadata={this.props.componentMetadata}
+            onResizeStart={this.props.onResizeStart}
+            testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
+            maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
+          />
+        )
       }
     })
   }
