@@ -41,17 +41,14 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
     },
     'useNameAndIcon',
     (oldResult, newResult) => {
-      const pathsChanged = !TP.pathsEqual(oldResult.path, newResult.path)
-      const labelChanged = oldResult.label !== newResult.label
-      const iconPropsChanged = !shallowEqual(oldResult.iconProps, newResult.iconProps)
+      const pathEquals = TP.pathsEqual(oldResult.path, newResult.path)
+      const labelEquals = oldResult.label === newResult.label
+      const iconPropsEqual = shallowEqual(oldResult.iconProps, newResult.iconProps)
       const oldNamePath = oldResult.name?.propertyPath != null ? oldResult.name?.propertyPath : null
       const newNamePath = newResult.name?.propertyPath != null ? newResult.name?.propertyPath : null
-      const namePathChanged = !PP.pathsEqual(oldNamePath, newNamePath)
-      const nameVariableChanged = oldResult.name?.baseVariable !== newResult.name?.baseVariable
-
-      return (
-        pathsChanged || labelChanged || iconPropsChanged || namePathChanged || nameVariableChanged
-      )
+      const namePathEquals = PP.pathsEqual(oldNamePath, newNamePath)
+      const nameVariableEquals = oldResult.name?.baseVariable === newResult.name?.baseVariable
+      return pathEquals || labelEquals || iconPropsEqual || namePathEquals || nameVariableEquals
     },
   )
 }
@@ -102,14 +99,15 @@ function createIconProps(
     ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
     : null
   const isFlexLayoutedContainer = MetadataUtils.isFlexLayoutedContainer(element)
-  const flexDirection = MetadataUtils.getYogaDirection(element)
-  const flexWrap = MetadataUtils.getYogaWrap(element)
+  const flexDirection = MetadataUtils.getFlexDirection(element)
+  const flexWrap = MetadataUtils.getFlexWrap(element)
   const componentInstance = MetadataUtils.isComponentInstance(path, components, metadata, imports)
   const isAutosizingView = MetadataUtils.isAutoSizingView(element)
 
   return {
     category: 'element',
     type: getIconTypeForElement(
+      path,
       imports,
       elementName,
       isFlexLayoutedContainer,
@@ -125,6 +123,7 @@ function createIconProps(
 }
 
 export function getIconTypeForElement(
+  path: TemplatePath,
   imports: Imports,
   elementName: JSXElementName | null,
   isFlexLayoutedContainer: boolean,
@@ -134,14 +133,14 @@ export function getIconTypeForElement(
   componentInstance: boolean,
   isGroup: boolean,
 ): string {
-  let role: string = 'default'
+  let role: string = 'scene'
   const flexDirection: 'column' | 'row' =
     originalFlexDirection === 'column' || originalFlexDirection === 'column-reverse'
       ? 'column'
       : 'row'
   const flexWrapped: boolean = flexWrap === 'wrap' || flexWrap === 'wrap-reverse'
 
-  if (elementName == null) {
+  if (TP.isScenePath(path) || elementName == null) {
     role = 'scene'
   } else {
     if (isViewAgainstImports(elementName, imports)) {
@@ -150,14 +149,8 @@ export function getIconTypeForElement(
       } else {
         role = 'view'
       }
-    } else if (isEllipseAgainstImports(elementName, imports)) {
-      role = 'ellipse'
-    } else if (isRectangleAgainstImports(elementName, imports)) {
-      role = 'rectangle'
     } else if (isImg(elementName)) {
       role = 'image'
-    } else if (isTextAgainstImports(elementName, imports)) {
-      role = 'text'
     } else if (isAnimatedElementAgainstImports(elementName, imports)) {
       role = 'animated'
     } else if (componentInstance) {

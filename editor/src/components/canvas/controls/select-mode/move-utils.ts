@@ -135,7 +135,7 @@ export function dragComponent(
     }
     if (isFlexContainer) {
       if (originalFrame.frame != null) {
-        const flexDirection = MetadataUtils.getYogaDirection(
+        const flexDirection = MetadataUtils.getFlexDirection(
           MetadataUtils.getParent(componentsMetadata, view),
         )
         const draggedFrame = Utils.offsetRect(originalFrame.frame, dragDelta)

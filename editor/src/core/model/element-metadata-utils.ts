@@ -301,7 +301,7 @@ export const MetadataUtils = {
     if (parentInstance == null) {
       return {}
     } else {
-      const flexDirection = getReorderDirection(this.getYogaDirection(parentInstance))
+      const flexDirection = getReorderDirection(this.getFlexDirection(parentInstance))
 
       if (TP.isInstancePath(target)) {
         const staticTarget = this.dynamicPathToStaticPath(target)
@@ -368,7 +368,7 @@ export const MetadataUtils = {
       return null
     }
   },
-  getYogaDirection: function (
+  getFlexDirection: function (
     instance: ElementInstanceMetadata | null,
   ): 'row' | 'row-reverse' | 'column' | 'column-reverse' {
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
@@ -377,18 +377,7 @@ export const MetadataUtils = {
       return 'row' // TODO read this value from spy
     }
   },
-  getYogaDirectionAtPath(
-    path: TemplatePath | null,
-    metadata: JSXMetadata,
-  ): 'row' | 'row-reverse' | 'column' | 'column-reverse' {
-    // TODO Scene Implementation
-    const instance =
-      path == null || TP.isScenePath(path)
-        ? null
-        : this.getElementByInstancePathMaybe(metadata.elements, path)
-    return this.getYogaDirection(instance)
-  },
-  getYogaWrap: function (
+  getFlexWrap: function (
     instance: ElementInstanceMetadata | null,
   ): 'wrap' | 'wrap-reverse' | 'nowrap' {
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {

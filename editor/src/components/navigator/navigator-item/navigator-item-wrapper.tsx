@@ -62,12 +62,6 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
       )
       const staticName = MetadataUtils.getStaticElementName(templatePath, componentsIncludingScenes)
       const labelInner = MetadataUtils.getElementLabel(templatePath, jsxMetadataKILLME, staticName)
-      const componentInstanceInner = MetadataUtils.isComponentInstance(
-        templatePath,
-        componentsIncludingScenes,
-        jsxMetadataKILLME,
-        imports,
-      )
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
       const isInNavigatorTargets = TP.containsPath(templatePath, navigatorTargets)
@@ -92,16 +86,10 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
       return {
         staticElementName: staticName,
         label: labelInner,
-        isFlexLayoutedContainer: MetadataUtils.isFlexLayoutedContainer(element),
-        yogaDirection: MetadataUtils.getYogaDirection(element),
-        yogaWrap: MetadataUtils.getYogaWrap(element),
-        componentInstance: componentInstanceInner,
-        isAutosizingView: MetadataUtils.isAutoSizingView(element),
         isSelected: TP.containsPath(templatePath, transientState.selectedViews),
         isHighlighted: TP.containsPath(templatePath, transientState.highlightedViews),
         noOfChildren: noOfChildrenInner,
         supportsChildren: supportsChildren,
-        imports: imports,
         elementOriginType: elementOriginType,
         elementWarnings: elementWarningsInner ?? defaultElementWarnings,
       }
@@ -117,17 +105,11 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
     const {
       isSelected,
       isHighlighted,
-      isFlexLayoutedContainer,
-      yogaDirection,
-      yogaWrap,
       noOfChildren,
       supportsChildren,
       elementOriginType,
       staticElementName,
       label,
-      componentInstance,
-      isAutosizingView,
-      imports,
       elementWarnings,
     } = useEditorState(selector, 'NavigatorItemWrapper')
 
@@ -172,14 +154,8 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
       elementOriginType: elementOriginType,
       staticElementName: deepReferenceStaticElementName,
       label: label,
-      isFlexLayoutedContainer,
-      yogaDirection,
-      yogaWrap,
-      componentInstance: componentInstance,
-      isAutosizingView: isAutosizingView,
       isElementVisible: isElementVisible,
       renamingTarget: renamingTarget,
-      imports: imports,
       elementWarnings: elementWarnings,
       windowStyle: props.windowStyle,
     }
