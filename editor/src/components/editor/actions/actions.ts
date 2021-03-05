@@ -201,7 +201,6 @@ import {
   updateFramesOfScenesAndComponents,
   cullSpyCollector,
 } from '../../canvas/canvas-utils'
-import { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-wrapper'
 import {
@@ -287,7 +286,6 @@ import {
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
-  SetCodeEditorTheme,
   SetCodeEditorVisibility,
   SetCursorOverlay,
   SetFilebrowserRenamingTarget,
@@ -359,6 +357,7 @@ import {
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
+  SendCodeEditorInitialisation,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -498,7 +497,12 @@ import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
-import { initVSCodeBridge, sendOpenFileMessage } from '../../../core/vscode/vscode-bridge'
+import {
+  initVSCodeBridge,
+  sendCodeEditorDecorations,
+  sendOpenFileMessage,
+  sendSelectedElement,
+} from '../../../core/vscode/vscode-bridge'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1019,7 +1023,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     pasteTargetsToIgnore: poppedEditor.pasteTargetsToIgnore,
     codeEditorErrors: currentEditor.codeEditorErrors,
     parseOrPrintInFlight: false,
-    codeEditorTheme: poppedEditor.codeEditorTheme,
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
@@ -3961,12 +3964,6 @@ export const UPDATE_FNS = {
       editor,
     )
   },
-  SET_CODE_EDITOR_THEME: (action: SetCodeEditorTheme, editor: EditorModel): EditorModel => {
-    return {
-      ...editor,
-      codeEditorTheme: action.value,
-    }
-  },
   SET_SAFE_MODE: (action: SetSafeMode, editor: EditorModel): EditorModel => {
     return {
       ...editor,
@@ -4291,6 +4288,15 @@ export const UPDATE_FNS = {
     } else {
       return editor
     }
+  },
+  SEND_CODE_EDITOR_INITIALISATION: (
+    action: SendCodeEditorInitialisation,
+    editor: EditorModel,
+  ): EditorModel => {
+    // Side effects.
+    sendCodeEditorDecorations(editor)
+    sendSelectedElement(editor)
+    return editor
   },
 }
 

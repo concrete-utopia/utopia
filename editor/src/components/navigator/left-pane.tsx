@@ -22,7 +22,6 @@ import {
   Button,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { CodeEditorTheme, CodeEditorThemeCollection } from '../code-editor/code-editor-themes'
 import { setFocus } from '../common/actions'
 import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -94,48 +93,6 @@ function setTab(tab: LeftMenuTab): EditorAction {
     action: 'SET_LEFT_MENU_TAB',
     tab: tab,
   }
-}
-
-interface ThemeSelectorProps {
-  selectedTheme: CodeEditorTheme
-  dispatch: EditorDispatch
-}
-
-const ThemeSelector = (props: ThemeSelectorProps) => {
-  const { dispatch, selectedTheme } = props
-
-  const themeListOptions: SelectOption[] = Object.keys(CodeEditorThemeCollection).map((key) => {
-    const theme = CodeEditorThemeCollection[key]
-    const name = typeof theme.name === 'string' ? theme.name : key
-    return {
-      label: name,
-      value: key,
-    }
-  })
-
-  const onSubmitValue = React.useCallback(
-    (newValue) => {
-      dispatch([EditorActions.setCodeEditorTheme(newValue.value)], 'everyone')
-    },
-    [dispatch],
-  )
-
-  return (
-    <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-      <span>Theme</span>
-      <PopupList
-        value={{ value: selectedTheme, label: selectedTheme }}
-        style={{
-          fontWeight: 'normal',
-          marginLeft: 4,
-        }}
-        options={themeListOptions}
-        onSubmitValue={onSubmitValue}
-        controlStyles={getControlStyles('simple')}
-        containerMode='default'
-      />
-    </GridRow>
-  )
 }
 
 interface ThumbnailProps {
@@ -397,7 +354,6 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
     userState,
     focusedPanel,
     minimised,
-    codeEditorTheme,
   } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -407,7 +363,6 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
       userState: store.userState,
       focusedPanel: store.editor.focusedPanel,
       minimised: store.editor.projectSettings.minimised,
-      codeEditorTheme: store.editor.codeEditorTheme,
     }
   }, 'ProjectSettingsPanel')
 
@@ -482,7 +437,6 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
                   action={triggerRegenerateThumbnail}
                   thumbnailLastGenerated={thumbnailLastGenerated}
                 />
-                <ThemeSelector dispatch={dispatch} selectedTheme={codeEditorTheme} />
               </div>
             )}
           </SectionBodyArea>

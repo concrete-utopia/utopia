@@ -137,7 +137,17 @@ export function editorCursorPositionChanged(filePath: string, line: number, colu
   }
 }
 
-export type FromVSCodeMessage = EditorCursorPositionChanged
+export interface SendInitialData {
+  type: 'SEND_INITIAL_DATA'
+}
+
+export function sendInitialData(): SendInitialData {
+  return {
+    type: 'SEND_INITIAL_DATA'
+  }
+}
+
+export type FromVSCodeMessage = EditorCursorPositionChanged | SendInitialData
 
 export function isEditorCursorPositionChanged(message: unknown): message is EditorCursorPositionChanged {
   return (
@@ -147,9 +157,19 @@ export function isEditorCursorPositionChanged(message: unknown): message is Edit
   )
 }
 
+export function isSendInitialData(message: unknown): message is SendInitialData {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'SEND_INITIAL_DATA'
+  )
+}
+
 export function parseFromVSCodeMessage(unparsed: string): FromVSCodeMessage {
   const message = JSON.parse(unparsed)
   if (isEditorCursorPositionChanged(message)) {
+    return message
+  } else if (isSendInitialData(message)) {
     return message
   } else {
     // FIXME This should return an Either

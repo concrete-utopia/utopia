@@ -43,7 +43,6 @@ import type {
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange } from '../../canvas/canvas-types'
 import type { RightMenuTab } from '../../canvas/right-menu'
-import type { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import type { CursorPosition } from '../../code-editor/code-editor-utils'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
@@ -118,7 +117,6 @@ import type {
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
-  SetCodeEditorTheme,
   SetCodeEditorVisibility,
   SetCursorOverlay,
   SetFilebrowserRenamingTarget,
@@ -180,6 +178,7 @@ import type {
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
+  SendCodeEditorInitialisation,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1091,13 +1090,6 @@ export function toggleCanvasIsLive(): ToggleCanvasIsLive {
   }
 }
 
-export function setCodeEditorTheme(value: CodeEditorTheme): SetCodeEditorTheme {
-  return {
-    action: 'SET_CODE_EDITOR_THEME',
-    value: value,
-  }
-}
-
 export function setSafeMode(value: boolean): SetSafeMode {
   return {
     action: 'SET_SAFE_MODE',
@@ -1245,5 +1237,11 @@ export function selectFromFileAndPosition(
     filePath: filePath,
     line: line,
     column: column,
+  }
+}
+
+export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
+  return {
+    action: 'SEND_CODE_EDITOR_INITIALISATION',
   }
 }

@@ -26,7 +26,6 @@ import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-te
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
-import { editor } from 'monaco-editor'
 import { isLiveMode, EditorModes } from '../../editor/editor-modes'
 import { DropTargetHookSpec, ConnectableElement, useDrop } from 'react-dnd'
 import { FileBrowserItemProps } from '../../filebrowser/fileitem'

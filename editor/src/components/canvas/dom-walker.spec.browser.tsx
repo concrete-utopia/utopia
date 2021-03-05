@@ -1,9 +1,3 @@
-jest.mock('../code-editor/script-editor', () => ({
-  ScriptEditor: (props: any) => {
-    return <div>hi!</div>
-  },
-}))
-
 jest.mock('../editor/stored-state', () => ({
   loadStoredState: () => Promise.resolve(null),
   saveStoredState: () => Promise.resolve(),

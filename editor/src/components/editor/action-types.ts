@@ -11,7 +11,6 @@ import { KeysPressed, Key } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
 import { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
 import { CanvasAction, CSSCursor, PinOrFlexFrameChange } from '../canvas/canvas-types'
-import { CodeEditorTheme } from '../code-editor/code-editor-themes'
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
 import {
@@ -697,11 +696,6 @@ export interface RenameStyleSelector {
   value: Array<string>
 }
 
-export interface SetCodeEditorTheme {
-  action: 'SET_CODE_EDITOR_THEME'
-  value: CodeEditorTheme
-}
-
 export interface SetSafeMode {
   action: 'SET_SAFE_MODE'
   value: boolean
@@ -790,6 +784,10 @@ export interface SelectFromFileAndPosition {
   filePath: string
   line: number
   column: number
+}
+
+export interface SendCodeEditorInitialisation {
+  action: 'SEND_CODE_EDITOR_INITIALISATION'
 }
 
 export type EditorAction =
@@ -905,7 +903,6 @@ export type EditorAction =
   | UpdateJSXElementName
   | ToggleCanvasIsLive
   | RenameStyleSelector
-  | SetCodeEditorTheme
   | SetSafeMode
   | SetSaveError
   | InsertDroppedImage
@@ -923,6 +920,7 @@ export type EditorAction =
   | UpdateChildText
   | MarkVSCodeBridgeReady
   | SelectFromFileAndPosition
+  | SendCodeEditorInitialisation
 
 export type DispatchPriority =
   | 'everyone'

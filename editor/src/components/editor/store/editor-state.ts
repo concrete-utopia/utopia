@@ -96,7 +96,6 @@ import {
   HigherOrderControl,
 } from '../../canvas/canvas-types'
 import { produceCanvasTransientState } from '../../canvas/canvas-utils'
-import { CodeEditorTheme, DefaultTheme } from '../../code-editor/code-editor-themes'
 import { CursorPosition } from '../../code-editor/code-editor-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
@@ -339,7 +338,6 @@ export interface EditorState {
   thumbnailLastGenerated: number
   pasteTargetsToIgnore: TemplatePath[]
   parseOrPrintInFlight: boolean
-  codeEditorTheme: CodeEditorTheme
   safeMode: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
@@ -948,7 +946,6 @@ export interface PersistentModel {
     buildErrors: ErrorMessages
     lintErrors: ErrorMessages
   }
-  codeEditorTheme: CodeEditorTheme
   fileBrowser: {
     minimised: boolean
   }
@@ -988,7 +985,6 @@ export function mergePersistentModel(
     openFiles: second.openFiles,
     selectedFile: second.selectedFile,
     codeEditorErrors: second.codeEditorErrors,
-    codeEditorTheme: second.codeEditorTheme,
     fileBrowser: {
       minimised: second.fileBrowser.minimised,
     },
@@ -1136,7 +1132,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     thumbnailLastGenerated: 0,
     pasteTargetsToIgnore: [],
     parseOrPrintInFlight: false,
-    codeEditorTheme: DefaultTheme,
     safeMode: false,
     saveError: false,
     vscodeBridgeReady: false,
@@ -1360,7 +1355,6 @@ export function editorModelFromPersistentModel(
     thumbnailLastGenerated: 0,
     pasteTargetsToIgnore: [],
     parseOrPrintInFlight: false,
-    codeEditorTheme: persistentModel.codeEditorTheme,
     safeMode: false,
     saveError: false,
     selectedFile: Utils.optionalMap((tab) => {
@@ -1401,7 +1395,6 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     openFiles: editor.openFiles,
     selectedFile: selectedFile,
     codeEditorErrors: editor.codeEditorErrors,
-    codeEditorTheme: editor.codeEditorTheme,
     fileBrowser: {
       minimised: editor.fileBrowser.minimised,
     },
@@ -1433,7 +1426,6 @@ export function persistentModelForProjectContents(
       buildErrors: {},
       lintErrors: {},
     },
-    codeEditorTheme: DefaultTheme,
     lastUsedFont: null,
     hiddenInstances: [],
     fileBrowser: {
