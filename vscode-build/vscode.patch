@@ -50,10 +50,10 @@ index 104acfe955..123e8e79f5 100644
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/product.json b/product.json
-index 9cddae242a..1390238e4e 100644
+index 9cddae242a..35400d5d59 100644
 --- a/product.json
 +++ b/product.json
-@@ -1,140 +1,10 @@
+@@ -1,140 +1,9 @@
  {
 -	"nameShort": "Code - OSS",
 -	"nameLong": "Code - OSS",
@@ -199,8 +199,7 @@ index 9cddae242a..1390238e4e 100644
 +    "applicationName": "code-web",
 +    "dataFolderName": ".vscode-web",
 +    "version": "1.53.0"
-+  },
-+  "webviewEndpoint": "http://localhost:8000/vscode/vscode/vs/workbench/contrib/webview/browser/pre"
++  }
  }
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
 index 1ed7feec97..573adf16ba 100644
