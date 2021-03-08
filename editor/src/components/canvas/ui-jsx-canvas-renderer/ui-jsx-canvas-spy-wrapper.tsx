@@ -16,6 +16,8 @@ import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as TP from '../../../core/shared/template-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import { getTopLevelElementName, useGetValidTemplatePaths } from './scene-root'
+import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
+import { getUtopiaID } from '../../../core/model/element-template-utils'
 
 export function buildSpyWrappedElement(
   jsx: JSXElement,
@@ -30,10 +32,16 @@ export function buildSpyWrappedElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   temporarySceneTemplatePath: TemplatePath | null,
 ): React.ReactElement {
-  const props = {
+  let props = {
     ...finalProps,
     key: TP.toComponentId(templatePath),
   }
+
+  if (TP.pathsEqual(TP.parentPath(templatePath), temporarySceneTemplatePath)) {
+    // Replace the instance's UID with the definition's
+    props[UTOPIA_UID_KEY] = getUtopiaID(jsx)
+  }
+
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
     const instanceMetadata: ElementInstanceMetadata = {
