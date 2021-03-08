@@ -4,6 +4,7 @@ import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { isSceneElement, PathForResizeContent } from '../../../core/model/scene-utils'
 import {
   UTOPIA_ORIGINAL_ID_KEY,
+  UTOPIA_TEMPLATE_PATH_KEY,
   UTOPIA_UID_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
@@ -67,6 +68,7 @@ export function renderCoreElement(
 
       let passthroughProps: MapLike<any> = {
         ...assembledProps,
+        [UTOPIA_TEMPLATE_PATH_KEY]: templatePath,
       }
 
       const uidForProps = Utils.defaultIfNull(assembledProps[UTOPIA_UID_KEY], uid)

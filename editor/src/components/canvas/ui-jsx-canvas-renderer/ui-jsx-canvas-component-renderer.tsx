@@ -15,6 +15,7 @@ import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as TP from '../../../core/shared/template-path'
 import { renderCoreElement } from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
+import { UTOPIA_TEMPLATE_PATH_KEY, UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 
 export type ComponentRendererComponent = React.ComponentType<any> & {
   topLevelElementName: string
@@ -73,7 +74,8 @@ export function createComponentRendererComponent(params: {
       ...appliedProps,
     }
 
-    const scenePath = sceneContext.scenePath
+    // ONLY correct if this component is used as a Scene Root.
+    const contextScenePath = sceneContext.scenePath
     let codeError: Error | null = null
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
@@ -88,11 +90,9 @@ export function createComponentRendererComponent(params: {
       if (isJSXFragment(element)) {
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
-        // so. this template path is ONLY correct if this component is used as a Scene Root.
-        // if this component is used as an instance inside some other component, this template path will be garbage.
-        // but! worry not, because in cases this is an instance, we are not running the DOM-walker and we discard the spy results
-        // so it is not an issue that we have a false template path
-        const ownTemplatePath = TP.instancePath(scenePath, [getUtopiaID(element)])
+        const realTemplatePath = realPassedProps[UTOPIA_TEMPLATE_PATH_KEY]
+        const uid = realPassedProps[UTOPIA_UID_KEY] || getUtopiaID(element)
+        const ownTemplatePath = realTemplatePath ?? TP.instancePath(contextScenePath, [uid])
 
         return renderCoreElement(
           element,
