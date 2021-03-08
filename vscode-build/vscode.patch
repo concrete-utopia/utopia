@@ -36,6 +36,19 @@ index 9e26dfeeb6..0000000000
 @@ -1 +0,0 @@
 -{}
 \ No newline at end of file
+diff --git a/extensions/simple-browser/src/simpleBrowserView.ts b/extensions/simple-browser/src/simpleBrowserView.ts
+index 104acfe955..123e8e79f5 100644
+--- a/extensions/simple-browser/src/simpleBrowserView.ts
++++ b/extensions/simple-browser/src/simpleBrowserView.ts
+@@ -136,7 +136,7 @@ export class SimpleBrowserView extends Disposable {
+ 				</header>
+ 				<div class="content">
+ 					<div class="iframe-focused-alert">${localize('view.iframe-focused', "Focus Lock")}</div>
+-					<iframe sandbox="allow-scripts allow-forms allow-same-origin"></iframe>
++					<iframe sandbox="allow-scripts allow-forms allow-same-origin allow-popups"></iframe>
+ 				</div>
+ 
+ 				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/product.json b/product.json
 index 9cddae242a..35400d5d59 100644
 --- a/product.json
@@ -189,10 +202,10 @@ index 9cddae242a..35400d5d59 100644
 +  }
  }
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 1ed7feec97..114403d3e0 100644
+index 1ed7feec97..573adf16ba 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
-@@ -1,532 +1,95 @@
+@@ -1,532 +1,99 @@
 -/*---------------------------------------------------------------------------------------------
 - *  Copyright (c) Microsoft Corporation. All rights reserved.
 - *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -794,6 +807,9 @@ index 1ed7feec97..114403d3e0 100644
 +  const urlParams = new URLSearchParams(window.location.search)
 +  const projectID = urlParams.get('project_id')!
 +
++  // Use this instance as the webview provider rather than hitting MS servers
++  const webviewEndpoint = `${window.location.origin}/vscode/vscode/vs/workbench/contrib/webview/browser/pre`
++
 +  let config = {
 +    ...loadedConfig,
 +    folderUri: {
@@ -803,6 +819,7 @@ index 1ed7feec97..114403d3e0 100644
 +      query: '',
 +      fragment: '',
 +    },
++    webviewEndpoint: webviewEndpoint,
 +  }
 +
 +  if (Array.isArray(config.staticExtensions)) {
@@ -1363,6 +1380,57 @@ index cfbbb00c6e..e7486279ab 100644
  		},
  		'search.quickOpen.history.filterSortOrder': {
  			'type': 'string',
+diff --git a/src/vs/workbench/contrib/url/browser/trustedDomains.ts b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
+index 145afdf032..bedd34dbbd 100644
+--- a/src/vs/workbench/contrib/url/browser/trustedDomains.ts
++++ b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
+@@ -215,10 +215,19 @@ export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTru
+ 	const storageService = accessor.get(IStorageService);
+ 	const productService = accessor.get(IProductService);
+ 
+-	const defaultTrustedDomains: string[] = productService.linkProtectionTrustedDomains
++	const utopiaTrustedDomains: string[] = [
++		"https://utopia.app",
++		"https://utopia.fm",
++		"https://utopia.pizza",
++		"https://utopia.baby"
++	]
++
++	const baseTrustedDomains: string[] = productService.linkProtectionTrustedDomains
+ 		? [...productService.linkProtectionTrustedDomains]
+ 		: [];
+ 
++	const defaultTrustedDomains = [...baseTrustedDomains, ...utopiaTrustedDomains]
++
+ 	let trustedDomains: string[] = [];
+ 	try {
+ 		const trustedDomainsSrc = storageService.get(TRUSTED_DOMAINS_STORAGE_KEY, StorageScope.GLOBAL);
+diff --git a/src/vs/workbench/contrib/webview/browser/pre/main.js b/src/vs/workbench/contrib/webview/browser/pre/main.js
+index b2f093ee19..6624b75df0 100644
+--- a/src/vs/workbench/contrib/webview/browser/pre/main.js
++++ b/src/vs/workbench/contrib/webview/browser/pre/main.js
+@@ -505,7 +505,7 @@
+ 				const newFrame = document.createElement('iframe');
+ 				newFrame.setAttribute('id', 'pending-frame');
+ 				newFrame.setAttribute('frameborder', '0');
+-				newFrame.setAttribute('sandbox', options.allowScripts ? 'allow-scripts allow-forms allow-same-origin allow-pointer-lock allow-downloads' : 'allow-same-origin allow-pointer-lock');
++				newFrame.setAttribute('sandbox', options.allowScripts ? 'allow-scripts allow-forms allow-same-origin allow-pointer-lock allow-downloads allow-popups' : 'allow-same-origin allow-pointer-lock');
+ 				if (host.fakeLoad) {
+ 					// We should just be able to use srcdoc, but I wasn't
+ 					// seeing the service worker applying properly.
+diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+index 4403a2ac4b..3ca8554cfc 100644
+--- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
++++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
+@@ -90,7 +90,7 @@ export class IFrameWebview extends BaseWebview<HTMLIFrameElement> implements Web
+ 		// Wait the end of the ctor when all listeners have been hooked up.
+ 		const element = document.createElement('iframe');
+ 		element.className = `webview ${options.customClasses || ''}`;
+-		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads');
++		element.sandbox.add('allow-scripts', 'allow-same-origin', 'allow-forms', 'allow-pointer-lock', 'allow-downloads', 'allow-popups');
+ 		element.style.border = 'none';
+ 		element.style.width = '100%';
+ 		element.style.height = '100%';
 diff --git a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
 index 380122d251..f979c43887 100644
 --- a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
