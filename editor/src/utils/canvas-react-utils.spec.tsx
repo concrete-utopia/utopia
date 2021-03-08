@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import { applyUIDMonkeyPatch } from './canvas-react-utils'
-applyUIDMonkeyPatch()
+// applyUIDMonkeyPatch()
 import * as ReactDOMServer from 'react-dom/server'
 import * as Prettier from 'prettier'
 import { DatePicker } from 'antd'

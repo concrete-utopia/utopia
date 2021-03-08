@@ -611,7 +611,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
 
           // Check this is a path we're interested in, otherwise skip straight to the children
-          const pathIsValid = isValidPath(Utils.defaultIfNull(uniquePath, originalPath), validPaths)
+          const pathIsValid = true // isValidPath(Utils.defaultIfNull(uniquePath, originalPath), validPaths)
           const pathForChildren = pathIsValid ? uniquePath : uniqueParentPath
 
           // Build the metadata for the children of this DOM node.

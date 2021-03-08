@@ -136,6 +136,8 @@ function attachDataUidToRoot(
     return originalResponse.map((element) => attachDataUidToRoot(element, dataUid))
   } else if (!React.isValidElement(originalResponse as any)) {
     return originalResponse
+  } else if (originalResponse.props[UTOPIA_UID_KEY] != null) {
+    return originalResponse
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
       return React.cloneElement(originalResponse, { [UTOPIA_UID_KEY]: dataUid })

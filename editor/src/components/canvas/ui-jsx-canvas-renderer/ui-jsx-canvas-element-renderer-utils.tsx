@@ -68,18 +68,18 @@ export function renderCoreElement(
         ...assembledProps,
       }
 
-      const uidForProps = Utils.defaultIfNull(assembledProps[UTOPIA_UID_KEY], uid)
-      if (uidForProps != null) {
-        passthroughProps[UTOPIA_UID_KEY] = uidForProps
-      }
+      // const uidForProps = Utils.defaultIfNull(assembledProps[UTOPIA_UID_KEY], uid)
+      // if (uidForProps != null) {
+      //   passthroughProps[UTOPIA_UID_KEY] = uidForProps
+      // }
 
-      const originalIDForProps = Utils.defaultIfNull(
-        assembledProps[UTOPIA_ORIGINAL_ID_KEY],
-        parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
-      )
-      if (originalIDForProps != null) {
-        passthroughProps[UTOPIA_ORIGINAL_ID_KEY] = originalIDForProps
-      }
+      // const originalIDForProps = Utils.defaultIfNull(
+      //   assembledProps[UTOPIA_ORIGINAL_ID_KEY],
+      //   parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
+      // )
+      // if (originalIDForProps != null) {
+      //   passthroughProps[UTOPIA_ORIGINAL_ID_KEY] = originalIDForProps
+      // }
 
       return renderJSXElement(
         TP.toString(templatePath),

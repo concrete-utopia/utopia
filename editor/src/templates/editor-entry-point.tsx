@@ -44,7 +44,7 @@ editorCSS.forEach((url) => addStyleSheetToPage(url, true))
 import { Editor } from './editor'
 import { applyUIDMonkeyPatch } from '../utils/canvas-react-utils'
 
-applyUIDMonkeyPatch()
+// applyUIDMonkeyPatch()
 
 // eslint-disable-next-line
 const EditorRunner = new Editor()
