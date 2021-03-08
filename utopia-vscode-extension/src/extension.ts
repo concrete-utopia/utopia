@@ -36,8 +36,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   watchForUnsavedContentChangesFromFS(utopiaFS)
   watchForChangesFromVSCode(context, projectID)
-
   sendMessage(sendInitialData())
+  vscode.commands.executeCommand('simpleBrowser.show', 'http://localhost:8000/projects')
 }
 
 async function initFS(projectID: string): Promise<void> {
