@@ -53,6 +53,7 @@ export function renderCoreElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  temporarySceneTemplatePath: TemplatePath | null,
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
@@ -97,6 +98,7 @@ export function renderCoreElement(
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
+        temporarySceneTemplatePath,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -148,6 +150,7 @@ export function renderCoreElement(
           jsxFactoryFunctionName,
           null,
           shouldIncludeCanvasRootInTheSpy,
+          temporarySceneTemplatePath,
         )
       }
       const blockScope = {
@@ -179,6 +182,7 @@ export function renderCoreElement(
           jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,
+          temporarySceneTemplatePath,
         )
         renderedChildren.push(renderResult)
       })
@@ -216,6 +220,7 @@ function renderJSXElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  temporarySceneTemplatePath: TemplatePath | null,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, templatePath)) {
@@ -243,6 +248,7 @@ function renderJSXElement(
       jsxFactoryFunctionName,
       codeError,
       shouldIncludeCanvasRootInTheSpy,
+      temporarySceneTemplatePath,
     )
   }
 
@@ -279,6 +285,7 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
+      temporarySceneTemplatePath,
     )
   } else {
     const childrenOrNull = childrenElements.length !== 0 ? childrenElements : null

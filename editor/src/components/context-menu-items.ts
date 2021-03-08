@@ -11,6 +11,7 @@ import {
   copySelectionToClipboard,
   deleteView,
   duplicateSelected,
+  setTemporaryScene,
   toggleHidden,
 } from './editor/actions/action-creators'
 import {
@@ -130,6 +131,16 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
       ),
     )
     requireDispatch(dispatch)(actions, 'everyone')
+  },
+}
+
+export const setAsTemporaryScene: ContextMenuItem<CanvasData> = {
+  name: 'Set As Temporary Scene',
+  enabled: true,
+  action: (data, dispatch?: EditorDispatch) => {
+    if (data.selectedViews.length > 0) {
+      requireDispatch(dispatch)([setTemporaryScene(data.selectedViews[0])])
+    }
   },
 }
 

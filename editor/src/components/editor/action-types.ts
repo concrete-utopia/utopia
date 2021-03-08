@@ -790,6 +790,11 @@ export interface SendCodeEditorInitialisation {
   action: 'SEND_CODE_EDITOR_INITIALISATION'
 }
 
+export interface SetTemporaryScene {
+  action: 'SET_TEMPORARY_SCENE'
+  temporaryScenePath: TemplatePath | null
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -921,6 +926,7 @@ export type EditorAction =
   | MarkVSCodeBridgeReady
   | SelectFromFileAndPosition
   | SendCodeEditorInitialisation
+  | SetTemporaryScene
 
 export type DispatchPriority =
   | 'everyone'

@@ -35,6 +35,7 @@ interface RerenderUtopiaContextProps {
   hiddenInstances: Array<TemplatePath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
+  temporarySceneTemplatePath: TemplatePath | null
 }
 
 export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
@@ -42,6 +43,7 @@ export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
   hiddenInstances: [],
   canvasIsLive: false,
   shouldIncludeCanvasRootInTheSpy: false,
+  temporarySceneTemplatePath: null,
 })
 RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 

@@ -7,13 +7,15 @@ import {
   emptyAttributeMetadatada,
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
+  getJSXElementNameNoPathName,
   JSXElement,
 } from '../../../core/shared/element-template'
-import { InstancePath } from '../../../core/shared/project-file-types'
+import { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as TP from '../../../core/shared/template-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
+import { getTopLevelElementName, useGetValidTemplatePaths } from './scene-root'
 
 export function buildSpyWrappedElement(
   jsx: JSXElement,
@@ -26,6 +28,7 @@ export function buildSpyWrappedElement(
   inScope: MapLike<any>,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  temporarySceneTemplatePath: TemplatePath | null,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -53,12 +56,23 @@ export function buildSpyWrappedElement(
       metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = instanceMetadata
     }
   }
+
+  let scenePath = null
+  const topLevelElementName = 'Card'
+
+  if (TP.pathsEqual(temporarySceneTemplatePath, templatePath)) {
+    scenePath = TP.scenePath(TP.elementPathForPath(templatePath))
+  }
+
   const spyWrapperProps: SpyWrapperProps = {
     elementToRender: Element,
     spyCallback: spyCallback,
     inScope: inScope,
     jsxFactoryFunctionName: jsxFactoryFunctionName,
+    scenePath: scenePath,
+    topLevelElementName: topLevelElementName,
   }
+
   return renderComponentUsingJsxFactoryFunction(
     inScope,
     jsxFactoryFunctionName,
@@ -76,6 +90,8 @@ interface SpyWrapperProps {
   elementToRender: React.ComponentType<any>
   inScope: MapLike<any>
   jsxFactoryFunctionName: string | null
+  topLevelElementName: string | null
+  scenePath: ScenePath | null
 }
 const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
   const {
@@ -83,14 +99,29 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     elementToRender: ElementToRender,
     inScope,
     jsxFactoryFunctionName,
+    topLevelElementName,
+    scenePath,
     ...passThroughProps
   } = props
+  const dataUtopiaValidPaths = useGetValidTemplatePaths(
+    topLevelElementName,
+    scenePath ?? TP.scenePath([]),
+  )
+    .map(TP.toString)
+    .join(' ')
+
   spyCallback(passThroughProps)
-  return renderComponentUsingJsxFactoryFunction(
+  const result = renderComponentUsingJsxFactoryFunction(
     inScope,
     jsxFactoryFunctionName,
     ElementToRender,
     passThroughProps,
   )
+  if (scenePath == null) {
+    return result
+  } else {
+    // this element is promoted to be a temporary Scene
+    return React.cloneElement(result, { 'data-utopia-valid-paths': dataUtopiaValidPaths })
+  }
 }
 SpyWrapper.displayName = 'SpyWapper'

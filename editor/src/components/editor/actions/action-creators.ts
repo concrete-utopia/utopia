@@ -179,6 +179,7 @@ import type {
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
   SendCodeEditorInitialisation,
+  SetTemporaryScene,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1243,5 +1244,12 @@ export function selectFromFileAndPosition(
 export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
   return {
     action: 'SEND_CODE_EDITOR_INITIALISATION',
+  }
+}
+
+export function setTemporaryScene(scenePath: TemplatePath | null): SetTemporaryScene {
+  return {
+    action: 'SET_TEMPORARY_SCENE',
+    temporaryScenePath: scenePath,
   }
 }

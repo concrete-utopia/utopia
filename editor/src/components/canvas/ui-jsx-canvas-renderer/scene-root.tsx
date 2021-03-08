@@ -79,7 +79,7 @@ function useRunSpy(
   }
 }
 
-function getTopLevelElementName(
+export function getTopLevelElementName(
   componentRenderer: ComponentRendererComponent | React.ComponentType | null | undefined,
 ): string | null {
   if (isComponentRendererComponent(componentRenderer)) {
@@ -89,7 +89,7 @@ function getTopLevelElementName(
   }
 }
 
-function useGetValidTemplatePaths(
+export function useGetValidTemplatePaths(
   topLevelElementName: string | null,
   scenePath: ScenePath,
 ): Array<InstancePath> {
