@@ -776,7 +776,11 @@ function findMatchingTemplatePath(
 
   const parentPath = TP.parentPath(pathToUpdate)
   if (parentPath == null) {
-    return null
+    const oldRootPaths = MetadataUtils.getAllCanvasRootPaths(oldComponents)
+    const newRootPaths = MetadataUtils.getAllCanvasRootPaths(oldComponents)
+    const oldRootIndex = oldRootPaths.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
+    const newRootPath = newRootPaths[oldRootIndex]
+    return newRootPath ?? null
   } else {
     const oldElementsHere = MetadataUtils.getImmediateChildren(oldComponents, parentPath)
     const newElementsHere = MetadataUtils.getImmediateChildren(newComponents, parentPath)
