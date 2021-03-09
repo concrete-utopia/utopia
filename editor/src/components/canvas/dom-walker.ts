@@ -280,7 +280,7 @@ function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, ()
 
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
+  const rootMetadataInStateRef = { current: [] as Array<any> } // useRefEditorState((store) => store.editor.domMetadataKILLME)
   const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
@@ -564,7 +564,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         if (isScene(element)) {
           // we found a nested scene, restart the walk
           walkScene(element, index)
-          return []
+          // return []
         }
         if (element instanceof HTMLElement) {
           // Determine the uid of this element if it has one.
