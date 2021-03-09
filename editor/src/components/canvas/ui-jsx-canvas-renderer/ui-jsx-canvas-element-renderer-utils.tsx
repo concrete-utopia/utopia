@@ -264,7 +264,7 @@ function renderJSXElement(
   const finalProps =
     elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
 
-  if (FinalElement != null && TP.containsPath(templatePath, validPaths)) {
+  if (FinalElement != null) {
     let childrenTemplatePaths: InstancePath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {

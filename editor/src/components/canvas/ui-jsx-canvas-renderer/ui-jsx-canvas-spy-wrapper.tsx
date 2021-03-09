@@ -18,6 +18,7 @@ import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-
 import { getTopLevelElementName, useGetValidTemplatePaths } from './scene-root'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
+import { ComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 
 export function buildSpyWrappedElement(
   jsx: JSXElement,
@@ -39,7 +40,9 @@ export function buildSpyWrappedElement(
 
   if (TP.pathsEqual(TP.parentPath(templatePath), temporarySceneTemplatePath)) {
     // Replace the instance's UID with the definition's
-    props[UTOPIA_UID_KEY] = getUtopiaID(jsx)
+    const originalComponent = inScope[jsx.name.baseVariable]
+    const originalUID = (originalComponent as ComponentRendererComponent)?.originalUID
+    props[UTOPIA_UID_KEY] = originalUID ?? getUtopiaID(jsx)
   }
 
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
@@ -129,7 +132,10 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     return result
   } else {
     // this element is promoted to be a temporary Scene
-    return React.cloneElement(result, { 'data-utopia-valid-paths': dataUtopiaValidPaths })
+    return React.cloneElement(result, {
+      'data-utopia-valid-paths': dataUtopiaValidPaths,
+      'data-utopia-scene-id': TP.elementPathToString(scenePath?.sceneElementPath),
+    })
   }
 }
 SpyWrapper.displayName = 'SpyWapper'

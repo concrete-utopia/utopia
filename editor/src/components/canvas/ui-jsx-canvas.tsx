@@ -12,7 +12,7 @@ import {
   UtopiaJSXComponent,
   ComponentMetadataWithoutRootElements,
 } from '../../core/shared/element-template'
-import { getValidTemplatePaths } from '../../core/model/element-template-utils'
+import { getUtopiaID, getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
   Imports,
   InstancePath,
@@ -311,7 +311,10 @@ export const UiJsxCanvas = betterReactMemo(
           if (!(topLevelElement.name in topLevelComponentRendererComponents.current)) {
             topLevelComponentRendererComponents.current[
               topLevelElement.name
-            ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
+            ] = createComponentRendererComponent({
+              topLevelElementName: topLevelElement.name,
+              originalUID: getUtopiaID(topLevelElement.rootElement),
+            })
           }
         }
       })

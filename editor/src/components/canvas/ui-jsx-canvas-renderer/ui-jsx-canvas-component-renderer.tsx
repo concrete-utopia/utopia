@@ -18,6 +18,7 @@ import { useContextSelector } from 'use-context-selector'
 import { UTOPIA_TEMPLATE_PATH_KEY, UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 
 export type ComponentRendererComponent = React.ComponentType<any> & {
+  originalUID: string
   topLevelElementName: string
   propertyControls?: PropertyControls
 }
@@ -34,6 +35,7 @@ export function isComponentRendererComponent(
 
 export function createComponentRendererComponent(params: {
   topLevelElementName: string
+  originalUID: string
 }): ComponentRendererComponent {
   const Component = (realPassedProps: any) => {
     const { current: mutableContext } = React.useContext(MutableUtopiaContext)
@@ -119,5 +121,6 @@ export function createComponentRendererComponent(params: {
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
   Component.topLevelElementName = params.topLevelElementName
+  Component.originalUID = params.originalUID
   return Component
 }
