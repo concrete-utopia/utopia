@@ -1,4 +1,3 @@
-import { StoryboardFilePath } from '../editor/store/editor-state'
 import { getFilePathToImport } from './filepath-utils'
 
 describe('getFilePathToImport', () => {
@@ -20,10 +19,10 @@ describe('getFilePathToImport', () => {
   })
   it('creates importline string when both files are in the same folder', () => {
     const from = '/src/nice-button'
-    const target = StoryboardFilePath
+    const target = '/src/app.js'
     const actualResult = getFilePathToImport(from, target)
 
-    const expectedResult = '../src/nice-button'
+    const expectedResult = './nice-button'
     expect(actualResult).toEqual(expectedResult)
   })
   it('creates importline string when both files are inside src folder, but more complex', () => {
@@ -52,7 +51,7 @@ describe('getFilePathToImport', () => {
   })
   it('does not change import which is not a file path', () => {
     const from = 'utopia-api'
-    const target = StoryboardFilePath
+    const target = '/src/app.js'
     const actualResult = getFilePathToImport(from, target)
 
     const expectedResult = 'utopia-api'
