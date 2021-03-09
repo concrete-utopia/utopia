@@ -60,6 +60,7 @@ export function buildSpyWrappedElement(
       scenePath = TP.scenePath([
         ...TP.scenePathForPath(templatePath).sceneElementPath,
         ...TP.elementPathForPath(templatePath),
+        originalUid,
       ])
 
       const fixedTemplatePath = TP.instancePath(scenePath, [originalUid])
