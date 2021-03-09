@@ -24,6 +24,7 @@ import {
   TextFile,
   NodeModules,
   Imports,
+  ElementPath,
 } from '../../core/shared/project-file-types'
 import { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
 import { ElementContextMenuInstance } from '../element-context-menu'
@@ -792,7 +793,7 @@ export interface SendCodeEditorInitialisation {
 
 export interface SetFocusedElement {
   action: 'SET_FOCUSED_ELEMENT'
-  focusedElementTemplatePath: TemplatePath | null
+  focusedElementTemplatePath: ElementPath | null
 }
 
 export type EditorAction =

@@ -10,7 +10,12 @@ import {
   getJSXElementNameNoPathName,
   JSXElement,
 } from '../../../core/shared/element-template'
-import { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
+import {
+  ElementPath,
+  InstancePath,
+  ScenePath,
+  TemplatePath,
+} from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as TP from '../../../core/shared/template-path'
@@ -19,12 +24,13 @@ import { getTopLevelElementName, useGetValidTemplatePaths } from './scene-root'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { ComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
-import { last } from '../../../core/shared/array-utils'
+import { dropLast, last } from '../../../core/shared/array-utils'
 
 export function buildSpyWrappedElement(
   jsx: JSXElement,
   finalProps: any,
   templatePath: InstancePath,
+  extendedTemplatePath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
   childrenTemplatePaths: Array<InstancePath>,
   childrenElements: Array<React.ReactNode>,
@@ -32,7 +38,7 @@ export function buildSpyWrappedElement(
   inScope: MapLike<any>,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
-  focusedElementTemplatePath: TemplatePath | null,
+  focusedElementTemplatePath: ElementPath | null,
   validPathsForCurrentScene: Array<InstancePath>,
 ): React.ReactElement {
   let props = {
@@ -40,7 +46,7 @@ export function buildSpyWrappedElement(
     key: TP.toComponentId(templatePath),
   }
 
-  if (TP.pathsEqual(templatePath, focusedElementTemplatePath)) {
+  if (TP.elementPathsEqual(extendedTemplatePath, focusedElementTemplatePath)) {
     // Replace the instance's UID with the definition's
     const originalComponent = inScope[jsx.name.baseVariable]
     const originalUID = (originalComponent as ComponentRendererComponent)?.originalUID
@@ -52,9 +58,14 @@ export function buildSpyWrappedElement(
   let scenePath: ScenePath | null = null
 
   const fixedChildrenTemplatePaths = childrenTemplatePaths.map((childTemplatePath, index) => {
-    if (TP.pathsEqual(childTemplatePath, focusedElementTemplatePath)) {
-      const originalUid = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
-        ?.originalUID
+    const originalUid = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
+      ?.originalUID
+
+    if (TP.elementPathsEqual(extendedTemplatePath, dropLast(focusedElementTemplatePath ?? []))) {
+      // ERROR: this is not correct, because if you drilling into an element inside a component inside a component, that will totally TOTALLY not show up in childrenTemplatePaths
+      // FFFFFUUUUU
+      // we probably need to move data-utopia-valid-paths onto the spied element itself, instead of designating its parent as a "scene"
+
       topLevelElementName = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
         ?.topLevelElementName // THIS IS A SPIKE, RELAX
 

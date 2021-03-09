@@ -3,7 +3,12 @@ import type { MapLike } from 'typescript'
 import { createContext } from 'use-context-selector'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
-import type { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
+import type {
+  ElementPath,
+  InstancePath,
+  ScenePath,
+  TemplatePath,
+} from '../../../core/shared/project-file-types'
 import type { UIFileBase64Blobs } from '../../editor/store/editor-state'
 
 export interface MutableUtopiaContextProps {
@@ -35,7 +40,7 @@ interface RerenderUtopiaContextProps {
   hiddenInstances: Array<TemplatePath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
-  temporarySceneTemplatePath: TemplatePath | null
+  temporarySceneTemplatePath: ElementPath | null
 }
 
 export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({

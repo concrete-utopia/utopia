@@ -20,6 +20,7 @@ import {
   TemplatePath,
   isParseSuccess,
   StaticInstancePath,
+  ElementPath,
 } from '../../core/shared/project-file-types'
 import { isRight } from '../../core/shared/either'
 import Utils from '../../utils/utils'
@@ -118,7 +119,7 @@ export interface UiJsxCanvasProps {
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
-  focusedElementTemplatePath: TemplatePath | null
+  focusedElementTemplatePath: ElementPath | null
 }
 
 export interface CanvasReactReportErrorCallback {

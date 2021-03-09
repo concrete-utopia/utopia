@@ -139,7 +139,8 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
-      requireDispatch(dispatch)([setFocusedElement(data.selectedViews[0])])
+      const sv = data.selectedViews[0]
+      requireDispatch(dispatch)([setFocusedElement([...sv.scene.sceneElementPath, ...sv.element])]) // TODO BALAZS figure this out!!
     }
   },
 }

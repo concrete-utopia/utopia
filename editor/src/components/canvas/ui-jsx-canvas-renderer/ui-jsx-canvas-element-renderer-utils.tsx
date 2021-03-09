@@ -3,6 +3,7 @@ import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { isSceneElement, PathForResizeContent } from '../../../core/model/scene-utils'
 import {
+  UTOPIA_EXTENDED_TEMPLATE_PATH_KEY,
   UTOPIA_ORIGINAL_ID_KEY,
   UTOPIA_TEMPLATE_PATH_KEY,
   UTOPIA_UID_KEY,
@@ -20,7 +21,7 @@ import {
   JSXArbitraryBlock,
 } from '../../../core/shared/element-template'
 import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath, InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
@@ -41,6 +42,7 @@ import { emptyComments } from '../../../core/workers/parser-printer/parser-print
 export function renderCoreElement(
   element: JSXElementChild,
   templatePath: InstancePath,
+  extendedTemplatePath: ElementPath,
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
@@ -54,7 +56,7 @@ export function renderCoreElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
-  focusedElementTemplatePath: TemplatePath | null,
+  focusedElementTemplatePath: ElementPath | null,
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
@@ -69,6 +71,7 @@ export function renderCoreElement(
       let passthroughProps: MapLike<any> = {
         ...assembledProps,
         [UTOPIA_TEMPLATE_PATH_KEY]: templatePath,
+        [UTOPIA_EXTENDED_TEMPLATE_PATH_KEY]: extendedTemplatePath,
       }
 
       const uidForProps = Utils.defaultIfNull(assembledProps[UTOPIA_UID_KEY], uid)
@@ -88,6 +91,7 @@ export function renderCoreElement(
         TP.toString(templatePath),
         element,
         templatePath,
+        extendedTemplatePath,
         parentComponentInputProps,
         requireResult,
         rootScope,
@@ -111,6 +115,7 @@ export function renderCoreElement(
       ): React.ReactElement {
         innerIndex++
         const innerPath = TP.appendToPath(templatePath, `index-${innerIndex}`)
+        const innerExtendedPath = [...extendedTemplatePath, `index-${innerIndex}`]
 
         const innerUID = getUtopiaID(innerElement)
         const withOriginalID = setJSXValueAtPath(
@@ -139,6 +144,7 @@ export function renderCoreElement(
         return renderCoreElement(
           augmentedInnerElement,
           innerPath,
+          innerExtendedPath,
           rootScope,
           innerInScope,
           parentComponentInputProps,
@@ -171,6 +177,7 @@ export function renderCoreElement(
         const renderResult = renderCoreElement(
           child,
           templatePath,
+          extendedTemplatePath, // is this right?
           rootScope,
           inScope,
           parentComponentInputProps,
@@ -210,6 +217,7 @@ function renderJSXElement(
   key: string,
   jsx: JSXElement,
   templatePath: InstancePath,
+  extendedTemplatePath: ElementPath,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   rootScope: MapLike<any>,
@@ -222,7 +230,7 @@ function renderJSXElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
-  focusedElementTemplatePath: TemplatePath | null,
+  focusedElementTemplatePath: ElementPath | null,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, templatePath)) {
@@ -234,9 +242,11 @@ function renderJSXElement(
     child: JSXElementChild,
   ): React.ReactElement | Array<React.ReactElement> => {
     const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
+    const childExtendedPath = [...extendedTemplatePath, getUtopiaID(child)]
     return renderCoreElement(
       child,
       childPath,
+      childExtendedPath,
       rootScope,
       inScope,
       parentComponentInputProps,
@@ -280,6 +290,7 @@ function renderJSXElement(
       jsx,
       finalProps,
       templatePath,
+      extendedTemplatePath,
       metadataContext,
       childrenTemplatePaths,
       childrenElements,

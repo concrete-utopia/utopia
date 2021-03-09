@@ -407,9 +407,11 @@ export function scenePathsEqual(l: ScenePath, r: ScenePath): boolean {
   return l === r || elementPathsEqual(l.sceneElementPath, r.sceneElementPath)
 }
 
-function elementPathsEqual(l: ElementPath, r: ElementPath): boolean {
+export function elementPathsEqual(l: ElementPath | null, r: ElementPath | null): boolean {
   if (l === r) {
     return true
+  } else if (l == null || r == null) {
+    return false
   } else {
     return arrayEquals(l, r, elementsEqual)
   }

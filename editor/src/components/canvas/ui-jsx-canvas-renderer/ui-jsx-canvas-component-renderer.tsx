@@ -15,7 +15,12 @@ import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as TP from '../../../core/shared/template-path'
 import { renderCoreElement } from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
-import { UTOPIA_TEMPLATE_PATH_KEY, UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
+import {
+  UTOPIA_EXTENDED_TEMPLATE_PATH_KEY,
+  UTOPIA_TEMPLATE_PATH_KEY,
+  UTOPIA_UID_KEY,
+} from '../../../core/model/utopia-constants'
+import { ElementPath } from '../../../core/shared/project-file-types'
 
 export type ComponentRendererComponent = React.ComponentType<any> & {
   originalUID: string
@@ -93,12 +98,18 @@ export function createComponentRendererComponent(params: {
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
         const realTemplatePath = realPassedProps[UTOPIA_TEMPLATE_PATH_KEY]
+        const realExtendedTemplatePath = realPassedProps[UTOPIA_EXTENDED_TEMPLATE_PATH_KEY]
         const uid = realPassedProps[UTOPIA_UID_KEY] || getUtopiaID(element)
         const ownTemplatePath = realTemplatePath ?? TP.instancePath(contextScenePath, [uid])
+        const ownExtendedTemplatePath: ElementPath = [
+          ...(realExtendedTemplatePath ?? contextScenePath.sceneElementPath),
+          params.originalUID,
+        ]
 
         return renderCoreElement(
           element,
           ownTemplatePath,
+          ownExtendedTemplatePath,
           mutableContext.rootScope,
           scope,
           realPassedProps,

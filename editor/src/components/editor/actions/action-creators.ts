@@ -20,6 +20,7 @@ import type {
   RequestedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import type {
+  ElementPath,
   Imports,
   InstancePath,
   LayoutWrapper,
@@ -1248,7 +1249,7 @@ export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
 }
 
 export function setFocusedElement(
-  focusedElementTemplatePath: TemplatePath | null,
+  focusedElementTemplatePath: ElementPath | null,
 ): SetFocusedElement {
   return {
     action: 'SET_FOCUSED_ELEMENT',

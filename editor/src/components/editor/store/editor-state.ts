@@ -56,6 +56,7 @@ import {
   EmptyExportsDetail,
   HighlightBounds,
   HighlightBoundsForUids,
+  ElementPath,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -341,7 +342,7 @@ export interface EditorState {
   safeMode: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
-  focusedElementTemplatePath: TemplatePath | null
+  focusedElementTemplatePath: ElementPath | null
 }
 
 export interface StoredEditorState {
