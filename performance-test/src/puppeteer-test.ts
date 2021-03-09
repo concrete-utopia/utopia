@@ -81,6 +81,7 @@ export const setupBrowser = async (): Promise<{
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS),
+    executablePath: process.env.BROWSER
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
