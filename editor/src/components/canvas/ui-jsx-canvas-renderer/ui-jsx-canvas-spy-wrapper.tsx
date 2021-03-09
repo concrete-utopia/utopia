@@ -19,6 +19,7 @@ import { getTopLevelElementName, useGetValidTemplatePaths } from './scene-root'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { ComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
+import { last } from '../../../core/shared/array-utils'
 
 export function buildSpyWrappedElement(
   jsx: JSXElement,
@@ -60,7 +61,7 @@ export function buildSpyWrappedElement(
       scenePath = TP.scenePath([
         ...TP.scenePathForPath(templatePath).sceneElementPath,
         ...TP.elementPathForPath(templatePath),
-        originalUid,
+        TP.toUid(childTemplatePath),
       ])
 
       const fixedTemplatePath = TP.instancePath(scenePath, [originalUid])
