@@ -32,6 +32,7 @@ export function buildSpyWrappedElement(
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   focusedElementTemplatePath: TemplatePath | null,
+  validPathsForCurrentScene: Array<InstancePath>,
 ): React.ReactElement {
   let props = {
     ...finalProps,
@@ -86,6 +87,7 @@ export function buildSpyWrappedElement(
     jsxFactoryFunctionName: jsxFactoryFunctionName,
     scenePath: scenePath,
     topLevelElementName: topLevelElementName,
+    validPathsForCurrentScene: validPathsForCurrentScene,
   }
 
   return renderComponentUsingJsxFactoryFunction(
@@ -107,6 +109,7 @@ interface SpyWrapperProps {
   jsxFactoryFunctionName: string | null
   topLevelElementName: string | null
   scenePath: ScenePath | null
+  validPathsForCurrentScene: Array<InstancePath>
 }
 const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
   const {
@@ -116,12 +119,12 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     jsxFactoryFunctionName,
     topLevelElementName,
     scenePath,
+    validPathsForCurrentScene,
     ...passThroughProps
   } = props
-  const dataUtopiaValidPaths = useGetValidTemplatePaths(
-    topLevelElementName,
-    scenePath ?? TP.scenePath([]),
-  )
+  const validPaths = useGetValidTemplatePaths(topLevelElementName, scenePath ?? TP.scenePath([]))
+
+  const cumulativeValidPathsAsString = [...validPathsForCurrentScene, ...validPaths]
     .map(TP.toString)
     .join(' ')
 
@@ -137,7 +140,7 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
   } else {
     // this element is promoted to be a temporary Scene
     return React.cloneElement(result, {
-      'data-utopia-valid-paths': dataUtopiaValidPaths,
+      'data-utopia-valid-paths': cumulativeValidPathsAsString,
       'data-utopia-scene-id': TP.elementPathToString(scenePath?.sceneElementPath),
     })
   }

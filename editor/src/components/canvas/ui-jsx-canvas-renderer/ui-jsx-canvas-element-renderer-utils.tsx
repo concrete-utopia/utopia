@@ -288,6 +288,7 @@ function renderJSXElement(
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
       focusedElementTemplatePath,
+      validPaths,
     )
   } else {
     const childrenOrNull = childrenElements.length !== 0 ? childrenElements : null
