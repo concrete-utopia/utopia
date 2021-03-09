@@ -32,7 +32,6 @@ import {
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
 import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-state'
-import { userConfigurationTab } from '../editor/store/editor-tabs'
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
@@ -408,10 +407,6 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
     e.stopPropagation()
   }, [])
 
-  const switchToUserConfiguration = React.useCallback(() => {
-    dispatch([EditorActions.openEditorTab(userConfigurationTab(), null)], 'everyone')
-  }, [dispatch])
-
   return (
     <FlexColumn key='leftPaneProjectTab'>
       {projectId == null ? null : (
@@ -439,11 +434,6 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
                 />
               </div>
             )}
-          </SectionBodyArea>
-          <SectionBodyArea minimised={false}>
-            <Button style={{ marginRight: '2px' }} onClick={switchToUserConfiguration}>
-              Settings
-            </Button>
           </SectionBodyArea>
         </Section>
       )}

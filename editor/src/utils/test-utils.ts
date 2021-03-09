@@ -9,6 +9,7 @@ import {
   PersistentModel,
   persistentModelFromEditorModel,
   DefaultPackageJson,
+  StoryboardFilePath,
 } from '../components/editor/store/editor-state'
 import * as TP from '../core/shared/template-path'
 import {
@@ -71,7 +72,6 @@ import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
-import { EditorTab, openFileTab } from '../components/editor/store/editor-tabs'
 import { forceNotNull } from '../core/shared/optional-utils'
 
 export function delay<T>(time: number): Promise<T> {
@@ -82,7 +82,7 @@ export function createPersistentModel(): PersistentModel {
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
-      '/src/app.js': textFile(
+      [StoryboardFilePath]: textFile(
         textFileContents(
           '',
           parseSuccess(
@@ -99,25 +99,18 @@ export function createPersistentModel(): PersistentModel {
         0,
       ),
     }),
-    selectedFile: {
-      tab: openFileTab('/src/app.js'),
-      initialCursorPosition: null,
-    },
   }
 
   return persistentModelFromEditorModel(editor)
 }
 
 export function createEditorStates(
-  selectedFileOrTab: string | EditorTab = '/src/app.js',
   selectedViews: TemplatePath[] = [],
 ): {
   editor: EditorState
   derivedState: DerivedState
   dispatch: EditorDispatch
 } {
-  const selectedTab: EditorTab =
-    typeof selectedFileOrTab === 'string' ? openFileTab(selectedFileOrTab) : selectedFileOrTab
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
@@ -130,7 +123,7 @@ export function createEditorStates(
         null,
         0,
       ),
-      '/src/app.js': textFile(
+      [StoryboardFilePath]: textFile(
         textFileContents(
           '',
           parseSuccess(
@@ -147,10 +140,6 @@ export function createEditorStates(
         0,
       ),
     }),
-    selectedFile: {
-      tab: selectedTab,
-      initialCursorPosition: null,
-    },
     selectedViews: selectedViews,
   }
   const derivedState = deriveState(editor, null)

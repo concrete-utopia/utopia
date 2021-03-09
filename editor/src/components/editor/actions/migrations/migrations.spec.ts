@@ -8,11 +8,4 @@ describe('Migrations', () => {
     const migrated = applyMigrations(emptyProject)
     expect(migrated.projectVersion).toEqual(CURRENT_PROJECT_VERSION)
   })
-
-  it('returns with the latest project version for a non-versioned project', () => {
-    const emptyProject = persistentModelFromEditorModel(createEditorState(NO_OP))
-    delete (emptyProject as any).projectVersion // Typescript trickery because this is actually an illegal move
-    const migrated = applyMigrations(emptyProject)
-    expect(migrated.projectVersion).toEqual(CURRENT_PROJECT_VERSION)
-  })
 })

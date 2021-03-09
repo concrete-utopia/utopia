@@ -20,7 +20,6 @@ import {
   ProjectContentsTree,
   transformContentsTree,
 } from '../../../assets'
-import { EditorTab } from '../../store/editor-tabs'
 
 export const CURRENT_PROJECT_VERSION = 6
 
@@ -38,22 +37,22 @@ export function applyMigrations(
 
 function migrateFromVersion0(
   persistentModel: PersistentModel,
-): PersistentModel & { projectVersion: 1 } {
+): PersistentModel & { projectVersion: 1 } & { openFiles: any; selectedFile: any } {
   if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 0) {
     return persistentModel as any
   } else {
-    function updateOpenFilesEntry(openFile: string): EditorTab {
+    function updateOpenFilesEntry(openFile: string): any {
       return {
         type: 'OPEN_FILE_TAB',
         filename: openFile,
       }
     }
 
-    const updatedOpenFiles = persistentModel.openFiles.map((openFile) =>
-      updateOpenFilesEntry(openFile as any),
+    const updatedOpenFiles = (persistentModel as any).openFiles.map((openFile: any) =>
+      updateOpenFilesEntry(openFile),
     )
-    let updatedSelectedFile: EditorTab | null = null
-    const selectedFileAsString: string = persistentModel.selectedFile as any
+    let updatedSelectedFile: any | null = null
+    const selectedFileAsString: string = (persistentModel as any).selectedFile as any
     if (selectedFileAsString != '') {
       updatedSelectedFile = updateOpenFilesEntry(selectedFileAsString)
     }

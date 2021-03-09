@@ -12,7 +12,6 @@ import { ContextMenuItem, requireDispatch } from '../context-menu-items'
 import { ContextMenuWrapper } from '../context-menu-wrapper'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import { openFileTab } from '../editor/store/editor-tabs'
 import { ExpandableIndicator } from '../navigator/navigator-item/expandable-indicator'
 import { FileBrowserItemInfo, FileBrowserItemType } from './filebrowser'
 import { PasteResult } from '../../utils/clipboard-utils'
@@ -494,10 +493,7 @@ class FileBrowserItemInner extends React.PureComponent<
     if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
       this.props.setSelected(this.props)
       if (this.props.fileType != null && this.props.fileType !== 'DIRECTORY') {
-        this.props.dispatch(
-          [EditorActions.openEditorTab(openFileTab(this.props.path), null)],
-          'everyone',
-        )
+        this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path)], 'everyone')
       }
     }
   }

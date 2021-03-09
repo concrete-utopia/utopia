@@ -4,7 +4,6 @@ import styled from '@emotion/styled'
 
 import * as React from 'react'
 import { colorTheme, SimpleFlexColumn, SimpleFlexRow, UtopiaTheme } from '../../uuiui'
-import { FileTabs } from '../filebrowser/file-tabs'
 import { H1, H2, PrettyKeys, EM, CalloutPrimary, A } from './documentation-components'
 
 import { GettingStarted } from './getting-started'
@@ -12,7 +11,6 @@ import { GettingStarted } from './getting-started'
 export function ReleaseNotesContent() {
   return (
     <SimpleFlexColumn>
-      <FileTabs />
       <div
         css={{
           label: 'ReleaseNotesContainer',

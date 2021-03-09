@@ -2,13 +2,12 @@
 import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { Dialog, FormButton } from '../../uuiui'
-import { EditorDispatch } from '../editor/action-types'
+import { EditorAction, EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import { EditorTab, isOpenFileTab } from '../editor/store/editor-tabs'
 
 interface ConfirmCloseDialogProps {
   dispatch: EditorDispatch
-  editorTab: EditorTab
+  currentDesignerFile: string | null
 }
 
 export const ConfirmCloseDialog: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => {
@@ -29,8 +28,8 @@ export const ConfirmCloseDialog: React.FunctionComponent<ConfirmCloseDialogProps
 
 const DialogBody: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => {
   let message: string = `Do you want to save the changes you made?`
-  if (isOpenFileTab(props.editorTab)) {
-    message = `Do you want to save the changes you made to {props.editorTab.filename}?`
+  if (props.currentDesignerFile != null) {
+    message = `Do you want to save the changes you made to {props.currentDesignerFile}?`
   }
   return (
     <React.Fragment>
@@ -53,10 +52,12 @@ const SaveAndCloseButton: React.FunctionComponent<ConfirmCloseDialogProps> = (pr
 
 const DontSaveButton: React.FunctionComponent<ConfirmCloseDialogProps> = (props) => {
   const dontSaveClick = React.useCallback(() => {
-    props.dispatch(
-      [EditorActions.closeEditorTab(props.editorTab), EditorActions.hideModal()],
-      'everyone',
-    )
+    let actions: Array<EditorAction> = []
+    if (props.currentDesignerFile != null) {
+      actions.push(EditorActions.closeDesignerFile(props.currentDesignerFile))
+    }
+    actions.push(EditorActions.hideModal())
+    props.dispatch(actions, 'everyone')
   }, [props])
 
   return (
