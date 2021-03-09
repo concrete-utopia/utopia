@@ -179,7 +179,7 @@ import type {
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
   SendCodeEditorInitialisation,
-  SetTemporaryScene,
+  SetFocusedElement,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1247,9 +1247,11 @@ export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
   }
 }
 
-export function setTemporaryScene(scenePath: TemplatePath | null): SetTemporaryScene {
+export function setFocusedElement(
+  focusedElementTemplatePath: TemplatePath | null,
+): SetFocusedElement {
   return {
-    action: 'SET_TEMPORARY_SCENE',
-    temporaryScenePath: scenePath,
+    action: 'SET_FOCUSED_ELEMENT',
+    focusedElementTemplatePath: focusedElementTemplatePath,
   }
 }

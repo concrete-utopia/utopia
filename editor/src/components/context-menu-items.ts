@@ -11,7 +11,7 @@ import {
   copySelectionToClipboard,
   deleteView,
   duplicateSelected,
-  setTemporaryScene,
+  setFocusedElement,
   toggleHidden,
 } from './editor/actions/action-creators'
 import {
@@ -134,12 +134,12 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
   },
 }
 
-export const setAsTemporaryScene: ContextMenuItem<CanvasData> = {
-  name: 'Set As Temporary Scene',
+export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
+  name: 'Set As Focused Element',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
-      requireDispatch(dispatch)([setTemporaryScene(data.selectedViews[0])])
+      requireDispatch(dispatch)([setFocusedElement(data.selectedViews[0])])
     }
   },
 }

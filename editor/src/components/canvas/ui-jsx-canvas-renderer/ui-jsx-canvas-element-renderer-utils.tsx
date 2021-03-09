@@ -54,7 +54,7 @@ export function renderCoreElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
-  temporarySceneTemplatePath: TemplatePath | null,
+  focusedElementTemplatePath: TemplatePath | null,
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
@@ -100,7 +100,7 @@ export function renderCoreElement(
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
-        temporarySceneTemplatePath,
+        focusedElementTemplatePath,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -152,7 +152,7 @@ export function renderCoreElement(
           jsxFactoryFunctionName,
           null,
           shouldIncludeCanvasRootInTheSpy,
-          temporarySceneTemplatePath,
+          focusedElementTemplatePath,
         )
       }
       const blockScope = {
@@ -184,7 +184,7 @@ export function renderCoreElement(
           jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,
-          temporarySceneTemplatePath,
+          focusedElementTemplatePath,
         )
         renderedChildren.push(renderResult)
       })
@@ -222,7 +222,7 @@ function renderJSXElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
-  temporarySceneTemplatePath: TemplatePath | null,
+  focusedElementTemplatePath: TemplatePath | null,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, templatePath)) {
@@ -250,7 +250,7 @@ function renderJSXElement(
       jsxFactoryFunctionName,
       codeError,
       shouldIncludeCanvasRootInTheSpy,
-      temporarySceneTemplatePath,
+      focusedElementTemplatePath,
     )
   }
 
@@ -287,7 +287,7 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
-      temporarySceneTemplatePath,
+      focusedElementTemplatePath,
     )
   } else {
     const childrenOrNull = childrenElements.length !== 0 ? childrenElements : null

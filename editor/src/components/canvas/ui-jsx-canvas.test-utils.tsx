@@ -155,7 +155,7 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
-      temporarySceneTemplatePath: null,
+      focusedElementTemplatePath: null,
     }
   } else {
     canvasProps = {
@@ -176,7 +176,7 @@ export function renderCanvasReturnResultAndError(
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
-      temporarySceneTemplatePath: null,
+      focusedElementTemplatePath: null,
     }
   }
 

@@ -31,14 +31,14 @@ export function buildSpyWrappedElement(
   inScope: MapLike<any>,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
-  temporarySceneTemplatePath: TemplatePath | null,
+  focusedElementTemplatePath: TemplatePath | null,
 ): React.ReactElement {
   let props = {
     ...finalProps,
     key: TP.toComponentId(templatePath),
   }
 
-  if (TP.pathsEqual(TP.parentPath(templatePath), temporarySceneTemplatePath)) {
+  if (TP.pathsEqual(templatePath, focusedElementTemplatePath)) {
     // Replace the instance's UID with the definition's
     const originalComponent = inScope[jsx.name.baseVariable]
     const originalUID = (originalComponent as ComponentRendererComponent)?.originalUID
@@ -72,7 +72,7 @@ export function buildSpyWrappedElement(
   const topLevelElementName = (childrenElements[0] as React.ReactElement)?.props?.elementToRender
     ?.topLevelElementName
 
-  if (TP.pathsEqual(temporarySceneTemplatePath, templatePath)) {
+  if (TP.pathsEqual(TP.parentPath(focusedElementTemplatePath), templatePath)) {
     scenePath = TP.scenePath([
       ...TP.scenePathForPath(templatePath).sceneElementPath,
       ...TP.elementPathForPath(templatePath),

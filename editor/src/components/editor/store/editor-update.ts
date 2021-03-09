@@ -292,8 +292,8 @@ export function runSimpleLocalEditorAction(
       return state
     case 'MARK_VSCODE_BRIDGE_READY':
       return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(action, state)
-    case 'SET_TEMPORARY_SCENE':
-      return UPDATE_FNS.SET_TEMPORARY_SCENE(action, state)
+    case 'SET_FOCUSED_ELEMENT':
+      return UPDATE_FNS.SET_FOCUSED_ELEMENT(action, state)
     default:
       return state
   }

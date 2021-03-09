@@ -118,7 +118,7 @@ export interface UiJsxCanvasProps {
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
-  temporarySceneTemplatePath: TemplatePath | null
+  focusedElementTemplatePath: TemplatePath | null
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -215,7 +215,7 @@ export function pickUiJsxCanvasProps(
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
-      temporarySceneTemplatePath: editor.temporarySceneTemplatePath,
+      focusedElementTemplatePath: editor.focusedElementTemplatePath,
     }
   }
 }
@@ -362,7 +362,7 @@ export const UiJsxCanvas = betterReactMemo(
                 topLevelElements: topLevelElementsMap,
                 canvasIsLive: canvasIsLive,
                 shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
-                temporarySceneTemplatePath: props.temporarySceneTemplatePath,
+                temporarySceneTemplatePath: props.focusedElementTemplatePath,
               }}
             >
               <CanvasContainer

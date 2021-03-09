@@ -790,9 +790,9 @@ export interface SendCodeEditorInitialisation {
   action: 'SEND_CODE_EDITOR_INITIALISATION'
 }
 
-export interface SetTemporaryScene {
-  action: 'SET_TEMPORARY_SCENE'
-  temporaryScenePath: TemplatePath | null
+export interface SetFocusedElement {
+  action: 'SET_FOCUSED_ELEMENT'
+  focusedElementTemplatePath: TemplatePath | null
 }
 
 export type EditorAction =
@@ -926,7 +926,7 @@ export type EditorAction =
   | MarkVSCodeBridgeReady
   | SelectFromFileAndPosition
   | SendCodeEditorInitialisation
-  | SetTemporaryScene
+  | SetFocusedElement
 
 export type DispatchPriority =
   | 'everyone'

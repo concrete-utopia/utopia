@@ -358,7 +358,7 @@ import {
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
   SendCodeEditorInitialisation,
-  SetTemporaryScene,
+  SetFocusedElement,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1027,7 +1027,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
-    temporarySceneTemplatePath: currentEditor.temporarySceneTemplatePath,
+    focusedElementTemplatePath: currentEditor.focusedElementTemplatePath,
   }
 }
 
@@ -4300,10 +4300,10 @@ export const UPDATE_FNS = {
     sendSelectedElement(editor)
     return editor
   },
-  SET_TEMPORARY_SCENE: (action: SetTemporaryScene, editor: EditorModel): EditorModel => {
+  SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
     return {
       ...editor,
-      temporarySceneTemplatePath: action.temporaryScenePath,
+      focusedElementTemplatePath: action.focusedElementTemplatePath,
     }
   },
 }

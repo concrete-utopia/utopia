@@ -19,7 +19,7 @@ import {
   toggleShadowItem,
   ContextMenuItem,
   CanvasData,
-  setAsTemporaryScene,
+  setAsFocusedElement,
 } from './context-menu-items'
 import { ContextMenuInnerProps, MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
@@ -43,7 +43,7 @@ interface ElementContextMenuProps {
 }
 
 const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
-  setAsTemporaryScene,
+  setAsFocusedElement,
   cutElements,
   copyElements,
   duplicateElement,

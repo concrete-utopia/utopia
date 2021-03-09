@@ -336,12 +336,13 @@ export function instancePathParent(path: InstancePath): TemplatePath {
   }
 }
 
+export function parentPath(path: null): null
 export function parentPath(path: ScenePath): null
 export function parentPath(path: StaticInstancePath): StaticTemplatePath
 export function parentPath(path: InstancePath): TemplatePath
-export function parentPath(path: TemplatePath): TemplatePath | null
-export function parentPath(path: TemplatePath): TemplatePath | null {
-  if (isScenePath(path)) {
+export function parentPath(path: TemplatePath | null): TemplatePath | null
+export function parentPath(path: TemplatePath | null): TemplatePath | null {
+  if (path == null || isScenePath(path)) {
     return null
   } else {
     return instancePathParent(path)
