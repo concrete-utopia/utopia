@@ -1335,6 +1335,7 @@ export interface SpecialSizeMeasurements {
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
   layoutSystemForChildren: DetectedLayoutSystem
   providesBoundsForChildren: boolean
+  display: string
   position: CSSPosition | null
   margin: Sides
   padding: Sides
@@ -1343,6 +1344,7 @@ export interface SpecialSizeMeasurements {
   clientWidth: number
   clientHeight: number
   parentFlexDirection: string | null
+  htmlElementName: string
 }
 
 export function specialSizeMeasurements(
@@ -1354,6 +1356,7 @@ export function specialSizeMeasurements(
   parentLayoutSystem: DetectedLayoutSystem,
   layoutSystemForChildren: DetectedLayoutSystem,
   providesBoundsForChildren: boolean,
+  display: string,
   position: CSSPosition | null,
   margin: Sides,
   padding: Sides,
@@ -1362,6 +1365,7 @@ export function specialSizeMeasurements(
   clientWidth: number,
   clientHeight: number,
   parentFlexDirection: string | null,
+  htmlElementName: string,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -1372,6 +1376,7 @@ export function specialSizeMeasurements(
     parentLayoutSystem,
     layoutSystemForChildren,
     providesBoundsForChildren,
+    display,
     position,
     margin,
     padding,
@@ -1380,6 +1385,7 @@ export function specialSizeMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    htmlElementName,
   }
 }
 
@@ -1395,6 +1401,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   'flow',
   'flow',
   false,
+  'initial',
   'static',
   sides(undefined, undefined, undefined, undefined),
   sides(undefined, undefined, undefined, undefined),
@@ -1403,6 +1410,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   0,
   0,
   null,
+  'div',
 )
 
 export const emptyComputedStyle: ComputedStyle = {}

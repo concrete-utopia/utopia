@@ -620,6 +620,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentLayoutSystem,
         newSize.layoutSystemForChildren,
         newSize.providesBoundsForChildren,
+        newSize.display,
         newSize.position,
         marginResult.value,
         paddingResult.value,
@@ -628,6 +629,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.clientWidth,
         newSize.clientHeight,
         newSize.parentFlexDirection,
+        newSize.htmlElementName,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

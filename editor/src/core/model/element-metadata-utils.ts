@@ -289,8 +289,39 @@ export const MetadataUtils = {
   isFlexLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.layoutSystemForChildren === 'flex'
   },
+  isGridLayoutedContainer(instance: ElementInstanceMetadata | null): boolean {
+    return instance?.specialSizeMeasurements.layoutSystemForChildren === 'grid'
+  },
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
+  },
+  isButton(
+    target: TemplatePath,
+    components: Array<UtopiaJSXComponent>,
+    metadata: JSXMetadata,
+  ): boolean {
+    const elementName = MetadataUtils.getJSXElementName(target, components, metadata.components)
+    if (
+      elementName != null &&
+      PP.depth(elementName.propertyPath) === 0 &&
+      elementName.baseVariable === 'button'
+    ) {
+      return true
+    }
+    const instance = TP.isInstancePath(target)
+      ? this.getElementByInstancePathMaybe(metadata.elements, target)
+      : null
+    if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
+      const buttonRoleFound = instance.element.value.props.some(
+        (attribute) =>
+          attribute.key === 'role' &&
+          eitherToMaybe(jsxSimpleAttributeToValue(attribute.value)) === 'button',
+      )
+      if (buttonRoleFound) {
+        return true
+      }
+    }
+    return instance?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
   },
   getYogaSizeProps(
     target: TemplatePath,
@@ -678,9 +709,6 @@ export const MetadataUtils = {
         MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Positionable') ||
         MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Resizeable'))
     )
-  },
-  isButton(instance: ElementInstanceMetadata): boolean {
-    return this.isElementOfType(instance, 'button')
   },
   isDiv(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'div')

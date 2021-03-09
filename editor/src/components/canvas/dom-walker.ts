@@ -385,6 +385,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           parentLayoutSystem,
           layoutSystemForChildren,
           providesBoundsForChildren,
+          elementStyle.display,
           position,
           isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
           isRight(padding) ? padding.value : sides(undefined, undefined, undefined, undefined),
@@ -393,6 +394,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           clientWidth,
           clientHeight,
           parentFlexDirection,
+          element.localName,
         )
       }
 

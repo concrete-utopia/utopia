@@ -20,6 +20,7 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
 import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
+import { LayoutIcon } from './layout-icon'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -181,17 +182,18 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       warningText = 'Element is trying to be position absolutely with an unconfigured parent'
     }
 
-    const preview =
-      warningText == null ? (
-        <ItemPreview
-          key={`preview-${label}`}
-          path={templatePath}
-          color={resultingStyle.iconColor}
-        />
-      ) : (
-        <WarningIcon tooltipText={warningText} />
-      )
+    const preview = (
+      <ItemPreview key={`preview-${label}`} path={templatePath} color={resultingStyle.iconColor} />
+    )
 
+    const layoutIcon = (
+      <LayoutIcon
+        key={`layout-type-${label}`}
+        path={templatePath}
+        color={resultingStyle.iconColor}
+        warningText={warningText}
+      />
+    )
     const collapse = React.useCallback(
       (event: any) => collapseItem(dispatch, templatePath, event),
       [dispatch, templatePath],
@@ -230,7 +232,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             selected={selected}
             onMouseDown={collapse}
           />
-          {preview}
+          {layoutIcon}
           <ItemLabel
             key={`label-${label}`}
             testId={`navigator-item-label-${label}`}
