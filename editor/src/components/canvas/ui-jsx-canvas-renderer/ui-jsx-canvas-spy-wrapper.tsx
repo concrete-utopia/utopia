@@ -46,6 +46,32 @@ export function buildSpyWrappedElement(
     props[UTOPIA_UID_KEY] = originalUID ?? getUtopiaID(jsx)
   }
 
+  let topLevelElementName = ''
+
+  let scenePath = TP.scenePath([]) // IT'S A SPIKE
+
+  if (TP.pathsEqual(TP.parentPath(focusedElementTemplatePath), templatePath)) {
+    scenePath = TP.scenePath([
+      ...TP.scenePathForPath(templatePath).sceneElementPath,
+      ...TP.elementPathForPath(templatePath),
+    ])
+  }
+
+  const fixedChildrenTemplatePaths = childrenTemplatePaths.map((childTemplatePath, index) => {
+    if (TP.pathsEqual(childTemplatePath, focusedElementTemplatePath)) {
+      const originalUid = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
+        ?.originalUID
+      topLevelElementName = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
+        ?.topLevelElementName // THIS IS A SPIKE, RELAX
+
+      const fixedTemplatePath = TP.instancePath(scenePath, [originalUid])
+
+      return fixedTemplatePath
+    } else {
+      return childTemplatePath
+    }
+  })
+
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
     const instanceMetadata: ElementInstanceMetadata = {
@@ -54,7 +80,7 @@ export function buildSpyWrappedElement(
       props: makeCanvasElementPropsSafe(reportedProps),
       globalFrame: null,
       localFrame: null,
-      children: childrenTemplatePaths,
+      children: fixedChildrenTemplatePaths,
       componentInstance: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
@@ -67,17 +93,6 @@ export function buildSpyWrappedElement(
     if (!isChildOfRootScene || shouldIncludeCanvasRootInTheSpy) {
       metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = instanceMetadata
     }
-  }
-
-  let scenePath = null
-  const topLevelElementName = (childrenElements[0] as React.ReactElement)?.props?.elementToRender
-    ?.topLevelElementName
-
-  if (TP.pathsEqual(TP.parentPath(focusedElementTemplatePath), templatePath)) {
-    scenePath = TP.scenePath([
-      ...TP.scenePathForPath(templatePath).sceneElementPath,
-      ...TP.elementPathForPath(templatePath),
-    ])
   }
 
   const spyWrapperProps: SpyWrapperProps = {
