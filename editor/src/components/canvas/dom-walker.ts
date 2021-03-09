@@ -564,7 +564,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         if (isScene(element)) {
           // we found a nested scene, restart the walk
           walkScene(element, index)
-          // return []
+          return []
         }
         if (element instanceof HTMLElement) {
           // Determine the uid of this element if it has one.
