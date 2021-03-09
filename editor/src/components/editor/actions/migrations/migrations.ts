@@ -1,4 +1,4 @@
-import { PersistentModel } from '../../store/editor-state'
+import { PersistentModel, StoryboardFilePath } from '../../store/editor-state'
 import { objectMap } from '../../../../core/shared/object-utils'
 import {
   ProjectFile,
@@ -10,18 +10,27 @@ import {
   textFileContents,
   unparsed,
   RevisionsState,
+  isParsedTextFile,
 } from '../../../../core/shared/project-file-types'
 import { isRight, right } from '../../../../core/shared/either'
-import { convertScenesToUtopiaCanvasComponent } from '../../../../core/model/scene-utils'
 import {
+  BakedInStoryboardVariableName,
+  convertScenesToUtopiaCanvasComponent,
+} from '../../../../core/model/scene-utils'
+import {
+  addFileToProjectContents,
   contentsToTree,
+  getContentsTreeFileFromString,
   projectContentFile,
   ProjectContentFile,
   ProjectContentsTree,
+  removeFromProjectContents,
   transformContentsTree,
+  walkContentsTree,
 } from '../../../assets'
+import { isUtopiaJSXComponent } from '../../../../core/shared/element-template'
 
-export const CURRENT_PROJECT_VERSION = 6
+export const CURRENT_PROJECT_VERSION = 7
 
 export function applyMigrations(
   persistentModel: PersistentModel,
@@ -32,7 +41,8 @@ export function applyMigrations(
   const version4 = migrateFromVersion3(version3)
   const version5 = migrateFromVersion4(version4)
   const version6 = migrateFromVersion5(version5)
-  return version6
+  const version7 = migrateFromVersion6(version6)
+  return version7
 }
 
 function migrateFromVersion0(
@@ -264,6 +274,52 @@ function migrateFromVersion5(
           }
         },
       ),
+    }
+  }
+}
+
+function migrateFromVersion6(
+  persistentModel: PersistentModel,
+): PersistentModel & { projectVersion: 7 } {
+  if (persistentModel.projectVersion != null && persistentModel.projectVersion !== 6) {
+    return persistentModel as any
+  } else {
+    let storyboardTarget: string | null = null
+    walkContentsTree(persistentModel.projectContents, (fullPath: string, file: ProjectFile) => {
+      // Don't bother looking further if there's already something to work with.
+      if (storyboardTarget == null) {
+        if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+          for (const topLevelElement of file.fileContents.parsed.topLevelElements) {
+            if (
+              isUtopiaJSXComponent(topLevelElement) &&
+              topLevelElement.name === BakedInStoryboardVariableName
+            ) {
+              storyboardTarget = fullPath
+            }
+          }
+        }
+      }
+    })
+
+    let updatedProjectContents = persistentModel.projectContents
+    if (storyboardTarget != null) {
+      const file = getContentsTreeFileFromString(updatedProjectContents, storyboardTarget)
+      if (file == null) {
+        throw new Error(`Internal error in migration: Unable to find file ${storyboardTarget}.`)
+      } else {
+        // Move the file around.
+        updatedProjectContents = removeFromProjectContents(updatedProjectContents, storyboardTarget)
+        updatedProjectContents = addFileToProjectContents(
+          updatedProjectContents,
+          StoryboardFilePath,
+          file,
+        )
+      }
+    }
+    return {
+      ...persistentModel,
+      projectVersion: 7,
+      projectContents: updatedProjectContents,
     }
   }
 }
