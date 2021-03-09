@@ -69,7 +69,8 @@ export function buildSpyWrappedElement(
   }
 
   let scenePath = null
-  const topLevelElementName = 'Card'
+  const topLevelElementName = (childrenElements[0] as React.ReactElement)?.props?.elementToRender
+    ?.topLevelElementName
 
   if (TP.pathsEqual(temporarySceneTemplatePath, templatePath)) {
     scenePath = TP.scenePath([
