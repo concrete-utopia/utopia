@@ -72,7 +72,10 @@ export function buildSpyWrappedElement(
   const topLevelElementName = 'Card'
 
   if (TP.pathsEqual(temporarySceneTemplatePath, templatePath)) {
-    scenePath = TP.scenePath(TP.elementPathForPath(templatePath))
+    scenePath = TP.scenePath([
+      ...TP.scenePathForPath(templatePath).sceneElementPath,
+      ...TP.elementPathForPath(templatePath),
+    ])
   }
 
   const spyWrapperProps: SpyWrapperProps = {
