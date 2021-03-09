@@ -48,14 +48,7 @@ export function buildSpyWrappedElement(
 
   let topLevelElementName = ''
 
-  let scenePath = TP.scenePath([]) // IT'S A SPIKE
-
-  if (TP.pathsEqual(TP.parentPath(focusedElementTemplatePath), templatePath)) {
-    scenePath = TP.scenePath([
-      ...TP.scenePathForPath(templatePath).sceneElementPath,
-      ...TP.elementPathForPath(templatePath),
-    ])
-  }
+  let scenePath: ScenePath | null = null
 
   const fixedChildrenTemplatePaths = childrenTemplatePaths.map((childTemplatePath, index) => {
     if (TP.pathsEqual(childTemplatePath, focusedElementTemplatePath)) {
@@ -63,6 +56,11 @@ export function buildSpyWrappedElement(
         ?.originalUID
       topLevelElementName = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
         ?.topLevelElementName // THIS IS A SPIKE, RELAX
+
+      scenePath = TP.scenePath([
+        ...TP.scenePathForPath(templatePath).sceneElementPath,
+        ...TP.elementPathForPath(templatePath),
+      ])
 
       const fixedTemplatePath = TP.instancePath(scenePath, [originalUid])
 
