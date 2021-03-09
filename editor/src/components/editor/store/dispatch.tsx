@@ -770,24 +770,24 @@ function findMatchingTemplatePath(
       newComponents.elements,
       pathToUpdate as InstancePath,
     ) != null
-  if (pathStillExists || scenePathStillExists) {
+  if (pathStillExists || (TP.isScenePath(pathToUpdate) && scenePathStillExists)) {
     return pathToUpdate
   }
 
   const parentPath = TP.parentPath(pathToUpdate)
-  const oldParent = MetadataUtils.getElementByInstancePathMaybe(
-    oldComponents.elements,
-    parentPath as InstancePath,
-  )
-  const newParent = MetadataUtils.getElementByInstancePathMaybe(
-    newComponents.elements,
-    parentPath as InstancePath,
-  )
-  if (oldParent != null && newParent != null) {
-    const oldChildIndex = oldParent.children.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
-    const potentialNewPath = newParent.children[oldChildIndex]
-    return potentialNewPath ?? null
+  if (parentPath == null) {
+    const oldRootPaths = MetadataUtils.getAllCanvasRootPaths(oldComponents)
+    const newRootPaths = MetadataUtils.getAllCanvasRootPaths(oldComponents)
+    const oldRootIndex = oldRootPaths.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
+    const newRootPath = newRootPaths[oldRootIndex]
+    return newRootPath ?? null
+  } else {
+    const oldElementsHere = MetadataUtils.getImmediateChildren(oldComponents, parentPath)
+    const newElementsHere = MetadataUtils.getImmediateChildren(newComponents, parentPath)
+    const oldChildIndex = oldElementsHere.findIndex((e) =>
+      TP.pathsEqual(e.templatePath, pathToUpdate),
+    )
+    const potentialNewElement = newElementsHere[oldChildIndex]
+    return potentialNewElement?.templatePath ?? null
   }
-
-  return null
 }
