@@ -6,7 +6,7 @@ import {
 } from '../../components/assets'
 import { EditorModel } from '../../components/editor/action-types'
 import { updateFile } from '../../components/editor/actions/action-creators'
-import { EditorState } from '../../components/editor/store/editor-state'
+import { EditorState, StoryboardFilePath } from '../../components/editor/store/editor-state'
 import {
   Compare,
   compareCompose,
@@ -47,8 +47,6 @@ import {
   createSceneFromComponent,
   createStoryboardElement,
 } from './scene-utils'
-
-export const StoryboardFilePath: string = '/src/storyboard.js'
 
 const PossiblyMainComponentNames: Array<string> = ['App', 'Application', 'Main']
 

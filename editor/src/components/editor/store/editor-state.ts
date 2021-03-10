@@ -147,7 +147,8 @@ import {
   DerivedStateKeepDeepEquality,
   JSXMetadataKeepDeepEquality,
 } from './store-deep-equality-instances'
-import { EditorTab, isOpenFileTab, releaseNotesTab } from './editor-tabs'
+
+export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
 export interface OriginalPath {
   originalTP: TemplatePath
@@ -186,12 +187,8 @@ export interface FileDeleteModal {
   type: 'file-delete'
   filePath: string
 }
-export interface FileCloseModal {
-  type: 'file-close'
-  editorTab: EditorTab
-}
 
-export type ModalDialog = FileDeleteModal | FileCloseModal
+export type ModalDialog = FileDeleteModal
 
 export type CursorImportanceLevel = 'fixed' | 'mouseOver' // only one fixed cursor can exist, mouseover is a bit less important
 export type CursorStackItem = {
@@ -224,6 +221,10 @@ export interface ConsoleLog {
   data: Array<any>
 }
 
+export interface DesignerFile {
+  filename: string
+}
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -231,11 +232,6 @@ export interface EditorState {
   projectName: string
   projectVersion: number
   isLoaded: boolean
-  openFiles: Array<EditorTab>
-  selectedFile: {
-    tab: EditorTab
-    initialCursorPosition: CursorPosition | null
-  } | null
   spyMetadataKILLME: JSXMetadata // this is coming from the canvas spy report.
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
   jsxMetadataKILLME: JSXMetadata // this is a merged result of the two above.
@@ -291,6 +287,7 @@ export interface EditorState {
     duplicationState: DuplicationState | null
     base64Blobs: CanvasBase64Blobs
     mountCount: number
+    openFile: DesignerFile | null
   }
   inspector: {
     visible: boolean
@@ -344,13 +341,11 @@ export interface EditorState {
 }
 
 export interface StoredEditorState {
-  selectedFile: EditorTab | null
   selectedViews: Array<TemplatePath>
 }
 
 export function storedEditorStateFromEditorState(editorState: EditorState): StoredEditorState {
   return {
-    selectedFile: getOpenEditorTab(editorState),
     selectedViews: editorState.selectedViews,
   }
 }
@@ -364,34 +359,21 @@ export function mergeStoredEditorStateIntoEditorState(
   } else {
     return {
       ...editorState,
-      selectedFile:
-        storedEditorState.selectedFile == null
-          ? null
-          : { tab: storedEditorState.selectedFile, initialCursorPosition: null },
       selectedViews: storedEditorState.selectedViews,
     }
   }
 }
 
-export function getOpenEditorTab(model: EditorState): EditorTab | null {
-  return model.selectedFile == null ? null : model.selectedFile.tab
-}
-
 export function getOpenFilename(model: EditorState): string | null {
-  const openTab = getOpenEditorTab(model)
-  return openTab != null && isOpenFileTab(openTab) ? openTab.filename : null
+  return model.canvas.openFile?.filename ?? null
 }
 
 export function getOpenFile(model: EditorState): ProjectFile | null {
-  const openEditorTab = getOpenEditorTab(model)
-  if (openEditorTab == null) {
+  const openFile = getOpenFilename(model)
+  if (openFile == null) {
     return null
   } else {
-    if (isOpenFileTab(openEditorTab)) {
-      return getContentsTreeFileFromString(model.projectContents, openEditorTab.filename)
-    } else {
-      return null
-    }
+    return getContentsTreeFileFromString(model.projectContents, openFile)
   }
 }
 
@@ -400,44 +382,43 @@ export function getFileForName(filePath: string, model: EditorState): ProjectFil
 }
 
 export function getOpenTextFileKey(model: EditorState): string | null {
-  const openFile = getOpenFile(model)
-  const openEditorTab = getOpenEditorTab(model)
-  if (
-    openFile != null &&
-    isTextFile(openFile) &&
-    openEditorTab != null &&
-    isOpenFileTab(openEditorTab)
-  ) {
-    return openEditorTab.filename
-  } else {
+  const openFilename = getOpenFilename(model)
+  if (openFilename == null) {
     return null
+  } else {
+    const projectFile = getContentsTreeFileFromString(model.projectContents, openFilename)
+    if (isTextFile(projectFile)) {
+      return openFilename
+    } else {
+      return null
+    }
   }
 }
 
 export function getOpenTextFile(model: EditorState): TextFile | null {
-  const openTextFileKey = getOpenTextFileKey(model)
-  if (openTextFileKey == null) {
+  const openFile = getOpenFile(model)
+  if (openFile == null) {
     return null
   } else {
-    const openTextFile = getContentsTreeFileFromString(model.projectContents, openTextFileKey)
-    if (openTextFile != null && isTextFile(openTextFile)) {
-      return openTextFile
+    if (isTextFile(openFile)) {
+      return openFile
     } else {
-      throw new Error(
-        `Inconsistency between expected open Text file ${openTextFileKey} and the file ${JSON.stringify(
-          openTextFile,
-        )}`,
-      )
+      return null
     }
   }
 }
 
 export function getOpenUIJSFileKey(model: EditorState): string | null {
-  const openEditorTab = getOpenEditorTab(model)
-  if (isOpenFileUiJs(model) && openEditorTab != null && isOpenFileTab(openEditorTab)) {
-    return openEditorTab.filename
-  } else {
+  const openFilename = getOpenFilename(model)
+  if (openFilename == null) {
     return null
+  } else {
+    const projectFile = getContentsTreeFileFromString(model.projectContents, openFilename)
+    if (isParsedTextFile(projectFile)) {
+      return openFilename
+    } else {
+      return null
+    }
   }
 }
 
@@ -447,19 +428,15 @@ export function isOpenFileUiJs(model: EditorState): boolean {
 }
 
 export function getOpenUIJSFile(model: EditorState): TextFile | null {
-  const openUIJSFileKey = getOpenUIJSFileKey(model)
-  if (openUIJSFileKey == null) {
+  const openFilename = getOpenFilename(model)
+  if (openFilename == null) {
     return null
   } else {
-    const openUIJSFile = getContentsTreeFileFromString(model.projectContents, openUIJSFileKey)
-    if (openUIJSFile != null && isParsedTextFile(openUIJSFile)) {
-      return openUIJSFile
+    const projectFile = getContentsTreeFileFromString(model.projectContents, openFilename)
+    if (isParsedTextFile(projectFile)) {
+      return projectFile
     } else {
-      throw new Error(
-        `Inconsistency between expected open UI JS file ${openUIJSFileKey} and the file ${JSON.stringify(
-          openUIJSFile,
-        )}`,
-      )
+      return null
     }
   }
 }
@@ -940,8 +917,6 @@ export interface PersistentModel {
   exportsInfo: ReadonlyArray<ExportsInfo>
   lastUsedFont: FontSettings | null
   hiddenInstances: Array<TemplatePath>
-  openFiles: Array<EditorTab>
-  selectedFile: EditorTab | null
   codeEditorErrors: {
     buildErrors: ErrorMessages
     lintErrors: ErrorMessages
@@ -982,8 +957,6 @@ export function mergePersistentModel(
     exportsInfo: second.exportsInfo,
     lastUsedFont: second.lastUsedFont,
     hiddenInstances: [...first.hiddenInstances, ...second.hiddenInstances],
-    openFiles: second.openFiles,
-    selectedFile: second.selectedFile,
     codeEditorErrors: second.codeEditorErrors,
     fileBrowser: {
       minimised: second.fileBrowser.minimised,
@@ -1015,8 +988,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectName: createNewProjectName(),
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
-    openFiles: [],
-    selectedFile: null,
     spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
     jsxMetadataKILLME: emptyJsxMetadata,
@@ -1082,6 +1053,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       duplicationState: null,
       base64Blobs: {},
       mountCount: 0,
+      openFile: {
+        filename: StoryboardFilePath,
+      },
     },
     inspector: {
       visible: true,
@@ -1261,7 +1235,6 @@ export function editorModelFromPersistentModel(
     projectName: createNewProjectName(),
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
-    openFiles: persistentModel.openFiles,
     spyMetadataKILLME: emptyJsxMetadata,
     domMetadataKILLME: [],
     jsxMetadataKILLME: emptyJsxMetadata,
@@ -1327,6 +1300,9 @@ export function editorModelFromPersistentModel(
       duplicationState: null,
       base64Blobs: {},
       mountCount: 0,
+      openFile: {
+        filename: StoryboardFilePath,
+      },
     },
     inspector: {
       visible: true,
@@ -1357,12 +1333,6 @@ export function editorModelFromPersistentModel(
     parseOrPrintInFlight: false,
     safeMode: false,
     saveError: false,
-    selectedFile: Utils.optionalMap((tab) => {
-      return {
-        tab: tab,
-        initialCursorPosition: null,
-      }
-    }, persistentModel.selectedFile),
     navigator: {
       dropTargetHint: {
         target: null,
@@ -1384,7 +1354,6 @@ export function editorModelFromPersistentModel(
 }
 
 export function persistentModelFromEditorModel(editor: EditorState): PersistentModel {
-  const selectedFile = getOpenEditorTab(editor)
   return {
     appID: editor.appID,
     projectVersion: editor.projectVersion,
@@ -1392,8 +1361,6 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
     exportsInfo: editor.codeResultCache.exportsInfo,
     lastUsedFont: editor.lastUsedFont,
     hiddenInstances: editor.hiddenInstances,
-    openFiles: editor.openFiles,
-    selectedFile: selectedFile,
     codeEditorErrors: editor.codeEditorErrors,
     fileBrowser: {
       minimised: editor.fileBrowser.minimised,
@@ -1413,15 +1380,11 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
 export function persistentModelForProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): PersistentModel {
-  const selectedTab: EditorTab = releaseNotesTab()
-
   return {
     appID: null,
     projectVersion: CURRENT_PROJECT_VERSION,
     projectContents: projectContents,
     exportsInfo: [],
-    openFiles: [selectedTab],
-    selectedFile: selectedTab,
     codeEditorErrors: {
       buildErrors: {},
       lintErrors: {},
@@ -1455,7 +1418,7 @@ export const DefaultPackageJson = {
   name: 'Utopia Project',
   version: '0.1.0',
   utopia: {
-    'main-ui': 'src/app.js',
+    'main-ui': StoryboardFilePath.slice(1),
     html: defaultIndexHtmlFilePath,
     js: 'src/index.js',
   },
