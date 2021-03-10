@@ -57,8 +57,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_PREVIEW_CONNECTED':
     case 'SET_HIGHLIGHTS_ENABLED':
     case 'SEND_PREVIEW_MODEL':
-    case 'CLOSE_FILE':
-    case 'REORDER_OPEN_FILES':
+    case 'CLOSE_DESIGNER_FILE':
     case 'UPDATE_CODE_RESULT_CACHE':
     case 'SET_CODE_EDITOR_BUILD_ERRORS':
     case 'SET_CODE_EDITOR_LINT_ERRORS':
@@ -80,6 +79,9 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
     case 'PROPERTY_CONTROLS_IFRAME_READY':
     case 'SEND_LINTER_REQUEST_MESSAGE':
+    case 'MARK_VSCODE_BRIDGE_READY':
+    case 'SELECT_FROM_FILE_AND_POSITION':
+    case 'SEND_CODE_EDITOR_INITIALISATION':
       return true
 
     case 'NEW':
@@ -118,19 +120,19 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'DELETE_FILE':
     case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
+    case 'UPDATE_FROM_CODE_EDITOR':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
     case 'SET_SCENE_PROP':
     case 'UNSET_SCENE_PROP':
     case 'SET_PROP_WITH_ELEMENT_PATH':
-    case 'OPEN_FILE':
+    case 'OPEN_CODE_EDITOR_FILE':
     case 'SWITCH_LAYOUT_SYSTEM':
     case 'SAVE_CURRENT_FILE':
     case 'WRAP_IN_LAYOUTABLE':
     case 'UNWRAP_LAYOUTABLE':
     case 'UPDATE_JSX_ELEMENT_NAME':
     case 'SET_ASPECT_RATIO_LOCK':
-    case 'SET_CODE_EDITOR_THEME':
     case 'INSERT_DROPPED_IMAGE':
     case 'RESET_PROP_TO_DEFAULT':
     case 'UPDATE_PACKAGE_JSON':
@@ -172,6 +174,19 @@ export function isParsedModelUpdate(action: EditorAction): boolean {
       return R.any(isParsedModelUpdate, action.actions)
     case 'UPDATE_FROM_WORKER':
       return action.codeOrModel === 'Model'
+    default:
+      return false
+  }
+}
+
+export function isFromVSCode(action: EditorAction): boolean {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return R.any(isFromVSCode, action.transientActions)
+    case 'ATOMIC':
+      return R.any(isFromVSCode, action.actions)
+    case 'UPDATE_FROM_CODE_EDITOR':
+      return true
     default:
       return false
   }

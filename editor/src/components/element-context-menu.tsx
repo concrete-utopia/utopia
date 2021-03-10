@@ -25,12 +25,12 @@ import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { filterScenes } from '../core/shared/template-path'
 import { betterReactMemo } from '../uuiui-deps'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
-import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { getOpenUtopiaJSXComponentsFromState } from './editor/store/editor-state'
 import { EditorDispatch } from './editor/action-types'
-import { selectComponents } from './editor/actions/action-creators'
+import { selectComponents, setHighlightedView } from './editor/actions/action-creators'
 import * as TP from '../core/shared/template-path'
 import { TemplatePath } from '../core/shared/project-file-types'
+import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
+import { FlexRow, Icn, IcnProps } from '../uuiui'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -68,43 +68,85 @@ function useCanvasContextMenuItems(
   contextMenuInstance: ElementContextMenuInstance,
   dispatch: EditorDispatch,
 ): Array<ContextMenuItem<CanvasData>> {
-  const metadata = useEditorState(
-    (store) => store.editor.jsxMetadataKILLME,
-    'ElementContextMenu metadata',
-  )
-  const components = useEditorState(
-    (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
-    'ElementContextMenu components',
-  )
+  const elementNamesAndIcons = useNamesAndIconsAllPaths()
 
   if (contextMenuInstance === 'context-menu-canvas') {
-    const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = MetadataUtils.getAllPaths(
-      metadata,
-    ).map((path) => {
-      const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
-      return {
-        name: elementName?.baseVariable || '',
-        details: {
-          path: path,
-        },
-        submenuName: 'Elements',
-        enabled: true,
-        action: () => dispatch([selectComponents([path], false)], 'canvas'),
-        isHidden: ({ props }: { props: ContextMenuInnerProps }) => {
-          if (props.elementsUnderCursor != null && Array.isArray(props.elementsUnderCursor)) {
-            return !props.elementsUnderCursor.some((underCursor: TemplatePath) =>
-              TP.pathsEqual(underCursor, path),
-            )
-          } else {
-            return true
-          }
-        },
-      }
-    })
-    return [...ElementContextMenuItems, ...elementListSubmenu]
+    const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = elementNamesAndIcons.map(
+      ({ label, path, iconProps }) => {
+        return {
+          name: (
+            <SelectableElementItem
+              path={path}
+              dispatch={dispatch}
+              iconProps={iconProps}
+              label={label}
+            />
+          ),
+          details: {
+            path: path,
+          },
+          submenuName: 'Select Elements',
+          enabled: true,
+          action: () => dispatch([selectComponents([path], false)], 'canvas'),
+          isHidden: ({ props }: { props: ContextMenuInnerProps }) => {
+            if (props.elementsUnderCursor != null && Array.isArray(props.elementsUnderCursor)) {
+              return !props.elementsUnderCursor.some((underCursor: TemplatePath) =>
+                TP.pathsEqual(underCursor, path),
+              )
+            } else {
+              return true
+            }
+          },
+        }
+      },
+    )
+    return [...elementListSubmenu, ...ElementContextMenuItems]
   } else {
     return ElementContextMenuItems
   }
+}
+
+interface SelectableElementItemProps {
+  dispatch: EditorDispatch
+  path: TemplatePath
+  iconProps: IcnProps
+  label: string
+}
+
+const SelectableElementItem = (props: SelectableElementItemProps) => {
+  const rawRef = React.useRef<HTMLDivElement>(null)
+  const { dispatch, path, iconProps, label } = props
+  const isHighlighted = useEditorState(
+    (store) => store.editor.highlightedViews.some((view) => TP.pathsEqual(path, view)),
+    'SelectableElementItem isHighlighted',
+  )
+  const highlightElement = React.useCallback(() => dispatch([setHighlightedView(path)]), [
+    dispatch,
+    path,
+  ])
+
+  React.useEffect(() => {
+    const current = rawRef.current
+    if (current != null) {
+      const parent = current.parentElement?.parentElement
+      // eslint-disable-next-line no-unused-expressions
+      parent?.addEventListener('mousemove', highlightElement)
+    }
+    return function cleanup() {
+      if (current != null) {
+        const parent = current.parentElement?.parentElement
+        // eslint-disable-next-line no-unused-expressions
+        parent?.removeEventListener('mousemove', highlightElement)
+      }
+    }
+  }, [highlightElement])
+
+  return (
+    <FlexRow ref={rawRef}>
+      <Icn {...iconProps} color={isHighlighted ? 'white' : 'darkgray'} />
+      <span style={{ paddingLeft: 6 }}>{label}</span>
+    </FlexRow>
+  )
 }
 
 // TODO Scene Implementation - seems we should have a different context menu for scenes

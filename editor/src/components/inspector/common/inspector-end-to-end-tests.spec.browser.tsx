@@ -1389,6 +1389,9 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
+      await screen.findByTestId('layout-system-expand')
+      fireEvent.click(screen.getByTestId('layout-system-expand'))
+      await screen.findByTestId('flexPadding-L')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
@@ -1488,6 +1491,9 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('toggle-min-max-button')
       fireEvent.click(screen.getByTestId('toggle-min-max-button'))
       await screen.findByTestId('position-maxWidth-number-input')
+      await screen.findByTestId('layout-system-expand')
+      fireEvent.click(screen.getByTestId('layout-system-expand'))
+      await screen.findByTestId('flexPadding-L')
     })
 
     const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
@@ -1576,5 +1582,110 @@ describe('inspector tests with real metadata', () => {
     expect(
       fontSizeControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"detected"`)
+  })
+  it('Flex shorthand properties', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            display: 'flex',
+          }}
+          data-uid={'aaa'}
+        >
+          <div data-uid={'bbb'} style={{flex: '1 0 15px'}}>hello</div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
+    ]
+
+    const flexBasis = (await renderResult.renderedDOM.findByTestId(
+      'position-flexBasis-number-input',
+    )) as HTMLInputElement
+    const flexGrow = (await renderResult.renderedDOM.findByTestId(
+      'position-flexGrow-number-input',
+    )) as HTMLInputElement
+    const flexShrink = (await renderResult.renderedDOM.findByTestId(
+      'position-flexShrink-number-input',
+    )) as HTMLInputElement
+
+    expect(metadata.computedStyle?.['flexBasis']).toMatchInlineSnapshot(`"15px"`)
+    expect(flexBasis.value).toMatchInlineSnapshot(`"15"`)
+    expect(
+      flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+    expect(metadata.computedStyle?.['flexGrow']).toMatchInlineSnapshot(`"1"`)
+    expect(flexGrow.value).toMatchInlineSnapshot(`"1"`)
+    expect(
+      flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+    expect(metadata.computedStyle?.['flexShrink']).toMatchInlineSnapshot(`"0"`)
+    expect(flexShrink.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+  })
+  it('Flex longhand properties', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            display: 'flex',
+          }}
+          data-uid={'aaa'}
+        >
+          <div
+            data-uid={'bbb'}
+            style={{
+              flexGrow: 1,
+              flexShrink: 0,
+              flexBasis: '15px',
+            }}
+          >hello</div>
+        </div>
+      `),
+    )
+
+    await renderResult.dispatch(
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      false,
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
+    ]
+
+    const flexBasis = (await renderResult.renderedDOM.findByTestId(
+      'position-flexBasis-number-input',
+    )) as HTMLInputElement
+    const flexGrow = (await renderResult.renderedDOM.findByTestId(
+      'position-flexGrow-number-input',
+    )) as HTMLInputElement
+    const flexShrink = (await renderResult.renderedDOM.findByTestId(
+      'position-flexShrink-number-input',
+    )) as HTMLInputElement
+
+    expect(metadata.computedStyle?.['flexBasis']).toMatchInlineSnapshot(`"15px"`)
+    expect(flexBasis.value).toMatchInlineSnapshot(`"15"`)
+    expect(
+      flexBasis.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+    expect(metadata.computedStyle?.['flexGrow']).toMatchInlineSnapshot(`"1"`)
+    expect(flexGrow.value).toMatchInlineSnapshot(`"1"`)
+    expect(
+      flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+    expect(metadata.computedStyle?.['flexShrink']).toMatchInlineSnapshot(`"0"`)
+    expect(flexShrink.value).toMatchInlineSnapshot(`"0"`)
+    expect(
+      flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
   })
 })

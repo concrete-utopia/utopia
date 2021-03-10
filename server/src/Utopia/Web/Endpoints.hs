@@ -335,7 +335,7 @@ servePath' :: FilePath -> (StaticSettings -> StaticSettings) -> Maybe Text -> Se
 servePath' defaultPathToServe settingsChange branchName = do
   pathToServe <- getPathToServe defaultPathToServe branchName
   let defaultSettings = defaultFileServerSettings pathToServe
-  let withIndicesTurnedOff = defaultSettings { ssListing = Nothing }
+  let withIndicesTurnedOff = defaultSettings { ssListing = Nothing, ssUseHash = True }
   app <- serveDirectoryWith $ settingsChange withIndicesTurnedOff
   let gzipConfig = def{gzipFiles = GzipCompress}
   return $ gzip gzipConfig app
@@ -354,6 +354,9 @@ addAccessControlAllowOrigin = addMiddlewareHeader "Access-Control-Allow-Origin" 
 
 addCacheControl :: Middleware
 addCacheControl = addMiddlewareHeader "Cache-Control" "public, immutable, max-age=2592000"
+
+addCacheControlRevalidate :: Middleware
+addCacheControlRevalidate = addMiddlewareHeader "Cache-Control" "public, must-revalidate"
 
 addCDNHeaders :: Middleware
 addCDNHeaders = addCacheControl . addAccessControlAllowOrigin
@@ -388,7 +391,7 @@ websiteAssetsEndpoint notProxiedPath = do
 vsCodeAssetsEndpoint :: ServerMonad Application
 vsCodeAssetsEndpoint = do
   pathToServeFrom <- getVSCodeAssetRoot
-  servePath pathToServeFrom Nothing
+  fmap addAccessControlAllowOrigin $ fmap addCacheControlRevalidate $ servePath pathToServeFrom Nothing
 
 wrappedWebAppLookup :: (Pieces -> IO LookupResult) -> Pieces -> IO LookupResult
 wrappedWebAppLookup defaultLookup _ = do

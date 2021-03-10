@@ -24,42 +24,59 @@ import {
   workspace,
 } from 'vscode'
 import {
-  createDirectory,
-  deletePath,
-  exists,
-  getDescendentPaths,
-  pathIsDirectory,
-  readdir,
-  readFile,
-  readFileWithEncoding,
-  rename,
-  stat,
-  stopWatching,
   watch,
+  stopWatching,
+  stat,
+  pathIsDirectory,
+  createDirectory,
+  readFile,
+  exists,
   writeFile,
-} from './browserfs-utils'
-import {
   appendToPath,
   dirname,
-  fromUtopiaURI,
-  Scheme,
   stripRootPrefix,
-  toUtopiaURI,
-} from './path-utils'
+  deletePath,
+  rename,
+  getDescendentPaths,
+  isDirectory,
+  readDirectory,
+  RootDir,
+  readFileSavedContent,
+  writeFileSavedContent,
+  readFileSavedContentAsUTF8,
+  pathIsFileWithUnsavedContent,
+} from 'utopia-vscode-common'
+import { fromUtopiaURI, toUtopiaURI } from './path-utils'
+
+interface EventQueue<T> {
+  queue: T[]
+  emitter: EventEmitter<T[]>
+  handle: number | null
+}
+
+function newEventQueue<T>(): EventQueue<T> {
+  return {
+    queue: [],
+    emitter: new EventEmitter<T[]>(),
+    handle: null,
+  }
+}
 
 export class UtopiaFSExtension
   implements FileSystemProvider, FileSearchProvider, TextSearchProvider, Disposable {
   private disposable: Disposable
-  private emitter = new EventEmitter<FileChangeEvent[]>()
-  private eventQueue: FileChangeEvent[] = []
-  private emitEventHandle: number | null = null
+
+  private fileChangeEventQueue = newEventQueue<FileChangeEvent>()
+  private utopiaSavedChangeEventQueue = newEventQueue<Uri>()
+  private utopiaUnsavedChangeEventQueue = newEventQueue<Uri>()
+
   private allFilePaths: string[] | null = null
 
-  constructor(private workspaceRootPath: string) {
+  constructor(private projectID: string) {
     this.disposable = Disposable.from(
-      workspace.registerFileSystemProvider(Scheme, this, { isCaseSensitive: true }),
-      workspace.registerFileSearchProvider(Scheme, this),
-      workspace.registerTextSearchProvider(Scheme, this),
+      workspace.registerFileSystemProvider(projectID, this, { isCaseSensitive: true }),
+      workspace.registerFileSearchProvider(projectID, this),
+      workspace.registerTextSearchProvider(projectID, this),
     )
   }
 
@@ -68,33 +85,73 @@ export class UtopiaFSExtension
   }
 
   // FileSystemProvider
+  readonly onDidChangeFile: Event<FileChangeEvent[]> = this.fileChangeEventQueue.emitter.event
+  readonly onUtopiaDidChangeSavedContent: Event<Uri[]> = this.utopiaSavedChangeEventQueue.emitter
+    .event
+  readonly onUtopiaDidChangeUnsavedContent: Event<Uri[]> = this.utopiaUnsavedChangeEventQueue
+    .emitter.event
 
-  readonly onDidChangeFile: Event<FileChangeEvent[]> = this.emitter.event
+  private queueEvent<T>(event: T, eventQueue: EventQueue<T>): void {
+    eventQueue.queue.push(event)
 
-  private queueFileChangeEvent(event: FileChangeEvent): void {
-    this.clearCachedFiles()
-    this.eventQueue.push(event)
-
-    if (this.emitEventHandle != null) {
-      clearTimeout(this.emitEventHandle)
+    if (eventQueue.handle != null) {
+      clearTimeout(eventQueue.handle)
     }
 
-    this.emitEventHandle = setTimeout(() => {
-      this.emitter.fire(this.eventQueue)
-      this.eventQueue = []
+    eventQueue.handle = setTimeout(() => {
+      eventQueue.emitter.fire(eventQueue.queue)
+      eventQueue.queue = []
     }, 5)
   }
 
-  private notifyFileChanged(path: string): void {
-    this.queueFileChangeEvent({ type: FileChangeType.Changed, uri: toUtopiaURI(path) })
+  private queueFileChangeEvent(event: FileChangeEvent): void {
+    this.clearCachedFiles()
+    this.queueEvent(event, this.fileChangeEventQueue)
+  }
+
+  private queueUtopiaSavedChangeEvent(resource: Uri): void {
+    this.queueEvent(resource, this.utopiaSavedChangeEventQueue)
+  }
+
+  private queueUtopiaUnsavedChangeEvent(resource: Uri): void {
+    this.queueEvent(resource, this.utopiaUnsavedChangeEventQueue)
+  }
+
+  private async notifyFileChanged(path: string, modifiedBySelf: boolean): Promise<void> {
+    const uri = toUtopiaURI(this.projectID, path)
+    const hasUnsavedContent = await pathIsFileWithUnsavedContent(path)
+    const fileWasSaved = !hasUnsavedContent
+
+    if (fileWasSaved) {
+      // Notify VS Code of updates to the saved content
+      this.queueFileChangeEvent({
+        type: FileChangeType.Changed,
+        uri: uri,
+      })
+    }
+
+    if (!modifiedBySelf) {
+      // Notify our extension of changes coming from Utopia only
+      if (fileWasSaved) {
+        this.queueUtopiaSavedChangeEvent(uri)
+      } else {
+        this.queueUtopiaUnsavedChangeEvent(uri)
+      }
+    }
   }
 
   private notifyFileCreated(path: string): void {
-    this.queueFileChangeEvent({ type: FileChangeType.Created, uri: toUtopiaURI(path) })
+    this.queueFileChangeEvent({
+      type: FileChangeType.Created,
+      uri: toUtopiaURI(this.projectID, path),
+    })
   }
 
   private notifyFileDeleted(path: string): void {
-    this.queueFileChangeEvent({ type: FileChangeType.Deleted, uri: toUtopiaURI(path) })
+    this.queueFileChangeEvent({
+      type: FileChangeType.Deleted,
+      uri: toUtopiaURI(this.projectID, path),
+    })
   }
 
   watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): Disposable {
@@ -112,22 +169,27 @@ export class UtopiaFSExtension
     })
   }
 
+  async exists(uri: Uri): Promise<boolean> {
+    const path = fromUtopiaURI(uri)
+    return exists(path)
+  }
+
   async stat(uri: Uri): Promise<FileStat> {
     const path = fromUtopiaURI(uri)
     const stats = await stat(path)
-    const fileType = stats.isDirectory() ? FileType.Directory : FileType.File
+    const fileType = isDirectory(stats) ? FileType.Directory : FileType.File
 
     return {
       type: fileType,
       ctime: stats.ctime.valueOf(),
-      mtime: stats.mtime.valueOf(),
+      mtime: stats.lastSavedTime.valueOf(), // VS Code is only interested in changes to the saved content
       size: stats.size,
     }
   }
 
   async readDirectory(uri: Uri): Promise<[string, FileType][]> {
     const path = fromUtopiaURI(uri)
-    const children = await readdir(path)
+    const children = await readDirectory(path)
     const result: Promise<[string, FileType]>[] = children.map((childName) =>
       pathIsDirectory(appendToPath(path, childName)).then((isDirectory) => [
         childName,
@@ -140,15 +202,11 @@ export class UtopiaFSExtension
   async createDirectory(uri: Uri): Promise<void> {
     const path = fromUtopiaURI(uri)
     await createDirectory(path)
-
-    const parentDir = dirname(path)
-    this.notifyFileChanged(parentDir)
-    this.notifyFileCreated(path)
   }
 
   async readFile(uri: Uri): Promise<Uint8Array> {
     const path = fromUtopiaURI(uri)
-    return readFile(path)
+    return readFileSavedContent(path)
   }
 
   async writeFile(
@@ -166,17 +224,12 @@ export class UtopiaFSExtension
       }
     }
 
-    await writeFile(path, content)
-    this.notifyFileChanged(path)
+    await writeFileSavedContent(path, content)
   }
 
   async delete(uri: Uri, options: { recursive: boolean }): Promise<void> {
     const path = fromUtopiaURI(uri)
-    const parentDir = dirname(path)
-    const deletedPaths = await deletePath(path, options.recursive)
-
-    this.notifyFileChanged(parentDir)
-    deletedPaths.forEach(this.notifyFileDeleted, this)
+    await deletePath(path, options.recursive)
   }
 
   async rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): Promise<void> {
@@ -191,19 +244,18 @@ export class UtopiaFSExtension
     }
 
     await rename(oldPath, newPath)
-
-    this.notifyFileDeleted(oldPath)
-    this.notifyFileCreated(newPath)
   }
 
   async copy(source: Uri, destination: Uri, options: { overwrite: boolean }): Promise<void> {
+    // It's not clear where this will ever be called from, but it seems to be from the side bar
+    // that isn't available in Utopia, so this implementation is "just in case"
     const sourcePath = fromUtopiaURI(source)
     const destinationPath = fromUtopiaURI(destination)
     const destinationParentDir = dirname(destinationPath)
     const destinationParentDirExists = await exists(destinationParentDir)
 
     if (!destinationParentDirExists) {
-      throw FileSystemError.FileNotFound(toUtopiaURI(destinationParentDir))
+      throw FileSystemError.FileNotFound(toUtopiaURI(this.projectID, destinationParentDir))
     }
 
     if (!options.overwrite) {
@@ -213,10 +265,8 @@ export class UtopiaFSExtension
       }
     }
 
-    const contents = await readFile(sourcePath)
-    await writeFile(destinationPath, contents)
-
-    this.notifyFileCreated(destinationPath)
+    const { content, unsavedContent } = await readFile(sourcePath)
+    await writeFile(destinationPath, content, unsavedContent)
   }
 
   // FileSearchProvider
@@ -228,7 +278,7 @@ export class UtopiaFSExtension
   ): Promise<Uri[]> {
     // TODO Support all search options
     const { result: foundPaths } = await this.filterFilePaths(query.pattern, options.maxResults)
-    return foundPaths.map(toUtopiaURI)
+    return foundPaths.map((p) => toUtopiaURI(this.projectID, p))
   }
 
   // TextSearchProvider
@@ -239,6 +289,7 @@ export class UtopiaFSExtension
     progress: Progress<TextSearchResult>,
     token: CancellationToken,
   ): Promise<TextSearchComplete> {
+    // This appears to only be callable from the side bar that isn't available in Utopia
     // TODO Support all search options
     const { result: filePaths, limitHit } = await this.filterFilePaths(options.includes[0])
 
@@ -248,7 +299,7 @@ export class UtopiaFSExtension
           break
         }
 
-        const content = await readFileWithEncoding(filePath, options.encoding || 'utf8')
+        const content = await readFileSavedContentAsUTF8(filePath)
 
         const lines = splitIntoLines(content)
         for (let i = 0; i < lines.length; i++) {
@@ -256,7 +307,7 @@ export class UtopiaFSExtension
           const index = line.indexOf(query.pattern)
           if (index !== -1) {
             progress.report({
-              uri: toUtopiaURI(filePath),
+              uri: toUtopiaURI(this.projectID, filePath),
               ranges: new Range(
                 new Position(i, index),
                 new Position(i, index + query.pattern.length),
@@ -314,7 +365,7 @@ export class UtopiaFSExtension
 
   async getAllPaths(): Promise<string[]> {
     if (this.allFilePaths == null) {
-      const result = await getDescendentPaths(this.workspaceRootPath, false)
+      const result = await getDescendentPaths(RootDir)
       this.allFilePaths = result
       return result
     } else {

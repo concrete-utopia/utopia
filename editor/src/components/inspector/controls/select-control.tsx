@@ -67,13 +67,22 @@ export const CustomReactSelectInput = (props: InputProps) => {
       color: 'inherit',
     }
   }, [props.isHidden])
+
+  let strippedProps: any = { ...props }
+  delete strippedProps['getStyles']
+  delete strippedProps['innerRef']
+  delete strippedProps['isHidden']
+  delete strippedProps['isDisabled']
+  delete strippedProps['cx']
+  delete strippedProps['selectProps']
+
   return (
     <div>
       <input
         className={props.className}
         style={inputStyle}
         disabled={props.isDisabled}
-        {...props}
+        {...strippedProps}
       />
     </div>
   )

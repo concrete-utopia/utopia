@@ -123,6 +123,7 @@ import {
   getStoryboardTemplatePathFromEditorState,
   addSceneToJSXComponents,
   getNumberOfScenes,
+  StoryboardFilePath,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -171,10 +172,10 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
-import { openFileTab } from '../editor/store/editor-tabs'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from './dom-lookup'
 import { WindowMousePositionRaw } from '../../templates/editor-canvas'
+import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -512,7 +513,7 @@ export function updateFramesOfScenesAndComponents(
                   const { flexBasis, width, height } = flexProps
                   if (flexBasis != null) {
                     propsToSet.push({
-                      path: createLayoutPropertyPath('FlexFlexBasis'),
+                      path: createLayoutPropertyPath('flexBasis'),
                       value: jsxAttributeValue(flexBasis, emptyComments),
                     })
                   }
@@ -810,23 +811,42 @@ function updateFrameValueForProp(
 ): ValueAtPath | null {
   if (delta !== 0) {
     const existingProp = frameProps[framePoint]
-    const pinIsPercentage = existingProp == null ? false : isPercentPin(existingProp)
-    let valueToUse: string | number
-    if (existingProp != null && pinIsPercentage) {
-      const percentValue = numberPartOfPin(existingProp)
-      if (parentFrame != null) {
-        const referenceSize = isHorizontalPoint(framePoint) ? parentFrame.width : parentFrame.height
-        const deltaAsPercentValue = (delta / referenceSize) * 100
-        valueToUse = `${percentValue + deltaAsPercentValue}%`
-      } else {
-        valueToUse = `${percentValue + delta}%`
+    if (existingProp == null) {
+      return {
+        path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+        value: jsxAttributeValue(delta, emptyComments),
       }
-    } else {
-      valueToUse = existingProp == null ? delta : Number(existingProp) + delta
     }
-    return {
-      path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
-      value: jsxAttributeValue(valueToUse, emptyComments),
+    const parsedProp = foldEither(
+      (_) => null,
+      (r) => r,
+      parseCSSLengthPercent(existingProp),
+    )
+    if (parsedProp != null) {
+      const pinIsPercentage = parsedProp.unit === '%'
+      const pinIsUnitlessOrPx = parsedProp.unit == null || parsedProp.unit === 'px'
+      if (pinIsPercentage) {
+        let valueToUse: string | number
+        const percentValue = parsedProp.value
+        if (parentFrame != null) {
+          const referenceSize = isHorizontalPoint(framePoint)
+            ? parentFrame.width
+            : parentFrame.height
+          const deltaAsPercentValue = (delta / referenceSize) * 100
+          valueToUse = `${percentValue + deltaAsPercentValue}%`
+        } else {
+          valueToUse = `${percentValue + delta}%`
+        }
+        return {
+          path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+          value: jsxAttributeValue(valueToUse, emptyComments),
+        }
+      } else if (pinIsUnitlessOrPx) {
+        return {
+          path: createLayoutPropertyPath(pinnedPropForFramePoint(framePoint)),
+          value: jsxAttributeValue(parsedProp.value + delta, emptyComments),
+        }
+      }
     }
   }
   return null
@@ -2458,7 +2478,7 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse('/src/app.js', appUiJsFile) as ParsedTextFile
+  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')
@@ -2468,14 +2488,13 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     ...baseModel,
     projectContents: addFileToProjectContents(
       baseModel.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
       textFile(
         textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
         null,
         Date.now(),
       ),
     ),
-    selectedFile: openFileTab('/src/app.js'),
   }
 }
 

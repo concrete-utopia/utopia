@@ -477,6 +477,40 @@ const getContainer = (
   }
 }
 
+const Input = (props: InputProps) => {
+  const inputStyle = React.useMemo(() => {
+    return {
+      label: 'input',
+      background: 0,
+      border: 0,
+      fontSize: 'inherit',
+      opacity: props.isHidden ? 0 : 1,
+      outline: 0,
+      padding: 0,
+      color: 'inherit',
+    }
+  }, [props.isHidden])
+
+  let strippedProps: any = { ...props }
+  delete strippedProps['getStyles']
+  delete strippedProps['innerRef']
+  delete strippedProps['isHidden']
+  delete strippedProps['isDisabled']
+  delete strippedProps['cx']
+  delete strippedProps['selectProps']
+
+  return (
+    <div>
+      <input
+        className={props.className}
+        style={inputStyle}
+        disabled={props.isDisabled}
+        {...strippedProps}
+      />
+    </div>
+  )
+}
+
 export const PopupList = betterReactMemo<PopupListProps>(
   'PopupList',
   ({

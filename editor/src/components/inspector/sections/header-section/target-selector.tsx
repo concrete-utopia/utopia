@@ -413,7 +413,7 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
       }}
     >
       <H1
-        data-testId={`target-selector-${selectedItem[0]}`}
+        data-testid={`target-selector-${selectedItem[0]}`}
         style={{ flexGrow: 1, display: 'inline', overflow: 'hidden', ...titleStyle }}
       >
         {selectedItem}

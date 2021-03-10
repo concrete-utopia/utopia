@@ -1,4 +1,3 @@
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 const ForkTsCheckerAsyncOverlayWebpackPlugin = require('fork-ts-checker-async-overlay-webpack-plugin')
 const CleanTerminalPlugin = require('clean-terminal-webpack-plugin')
@@ -60,9 +59,6 @@ const config = {
     propertyControlsInfo: hot
       ? ['react-hot-loader/patch', './src/templates/property-controls-info.tsx']
       : './src/templates/property-controls-info.tsx',
-    monacoEditorIframe: hot
-      ? ['react-hot-loader/patch', './src/templates/monaco-editor-iframe.tsx']
-      : './src/templates/monaco-editor-iframe.tsx',
     vsCodeEditorOuterIframe: hot
       ? ['react-hot-loader/patch', './src/templates/vscode-editor-outer-iframe.tsx']
       : './src/templates/vscode-editor-outer-iframe.tsx',
@@ -93,7 +89,6 @@ const config = {
 
   plugins: [
     new CleanTerminalPlugin(),
-    new MonacoWebpackPlugin(),
 
     // This plugin was not really built for multiple output webpack projects like ours
     // Therefore you have to add it multiple times to generate a new file per output,
@@ -122,15 +117,6 @@ const config = {
       scriptLoading: 'defer',
       template: './src/templates/property-controls-info.html',
       filename: 'property-controls-info.html',
-      minify: false,
-    }),
-    new HtmlWebpackPlugin({
-      // Run it again to generate the preview.html
-      chunks: ['monacoEditorIframe'],
-      inject: 'head', // Add the script tags to the end of the <head>
-      scriptLoading: 'defer',
-      template: './src/templates/monaco-editor-iframe.html',
-      filename: 'monaco-editor-iframe.html',
       minify: false,
     }),
     new HtmlWebpackPlugin({
@@ -240,7 +226,7 @@ const config = {
         ],
       },
 
-      // CSS Loading (used by monaco)
+      // CSS Loading.
       { test: /\.css$/, use: ['style-loader', 'css-loader'] },
 
       {

@@ -6,7 +6,7 @@ import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-e
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { setFocus } from '../common/actions'
-import { openEditorTab, setSafeMode } from '../editor/actions/action-creators'
+import { openCodeEditorFile, setSafeMode } from '../editor/actions/action-creators'
 import {
   ConsoleLog,
   createCanvasModelKILLME,
@@ -22,12 +22,12 @@ import CloseButton from '../../third-party/react-error-overlay/components/CloseB
 import { NO_OP } from '../../core/shared/utils'
 import Footer from '../../third-party/react-error-overlay/components/Footer'
 import Header from '../../third-party/react-error-overlay/components/Header'
-import { openFileTab } from '../editor/store/editor-tabs'
 import { FlexColumn, Button, UtopiaTheme } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { TemplatePath } from '../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
+import { LeftPaneDefaultWidth } from '../navigator/left-pane'
 
 interface CanvasWrapperComponentProps {}
 
@@ -112,10 +112,15 @@ const ErrorOverlayComponent = betterReactMemo(
     const errorRecords = filterOldPasses([...lintErrors, ...utopiaParserErrors])
 
     const onOpenFile = React.useCallback(
-      (path: string, cursorPosition: CursorPosition | null) => {
-        dispatch([openEditorTab(openFileTab(path), cursorPosition), setFocus('uicodeeditor')])
+      (path: string) => {
+        dispatch([openCodeEditorFile(path), setFocus('uicodeeditor')])
       },
       [dispatch],
+    )
+
+    const isHiddenUnderNavigator = useEditorState(
+      (store) => store.editor.navigator.position === 'right',
+      'ErrorOverlayComponent isOverlappingWithNavigator',
     )
 
     return (
@@ -123,6 +128,7 @@ const ErrorOverlayComponent = betterReactMemo(
         currentBuildErrorRecords={errorRecords}
         currentRuntimeErrorRecords={overlayErrors}
         onOpenFile={onOpenFile}
+        overlayOffset={isHiddenUnderNavigator ? LeftPaneDefaultWidth : 0}
       />
     )
   },

@@ -5,7 +5,7 @@ import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata } from '../../../core/shared/element-template'
+import { ComponentMetadata, JSXMetadata } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import {
   fileTypeFromFileName,
@@ -20,6 +20,7 @@ import {
   textFile,
   textFileContents,
   RevisionsState,
+  InstancePath,
 } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
@@ -38,7 +39,12 @@ import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
 import * as TP from '../../../core/shared/template-path'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
-import { isTransientAction, isUndoOrRedo, isParsedModelUpdate } from '../actions/action-utils'
+import {
+  isTransientAction,
+  isUndoOrRedo,
+  isParsedModelUpdate,
+  isFromVSCode,
+} from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
@@ -52,6 +58,8 @@ import {
   getAllBuildErrors,
   getAllErrorsFromFiles,
   getAllLintErrors,
+  getHighlightBoundsForTemplatePath,
+  getHighlightBoundsForUids,
   getOpenTextFile,
   getOpenTextFileKey,
   getOpenUtopiaJSXComponentsFromState,
@@ -69,6 +77,15 @@ import {
   walkContentsTree,
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
+import {
+  applyProjectContentChanges,
+  sendCodeEditorDecorations,
+  sendSelectedElement,
+  sendSelectedElementChangedMessage,
+} from '../../../core/vscode/vscode-bridge'
+import { boundsInFile } from 'utopia-vscode-common'
+import { TemplatePathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -289,6 +306,54 @@ function maybeRequestModelUpdateOnEditor(
   }
 }
 
+async function applyVSCodeDecorations(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): Promise<void> {
+  const oldHighlightBounds = getHighlightBoundsForUids(oldEditorState)
+  const newHighlightBounds = getHighlightBoundsForUids(newEditorState)
+  if (
+    oldEditorState.selectedViews !== newEditorState.selectedViews ||
+    oldEditorState.highlightedViews !== newEditorState.highlightedViews ||
+    oldHighlightBounds !== newHighlightBounds
+  ) {
+    await sendCodeEditorDecorations(newEditorState)
+  }
+}
+
+async function updateSelectedElementChanged(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+): Promise<void> {
+  if (
+    oldEditorState.selectedViews !== newEditorState.selectedViews &&
+    newEditorState.selectedViews.length > 0
+  ) {
+    await sendSelectedElement(newEditorState)
+  }
+}
+
+async function applyVSCodeChanges(
+  oldStoredState: EditorStore,
+  newEditorState: EditorState,
+  updateCameFromVSCode: boolean,
+): Promise<void> {
+  // Update the file system that is shared between Utopia and VS Code.
+  if (oldStoredState.editor.id != null && !updateCameFromVSCode) {
+    await applyProjectContentChanges(
+      oldStoredState.editor.id,
+      oldStoredState.editor.projectContents,
+      newEditorState.projectContents,
+    )
+  }
+
+  // Keep the decorations synchronised from Utopia to VS Code.
+  await applyVSCodeDecorations(oldStoredState.editor, newEditorState)
+
+  // Handle the selected element having changed to inform the user what is going on.
+  await updateSelectedElementChanged(oldStoredState.editor, newEditorState)
+}
+
 export function editorDispatch(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
@@ -410,6 +475,18 @@ export function editorDispatch(
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
   }
 
+  const updatedFromVSCode = dispatchedActions.some(isFromVSCode)
+  if (updatedFromVSCode && !dispatchedActions.every(isFromVSCode)) {
+    console.error(
+      `VS Code actions mixed with Utopia actions`,
+      simpleStringifyActions(dispatchedActions),
+    )
+  }
+
+  applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
+    console.error('Error sending updates to VS Code', error)
+  })
+
   if (nameUpdated && frozenEditorState.id != null) {
     pushProjectURLToBrowserHistory(
       `Utopia ${frozenEditorState.projectName}`,
@@ -507,7 +584,7 @@ function editorDispatchInner(
     }
 
     const cleanedEditor = metadataChanged
-      ? removeNonExistingViewReferencesFromState(result.editor)
+      ? removeNonExistingViewReferencesFromState(storedState.editor, result.editor)
       : result.editor
 
     let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
@@ -644,12 +721,35 @@ function notifyTsWorker(
   }
 }
 
-function removeNonExistingViewReferencesFromState(editorState: EditorState): EditorState {
+function removeNonExistingViewReferencesFromState(
+  oldEditorState: EditorState,
+  editorState: EditorState,
+): EditorState {
+  const oldRootComponents = oldEditorState.jsxMetadataKILLME
   const rootComponents = editorState.jsxMetadataKILLME
-  const allPaths = MetadataUtils.getAllPaths(rootComponents)
-  const updatedSelectedViews = filterNonExistingViews(allPaths, editorState.selectedViews)
-  const updatedHighlightedViews = filterNonExistingViews(allPaths, editorState.highlightedViews)
-  const updatedHiddenInstances = filterNonExistingViews(allPaths, editorState.hiddenInstances)
+  const updatedSelectedViews = TemplatePathArrayKeepDeepEquality(
+    editorState.selectedViews,
+    mapDropNulls(
+      (selectedView) => findMatchingTemplatePath(oldRootComponents, rootComponents, selectedView),
+      editorState.selectedViews,
+    ),
+  ).value
+  const updatedHighlightedViews = TemplatePathArrayKeepDeepEquality(
+    editorState.highlightedViews,
+    mapDropNulls(
+      (highlightedView) =>
+        findMatchingTemplatePath(oldRootComponents, rootComponents, highlightedView),
+      editorState.highlightedViews,
+    ),
+  ).value
+  const updatedHiddenInstances = TemplatePathArrayKeepDeepEquality(
+    editorState.hiddenInstances,
+    mapDropNulls(
+      (hiddenInstance) =>
+        findMatchingTemplatePath(oldRootComponents, rootComponents, hiddenInstance),
+      editorState.hiddenInstances,
+    ),
+  ).value
   return {
     ...editorState,
     selectedViews: updatedSelectedViews,
@@ -658,14 +758,36 @@ function removeNonExistingViewReferencesFromState(editorState: EditorState): Edi
   }
 }
 
-function filterNonExistingViews(
-  allPaths: Array<TemplatePath>,
-  views: Array<TemplatePath>,
-): Array<TemplatePath> {
-  const filtered = views.filter((path) => TP.containsPath(path, allPaths))
-  if (filtered.length !== views.length) {
-    return filtered
+function findMatchingTemplatePath(
+  oldComponents: JSXMetadata,
+  newComponents: JSXMetadata,
+  pathToUpdate: TemplatePath,
+): TemplatePath | null {
+  const scenePathStillExists =
+    MetadataUtils.findSceneByTemplatePath(newComponents.components, pathToUpdate) != null
+  const pathStillExists =
+    MetadataUtils.getElementByInstancePathMaybe(
+      newComponents.elements,
+      pathToUpdate as InstancePath,
+    ) != null
+  if (pathStillExists || (TP.isScenePath(pathToUpdate) && scenePathStillExists)) {
+    return pathToUpdate
+  }
+
+  const parentPath = TP.parentPath(pathToUpdate)
+  if (parentPath == null) {
+    const oldRootPaths = MetadataUtils.getAllCanvasRootPaths(oldComponents)
+    const newRootPaths = MetadataUtils.getAllCanvasRootPaths(oldComponents)
+    const oldRootIndex = oldRootPaths.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
+    const newRootPath = newRootPaths[oldRootIndex]
+    return newRootPath ?? null
   } else {
-    return views
+    const oldElementsHere = MetadataUtils.getImmediateChildren(oldComponents, parentPath)
+    const newElementsHere = MetadataUtils.getImmediateChildren(newComponents, parentPath)
+    const oldChildIndex = oldElementsHere.findIndex((e) =>
+      TP.pathsEqual(e.templatePath, pathToUpdate),
+    )
+    const potentialNewElement = newElementsHere[oldChildIndex]
+    return potentialNewElement?.templatePath ?? null
   }
 }

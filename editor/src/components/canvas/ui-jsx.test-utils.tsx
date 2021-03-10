@@ -1,10 +1,3 @@
-// WATCH OUT! We are disabling the imports from monaco here, because it breaks jest
-jest.mock('../code-editor/script-editor', () => ({
-  ScriptEditor: (props: any) => {
-    return <div>hi!</div>
-  },
-}))
-
 jest.mock('../editor/stored-state', () => ({
   loadStoredState: () => Promise.resolve(null),
   saveStoredState: () => Promise.resolve(),
@@ -26,11 +19,6 @@ jest.setTimeout(10000) // in milliseconds
 import { act, render } from '@testing-library/react'
 import * as Prettier from 'prettier'
 import create from 'zustand'
-import {
-  ComponentMetadata,
-  ElementInstanceMetadata,
-  TopLevelElement,
-} from '../../core/shared/element-template'
 import {
   foldParsedTextFile,
   isParseFailure,
@@ -56,7 +44,12 @@ import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-ty
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import { editorDispatch } from '../editor/store/dispatch'
-import { createEditorState, deriveState, EditorStore } from '../editor/store/editor-state'
+import {
+  createEditorState,
+  deriveState,
+  EditorStore,
+  StoryboardFilePath,
+} from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { scenePath } from '../../core/shared/template-path'
@@ -70,6 +63,8 @@ import { getContentsTreeFileFromString } from '../assets'
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
 })
+
+jest.mock('../../core/vscode/vscode-bridge')
 
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {
   const renderCountBaseline = renderCount
@@ -205,7 +200,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
 }
 
 export function getPrintedUiJsCode(store: EditorStore): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js')
+  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
   if (isTextFile(file)) {
     return file.fileContents.code
   } else {
@@ -214,7 +209,7 @@ export function getPrintedUiJsCode(store: EditorStore): string {
 }
 
 export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js')
+  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
       printCodeOptions(false, true, false, true),

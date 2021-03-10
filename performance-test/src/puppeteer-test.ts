@@ -81,6 +81,7 @@ export const setupBrowser = async (): Promise<{
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS),
+    executablePath: process.env.BROWSER
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
@@ -114,13 +115,14 @@ export const testPerformance = async function () {
   const summaryImage = await uploadSummaryImage([selectionResult, scrollResult, resizeResult])
 
   console.info(
-    `::set-output name=perf-result:: ${scrollResult.title}: fastest ${scrollResult.analytics.frameMin}ms, average ${scrollResult.analytics.frameAvg}ms %0A ${resizeResult.title}: fastest ${resizeResult.analytics.frameMin}ms, average ${resizeResult.analytics.frameAvg}ms %0A ${selectionResult.title}: fastest ${selectionResult.analytics.frameMin}ms, average ${selectionResult.analytics.frameAvg}ms ![SummaryChart](${summaryImage})`,
+    `::set-output name=perf-result:: ${scrollResult.title}:  ${scrollResult.analytics.frameMin}ms | ${resizeResult.title}: ${resizeResult.analytics.frameMin}ms | ${selectionResult.title}: ${selectionResult.analytics.frameMin}ms ![SummaryChart](${summaryImage})`,
   )
 }
 
 export const testScrollingPerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
+  console.log('Test Scrolling Performance')
   await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P S')]")
@@ -141,6 +143,7 @@ export const testScrollingPerformance = async function (
 }
 
 export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
+  console.log('Test Resize Performance')
   await page.waitForXPath("//a[contains(., 'P R')]")
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P R')]")
@@ -166,6 +169,7 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
 export const testSelectionPerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
+  console.log('Test Selection Performance')
   await page.waitForTimeout(20000)
   await page.waitForXPath("//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment
@@ -268,9 +272,15 @@ async function createSummaryPng(
   const processedData = results.map((result) => boxPlotConfig(result.title, result.timeSeries))
 
   const layout = {
-    title: 'Automated Performance Test (100 runs, fastest counts)',
+    margin: {
+      l: 50,
+      r: 50,
+      b: 60,
+      t: 10,
+      pad: 4,
+    },
     showlegend: false,
-    height: 60 * numberOfTests,
+    height: 50 * numberOfTests,
     width: 720,
     yaxis: {
       automargin: true,
@@ -293,7 +303,7 @@ async function createSummaryPng(
       },
     ],
     xaxis: {
-      title: 'ms / frame (16.67 = 60fps)',
+      title: 'lower is better, ms / frame (16.67 = 60fps), 100 runs',
       autorange: true,
       showgrid: true,
       zeroline: true,
@@ -302,14 +312,14 @@ async function createSummaryPng(
       gridwidth: 1,
       zerolinecolor: 'rgba(0,0,0,.1)',
       zerolinewidth: 1,
-      color: '#bbb',
+      color: '#999',
     },
   }
 
   const imgOpts = {
     format: 'png',
     width: 800,
-    height: 600,
+    height: 220,
   }
   const figure = { data: processedData, layout: layout }
 

@@ -43,7 +43,6 @@ import type {
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange } from '../../canvas/canvas-types'
 import type { RightMenuTab } from '../../canvas/right-menu'
-import type { CodeEditorTheme } from '../../code-editor/code-editor-themes'
 import type { CursorPosition } from '../../code-editor/code-editor-utils'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
@@ -63,7 +62,6 @@ import type {
   ClearHighlightedViews,
   ClearImageFileBlob,
   ClearParseOrPrintInFlight,
-  CloseEditorTab,
   ClosePopup,
   CloseTextEditor,
   CopySelectionToClipboard,
@@ -86,7 +84,7 @@ import type {
   MoveSelectedForward,
   MoveSelectedToBack,
   MoveSelectedToFront,
-  OpenEditorTab,
+  OpenCodeEditorFile,
   OpenPopup,
   OpenTextEditor,
   PasteJSXElements,
@@ -97,7 +95,6 @@ import type {
   RedrawOldCanvasControls,
   RegenerateThumbnail,
   RenameStyleSelector,
-  ReorderEditorTabs,
   ResetPins,
   ResetPropToDefault,
   ResizeInterfaceDesignerCodePane,
@@ -118,7 +115,6 @@ import type {
   SetCanvasFrames,
   SetCodeEditorBuildErrors,
   SetCodeEditorLintErrors,
-  SetCodeEditorTheme,
   SetCodeEditorVisibility,
   SetCursorOverlay,
   SetFilebrowserRenamingTarget,
@@ -177,6 +173,11 @@ import type {
   UpdateThumbnailGenerated,
   WrapInLayoutable,
   WrapInView,
+  UpdateFromCodeEditor,
+  MarkVSCodeBridgeReady,
+  SelectFromFileAndPosition,
+  SendCodeEditorInitialisation,
+  CloseDesignerFile,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -185,7 +186,6 @@ import type {
   ModalDialog,
   OriginalFrame,
 } from '../store/editor-state'
-import { EditorTab } from '../store/editor-tabs'
 
 export function clearSelection(): EditorAction {
   return {
@@ -837,29 +837,17 @@ export function addFolder(parentPath: string): AddFolder {
   }
 }
 
-export function openEditorTab(
-  editorTab: EditorTab,
-  cursorPosition: CursorPosition | null,
-): OpenEditorTab {
+export function openCodeEditorFile(filename: string): OpenCodeEditorFile {
   return {
-    action: 'OPEN_FILE',
-    editorTab: editorTab,
-    cursorPosition: cursorPosition,
+    action: 'OPEN_CODE_EDITOR_FILE',
+    filename: filename,
   }
 }
 
-export function closeEditorTab(editorTab: EditorTab): CloseEditorTab {
+export function closeDesignerFile(filename: string): CloseDesignerFile {
   return {
-    action: 'CLOSE_FILE',
-    editorTab: editorTab,
-  }
-}
-
-export function reorderOpenFiles(editorTab: EditorTab, newIndex: number): ReorderEditorTabs {
-  return {
-    action: 'REORDER_OPEN_FILES',
-    editorTab: editorTab,
-    newIndex: newIndex,
+    action: 'CLOSE_DESIGNER_FILE',
+    filename: filename,
   }
 }
 
@@ -886,6 +874,19 @@ export function updateFromWorker(
     filePath: filePath,
     file: file,
     codeOrModel: codeOrModel,
+  }
+}
+
+export function updateFromCodeEditor(
+  filePath: string,
+  savedContent: string,
+  unsavedContent: string | null,
+): UpdateFromCodeEditor {
+  return {
+    action: 'UPDATE_FROM_CODE_EDITOR',
+    filePath: filePath,
+    savedContent: savedContent,
+    unsavedContent: unsavedContent,
   }
 }
 
@@ -1075,13 +1076,6 @@ export function toggleCanvasIsLive(): ToggleCanvasIsLive {
   }
 }
 
-export function setCodeEditorTheme(value: CodeEditorTheme): SetCodeEditorTheme {
-  return {
-    action: 'SET_CODE_EDITOR_THEME',
-    value: value,
-  }
-}
-
 export function setSafeMode(value: boolean): SetSafeMode {
   return {
     action: 'SET_SAFE_MODE',
@@ -1209,5 +1203,31 @@ export function updateChildText(target: InstancePath, text: string): UpdateChild
     action: 'UPDATE_CHILD_TEXT',
     target: target,
     text: text,
+  }
+}
+
+export function markVSCodeBridgeReady(ready: boolean): MarkVSCodeBridgeReady {
+  return {
+    action: 'MARK_VSCODE_BRIDGE_READY',
+    ready: ready,
+  }
+}
+
+export function selectFromFileAndPosition(
+  filePath: string,
+  line: number,
+  column: number,
+): SelectFromFileAndPosition {
+  return {
+    action: 'SELECT_FROM_FILE_AND_POSITION',
+    filePath: filePath,
+    line: line,
+    column: column,
+  }
+}
+
+export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
+  return {
+    action: 'SEND_CODE_EDITOR_INITIALISATION',
   }
 }

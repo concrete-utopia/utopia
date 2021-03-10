@@ -4,15 +4,27 @@ import {
   framePointForPinnedProp,
   LayoutFlexElementNumericProp,
   LayoutPinnedProp,
+  LayoutProp,
+  StyleLayoutProp,
 } from '../../../../../core/layout/layout-helpers-new'
 import { LocalRectangle } from '../../../../../core/shared/math-utils'
 import Utils from '../../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { FullFrame, getFullFrame } from '../../../../frame'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import { CSSNumber, cssNumberToFramePin, framePinToCSSNumber } from '../../../common/css-utils'
+import {
+  CSSNumber,
+  cssNumberToFramePin,
+  framePinToCSSNumber,
+  isCSSNumber,
+  ParsedCSSPropertiesKeys,
+} from '../../../common/css-utils'
 import { FramePinsInfo, usePinToggling } from '../../../common/layout-property-path-hooks'
-import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
+import {
+  InspectorInfo,
+  stylePropPathMappingFn,
+  useInspectorLayoutInfo,
+} from '../../../common/property-path-hooks'
 import { GridRow } from '../../../widgets/grid-row'
 import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
@@ -24,8 +36,14 @@ import {
   SquareButton,
   Icons,
   FlexColumn,
+  SimpleNumberInput,
 } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
+import {
+  InspectorInfoWithPropKeys,
+  useInspectorInfoLonghandShorthand,
+} from '../../../common/longhand-shorthand-hooks'
+import { isNotUnsetOrDefault } from '../../../common/control-status'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -109,6 +127,10 @@ export const FlexStyleNumberControl = betterReactMemo(
   'FlexStyleNumberControl',
   (props: FlexStyleNumberControlProps) => {
     const layoutPropInfo = useInspectorLayoutInfo(props.styleProp)
+    const value =
+      isCSSNumber(layoutPropInfo.value) || layoutPropInfo.value == null
+        ? layoutPropInfo.value
+        : undefined
 
     const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
       layoutPropInfo.onSubmitValue,
@@ -127,6 +149,92 @@ export const FlexStyleNumberControl = betterReactMemo(
         <NumberInput
           id={`position-${props.styleProp}-number-input`}
           testId={`position-${props.styleProp}-number-input`}
+          value={value}
+          onSubmitValue={wrappedOnSubmitValue}
+          onTransientSubmitValue={wrappedOnTransientSubmitValue}
+          controlStatus={layoutPropInfo.controlStatus}
+          numberType={'UnitlessPercent'}
+          labelInner={props.label}
+          defaultUnitToHide={'px'}
+        />
+      </InspectorContextMenuWrapper>
+    )
+  },
+)
+
+interface FlexShorthandNumberControlProps {
+  label: string
+  styleProp: 'flexGrow' | 'flexShrink'
+}
+
+export const FlexShorthandNumberControl = betterReactMemo(
+  'FlexShorthandNumberControl',
+  (props: FlexShorthandNumberControlProps) => {
+    const layoutPropInfo = useInspectorInfoLonghandShorthand(
+      ['flexGrow', 'flexShrink', 'flexBasis'],
+      'flex',
+      createLayoutPropertyPath,
+    )[props.styleProp] as InspectorInfoWithPropKeys<'flexGrow' | 'flexShrink', 'flex'>
+    const value = typeof layoutPropInfo.value === 'number' ? layoutPropInfo.value : undefined
+
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onTransientSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    return (
+      <InspectorContextMenuWrapper
+        id={`position-${props.styleProp}-context-menu`}
+        items={[unsetPropertyMenuItem(props.styleProp, layoutPropInfo.onUnsetValues)]}
+        data={{}}
+      >
+        <SimpleNumberInput
+          id={`position-${props.styleProp}-number-input`}
+          testId={`position-${props.styleProp}-number-input`}
+          value={value}
+          onForcedSubmitValue={wrappedOnSubmitValue}
+          onSubmitValue={wrappedOnSubmitValue}
+          onTransientSubmitValue={wrappedOnTransientSubmitValue}
+          controlStatus={layoutPropInfo.controlStatus}
+          labelInner={props.label}
+          defaultUnitToHide={'px'}
+        />
+      </InspectorContextMenuWrapper>
+    )
+  },
+)
+
+interface FlexShorthandCSSNumberControlProps {
+  label: string
+}
+export const FlexBasisShorthandCSSNumberControl = betterReactMemo(
+  'FlexStyleNumberControl',
+  (props: FlexShorthandCSSNumberControlProps) => {
+    const layoutPropInfo = useInspectorInfoLonghandShorthand(
+      ['flexBasis', 'flexGrow', 'flexShrink'],
+      'flex',
+      createLayoutPropertyPath,
+    ).flexBasis as InspectorInfoWithPropKeys<'flexBasis', 'flex'>
+    const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    const wrappedOnTransientSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(
+      layoutPropInfo.onTransientSubmitValue,
+      layoutPropInfo.onUnsetValues,
+    )
+    return (
+      <InspectorContextMenuWrapper
+        id={`position-flexBasis-context-menu`}
+        items={[unsetPropertyMenuItem('flexBasis', layoutPropInfo.onUnsetValues)]}
+        data={{}}
+      >
+        <NumberInput
+          id={`position-flexBasis-number-input`}
+          testId={`position-flexBasis-number-input`}
           value={layoutPropInfo.value}
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
@@ -250,10 +358,10 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
     switch (parentFlexAxis) {
       case 'horizontal':
       case null:
-        widthControl = flexLayoutNumberControl('W', 'FlexFlexBasis')
+        widthControl = <FlexBasisShorthandCSSNumberControl label='W' />
         break
       case 'vertical':
-        heightControl = flexLayoutNumberControl('H', 'FlexFlexBasis')
+        heightControl = <FlexBasisShorthandCSSNumberControl label='H' />
         break
       default:
         break
@@ -374,9 +482,9 @@ const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
     <GridRow padded={true} type='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexGrowShrinkProps}>Flex</PropertyLabel>
       <GridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
-        {flexStyleNumberControl('G', 'flexGrow')}
+        <FlexShorthandNumberControl label='G' styleProp='flexGrow' />
         {spacingButton}
-        {flexStyleNumberControl('S', 'flexShrink')}
+        <FlexShorthandNumberControl label='S' styleProp='flexShrink' />
         {spacingButton}
       </GridRow>
     </GridRow>
@@ -474,11 +582,10 @@ export const GiganticSizePinsSubsection = betterReactMemo(
     const maxHeight = useInspectorLayoutInfo('maxHeight')
 
     const hasMinMaxValues =
-      (minWidth.controlStatus !== 'unset' && minWidth.controlStatus !== 'trivial-default') ||
-      (maxWidth.controlStatus !== 'unset' && maxWidth.controlStatus !== 'trivial-default') ||
-      (minHeight.controlStatus !== 'unset' && minHeight.controlStatus !== 'trivial-default') ||
-      (maxHeight.controlStatus !== 'unset' && maxHeight.controlStatus !== 'trivial-default')
-
+      isNotUnsetOrDefault(minWidth.controlStatus) ||
+      isNotUnsetOrDefault(maxWidth.controlStatus) ||
+      isNotUnsetOrDefault(minHeight.controlStatus) ||
+      isNotUnsetOrDefault(maxHeight.controlStatus)
     const [minMaxToggled, setMinMaxToggled] = React.useState<boolean>(hasMinMaxValues)
     const toggleMinMax = React.useCallback(() => {
       setMinMaxToggled(!minMaxToggled)

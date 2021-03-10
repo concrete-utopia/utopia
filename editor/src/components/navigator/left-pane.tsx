@@ -22,7 +22,6 @@ import {
   Button,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { CodeEditorTheme, CodeEditorThemeCollection } from '../code-editor/code-editor-themes'
 import { setFocus } from '../common/actions'
 import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -33,7 +32,6 @@ import {
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
 import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-state'
-import { userConfigurationTab } from '../editor/store/editor-tabs'
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
@@ -94,48 +92,6 @@ function setTab(tab: LeftMenuTab): EditorAction {
     action: 'SET_LEFT_MENU_TAB',
     tab: tab,
   }
-}
-
-interface ThemeSelectorProps {
-  selectedTheme: CodeEditorTheme
-  dispatch: EditorDispatch
-}
-
-const ThemeSelector = (props: ThemeSelectorProps) => {
-  const { dispatch, selectedTheme } = props
-
-  const themeListOptions: SelectOption[] = Object.keys(CodeEditorThemeCollection).map((key) => {
-    const theme = CodeEditorThemeCollection[key]
-    const name = typeof theme.name === 'string' ? theme.name : key
-    return {
-      label: name,
-      value: key,
-    }
-  })
-
-  const onSubmitValue = React.useCallback(
-    (newValue) => {
-      dispatch([EditorActions.setCodeEditorTheme(newValue.value)], 'everyone')
-    },
-    [dispatch],
-  )
-
-  return (
-    <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-      <span>Theme</span>
-      <PopupList
-        value={{ value: selectedTheme, label: selectedTheme }}
-        style={{
-          fontWeight: 'normal',
-          marginLeft: 4,
-        }}
-        options={themeListOptions}
-        onSubmitValue={onSubmitValue}
-        controlStyles={getControlStyles('simple')}
-        containerMode='default'
-      />
-    </GridRow>
-  )
 }
 
 interface ThumbnailProps {
@@ -397,7 +353,6 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
     userState,
     focusedPanel,
     minimised,
-    codeEditorTheme,
   } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -407,7 +362,6 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
       userState: store.userState,
       focusedPanel: store.editor.focusedPanel,
       minimised: store.editor.projectSettings.minimised,
-      codeEditorTheme: store.editor.codeEditorTheme,
     }
   }, 'ProjectSettingsPanel')
 
@@ -453,10 +407,6 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
     e.stopPropagation()
   }, [])
 
-  const switchToUserConfiguration = React.useCallback(() => {
-    dispatch([EditorActions.openEditorTab(userConfigurationTab(), null)], 'everyone')
-  }, [dispatch])
-
   return (
     <FlexColumn key='leftPaneProjectTab'>
       {projectId == null ? null : (
@@ -482,14 +432,8 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
                   action={triggerRegenerateThumbnail}
                   thumbnailLastGenerated={thumbnailLastGenerated}
                 />
-                <ThemeSelector dispatch={dispatch} selectedTheme={codeEditorTheme} />
               </div>
             )}
-          </SectionBodyArea>
-          <SectionBodyArea minimised={false}>
-            <Button style={{ marginRight: '2px' }} onClick={switchToUserConfiguration}>
-              Settings
-            </Button>
           </SectionBodyArea>
         </Section>
       )}

@@ -5,14 +5,12 @@ import * as React from 'react'
 import { DndProvider } from 'react-dnd'
 import Backend from 'react-dnd-html5-backend'
 import Utils from '../../utils/utils'
-import { StoryboardFilePath } from '../../core/model/storyboard-utils'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import { getCursorFromDragState } from '../canvas/canvas-utils'
 import { DesignPanelRoot } from '../canvas/design-panel-root'
 import { resizeLeftPane } from '../common/actions'
 import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
-import { FileTabs } from '../filebrowser/file-tabs'
 import { Menubar } from '../menubar/menubar'
 import { LeftPaneComponent, LeftMenuTab, LeftPaneDefaultWidth } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
@@ -22,7 +20,12 @@ import * as EditorActions from './actions/action-creators'
 import { handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { StateHistory } from './history'
 import { LoginStatusBar, EditorOfflineBar, BrowserInfoBar } from './notification-bar'
-import { ConsoleLog, getOpenEditorTab, getOpenFile, getOpenTextFileKey } from './store/editor-state'
+import {
+  ConsoleLog,
+  getOpenFile,
+  getOpenTextFileKey,
+  StoryboardFilePath,
+} from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
 import { isParsedTextFile } from '../../core/shared/project-file-types'
 import { isLiveMode, dragAndDropInsertionSubject, EditorModes, isSelectMode } from './editor-modes'
@@ -35,7 +38,6 @@ import {
   PropertyControlsInfoIFrameID,
   setPropertyControlsIFrameAvailable,
 } from '../../core/property-controls/property-controls-utils'
-import { isReleaseNotesTab, isUserConfigurationTab } from './store/editor-tabs'
 import {
   SimpleFlexRow,
   SimpleFlexColumn,
@@ -58,6 +60,25 @@ interface NumberSize {
 
 export interface EditorProps {
   propertyControlsInfoSupported: boolean
+}
+
+function useDelayedValueHook(inputValue: boolean, delayMs: number): boolean {
+  const [returnValue, setReturnValue] = React.useState(inputValue)
+  React.useEffect(() => {
+    let timerID: any = undefined
+    if (inputValue) {
+      // we do not delay the toggling if the input value is true
+      setReturnValue(true)
+    } else {
+      timerID = setTimeout(() => {
+        setReturnValue(false)
+      }, delayMs)
+    }
+    return function cleanup() {
+      clearTimeout(timerID)
+    }
+  }, [inputValue, delayMs])
+  return returnValue
 }
 
 export const EditorComponentInner = betterReactMemo(
@@ -155,6 +176,9 @@ export const EditorComponentInner = betterReactMemo(
       (store) => store.editor.leftMenu.expanded,
       'EditorComponentInner leftMenuExpanded',
     )
+
+    const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
+
     const saveError = useEditorState(
       (store) => store.editor.saveError,
       'EditorComponentInner saveError',
@@ -265,20 +289,20 @@ export const EditorComponentInner = betterReactMemo(
                 <OpenFileEditor />
               </SimpleFlexRow>
               {/* insert more columns here */}
-              {leftMenuExpanded ? (
-                <div
-                  className='LeftPaneShell'
-                  style={{
-                    position: 'absolute',
-                    height: '100% !important',
-                    width: LeftPaneDefaultWidth,
-                    overflowX: 'scroll',
-                    backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
-                  }}
-                >
-                  <LeftPaneComponent />
-                </div>
-              ) : null}
+
+              <div
+                className='LeftPaneShell'
+                style={{
+                  transition: 'all .1s linear',
+                  position: 'absolute',
+                  height: '100% !important',
+                  width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
+                  overflowX: 'scroll',
+                  backgroundColor: UtopiaTheme.color.leftPaneBackground.value,
+                }}
+              >
+                {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
+              </div>
               {previewVisible ? (
                 <ResizableFlexColumn
                   style={{ borderLeft: `1px solid ${colorTheme.secondaryBorder.value}` }}
@@ -331,8 +355,6 @@ const ModalComponent = betterReactMemo('ModalComponent', (): React.ReactElement<
   if (modal != null) {
     if (modal.type === 'file-delete') {
       return <ConfirmDeleteDialog dispatch={dispatch} filePath={modal.filePath} />
-    } else if (modal.type === 'file-close') {
-      return <ConfirmCloseDialog dispatch={dispatch} editorTab={modal.editorTab} />
     }
   }
   return null
@@ -347,34 +369,21 @@ export function EditorComponent(props: EditorProps) {
 }
 
 const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
-  const {
-    noFileOpen,
-    isUiJsFileOpen,
-    areReleaseNotesOpen,
-    isUserConfigurationOpen,
-  } = useEditorState((store) => {
+  const { isUiJsFileOpen } = useEditorState((store) => {
     const selectedFile = getOpenFile(store.editor)
     const selectedFileName = getOpenTextFileKey(store.editor)
     const isAppDotJS = selectedFileName?.endsWith('app.js') ?? false
     const isStoryboardFile = selectedFileName?.endsWith(StoryboardFilePath) ?? false
     const isCanvasFile = isAppDotJS || isStoryboardFile // FIXME This is not how we should determine whether or not to open the canvas
-    const openEditorTab = getOpenEditorTab(store.editor)
     return {
-      noFileOpen: openEditorTab == null,
       isUiJsFileOpen: selectedFile != null && isParsedTextFile(selectedFile) && isCanvasFile,
-      areReleaseNotesOpen: openEditorTab != null && isReleaseNotesTab(openEditorTab),
-      isUserConfigurationOpen: openEditorTab != null && isUserConfigurationTab(openEditorTab),
     }
   }, 'OpenFileEditor')
 
-  if (noFileOpen) {
-    return <Subdued>No file open</Subdued>
-  } else if (areReleaseNotesOpen) {
-    return <ReleaseNotesContent />
-  } else if (isUserConfigurationOpen) {
-    return <UserConfiguration />
-  } else {
+  if (isUiJsFileOpen) {
     return <DesignPanelRoot isUiJsFileOpen={isUiJsFileOpen} />
+  } else {
+    return <Subdued>No file open</Subdued>
   }
 })
 OpenFileEditor.displayName = 'OpenFileEditor'

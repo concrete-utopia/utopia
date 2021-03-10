@@ -65,7 +65,7 @@ export const printPaddingAsAttributeValue = (
   const paddingLeft = printCSSNumberWithDefaultUnit(value.paddingLeft, 'px')
 
   if (canUseOneValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
-    const paddingValue = printCSSNumber(value.paddingTop)
+    const paddingValue = printCSSNumber(value.paddingTop, 'px')
     return jsxAttributeValue(paddingValue, emptyComments)
   } else if (canUseTwoValueSyntax(paddingTop, paddingRight, paddingBottom, paddingLeft)) {
     const paddingValue = `${paddingTop} ${paddingLeft}`

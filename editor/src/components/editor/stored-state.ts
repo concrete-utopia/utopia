@@ -8,19 +8,15 @@ interface StoredStateOnDisk {
   storedState: StoredEditorState
 }
 
-export async function loadStoredState(projectId: string | null): Promise<StoredEditorState | null> {
-  if (projectId == null) {
+export async function loadStoredState(projectId: string): Promise<StoredEditorState | null> {
+  const asStored = await localforage.getItem<StoredStateOnDisk | null>(StoredStateKey)
+  if (asStored == null) {
     return Promise.resolve(null)
   } else {
-    const asStored = await localforage.getItem<StoredStateOnDisk | null>(StoredStateKey)
-    if (asStored == null) {
-      return Promise.resolve(null)
+    if (asStored.projectId === projectId) {
+      return Promise.resolve(asStored.storedState)
     } else {
-      if (asStored.projectId === projectId) {
-        return Promise.resolve(asStored.storedState)
-      } else {
-        return Promise.resolve(null)
-      }
+      return Promise.resolve(null)
     }
   }
 }

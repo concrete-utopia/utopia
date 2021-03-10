@@ -186,16 +186,14 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FOCUS(action, state)
     case 'RESIZE_LEFTPANE':
       return UPDATE_FNS.RESIZE_LEFTPANE(action, state)
-    case 'OPEN_FILE':
-      return UPDATE_FNS.OPEN_EDITOR_TAB(action, state)
-    case 'CLOSE_FILE':
-      return UPDATE_FNS.CLOSE_FILE(action, state)
-    case 'REORDER_OPEN_FILES':
-      return UPDATE_FNS.REORDER_EDITOR_TABS(action, state)
+    case 'OPEN_CODE_EDITOR_FILE':
+      return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(action, state)
     case 'UPDATE_FILE':
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch)
     case 'UPDATE_FROM_WORKER':
       return UPDATE_FNS.UPDATE_FROM_WORKER(action, state, derivedState)
+    case 'UPDATE_FROM_CODE_EDITOR':
+      return UPDATE_FNS.UPDATE_FROM_CODE_EDITOR(action, state, dispatch)
     case 'CLEAR_PARSE_OR_PRINT_IN_FLIGHT':
       return UPDATE_FNS.CLEAR_PARSE_OR_PRINT_IN_FLIGHT(action, state)
     case 'ADD_FOLDER':
@@ -254,8 +252,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_CANVAS_IS_LIVE(state, derivedState)
     case 'RENAME_PROP_KEY':
       return UPDATE_FNS.RENAME_PROP_KEY(action, state)
-    case 'SET_CODE_EDITOR_THEME':
-      return UPDATE_FNS.SET_CODE_EDITOR_THEME(action, state)
     case 'SET_SAFE_MODE':
       return UPDATE_FNS.SET_SAFE_MODE(action, state)
     case 'SET_SAVE_ERROR':
@@ -284,10 +280,14 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
     case 'UPDATE_CHILD_TEXT':
       return UPDATE_FNS.UPDATE_CHILD_TEXT(action, state)
+    case 'SELECT_FROM_FILE_AND_POSITION':
+      return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, derivedState, dispatch)
     case 'SEND_LINTER_REQUEST_MESSAGE':
       // side effect ☢️
       workers.sendLinterRequestMessage(action.filePath, action.content)
       return state
+    case 'MARK_VSCODE_BRIDGE_READY':
+      return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(action, state)
     default:
       return state
   }

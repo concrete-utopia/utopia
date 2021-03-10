@@ -16,7 +16,6 @@ import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 import { NavigatorComponent } from '../navigator/navigator'
 import { SimpleFlexRow, UtopiaTheme, UtopiaStyles, SimpleFlexColumn } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { FileTabs, TopMenuHeight } from '../filebrowser/file-tabs'
 import { TopMenu } from '../editor/top-menu'
 
 interface DesignPanelRootProps {
@@ -27,6 +26,8 @@ interface NumberSize {
   width: number
   height: number
 }
+
+const TopMenuHeight = 40
 
 export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: DesignPanelRootProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'DesignPanelRoot dispatch')
@@ -146,7 +147,6 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
         }}
       >
         <SimpleFlexColumn style={{ flexGrow: props.isUiJsFileOpen ? undefined : 1 }}>
-          <FileTabs />
           <Resizable
             defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
             size={{

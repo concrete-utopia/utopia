@@ -35,6 +35,13 @@ jobs:
           key: ${{ runner.os }}-node-utopia-api-PRs-${{ hashFiles('utopia-api/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-utopia-api-PRs-
+      - name: Cache utopia-vscode-common modules
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/node_modules
+          key: ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-${{ hashFiles('utopia-vscode-common/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-
       - name: Cache website modules
         uses: actions/cache@v2
         with:
@@ -79,6 +86,13 @@ jobs:
           key: ${{ runner.os }}-node-utopia-api-PRs-${{ hashFiles('utopia-api/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-utopia-api-PRs-
+      - name: Cache utopia-vscode-common modules
+        uses: actions/cache@v2
+        with:
+          path: utopia-vscode-common/node_modules
+          key: ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-${{ hashFiles('utopia-vscode-common/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-utopia-vscode-common-PRs-node-modules-
       - name: Install nix
         uses: cachix/install-nix-action@v12
         with:
@@ -86,8 +100,7 @@ jobs:
       - name: Build Editor
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd editor; npm install --unsafe-perm"
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd editor; npm run staging"
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging
       - name: Create Editor Bundle
         working-directory: editor/lib/
         run: |
@@ -116,7 +129,6 @@ jobs:
           AWS_REGION: ${{ secrets.STAGING_BUNDLE_REGION }}
           PERFORMANCE_GRAPHS_PLOTLY_USERNAME: ${{ secrets.PERFORMANCE_GRAPHS_PLOTLY_USERNAME}}
           PERFORMANCE_GRAPHS_PLOTLY_API_KEY: ${{secrets.PERFORMANCE_GRAPHS_PLOTLY_API_KEY}}
-
         run: |
           nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run "cd performance-test; npm install --unsafe-perm; npm start"
       - name: Create comment
@@ -125,6 +137,4 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            These are the results of the :racing_car: **SPEED TEST** that runs right after the test editor was deployed
-
-            ${{ steps.run-performance-test.outputs.perf-result }}
+            Performance: ${{ steps.run-performance-test.outputs.perf-result }}

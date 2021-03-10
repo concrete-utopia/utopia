@@ -11,7 +11,6 @@ import { KeysPressed, Key } from '../../utils/keyboard'
 import { IndexPosition } from '../../utils/utils'
 import { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
 import { CanvasAction, CSSCursor, PinOrFlexFrameChange } from '../canvas/canvas-types'
-import { CodeEditorTheme } from '../code-editor/code-editor-themes'
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
 import {
@@ -50,7 +49,6 @@ import {
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { BuildType } from '../../core/workers/ts/ts-worker'
-import type { EditorTab } from './store/editor-tabs'
 import { ContextMenuInnerProps } from '../../uuiui-deps'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
@@ -251,7 +249,7 @@ export type Load = {
   packageResult: PackageStatusMap
   codeResultCache: CodeResultCache
   title: string
-  projectId: string | null
+  projectId: string
   storedState: StoredEditorState | null
   safeMode: boolean
 }
@@ -532,21 +530,14 @@ export interface UpdateFilePath {
   newPath: string
 }
 
-export interface OpenEditorTab {
-  action: 'OPEN_FILE'
-  editorTab: EditorTab
-  cursorPosition: CursorPosition | null
+export interface OpenCodeEditorFile {
+  action: 'OPEN_CODE_EDITOR_FILE'
+  filename: string
 }
 
-export interface CloseEditorTab {
-  action: 'CLOSE_FILE'
-  editorTab: EditorTab
-}
-
-export interface ReorderEditorTabs {
-  action: 'REORDER_OPEN_FILES'
-  editorTab: EditorTab
-  newIndex: number
+export interface CloseDesignerFile {
+  action: 'CLOSE_DESIGNER_FILE'
+  filename: string
 }
 
 export interface UpdateFile {
@@ -561,6 +552,13 @@ export interface UpdateFromWorker {
   filePath: string
   file: TextFile
   codeOrModel: 'Code' | 'Model'
+}
+
+export interface UpdateFromCodeEditor {
+  action: 'UPDATE_FROM_CODE_EDITOR'
+  filePath: string
+  savedContent: string
+  unsavedContent: string | null
 }
 
 export interface ClearParseOrPrintInFlight {
@@ -690,11 +688,6 @@ export interface RenameStyleSelector {
   value: Array<string>
 }
 
-export interface SetCodeEditorTheme {
-  action: 'SET_CODE_EDITOR_THEME'
-  value: CodeEditorTheme
-}
-
 export interface SetSafeMode {
   action: 'SET_SAFE_MODE'
   value: boolean
@@ -771,6 +764,22 @@ export interface UpdateChildText {
   action: 'UPDATE_CHILD_TEXT'
   target: InstancePath
   text: string
+}
+
+export interface MarkVSCodeBridgeReady {
+  action: 'MARK_VSCODE_BRIDGE_READY'
+  ready: boolean
+}
+
+export interface SelectFromFileAndPosition {
+  action: 'SELECT_FROM_FILE_AND_POSITION'
+  filePath: string
+  line: number
+  column: number
+}
+
+export interface SendCodeEditorInitialisation {
+  action: 'SEND_CODE_EDITOR_INITIALISATION'
 }
 
 export type EditorAction =
@@ -853,11 +862,11 @@ export type EditorAction =
   | UpdateDuplicationState
   | SendPreviewModel
   | UpdateFilePath
-  | OpenEditorTab
-  | CloseEditorTab
-  | ReorderEditorTabs
+  | OpenCodeEditorFile
+  | CloseDesignerFile
   | UpdateFile
   | UpdateFromWorker
+  | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight
   | ClearImageFileBlob
   | AddFolder
@@ -885,7 +894,6 @@ export type EditorAction =
   | UpdateJSXElementName
   | ToggleCanvasIsLive
   | RenameStyleSelector
-  | SetCodeEditorTheme
   | SetSafeMode
   | SetSaveError
   | InsertDroppedImage
@@ -901,6 +909,9 @@ export type EditorAction =
   | PropertyControlsIFrameReady
   | AddStoryboardFile
   | UpdateChildText
+  | MarkVSCodeBridgeReady
+  | SelectFromFileAndPosition
+  | SendCodeEditorInitialisation
 
 export type DispatchPriority =
   | 'everyone'

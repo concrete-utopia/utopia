@@ -1,8 +1,8 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { ElementInstanceMetadata, JSXElementName } from '../../../core/shared/element-template'
-import { ElementOriginType, Imports, TemplatePath } from '../../../core/shared/project-file-types'
+import { JSXElementName } from '../../../core/shared/element-template'
+import { ElementOriginType, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
@@ -43,20 +43,14 @@ export interface NavigatorItemInnerProps {
   index: number
   getSelectedViewsInRange: (i: number) => Array<TemplatePath> // TODO KILLME
   noOfChildren: number
-  isAutosizingView: boolean
   label: string
-  isFlexLayoutedContainer: boolean
-  yogaDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse'
-  yogaWrap: 'wrap' | 'wrap-reverse' | 'nowrap'
   staticElementName: JSXElementName | null
-  componentInstance: boolean
   dispatch: EditorDispatch
   isHighlighted: boolean
   collapsed: boolean
   isElementVisible: boolean
   renamingTarget: TemplatePath | null
   selected: boolean
-  imports: Imports
   elementOriginType: ElementOriginType
   elementWarnings: ElementWarnings
 }
@@ -125,45 +119,22 @@ const dynamicSelected: ComputedLook = {
   iconColor: 'white',
 }
 
-const instanceDefaultUnselected: ComputedLook = {
-  style: { background: 'transparent', color: colorTheme.brandPurple.value },
-  iconColor: 'purple',
-}
-const instanceDefaultSelectedStyle: ComputedLook = {
-  style: { background: UtopiaStyles.backgrounds.lightblue, color: colorTheme.white.value },
-  iconColor: 'white',
-}
-
-const instanceDynamicUnselected: ComputedLook = {
-  style: { background: 'transparent', color: colorTheme.brandPurple.value },
-  iconColor: 'purple',
-}
-const instanceDynamicSelected: ComputedLook = {
-  style: { background: UtopiaStyles.backgrounds.lightblue, color: colorTheme.white.value },
-  iconColor: 'purple',
-}
-
 export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = betterReactMemo(
   'NavigatorItem',
   (props) => {
     const {
       label,
-      isAutosizingView,
       dispatch,
       isHighlighted,
       isElementVisible,
       renamingTarget,
       selected,
       collapsed,
-      imports,
       elementOriginType,
       templatePath,
       getSelectedViewsInRange,
       index,
       elementWarnings,
-      isFlexLayoutedContainer,
-      yogaDirection,
-      yogaWrap,
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
@@ -214,16 +185,8 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       warningText == null ? (
         <ItemPreview
           key={`preview-${label}`}
-          {...props}
-          isAutosizingView={isAutosizingView}
-          collapsed={collapsed}
-          isFlexLayoutedContainer={isFlexLayoutedContainer}
-          yogaDirection={yogaDirection}
-          yogaWrap={yogaWrap}
           path={templatePath}
           color={resultingStyle.iconColor}
-          selected={selected}
-          imports={imports}
         />
       ) : (
         <WarningIcon tooltipText={warningText} />

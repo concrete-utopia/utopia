@@ -28,7 +28,6 @@ const editorCSS = [
   `${STATIC_BASE_URL}editor/show-hint.css`,
   `${STATIC_BASE_URL}editor/css/react-spinner.css`,
   `${STATIC_BASE_URL}editor/css/loadscreen.css`,
-  `${STATIC_BASE_URL}editor/css/light/monaco-overrides.css`,
   `${STATIC_BASE_URL}editor/css/codicons.css`,
   `${STATIC_BASE_URL}editor/css/control-iconcheckbox.css`,
   `${STATIC_BASE_URL}editor/css/control-button.css`,
@@ -43,6 +42,9 @@ const editorCSS = [
 editorCSS.forEach((url) => addStyleSheetToPage(url, true))
 
 import { Editor } from './editor'
+import { applyUIDMonkeyPatch } from '../utils/canvas-react-utils'
+
+applyUIDMonkeyPatch()
 
 // eslint-disable-next-line
 const EditorRunner = new Editor()

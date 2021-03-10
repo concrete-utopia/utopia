@@ -21,7 +21,6 @@ import {
   isParseSuccess,
   StaticInstancePath,
 } from '../../core/shared/project-file-types'
-import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { isRight } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
@@ -233,7 +232,6 @@ function normalizedCssImportsFromImports(filePath: string, imports: Imports): Ar
 export const UiJsxCanvas = betterReactMemo(
   'UiJsxCanvas',
   (props: UiJsxCanvasPropsWithErrorCallback) => {
-    applyUIDMonkeyPatch()
     const {
       offset,
       scale,
