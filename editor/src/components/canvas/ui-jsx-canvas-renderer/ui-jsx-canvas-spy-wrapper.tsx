@@ -47,6 +47,7 @@ export function buildSpyWrappedElement(
   }
 
   if (TP.elementPathsEqual(extendedTemplatePath, focusedElementTemplatePath)) {
+    // I am being spied
     // Replace the instance's UID with the definition's
     const originalComponent = inScope[jsx.name.baseVariable]
     const originalUID = (originalComponent as ComponentRendererComponent)?.originalUID
@@ -57,31 +58,44 @@ export function buildSpyWrappedElement(
 
   let scenePath: ScenePath | null = null
 
-  const fixedChildrenTemplatePaths = childrenTemplatePaths.map((childTemplatePath, index) => {
-    const originalUid = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
-      ?.originalUID
+  let fixedChildrenTemplatePaths: Array<InstancePath> = childrenTemplatePaths
 
-    if (TP.elementPathsEqual(extendedTemplatePath, dropLast(focusedElementTemplatePath ?? []))) {
-      // ERROR: this is not correct, because if you drilling into an element inside a component inside a component, that will totally TOTALLY not show up in childrenTemplatePaths
-      // FFFFFUUUUU
-      // we probably need to move data-utopia-valid-paths onto the spied element itself, instead of designating its parent as a "scene"
+  if (
+    focusedElementTemplatePath != null &&
+    TP.elementPathsEqual(extendedTemplatePath, dropLast(focusedElementTemplatePath))
+  ) {
+    // I am rendering the parent of whatever's being spied
 
-      topLevelElementName = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
-        ?.topLevelElementName // THIS IS A SPIKE, RELAX
+    scenePath = TP.scenePath(focusedElementTemplatePath)
 
-      scenePath = TP.scenePath([
-        ...TP.scenePathForPath(templatePath).sceneElementPath,
-        ...TP.elementPathForPath(templatePath),
-        TP.toUid(childTemplatePath),
-      ])
-
-      const fixedTemplatePath = TP.instancePath(scenePath, [originalUid])
-
-      return fixedTemplatePath
+    if (childrenTemplatePaths.length === 0) {
+      topLevelElementName = jsx.name.baseVariable
+      const originalUid = (inScope[topLevelElementName] as ComponentRendererComponent)?.originalUID
+      fixedChildrenTemplatePaths = [TP.instancePath(scenePath, [originalUid])]
     } else {
-      return childTemplatePath
+      fixedChildrenTemplatePaths = childrenTemplatePaths.map((childTemplatePath, index) => {
+        const originalUid = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
+          ?.originalUID
+
+        if (
+          TP.elementPathsEqual(extendedTemplatePath, dropLast(focusedElementTemplatePath ?? []))
+        ) {
+          // ERROR: this is not correct, because if you drilling into an element inside a component inside a component, that will totally TOTALLY not show up in childrenTemplatePaths
+          // FFFFFUUUUU
+          // we probably need to move data-utopia-valid-paths onto the spied element itself, instead of designating its parent as a "scene"
+
+          topLevelElementName = (childrenElements[index] as React.ReactElement)?.props
+            ?.elementToRender?.topLevelElementName // THIS IS A SPIKE, RELAX
+
+          const fixedTemplatePath = TP.instancePath(scenePath!, [originalUid])
+
+          return fixedTemplatePath
+        } else {
+          return childTemplatePath
+        }
+      })
     }
-  })
+  }
 
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
