@@ -186,12 +186,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FOCUS(action, state)
     case 'RESIZE_LEFTPANE':
       return UPDATE_FNS.RESIZE_LEFTPANE(action, state)
-    case 'OPEN_FILE':
-      return UPDATE_FNS.OPEN_EDITOR_TAB(action, state)
-    case 'CLOSE_FILE':
-      return UPDATE_FNS.CLOSE_FILE(action, state)
-    case 'REORDER_OPEN_FILES':
-      return UPDATE_FNS.REORDER_EDITOR_TABS(action, state)
+    case 'OPEN_CODE_EDITOR_FILE':
+      return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(action, state)
     case 'UPDATE_FILE':
       return UPDATE_FNS.UPDATE_FILE(action, state, dispatch)
     case 'UPDATE_FROM_WORKER':

@@ -16,6 +16,7 @@ import {
   EditorStore,
   modifyOpenJsxElementAtStaticPath,
   defaultUserState,
+  StoryboardFilePath,
 } from '../../editor/store/editor-state'
 import { EditorStateContext, EditorStateContextData } from '../../editor/store/store-hook'
 import * as TP from '../../../core/shared/template-path'
@@ -39,7 +40,7 @@ type UpdateFunctionHelpers = {
 export function getStoreHook(
   mockDispatch: EditorDispatch,
 ): EditorStateContextData & UpdateFunctionHelpers {
-  const editor = createEditorStates('/src/app.js', [
+  const editor = createEditorStates([
     TP.instancePath(ScenePathForTestUiJsFile.sceneElementPath, ['aaa', 'bbb']),
   ])
   const defaultState: EditorStore = {

@@ -3,8 +3,8 @@ import {
   DefaultPackageJson,
   PersistentModel,
   persistentModelForProjectContents,
+  StoryboardFilePath,
 } from '../components/editor/store/editor-state'
-import { openFileTab } from '../components/editor/store/editor-tabs'
 import {
   getDefaultUIJsFile,
   getSamplePreviewFile,
@@ -34,7 +34,7 @@ export function defaultProject(): PersistentModel {
       0,
     ),
     '/src': directory(),
-    '/src/app.js': getDefaultUIJsFile(),
+    [StoryboardFilePath]: getDefaultUIJsFile(),
     '/assets': directory(),
     '/public': directory(),
     '/src/index.js': getSamplePreviewFile(),
@@ -42,7 +42,6 @@ export function defaultProject(): PersistentModel {
   }
 
   let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
-  persistentModel.openFiles = [openFileTab('/src/app.js'), ...persistentModel.openFiles]
   return persistentModel
 }
 
@@ -58,7 +57,7 @@ function uiBuilderProject(): PersistentModel {
       0,
     ),
     '/src': directory(),
-    '/src/app.js': getUiBuilderUIJSFile(),
+    [StoryboardFilePath]: getUiBuilderUIJSFile(),
     '/src/components.js': getSampleComponentsFile(),
     '/assets': directory(),
     '/public': directory(),
@@ -67,12 +66,6 @@ function uiBuilderProject(): PersistentModel {
   }
 
   let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
-  persistentModel.openFiles = [
-    openFileTab('/src/app.js'),
-    openFileTab('/src/components.js'),
-    ...persistentModel.openFiles,
-  ]
-
   return persistentModel
 }
 

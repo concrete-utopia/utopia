@@ -27,7 +27,7 @@ Object {
         "/",
       ],
       "sources": Array [
-        "/src/app.js",
+        "/utopia/storyboard.js",
       ],
       "sourcesContent": Array [
         "/** @jsx jsx */

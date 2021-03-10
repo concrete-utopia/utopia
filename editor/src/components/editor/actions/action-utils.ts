@@ -57,8 +57,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_PREVIEW_CONNECTED':
     case 'SET_HIGHLIGHTS_ENABLED':
     case 'SEND_PREVIEW_MODEL':
-    case 'CLOSE_FILE':
-    case 'REORDER_OPEN_FILES':
+    case 'CLOSE_DESIGNER_FILE':
     case 'UPDATE_CODE_RESULT_CACHE':
     case 'SET_CODE_EDITOR_BUILD_ERRORS':
     case 'SET_CODE_EDITOR_LINT_ERRORS':
@@ -128,7 +127,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_SCENE_PROP':
     case 'UNSET_SCENE_PROP':
     case 'SET_PROP_WITH_ELEMENT_PATH':
-    case 'OPEN_FILE':
+    case 'OPEN_CODE_EDITOR_FILE':
     case 'SWITCH_LAYOUT_SYSTEM':
     case 'SAVE_CURRENT_FILE':
     case 'WRAP_IN_LAYOUTABLE':

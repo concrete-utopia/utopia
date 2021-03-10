@@ -4,8 +4,9 @@
 2. Create a project on localhost and copy its URL.
 3. run the performance test like this in the terminal: `EDITOR_URL=<project-url-you-just-copied> npm run start`
 4. can provide an env var HEADLESS=false to see what the editor is doing: `HEADLESS=false EDITOR_URL=<project-url-you-just-copied> npm run start`
-5. you will see console output with the frame numbers.
-6. That's all you need for debugging existing tests!
+5. It's possible to provide a browser path if the bundled one is no use: `BROWSER='google-chrome' EDITOR_URL=<project-url-you-just-copied> npm run start`
+6. you will see console output with the frame numbers.
+7. That's all you need for debugging existing tests!
 
 To debug plotly graphs, you also need a Plotly account username and password, please provide these env vars to the script `PERFORMANCE_GRAPHS_PLOTLY_USERNAME` and `PERFORMANCE_GRAPHS_PLOTLY_API_KEY`
 

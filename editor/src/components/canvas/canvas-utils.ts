@@ -123,6 +123,7 @@ import {
   getStoryboardTemplatePathFromEditorState,
   addSceneToJSXComponents,
   getNumberOfScenes,
+  StoryboardFilePath,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -171,7 +172,6 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
-import { openFileTab } from '../editor/store/editor-tabs'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from './dom-lookup'
 import { WindowMousePositionRaw } from '../../templates/editor-canvas'
@@ -2478,7 +2478,7 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse('/src/app.js', appUiJsFile) as ParsedTextFile
+  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')
@@ -2488,14 +2488,13 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     ...baseModel,
     projectContents: addFileToProjectContents(
       baseModel.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
       textFile(
         textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
         null,
         Date.now(),
       ),
     ),
-    selectedFile: openFileTab('/src/app.js'),
   }
 }
 

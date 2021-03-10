@@ -1,4 +1,4 @@
-import { PersistentModel } from './store/editor-state'
+import { PersistentModel, StoryboardFilePath } from './store/editor-state'
 import {
   saveToServer,
   setBaseSaveWaitTime,
@@ -93,7 +93,7 @@ const ModelChange = createPersistentModel()
 export function updateModel(model: PersistentModel): PersistentModel {
   const oldFile = forceNotNull(
     'Unexpectedly null.',
-    getContentsTreeFileFromString(model.projectContents, '/src/app.js'),
+    getContentsTreeFileFromString(model.projectContents, StoryboardFilePath),
   )
   const updatedFile = {
     ...oldFile,
@@ -101,7 +101,11 @@ export function updateModel(model: PersistentModel): PersistentModel {
   }
   return {
     ...model,
-    projectContents: addFileToProjectContents(model.projectContents, '/src/app.js', updatedFile),
+    projectContents: addFileToProjectContents(
+      model.projectContents,
+      StoryboardFilePath,
+      updatedFile,
+    ),
   }
 }
 

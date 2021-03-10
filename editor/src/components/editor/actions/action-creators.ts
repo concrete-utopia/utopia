@@ -63,7 +63,6 @@ import type {
   ClearHighlightedViews,
   ClearImageFileBlob,
   ClearParseOrPrintInFlight,
-  CloseEditorTab,
   ClosePopup,
   CloseTextEditor,
   CopySelectionToClipboard,
@@ -86,7 +85,7 @@ import type {
   MoveSelectedForward,
   MoveSelectedToBack,
   MoveSelectedToFront,
-  OpenEditorTab,
+  OpenCodeEditorFile,
   OpenPopup,
   OpenTextEditor,
   PasteJSXElements,
@@ -97,7 +96,6 @@ import type {
   RedrawOldCanvasControls,
   RegenerateThumbnail,
   RenameStyleSelector,
-  ReorderEditorTabs,
   ResetPins,
   ResetPropToDefault,
   ResizeInterfaceDesignerCodePane,
@@ -181,6 +179,7 @@ import type {
   SelectFromFileAndPosition,
   SendCodeEditorInitialisation,
   SetFocusedElement,
+  CloseDesignerFile,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -189,7 +188,6 @@ import type {
   ModalDialog,
   OriginalFrame,
 } from '../store/editor-state'
-import { EditorTab } from '../store/editor-tabs'
 
 export function clearSelection(): EditorAction {
   return {
@@ -841,29 +839,17 @@ export function addFolder(parentPath: string): AddFolder {
   }
 }
 
-export function openEditorTab(
-  editorTab: EditorTab,
-  cursorPosition: CursorPosition | null,
-): OpenEditorTab {
+export function openCodeEditorFile(filename: string): OpenCodeEditorFile {
   return {
-    action: 'OPEN_FILE',
-    editorTab: editorTab,
-    cursorPosition: cursorPosition,
+    action: 'OPEN_CODE_EDITOR_FILE',
+    filename: filename,
   }
 }
 
-export function closeEditorTab(editorTab: EditorTab): CloseEditorTab {
+export function closeDesignerFile(filename: string): CloseDesignerFile {
   return {
-    action: 'CLOSE_FILE',
-    editorTab: editorTab,
-  }
-}
-
-export function reorderOpenFiles(editorTab: EditorTab, newIndex: number): ReorderEditorTabs {
-  return {
-    action: 'REORDER_OPEN_FILES',
-    editorTab: editorTab,
-    newIndex: newIndex,
+    action: 'CLOSE_DESIGNER_FILE',
+    filename: filename,
   }
 }
 

@@ -36,7 +36,7 @@ import {
   duplicateSpecificElements,
   insertJSXElement,
   moveSelectedBackward,
-  openEditorTab,
+  openCodeEditorFile,
   selectComponents,
   toggleCollapse,
   togglePanel,
@@ -49,7 +49,12 @@ import {
   removeToast,
 } from '../actions/action-creators'
 import * as History from '../history'
-import { EditorState, getOpenUtopiaJSXComponentsFromState, defaultUserState } from './editor-state'
+import {
+  EditorState,
+  getOpenUtopiaJSXComponentsFromState,
+  defaultUserState,
+  StoryboardFilePath,
+} from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
@@ -59,7 +64,6 @@ import {
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { getContentsTreeFileFromString } from '../../assets'
-import { openFileTab } from './editor-tabs'
 import { forceParseSuccessFromFileOrFail } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { notice } from '../../common/notice'
@@ -195,7 +199,7 @@ describe('action CLEAR_SELECTION', () => {
 
 describe('action RENAME_COMPONENT', () => {
   function checkRename(target: TemplatePath, expectedDefaultName: string): void {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
     const newName = 'newName'
     const renameAction = renameComponent(target, newName)
     const updatedEditor = runLocalEditorAction(
@@ -290,12 +294,12 @@ describe('action TOGGLE_PANE', () => {
 describe('action NAVIGATOR_REORDER', () => {
   xit('reparents one element, which was a scene before set it to child of target and removes from scene', () => {
     // TODO Scene Implementation
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
     const reparentAction = reparentComponents(
       [TP.instancePath(ScenePath1ForTestUiJsFile, ['jjj'])],
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
     )
-    const mainUIJSFile = getContentsTreeFileFromString(editor.projectContents, '/src/app.js')
+    const mainUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
     if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
       const topLevelElements = mainUIJSFile.fileContents.parsed.topLevelElements
       const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(
@@ -317,7 +321,7 @@ describe('action NAVIGATOR_REORDER', () => {
 
         const updatedMainUIJSFile = getContentsTreeFileFromString(
           updatedEditor.projectContents,
-          '/src/app.js',
+          StoryboardFilePath,
         )
         if (
           isTextFile(updatedMainUIJSFile) &&
@@ -362,7 +366,7 @@ describe('action NAVIGATOR_REORDER', () => {
 
 describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
   it('duplicates 1 element', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js', [
+    const { editor, derivedState, dispatch } = createEditorStates([
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'iii']),
     ])
     const duplicateAction = duplicateSpecificElements([
@@ -378,8 +382,11 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
-    const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, '/src/app.js')
+    const mainUIJSFile = getContentsTreeFileFromString(
+      updatedEditor.projectContents,
+      StoryboardFilePath,
+    )
+    const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
     if (
       isTextFile(oldUIJSFile) &&
       isParseSuccess(oldUIJSFile.fileContents.parsed) &&
@@ -404,10 +411,7 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
   it('duplicates multiple elements', () => {
     const element1 = TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'iii'])
     const element2 = TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js', [
-      element1,
-      element2,
-    ])
+    const { editor, derivedState, dispatch } = createEditorStates([element1, element2])
     const duplicateAction = duplicateSelected()
     const updatedEditor = runLocalEditorAction(
       editor,
@@ -419,8 +423,11 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
-    const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, '/src/app.js')
+    const mainUIJSFile = getContentsTreeFileFromString(
+      updatedEditor.projectContents,
+      StoryboardFilePath,
+    )
+    const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
     if (
       isTextFile(oldUIJSFile) &&
       isParseSuccess(oldUIJSFile.fileContents.parsed) &&
@@ -455,10 +462,10 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
 
 describe('action DELETE_VIEWS', () => {
   it('deletes all target elements', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
 
     const parseSuccess = forceParseSuccessFromFileOrFail(
-      getContentsTreeFileFromString(editor.projectContents, '/src/app.js'),
+      getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath),
     )
     const originalChildrenCount = Utils.pathOr(
       [],
@@ -484,7 +491,10 @@ describe('action DELETE_VIEWS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
+    const mainUIJSFile = getContentsTreeFileFromString(
+      updatedEditor.projectContents,
+      StoryboardFilePath,
+    )
     if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
       expect(
         Utils.pathOr(
@@ -520,7 +530,7 @@ describe('action DELETE_VIEWS', () => {
 
 describe('INSERT_JSX_ELEMENT', () => {
   function testInsertionToParent(parentPath: StaticInstancePath) {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
 
     const parentBeforeInsert = findJSXElementChildAtPath(
       getOpenUtopiaJSXComponentsFromState(editor),
@@ -575,7 +585,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
   xit('inserts an element as a new root component', () => {
     // TODO Scene Implementation
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
     const editorWithNoHighlighted: EditorState = {
       ...editor,
       highlightedViews: [],
@@ -613,7 +623,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
 describe('action MOVE_SELECTED_BACKWARD', () => {
   it('moves the element backward', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
     const editorWithSelectedView = {
       ...editor,
       selectedViews: [TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])],
@@ -645,7 +655,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
 
 describe('action UPDATE_FRAME_DIMENSIONS', () => {
   it('updates text element frame dimension', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
     const targetText = TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'hhh'])
     const newWidth = 300
     const newHeight = 400
@@ -660,7 +670,10 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const mainUIJSFile = getContentsTreeFileFromString(updatedEditor.projectContents, '/src/app.js')
+    const mainUIJSFile = getContentsTreeFileFromString(
+      updatedEditor.projectContents,
+      StoryboardFilePath,
+    )
     if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
       const components = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed)
       const textElement = Utils.forceNotNull(
@@ -681,37 +694,9 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
   })
 })
 
-describe('action OPEN_FILE', () => {
-  it('opens a new file with initial cursor position', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
-    const cursorPosition = {
-      line: 15,
-      column: 11,
-    }
-    const action = openEditorTab(openFileTab('/src/components.js'), cursorPosition)
-    const updatedEditor = runLocalEditorAction(
-      editor,
-      derivedState,
-      defaultUserState,
-      workers,
-      action,
-      History.init(editor, derivedState),
-      dispatch,
-      emptyUiJsxCanvasContextData(),
-    )
-    const selectedFile = updatedEditor.selectedFile
-    if (selectedFile == null) {
-      fail('Unable to find the scene that should have been updated')
-    } else {
-      expect(selectedFile.tab).toEqual(openFileTab('/src/components.js'))
-      expect(selectedFile.initialCursorPosition).toEqual(cursorPosition)
-    }
-  })
-})
-
 describe('action SET_SAFE_MODE', () => {
   it('Sets safe mode to true', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
     expect(editor.safeMode).toBeFalsy()
     const action = setSafeMode(true)
     const updatedEditor = runLocalEditorAction(
@@ -730,7 +715,7 @@ describe('action SET_SAFE_MODE', () => {
 
 describe('action SET_SAVE_ERROR', () => {
   it('Sets save error to true', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
     expect(editor.saveError).toBeFalsy()
     const action = setSaveError(true)
     const updatedEditor = runLocalEditorAction(
@@ -749,7 +734,7 @@ describe('action SET_SAVE_ERROR', () => {
 
 describe('action ADD_TOAST and REMOVE_TOAST', () => {
   it('ADD_TOAST pushes to existing toasts in state, REMOVE_TOAST removes the toast with the given id', () => {
-    const { editor, derivedState, dispatch } = createEditorStates('/src/app.js')
+    const { editor, derivedState, dispatch } = createEditorStates()
 
     const firstToast = notice('toast1')
     const updatedEditor = runLocalEditorAction(
@@ -813,7 +798,7 @@ describe('action ADD_TOAST and REMOVE_TOAST', () => {
   })
 
   it('ADD_TOAST schedules a REMOVE_TOAST', () => {
-    const { editor, derivedState } = createEditorStates('/src/app.js')
+    const { editor, derivedState } = createEditorStates()
     const mockDispatch = jest.fn()
 
     const toast = notice('toast1')
@@ -837,7 +822,7 @@ describe('action ADD_TOAST and REMOVE_TOAST', () => {
 
 describe('updating node_modules', () => {
   it('action UPDATE_NODE_MODULES incrementally', () => {
-    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState } = createEditorStates()
     const mockDispatch = jest.fn()
     editor.nodeModules = {
       skipDeepFreeze: true,
@@ -868,7 +853,7 @@ describe('updating node_modules', () => {
   })
 
   it('action UPDATE_NODE_MODULES from scratch', () => {
-    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState } = createEditorStates()
     const mockDispatch = jest.fn()
 
     const nodeModules = createNodeModules(fileWithImports.contents)
@@ -891,7 +876,7 @@ describe('updating node_modules', () => {
 
 describe('updating package.json', () => {
   it('action UPDATE_PACKAGE_JSON', () => {
-    const { editor, derivedState } = createEditorStates('/src/app.ui.js')
+    const { editor, derivedState } = createEditorStates()
     const mockDispatch = jest.fn()
 
     const deps = [
@@ -923,7 +908,7 @@ describe('updating package.json', () => {
           \\"name\\": \\"Utopia Project\\",
           \\"version\\": \\"0.1.0\\",
           \\"utopia\\": {
-            \\"main-ui\\": \\"src/app.js\\",
+            \\"main-ui\\": \\"utopia/storyboard.js\\",
             \\"html\\": \\"public/index.html\\",
             \\"js\\": \\"src/index.js\\"
           },
