@@ -1,44 +1,20 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import BreadcrumbSeparator from 'antd/lib/breadcrumb/BreadcrumbSeparator'
-import onClickOutside from 'react-onclickoutside'
-import { BreadcrumbTrail } from '../../canvas/controls/breadcrumb-trail'
+import { BreadcrumbTrail } from '../canvas/controls/breadcrumb-trail'
 import {
-  colorTheme,
   FlexRow,
   Icn,
-  Icons,
   OnClickOutsideHOC,
   SmallerIcons,
   UtopiaTheme,
-} from '../../../uuiui'
-import { betterReactMemo } from '../../../uuiui-deps'
-import {
-  NameRow,
-  NameRowInnerProps,
-} from '../../../components/inspector/sections/header-section/name-row'
-import {
-  LayoutWrapperRow,
-  LayoutWrapperCoreProps,
-  LayoutWrapperRowProps,
-} from '../../../components/inspector/sections/header-section/layout-wrapper-section'
-import { JSXElementName } from '../../../core/shared/element-template'
-import { NameRowCrumbs } from '../../../components/canvas/controls/namerowcrumbs'
-import { Color } from 'src/utils/utils'
-
-interface ComponentOrInstanceIndicatorProps
-  extends NameRowInnerProps,
-    LayoutWrapperCoreProps,
-    LayoutWrapperRowProps {
-  label: string
-  component: boolean
-  instance: boolean
-}
+} from '../../uuiui'
+import { betterReactMemo } from '../../uuiui-deps'
+import { NameRowCrumbs } from '../canvas/controls/namerowcrumbs'
 
 export const ComponentOrInstanceIndicator = betterReactMemo(
   'ComponentOrInstanceIndicator',
-  (props: ComponentOrInstanceIndicatorProps) => {
+  () => {
     const [isOpen, setIsOpen] = React.useState(false)
     const toggleOpen = React.useCallback(() => {
       setIsOpen(!isOpen)
@@ -217,11 +193,6 @@ export const ComponentOrInstanceIndicator = betterReactMemo(
             >
               <BreadcrumbTrail />
               <NameRowCrumbs />
-              <LayoutWrapperRow
-                onWrap={props.onWrap}
-                onUnwrap={props.onUnwrap}
-                value={props.value}
-              />
             </div>
           </OnClickOutsideHOC>
         ) : null}

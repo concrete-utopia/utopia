@@ -1,9 +1,5 @@
 import * as React from 'react'
-import {
-    getOpenImportsFromState,
-    getOpenUtopiaJSXComponentsFromState,
-    isOpenFileUiJs,
-} from '../../../components/editor/store/editor-state'
+import { getOpenUtopiaJSXComponentsFromState } from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../../components/inspector/common/inspector-utils'
 import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
@@ -14,6 +10,7 @@ import { GridRow } from '../../../components/inspector/widgets/grid-row'
 import { PopupList } from '../../../uuiui'
 import { typeOptions } from '../../../components/inspector/sections/header-section/name-row'
 import { JSXElementName, jsxElementName } from '../../../core/shared/element-template'
+import { useNamesAndIconsSelectedViews } from '../../../components/inspector/common/name-and-icon-hook'
 
 export const NameRowCrumbs = () => {
     const selectedViews = useEditorState(
@@ -56,6 +53,7 @@ export const NameRowCrumbs = () => {
 
     const label: string = 'Test'
     const type: string = 'TestType'
+    const hookResult = useNamesAndIconsSelectedViews()
 
     const constrolStatus = 'simple'
     const controlStyles = getControlStyles(constrolStatus)
@@ -71,7 +69,7 @@ export const NameRowCrumbs = () => {
                     onElementTypeChange(value)
                 }
             },
-            [label, type],
+            hookResult,
         )
 
         return (

@@ -1,6 +1,4 @@
 import * as React from 'react'
-import { ExpandableIndicator } from '../../../navigator/navigator-item/expandable-indicator'
-import * as TP from '../../../../core/shared/template-path'
 import { JSXElementName, jsxElementName } from '../../../../core/shared/element-template'
 import { useToggle, SeeMoreButton, SeeMoreHOC } from '../../widgets/see-more'
 import { GridRow } from '../../widgets/grid-row'
@@ -22,9 +20,9 @@ export interface HeaderSectionCoreProps extends ElementPathProps {
 }
 export interface HeaderSectionProps
   extends HeaderSectionCoreProps,
-    NameRowInnerProps,
-    LayoutWrapperCoreProps,
-    LayoutWrapperRowProps {}
+  NameRowInnerProps,
+  LayoutWrapperCoreProps,
+  LayoutWrapperRowProps { }
 
 const LargeRowWithMarginStyle = {
   marginLeft: '8px',

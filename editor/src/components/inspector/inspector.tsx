@@ -19,7 +19,6 @@ import {
   jsxAttributeValue,
   JSXElement,
   JSXElementName,
-  DetectedLayoutSystem,
   SpecialSizeMeasurements,
   emptySpecialSizeMeasurements,
   ComputedStyle,
@@ -61,7 +60,7 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { useEditorState } from '../editor/store/store-hook'
 import { CSSPosition } from './common/css-utils'
 import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
@@ -86,7 +85,6 @@ import {
   TargetSelectorSection,
   TargetSelectorSectionProps,
 } from './sections/target-selector-section'
-import { addStyleSheetToPage } from '../../core/shared/dom-utils'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import { arrayEquals } from '../../core/shared/utils'
 import {
@@ -114,10 +112,10 @@ export interface InspectorPartProps<T> {
 }
 export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
-    HeaderSectionCoreProps,
-    TargetSelectorSectionProps,
-    LayoutWrapperCoreProps,
-    NameRowProps {
+  HeaderSectionCoreProps,
+  TargetSelectorSectionProps,
+  LayoutWrapperCoreProps,
+  NameRowProps {
   selectedViews: Array<TemplatePath>
 }
 
@@ -435,7 +433,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
 })
 Inspector.displayName = 'Inspector'
 
-function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
+export function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
   let result: Array<InstancePath> = []
   Utils.fastForEach(paths, (path) => {
     // TODO Scene Implementation

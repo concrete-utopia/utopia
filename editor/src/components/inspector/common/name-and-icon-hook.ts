@@ -1,11 +1,8 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   isAnimatedElementAgainstImports,
-  isEllipseAgainstImports,
   isHTMLComponent,
   isImg,
-  isRectangleAgainstImports,
-  isTextAgainstImports,
   isViewAgainstImports,
 } from '../../../core/model/project-file-utils'
 import {
@@ -50,6 +47,19 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
       const nameVariableEquals = oldResult.name?.baseVariable === newResult.name?.baseVariable
       return pathEquals || labelEquals || iconPropsEqual || namePathEquals || nameVariableEquals
     },
+  )
+}
+
+export function useNamesAndIconsSelectedViews(): NameAndIconResult[] {
+  return useEditorState(
+    (store) => {
+      const metadata = store.editor.jsxMetadataKILLME
+      const components = getOpenUtopiaJSXComponentsFromState(store.editor)
+      const imports = getOpenImportsFromState(store.editor)
+      const selectedViews = store.editor.selectedViews
+      return selectedViews.map(path => getNameAndIconResult(path, components, metadata, imports))
+    },
+    'useNameAndIconSelectedViews',
   )
 }
 

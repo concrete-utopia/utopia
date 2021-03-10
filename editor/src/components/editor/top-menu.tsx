@@ -1,17 +1,16 @@
 import * as React from 'react'
 import { MenuIcons, SimpleFlexRow, SquareButton, Tooltip } from '../../uuiui'
-import { RightMenuTile } from '../canvas/right-menu'
 import { useEditorState } from './store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
 import { betterReactMemo } from '../../uuiui-deps'
 import * as TP from '../../core/shared/template-path'
 import { FormulaBar } from '../canvas/controls/formula-bar'
-import { ComponentOrInstanceIndicator } from './ComponentButton/componentButton'
 import { getNavigatorPositionNextState } from './actions/actions'
 import { LeftPaneDefaultWidth } from '../navigator/left-pane'
 import CanvasActions from '../canvas/canvas-actions'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { EditorAction } from './action-types'
+import { ComponentOrInstanceIndicator } from '../editor/component-button'
 
 export const TopMenu = betterReactMemo('TopMenu', () => {
   const dispatch = useEditorState((store) => store.dispatch, 'TopMenu dispatch')
