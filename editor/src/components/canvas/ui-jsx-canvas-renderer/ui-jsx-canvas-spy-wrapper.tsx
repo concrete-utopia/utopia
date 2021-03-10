@@ -99,9 +99,12 @@ export function buildSpyWrappedElement(
 
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
+    const uid = getUtopiaID(jsx)
+    const isInstance = TP.toUid(templatePath) === uid
+    const shiftedTemplatePath = isInstance ? templatePath : TP.appendToPath(templatePath, uid)
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
-      templatePath: templatePath,
+      templatePath: shiftedTemplatePath,
       props: makeCanvasElementPropsSafe(reportedProps),
       globalFrame: null,
       localFrame: null,
@@ -112,11 +115,13 @@ export function buildSpyWrappedElement(
       attributeMetadatada: emptyAttributeMetadatada,
     }
     const isChildOfRootScene = TP.pathsEqual(
-      TP.scenePathForPath(templatePath),
+      TP.scenePathForPath(shiftedTemplatePath),
       EmptyScenePathForStoryboard,
     )
     if (!isChildOfRootScene || shouldIncludeCanvasRootInTheSpy) {
-      metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = instanceMetadata
+      metadataContext.current.spyValues.metadata[
+        TP.toComponentId(shiftedTemplatePath)
+      ] = instanceMetadata
     }
   }
 

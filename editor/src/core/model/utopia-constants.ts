@@ -17,4 +17,6 @@ export const UtopiaKeys: Array<string> = [
   UTOPIA_UID_PARENTS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
   UTOPIA_TEMPLATE_PATH_KEY,
+  UTOPIA_EXTENDED_TEMPLATE_PATH_KEY,
+  'data-utopia-valid-paths',
 ]
