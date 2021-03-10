@@ -69,8 +69,10 @@ export function buildSpyWrappedElement(
     scenePath = TP.scenePath(focusedElementTemplatePath)
 
     if (childrenTemplatePaths.length === 0) {
-      topLevelElementName = jsx.name.baseVariable
-      const originalUid = (inScope[topLevelElementName] as ComponentRendererComponent)?.originalUID
+      topLevelElementName = (childrenElements[0] as React.ReactElement)?.props?.elementToRender
+        ?.topLevelElementName // THIS IS A SPIKE, RELAX
+      const originalUid = (childrenElements[0] as React.ReactElement)?.props?.elementToRender
+        ?.originalUID
       fixedChildrenTemplatePaths = [TP.instancePath(scenePath, [originalUid])]
     } else {
       fixedChildrenTemplatePaths = childrenTemplatePaths.map((childTemplatePath, index) => {
@@ -99,8 +101,8 @@ export function buildSpyWrappedElement(
 
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
-    const uid = getUtopiaID(jsx)
-    const isInstance = TP.toUid(templatePath) === uid
+    // const uid = getUtopiaID(jsx)
+    // const isInstance = TP.toUid(templatePath) === uid
     // Commented out because this is _actually_ a fix but we don't want to mix it in yet
     const shiftedTemplatePath = templatePath // isInstance ? templatePath : TP.appendToPath(templatePath, uid)
     const instanceMetadata: ElementInstanceMetadata = {
