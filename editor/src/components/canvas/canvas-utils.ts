@@ -2511,7 +2511,9 @@ export function cullSpyCollector(
     while (workingPath != null) {
       const pathAsString = TP.toString(workingPath)
       if (TP.isScenePath(workingPath)) {
-        elementPaths.add(TP.toString(TP.instancePath([], workingPath.sceneElementPath)))
+        elementPaths.add(
+          TP.toString(TP.instancePath(TP.emptyScenePath, workingPath.sceneElementPath)),
+        )
         scenePaths.add(pathAsString)
       } else {
         elementPaths.add(pathAsString)
@@ -2532,7 +2534,7 @@ export function cullSpyCollector(
       !elementPaths.has(
         TP.toString(
           TP.instancePath(
-            [],
+            TP.emptyScenePath,
             spyCollector.current.spyValues.scenes[scenePath].scenePath.sceneElementPath,
           ),
         ),

@@ -837,7 +837,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     0,
   )
   const scenePath = TP.scenePath([BakedInStoryboardUID, `scene-0`])
-  const sceneTemplatePath = TP.instancePath([], [BakedInStoryboardUID, `scene-0`])
+  const sceneTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, `scene-0`])
   const rootElementPath = TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa'])
   const childElementPath = TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), [
     'aaa',

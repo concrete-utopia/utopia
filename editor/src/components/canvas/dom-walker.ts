@@ -471,7 +471,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
               const sceneMetadata = collectMetadata(
                 scene,
-                TP.instancePath([], TP.elementPathForPath(scenePath)),
+                TP.instancePath(TP.emptyScenePath, TP.elementPathForPath(scenePath)),
                 canvasPoint({ x: 0, y: 0 }),
                 rootElements,
               )

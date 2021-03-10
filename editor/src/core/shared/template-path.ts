@@ -156,7 +156,7 @@ function newScenePath(elements: StaticElementPath): ScenePath {
   }
 }
 
-const emptyScenePath: ScenePath = newScenePath(([] as any) as StaticElementPath)
+export const emptyScenePath: ScenePath = newScenePath(([] as any) as StaticElementPath)
 
 function newInstancePath(scene: ScenePath | ElementPath, elementPath: ElementPath): InstancePath {
   return {
@@ -165,7 +165,7 @@ function newInstancePath(scene: ScenePath | ElementPath, elementPath: ElementPat
   }
 }
 
-const emptyInstancePath: InstancePath = newInstancePath(emptyScenePath, [])
+export const emptyInstancePath: InstancePath = newInstancePath(emptyScenePath, [])
 
 export function scenePath(elements: ElementPath): ScenePath {
   const staticElements = elements as StaticElementPath
@@ -187,33 +187,22 @@ function scenePathFromElementPathOrScenePath(scene: ScenePath | ElementPath): Sc
   }
 }
 
-export function instancePath(
-  scene: ScenePath | ElementPath,
-  elementPath: ElementPath,
-): InstancePath {
-  if (isScenePath(scene as ScenePath)) {
-    return instancePath((scene as ScenePath).sceneElementPath, elementPath)
+export function instancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
+  if (scene.sceneElementPath.length === 0 && elementPath.length === 0) {
+    return emptyInstancePath
   } else {
-    const sceneElementPath = scene as StaticElementPath
-    if (sceneElementPath.length === 0 && elementPath.length === 0) {
-      return emptyInstancePath
+    const pathCache = getInstancePathCache(scene.sceneElementPath, elementPath)
+    if (pathCache.cached == null) {
+      const newPath = newInstancePath(scene, elementPath)
+      pathCache.cached = newPath
+      return newPath
     } else {
-      const pathCache = getInstancePathCache(sceneElementPath, elementPath)
-      if (pathCache.cached == null) {
-        const newPath = newInstancePath(sceneElementPath, elementPath)
-        pathCache.cached = newPath
-        return newPath
-      } else {
-        return pathCache.cached
-      }
+      return pathCache.cached
     }
   }
 }
 
-export function staticInstancePath(
-  scene: ScenePath | ElementPath,
-  elementPath: ElementPath,
-): StaticInstancePath {
+export function staticInstancePath(scene: ScenePath, elementPath: ElementPath): StaticInstancePath {
   return instancePath(scene, elementPath) as StaticInstancePath
 }
 

@@ -1401,7 +1401,7 @@ export const MetadataUtils = {
     elements: Array<ElementInstanceMetadata>,
   ): ElementInstanceMetadata | null {
     const pathToUse = TP.isScenePath(target)
-      ? TP.instancePath([], TP.elementPathForPath(target))
+      ? TP.instancePath(TP.emptyScenePath, TP.elementPathForPath(target))
       : target
     return elements.find((elem) => TP.pathsEqual(pathToUse, elem.templatePath)) ?? null
   },

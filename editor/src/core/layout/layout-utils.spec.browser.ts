@@ -51,7 +51,7 @@ describe('maybeSwitchLayoutProps', () => {
     await renderResult.dispatch(
       [
         selectComponents(
-          [TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], ['aaa', 'bbb'])],
+          [TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-aaa']), ['aaa', 'bbb'])],
           false,
         ),
       ],
@@ -74,10 +74,10 @@ describe('maybeSwitchLayoutProps', () => {
       }),
       [],
     )
-    const elementPath = TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID])
+    const elementPath = TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-aaa']), [NewUID])
     const elements: ElementInstanceMetadataMap = {
       [TP.toString(elementPath)]: {
-        templatePath: TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID]),
+        templatePath: TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-aaa']), [NewUID]),
         element: right(elementToPaste),
         props: {
           'data-uid': NewUID,
@@ -112,7 +112,7 @@ describe('maybeSwitchLayoutProps', () => {
     const components: ComponentMetadata[] = [
       {
         scenePath: TP.scenePath([BakedInStoryboardUID, 'scene-aaa']),
-        templatePath: TP.instancePath([], [BakedInStoryboardUID, 'scene-aaa']),
+        templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'scene-aaa']),
         component: 'Component1',
         sceneResizesContent: false,
         globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
@@ -123,7 +123,7 @@ describe('maybeSwitchLayoutProps', () => {
     const metadata = jsxMetadata(components, elements)
     const pasteElements = pasteJSXElements(
       [elementToPaste],
-      [TP.instancePath([BakedInStoryboardUID, 'scene-aaa'], [NewUID])],
+      [TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-aaa']), [NewUID])],
       metadata,
     )
     await renderResult.dispatch([pasteElements], true)
