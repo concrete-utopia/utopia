@@ -101,7 +101,8 @@ export function buildSpyWrappedElement(
   const spyCallback = (reportedProps: any) => {
     const uid = getUtopiaID(jsx)
     const isInstance = TP.toUid(templatePath) === uid
-    const shiftedTemplatePath = isInstance ? templatePath : TP.appendToPath(templatePath, uid)
+    // Commented out because this is _actually_ a fix but we don't want to mix it in yet
+    const shiftedTemplatePath = templatePath // isInstance ? templatePath : TP.appendToPath(templatePath, uid)
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
       templatePath: shiftedTemplatePath,
