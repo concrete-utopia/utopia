@@ -2521,11 +2521,11 @@ export function cullSpyCollector(
     }
   })
   // Eliminate the element paths which are invalid.
-  fastForEach(Object.keys(spyCollector.current.spyValues.metadata), (elementPath) => {
-    if (!elementPaths.has(elementPath)) {
-      delete spyCollector.current.spyValues.metadata[elementPath]
-    }
-  })
+  // fastForEach(Object.keys(spyCollector.current.spyValues.metadata), (elementPath) => {
+  //   if (!elementPaths.has(elementPath)) {
+  //     delete spyCollector.current.spyValues.metadata[elementPath]
+  //   }
+  // })
   // Eliminate the scene paths which are invalid.
   fastForEach(Object.keys(spyCollector.current.spyValues.scenes), (scenePath) => {
     if (

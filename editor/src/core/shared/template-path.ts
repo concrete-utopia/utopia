@@ -494,7 +494,7 @@ export function isSiblingOf(l: TemplatePath | null, r: TemplatePath | null): boo
   return l != null && r != null && pathsEqual(parentPath(l), parentPath(r))
 }
 
-function elementIsDescendent(l: ElementPath, r: ElementPath): boolean {
+export function elementIsDescendent(l: ElementPath, r: ElementPath): boolean {
   if (l.length < r.length) {
     return false
   }

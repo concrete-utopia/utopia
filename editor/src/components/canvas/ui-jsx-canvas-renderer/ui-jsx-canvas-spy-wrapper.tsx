@@ -46,19 +46,49 @@ export function buildSpyWrappedElement(
     key: TP.toComponentId(templatePath),
   }
 
-  if (TP.elementPathsEqual(extendedTemplatePath, focusedElementTemplatePath)) {
-    // I am being spied
-    // Replace the instance's UID with the definition's
-    const originalComponent = inScope[jsx.name.baseVariable]
-    const originalUID = (originalComponent as ComponentRendererComponent)?.originalUID
-    props[UTOPIA_UID_KEY] = originalUID ?? getUtopiaID(jsx)
-  }
-
   let topLevelElementName = ''
 
   let scenePath: ScenePath | null = null
 
   let fixedChildrenTemplatePaths: Array<InstancePath> = childrenTemplatePaths
+
+  // focused app/card/card-root/button/button-root
+  // storyboard-uid/scene-uid/app/card/card-root
+  // storyboard-uid/scene-uid:app/card
+
+  if (focusedElementTemplatePath != null) {
+    if (TP.elementPathsEqual(extendedTemplatePath, focusedElementTemplatePath)) {
+      // I am being spied
+      // Replace the instance's UID with the definition's
+      const instanceUID = getUtopiaID(jsx)
+      const originalComponent = inScope[jsx.name.baseVariable]
+      const originalUID = (originalComponent as ComponentRendererComponent)?.originalUID
+      props[UTOPIA_UID_KEY] = originalUID ?? instanceUID
+
+      // Add the root of this a child template path
+      if (originalUID != null) {
+        fixedChildrenTemplatePaths = [
+          TP.instancePath(TP.scenePath(focusedElementTemplatePath), [originalUID]),
+          ...childrenTemplatePaths,
+        ]
+      }
+    } else if (
+      // storyboard-uid/scene-uid/app-root/designated-scene/card-instance/card-root/button-instance - focus
+      // storyboard-uid/scene-uid/app-root/designated-scene/card-instance - extended
+      // storyboard-uid/scene-uid:app-root/designated-scene/card-instance - TP
+      TP.elementIsDescendent(focusedElementTemplatePath, extendedTemplatePath) &&
+      // last(templatePath.element) !== last(extendedTemplatePath) &&
+      templatePath.element.length > 0
+    ) {
+      const pathElementToAdd = focusedElementTemplatePath[extendedTemplatePath.length]
+      if (!childrenTemplatePaths.some((p) => TP.toUid(p) === pathElementToAdd)) {
+        fixedChildrenTemplatePaths = [
+          TP.appendToPath(templatePath, pathElementToAdd),
+          ...childrenTemplatePaths,
+        ]
+      }
+    }
+  }
 
   if (
     focusedElementTemplatePath != null &&
@@ -71,9 +101,9 @@ export function buildSpyWrappedElement(
     if (childrenTemplatePaths.length === 0) {
       topLevelElementName = (childrenElements[0] as React.ReactElement)?.props?.elementToRender
         ?.topLevelElementName // THIS IS A SPIKE, RELAX
-      const originalUid = (childrenElements[0] as React.ReactElement)?.props?.elementToRender
-        ?.originalUID
-      fixedChildrenTemplatePaths = [TP.instancePath(scenePath, [originalUid])]
+      // const originalUid = (childrenElements[0] as React.ReactElement)?.props?.elementToRender
+      //   ?.originalUID
+      // fixedChildrenTemplatePaths = [TP.instancePath(scenePath, [originalUid])]
     } else {
       fixedChildrenTemplatePaths = childrenTemplatePaths.map((childTemplatePath, index) => {
         const originalUid = (childrenElements[index] as React.ReactElement)?.props?.elementToRender
@@ -89,22 +119,23 @@ export function buildSpyWrappedElement(
           topLevelElementName = (childrenElements[index] as React.ReactElement)?.props
             ?.elementToRender?.topLevelElementName // THIS IS A SPIKE, RELAX
 
-          const fixedTemplatePath = TP.instancePath(scenePath!, [originalUid])
+          //   const fixedTemplatePath = TP.instancePath(scenePath!, [originalUid])
 
-          return fixedTemplatePath
-        } else {
-          return childTemplatePath
+          //   return fixedTemplatePath
+          // } else {
         }
+        return childTemplatePath
+        // }
       })
     }
   }
 
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
-    // const uid = getUtopiaID(jsx)
-    // const isInstance = TP.toUid(templatePath) === uid
+    const uid = getUtopiaID(jsx)
+    const isInstance = TP.toUid(templatePath) === uid
     // Commented out because this is _actually_ a fix but we don't want to mix it in yet
-    const shiftedTemplatePath = templatePath // isInstance ? templatePath : TP.appendToPath(templatePath, uid)
+    const shiftedTemplatePath = isInstance ? templatePath : TP.appendToPath(templatePath, uid)
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
       templatePath: shiftedTemplatePath,
@@ -193,4 +224,4 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     })
   }
 }
-SpyWrapper.displayName = 'SpyWapper'
+SpyWrapper.displayName = 'SpyWrapper'
