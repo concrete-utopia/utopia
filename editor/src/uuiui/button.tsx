@@ -41,6 +41,7 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   pointerEvents: props.disabled ? 'none' : 'initial',
   boxShadow: props.outline ? 'inset 0px 0px 0px 1px hsl(0,0%,90%)' : undefined,
   color: props.primary ? 'white' : 'inherit',
+  //TODO Nested ternaries
   background: props.primary
     ? UtopiaStyles.backgrounds.blue
     : props.spotlight

@@ -323,7 +323,7 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
           minWidth: 150,
           maxWidth: 250,
           boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 4px 11px',
-          zIndex: 999999,
+          zIndex: 1,
           boxSizing: 'border-box',
           borderRadius: UtopiaTheme.inputBorderRadius,
           position: 'absolute',
@@ -403,7 +403,6 @@ const DropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> =
 }
 
 const SingleValue = (props: SingleValueProps<SelectOption>) => {
-  console.log('single value props', props)
   return (
     <components.SingleValue {...props}>
       {props.data.icon == null ? null : <Icn {...props.data.icon} />}
