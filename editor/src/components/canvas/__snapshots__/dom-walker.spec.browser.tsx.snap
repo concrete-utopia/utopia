@@ -109,6 +109,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -190,6 +191,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -306,6 +308,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -413,6 +416,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 375,
@@ -496,6 +500,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 375,
@@ -579,6 +584,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 375,
@@ -760,6 +766,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -841,6 +848,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -917,6 +925,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -1123,6 +1132,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -1204,6 +1214,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -1294,6 +1305,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -1417,6 +1429,7 @@ Object {
         "x": 55,
         "y": 98,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 164,
         "width": 306,
@@ -1522,6 +1535,7 @@ Object {
         "x": 126,
         "y": 125,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 70,
         "width": 125,
@@ -1730,6 +1744,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -1811,6 +1826,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -1901,6 +1917,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -2025,6 +2042,7 @@ Object {
         "x": 55,
         "y": 98,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 164,
         "width": 306,
@@ -2130,6 +2148,7 @@ Object {
         "x": 126,
         "y": 125,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 70,
         "width": 125,
@@ -2338,6 +2357,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -2419,6 +2439,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -2509,6 +2530,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -2632,6 +2654,7 @@ Object {
         "x": 55,
         "y": 98,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 124,
         "width": 266,
@@ -2741,6 +2764,7 @@ Object {
         "x": 126,
         "y": 125,
       },
+      "isEmotionComponent": false,
       "localFrame": Object {
         "height": 70,
         "width": 125,

@@ -259,6 +259,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -495,6 +496,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-label": "Hat",
@@ -645,6 +647,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "567",
@@ -905,6 +908,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -1289,6 +1293,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -1497,6 +1502,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -1584,6 +1590,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -1672,6 +1679,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -1869,6 +1877,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -2164,6 +2173,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -2435,6 +2445,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -2643,6 +2654,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -2730,6 +2742,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -2818,6 +2831,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -3029,6 +3043,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -3381,6 +3396,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -3572,6 +3588,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -3960,6 +3977,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -4151,6 +4169,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -4580,6 +4599,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -4819,6 +4839,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -5254,6 +5275,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -5493,6 +5515,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -5651,6 +5674,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -6938,6 +6962,7 @@ export var storyboard = (props) => {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -7772,6 +7797,7 @@ export var storyboard = (props) => {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "03a",
@@ -8053,6 +8079,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -8155,6 +8182,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -8259,6 +8287,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -8446,6 +8475,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -8697,6 +8727,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -8989,6 +9020,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -9145,6 +9177,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -9444,6 +9477,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -9619,6 +9653,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "d59",
@@ -9754,6 +9789,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "dd5",
@@ -10075,6 +10111,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -10212,6 +10249,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -10508,6 +10546,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -10778,6 +10817,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -11054,6 +11094,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -11184,6 +11225,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -11277,6 +11319,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -11526,6 +11569,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -11635,6 +11679,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -11923,6 +11968,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -12066,6 +12112,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "BBB",
@@ -12528,6 +12575,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -12648,6 +12696,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "ddd",
@@ -12860,6 +12909,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -12962,6 +13012,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -13113,6 +13164,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-factory-function-works": "true",
@@ -13418,6 +13470,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -13621,6 +13674,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -13757,6 +13811,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "cloner",
@@ -13851,6 +13906,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "cloned",
@@ -13985,6 +14041,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -14114,6 +14171,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
