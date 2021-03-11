@@ -1,10 +1,5 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
-  isAnimatedElementAgainstImports,
-  isImportedComponent,
-} from '../../../core/model/project-file-utils'
-import {
-  isIntrinsicHTMLElement,
   JSXElementName,
   JSXMetadata,
   UtopiaJSXComponent,
@@ -19,6 +14,7 @@ import {
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
 
 export interface NameAndIconResult {
   path: TemplatePath
@@ -75,73 +71,10 @@ function getNameAndIconResult(
   imports: Imports,
 ): NameAndIconResult {
   const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
-
   return {
     path: path,
     name: elementName,
     label: MetadataUtils.getElementLabel(path, metadata),
-    iconProps: createIconProps(path, metadata, components, imports, elementName),
+    iconProps: createComponentOrElementIconProps(path, components, metadata, imports),
   }
-}
-
-function createIconProps(
-  path: TemplatePath,
-  metadata: JSXMetadata,
-  components: UtopiaJSXComponent[],
-  imports: Imports,
-  elementName: JSXElementName | null,
-): IcnProps {
-  let elementIcon = {
-    category: 'element',
-    type: 'div',
-    width: 18,
-    height: 18,
-  }
-
-  const element = TP.isInstancePath(path)
-    ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
-    : null
-
-  const isComponent = elementName != null && !isIntrinsicHTMLElement(elementName)
-  if (isComponent) {
-    elementIcon = {
-      ...elementIcon,
-      category: 'component',
-      type: 'default',
-    }
-  }
-  const isImported = elementName != null && isImportedComponent(elementName, imports)
-  if (isImported) {
-    elementIcon = {
-      ...elementIcon,
-      category: 'component',
-      type: 'npm',
-    }
-  }
-  const isAnimatedComponent =
-    elementName != null && isAnimatedElementAgainstImports(elementName, imports)
-  if (isAnimatedComponent) {
-    elementIcon = {
-      ...elementIcon,
-      category: 'component',
-      type: 'animated',
-    }
-  }
-  const isStyledComponent = element?.isEmotionComponent
-  if (isStyledComponent) {
-    elementIcon = {
-      ...elementIcon,
-      category: 'component',
-      type: 'styled',
-    }
-  }
-  if (TP.isScenePath(path)) {
-    elementIcon = {
-      ...elementIcon,
-      category: 'component',
-      type: 'scene',
-    }
-  }
-
-  return elementIcon
 }

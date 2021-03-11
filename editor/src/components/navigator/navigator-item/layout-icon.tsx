@@ -3,7 +3,7 @@ import { TemplatePath } from '../../../core/shared/project-file-types'
 import { IcnProps, Icn } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { WarningIcon } from '../../../uuiui/warning-icon'
-import { useLayoutIcon } from '../layout-type-icon-hook'
+import { useLayoutOrElementIcon } from '../layout-element-icons'
 
 interface LayoutIconProps {
   path: TemplatePath
@@ -14,7 +14,7 @@ interface LayoutIconProps {
 export const LayoutIcon: React.FunctionComponent<LayoutIconProps> = betterReactMemo(
   'LayoutIcon',
   (props) => {
-    const { iconProps, hasWidthOrHeight } = useLayoutIcon(props.path)
+    const { iconProps, hasWidthOrHeight } = useLayoutOrElementIcon(props.path)
 
     if (props.warningText != null) {
       return <WarningIcon tooltipText={props.warningText} />
