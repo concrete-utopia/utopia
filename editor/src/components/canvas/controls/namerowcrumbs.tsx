@@ -11,87 +11,80 @@ import { PopupList } from '../../../uuiui'
 import { JSXElementName, jsxElementName } from '../../../core/shared/element-template'
 import { useNamesAndIconsSelectedViews } from '../../../components/inspector/common/name-and-icon-hook'
 
-export const NameRowCrumbs = betterReactMemo('NameRowCrumbs', () => {
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'InspectorEntryPoint selectedViews',
-  )
-
-  const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
-    getElementsToTarget(selectedViews),
-  )
-
-  const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
-    }
-  }, 'InspectorContextProvider')
-
-  function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
-    let result: Array<InstancePath> = []
-    Utils.fastForEach(paths, (path) => {
-      // TODO Scene Implementation
-      if (!TP.isScenePath(path) && !TP.containsPath(path, result)) {
-        result.push(path)
-      }
-    })
-    return result
+const constrolStatus = 'simple'
+const controlStyles = getControlStyles(constrolStatus)
+const hookResult = useNamesAndIconsSelectedViews()
+const selectedViews = useEditorState(
+  (store) => store.editor.selectedViews,
+  'InspectorEntryPoint selectedViews',
+)
+const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
+  getElementsToTarget(selectedViews),
+)
+const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
+  return {
+    dispatch: store.dispatch,
+    jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
+    rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
   }
+}, 'InspectorContextProvider')
 
-  const onElementTypeChange = React.useCallback(
-    (value: JSXElementName) => {
-      const actions = refElementsToTargetForUpdates.current.map((path) => {
-        return EditorActions.updateJSXElementName(path, value)
-      })
-      dispatch(actions, 'everyone')
-    },
-    [dispatch],
-  )
+const onElementTypeChange = React.useCallback(
+  (value: JSXElementName) => {
+    const actions = refElementsToTargetForUpdates.current.map((path) => {
+      return EditorActions.updateJSXElementName(path, value)
+    })
+    dispatch(actions, 'everyone')
+  },
+  [dispatch],
+)
 
-  const label: string = 'Test'
-  const type: string = 'TestType'
-  const hookResult = useNamesAndIconsSelectedViews()
-
-  const constrolStatus = 'simple'
-  const controlStyles = getControlStyles(constrolStatus)
-
-  const NameRow = betterReactMemo('NameRow', () => {
-    const onSelect = React.useCallback((selectOption: SelectOption) => {
-      const value = selectOption.value
-      if (typeof value === 'string') {
-        const elementName = jsxElementName(value, [])
-        onElementTypeChange(elementName)
-      } else {
-        onElementTypeChange(value)
-      }
-    }, hookResult)
-
-    return (
-      <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-        <span
-          style={{
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          Render as
-        </span>
-        {type == null ? null : (
-          <PopupList
-            disabled={!controlStyles.interactive}
-            value={{ value: type, label: type }}
-            onSubmitValue={onSelect}
-            options={typeOptions}
-            containerMode='default'
-          />
-        )}
-      </GridRow>
-    )
+function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
+  let result: Array<InstancePath> = []
+  Utils.fastForEach(paths, (path) => {
+    // TODO Scene Implementation
+    if (!TP.isScenePath(path) && !TP.containsPath(path, result)) {
+      result.push(path)
+    }
   })
+  return result
+}
+const NameRow = betterReactMemo('NameRow', () => {
+  const onSelect = React.useCallback((selectOption: SelectOption) => {
+    const value = selectOption.value
+    if (typeof value === 'string') {
+      const elementName = jsxElementName(value, [])
+      onElementTypeChange(elementName)
+    } else {
+      onElementTypeChange(value)
+    }
+  }, hookResult)
 
+  return (
+    <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <span
+        style={{
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+      >
+        Render as
+      </span>
+      {hookResult.length >= 1 ? (
+        <PopupList
+          disabled={!controlStyles.interactive}
+          value={{ value: hookResult[0].name, label: hookResult[0].label }}
+          onSubmitValue={onSelect}
+          options={typeOptions}
+          containerMode='default'
+        />
+      ) : null}
+    </GridRow>
+  )
+})
+
+export const NameRowCrumbs = betterReactMemo('NameRowCrumbs', () => {
   return (
     <div>
       <NameRow />
