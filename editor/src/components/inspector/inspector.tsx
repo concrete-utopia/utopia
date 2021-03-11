@@ -112,10 +112,10 @@ export interface InspectorPartProps<T> {
 }
 export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
-  HeaderSectionCoreProps,
-  TargetSelectorSectionProps,
-  LayoutWrapperCoreProps,
-  NameRowProps {
+    HeaderSectionCoreProps,
+    TargetSelectorSectionProps,
+    LayoutWrapperCoreProps,
+    NameRowProps {
   selectedViews: Array<TemplatePath>
 }
 

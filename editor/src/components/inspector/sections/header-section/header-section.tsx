@@ -20,9 +20,9 @@ export interface HeaderSectionCoreProps extends ElementPathProps {
 }
 export interface HeaderSectionProps
   extends HeaderSectionCoreProps,
-  NameRowInnerProps,
-  LayoutWrapperCoreProps,
-  LayoutWrapperRowProps { }
+    NameRowInnerProps,
+    LayoutWrapperCoreProps,
+    LayoutWrapperRowProps {}
 
 const LargeRowWithMarginStyle = {
   marginLeft: '8px',

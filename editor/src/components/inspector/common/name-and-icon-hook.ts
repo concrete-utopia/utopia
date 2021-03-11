@@ -51,16 +51,13 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
 }
 
 export function useNamesAndIconsSelectedViews(): NameAndIconResult[] {
-  return useEditorState(
-    (store) => {
-      const metadata = store.editor.jsxMetadataKILLME
-      const components = getOpenUtopiaJSXComponentsFromState(store.editor)
-      const imports = getOpenImportsFromState(store.editor)
-      const selectedViews = store.editor.selectedViews
-      return selectedViews.map(path => getNameAndIconResult(path, components, metadata, imports))
-    },
-    'useNameAndIconSelectedViews',
-  )
+  return useEditorState((store) => {
+    const metadata = store.editor.jsxMetadataKILLME
+    const components = getOpenUtopiaJSXComponentsFromState(store.editor)
+    const imports = getOpenImportsFromState(store.editor)
+    const selectedViews = store.editor.selectedViews
+    return selectedViews.map((path) => getNameAndIconResult(path, components, metadata, imports))
+  }, 'useNameAndIconSelectedViews')
 }
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {

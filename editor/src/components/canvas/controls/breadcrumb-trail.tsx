@@ -89,7 +89,5 @@ export const BreadcrumbTrail = () => {
     )
   })
 
-  return (
-    <ElementPathButtons />
-  )
+  return <ElementPathButtons />
 }
