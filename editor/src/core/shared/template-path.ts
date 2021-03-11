@@ -10,7 +10,7 @@ import {
 } from './project-file-types'
 import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
 import { replaceAll } from './string-utils'
-import { last, dropLastN, drop, splitAt } from './array-utils'
+import { last, dropLastN, drop, splitAt, flattenArray } from './array-utils'
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
 
 // KILLME, except in 106 places
@@ -60,9 +60,17 @@ export function clearTemplatePathCache() {
   globalScenePathCache = emptyScenePathCache()
 }
 
-function getScenePathCache(sceneElementPath: StaticElementPath): ScenePathCache {
+function getScenePathCache(sceneElementPaths: StaticElementPath[]): ScenePathCache {
+  let joinedPaths: string[] = []
+  for (var i = 0, len = sceneElementPaths.length; i < len; i++) {
+    joinedPaths.push(...sceneElementPaths[i])
+    if (i < len - 1) {
+      joinedPaths.push(SceneSeparator)
+    }
+  }
+
   let workingPathCache: ScenePathCache = globalScenePathCache
-  fastForEach(sceneElementPath, (pathPart) => {
+  fastForEach(joinedPaths, (pathPart) => {
     if (workingPathCache.childSceneCaches[pathPart] == null) {
       const newCache = emptyScenePathCache()
       workingPathCache.childSceneCaches[pathPart] = newCache
@@ -75,7 +83,7 @@ function getScenePathCache(sceneElementPath: StaticElementPath): ScenePathCache 
 }
 
 function getScenePathCacheForScenePath(scene: ScenePath): ScenePathCache {
-  return getScenePathCache(scene.sceneElementPaths)
+  return getScenePathCache([scene.sceneElementPaths])
 }
 
 function getInstancePathCacheFromScenePathCache(
@@ -150,10 +158,10 @@ export function toString(target: TemplatePath): string {
   }
 }
 
-function newScenePath(elements: StaticElementPath): ScenePath {
+function newScenePath(elementPaths: StaticElementPath): ScenePath {
   return {
     type: 'scenepath',
-    sceneElementPaths: elements,
+    sceneElementPaths: elementPaths,
   }
 }
 
@@ -170,7 +178,7 @@ export const emptyInstancePath: InstancePath = newInstancePath(emptyScenePath, [
 
 export function scenePath(elementPaths: ElementPath[]): ScenePath {
   const staticElementPaths = elementPaths as StaticElementPath[]
-  const pathCache = getScenePathCache(last(staticElementPaths)!)
+  const pathCache = getScenePathCache(staticElementPaths)
   if (pathCache.cached == null) {
     const newPath = newScenePath(last(staticElementPaths)!)
     pathCache.cached = newPath
