@@ -12,7 +12,7 @@ import { typeOptions } from '../../../components/inspector/sections/header-secti
 import { JSXElementName, jsxElementName } from '../../../core/shared/element-template'
 import { useNamesAndIconsSelectedViews } from '../../../components/inspector/common/name-and-icon-hook'
 
-export const NameRowCrumbs = () => {
+export const NameRowCrumbs = betterReactMemo('NameRowCrumbs', () => {
   const selectedViews = useEditorState(
     (store) => store.editor.selectedViews,
     'InspectorEntryPoint selectedViews',
@@ -98,4 +98,5 @@ export const NameRowCrumbs = () => {
       <NameRow />
     </div>
   )
-}
+
+}) 

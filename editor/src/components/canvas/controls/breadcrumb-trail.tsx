@@ -12,7 +12,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { FlexRow, Icons } from '../../../uuiui'
 
-export const BreadcrumbTrail = () => {
+export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
   const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -88,6 +88,5 @@ export const BreadcrumbTrail = () => {
       </FlexRow>
     )
   })
-
   return <ElementPathButtons />
-}
+})

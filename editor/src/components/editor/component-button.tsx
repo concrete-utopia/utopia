@@ -2,7 +2,17 @@
 import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { BreadcrumbTrail } from '../canvas/controls/breadcrumb-trail'
-import { background, color, FlexRow, Icn, IcnColor, OnClickOutsideHOC, SmallerIcons, stroke, UtopiaTheme } from '../../uuiui'
+import {
+  background,
+  color,
+  FlexRow,
+  Icn,
+  IcnColor,
+  OnClickOutsideHOC,
+  SmallerIcons,
+  stroke,
+  UtopiaTheme,
+} from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { NameRowCrumbs } from '../canvas/controls/namerowcrumbs'
 import { string } from 'fast-check/*'
