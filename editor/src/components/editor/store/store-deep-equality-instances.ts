@@ -591,8 +591,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const clientWidthResult = oldSize.clientWidth === newSize.clientWidth
     const clientHeightResult = oldSize.clientHeight === newSize.clientHeight
     const parentFlexDirectionResult = oldSize.parentFlexDirection === newSize.parentFlexDirection
-    const display = oldSize.display === newSize.display
-    const htmlElementName = oldSize.htmlElementName === newSize.htmlElementName
+    const displayEquals = oldSize.display === newSize.display
+    const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -610,8 +610,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       clientWidthResult &&
       clientHeightResult &&
       parentFlexDirectionResult &&
-      display &&
-      htmlElementName
+      displayEquals &&
+      htmlElementNameEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
