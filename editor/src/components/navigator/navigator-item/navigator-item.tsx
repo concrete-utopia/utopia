@@ -182,10 +182,6 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       warningText = 'Element is trying to be position absolutely with an unconfigured parent'
     }
 
-    const preview = (
-      <ItemPreview key={`preview-${label}`} path={templatePath} color={resultingStyle.iconColor} />
-    )
-
     const layoutIcon = (
       <LayoutIcon
         key={`layout-type-${label}`}
@@ -243,6 +239,11 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             dispatch={dispatch}
             inputVisible={TP.pathsEqual(renamingTarget, templatePath)}
             elementOriginType={elementOriginType}
+          />
+          <ItemPreview
+            key={`preview-${label}`}
+            path={templatePath}
+            color={resultingStyle.iconColor}
           />
         </FlexRow>
         <NavigatorItemActionSheet

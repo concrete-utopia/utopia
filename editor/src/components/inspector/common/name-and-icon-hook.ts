@@ -1,14 +1,10 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   isAnimatedElementAgainstImports,
-  isEllipseAgainstImports,
-  isHTMLComponent,
-  isImg,
-  isRectangleAgainstImports,
-  isTextAgainstImports,
-  isViewAgainstImports,
+  isImportedComponent,
 } from '../../../core/model/project-file-utils'
 import {
+  isIntrinsicHTMLElement,
   JSXElementName,
   JSXMetadata,
   UtopiaJSXComponent,
@@ -95,80 +91,57 @@ function createIconProps(
   imports: Imports,
   elementName: JSXElementName | null,
 ): IcnProps {
-  const element = TP.isInstancePath(path)
-    ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
-    : null
-  const isFlexLayoutedContainer = MetadataUtils.isFlexLayoutedContainer(element)
-  const flexDirection = MetadataUtils.getFlexDirection(element)
-  const flexWrap = MetadataUtils.getFlexWrap(element)
-  const componentInstance = MetadataUtils.isComponentInstance(path, components, metadata, imports)
-  const isAutosizingView = MetadataUtils.isAutoSizingView(element)
-
-  return {
+  let elementIcon = {
     category: 'element',
-    type: getIconTypeForElement(
-      path,
-      imports,
-      elementName,
-      isFlexLayoutedContainer,
-      flexDirection,
-      flexWrap,
-      'open',
-      componentInstance,
-      isAutosizingView,
-    ),
+    type: 'div',
     width: 18,
     height: 18,
   }
-}
 
-export function getIconTypeForElement(
-  path: TemplatePath,
-  imports: Imports,
-  elementName: JSXElementName | null,
-  isFlexLayoutedContainer: boolean,
-  originalFlexDirection: 'row' | 'row-reverse' | 'column' | 'column-reverse',
-  flexWrap: 'wrap' | 'wrap-reverse' | 'nowrap',
-  openStatus: 'closed' | 'open',
-  componentInstance: boolean,
-  isGroup: boolean,
-): string {
-  let role: string = 'scene'
-  const flexDirection: 'column' | 'row' =
-    originalFlexDirection === 'column' || originalFlexDirection === 'column-reverse'
-      ? 'column'
-      : 'row'
-  const flexWrapped: boolean = flexWrap === 'wrap' || flexWrap === 'wrap-reverse'
+  const element = TP.isInstancePath(path)
+    ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
+    : null
 
-  if (TP.isScenePath(path) || elementName == null) {
-    role = 'scene'
-  } else {
-    if (isViewAgainstImports(elementName, imports)) {
-      if (isGroup) {
-        role = 'group'
-      } else {
-        role = 'view'
-      }
-    } else if (isImg(elementName)) {
-      role = 'image'
-    } else if (isAnimatedElementAgainstImports(elementName, imports)) {
-      role = 'animated'
-    } else if (componentInstance) {
-      role = 'componentinstance'
-    } else if (isHTMLComponent(elementName, imports)) {
-      role = 'div'
+  const isComponent = elementName != null && !isIntrinsicHTMLElement(elementName)
+  if (isComponent) {
+    elementIcon = {
+      ...elementIcon,
+      category: 'component',
+      type: 'default',
+    }
+  }
+  const isImported = elementName != null && isImportedComponent(elementName, imports)
+  if (isImported) {
+    elementIcon = {
+      ...elementIcon,
+      category: 'component',
+      type: 'npm',
+    }
+  }
+  const isAnimatedComponent =
+    elementName != null && isAnimatedElementAgainstImports(elementName, imports)
+  if (isAnimatedComponent) {
+    elementIcon = {
+      ...elementIcon,
+      category: 'component',
+      type: 'animated',
+    }
+  }
+  const isStyledComponent = element?.isEmotionComponent
+  if (isStyledComponent) {
+    elementIcon = {
+      ...elementIcon,
+      category: 'component',
+      type: 'styled',
+    }
+  }
+  if (TP.isScenePath(path)) {
+    elementIcon = {
+      ...elementIcon,
+      category: 'component',
+      type: 'scene',
     }
   }
 
-  let specifierPath: string
-  if (isFlexLayoutedContainer && role === 'view') {
-    specifierPath = `-flex-${flexWrapped ? 'wrap' : 'nowrap'}-${flexDirection}`
-  } else {
-    if (role === 'group') {
-      specifierPath = `-${openStatus}`
-    } else {
-      specifierPath = ''
-    }
-  }
-  return `${role}${specifierPath}`
+  return elementIcon
 }

@@ -21,7 +21,12 @@ export const ItemPreview: React.FunctionComponent<ItemPreviewProps> = betterReac
     const nameAndIcon = useNameAndIcon(props.path)
 
     return (
-      <div className='w20 h20 flex justify-center items-center relative'>
+      <div
+        className='w20 h20 flex justify-center items-center relative'
+        style={{
+          paddingLeft: 8,
+        }}
+      >
         <Icn {...nameAndIcon.iconProps} color={props.color} />
       </div>
     )
