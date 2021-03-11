@@ -18,11 +18,11 @@ import {
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { isRight } from '../../core/shared/either'
-import { IcnProps } from '../../uuiui'
+import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
 
 interface LayoutIconResult {
-  iconProps: IcnProps
+  iconProps: IcnPropsBase
   hasWidthOrHeight: boolean
 }
 
@@ -43,7 +43,7 @@ export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
   )
 }
 
-export function useComponentIcon(path: TemplatePath): IcnProps | null {
+export function useComponentIcon(path: TemplatePath): IcnPropsBase | null {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadataKILLME
     const components = getOpenUtopiaJSXComponentsFromState(store.editor)
@@ -57,7 +57,7 @@ export function createComponentOrElementIconProps(
   components: UtopiaJSXComponent[],
   metadata: JSXMetadata,
   imports: Imports,
-): IcnProps {
+): IcnPropsBase {
   return (
     createComponentIconProps(path, components, metadata, imports) ??
     createElementIconProps(path, components, metadata)
@@ -103,7 +103,7 @@ export function createLayoutOrElementIconResult(
   }
 }
 
-function createLayoutIconProps(path: TemplatePath, metadata: JSXMetadata): IcnProps | null {
+function createLayoutIconProps(path: TemplatePath, metadata: JSXMetadata): IcnPropsBase | null {
   const element = TP.isInstancePath(path)
     ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
     : null
@@ -145,7 +145,7 @@ export function createElementIconProps(
   path: TemplatePath,
   components: UtopiaJSXComponent[],
   metadata: JSXMetadata,
-): IcnProps {
+): IcnPropsBase {
   const element = TP.isInstancePath(path)
     ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
     : null
@@ -201,7 +201,7 @@ function createComponentIconProps(
   components: UtopiaJSXComponent[],
   metadata: JSXMetadata,
   imports: Imports,
-): IcnProps | null {
+): IcnPropsBase | null {
   const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
   const element = TP.isInstancePath(path)
     ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)

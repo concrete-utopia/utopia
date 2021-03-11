@@ -15,12 +15,15 @@ export type IcnColor =
   | 'red'
   | 'orange'
 
-export interface IcnProps {
+export interface IcnPropsBase {
   category?: string
   type: string
-  color?: IcnColor
   width?: number
   height?: number
+}
+
+export interface IcnProps extends IcnPropsBase {
+  color?: IcnColor
   style?: React.CSSProperties
   className?: string
   isDisabled?: boolean
