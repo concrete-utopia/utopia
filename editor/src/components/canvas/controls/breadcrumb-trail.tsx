@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { useEditorState } from '../../../components/editor/store/store-hook'
-import { ElementPathElement } from '../../../components/inspector/sections/header-section/element-path'
 import {
   betterReactMemo,
   useKeepReferenceEqualityIfPossible,
@@ -11,82 +10,85 @@ import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-s
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { FlexRow, Icons } from '../../../uuiui'
+import { TemplatePath } from 'src/core/shared/project-file-types'
 
-export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
-  const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
-    return {
-      dispatch: store.dispatch,
-      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
+interface ElementPathElement {
+  name?: string
+  path: TemplatePath
+}
+
+const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
+  return {
+    dispatch: store.dispatch,
+    jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
+    rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
+  }
+}, 'InspectorContextProvider')
+
+const onSelect = React.useCallback(
+  (path) => dispatch([selectComponents([path], false)], 'everyone'),
+  [dispatch],
+)
+
+const selectedViews = useEditorState(
+  (store) => store.editor.selectedViews,
+  'InspectorEntryPoint selectedViews',
+)
+const elementPath = useKeepReferenceEqualityIfPossible(
+  React.useMemo(() => {
+    if (selectedViews.length === 0) {
+      return []
     }
-  }, 'InspectorContextProvider')
-
-  const onSelect = React.useCallback(
-    (path) => dispatch([selectComponents([path], false)], 'everyone'),
-    [dispatch],
-  )
-
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'InspectorEntryPoint selectedViews',
-  )
-
-  const elementPath = useKeepReferenceEqualityIfPossible(
-    React.useMemo(() => {
-      if (selectedViews.length === 0) {
-        return []
-      }
-      let elements: Array<ElementPathElement> = []
-      Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-        // TODO Scene Implementation
-        if (TP.isInstancePath(path)) {
-          const component = MetadataUtils.getElementByInstancePathMaybe(
-            jsxMetadataKILLME.elements,
-            path,
-          )
-          if (component != null) {
-            elements.push({
-              name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
-              path: path,
-            })
-          }
-        } else {
-          const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
-          if (scene != null) {
-            elements.push({
-              name: scene.label,
-              path: path,
-            })
-          }
+    let elements: Array<ElementPathElement> = []
+    Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
+      // TODO Scene Implementation
+      if (TP.isInstancePath(path)) {
+        const component = MetadataUtils.getElementByInstancePathMaybe(
+          jsxMetadataKILLME.elements,
+          path,
+        )
+        if (component != null) {
+          elements.push({
+            name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
+            path: path,
+          })
         }
-      })
-      return elements
-    }, [selectedViews, jsxMetadataKILLME]),
-  )
-
-  const ElementPathButtons = betterReactMemo('ElementPathButtons', () => {
-    const lastElemIndex = elementPath.length - 1
-    const elements = elementPath.map((elem, index) => {
-      const isSelected = index === lastElemIndex
-      return (
-        <React.Fragment key={`elem-path-${TP.toComponentId(elem.path)}`}>
-          <div
-            onMouseDown={() => onSelect(elem.path)}
-            style={{ fontWeight: isSelected ? 500 : 400 }}
-          >
-            {elem.name}
-          </div>
-          {isSelected ? null : <span style={{ paddingLeft: 4, paddingRight: 4 }}>&gt;</span>}
-        </React.Fragment>
-      )
+      } else {
+        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
+        if (scene != null) {
+          elements.push({
+            name: scene.label,
+            path: path,
+          })
+        }
+      }
     })
+    return elements
+  }, [selectedViews, jsxMetadataKILLME]),
+)
 
+const ElementPathButtons = betterReactMemo('ElementPathButtons', () => {
+  const lastElemIndex = elementPath.length - 1
+  const elements = elementPath.map((elem, index) => {
+    const isSelected = index === lastElemIndex
     return (
-      <FlexRow style={{ paddingLeft: 6, paddingTop: 4 }}>
-        <Icons.Component />
-        {elements}
-      </FlexRow>
+      <React.Fragment key={`elem-path-${TP.toComponentId(elem.path)}`}>
+        <div onMouseDown={() => onSelect(elem.path)} style={{ fontWeight: isSelected ? 500 : 400 }}>
+          {elem.name}
+        </div>
+        {isSelected ? null : <span style={{ paddingLeft: 4, paddingRight: 4 }}>&gt;</span>}
+      </React.Fragment>
     )
   })
+
+  return (
+    <FlexRow style={{ paddingLeft: 6, paddingTop: 4 }}>
+      <Icons.Component />
+      {elements}
+    </FlexRow>
+  )
+})
+
+export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
   return <ElementPathButtons />
 })
