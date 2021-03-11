@@ -47,7 +47,7 @@ export const NameRowCrumbs = betterReactMemo('NameRowCrumbs', () => {
       })
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates],
+    [dispatch],
   )
 
   const label: string = 'Test'
