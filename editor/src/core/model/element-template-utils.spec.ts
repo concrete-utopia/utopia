@@ -178,7 +178,7 @@ describe('removeJSXElementChild', () => {
   xit('removes a root element', () => {
     // TODO Scene Implementation
     const updatedElements = removeJSXElementChild(
-      TP.staticInstancePath(TP.scenePath([BakedInStoryboardUID, 'scene-aaa']), ['aaa']),
+      TP.staticInstancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['aaa']),
       utopiaComponents,
     )
     expect(updatedElements.length).toEqual(1)
@@ -186,7 +186,7 @@ describe('removeJSXElementChild', () => {
   })
   it('removes a non-root element', () => {
     const updatedElements = removeJSXElementChild(
-      TP.staticInstancePath(TP.scenePath([BakedInStoryboardUID, 'scene-aaa']), ['aab', 'aac']),
+      TP.staticInstancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['aab', 'aac']),
       utopiaComponents,
     )
     const expectedResult = R.over(

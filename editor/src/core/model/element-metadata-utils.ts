@@ -579,7 +579,7 @@ export const MetadataUtils = {
       )
       return rootChildrenOfStoryboard.map((child) => {
         if (isLeft(child.element) && child.element.value === 'Scene') {
-          const foundScenePath = TP.scenePath(child.templatePath.element)
+          const foundScenePath = TP.scenePath([child.templatePath.element])
           const realSceneRoot = MetadataUtils.findSceneByTemplatePath(
             metadata.components,
             foundScenePath,

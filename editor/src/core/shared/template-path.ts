@@ -10,7 +10,7 @@ import {
 } from './project-file-types'
 import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
 import { replaceAll } from './string-utils'
-import { last, dropLastN, drop } from './array-utils'
+import { last, dropLastN, drop, splitAt } from './array-utils'
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
 
 // KILLME, except in 106 places
@@ -75,7 +75,7 @@ function getScenePathCache(sceneElementPath: StaticElementPath): ScenePathCache 
 }
 
 function getScenePathCacheForScenePath(scene: ScenePath): ScenePathCache {
-  return getScenePathCache(scene.sceneElementPath)
+  return getScenePathCache(scene.sceneElementPaths)
 }
 
 function getInstancePathCacheFromScenePathCache(
@@ -109,7 +109,7 @@ const ElementSeparator = '/'
 function scenePathToString(path: ScenePath): string {
   const pathCache = getScenePathCacheForScenePath(path)
   if (pathCache.cachedToString == null) {
-    const result = elementPathToString(path.sceneElementPath)
+    const result = elementPathToString(path.sceneElementPaths)
     pathCache.cachedToString = result
     return result
   } else {
@@ -153,26 +153,26 @@ export function toString(target: TemplatePath): string {
 function newScenePath(elements: StaticElementPath): ScenePath {
   return {
     type: 'scenepath',
-    sceneElementPath: elements,
+    sceneElementPaths: elements,
   }
 }
 
 export const emptyScenePath: ScenePath = newScenePath(([] as any) as StaticElementPath)
 
-function newInstancePath(scene: ScenePath | ElementPath, elementPath: ElementPath): InstancePath {
+function newInstancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
   return {
-    scene: scenePathFromElementPathOrScenePath(scene),
+    scene: scene,
     element: elementPath,
   }
 }
 
 export const emptyInstancePath: InstancePath = newInstancePath(emptyScenePath, [])
 
-export function scenePath(elements: ElementPath): ScenePath {
-  const staticElements = elements as StaticElementPath
-  const pathCache = getScenePathCache(staticElements)
+export function scenePath(elementPaths: ElementPath[]): ScenePath {
+  const staticElementPaths = elementPaths as StaticElementPath[]
+  const pathCache = getScenePathCache(last(staticElementPaths)!)
   if (pathCache.cached == null) {
-    const newPath = newScenePath(staticElements)
+    const newPath = newScenePath(last(staticElementPaths)!)
     pathCache.cached = newPath
     return newPath
   } else {
@@ -180,16 +180,8 @@ export function scenePath(elements: ElementPath): ScenePath {
   }
 }
 
-function scenePathFromElementPathOrScenePath(scene: ScenePath | ElementPath): ScenePath {
-  if (Array.isArray(scene)) {
-    return scenePath(scene)
-  } else {
-    return scene
-  }
-}
-
 export function instancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
-  if (scene.sceneElementPath.length === 0 && elementPath.length === 0) {
+  if (scene.sceneElementPaths.length === 0 && elementPath.length === 0) {
     return emptyInstancePath
   } else {
     const pathCache = getInstancePathCache(scene, elementPath)
@@ -232,9 +224,14 @@ export function scenePathForPath(path: TemplatePath): ScenePath {
 }
 
 export function instancePathForScenePath(path: ScenePath): StaticInstancePath {
-  const lastElementPath = path.sceneElementPath
+  const lastElementPath = path.sceneElementPaths
   const targetScenePath = emptyScenePath
   return staticInstancePath(targetScenePath, lastElementPath)
+}
+
+export function scenePathFromInstancePath(path: InstancePath): ScenePath {
+  // FIXME Rename? The use of this is a bit confusing
+  return scenePath([path.scene.sceneElementPaths, path.element])
 }
 
 export function elementPathForPath(path: StaticInstancePath): StaticElementPath
@@ -252,18 +249,26 @@ export function filterScenes(paths: TemplatePath[]): StaticInstancePath | Instan
 // FIXME: This should be retired, it's just plain dangerous.
 // Right now this is only used for SpecialNodes (in CanvasMetaData)
 function fromStringUncached(path: string): TemplatePath {
-  const [sceneStr, elementStr] = path.split(SceneSeparator)
-  const scene = sceneStr.split(ElementSeparator).filter((e) => e.length > 0)
+  const elementPathStrs = path.split(SceneSeparator)
+  const [sceneStrs, elementStrs] =
+    elementPathStrs.length > 1
+      ? splitAt(elementPathStrs.length - 1, elementPathStrs)
+      : [elementPathStrs, []]
+  const elementStr = elementStrs[0] ?? null
+  const sceneElementPaths = sceneStrs.map((scene) =>
+    scene.split(ElementSeparator).filter((e) => e.length > 0),
+  )
+  const scene = scenePath(sceneElementPaths)
 
   if (elementStr == null) {
-    return scenePath(scene)
+    return scene
   } else {
     const element = elementStr.split(ElementSeparator)
     if (element.length > 0) {
       const filteredElement = element.filter((e) => e.length > 0)
-      return instancePath(scenePath(scene), filteredElement)
+      return instancePath(scene, filteredElement)
     } else {
-      return scenePath(scene)
+      return scene
     }
   }
 }
@@ -393,7 +398,7 @@ export function elementsEqual(l: id | null, r: id | null): boolean {
 }
 
 export function scenePathsEqual(l: ScenePath, r: ScenePath): boolean {
-  return l === r || elementPathsEqual(l.sceneElementPath, r.sceneElementPath)
+  return l === r || elementPathsEqual(l.sceneElementPaths, r.sceneElementPaths)
 }
 
 function elementPathsEqual(l: ElementPath, r: ElementPath): boolean {

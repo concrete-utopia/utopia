@@ -762,7 +762,7 @@ export function addSceneToJSXComponents(
     storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
   if (storyboardComponentUID != null) {
     const storyboardComponentTemplatePath = staticInstancePath(
-      scenePath([storyboardComponentUID]),
+      scenePath([[storyboardComponentUID]]),
       [storyboardComponentUID],
     )
     return insertJSXElementChild(storyboardComponentTemplatePath, newSceneElement, components, null)

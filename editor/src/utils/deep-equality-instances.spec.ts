@@ -11,7 +11,7 @@ import {
 describe('TemplatePathKeepDeepEquality', () => {
   it('same reference returns the same reference', () => {
     const path: TemplatePath = {
-      scene: TP.scenePath(['scene']),
+      scene: TP.scenePath([['scene']]),
       element: ['aaa', 'bbb'],
     }
     const result = TemplatePathKeepDeepEquality(path, path)
@@ -20,11 +20,11 @@ describe('TemplatePathKeepDeepEquality', () => {
   })
   it('same value returns the same reference', () => {
     const oldPath: TemplatePath = {
-      scene: TP.scenePath(['scene']),
+      scene: TP.scenePath([['scene']]),
       element: ['aaa', 'bbb'],
     }
     const newPath: TemplatePath = {
-      scene: TP.scenePath(['scene']),
+      scene: TP.scenePath([['scene']]),
       element: ['aaa', 'bbb'],
     }
     const result = TemplatePathKeepDeepEquality(oldPath, newPath)
@@ -33,11 +33,11 @@ describe('TemplatePathKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const oldPath: InstancePath = {
-      scene: TP.scenePath(['scene']),
+      scene: TP.scenePath([['scene']]),
       element: ['aaa', 'bbb'],
     }
     const newPath: InstancePath = {
-      scene: TP.scenePath(['scene']),
+      scene: TP.scenePath([['scene']]),
       element: ['aaa', 'ccc'],
     }
     const result = TemplatePathKeepDeepEquality(oldPath, newPath)
