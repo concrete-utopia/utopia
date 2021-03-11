@@ -10,7 +10,7 @@ import {
 } from './project-file-types'
 import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
 import { replaceAll } from './string-utils'
-import { last, dropLastN, drop, splitAt, flattenArray } from './array-utils'
+import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
 
 // KILLME, except in 106 places
@@ -83,7 +83,7 @@ function getScenePathCache(sceneElementPaths: StaticElementPath[]): ScenePathCac
 }
 
 function getScenePathCacheForScenePath(scene: ScenePath): ScenePathCache {
-  return getScenePathCache([scene.sceneElementPaths])
+  return getScenePathCache(scene.sceneElementPaths)
 }
 
 function getInstancePathCacheFromScenePathCache(
@@ -117,7 +117,7 @@ const ElementSeparator = '/'
 function scenePathToString(path: ScenePath): string {
   const pathCache = getScenePathCacheForScenePath(path)
   if (pathCache.cachedToString == null) {
-    const result = elementPathToString(path.sceneElementPaths)
+    const result = path.sceneElementPaths.map(elementPathToString).join(SceneSeparator)
     pathCache.cachedToString = result
     return result
   } else {
@@ -158,14 +158,14 @@ export function toString(target: TemplatePath): string {
   }
 }
 
-function newScenePath(elementPaths: StaticElementPath): ScenePath {
+function newScenePath(elementPaths: StaticElementPath[]): ScenePath {
   return {
     type: 'scenepath',
     sceneElementPaths: elementPaths,
   }
 }
 
-export const emptyScenePath: ScenePath = newScenePath(([] as any) as StaticElementPath)
+export const emptyScenePath: ScenePath = newScenePath(([] as any) as StaticElementPath[])
 
 function newInstancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
   return {
@@ -174,13 +174,20 @@ function newInstancePath(scene: ScenePath, elementPath: ElementPath): InstancePa
   }
 }
 
-export const emptyInstancePath: InstancePath = newInstancePath(emptyScenePath, [])
+export const emptyInstancePath: StaticInstancePath = newInstancePath(
+  emptyScenePath,
+  [],
+) as StaticInstancePath
 
 export function scenePath(elementPaths: ElementPath[]): ScenePath {
+  if (elementPaths.length === 0 || (elementPaths.length === 1 && elementPaths[0].length === 0)) {
+    return emptyScenePath
+  }
+
   const staticElementPaths = elementPaths as StaticElementPath[]
   const pathCache = getScenePathCache(staticElementPaths)
   if (pathCache.cached == null) {
-    const newPath = newScenePath(last(staticElementPaths)!)
+    const newPath = newScenePath(staticElementPaths)
     pathCache.cached = newPath
     return newPath
   } else {
@@ -232,14 +239,19 @@ export function scenePathForPath(path: TemplatePath): ScenePath {
 }
 
 export function instancePathForScenePath(path: ScenePath): StaticInstancePath {
-  const lastElementPath = path.sceneElementPaths
-  const targetScenePath = emptyScenePath
-  return staticInstancePath(targetScenePath, lastElementPath)
+  const lastElementPath = last(path.sceneElementPaths)
+  if (lastElementPath == null) {
+    return emptyInstancePath
+  } else {
+    const targetSceneElementPaths = dropLast(path.sceneElementPaths)
+    const targetScenePath = scenePath(targetSceneElementPaths)
+    return staticInstancePath(targetScenePath, lastElementPath)
+  }
 }
 
 export function scenePathFromInstancePath(path: InstancePath): ScenePath {
   // FIXME Rename? The use of this is a bit confusing
-  return scenePath([path.scene.sceneElementPaths, path.element])
+  return scenePath([...path.scene.sceneElementPaths, path.element])
 }
 
 export function elementPathForPath(path: StaticInstancePath): StaticElementPath
@@ -406,7 +418,7 @@ export function elementsEqual(l: id | null, r: id | null): boolean {
 }
 
 export function scenePathsEqual(l: ScenePath, r: ScenePath): boolean {
-  return l === r || elementPathsEqual(l.sceneElementPaths, r.sceneElementPaths)
+  return l === r || arrayEquals(l.sceneElementPaths, r.sceneElementPaths, elementPathsEqual)
 }
 
 function elementPathsEqual(l: ElementPath, r: ElementPath): boolean {

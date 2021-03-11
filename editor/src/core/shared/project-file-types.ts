@@ -15,7 +15,7 @@ export type id = string
 
 export type ScenePath = {
   type: 'scenepath'
-  sceneElementPaths: StaticElementPath
+  sceneElementPaths: StaticElementPath[]
 }
 export type StaticElementPath = StaticModifier & Array<id>
 export type ElementPath = Array<id> | StaticElementPath
