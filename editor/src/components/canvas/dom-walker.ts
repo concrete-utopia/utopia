@@ -444,11 +444,16 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           // and that they can only have a single root element
           const sceneIndexAttr = scene.attributes.getNamedItemNS(null, 'data-utopia-scene-id')
           const validPathsAttr = scene.attributes.getNamedItemNS(null, 'data-utopia-valid-paths')
+          const sceneID = sceneIndexAttr?.value ?? null
+          const scenePath = sceneID == null ? null : TP.fromString(sceneID)
 
-          if (sceneIndexAttr != null && validPathsAttr != null) {
-            const scenePath = TP.fromString(sceneIndexAttr.value)
+          if (
+            sceneID != null &&
+            scenePath != null &&
+            TP.isScenePath(scenePath) &&
+            validPathsAttr != null
+          ) {
             const validPaths = validPathsAttr.value.split(' ')
-            const sceneID = sceneIndexAttr.value
             let cachedMetadata: ElementInstanceMetadata | null = null
             if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
               if (!invalidatedSceneIDsRef.current.has(sceneID)) {
@@ -471,7 +476,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
               const sceneMetadata = collectMetadata(
                 scene,
-                TP.instancePath(TP.emptyScenePath, TP.elementPathForPath(scenePath)),
+                TP.instancePathForScenePath(scenePath),
                 canvasPoint({ x: 0, y: 0 }),
                 rootElements,
               )

@@ -1400,9 +1400,7 @@ export const MetadataUtils = {
     target: TemplatePath,
     elements: Array<ElementInstanceMetadata>,
   ): ElementInstanceMetadata | null {
-    const pathToUse = TP.isScenePath(target)
-      ? TP.instancePath(TP.emptyScenePath, TP.elementPathForPath(target))
-      : target
+    const pathToUse = TP.isScenePath(target) ? TP.instancePathForScenePath(target) : target
     return elements.find((elem) => TP.pathsEqual(pathToUse, elem.templatePath)) ?? null
   },
   getStaticElementName(
