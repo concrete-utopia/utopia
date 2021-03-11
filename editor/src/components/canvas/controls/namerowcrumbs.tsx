@@ -8,7 +8,6 @@ import * as TP from '../../../core/shared/template-path'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { GridRow } from '../../../components/inspector/widgets/grid-row'
 import { PopupList } from '../../../uuiui'
-import { typeOptions } from '../../../components/inspector/sections/header-section/name-row'
 import { JSXElementName, jsxElementName } from '../../../core/shared/element-template'
 import { useNamesAndIconsSelectedViews } from '../../../components/inspector/common/name-and-icon-hook'
 
@@ -98,5 +97,95 @@ export const NameRowCrumbs = betterReactMemo('NameRowCrumbs', () => {
       <NameRow />
     </div>
   )
+})
 
-}) 
+const typeOptions: ReadonlyArray<SelectOption> = [
+  {
+    value: 'View',
+    label: 'View',
+    icon: {
+      category: 'element',
+      type: 'view',
+      width: 18,
+      height: 18,
+      color: 'black',
+    },
+  },
+  {
+    value: 'Rectangle',
+    label: 'Rectangle',
+    icon: {
+      category: 'element',
+      type: 'rectangle',
+      width: 18,
+      height: 18,
+      color: 'black',
+    },
+  },
+  {
+    value: 'Ellipse',
+    label: 'Ellipse',
+    icon: {
+      category: 'element',
+      type: 'ellipse',
+      width: 18,
+      height: 18,
+      color: 'black',
+    },
+  },
+  {
+    value: 'div',
+    label: 'div',
+    icon: {
+      category: 'element',
+      type: 'div',
+      width: 18,
+      height: 18,
+      color: 'black',
+    },
+  },
+  {
+    value: 'span',
+    label: 'span',
+    icon: {
+      category: 'element',
+      type: 'div',
+      width: 18,
+      height: 18,
+      color: 'black',
+    },
+  },
+  {
+    value: jsxElementName('animated', ['div']),
+    label: 'animated.div',
+    icon: {
+      category: 'element',
+      type: 'animated',
+      width: 18,
+      height: 18,
+      color: 'black',
+    },
+  },
+  {
+    value: 'img',
+    label: 'Image',
+    icon: {
+      category: 'element',
+      type: 'image',
+      width: 18,
+      height: 18,
+      color: 'black',
+    },
+  },
+  {
+    value: 'Text',
+    label: 'Text',
+    icon: {
+      category: 'element',
+      type: 'text',
+      width: 18,
+      height: 18,
+      color: 'black',
+    },
+  },
+]
