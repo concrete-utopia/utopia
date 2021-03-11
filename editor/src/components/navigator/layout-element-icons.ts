@@ -19,6 +19,7 @@ import {
 import { useEditorState } from '../editor/store/store-hook'
 import { isRight } from '../../core/shared/either'
 import { IcnProps } from '../../uuiui'
+import { shallowEqual } from '../../core/shared/equality-utils'
 
 interface LayoutIconResult {
   iconProps: IcnProps
@@ -26,11 +27,20 @@ interface LayoutIconResult {
 }
 
 export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
-  return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadataKILLME
-    const components = getOpenUtopiaJSXComponentsFromState(store.editor)
-    return createLayoutOrElementIconResult(path, components, metadata)
-  }, 'useLayoutOrElementIcon')
+  return useEditorState(
+    (store) => {
+      const metadata = store.editor.jsxMetadataKILLME
+      const components = getOpenUtopiaJSXComponentsFromState(store.editor)
+      return createLayoutOrElementIconResult(path, components, metadata)
+    },
+    'useLayoutOrElementIcon',
+    (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
+      return (
+        oldResult.hasWidthOrHeight === newResult.hasWidthOrHeight ||
+        shallowEqual(oldResult.iconProps, newResult.iconProps)
+      )
+    },
+  )
 }
 
 export function useComponentIcon(path: TemplatePath): IcnProps | null {
