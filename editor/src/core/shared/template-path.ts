@@ -239,7 +239,7 @@ export function scenePathPartOfTemplatePath(path: TemplatePath): ScenePath {
   }
 }
 
-export function instancePathForLastPartOfScenePath(path: ScenePath): StaticInstancePath {
+export function instancePathForElementAtScenePath(path: ScenePath): StaticInstancePath {
   // Uses the last `ElementPath` in a `ScenePath` to create an `InstancePath` pointing to that element
   const lastElementPath = last(path.sceneElementPaths)
   if (lastElementPath == null) {
@@ -251,7 +251,7 @@ export function instancePathForLastPartOfScenePath(path: ScenePath): StaticInsta
   }
 }
 
-export function scenePathForCombinedPartsOfInstancePath(path: InstancePath): ScenePath {
+export function scenePathForElementAtInstancePath(path: InstancePath): ScenePath {
   // Appends the `ElementPath` part of an `InstancePath` to that instance's `ScenePath`, to create a
   // `ScenePath` pointing to that element
   return scenePath([...path.scene.sceneElementPaths, path.element])

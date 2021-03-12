@@ -66,7 +66,7 @@ export function createSceneUidFromIndex(sceneIndex: number): string {
 }
 
 export function createSceneTemplatePath(scenePath: ScenePath): StaticInstancePath {
-  return TP.instancePathForLastPartOfScenePath(scenePath)
+  return TP.instancePathForElementAtScenePath(scenePath)
 }
 
 export function mapScene(scene: SceneMetadata): JSXElement {

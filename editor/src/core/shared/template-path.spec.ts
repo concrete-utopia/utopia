@@ -212,21 +212,17 @@ describe('Scenes, Instances and Element Paths', () => {
     expect(TP.scenePathPartOfTemplatePath(cardRootScenePath)).toEqual(cardRootScenePath)
   })
 
-  it('instancePathForScenePath creates a new instance path pointing to last element path of a scene', () => {
-    expect(TP.instancePathForLastPartOfScenePath(TP.emptyScenePath)).toEqual(TP.emptyInstancePath)
-    expect(TP.instancePathForLastPartOfScenePath(appScenePath)).toEqual(appInstancePath)
-    expect(TP.instancePathForLastPartOfScenePath(cardScenePath)).toEqual(cardInstancePath)
-    expect(TP.instancePathForLastPartOfScenePath(cardRootScenePath)).toEqual(cardRootInstancePath)
+  it('instancePathForElementAtScenePath creates a new instance path pointing to last element path of a scene', () => {
+    expect(TP.instancePathForElementAtScenePath(TP.emptyScenePath)).toEqual(TP.emptyInstancePath)
+    expect(TP.instancePathForElementAtScenePath(appScenePath)).toEqual(appInstancePath)
+    expect(TP.instancePathForElementAtScenePath(cardScenePath)).toEqual(cardInstancePath)
+    expect(TP.instancePathForElementAtScenePath(cardRootScenePath)).toEqual(cardRootInstancePath)
   })
 
-  it('scenePathFromInstancePath creates a new scene path pointing to full element path of an instance path', () => {
-    expect(TP.scenePathForCombinedPartsOfInstancePath(TP.emptyInstancePath)).toEqual(
-      TP.emptyScenePath,
-    )
-    expect(TP.scenePathForCombinedPartsOfInstancePath(appInstancePath)).toEqual(appScenePath)
-    expect(TP.scenePathForCombinedPartsOfInstancePath(cardInstancePath)).toEqual(cardScenePath)
-    expect(TP.scenePathForCombinedPartsOfInstancePath(cardRootInstancePath)).toEqual(
-      cardRootScenePath,
-    )
+  it('scenePathForElementAtInstancePath creates a new scene path pointing to full element path of an instance path', () => {
+    expect(TP.scenePathForElementAtInstancePath(TP.emptyInstancePath)).toEqual(TP.emptyScenePath)
+    expect(TP.scenePathForElementAtInstancePath(appInstancePath)).toEqual(appScenePath)
+    expect(TP.scenePathForElementAtInstancePath(cardInstancePath)).toEqual(cardScenePath)
+    expect(TP.scenePathForElementAtInstancePath(cardRootInstancePath)).toEqual(cardRootScenePath)
   })
 })
