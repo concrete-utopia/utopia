@@ -90,6 +90,7 @@ describe('maybeSwitchLayoutProps', () => {
         localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
         children: [],
         componentInstance: true,
+        isEmotionOrStyledComponent: false,
         specialSizeMeasurements: specialSizeMeasurements(
           { x: 0, y: 0 } as any,
           null,
@@ -99,6 +100,7 @@ describe('maybeSwitchLayoutProps', () => {
           'none',
           'none',
           false,
+          'block',
           'absolute',
           sides(undefined, undefined, undefined, undefined),
           sides(undefined, undefined, undefined, undefined),
@@ -107,6 +109,7 @@ describe('maybeSwitchLayoutProps', () => {
           0,
           0,
           null,
+          'div',
         ),
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
