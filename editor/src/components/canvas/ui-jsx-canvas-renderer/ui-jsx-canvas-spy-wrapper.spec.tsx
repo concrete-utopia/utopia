@@ -6,6 +6,7 @@ import {
 } from '../../../core/shared/element-template'
 import { objectMap } from '../../../core/shared/object-utils'
 import * as TP from '../../../core/shared/template-path'
+import { setFocusedElement } from '../../editor/actions/action-creators'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 
 const exampleProject = `/** @jsx jsx */
@@ -112,6 +113,183 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
           "templatePathAsKey": "storyboard/scene:app-root/inner-div/card-instance",
           "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div/card-instance",
+        },
+      }
+    `)
+  })
+
+  it('a component instance is focused inside the main (App) component', async () => {
+    const { dispatch, getEditorState } = await renderTestEditorWithCode(exampleProject)
+    await dispatch(
+      [
+        setFocusedElement(
+          TP.scenePath([
+            ['storyboard', 'scene'],
+            ['app-root', 'inner-div', 'card-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const sanitizedSpyData = objectMap((elementMetadata, key) => {
+      return {
+        templatePathAsKey: key,
+        templatePathAsReportedBySpy: TP.toString(elementMetadata.templatePath),
+        name: foldEither(
+          (name) => name,
+          (element) =>
+            isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'not-jsx-element',
+          elementMetadata.element,
+        ),
+        children: elementMetadata.children.map(TP.toString),
+      }
+    }, spiedMetadata.elements)
+
+    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard": Object {
+          "children": Array [
+            ":storyboard/scene",
+          ],
+          "name": "Storyboard",
+          "templatePathAsKey": ":storyboard",
+          "templatePathAsReportedBySpy": ":storyboard",
+        },
+        ":storyboard/scene": Object {
+          "children": Array [],
+          "name": "Scene",
+          "templatePathAsKey": ":storyboard/scene",
+          "templatePathAsReportedBySpy": ":storyboard/scene",
+        },
+        "storyboard/scene:app-root": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div",
+          ],
+          "name": "div",
+          "templatePathAsKey": "storyboard/scene:app-root",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root",
+        },
+        "storyboard/scene:app-root/inner-div": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div/card-instance",
+          ],
+          "name": "div",
+          "templatePathAsKey": "storyboard/scene:app-root/inner-div",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance": Object {
+          "children": Array [],
+          "name": "Card",
+          "templatePathAsKey": "storyboard/scene:app-root/inner-div/card-instance",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div/card-instance",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element"
+          ],
+          "name": "Button",
+          "templatePathAsKey": "storyboard/scene:app-root/inner-div/card-instance:button-instance",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div/card-instance:button-instance",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element": Object {
+          "children": Array [],
+          "name": "div",
+          "templatePathAsKey": "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element",
+        },
+      }
+    `)
+  })
+
+  it('a component instance is focused inside the main (App) component', async () => {
+    const { dispatch, getEditorState } = await renderTestEditorWithCode(exampleProject)
+    await dispatch(
+      [
+        setFocusedElement(
+          TP.scenePath([
+            ['storyboard', 'scene'],
+            ['app-root', 'inner-div', 'card-instance'],
+            ['button-instace'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const sanitizedSpyData = objectMap((elementMetadata, key) => {
+      return {
+        templatePathAsKey: key,
+        templatePathAsReportedBySpy: TP.toString(elementMetadata.templatePath),
+        name: foldEither(
+          (name) => name,
+          (element) =>
+            isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'not-jsx-element',
+          elementMetadata.element,
+        ),
+        children: elementMetadata.children.map(TP.toString),
+      }
+    }, spiedMetadata.elements)
+
+    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard": Object {
+          "children": Array [
+            ":storyboard/scene",
+          ],
+          "name": "Storyboard",
+          "templatePathAsKey": ":storyboard",
+          "templatePathAsReportedBySpy": ":storyboard",
+        },
+        ":storyboard/scene": Object {
+          "children": Array [],
+          "name": "Scene",
+          "templatePathAsKey": ":storyboard/scene",
+          "templatePathAsReportedBySpy": ":storyboard/scene",
+        },
+        "storyboard/scene:app-root": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div",
+          ],
+          "name": "div",
+          "templatePathAsKey": "storyboard/scene:app-root",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root",
+        },
+        "storyboard/scene:app-root/inner-div": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div/card-instance",
+          ],
+          "name": "div",
+          "templatePathAsKey": "storyboard/scene:app-root/inner-div",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance": Object {
+          "children": Array [],
+          "name": "Card",
+          "templatePathAsKey": "storyboard/scene:app-root/inner-div/card-instance",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div/card-instance",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element"
+          ],
+          "name": "Button",
+          "templatePathAsKey": "storyboard/scene:app-root/inner-div/card-instance:button-instance",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div/card-instance:button-instance",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element": Object {
+          "children": Array [],
+          "name": "div",
+          "templatePathAsKey": "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance:button-root": Object {
+          "children": Array [],
+          "name": "div",
+          "templatePathAsKey": "storyboard/scene:app-root/inner-div/card-instance:button-instance:button-root",
+          "templatePathAsReportedBySpy": "storyboard/scene:app-root/inner-div/card-instance:button-instance:button-root",
         },
       }
     `)
