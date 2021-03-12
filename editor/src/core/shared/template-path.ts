@@ -859,3 +859,9 @@ export function isFromSameSceneAs(a: TemplatePath, b: TemplatePath): boolean {
 export function dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
   return staticInstancePath(path.scene, path.element.map(extractOriginalUidFromIndexedUid))
 }
+
+export function scenePathContainsElementPath(scene: ScenePath, elementPath: ElementPath): boolean {
+  return scene.sceneElementPaths.some((sceneElementPath) =>
+    elementPathsEqual(sceneElementPath, elementPath),
+  )
+}

@@ -93,13 +93,14 @@ function useGetValidTemplatePaths(
   topLevelElementName: string | null,
   scenePath: ScenePath,
 ): Array<InstancePath> {
-  const utopiaJsxComponent = useContextSelector(RerenderUtopiaContext, (c) =>
-    c.topLevelElements.get(topLevelElementName ?? ''),
+  const { topLevelElements, focusedElementPath } = useContextSelector(
+    RerenderUtopiaContext,
+    (c) => ({
+      topLevelElements: c.topLevelElements,
+      focusedElementPath: c.focusedElementPath,
+    }),
   )
-  if (utopiaJsxComponent != null) {
-    return getValidTemplatePaths(utopiaJsxComponent, scenePath)
-  }
-  return []
+  return getValidTemplatePaths(topLevelElements, focusedElementPath, topLevelElementName, scenePath)
 }
 
 interface SceneRootRendererProps {

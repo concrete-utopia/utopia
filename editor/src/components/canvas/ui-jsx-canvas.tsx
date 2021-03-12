@@ -118,6 +118,7 @@ export interface UiJsxCanvasProps {
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
+  focusedElementPath: ScenePath | null
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -214,6 +215,7 @@ export function pickUiJsxCanvasProps(
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+      focusedElementPath: editor.focusedElementPath,
     }
   }
 }
@@ -357,6 +359,7 @@ export const UiJsxCanvas = betterReactMemo(
                 topLevelElements: topLevelElementsMap,
                 canvasIsLive: canvasIsLive,
                 shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+                focusedElementPath: props.focusedElementPath,
               }}
             >
               <CanvasContainer
@@ -408,7 +411,12 @@ function useGetStoryboardRoot(
   const validPaths =
     storyboardRootJsxComponent == null
       ? []
-      : getValidTemplatePaths(storyboardRootJsxComponent, EmptyScenePathForStoryboard)
+      : getValidTemplatePaths(
+          topLevelElementsMap,
+          null,
+          BakedInStoryboardVariableName,
+          EmptyScenePathForStoryboard,
+        )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
 
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements = {

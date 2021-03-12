@@ -118,7 +118,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     `)
   })
 
-  it('a component instance is focused inside the main (App) component', async () => {
+  it('a component instance is focused inside the main App component', async () => {
     const { dispatch, getEditorState } = await renderTestEditorWithCode(exampleProject)
     await dispatch(
       [
@@ -177,7 +177,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     `)
   })
 
-  it('a component instance is focused inside the main (App) component', async () => {
+  it('a component instance is focused inside a component instance inside the main App component', async () => {
     const { dispatch, getEditorState } = await renderTestEditorWithCode(exampleProject)
     await dispatch(
       [
