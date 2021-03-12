@@ -782,6 +782,11 @@ export interface SendCodeEditorInitialisation {
   action: 'SEND_CODE_EDITOR_INITIALISATION'
 }
 
+export interface SetFocusedElement {
+  action: 'SET_FOCUSED_ELEMENT'
+  focusedElementPath: ScenePath | null
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -912,6 +917,7 @@ export type EditorAction =
   | MarkVSCodeBridgeReady
   | SelectFromFileAndPosition
   | SendCodeEditorInitialisation
+  | SetFocusedElement
 
 export type DispatchPriority =
   | 'everyone'
