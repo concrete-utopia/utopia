@@ -6,9 +6,11 @@ import {
   isJSXElement,
   JSXMetadata,
 } from '../../../core/shared/element-template'
+import { canvasPoint, point } from '../../../core/shared/math-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import * as TP from '../../../core/shared/template-path'
 import { setFocusedElement } from '../../editor/actions/action-creators'
+import CanvasActions from '../canvas-actions'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 
 const exampleProject = `/** @jsx jsx */
@@ -129,8 +131,10 @@ describe('Spy Wrapper Template Path Tests', () => {
           ]),
         ),
       ],
-      false, // TODO figure out why doesn't it run properly if this is true
+      true,
     )
+
+    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadataKILLME
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
@@ -165,7 +169,7 @@ describe('Spy Wrapper Template Path Tests', () => {
         },
         "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
           "children": Array [
-            "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element"
+            "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element",
           ],
           "name": "Button",
         },
@@ -185,12 +189,14 @@ describe('Spy Wrapper Template Path Tests', () => {
           TP.scenePath([
             ['storyboard', 'scene'],
             ['app-root', 'inner-div', 'card-instance'],
-            ['button-instace'],
+            ['button-instance'],
           ]),
         ),
       ],
-      false, // TODO figure out why doesn't it run properly if this is true
+      true,
     )
+
+    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
     const spiedMetadata = getEditorState().editor.spyMetadataKILLME
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
@@ -225,7 +231,7 @@ describe('Spy Wrapper Template Path Tests', () => {
         },
         "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
           "children": Array [
-            "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element"
+            "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element",
           ],
           "name": "Button",
         },

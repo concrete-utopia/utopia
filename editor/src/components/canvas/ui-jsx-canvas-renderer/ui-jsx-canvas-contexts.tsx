@@ -49,12 +49,10 @@ RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 
 interface SceneLevelContextProps {
   validPaths: Array<InstancePath>
-  scenePath: ScenePath
 }
 
 export const SceneLevelUtopiaContext = React.createContext<SceneLevelContextProps>({
   validPaths: [],
-  scenePath: EmptyScenePathForStoryboard,
 })
 SceneLevelUtopiaContext.displayName = 'SceneLevelUtopiaContext'
 

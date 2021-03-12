@@ -4,6 +4,7 @@ import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { isSceneElement, PathForResizeContent } from '../../../core/model/scene-utils'
 import {
   UTOPIA_ORIGINAL_ID_KEY,
+  UTOPIA_SCENE_PATH,
   UTOPIA_UID_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
@@ -36,6 +37,7 @@ import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 
 export function renderCoreElement(
   element: JSXElementChild,
@@ -253,8 +255,14 @@ function renderJSXElement(
   const elementIsIntrinsic = ElementFromScopeOrImport == null && isIntrinsicElement(jsx.name)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : ElementFromScopeOrImport
+  const scenePathForElement = TP.scenePathForElementAtInstancePath(templatePath)
+  const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
+    ? { ...elementProps, [UTOPIA_SCENE_PATH]: scenePathForElement }
+    : elementProps
   const finalProps =
-    elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
+    elementIsIntrinsic && !elementIsBaseHTML
+      ? filterDataProps(elementPropsWithScenePath)
+      : elementPropsWithScenePath
 
   if (FinalElement != null && TP.containsPath(templatePath, validPaths)) {
     let childrenTemplatePaths: InstancePath[] = []

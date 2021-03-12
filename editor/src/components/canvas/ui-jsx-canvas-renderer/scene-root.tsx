@@ -31,6 +31,7 @@ import { jsxAttributesToProps } from '../../../core/shared/jsx-attributes'
 import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
+import { UTOPIA_SCENE_PATH } from '../../../core/model/utopia-constants'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -135,6 +136,11 @@ export const SceneRootRenderer = betterReactMemo(
 
     useRunSpy(scenePath, templatePath, topLevelElementName, sceneProps)
 
+    const propsWithScenePath = {
+      ...sceneProps.props,
+      [UTOPIA_SCENE_PATH]: scenePath,
+    }
+
     const rootElement =
       sceneProps.component == null
         ? null
@@ -142,7 +148,7 @@ export const SceneRootRenderer = betterReactMemo(
             inScope,
             mutableUtopiaContext.jsxFactoryFunctionName,
             sceneProps.component,
-            sceneProps.props,
+            propsWithScenePath,
             undefined,
           )
 
@@ -157,7 +163,7 @@ export const SceneRootRenderer = betterReactMemo(
     }
 
     return (
-      <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
+      <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths }}>
         <View
           data-utopia-scene-id={TP.toString(scenePath)}
           data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}

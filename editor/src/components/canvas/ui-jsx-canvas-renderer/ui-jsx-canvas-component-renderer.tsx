@@ -3,7 +3,7 @@ import { MapLike } from 'typescript'
 import { PropertyControls } from 'utopia-api'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { JSXElementChild, isJSXFragment } from '../../../core/shared/element-template'
-import { optionalMap } from '../../../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { UiJsxCanvasContext, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import {
   MutableUtopiaContext,
@@ -15,8 +15,10 @@ import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as TP from '../../../core/shared/template-path'
 import { renderCoreElement } from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
+import { ScenePath } from '../../../core/shared/project-file-types'
+import { UTOPIA_SCENE_PATH } from '../../../core/model/utopia-constants'
 
-export type ComponentRendererComponent = React.ComponentType<any> & {
+export type ComponentRendererComponent = React.ComponentType<{ [UTOPIA_SCENE_PATH]: ScenePath }> & {
   topLevelElementName: string
   propertyControls?: PropertyControls
 }
@@ -34,7 +36,17 @@ export function isComponentRendererComponent(
 export function createComponentRendererComponent(params: {
   topLevelElementName: string
 }): ComponentRendererComponent {
-  const Component = (realPassedProps: any) => {
+  const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
+    const {
+      [UTOPIA_SCENE_PATH]: scenePathAny, // TODO types?
+      ...realPassedProps
+    } = realPassedPropsIncludingUtopiaSpecialStuff
+
+    const scenePath: ScenePath = forceNotNull(
+      'a valid ScenePath must be provided to the component renderer component',
+      TP.isScenePath(scenePathAny) ? scenePathAny : null,
+    )
+
     const { current: mutableContext } = React.useContext(MutableUtopiaContext)
     const utopiaJsxComponent = useContextSelector(RerenderUtopiaContext, (c) =>
       c.topLevelElements.get(params.topLevelElementName),
@@ -69,7 +81,6 @@ export function createComponentRendererComponent(params: {
       ...appliedProps,
     }
 
-    const scenePath = sceneContext.scenePath
     let codeError: Error | null = null
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {

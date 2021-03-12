@@ -67,6 +67,7 @@ import { CanvasContainerID } from './canvas-types'
 import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
+import { UTOPIA_SCENE_PATH } from '../../core/model/utopia-constants'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -371,15 +372,15 @@ export const UiJsxCanvas = betterReactMemo(
                 validRootPaths={rootValidPaths}
                 canvasRootElementTemplatePath={storyboardRootElementPath}
               >
-                <SceneLevelUtopiaContext.Provider
-                  value={{ validPaths: rootValidPaths, scenePath: rootScenePath }}
-                >
+                <SceneLevelUtopiaContext.Provider value={{ validPaths: rootValidPaths }}>
                   <ParentLevelUtopiaContext.Provider
                     value={{
                       templatePath: storyboardRootElementPath,
                     }}
                   >
-                    {StoryboardRootComponent == null ? null : <StoryboardRootComponent />}
+                    {StoryboardRootComponent == null ? null : (
+                      <StoryboardRootComponent {...{ [UTOPIA_SCENE_PATH]: rootScenePath }} />
+                    )}
                   </ParentLevelUtopiaContext.Provider>
                 </SceneLevelUtopiaContext.Provider>
               </CanvasContainer>
