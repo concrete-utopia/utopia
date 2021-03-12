@@ -658,7 +658,7 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     InstancePathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),
-    (metadata) => metadata.isEmotionComponent,
+    (metadata) => metadata.isEmotionOrStyledComponent,
     createCallWithTripleEquals(),
     (metadata) => metadata.specialSizeMeasurements,
     SpecialSizeMeasurementsKeepDeepEquality(),

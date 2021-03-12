@@ -1166,7 +1166,7 @@ export const MetadataUtils = {
           element: elementToUse,
           children: children,
           componentInstance: componentInstance,
-          isEmotionComponent: spyElem.isEmotionComponent,
+          isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
         }
         workingElements[TP.toString(domElem.templatePath)] = elem
       }

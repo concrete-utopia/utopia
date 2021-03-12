@@ -38,6 +38,7 @@ export function buildSpyWrappedElement(
      * TODO move this out of metadata once we have syledcomponent editing
      */
     const isEmotionComponent = Element['__emotion_base'] != null
+    const isStyledComponent = Element['styledComponentId'] != null
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
       templatePath: templatePath,
@@ -46,7 +47,7 @@ export function buildSpyWrappedElement(
       localFrame: null,
       children: childrenTemplatePaths,
       componentInstance: false,
-      isEmotionComponent: isEmotionComponent,
+      isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,

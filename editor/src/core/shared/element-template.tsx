@@ -1292,7 +1292,7 @@ export interface ElementInstanceMetadata {
   localFrame: LocalRectangle | null
   children: Array<InstancePath>
   componentInstance: boolean
-  isEmotionComponent: boolean
+  isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
   attributeMetadatada: StyleAttributeMetadata | null
@@ -1306,7 +1306,7 @@ export function elementInstanceMetadata(
   localFrame: LocalRectangle | null,
   children: Array<InstancePath>,
   componentInstance: boolean,
-  isEmotionComponent: boolean,
+  isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
   attributeMetadatada: StyleAttributeMetadata | null,
@@ -1319,7 +1319,7 @@ export function elementInstanceMetadata(
     localFrame: localFrame,
     children: children,
     componentInstance: componentInstance,
-    isEmotionComponent: isEmotionComponent,
+    isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
     attributeMetadatada: attributeMetadatada,

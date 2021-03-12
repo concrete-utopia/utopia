@@ -298,7 +298,7 @@ function createFakeMetadataForJSXElement(
       localFrame: Utils.zeroRectangle as LocalRectangle,
       children: childPaths,
       componentInstance: false,
-      isEmotionComponent: false,
+      isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,

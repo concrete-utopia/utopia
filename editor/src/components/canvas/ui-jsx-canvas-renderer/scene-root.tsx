@@ -72,7 +72,7 @@ function useRunSpy(
       localFrame: null,
       children: [],
       componentInstance: false,
-      isEmotionComponent: false,
+      isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,

@@ -206,8 +206,7 @@ function createComponentIconProps(
   const element = TP.isInstancePath(path)
     ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
     : null
-  const isStyledComponent = element?.isEmotionComponent
-  if (isStyledComponent) {
+  if (element?.isEmotionOrStyledComponent) {
     return {
       category: 'component',
       type: 'styled',
