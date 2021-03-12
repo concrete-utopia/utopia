@@ -82,6 +82,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'MARK_VSCODE_BRIDGE_READY':
     case 'SELECT_FROM_FILE_AND_POSITION':
     case 'SEND_CODE_EDITOR_INITIALISATION':
+    case 'SET_FOCUSED_ELEMENT':
       return true
 
     case 'NEW':

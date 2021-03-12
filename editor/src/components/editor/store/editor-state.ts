@@ -339,6 +339,7 @@ export interface EditorState {
   safeMode: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
+  focusedElementPath: ScenePath | null
 }
 
 export interface StoredEditorState {
@@ -1110,6 +1111,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     safeMode: false,
     saveError: false,
     vscodeBridgeReady: false,
+    focusedElementPath: null,
   }
 }
 
@@ -1350,6 +1352,7 @@ export function editorModelFromPersistentModel(
     },
     codeEditorErrors: persistentModel.codeEditorErrors,
     vscodeBridgeReady: false,
+    focusedElementPath: null,
   }
   return editor
 }
