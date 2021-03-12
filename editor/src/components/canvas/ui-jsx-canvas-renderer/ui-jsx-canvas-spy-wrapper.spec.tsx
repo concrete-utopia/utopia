@@ -56,7 +56,7 @@ export var storyboard = (
   </Storyboard>
 )`
 
-describe('Spy Wrapper Tests', () => {
+describe('Spy Wrapper Template Path Tests', () => {
   it('a simple component in a regular scene', async () => {
     const { getEditorState } = await renderTestEditorWithCode(exampleProject)
 
