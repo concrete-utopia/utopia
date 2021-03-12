@@ -19,7 +19,7 @@ function frameInfoForPins(
   parentFrame: LocalRectangle = SimpleRect,
 ): ElementFrameInfo {
   return {
-    path: TP.instancePath(ScenePathForTestUiJsFile.sceneElementPath, ['aaa']),
+    path: TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
     frame: frameForPins(pins),
     localFrame,
     parentFrame,

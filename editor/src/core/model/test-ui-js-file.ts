@@ -324,9 +324,9 @@ const scene = utopiaJSXComponent(
 )
 
 const Scene0UID = 'scene-0'
-export const ScenePathForTestUiJsFile = scenePath([BakedInStoryboardUID, Scene0UID])
+export const ScenePathForTestUiJsFile = scenePath([[BakedInStoryboardUID, Scene0UID]])
 const Scene1UID = 'scene-1'
-export const ScenePath1ForTestUiJsFile = scenePath([BakedInStoryboardUID, Scene1UID])
+export const ScenePath1ForTestUiJsFile = scenePath([[BakedInStoryboardUID, Scene1UID]])
 
 const Scene1 = defaultSceneElement(
   Scene0UID,

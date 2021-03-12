@@ -197,7 +197,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
     if (component != null) {
       const elementMetadata = createFakeMetadataForJSXElement(
         component.rootElement,
-        TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+        TP.scenePath([[BakedInStoryboardUID, createSceneUidFromIndex(index)]]),
         {
           props: {
             style: sceneResizesContent ? props.style : undefined,
@@ -217,8 +217,11 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
     return {
       component: props[PP.toString(PathForSceneComponent)],
       label: props[PP.toString(PathForSceneDataLabel)],
-      scenePath: TP.scenePath([BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]),
-      templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+      scenePath: TP.scenePath([[BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]]),
+      templatePath: TP.instancePath(TP.emptyScenePath, [
+        BakedInStoryboardUID,
+        createSceneUidFromIndex(index),
+      ]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
       sceneResizesContent: sceneResizesContent ?? true,
       style: {},
@@ -238,7 +241,7 @@ export function createFakeMetadataForComponents(
     if (isUtopiaJSXComponent(component)) {
       const elementMetadata = createFakeMetadataForJSXElement(
         component.rootElement,
-        TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+        TP.scenePath([[BakedInStoryboardUID, createSceneUidFromIndex(index)]]),
         {},
         {},
       )
@@ -250,8 +253,8 @@ export function createFakeMetadataForComponents(
       })
 
       components.push({
-        scenePath: TP.scenePath([BakedInStoryboardUID, `scene-${index}`]),
-        templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
+        scenePath: TP.scenePath([[BakedInStoryboardUID, `scene-${index}`]]),
+        templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, `scene-${index}`]),
         component: component.name,
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
         sceneResizesContent: false,

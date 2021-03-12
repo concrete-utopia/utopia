@@ -126,7 +126,7 @@ export const SceneRootRenderer = betterReactMemo(
       [inScope, props.sceneElement.props, requireResult],
     )
     const templatePath = React.useMemo(() => TP.appendToPath(parentPath, uid), [parentPath, uid])
-    const scenePath = TP.scenePath(TP.elementPathForPath(templatePath))
+    const scenePath = TP.scenePathForElementAtInstancePath(templatePath)
 
     const topLevelElementName = getTopLevelElementName(sceneProps.component)
 

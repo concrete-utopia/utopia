@@ -129,6 +129,7 @@ import {
   toUid,
   toString,
   dynamicPathToStaticPath,
+  scenePath,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notice'
@@ -761,7 +762,7 @@ export function addSceneToJSXComponents(
     storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
   if (storyboardComponentUID != null) {
     const storyboardComponentTemplatePath = staticInstancePath(
-      [storyboardComponentUID],
+      scenePath([[storyboardComponentUID]]),
       [storyboardComponentUID],
     )
     return insertJSXElementChild(storyboardComponentTemplatePath, newSceneElement, components, null)
@@ -770,9 +771,9 @@ export function addSceneToJSXComponents(
   }
 }
 
-export function removeScene(model: EditorState, scenePath: ScenePath): EditorState {
+export function removeScene(model: EditorState, path: ScenePath): EditorState {
   return modifyOpenScenes_INTERNAL((components) => {
-    return removeJSXElementChild(createSceneTemplatePath(scenePath), components)
+    return removeJSXElementChild(createSceneTemplatePath(path), components)
   }, model)
 }
 
