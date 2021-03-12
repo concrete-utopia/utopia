@@ -1439,7 +1439,7 @@ describe('moveTemplate', () => {
     await renderResult.dispatch(
       [
         selectComponents(
-          [TP.instancePath(TP.scenePath([]), [BakedInStoryboardUID, 'orphan-bbb'])],
+          [TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'orphan-bbb'])],
           false,
         ),
       ],
@@ -1605,7 +1605,7 @@ describe('moveTemplate', () => {
     await renderResult.dispatch(
       [
         selectComponents(
-          [TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-aaa']), ['aaa', 'bbb'])],
+          [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['aaa', 'bbb'])],
           false,
         ),
       ],

@@ -31,7 +31,7 @@ export const BasePaddingUnit = 20
 export function getElementPadding(templatePath: TemplatePath): number {
   // if an element is the child of the Storyboard component, let's show it at the root level
   const extraDepthRemoval = TP.pathsEqual(
-    TP.scenePathForPath(templatePath),
+    TP.scenePathPartOfTemplatePath(templatePath),
     EmptyScenePathForStoryboard,
   )
   const depthOffset = extraDepthRemoval ? 2 : 0

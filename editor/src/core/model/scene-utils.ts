@@ -44,7 +44,7 @@ import { UTOPIA_UID_KEY } from './utopia-constants'
 import { getUtopiaID } from './element-template-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
-export const EmptyScenePathForStoryboard = TP.scenePath([])
+export const EmptyScenePathForStoryboard = TP.emptyScenePath
 
 export const PathForSceneComponent = PP.create(['component'])
 export const PathForSceneDataUid = PP.create(['data-uid'])
@@ -66,7 +66,7 @@ export function createSceneUidFromIndex(sceneIndex: number): string {
 }
 
 export function createSceneTemplatePath(scenePath: ScenePath): StaticInstancePath {
-  return TP.staticInstancePath(scenePath, scenePath.sceneElementPath)
+  return TP.instancePathForElementAtScenePath(scenePath)
 }
 
 export function mapScene(scene: SceneMetadata): JSXElement {

@@ -2377,7 +2377,7 @@ export function duplicate(
                 'Could not find storyboard element',
                 getStoryboardUID(utopiaComponents),
               )
-              newPath = TP.scenePath([storyboardUID, uid])
+              newPath = TP.scenePath([[storyboardUID, uid]])
             } else {
               newPath = TP.appendToPath(newParentPath, uid)
             }
@@ -2511,7 +2511,7 @@ export function cullSpyCollector(
     while (workingPath != null) {
       const pathAsString = TP.toString(workingPath)
       if (TP.isScenePath(workingPath)) {
-        elementPaths.add(TP.toString(TP.instancePath([], workingPath.sceneElementPath)))
+        elementPaths.add(TP.toString(TP.instancePathForElementAtScenePath(workingPath)))
         scenePaths.add(pathAsString)
       } else {
         elementPaths.add(pathAsString)
@@ -2531,9 +2531,8 @@ export function cullSpyCollector(
       !scenePaths.has(scenePath) &&
       !elementPaths.has(
         TP.toString(
-          TP.instancePath(
-            [],
-            spyCollector.current.spyValues.scenes[scenePath].scenePath.sceneElementPath,
+          TP.instancePathForElementAtScenePath(
+            spyCollector.current.spyValues.scenes[scenePath].scenePath,
           ),
         ),
       ) // this is needed because empty scenes are stored in metadata with an instancepath

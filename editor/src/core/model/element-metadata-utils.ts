@@ -185,7 +185,7 @@ export const MetadataUtils = {
     scenes: ComponentMetadata[],
     path: TemplatePath,
   ): ComponentMetadata | null {
-    const scenePath = TP.scenePathForPath(path)
+    const scenePath = TP.scenePathPartOfTemplatePath(path)
     return scenes.find((s) => TP.pathsEqual(s.scenePath, scenePath)) ?? null
   },
   isSceneTreatedAsGroup(scene: ComponentMetadata | null): boolean {
@@ -579,7 +579,7 @@ export const MetadataUtils = {
       )
       return rootChildrenOfStoryboard.map((child) => {
         if (isLeft(child.element) && child.element.value === 'Scene') {
-          const foundScenePath = TP.scenePath(child.templatePath.element)
+          const foundScenePath = TP.scenePath([child.templatePath.element])
           const realSceneRoot = MetadataUtils.findSceneByTemplatePath(
             metadata.components,
             foundScenePath,
@@ -1400,9 +1400,7 @@ export const MetadataUtils = {
     target: TemplatePath,
     elements: Array<ElementInstanceMetadata>,
   ): ElementInstanceMetadata | null {
-    const pathToUse = TP.isScenePath(target)
-      ? TP.instancePath([], TP.elementPathForPath(target))
-      : target
+    const pathToUse = TP.isScenePath(target) ? TP.instancePathForElementAtScenePath(target) : target
     return elements.find((elem) => TP.pathsEqual(pathToUse, elem.templatePath)) ?? null
   },
   getStaticElementName(

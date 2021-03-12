@@ -23,7 +23,7 @@ describe('Component Section', () => {
     const storeHookForTest = getStoreHook(utils.NO_OP)
     storeHookForTest.updateStoreWithImmer((store) => {
       store.editor.selectedViews = [
-        TP.instancePath(ScenePathForTestUiJsFile.sceneElementPath, ['aaa', 'mycomponent']),
+        TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'mycomponent']),
       ] // TODO add a Component instance to the test file and select that!
       store.editor.codeResultCache = {
         propertyControlsInfo: {

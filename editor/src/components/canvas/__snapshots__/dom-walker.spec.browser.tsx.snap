@@ -13,13 +13,13 @@ Object {
             "utopia-storyboard-uid",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [],
+        "sceneElementPaths": Array [],
         "type": "scenepath",
       },
       "sceneResizesContent": false,
@@ -27,7 +27,7 @@ Object {
       "templatePath": Object {
         "element": Array [],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -47,18 +47,22 @@ Object {
             "aaa",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -76,7 +80,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -92,7 +96,7 @@ Object {
             "scene-aaa",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
@@ -155,7 +159,7 @@ Object {
           "utopia-storyboard-uid",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -168,9 +172,11 @@ Object {
             "aaa",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -242,7 +248,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -256,9 +262,11 @@ Object {
             "bbb~~~1",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -269,9 +277,11 @@ Object {
             "bbb~~~2",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -282,9 +292,11 @@ Object {
             "bbb~~~3",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -384,9 +396,11 @@ Object {
           "aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -465,9 +479,11 @@ Object {
           "bbb~~~1",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -546,9 +562,11 @@ Object {
           "bbb~~~2",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -627,9 +645,11 @@ Object {
           "bbb~~~3",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -652,13 +672,13 @@ Object {
             "utopia-storyboard-uid",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [],
+        "sceneElementPaths": Array [],
         "type": "scenepath",
       },
       "sceneResizesContent": false,
@@ -666,7 +686,7 @@ Object {
       "templatePath": Object {
         "element": Array [],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -686,18 +706,22 @@ Object {
             "aaa",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -715,7 +739,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -731,7 +755,7 @@ Object {
             "scene-aaa",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
@@ -794,7 +818,7 @@ Object {
           "utopia-storyboard-uid",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -807,9 +831,11 @@ Object {
             "aaa",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -881,7 +907,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -984,9 +1010,11 @@ Object {
           "aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -1009,13 +1037,13 @@ Object {
             "utopia-storyboard-uid",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [],
+        "sceneElementPaths": Array [],
         "type": "scenepath",
       },
       "sceneResizesContent": false,
@@ -1023,7 +1051,7 @@ Object {
       "templatePath": Object {
         "element": Array [],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -1043,18 +1071,22 @@ Object {
             "05c",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -1072,7 +1104,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -1088,7 +1120,7 @@ Object {
             "scene-aaa",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
@@ -1151,7 +1183,7 @@ Object {
           "utopia-storyboard-uid",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -1164,9 +1196,11 @@ Object {
             "05c",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -1238,7 +1272,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -1252,9 +1286,11 @@ Object {
             "ef0",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -1355,9 +1391,11 @@ Object {
           "05c",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -1373,9 +1411,11 @@ Object {
             "488",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -1473,9 +1513,11 @@ Object {
           "ef0",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -1581,9 +1623,11 @@ Object {
           "488",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -1606,13 +1650,13 @@ Object {
             "utopia-storyboard-uid",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [],
+        "sceneElementPaths": Array [],
         "type": "scenepath",
       },
       "sceneResizesContent": false,
@@ -1620,7 +1664,7 @@ Object {
       "templatePath": Object {
         "element": Array [],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -1640,18 +1684,22 @@ Object {
             "05c",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -1669,7 +1717,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -1685,7 +1733,7 @@ Object {
             "scene-aaa",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
@@ -1748,7 +1796,7 @@ Object {
           "utopia-storyboard-uid",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -1761,9 +1809,11 @@ Object {
             "05c",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -1835,7 +1885,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -1849,9 +1899,11 @@ Object {
             "ef0",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -1953,9 +2005,11 @@ Object {
           "05c",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -1971,9 +2025,11 @@ Object {
             "488",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -2071,9 +2127,11 @@ Object {
           "ef0",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -2179,9 +2237,11 @@ Object {
           "488",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -2204,13 +2264,13 @@ Object {
             "utopia-storyboard-uid",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [],
+        "sceneElementPaths": Array [],
         "type": "scenepath",
       },
       "sceneResizesContent": false,
@@ -2218,7 +2278,7 @@ Object {
       "templatePath": Object {
         "element": Array [],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -2238,18 +2298,22 @@ Object {
             "05c",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
         },
       ],
       "scenePath": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -2267,7 +2331,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -2283,7 +2347,7 @@ Object {
             "scene-aaa",
           ],
           "scene": Object {
-            "sceneElementPath": Array [],
+            "sceneElementPaths": Array [],
             "type": "scenepath",
           },
         },
@@ -2346,7 +2410,7 @@ Object {
           "utopia-storyboard-uid",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -2359,9 +2423,11 @@ Object {
             "05c",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -2433,7 +2499,7 @@ Object {
           "scene-aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [],
+          "sceneElementPaths": Array [],
           "type": "scenepath",
         },
       },
@@ -2447,9 +2513,11 @@ Object {
             "ef0",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -2550,9 +2618,11 @@ Object {
           "05c",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -2568,9 +2638,11 @@ Object {
             "488",
           ],
           "scene": Object {
-            "sceneElementPath": Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
+            "sceneElementPaths": Array [
+              Array [
+                "utopia-storyboard-uid",
+                "scene-aaa",
+              ],
             ],
             "type": "scenepath",
           },
@@ -2672,9 +2744,11 @@ Object {
           "ef0",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -2780,9 +2854,11 @@ Object {
           "488",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
