@@ -168,7 +168,10 @@ function isHTMLComponentFromBaseName(baseName: string, imports: Imports): boolea
 export function isImportedComponent(jsxElementName: JSXElementName, imports: Imports): boolean {
   return Object.keys(imports).some((importKey) => {
     const fromImports = imports[importKey]
-    return pluck(fromImports.importedFromWithin, 'name').includes(jsxElementName.baseVariable)
+    return (
+      pluck(fromImports.importedFromWithin, 'name').includes(jsxElementName.baseVariable) ||
+      fromImports.importedWithName === jsxElementName.baseVariable
+    )
   })
 }
 
