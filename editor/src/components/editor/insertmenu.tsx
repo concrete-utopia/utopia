@@ -74,6 +74,13 @@ import {
   UtopiaStyles,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
+import {
+  getComponentGroups,
+  getDependencyStatus,
+  getInsertableGroupLabel,
+  getInsertableGroupPackageStatus,
+} from '../shared/project-components'
+import { ProjectContentTreeRoot } from '../assets'
 
 interface CurrentFileComponent {
   componentName: string
@@ -92,6 +99,7 @@ interface InsertMenuProps {
   dependencies: Array<PossiblyUnversionedNpmDependency>
   packageStatus: PackageStatusMap
   propertyControlsInfo: PropertyControlsInfo
+  projectContents: ProjectContentTreeRoot
 }
 
 export const InsertMenu = betterReactMemo('InsertMenu', () => {
@@ -136,6 +144,7 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
       currentFileComponents: currentFileComponents,
       packageStatus: store.editor.nodeModules.packageStatus,
       propertyControlsInfo: store.editor.propertyControlsInfo,
+      projectContents: store.editor.projectContents,
     }
   }, 'InsertMenu')
 
@@ -300,22 +309,6 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     )
   }
 
-  getDependencyStatus(dependencyName: string, defaultStatus: PackageStatus): PackageStatus {
-    const regularStatus = this.props.packageStatus[dependencyName]?.status
-    switch (regularStatus) {
-      case null:
-        return defaultStatus
-      case 'loaded':
-        if (dependencyName in this.props.propertyControlsInfo) {
-          return 'loaded'
-        } else {
-          return 'loading'
-        }
-      default:
-        return regularStatus
-    }
-  }
-
   render() {
     let sceneSelected: boolean = false
     let currentlyBeingInserted: ComponentBeingInserted | null = null
@@ -331,6 +324,58 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
       }
     }
 
+    const insertableGroups =
+      this.props.currentlyOpenFilename == null
+        ? []
+        : getComponentGroups(
+            this.props.packageStatus,
+            this.props.propertyControlsInfo,
+            this.props.projectContents,
+            this.props.dependencies,
+            this.props.currentlyOpenFilename,
+          )
+
+    return insertableGroups.map((insertableGroup, groupIndex) => {
+      return (
+        <InsertGroup
+          label={getInsertableGroupLabel(insertableGroup.source)}
+          key={`insert-group-${groupIndex}`}
+          dependencyVersion={null}
+          dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
+        >
+          {insertableGroup.insertableComponents.map((component, componentIndex) => {
+            const insertItemOnMouseDown = () => {
+              const newUID = generateUID(this.props.existingUIDs)
+              const newElement = {
+                ...component.element,
+                props: setJSXAttributesAttribute(
+                  component.element.props,
+                  'data-uid',
+                  jsxAttributeValue(newUID, emptyComments),
+                ),
+              }
+              this.props.editorDispatch(
+                [enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null)],
+                'everyone',
+              )
+            }
+            return (
+              <InsertItem
+                key={`insert-item-third-party-${groupIndex}-${componentIndex}`}
+                type={'component'}
+                label={component.name}
+                selected={componentBeingInsertedEquals(
+                  currentlyBeingInserted,
+                  componentBeingInserted(component.importsToAdd, component.element.name),
+                )}
+                onMouseDown={insertItemOnMouseDown}
+              />
+            )
+          })}
+        </InsertGroup>
+      )
+    })
+    /*
     return (
       <React.Fragment>
         <InsertGroup label='Storyboard' dependencyStatus='loaded' dependencyVersion={null}>
@@ -449,7 +494,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             if (componentDescriptor == null) {
               return null
             } else {
-              const dependencyStatus = this.getDependencyStatus(dependency.name, 'loaded')
+              const dependencyStatus = getDependencyStatus(this.props.packageStatus, this.props.propertyControlsInfo, dependency.name, 'loaded')
               const components = dependencyStatus === 'loaded' ? componentDescriptor.components : []
               return (
                 <InsertGroup
@@ -504,7 +549,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
               return (
                 <InsertGroup
                   label={dependency.name}
-                  dependencyStatus={this.getDependencyStatus(dependency.name, 'loading')}
+                  dependencyStatus={getDependencyStatus(this.props.packageStatus, this.props.propertyControlsInfo, dependency.name, 'loading')}
                   dependencyVersion={null}
                 />
               )
@@ -513,6 +558,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
         })}
       </React.Fragment>
     )
+    */
   }
 }
 
