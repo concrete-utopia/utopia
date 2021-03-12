@@ -5,20 +5,14 @@ import { betterReactMemo } from '../../../uuiui-deps'
 import * as TP from '../../../core/shared/template-path'
 import { useComponentIcon } from '../layout-element-icons'
 
-interface ItemPreviewProps {
+interface ComponentPreviewProps {
   path: TemplatePath
   color: IcnProps['color']
 }
 
-export const ItemPreview: React.FunctionComponent<ItemPreviewProps> = betterReactMemo(
-  'ItemPreview',
+export const ComponentPreview: React.FunctionComponent<ComponentPreviewProps> = betterReactMemo(
+  'ComponentPreview',
   (props) => {
-    // preview depends on three things:
-    // 1 - role
-    // 2 - if it's empty or not
-    // 3 - if it's a component or not
-    // 4 - if it's a placeholder or not
-    // 5 if it's generated or not
     const iconProps = useComponentIcon(props.path)
 
     if (iconProps == null || TP.isScenePath(props.path)) {

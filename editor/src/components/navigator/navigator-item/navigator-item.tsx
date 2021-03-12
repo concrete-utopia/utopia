@@ -8,7 +8,7 @@ import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
-import { ItemPreview } from './item-preview'
+import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
@@ -240,7 +240,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             inputVisible={TP.pathsEqual(renamingTarget, templatePath)}
             elementOriginType={elementOriginType}
           />
-          <ItemPreview
+          <ComponentPreview
             key={`preview-${label}`}
             path={templatePath}
             color={resultingStyle.iconColor}
