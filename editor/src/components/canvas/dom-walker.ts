@@ -251,7 +251,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
     (store) => store.editor.selectedViews,
     (newSelectedViews) => {
       newSelectedViews.forEach((sv) => {
-        const scenePath = TP.scenePathForPath(sv)
+        const scenePath = TP.scenePathPartOfTemplatePath(sv)
         const sceneID = TP.toString(scenePath)
         invalidatedSceneIDsRef.current.add(sceneID)
         invalidatedPathsForStylesheetCacheRef.current.add(TP.toString(sv))
@@ -476,7 +476,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
               const sceneMetadata = collectMetadata(
                 scene,
-                TP.instancePathForScenePath(scenePath),
+                TP.instancePathForLastPartOfScenePath(scenePath),
                 canvasPoint({ x: 0, y: 0 }),
                 rootElements,
               )

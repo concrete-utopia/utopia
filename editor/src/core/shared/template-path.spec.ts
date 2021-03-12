@@ -180,3 +180,53 @@ describe('getCommonParent', () => {
     expect(actualResult).toEqual(expectedResult)
   })
 })
+
+describe('Scenes, Instances and Element Paths', () => {
+  const appInstanceElementPath = ['storyboard', 'app-instance']
+  const cardInstanceElementPath = ['app-root', 'card-instance']
+  const cardRootElementPath = ['card-root']
+
+  const appScenePath = TP.scenePath([appInstanceElementPath])
+  const cardScenePath = TP.scenePath([appInstanceElementPath, cardInstanceElementPath])
+  const cardRootScenePath = TP.scenePath([
+    appInstanceElementPath,
+    cardInstanceElementPath,
+    cardRootElementPath,
+  ])
+
+  const appInstancePath = TP.instancePath(TP.emptyScenePath, appInstanceElementPath)
+  const cardInstancePath = TP.instancePath(appScenePath, cardInstanceElementPath)
+  const cardRootInstancePath = TP.instancePath(cardScenePath, cardRootElementPath)
+
+  it('scenePathPartOfTemplatePath returns the scene path part of a given instance path', () => {
+    expect(TP.scenePathPartOfTemplatePath(TP.emptyInstancePath)).toEqual(TP.emptyScenePath)
+    expect(TP.scenePathPartOfTemplatePath(appInstancePath)).toEqual(TP.emptyScenePath)
+    expect(TP.scenePathPartOfTemplatePath(cardInstancePath)).toEqual(appScenePath)
+    expect(TP.scenePathPartOfTemplatePath(cardRootInstancePath)).toEqual(cardScenePath)
+  })
+
+  it('calling scenePathPartOfTemplatePath with a scene path returns that same scene path', () => {
+    expect(TP.scenePathPartOfTemplatePath(TP.emptyScenePath)).toEqual(TP.emptyScenePath)
+    expect(TP.scenePathPartOfTemplatePath(appScenePath)).toEqual(appScenePath)
+    expect(TP.scenePathPartOfTemplatePath(cardScenePath)).toEqual(cardScenePath)
+    expect(TP.scenePathPartOfTemplatePath(cardRootScenePath)).toEqual(cardRootScenePath)
+  })
+
+  it('instancePathForScenePath creates a new instance path pointing to last element path of a scene', () => {
+    expect(TP.instancePathForLastPartOfScenePath(TP.emptyScenePath)).toEqual(TP.emptyInstancePath)
+    expect(TP.instancePathForLastPartOfScenePath(appScenePath)).toEqual(appInstancePath)
+    expect(TP.instancePathForLastPartOfScenePath(cardScenePath)).toEqual(cardInstancePath)
+    expect(TP.instancePathForLastPartOfScenePath(cardRootScenePath)).toEqual(cardRootInstancePath)
+  })
+
+  it('scenePathFromInstancePath creates a new scene path pointing to full element path of an instance path', () => {
+    expect(TP.scenePathForCombinedPartsOfInstancePath(TP.emptyInstancePath)).toEqual(
+      TP.emptyScenePath,
+    )
+    expect(TP.scenePathForCombinedPartsOfInstancePath(appInstancePath)).toEqual(appScenePath)
+    expect(TP.scenePathForCombinedPartsOfInstancePath(cardInstancePath)).toEqual(cardScenePath)
+    expect(TP.scenePathForCombinedPartsOfInstancePath(cardRootInstancePath)).toEqual(
+      cardRootScenePath,
+    )
+  })
+})

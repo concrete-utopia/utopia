@@ -230,7 +230,8 @@ export function isTopLevelInstancePath(path: TemplatePath): path is InstancePath
   return isInstancePath(path) && path.element.length === 1
 }
 
-export function scenePathForPath(path: TemplatePath): ScenePath {
+export function scenePathPartOfTemplatePath(path: TemplatePath): ScenePath {
+  // Returns the `scene` part of an `InstancePath`, or if given a `ScenePath` it just returns that
   if (isScenePath(path)) {
     return path
   } else {
@@ -238,7 +239,8 @@ export function scenePathForPath(path: TemplatePath): ScenePath {
   }
 }
 
-export function instancePathForScenePath(path: ScenePath): StaticInstancePath {
+export function instancePathForLastPartOfScenePath(path: ScenePath): StaticInstancePath {
+  // Uses the last `ElementPath` in a `ScenePath` to create an `InstancePath` pointing to that element
   const lastElementPath = last(path.sceneElementPaths)
   if (lastElementPath == null) {
     return emptyInstancePath
@@ -249,8 +251,9 @@ export function instancePathForScenePath(path: ScenePath): StaticInstancePath {
   }
 }
 
-export function scenePathFromInstancePath(path: InstancePath): ScenePath {
-  // FIXME Rename? The use of this is a bit confusing
+export function scenePathForCombinedPartsOfInstancePath(path: InstancePath): ScenePath {
+  // Appends the `ElementPath` part of an `InstancePath` to that instance's `ScenePath`, to create a
+  // `ScenePath` pointing to that element
   return scenePath([...path.scene.sceneElementPaths, path.element])
 }
 
@@ -665,8 +668,8 @@ export function closestSharedAncestor(
   } else if (l === r) {
     return toTargetPath(l)
   } else {
-    const lScene = scenePathForPath(lTarget)
-    const rScene = scenePathForPath(rTarget)
+    const lScene = scenePathPartOfTemplatePath(lTarget)
+    const rScene = scenePathPartOfTemplatePath(rTarget)
     const scenesEqual = scenePathsEqual(lScene, rScene)
     if (scenesEqual) {
       if (isScenePath(lTarget) || isScenePath(rTarget)) {
@@ -843,13 +846,13 @@ export function areAllElementsInSameScene(paths: TemplatePath[]): boolean {
   if (paths.length === 0) {
     return true
   } else {
-    const firstScenePath = scenePathForPath(paths[0])
-    return paths.every((p) => scenePathsEqual(firstScenePath, scenePathForPath(p)))
+    const firstScenePath = scenePathPartOfTemplatePath(paths[0])
+    return paths.every((p) => scenePathsEqual(firstScenePath, scenePathPartOfTemplatePath(p)))
   }
 }
 
 export function isFromSameSceneAs(a: TemplatePath, b: TemplatePath): boolean {
-  return scenePathsEqual(scenePathForPath(a), scenePathForPath(b))
+  return scenePathsEqual(scenePathPartOfTemplatePath(a), scenePathPartOfTemplatePath(b))
 }
 
 export function dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
