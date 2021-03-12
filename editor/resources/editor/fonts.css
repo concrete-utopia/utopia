@@ -1,9 +1,4 @@
 @font-face {
-  font-family: 'utopian-inconsolata';
-  src: url('./fonts/Inconsolata-VariableFont_wdth\,wght.ttf');
-}
-
-@font-face {
   font-family: 'utopian-inter';
   src: url('./fonts/Inter-Regular.woff') format('woff');
   font-weight: 400;
