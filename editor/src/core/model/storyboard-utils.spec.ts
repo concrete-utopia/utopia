@@ -1,21 +1,30 @@
-import { addFileToProjectContents, getContentsTreeFileFromString } from '../../components/assets'
+import {
+  addFileToProjectContents,
+  getContentsTreeFileFromString,
+  removeFromProjectContents,
+} from '../../components/assets'
 import { createTestProjectWithCode } from '../../components/canvas/canvas-utils'
 import {
   editorModelFromPersistentModel,
   EditorState,
+  StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
+import { defaultProject } from '../../sample-projects/sample-project-utils'
 import { foldEither } from '../shared/either'
 import { clearTopLevelElementUniqueIDs } from '../shared/element-template'
 import {
   foldParsedTextFile,
+  isParseFailure,
   isTextFile,
+  ParsedTextFile,
   RevisionsState,
   textFile,
   textFileContents,
   unparsed,
 } from '../shared/project-file-types'
 import { NO_OP } from '../shared/utils'
-import { addStoryboardFileToProject, StoryboardFilePath } from './storyboard-utils'
+import { lintAndParse } from '../workers/parser-printer/parser-printer'
+import { addStoryboardFileToProject } from './storyboard-utils'
 
 function createTestProjectLackingStoryboardFile(): EditorState {
   const appFile = `/** @jsx jsx */
@@ -24,7 +33,27 @@ import { jsx } from 'utopia-api'
 export var App = (props) => {
   return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
 }`
-  const persistentModel = createTestProjectWithCode(appFile)
+  const baseModel = defaultProject()
+  const parsedFile = lintAndParse(StoryboardFilePath, appFile) as ParsedTextFile
+
+  if (isParseFailure(parsedFile)) {
+    fail('The test file parse failed')
+  }
+
+  const projectContentsWithoutStoryboard = removeFromProjectContents(
+    baseModel.projectContents,
+    StoryboardFilePath,
+  )
+
+  const persistentModel = {
+    ...baseModel,
+    projectContents: addFileToProjectContents(
+      projectContentsWithoutStoryboard,
+      '/src/app.js',
+      textFile(textFileContents(appFile, parsedFile, RevisionsState.BothMatch), null, Date.now()),
+    ),
+  }
+
   return editorModelFromPersistentModel(persistentModel, NO_OP)
 }
 

@@ -20,7 +20,7 @@ import * as PP from '../../../core/shared/property-path'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 
-const TestSelectedComponent = TP.instancePath(['scene1'], ['aaa', 'bbb'])
+const TestSelectedComponent = TP.instancePath(TP.scenePath([['scene1']]), ['aaa', 'bbb'])
 
 function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPropertiesKeys>(
   longhands: Array<P>,

@@ -6,7 +6,6 @@
  */
 
 import * as React from 'react'
-import { CursorPosition } from '../../components/code-editor/code-editor-utils'
 import { ErrorMessage } from '../../core/shared/error-messages'
 import utils from '../../utils/utils'
 import CompileErrorContainer from './containers/CompileErrorContainer'
@@ -17,7 +16,7 @@ import { overlayStyle } from './styles'
 interface ErrorOverlayProps {
   currentBuildErrorRecords: ErrorMessage[]
   currentRuntimeErrorRecords: ErrorRecord[]
-  onOpenFile: (path: string, cursorPosition: CursorPosition | null) => void
+  onOpenFile: (path: string) => void
   overlayOffset: number
 }
 

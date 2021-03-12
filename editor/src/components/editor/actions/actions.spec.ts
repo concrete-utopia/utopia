@@ -58,6 +58,7 @@ import {
   getOpenUIJSFile,
   getOpenUtopiaJSXComponentsFromState,
   PersistentModel,
+  StoryboardFilePath,
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
 import { setCanvasFrames, setProp_UNSAFE, switchLayoutSystem } from './action-creators'
@@ -74,7 +75,6 @@ import { NO_OP } from '../../../core/shared/utils'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'
 import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
-import { openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 const chaiExpect = Chai.expect
 
@@ -123,16 +123,12 @@ describe('SET_PROP', () => {
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
-      '/src/app.js': textFile(
+      [StoryboardFilePath]: textFile(
         textFileContents('', originalModel, RevisionsState.ParsedAhead),
         null,
         0,
       ),
     }),
-    selectedFile: {
-      tab: openFileTab('/src/app.js'),
-      initialCursorPosition: null,
-    },
     jsxMetadataKILLME: createFakeMetadataForComponents(originalModel.topLevelElements),
   })
   it('updates a simple value property', () => {
@@ -144,7 +140,7 @@ describe('SET_PROP', () => {
     const newEditor = UPDATE_FNS.SET_PROP(action, testEditor)
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -228,16 +224,12 @@ describe('SET_CANVAS_FRAMES', () => {
   const testEditor: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
-      '/src/app.js': textFile(
+      [StoryboardFilePath]: textFile(
         textFileContents('', originalModel, RevisionsState.ParsedAhead),
         null,
         0,
       ),
     }),
-    selectedFile: {
-      tab: openFileTab('/src/app.js'),
-      initialCursorPosition: null,
-    },
     jsxMetadataKILLME: createFakeMetadataForComponents(originalModel.topLevelElements),
   })
   const derivedState = deriveState(testEditor, null)
@@ -255,7 +247,7 @@ describe('SET_CANVAS_FRAMES', () => {
     const newEditor = UPDATE_FNS.SET_CANVAS_FRAMES(action, testEditor, derivedState)
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -365,12 +357,12 @@ describe('moveTemplate', () => {
     let editor: EditorState = {
       ...createEditorState(NO_OP),
       projectContents: contentsToTree({
-        '/src/app.js': textFile(textFileContents('', uiFile, RevisionsState.ParsedAhead), null, 0),
+        [StoryboardFilePath]: textFile(
+          textFileContents('', uiFile, RevisionsState.ParsedAhead),
+          null,
+          0,
+        ),
       }),
-      selectedFile: {
-        tab: openFileTab('/src/app.js'),
-        initialCursorPosition: null,
-      },
     }
     editor.jsxMetadataKILLME = createFakeMetadataForComponents(uiFile.topLevelElements)
 
@@ -396,7 +388,7 @@ describe('moveTemplate', () => {
 
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -437,7 +429,7 @@ describe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = getContentsTreeFileFromString(newEditor.projectContents, '/src/app.js')
+    const newUiJsFile = getContentsTreeFileFromString(newEditor.projectContents, StoryboardFilePath)
     if (newUiJsFile != null && isTextFile(newUiJsFile)) {
       if (isParseSuccess(newUiJsFile.fileContents.parsed)) {
         const newTopLevelElements = newUiJsFile.fileContents.parsed.topLevelElements
@@ -487,7 +479,7 @@ describe('moveTemplate', () => {
 
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -520,7 +512,7 @@ describe('moveTemplate', () => {
 
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -552,7 +544,7 @@ describe('moveTemplate', () => {
 
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -585,7 +577,7 @@ describe('moveTemplate', () => {
 
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -617,7 +609,7 @@ describe('moveTemplate', () => {
 
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -667,7 +659,7 @@ describe('moveTemplate', () => {
 
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -725,7 +717,7 @@ describe('moveTemplate', () => {
 
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -776,7 +768,7 @@ describe('moveTemplate', () => {
 
     const newUiJsFile = getContentsTreeFileFromString(
       newEditor.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
@@ -844,10 +836,12 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     null,
     0,
   )
-  const scenePath = TP.scenePath([BakedInStoryboardUID, `scene-0`])
-  const sceneTemplatePath = TP.instancePath([], [BakedInStoryboardUID, `scene-0`])
-  const rootElementPath = TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa'])
-  const childElementPath = TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), [
+  const scenePath = TP.scenePath([[BakedInStoryboardUID, 'scene-0']])
+  const sceneTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'scene-0'])
+  const rootElementPath = TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), [
+    'aaa',
+  ])
+  const childElementPath = TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), [
     'aaa',
     'bbb',
   ])
@@ -908,14 +902,10 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   const testEditorWithPins: EditorState = deepFreeze({
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
-      '/src/app.js': fileForUI,
+      [StoryboardFilePath]: fileForUI,
     }),
-    selectedFile: {
-      tab: openFileTab('/src/app.js'),
-      initialCursorPosition: null,
-    },
     jsxMetadataKILLME: jsxMetadata([componentMetadata], elementMetadataMap),
-    selectedViews: [TP.instancePath(TP.scenePath([BakedInStoryboardUID, 'scene-0']), ['aaa'])],
+    selectedViews: [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), ['aaa'])],
   })
   it('switches from pins to flex correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
@@ -937,7 +927,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
 
 describe('LOAD', () => {
   it('Parses all UIJS files and bins any previously stored parsed model data', () => {
-    const firstUIJSFile = '/src/app.js'
+    const firstUIJSFile = StoryboardFilePath
     const secondUIJSFile = '/src/some/other/file.js'
     const initialFileContents: TextFileContents = textFileContents(
       sampleCode,
@@ -952,8 +942,6 @@ describe('LOAD', () => {
         [secondUIJSFile]: textFile(initialFileContents, null, 0),
       }),
       exportsInfo: [],
-      openFiles: [],
-      selectedFile: null,
       codeEditorErrors: {
         buildErrors: {},
         lintErrors: {},

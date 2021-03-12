@@ -232,7 +232,6 @@ import {
   ClearHighlightedViews,
   ClearImageFileBlob,
   ClearParseOrPrintInFlight,
-  CloseEditorTab,
   ClosePopup,
   CloseTextEditor,
   CopySelectionToClipboard,
@@ -259,7 +258,7 @@ import {
   MoveSelectedToFront,
   NavigatorReorder,
   NewProject,
-  OpenEditorTab,
+  OpenCodeEditorFile,
   OpenPopup,
   OpenTextEditor,
   PasteJSXElements,
@@ -268,7 +267,6 @@ import {
   RegenerateThumbnail,
   RenameComponent,
   RenameStyleSelector,
-  ReorderEditorTabs,
   ResetPins,
   ResizeInterfaceDesignerCodePane,
   SaveCurrentFile,
@@ -398,7 +396,6 @@ import {
   getAllLintErrors,
   getFileForName,
   getMainUIFromModel,
-  getOpenEditorTab,
   getOpenFilename,
   getOpenImportsFromState,
   getOpenTextFileKey,
@@ -430,6 +427,7 @@ import {
   UserConfiguration,
   getHighlightBoundsForUids,
   getTemplatePathsInBounds,
+  StoryboardFilePath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -467,10 +465,7 @@ import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
-import {
-  addStoryboardFileToProject,
-  StoryboardFilePath,
-} from '../../../core/model/storyboard-utils'
+import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import {
@@ -486,14 +481,13 @@ import {
   enableInsertModeForJSXElement,
   insertJSXElement,
   updateThumbnailGenerated,
-  openEditorTab,
+  openCodeEditorFile,
   setPackageStatus,
   updateNodeModulesContents,
   finishCheckpointTimer,
   selectComponents,
   markVSCodeBridgeReady,
 } from './action-creators'
-import { EditorTab, isOpenFileTab, openFileTab } from '../store/editor-tabs'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
@@ -929,8 +923,6 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     jsxMetadataKILLME: poppedEditor.jsxMetadataKILLME,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
-    openFiles: poppedEditor.openFiles,
-    selectedFile: poppedEditor.selectedFile,
     codeResultCache: currentEditor.codeResultCache,
     propertyControlsInfo: currentEditor.propertyControlsInfo,
     selectedViews: poppedEditor.selectedViews,
@@ -976,6 +968,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       duplicationState: null,
       base64Blobs: {},
       mountCount: currentEditor.canvas.mountCount + 1,
+      openFile: currentEditor.canvas.openFile,
     },
     inspector: {
       visible: currentEditor.inspector.visible,
@@ -1913,7 +1906,7 @@ export const UPDATE_FNS = {
     )
     const storyBoardPath = getStoryboardTemplatePath(components)
     const newSelection =
-      storyBoardPath != null ? [TP.scenePath([TP.toUid(storyBoardPath), sceneUID])] : []
+      storyBoardPath != null ? [TP.scenePath([[TP.toUid(storyBoardPath), sceneUID]])] : []
     return {
       ...addNewScene(editor, newScene),
       selectedViews: newSelection,
@@ -3188,11 +3181,10 @@ export const UPDATE_FNS = {
       const toastAction = showToast(notice(replaceFilePathResults.errorMessage, 'ERROR', true))
       return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
     } else {
+      let currentDesignerFile = editor.canvas.openFile
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)
       let updateUIFile: (e: EditorModel) => EditorModel = R.identity
-      let selectedFile = getOpenEditorTab(editor)
-      let updatedOpenFiles = [...editor.openFiles]
       Utils.fastForEach(updatedFiles, (updatedFile) => {
         const { oldPath, newPath } = updatedFile
         // If the main UI file is what we have renamed, update that later.
@@ -3201,20 +3193,11 @@ export const UPDATE_FNS = {
             return updateMainUIInEditorState(e, newPath)
           }
         }
-        // update open file array
-        const indexOfTabToUpdate = updatedOpenFiles.findIndex((editorTab) => {
-          return isOpenFileTab(editorTab) && editorTab.filename === oldPath
-        })
-        if (indexOfTabToUpdate > -1) {
-          updatedOpenFiles[indexOfTabToUpdate] = openFileTab(newPath)
-        }
         // update currently open file
-        if (
-          selectedFile != null &&
-          isOpenFileTab(selectedFile) &&
-          selectedFile.filename === oldPath
-        ) {
-          selectedFile = openFileTab(newPath)
+        if (currentDesignerFile != null && currentDesignerFile.filename === oldPath) {
+          currentDesignerFile = {
+            filename: newPath,
+          }
         }
         const oldContent = getContentsTreeFileFromString(editor.projectContents, oldPath)
         if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
@@ -3227,19 +3210,14 @@ export const UPDATE_FNS = {
 
       return updateUIFile({
         ...editor,
-        openFiles: updatedOpenFiles,
-        selectedFile:
-          selectedFile == null
-            ? null
-            : {
-                tab: selectedFile,
-                initialCursorPosition:
-                  editor.selectedFile == null ? null : editor.selectedFile.initialCursorPosition,
-              },
         projectContents: projectContents,
         codeEditorErrors: {
           buildErrors: {},
           lintErrors: {},
+        },
+        canvas: {
+          ...editor.canvas,
+          openFile: currentDesignerFile,
         },
       })
     }
@@ -3254,73 +3232,10 @@ export const UPDATE_FNS = {
       })
     }
   },
-  OPEN_EDITOR_TAB: (action: OpenEditorTab, editor: EditorModel): EditorModel => {
-    const currentOpenFile = getOpenEditorTab(editor)
-    const selectedFile = isOpenFileTab(action.editorTab)
-      ? getFileForName(action.editorTab.filename, editor)
-      : null
-    const fileOpensInCanvas = selectedFile == null || isTextFile(selectedFile)
-    const focusedPanel: EditorPanel = fileOpensInCanvas ? 'canvas' : 'misccodeeditor'
-
-    const keepSelectedViews = R.equals(currentOpenFile, action.editorTab)
-    if (isOpenFileTab(action.editorTab)) {
-      sendOpenFileMessage(action.editorTab.filename)
-    }
-
-    return setLeftMenuTabFromFocusedPanel({
-      ...editor,
-      openFiles: R.uniq([...editor.openFiles, action.editorTab]),
-      selectedFile: {
-        tab: action.editorTab,
-        initialCursorPosition: action.cursorPosition,
-      },
-      focusedPanel: focusedPanel,
-      selectedViews: keepSelectedViews ? editor.selectedViews : [],
-      highlightedViews: keepSelectedViews ? editor.highlightedViews : [],
-    })
-  },
-  CLOSE_FILE: (action: CloseEditorTab, editor: EditorModel): EditorModel => {
-    const updatedOpenFiles = editor.openFiles.filter(
-      (editorTab) => !R.equals(editorTab, action.editorTab),
-    )
-    let revertedProjectContents: ProjectContentTreeRoot
-    if (isOpenFileTab(action.editorTab)) {
-      revertedProjectContents = revertFileInProjectContents(
-        editor.projectContents,
-        action.editorTab.filename,
-      )
-    } else {
-      revertedProjectContents = editor.projectContents
-    }
-    if (R.equals(getOpenEditorTab(editor), action.editorTab)) {
-      if (updatedOpenFiles.length >= 1) {
-        const nextSelectedFile = updatedOpenFiles[updatedOpenFiles.length - 1]
-        const updatedEditor = {
-          ...editor,
-          projectContents: revertedProjectContents,
-          openFiles: updatedOpenFiles,
-        }
-        return UPDATE_FNS.OPEN_EDITOR_TAB(openEditorTab(nextSelectedFile, null), updatedEditor)
-      } else {
-        return editor
-      }
-    } else {
-      return {
-        ...editor,
-        projectContents: revertedProjectContents,
-        openFiles: updatedOpenFiles,
-      }
-    }
-  },
-  REORDER_EDITOR_TABS: (action: ReorderEditorTabs, editor: EditorModel): EditorModel => {
-    const oldIndex = editor.openFiles.findIndex((tab) => R.equals(tab, action.editorTab))
-    let updatedOpenFiles = [...editor.openFiles]
-    updatedOpenFiles[oldIndex] = editor.openFiles[action.newIndex]
-    updatedOpenFiles[action.newIndex] = editor.openFiles[oldIndex]
-    return {
-      ...editor,
-      openFiles: updatedOpenFiles,
-    }
+  OPEN_CODE_EDITOR_FILE: (action: OpenCodeEditorFile, editor: EditorModel): EditorModel => {
+    // Side effect.
+    sendOpenFileMessage(action.filename)
+    return editor
   },
   UPDATE_FILE: (action: UpdateFile, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     if (
@@ -3561,22 +3476,15 @@ export const UPDATE_FNS = {
     )
 
     // Update the model.
-    const newTab = openFileTab(newFileKey)
     const updatedEditor: EditorModel = {
       ...editor,
-      selectedFile: {
-        tab: newTab,
-        initialCursorPosition: null,
-      },
-      openFiles: [...editor.openFiles, newTab],
       projectContents: updatedProjectContents,
       fileBrowser: {
         ...editor.fileBrowser,
         renamingTarget: newFileKey,
       },
     }
-    sendOpenFileMessage(newFileKey)
-    return updatedEditor
+    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey), updatedEditor)
   },
   DELETE_FILE: (
     action: DeleteFile,
@@ -3595,19 +3503,8 @@ export const UPDATE_FNS = {
       editor.projectContents,
       action.filename,
     )
-    const updatedOpenFiles = editor.openFiles.filter(
-      (tab) => !isOpenFileTab(tab) || tab.filename !== action.filename,
-    )
     const selectedFile = getOpenFilename(editor)
-    const updatedSelectedFile =
-      selectedFile === action.filename
-        ? updatedOpenFiles.length > 0
-          ? {
-              tab: updatedOpenFiles[0],
-              initialCursorPosition: null,
-            }
-          : null
-        : editor.selectedFile
+    const updatedCanvas = selectedFile === action.filename ? null : editor.canvas.openFile
 
     switch (file.type) {
       case 'DIRECTORY': {
@@ -3633,8 +3530,6 @@ export const UPDATE_FNS = {
         return {
           ...editor,
           projectContents: updatedProjectContents,
-          openFiles: updatedOpenFiles,
-          selectedFile: updatedSelectedFile,
         }
       }
       case 'ASSET_FILE':
@@ -3647,8 +3542,10 @@ export const UPDATE_FNS = {
         return {
           ...editor,
           projectContents: updatedProjectContents,
-          openFiles: updatedOpenFiles,
-          selectedFile: updatedSelectedFile,
+          canvas: {
+            ...editor.canvas,
+            openFile: updatedCanvas,
+          },
         }
       }
       default:
@@ -4236,8 +4133,8 @@ export const UPDATE_FNS = {
     if (updatedEditor == null) {
       return editor
     } else {
-      const openTab = openEditorTab(openFileTab(StoryboardFilePath), null)
-      return UPDATE_FNS.OPEN_EDITOR_TAB(openTab, updatedEditor)
+      const openTab = openCodeEditorFile(StoryboardFilePath)
+      return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },
   UPDATE_CHILD_TEXT: (action: UpdateChildText, editor: EditorModel): EditorModel => {

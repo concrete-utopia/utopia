@@ -9,6 +9,7 @@ import {
   PersistentModel,
   persistentModelFromEditorModel,
   DefaultPackageJson,
+  StoryboardFilePath,
 } from '../components/editor/store/editor-state'
 import * as TP from '../core/shared/template-path'
 import {
@@ -71,7 +72,6 @@ import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
-import { EditorTab, openFileTab } from '../components/editor/store/editor-tabs'
 import { forceNotNull } from '../core/shared/optional-utils'
 
 export function delay<T>(time: number): Promise<T> {
@@ -82,7 +82,7 @@ export function createPersistentModel(): PersistentModel {
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
-      '/src/app.js': textFile(
+      [StoryboardFilePath]: textFile(
         textFileContents(
           '',
           parseSuccess(
@@ -99,25 +99,18 @@ export function createPersistentModel(): PersistentModel {
         0,
       ),
     }),
-    selectedFile: {
-      tab: openFileTab('/src/app.js'),
-      initialCursorPosition: null,
-    },
   }
 
   return persistentModelFromEditorModel(editor)
 }
 
 export function createEditorStates(
-  selectedFileOrTab: string | EditorTab = '/src/app.js',
   selectedViews: TemplatePath[] = [],
 ): {
   editor: EditorState
   derivedState: DerivedState
   dispatch: EditorDispatch
 } {
-  const selectedTab: EditorTab =
-    typeof selectedFileOrTab === 'string' ? openFileTab(selectedFileOrTab) : selectedFileOrTab
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({
@@ -130,7 +123,7 @@ export function createEditorStates(
         null,
         0,
       ),
-      '/src/app.js': textFile(
+      [StoryboardFilePath]: textFile(
         textFileContents(
           '',
           parseSuccess(
@@ -147,10 +140,6 @@ export function createEditorStates(
         0,
       ),
     }),
-    selectedFile: {
-      tab: selectedTab,
-      initialCursorPosition: null,
-    },
     selectedViews: selectedViews,
   }
   const derivedState = deriveState(editor, null)
@@ -208,7 +197,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
     if (component != null) {
       const elementMetadata = createFakeMetadataForJSXElement(
         component.rootElement,
-        TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+        TP.scenePath([[BakedInStoryboardUID, createSceneUidFromIndex(index)]]),
         {
           props: {
             style: sceneResizesContent ? props.style : undefined,
@@ -228,8 +217,11 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
     return {
       component: props[PP.toString(PathForSceneComponent)],
       label: props[PP.toString(PathForSceneDataLabel)],
-      scenePath: TP.scenePath([BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]),
-      templatePath: TP.instancePath([], [BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+      scenePath: TP.scenePath([[BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]]),
+      templatePath: TP.instancePath(TP.emptyScenePath, [
+        BakedInStoryboardUID,
+        createSceneUidFromIndex(index),
+      ]),
       globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
       sceneResizesContent: sceneResizesContent ?? true,
       style: {},
@@ -249,7 +241,7 @@ export function createFakeMetadataForComponents(
     if (isUtopiaJSXComponent(component)) {
       const elementMetadata = createFakeMetadataForJSXElement(
         component.rootElement,
-        TP.scenePath([BakedInStoryboardUID, createSceneUidFromIndex(index)]),
+        TP.scenePath([[BakedInStoryboardUID, createSceneUidFromIndex(index)]]),
         {},
         {},
       )
@@ -261,8 +253,8 @@ export function createFakeMetadataForComponents(
       })
 
       components.push({
-        scenePath: TP.scenePath([BakedInStoryboardUID, `scene-${index}`]),
-        templatePath: TP.instancePath([], [BakedInStoryboardUID, `scene-${index}`]),
+        scenePath: TP.scenePath([[BakedInStoryboardUID, `scene-${index}`]]),
+        templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, `scene-${index}`]),
         component: component.name,
         globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
         sceneResizesContent: false,

@@ -49,7 +49,6 @@ import {
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { BuildType } from '../../core/workers/ts/ts-worker'
-import type { EditorTab } from './store/editor-tabs'
 import { ContextMenuInnerProps } from '../../uuiui-deps'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
@@ -531,21 +530,14 @@ export interface UpdateFilePath {
   newPath: string
 }
 
-export interface OpenEditorTab {
-  action: 'OPEN_FILE'
-  editorTab: EditorTab
-  cursorPosition: CursorPosition | null
+export interface OpenCodeEditorFile {
+  action: 'OPEN_CODE_EDITOR_FILE'
+  filename: string
 }
 
-export interface CloseEditorTab {
-  action: 'CLOSE_FILE'
-  editorTab: EditorTab
-}
-
-export interface ReorderEditorTabs {
-  action: 'REORDER_OPEN_FILES'
-  editorTab: EditorTab
-  newIndex: number
+export interface CloseDesignerFile {
+  action: 'CLOSE_DESIGNER_FILE'
+  filename: string
 }
 
 export interface UpdateFile {
@@ -870,9 +862,8 @@ export type EditorAction =
   | UpdateDuplicationState
   | SendPreviewModel
   | UpdateFilePath
-  | OpenEditorTab
-  | CloseEditorTab
-  | ReorderEditorTabs
+  | OpenCodeEditorFile
+  | CloseDesignerFile
   | UpdateFile
   | UpdateFromWorker
   | UpdateFromCodeEditor

@@ -81,6 +81,7 @@ export const setupBrowser = async (): Promise<{
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS),
+    executablePath: process.env.BROWSER
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
@@ -121,6 +122,7 @@ export const testPerformance = async function () {
 export const testScrollingPerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
+  console.log('Test Scrolling Performance')
   await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P S')]")
@@ -141,6 +143,7 @@ export const testScrollingPerformance = async function (
 }
 
 export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
+  console.log('Test Resize Performance')
   await page.waitForXPath("//a[contains(., 'P R')]")
   // we run it twice without measurements to warm up the environment
   const [button] = await page.$x("//a[contains(., 'P R')]")
@@ -166,6 +169,7 @@ export const testResizePerformance = async function (page: puppeteer.Page): Prom
 export const testSelectionPerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
+  console.log('Test Selection Performance')
   await page.waitForTimeout(20000)
   await page.waitForXPath("//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment

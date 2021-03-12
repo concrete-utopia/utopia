@@ -123,6 +123,7 @@ import {
   getStoryboardTemplatePathFromEditorState,
   addSceneToJSXComponents,
   getNumberOfScenes,
+  StoryboardFilePath,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -171,7 +172,6 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
-import { openFileTab } from '../editor/store/editor-tabs'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from './dom-lookup'
 import { WindowMousePositionRaw } from '../../templates/editor-canvas'
@@ -2377,7 +2377,7 @@ export function duplicate(
                 'Could not find storyboard element',
                 getStoryboardUID(utopiaComponents),
               )
-              newPath = TP.scenePath([storyboardUID, uid])
+              newPath = TP.scenePath([[storyboardUID, uid]])
             } else {
               newPath = TP.appendToPath(newParentPath, uid)
             }
@@ -2478,7 +2478,7 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse('/src/app.js', appUiJsFile) as ParsedTextFile
+  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')
@@ -2488,14 +2488,13 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
     ...baseModel,
     projectContents: addFileToProjectContents(
       baseModel.projectContents,
-      '/src/app.js',
+      StoryboardFilePath,
       textFile(
         textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
         null,
         Date.now(),
       ),
     ),
-    selectedFile: openFileTab('/src/app.js'),
   }
 }
 
@@ -2512,7 +2511,7 @@ export function cullSpyCollector(
     while (workingPath != null) {
       const pathAsString = TP.toString(workingPath)
       if (TP.isScenePath(workingPath)) {
-        elementPaths.add(TP.toString(TP.instancePath([], workingPath.sceneElementPath)))
+        elementPaths.add(TP.toString(TP.instancePathForElementAtScenePath(workingPath)))
         scenePaths.add(pathAsString)
       } else {
         elementPaths.add(pathAsString)
@@ -2532,9 +2531,8 @@ export function cullSpyCollector(
       !scenePaths.has(scenePath) &&
       !elementPaths.has(
         TP.toString(
-          TP.instancePath(
-            [],
-            spyCollector.current.spyValues.scenes[scenePath].scenePath.sceneElementPath,
+          TP.instancePathForElementAtScenePath(
+            spyCollector.current.spyValues.scenes[scenePath].scenePath,
           ),
         ),
       ) // this is needed because empty scenes are stored in metadata with an instancepath

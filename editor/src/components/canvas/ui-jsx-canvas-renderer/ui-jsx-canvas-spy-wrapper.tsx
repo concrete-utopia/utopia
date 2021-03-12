@@ -53,7 +53,7 @@ export function buildSpyWrappedElement(
       attributeMetadatada: emptyAttributeMetadatada,
     }
     const isChildOfRootScene = TP.pathsEqual(
-      TP.scenePathForPath(templatePath),
+      TP.scenePathPartOfTemplatePath(templatePath),
       EmptyScenePathForStoryboard,
     )
     if (!isChildOfRootScene || shouldIncludeCanvasRootInTheSpy) {

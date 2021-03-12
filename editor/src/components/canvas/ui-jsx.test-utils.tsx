@@ -44,7 +44,12 @@ import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-ty
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
 import { editorDispatch } from '../editor/store/dispatch'
-import { createEditorState, deriveState, EditorStore } from '../editor/store/editor-state'
+import {
+  createEditorState,
+  deriveState,
+  EditorStore,
+  StoryboardFilePath,
+} from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { scenePath } from '../../core/shared/template-path'
@@ -195,7 +200,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
 }
 
 export function getPrintedUiJsCode(store: EditorStore): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js')
+  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
   if (isTextFile(file)) {
     return file.fileContents.code
   } else {
@@ -204,7 +209,7 @@ export function getPrintedUiJsCode(store: EditorStore): string {
 }
 
 export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, '/src/app.js')
+  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
       printCodeOptions(false, true, false, true),
@@ -219,7 +224,7 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
 }
 
 const TestSceneUID = 'scene-aaa'
-export const TestScenePath = scenePath([BakedInStoryboardUID, TestSceneUID])
+export const TestScenePath = scenePath([[BakedInStoryboardUID, TestSceneUID]])
 
 export function makeTestProjectCodeWithSnippet(snippet: string): string {
   const code = `/** @jsx jsx */
