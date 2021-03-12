@@ -62,12 +62,13 @@ export function clearTemplatePathCache() {
 
 function getScenePathCache(sceneElementPaths: StaticElementPath[]): ScenePathCache {
   let joinedPaths: string[] = []
-  for (var i = 0, len = sceneElementPaths.length; i < len; i++) {
-    joinedPaths.push(...sceneElementPaths[i])
-    if (i < len - 1) {
+  const length = sceneElementPaths.length
+  fastForEach(sceneElementPaths, (path, index) => {
+    joinedPaths.push(...path)
+    if (index < length - 1) {
       joinedPaths.push(SceneSeparator)
     }
-  }
+  })
 
   let workingPathCache: ScenePathCache = globalScenePathCache
   fastForEach(joinedPaths, (pathPart) => {
