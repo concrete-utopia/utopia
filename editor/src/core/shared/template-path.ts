@@ -269,12 +269,11 @@ export function filterScenes(paths: TemplatePath[]): StaticInstancePath | Instan
 // FIXME: This should be retired, it's just plain dangerous.
 // Right now this is only used for SpecialNodes (in CanvasMetaData)
 function fromStringUncached(path: string): TemplatePath {
-  const elementPathStrs = path.split(SceneSeparator)
-  const [sceneStrs, elementStrs] =
-    elementPathStrs.length > 1
-      ? splitAt(elementPathStrs.length - 1, elementPathStrs)
-      : [elementPathStrs, []]
-  const elementStr = elementStrs[0] ?? null
+  let elementPathStrs = path.split(SceneSeparator)
+  const lastElementStr = elementPathStrs.pop()! // We know this is safe because ''.split(SceneSeparator).pop() returns ''
+  let sceneStrs = elementPathStrs.length > 0 ? elementPathStrs : [lastElementStr]
+  let elementStr = elementPathStrs.length > 0 ? lastElementStr : null
+
   const sceneElementPaths = sceneStrs.map((scene) =>
     scene.split(ElementSeparator).filter((e) => e.length > 0),
   )
