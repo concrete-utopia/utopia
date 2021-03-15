@@ -262,4 +262,84 @@ describe('Spy Wrapper Template Path Tests', () => {
       }
     `)
   })
+
+  it('a generated component instance is focused inside a component instance inside the main App component', async () => {
+    const { dispatch, getEditorState } = await renderTestEditorWithCode(exampleProject)
+    await dispatch(
+      [
+        setFocusedElement(
+          TP.scenePath([
+            ['storyboard', 'scene'],
+            ['app-root', 'inner-div', 'card-instance'],
+            ['button-instance', 'hi-element~~~2'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+
+    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
+
+    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard": Object {
+          "children": Array [
+            ":storyboard/scene",
+          ],
+          "name": "Storyboard",
+        },
+        ":storyboard/scene": Object {
+          "children": Array [],
+          "name": "Scene",
+        },
+        "storyboard/scene:app-root": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div/card-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance": Object {
+          "children": Array [],
+          "name": "Card",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
+          "children": Array [],
+          "name": "Button",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~1": Object {
+          "children": Array [],
+          "name": "HiElement",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~1:hi-element-root": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~2": Object {
+          "children": Array [],
+          "name": "HiElement",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~3": Object {
+          "children": Array [],
+          "name": "HiElement",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~3:hi-element-root": Object {
+          "children": Array [],
+          "name": "div",
+        },
+      }
+    `)
+  })
 })

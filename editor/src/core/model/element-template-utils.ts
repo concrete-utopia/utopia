@@ -127,7 +127,7 @@ export function getValidTemplatePathsFromElement(
     const name = getJSXElementNameAsString(element.name)
     if (
       focusedElementPath != null &&
-      TP.scenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
+      TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
     ) {
       paths = [
         ...paths,

@@ -856,12 +856,34 @@ export function isFromSameSceneAs(a: TemplatePath, b: TemplatePath): boolean {
   return scenePathsEqual(scenePathPartOfTemplatePath(a), scenePathPartOfTemplatePath(b))
 }
 
+function dynamicScenePathToStaticScenePath(scene: ScenePath): ScenePath {
+  return scenePath(
+    scene.sceneElementPaths.map((sceneElementPath) =>
+      sceneElementPath.map(extractOriginalUidFromIndexedUid),
+    ),
+  )
+}
+
 export function dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
-  return staticInstancePath(path.scene, path.element.map(extractOriginalUidFromIndexedUid))
+  return staticInstancePath(
+    dynamicScenePathToStaticScenePath(path.scene),
+    path.element.map(extractOriginalUidFromIndexedUid),
+  )
 }
 
 export function scenePathContainsElementPath(scene: ScenePath, elementPath: ElementPath): boolean {
   return scene.sceneElementPaths.some((sceneElementPath) =>
     elementPathsEqual(sceneElementPath, elementPath),
   )
+}
+
+export function staticScenePathContainsElementPath(
+  scene: ScenePath,
+  elementPath: ElementPath,
+): boolean {
+  return scene.sceneElementPaths.some((sceneElementPath) => {
+    // TODO RHEESE Change the types so we can have a StaticScenePath
+    const staticSceneElementPath = sceneElementPath.map(extractOriginalUidFromIndexedUid)
+    return elementPathsEqual(staticSceneElementPath, elementPath)
+  })
 }
