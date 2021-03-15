@@ -143,6 +143,7 @@ export function getValidTemplatePathsFromElement(
   } else if (isJSXArbitraryBlock(element)) {
     let paths: Array<StaticInstancePath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
+      // TODO BALAZS probably need to recurse into getValidTemplatePaths here as well
       paths.push(
         ...getValidTemplatePathsFromElement(topLevelElements, focusedElementPath, e, parentPath),
       ),

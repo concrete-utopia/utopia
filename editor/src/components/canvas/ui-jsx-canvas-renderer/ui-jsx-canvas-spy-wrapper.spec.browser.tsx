@@ -14,52 +14,56 @@ import CanvasActions from '../canvas-actions'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 
 const exampleProject = `/** @jsx jsx */
-import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
-import { View } from 'utopia-api'
+import * as React from "react";
+import { Scene, Storyboard, jsx } from "utopia-api";
+import { View } from "utopia-api";
+
+const HiElement = (props) => {
+  return <div data-uid="hi-element-root">hi!</div>
+}
 
 const Button = (props) => {
-  return <div data-uid='button-root'>{props.children}</div>
-}
+  return <div data-uid="button-root">{props.children}</div>;
+};
 const Card = () => {
   return (
-    <Button data-uid='button-instance' >
-      <div data-uid='hi-element'>hi!</div>
+    <Button data-uid="button-instance">
+      {[0, 1, 2].map(i => (
+        <HiElement data-uid="hi-element" />
+      ))}
     </Button>
-  )
-}
+  );
+};
 export var App = (props) => {
   return (
     <div
-      data-uid='app-root'
-      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}
+      data-uid="app-root"
+      style={{
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#FFFFFF",
+        position: "relative",
+      }}
     >
-      <div data-uid='inner-div'>
-        <Card
-          data-uid='card-instance'
-          style={{
-            backgroundColor: '#0091FFAA',
-            position: 'absolute',
-            left: 70,
-            top: 387,
-            width: 193,
-            height: 221,
-          }}
-        />
+      <div data-uid="inner-div">
+        <Card data-uid="card-instance" />
+        
       </div>
     </div>
-  )
-}
+  );
+};
+
 export var storyboard = (
-  <Storyboard data-uid='storyboard'>
+  <Storyboard data-uid="storyboard">
     <Scene
-      data-uid='scene'
+      data-uid="scene"
       component={App}
       props={{}}
-      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      style={{ position: "absolute", left: 0, top: 0, width: 375, height: 812 }}
     />
   </Storyboard>
-)`
+);
+`
 
 function extractTemplatePathStuffFromElementInstanceMetadata(metadata: JSXMetadata) {
   const sanitizedSpyData = objectMap((elementMetadata, key) => {
@@ -168,14 +172,20 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
         "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
-          "children": Array [
-            "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element",
-          ],
+          "children": Array [],
           "name": "Button",
         },
-        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element": Object {
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
-          "name": "div",
+          "name": "HiElement",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~2": Object {
+          "children": Array [],
+          "name": "HiElement",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~3": Object {
+          "children": Array [],
+          "name": "HiElement",
         },
       }
     `)
@@ -230,14 +240,20 @@ describe('Spy Wrapper Template Path Tests', () => {
           "name": "Card",
         },
         "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
-          "children": Array [
-            "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element",
-          ],
+          "children": Array [],
           "name": "Button",
         },
-        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element": Object {
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~1": Object {
           "children": Array [],
-          "name": "div",
+          "name": "HiElement",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~2": Object {
+          "children": Array [],
+          "name": "HiElement",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~3": Object {
+          "children": Array [],
+          "name": "HiElement",
         },
         "storyboard/scene:app-root/inner-div/card-instance:button-instance:button-root": Object {
           "children": Array [],

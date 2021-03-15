@@ -108,8 +108,6 @@ export function renderCoreElement(
         innerInScope: MapLike<any>,
       ): React.ReactElement {
         innerIndex++
-        const innerPath = TP.appendToPath(templatePath, `index-${innerIndex}`)
-
         const innerUID = getUtopiaID(innerElement)
         const withOriginalID = setJSXValueAtPath(
           innerElement.props,
@@ -125,6 +123,14 @@ export function renderCoreElement(
               jsxAttributeValue(generatedUID, emptyComments),
             ),
           withOriginalID,
+        )
+
+        const templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = TP.parentPath(
+          templatePath,
+        ) // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
+        const innerPath = TP.appendToPath(
+          templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
+          generatedUID,
         )
 
         let augmentedInnerElement = innerElement
@@ -264,7 +270,9 @@ function renderJSXElement(
       ? filterDataProps(elementPropsWithScenePath)
       : elementPropsWithScenePath
 
-  if (FinalElement != null && TP.containsPath(templatePath, validPaths)) {
+  const staticTemplatePathForGeneratedElement = TP.dynamicPathToStaticPath(templatePath)
+
+  if (FinalElement != null && TP.containsPath(staticTemplatePathForGeneratedElement, validPaths)) {
     let childrenTemplatePaths: InstancePath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {
