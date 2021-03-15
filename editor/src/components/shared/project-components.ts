@@ -13,7 +13,7 @@ import {
   ProjectFile,
 } from '../../core/shared/project-file-types'
 import { getThirdPartyComponents } from '../../core/third-party/third-party-components'
-import { emptyImports } from '../../core/workers/common/project-file-utils'
+import { addImport, emptyImports } from '../../core/workers/common/project-file-utils'
 import { SelectOption } from '../../uuiui-deps'
 import { ProjectContentTreeRoot, walkContentsTree } from '../assets'
 import { PropertyControlsInfo } from '../custom-code/code-file'
@@ -192,7 +192,7 @@ export function getComponentGroups(
       insertableComponentGroupHTML(),
       basicHTMLEntities.map((basicHTMLEntity) => {
         return insertableComponent(
-          emptyImportsValue,
+          addImport('react', null, [], 'React', emptyImportsValue),
           jsxElement(basicHTMLEntity, [], []),
           basicHTMLEntity,
         )

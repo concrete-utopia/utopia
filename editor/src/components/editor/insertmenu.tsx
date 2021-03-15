@@ -335,230 +335,62 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             this.props.currentlyOpenFilename,
           )
 
-    return insertableGroups.map((insertableGroup, groupIndex) => {
-      return (
-        <InsertGroup
-          label={getInsertableGroupLabel(insertableGroup.source)}
-          key={`insert-group-${groupIndex}`}
-          dependencyVersion={null}
-          dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
-        >
-          {insertableGroup.insertableComponents.map((component, componentIndex) => {
-            const insertItemOnMouseDown = () => {
-              const newUID = generateUID(this.props.existingUIDs)
-              const newElement = {
-                ...component.element,
-                props: setJSXAttributesAttribute(
-                  component.element.props,
-                  'data-uid',
-                  jsxAttributeValue(newUID, emptyComments),
-                ),
-              }
-              this.props.editorDispatch(
-                [enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null)],
-                'everyone',
-              )
-            }
-            return (
-              <InsertItem
-                key={`insert-item-third-party-${groupIndex}-${componentIndex}`}
-                type={'component'}
-                label={component.name}
-                selected={componentBeingInsertedEquals(
-                  currentlyBeingInserted,
-                  componentBeingInserted(component.importsToAdd, component.element.name),
-                )}
-                onMouseDown={insertItemOnMouseDown}
-              />
-            )
-          })}
-        </InsertGroup>
-      )
-    })
-    /*
-    return (
-      <React.Fragment>
-        <InsertGroup label='Storyboard' dependencyStatus='loaded' dependencyVersion={null}>
-          <InsertItem
-            type='scene'
-            label='Scene'
-            selected={sceneSelected}
-            onMouseDown={this.sceneInsertMode}
-          />
-        </InsertGroup>
-        <InsertGroup label='Utopia Components' dependencyStatus='loaded' dependencyVersion={null}>
-          <InsertItem
-            type='div'
-            label='div'
-            selected={componentBeingInsertedEquals(
-              currentlyBeingInserted,
-              divComponentBeingInserted,
-            )}
-            onMouseDown={this.divInsertMode}
-          />
-          <InsertItem
-            type='image'
-            label='Image'
-            selected={componentBeingInsertedEquals(
-              currentlyBeingInserted,
-              imageComponentBeingInserted,
-            )}
-            onMouseDown={this.imageInsert}
-          />
-          <InsertItem
-            type='text'
-            label='Text'
-            selected={componentBeingInsertedEquals(
-              currentlyBeingInserted,
-              textComponentBeingInserted,
-            )}
-            onMouseDown={this.textInsertMode}
-          />
-          <InsertItem
-            type='ellipse'
-            label='Ellipse'
-            selected={componentBeingInsertedEquals(
-              currentlyBeingInserted,
-              ellipseComponentBeingInserted,
-            )}
-            onMouseDown={this.ellipseInsertMode}
-          />
-          <InsertItem
-            type='rectangle'
-            label='Rectangle'
-            selected={componentBeingInsertedEquals(
-              currentlyBeingInserted,
-              rectangleComponentBeingInserted,
-            )}
-            onMouseDown={this.rectangleInsertMode}
-          />
-          <InsertItem
-            type='div'
-            label='Animated Div'
-            selected={componentBeingInsertedEquals(
-              currentlyBeingInserted,
-              animatedDivComponentBeingInserted,
-            )}
-            onMouseDown={this.animatedDivInsertMode}
-          />
-        </InsertGroup>
-        {this.props.currentlyOpenFilename == null ? null : (
+    return [
+      // FIXME: Once scenes are refactored, this should be removed.
+      <InsertGroup
+        label='Storyboard'
+        key='insert-group-storyboard'
+        dependencyStatus='loaded'
+        dependencyVersion={null}
+      >
+        <InsertItem
+          type='scene'
+          label='Scene'
+          selected={sceneSelected}
+          onMouseDown={this.sceneInsertMode}
+        />
+      </InsertGroup>,
+      ...insertableGroups.map((insertableGroup, groupIndex) => {
+        return (
           <InsertGroup
-            label='Current File'
-            subLabel={this.props.currentlyOpenFilename}
-            dependencyStatus='loaded'
+            label={getInsertableGroupLabel(insertableGroup.source)}
+            key={`insert-group-${groupIndex}`}
             dependencyVersion={null}
+            dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
           >
-            {this.props.currentFileComponents.map((currentFileComponent) => {
-              const { componentName, defaultProps, detectedProps } = currentFileComponent
-              const warningMessage = findMissingDefaultsAndGetWarning(detectedProps, defaultProps)
+            {insertableGroup.insertableComponents.map((component, componentIndex) => {
               const insertItemOnMouseDown = () => {
                 const newUID = generateUID(this.props.existingUIDs)
-                let props: JSXAttributes = jsxAttributesFromMap(
-                  objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
-                )
-                props = setJSXAttributesAttribute(
-                  props,
-                  'data-uid',
-                  jsxAttributeValue(newUID, emptyComments),
-                )
-                const newElement = jsxElement(jsxElementName(componentName, []), props, [])
+                const newElement = {
+                  ...component.element,
+                  props: setJSXAttributesAttribute(
+                    component.element.props,
+                    'data-uid',
+                    jsxAttributeValue(newUID, emptyComments),
+                  ),
+                }
                 this.props.editorDispatch(
-                  [enableInsertModeForJSXElement(newElement, newUID, {}, null)],
+                  [enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null)],
                   'everyone',
                 )
               }
-
               return (
                 <InsertItem
-                  key={`insert-item-${currentFileComponent.componentName}`}
+                  key={`insert-item-third-party-${groupIndex}-${componentIndex}`}
                   type={'component'}
-                  label={currentFileComponent.componentName}
+                  label={component.name}
                   selected={componentBeingInsertedEquals(
                     currentlyBeingInserted,
-                    componentBeingInserted(
-                      {},
-                      jsxElementName(currentFileComponent.componentName, []),
-                    ),
+                    componentBeingInserted(component.importsToAdd, component.element.name),
                   )}
                   onMouseDown={insertItemOnMouseDown}
-                  warningMessage={warningMessage}
                 />
               )
             })}
           </InsertGroup>
-        )}
-        {this.props.dependencies.map((dependency, dependencyIndex) => {
-          if (isResolvedNpmDependency(dependency)) {
-            const componentDescriptor = getThirdPartyComponents(dependency.name, dependency.version)
-            if (componentDescriptor == null) {
-              return null
-            } else {
-              const dependencyStatus = getDependencyStatus(this.props.packageStatus, this.props.propertyControlsInfo, dependency.name, 'loaded')
-              const components = dependencyStatus === 'loaded' ? componentDescriptor.components : []
-              return (
-                <InsertGroup
-                  label={componentDescriptor.name}
-                  key={dependency.name}
-                  dependencyVersion={dependency.version}
-                  dependencyStatus={dependencyStatus}
-                >
-                  {components.map((component, componentIndex) => {
-                    const insertItemOnMouseDown = () => {
-                      const newUID = generateUID(this.props.existingUIDs)
-                      const newElement = {
-                        ...component.element,
-                        props: setJSXAttributesAttribute(
-                          component.element.props,
-                          'data-uid',
-                          jsxAttributeValue(newUID, emptyComments),
-                        ),
-                      }
-                      this.props.editorDispatch(
-                        [
-                          enableInsertModeForJSXElement(
-                            newElement,
-                            newUID,
-                            component.importsToAdd,
-                            null,
-                          ),
-                        ],
-                        'everyone',
-                      )
-                    }
-                    return (
-                      <InsertItem
-                        key={`insert-item-third-party-${dependencyIndex}-${componentIndex}`}
-                        type={'component'}
-                        label={component.name}
-                        selected={componentBeingInsertedEquals(
-                          currentlyBeingInserted,
-                          componentBeingInserted(component.importsToAdd, component.element.name),
-                        )}
-                        onMouseDown={insertItemOnMouseDown}
-                      />
-                    )
-                  })}
-                </InsertGroup>
-              )
-            }
-          } else {
-            if (isBuiltInDependency(dependency.name)) {
-              return null
-            } else {
-              return (
-                <InsertGroup
-                  label={dependency.name}
-                  dependencyStatus={getDependencyStatus(this.props.packageStatus, this.props.propertyControlsInfo, dependency.name, 'loading')}
-                  dependencyVersion={null}
-                />
-              )
-            }
-          }
-        })}
-      </React.Fragment>
-    )
-    */
+        )
+      }),
+    ]
   }
 }
 
