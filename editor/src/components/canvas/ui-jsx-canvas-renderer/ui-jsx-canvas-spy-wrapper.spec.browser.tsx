@@ -1,3 +1,4 @@
+import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { bimapEither, foldEither, mapEither } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
@@ -85,12 +86,33 @@ function extractTemplatePathStuffFromElementInstanceMetadata(metadata: JSXMetada
   return sanitizedSpyData
 }
 
+function extractTemplatePathStuffFromDomWalkerMetadata(metadata: Array<ElementInstanceMetadata>) {
+  return mapArrayToDictionary(
+    metadata,
+    (elementMetadata: ElementInstanceMetadata) => TP.toString(elementMetadata.templatePath),
+    (elementMetadata: ElementInstanceMetadata) => {
+      return {
+        name: foldEither(
+          (name) => name,
+          (element) =>
+            isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'not-jsx-element',
+          elementMetadata.element,
+        ),
+        children: elementMetadata.children.map(TP.toString),
+      }
+    },
+  )
+}
+
 describe('Spy Wrapper Template Path Tests', () => {
   it('a simple component in a regular scene', async () => {
     const { getEditorState } = await renderTestEditorWithCode(exampleProject)
 
     const spiedMetadata = getEditorState().editor.spyMetadataKILLME
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
+
+    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
 
     expect(sanitizedSpyData).toMatchInlineSnapshot(`
       Object {
@@ -122,6 +144,37 @@ describe('Spy Wrapper Template Path Tests', () => {
         },
       }
     `)
+
+    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard": Object {
+          "children": Array [],
+          "name": "Storyboard",
+        },
+        ":storyboard/scene": Object {
+          "children": Array [
+            "storyboard/scene:app-root",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div/card-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance": Object {
+          "children": Array [],
+          "name": "div",
+        },
+      }
+    `)
   })
 
   it('a component instance is focused inside the main App component', async () => {
@@ -142,6 +195,9 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     const spiedMetadata = getEditorState().editor.spyMetadataKILLME
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
+
+    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
 
     expect(sanitizedSpyData).toMatchInlineSnapshot(`
       Object {
@@ -189,6 +245,53 @@ describe('Spy Wrapper Template Path Tests', () => {
         },
       }
     `)
+
+    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard": Object {
+          "children": Array [],
+          "name": "Storyboard",
+        },
+        ":storyboard/scene": Object {
+          "children": Array [
+            "storyboard/scene:app-root",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div/card-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~1": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~2": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~3": Object {
+          "children": Array [],
+          "name": "div",
+        },
+      }
+    `)
   })
 
   it('a component instance is focused inside a component instance inside the main App component', async () => {
@@ -210,6 +313,9 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     const spiedMetadata = getEditorState().editor.spyMetadataKILLME
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
+
+    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
 
     expect(sanitizedSpyData).toMatchInlineSnapshot(`
       Object {
@@ -261,6 +367,57 @@ describe('Spy Wrapper Template Path Tests', () => {
         },
       }
     `)
+
+    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard": Object {
+          "children": Array [],
+          "name": "Storyboard",
+        },
+        ":storyboard/scene": Object {
+          "children": Array [
+            "storyboard/scene:app-root",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div": Object {
+          "children": Array [
+            "storyboard/scene:app-root/inner-div/card-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~1": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~2": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~3": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/inner-div/card-instance:button-instance:button-root": Object {
+          "children": Array [],
+          "name": "div",
+        },
+      }
+    `)
   })
 
   it('a generated component instance is focused inside a component instance inside the main App component', async () => {
@@ -282,6 +439,9 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     const spiedMetadata = getEditorState().editor.spyMetadataKILLME
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
+
+    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
 
     expect(sanitizedSpyData).toMatchInlineSnapshot(`
       Object {
@@ -341,5 +501,64 @@ describe('Spy Wrapper Template Path Tests', () => {
         },
       }
     `)
+
+    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+    Object {
+      ":storyboard": Object {
+        "children": Array [],
+        "name": "Storyboard",
+      },
+      ":storyboard/scene": Object {
+        "children": Array [
+          "storyboard/scene:app-root",
+        ],
+        "name": "div",
+      },
+      "storyboard/scene:app-root": Object {
+        "children": Array [
+          "storyboard/scene:app-root/inner-div",
+        ],
+        "name": "div",
+      },
+      "storyboard/scene:app-root/inner-div": Object {
+        "children": Array [
+          "storyboard/scene:app-root/inner-div/card-instance",
+        ],
+        "name": "div",
+      },
+      "storyboard/scene:app-root/inner-div/card-instance": Object {
+        "children": Array [],
+        "name": "div",
+      },
+      "storyboard/scene:app-root/inner-div/card-instance:button-instance": Object {
+        "children": Array [],
+        "name": "div",
+      },
+      "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~1": Object {
+        "children": Array [],
+        "name": "div",
+      },
+      "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~1:hi-element-root": Object {
+        "children": Array [],
+        "name": "div",
+      },
+      "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~2": Object {
+        "children": Array [],
+        "name": "div",
+      },
+      "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "children": Array [],
+        "name": "div",
+      },
+      "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~3": Object {
+        "children": Array [],
+        "name": "div",
+      },
+      "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~3:hi-element-root": Object {
+        "children": Array [],
+        "name": "div",
+      },
+    }
+  `)
   })
 })
