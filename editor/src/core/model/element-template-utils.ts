@@ -22,6 +22,7 @@ import {
   ScenePath,
   StaticElementPath,
   StaticInstancePath,
+  StaticScenePath,
   StaticTemplatePath,
 } from '../shared/project-file-types'
 import * as TP from '../shared/template-path'
@@ -88,7 +89,7 @@ export function guaranteeUniqueUids(
 
 export function getValidTemplatePaths(
   topLevelElement: TopLevelElement,
-  scenePath: ScenePath,
+  scenePath: StaticScenePath,
 ): Array<StaticInstancePath> {
   if (isUtopiaJSXComponent(topLevelElement)) {
     return getValidTemplatePathsFromElement(topLevelElement.rootElement, scenePath)

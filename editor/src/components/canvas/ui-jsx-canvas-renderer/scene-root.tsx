@@ -98,7 +98,7 @@ function useGetValidTemplatePaths(
     c.topLevelElements.get(topLevelElementName ?? ''),
   )
   if (utopiaJsxComponent != null) {
-    return getValidTemplatePaths(utopiaJsxComponent, scenePath)
+    return getValidTemplatePaths(utopiaJsxComponent, TP.dynamicPathToStaticPath(scenePath))
   }
   return []
 }
