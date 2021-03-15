@@ -42,10 +42,7 @@ export function createComponentRendererComponent(params: {
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
 
-    const scenePath: ScenePath = forceNotNull(
-      'a valid ScenePath must be provided to the component renderer component',
-      TP.isScenePath(scenePathAny) ? scenePathAny : null,
-    )
+    const scenePath: ScenePath | null = TP.isScenePath(scenePathAny) ? scenePathAny : null
 
     const { current: mutableContext } = React.useContext(MutableUtopiaContext)
     const utopiaJsxComponent = useContextSelector(RerenderUtopiaContext, (c) =>
@@ -95,11 +92,10 @@ export function createComponentRendererComponent(params: {
       if (isJSXFragment(element)) {
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
-        // so. this template path is ONLY correct if this component is used as a Scene Root.
-        // if this component is used as an instance inside some other component, this template path will be garbage.
-        // but! worry not, because in cases this is an instance, we are not running the DOM-walker and we discard the spy results
-        // so it is not an issue that we have a false template path
-        const ownTemplatePath = TP.instancePath(scenePath, [getUtopiaID(element)])
+        const ownTemplatePath = optionalMap(
+          (p) => TP.instancePath(p, [getUtopiaID(element)]),
+          scenePath,
+        )
 
         return renderCoreElement(
           element,

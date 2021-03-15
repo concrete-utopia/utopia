@@ -452,7 +452,7 @@ export function pathsEqual(l: TemplatePath | null, r: TemplatePath | null): bool
   }
 }
 
-export function containsPath(path: TemplatePath, paths: Array<TemplatePath>): boolean {
+export function containsPath(path: TemplatePath | null, paths: Array<TemplatePath>): boolean {
   const matchesPath = (p: TemplatePath) => pathsEqual(path, p)
   return paths.some(matchesPath)
 }
