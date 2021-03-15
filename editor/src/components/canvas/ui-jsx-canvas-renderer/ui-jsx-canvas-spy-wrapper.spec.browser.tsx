@@ -104,7 +104,7 @@ function extractTemplatePathStuffFromDomWalkerMetadata(metadata: Array<ElementIn
   )
 }
 
-describe('Spy Wrapper Template Path Tests', () => {
+xdescribe('Spy Wrapper Template Path Tests', () => {
   it('a simple component in a regular scene', async () => {
     const { getEditorState } = await renderTestEditorWithCode(exampleProject)
 
