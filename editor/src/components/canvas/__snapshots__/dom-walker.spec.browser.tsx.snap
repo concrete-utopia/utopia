@@ -113,6 +113,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -132,6 +133,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "initial",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
           "width": 0,
@@ -194,6 +197,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -210,6 +214,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -314,6 +320,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -359,6 +366,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -421,6 +430,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 375,
@@ -442,6 +452,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -505,6 +517,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 375,
@@ -526,6 +539,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -589,6 +604,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 375,
@@ -610,6 +626,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -775,6 +793,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -794,6 +813,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "initial",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
           "width": 0,
@@ -856,6 +877,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -872,6 +894,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -930,6 +954,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -976,6 +1001,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -1140,6 +1167,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -1159,6 +1187,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "initial",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
           "width": 0,
@@ -1221,6 +1251,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -1237,6 +1268,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -1311,6 +1344,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -1357,6 +1391,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -1436,6 +1472,7 @@ Object {
         "x": 55,
         "y": 98,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 164,
         "width": 306,
@@ -1478,6 +1515,8 @@ Object {
         "clientHeight": 164,
         "clientWidth": 306,
         "coordinateSystemBounds": null,
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -1541,6 +1580,7 @@ Object {
         "x": 126,
         "y": 125,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 70,
         "width": 125,
@@ -1587,6 +1627,8 @@ Object {
           "x": 55,
           "y": 98,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 164,
           "width": 306,
@@ -1753,6 +1795,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -1772,6 +1815,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "initial",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
           "width": 0,
@@ -1834,6 +1879,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -1850,6 +1896,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -1924,6 +1972,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -1971,6 +2020,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "flex",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -2050,6 +2101,7 @@ Object {
         "x": 55,
         "y": 98,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 164,
         "width": 306,
@@ -2092,6 +2144,8 @@ Object {
         "clientHeight": 164,
         "clientWidth": 306,
         "coordinateSystemBounds": null,
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -2155,6 +2209,7 @@ Object {
         "x": 126,
         "y": 125,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 70,
         "width": 125,
@@ -2201,6 +2256,8 @@ Object {
           "x": 55,
           "y": 98,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 164,
           "width": 306,
@@ -2367,6 +2424,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -2386,6 +2444,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "initial",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
           "width": 0,
@@ -2448,6 +2508,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -2464,6 +2525,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -2538,6 +2601,7 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -2584,6 +2648,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -2663,6 +2729,7 @@ Object {
         "x": 55,
         "y": 98,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 124,
         "width": 266,
@@ -2709,6 +2776,8 @@ Object {
           "x": 0,
           "y": 0,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
           "width": 375,
@@ -2772,6 +2841,7 @@ Object {
         "x": 126,
         "y": 125,
       },
+      "isEmotionOrStyledComponent": false,
       "localFrame": Object {
         "height": 70,
         "width": 125,
@@ -2818,6 +2888,8 @@ Object {
           "x": 55,
           "y": 98,
         },
+        "display": "block",
+        "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 124,
           "width": 266,
