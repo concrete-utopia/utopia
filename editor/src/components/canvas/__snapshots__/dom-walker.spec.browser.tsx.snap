@@ -431,6 +431,7 @@ Object {
         "data-label": "Plane",
         "data-uid": "bbb~~~1",
         "data-utopia-original-uid": "bbb",
+        "skipDeepFreeze": true,
       },
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
@@ -514,6 +515,7 @@ Object {
         "data-label": "Plane",
         "data-uid": "bbb~~~2",
         "data-utopia-original-uid": "bbb",
+        "skipDeepFreeze": true,
       },
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
@@ -597,6 +599,7 @@ Object {
         "data-label": "Plane",
         "data-uid": "bbb~~~3",
         "data-utopia-original-uid": "bbb",
+        "skipDeepFreeze": true,
       },
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
