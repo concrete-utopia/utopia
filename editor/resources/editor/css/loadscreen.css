@@ -62,7 +62,7 @@
   font-family: garamond;
   font-size: 48px;
   font-weight: 100;
-  -webkit-font-smoothing: none;
+  /* -webkit-font-smoothing: none; */
   text-rendering: geometricPrecision;
 }
 
