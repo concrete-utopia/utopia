@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { TemplatePath, InstancePath } from 'src/core/shared/project-file-types'
-import { Utils } from 'src/uuiui-deps'
+import { Utils } from '../../../uuiui-deps'
 import * as TP from '../../../core/shared/template-path'
 import { colorTheme } from '../../../uuiui'
 import { useForceUpdate } from '../../editor/hook-utils'
