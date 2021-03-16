@@ -5,7 +5,11 @@ import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import * as ReactTransformPlugin from 'babel-plugin-transform-react-jsx'
 import { SourceNode } from 'source-map'
 import { Either, left, right } from '../../shared/either'
-import { getDefinedElsewhereFromElement, JSXElement } from '../../shared/element-template'
+import {
+  getDefinedElsewhereFromElement,
+  JSXElement,
+  getJSXElementNameAsString,
+} from '../../shared/element-template'
 import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
 import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
@@ -110,14 +114,28 @@ function babelRewriteJSXArbitraryBlockCode(
       }
     }
   }
-  function handleByPosition(path: BabelTraverse.NodePath<any>): void {
+  function handleByPositionOrName(path: BabelTraverse.NodePath<BabelTypes.JSXElement>): void {
     const pathLocation: {
       line: number
       column: number
-    } = path.node.loc.start
-    const foundElementWithin = elementsWithin.find((e) => {
+    } = path.node.loc?.start ?? { line: -1, column: -1 }
+
+    const name = path.node.openingElement.name
+    const tagName = BabelTypes.isJSXIdentifier(name)
+      ? name.name
+      : BabelTypes.isJSXMemberExpression(name)
+      ? name.property.name
+      : `${name.namespace.name}.${name.name}`
+
+    const foundByLocation = elementsWithin.find((e) => {
       return e.startLine === pathLocation.line && e.startColumn === pathLocation.column
     })
+
+    const foundElementWithin =
+      foundByLocation ??
+      elementsWithin.find((e) => {
+        return tagName === getJSXElementNameAsString(e.element.name)
+      })
 
     if (foundElementWithin != null) {
       transformForElementWithin(
@@ -148,7 +166,7 @@ function babelRewriteJSXArbitraryBlockCode(
             }
           }
           if (!foundByID) {
-            handleByPosition(path)
+            handleByPositionOrName(path)
           }
         },
       },

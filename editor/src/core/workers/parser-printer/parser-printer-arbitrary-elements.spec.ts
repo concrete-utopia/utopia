@@ -318,6 +318,7 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -416,6 +417,7 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -515,6 +517,7 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -702,6 +705,7 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -889,6 +893,7 @@ return { arr: arr };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',

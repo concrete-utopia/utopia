@@ -838,6 +838,7 @@ return { getSizing: getSizing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const jsCode2 = `var spacing = 20`
     const transpiledJsCode2 = `var spacing = 20;
@@ -852,6 +853,7 @@ return { spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const combinedJsCode = `function getSizing(n) {
   return 100 + n
@@ -873,6 +875,7 @@ return { getSizing: getSizing, spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -955,6 +958,7 @@ return { getSizing: getSizing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1053,6 +1057,7 @@ return { getSizing: getSizing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1135,6 +1140,7 @@ return {  };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1214,6 +1220,7 @@ return { spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
@@ -1275,6 +1282,7 @@ return { bgs: bgs, bg: bg };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1348,6 +1356,7 @@ return { greys: greys };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1415,6 +1424,7 @@ return { a: a, b: b };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1485,6 +1495,7 @@ return { a: a, b: b, c: c };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1559,6 +1570,7 @@ return { a: a };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1628,6 +1640,7 @@ return { a: a, b: b };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1702,6 +1715,7 @@ return { bg: bg };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1790,6 +1804,7 @@ return { count: count };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
@@ -1868,6 +1883,7 @@ return { use20: use20 };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
@@ -1927,6 +1943,7 @@ return { mySet: mySet };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
@@ -2004,6 +2021,7 @@ return { spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
@@ -2081,6 +2099,7 @@ return { MyComp: MyComp };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const myCompAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
@@ -2599,6 +2618,7 @@ return { getSizing: getSizing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const jsCode2 = `var spacing = 20`
     const transpiledJSCode2 = `var spacing = 20;
@@ -2613,6 +2633,7 @@ return { spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const combinedJSCode = `function getSizing(n) {
   return 100 + n
@@ -2634,6 +2655,7 @@ return { getSizing: getSizing, spacing: spacing };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -3020,6 +3042,7 @@ return { test: test };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const expectedResult = parseSuccess(
       imports,
@@ -3124,6 +3147,7 @@ return { test: test };`
               version: 3,
               file: 'code.tsx',
             }),
+            {},
           ),
           false,
           emptyComments,
@@ -3576,6 +3600,7 @@ return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
           version: 3,
           file: 'code.tsx',
         }),
+        {},
       ),
       false,
       emptyComments,
@@ -3779,6 +3804,7 @@ return {  };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const view = jsxElement(
       'div',
@@ -3851,6 +3877,7 @@ return { result: result };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const innerBlock = jsxArbitraryBlock(
       'result',
@@ -4066,6 +4093,7 @@ return { a: a };`,
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
 
     const view = jsxElement(

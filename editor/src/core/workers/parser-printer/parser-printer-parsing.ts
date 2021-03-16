@@ -2045,7 +2045,7 @@ export function parseArbitraryNodes(
         sourceFile.fileName,
         sourceFile.text,
         fileSourceNode,
-        [],
+        parsedElementsWithin,
         false,
       )
       const dataUIDFixed = insertDataUIDsIntoCode(
@@ -2062,8 +2062,9 @@ export function parseArbitraryNodes(
             code,
             transpiled,
             definedWithin,
-            definedElsewhere,
+            [...definedElsewhere, JSX_CANVAS_LOOKUP_FUNCTION_NAME],
             transpileResult.sourceMap,
+            inPositionToElementsWithin(parsedElementsWithin),
           )
         },
         transpileEither,
@@ -2171,6 +2172,7 @@ export function parseOutFunctionContents(
           [],
           [],
           null,
+          {},
         )
       }
 
