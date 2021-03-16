@@ -60,6 +60,7 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
     },
     'Name Row Values',
   )
+  console.log(hookResult[0].name, hookResult[0].label)
 
   const insertableComponents = React.useMemo(() => {
     if (fullPath == null) {
