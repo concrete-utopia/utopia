@@ -434,7 +434,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         }
       }
 
-      function walkScene(scene: HTMLElement, index: number): void {
+      function walkScene(
+        scene: HTMLElement,
+        index: number,
+      ): ReadonlyArray<ElementInstanceMetadata> {
         if (scene instanceof HTMLElement) {
           // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
           // and that they can only have a single root element
@@ -468,7 +471,12 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             }
 
             if (cachedMetadata == null || !initComplete) {
-              const rootElements = walkSceneInner(scene, index, scenePath, validPaths)
+              const { childPaths: rootElements, rootMetadata } = walkSceneInner(
+                scene,
+                index,
+                scenePath,
+                validPaths,
+              )
 
               const sceneMetadata = collectMetadata(
                 scene,
@@ -480,18 +488,20 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
                 getComputedStyle,
                 getSpecialMeasurements,
               )
-              rootMetadata.push(sceneMetadata)
+              return [...rootMetadata, sceneMetadata]
             } else {
-              rootMetadata.push(cachedMetadata)
+              let rootMetadataAccumulator = [cachedMetadata]
               // Push the cached metadata for everything from this scene downwards
               Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
                 if (TP.isAncestorOf(elem.templatePath, scenePath)) {
-                  rootMetadata.push(elem)
+                  rootMetadataAccumulator.push(elem)
                 }
               })
+              return rootMetadataAccumulator
             }
           }
         }
+        return [] // verify
       }
 
       function walkCanvasRootFragment(
@@ -499,7 +509,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         index: number,
         canvasRootPath: TemplatePath,
         validPaths: Array<string>,
-      ) {
+      ): ReadonlyArray<ElementInstanceMetadata> {
         if (
           ObserversAvailable &&
           invalidatedSceneIDsRef.current.size === 0 &&
@@ -507,9 +517,14 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           initComplete
         ) {
           // no mutation happened on the entire canvas, just return the old metadata
-          rootMetadata = rootMetadataInStateRef.current
+          return rootMetadataInStateRef.current
         } else {
-          const rootElements = walkSceneInner(canvasRoot, index, canvasRootPath, validPaths)
+          const { childPaths: rootElements, rootMetadata } = walkSceneInner(
+            canvasRoot,
+            index,
+            canvasRootPath,
+            validPaths,
+          )
           // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
           // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
           // to provide a home for the the (really existing) childMetadata
@@ -526,7 +541,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
             emptyComputedStyle,
             emptyAttributeMetadatada,
           )
-          rootMetadata.push(metadata)
+          return [...rootMetadata, metadata]
         }
       }
 
@@ -535,7 +550,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         index: number,
         scenePath: TemplatePath,
         validPaths: Array<string>,
-      ): Array<InstancePath> {
+      ): { childPaths: Array<InstancePath>; rootMetadata: ReadonlyArray<ElementInstanceMetadata> } {
         const globalFrame: CanvasRectangle = globalFrameForElement(
           scene,
           props.scale,
@@ -543,9 +558,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         )
 
         let childPaths: Array<InstancePath> = []
+        let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
 
         scene.childNodes.forEach((childNode) => {
-          const childNodePaths = walkElements(
+          const { childPaths: childNodePaths, rootMetadata } = walkElements(
             childNode,
             index,
             0,
@@ -556,9 +572,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           )
 
           childPaths.push(...childNodePaths)
+          rootMetadataAccumulator.push(...rootMetadata)
         })
 
-        return childPaths
+        return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
       }
 
       // Walks through the DOM producing the structure and values from within.
@@ -570,11 +587,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         originalParentPath: TemplatePath | null,
         uniqueParentPath: TemplatePath,
         validPaths: Array<string>,
-      ): Array<InstancePath> {
+      ): {
+        childPaths: ReadonlyArray<InstancePath>
+        rootMetadata: ReadonlyArray<ElementInstanceMetadata>
+      } {
         if (isScene(element)) {
           // we found a nested scene, restart the walk
-          walkScene(element, index)
-          return []
+          return { childPaths: [], rootMetadata: walkScene(element, index) }
         }
         if (element instanceof HTMLElement) {
           // Determine the uid of this element if it has one.
@@ -626,9 +645,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
           // Build the metadata for the children of this DOM node.
           let childPaths: Array<InstancePath> = []
+          let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
           if (traverseChildren) {
             element.childNodes.forEach((child, childIndex) => {
-              const childNodePaths = walkElements(
+              const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
                 child,
                 childIndex,
                 depth + 1,
@@ -638,6 +658,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
                 validPaths,
               )
               childPaths.push(...childNodePaths)
+              rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
             })
           }
 
@@ -652,21 +673,23 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
               getComputedStyle,
               getSpecialMeasurements,
             )
-            rootMetadata.push(collectedMetadata)
-            return [collectedMetadata.templatePath]
+            rootMetadataAccumulator = [...rootMetadataAccumulator, collectedMetadata]
+            return {
+              rootMetadata: rootMetadataAccumulator,
+              childPaths: [collectedMetadata.templatePath],
+            }
           } else {
-            return childPaths
+            return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
           }
         } else {
-          return []
+          return { childPaths: [], rootMetadata: [] }
         }
       }
 
-      let rootMetadata: Array<ElementInstanceMetadata> = []
       // This assumes that the canvas root is rendering a Storyboard fragment.
       // The necessary validPaths and the root fragment's template path comes from props,
       // because the fragment is invisible in the DOM.
-      walkCanvasRootFragment(
+      const rootMetadata: ReadonlyArray<ElementInstanceMetadata> = walkCanvasRootFragment(
         refOfContainer,
         0,
         props.canvasRootElementTemplatePath,
