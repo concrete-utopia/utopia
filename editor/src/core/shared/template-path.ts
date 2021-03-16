@@ -160,14 +160,23 @@ export function toString(target: TemplatePath): string {
   }
 }
 
-function newScenePath(elementPaths: StaticElementPath[]): ScenePath {
+function newScenePath(elementPaths: ElementPath[]): ScenePath {
   return {
     type: 'scenepath',
     sceneElementPaths: elementPaths,
   }
 }
 
-export const emptyScenePath: StaticScenePath = newScenePath([]) as StaticScenePath
+const emptyElementPath: StaticElementPath = ([] as any) as StaticElementPath
+
+export function staticElementPath(elements: string[]): StaticElementPath {
+  return elements as StaticElementPath
+}
+
+export const emptyScenePath: StaticScenePath = {
+  type: 'scenepath',
+  sceneElementPaths: [],
+}
 
 function newInstancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
   return {
@@ -176,20 +185,19 @@ function newInstancePath(scene: ScenePath, elementPath: ElementPath): InstancePa
   }
 }
 
-export const emptyInstancePath: StaticInstancePath = newInstancePath(
-  emptyScenePath,
-  [],
-) as StaticInstancePath
+export const emptyInstancePath: StaticInstancePath = {
+  scene: emptyScenePath,
+  element: emptyElementPath,
+}
 
 export function scenePath(elementPaths: ElementPath[]): ScenePath {
   if (elementPaths.length === 0 || (elementPaths.length === 1 && elementPaths[0].length === 0)) {
     return emptyScenePath
   }
 
-  const staticElementPaths = elementPaths as StaticElementPath[]
-  const pathCache = getScenePathCache(staticElementPaths)
+  const pathCache = getScenePathCache(elementPaths)
   if (pathCache.cached == null) {
-    const newPath = newScenePath(staticElementPaths)
+    const newPath = newScenePath(elementPaths)
     pathCache.cached = newPath
     return newPath
   } else {
@@ -197,7 +205,7 @@ export function scenePath(elementPaths: ElementPath[]): ScenePath {
   }
 }
 
-export function staticScenePath(elementPaths: ElementPath[]): StaticScenePath {
+export function staticScenePath(elementPaths: StaticElementPath[]): StaticScenePath {
   return scenePath(elementPaths) as StaticScenePath
 }
 
@@ -216,7 +224,10 @@ export function instancePath(scene: ScenePath, elementPath: ElementPath): Instan
   }
 }
 
-export function staticInstancePath(scene: ScenePath, elementPath: ElementPath): StaticInstancePath {
+export function staticInstancePath(
+  scene: StaticScenePath,
+  elementPath: StaticElementPath,
+): StaticInstancePath {
   return instancePath(scene, elementPath) as StaticInstancePath
 }
 
@@ -247,12 +258,13 @@ export function scenePathPartOfTemplatePath(path: TemplatePath): ScenePath {
 
 export function instancePathForElementAtScenePath(path: ScenePath): StaticInstancePath {
   // Uses the last `ElementPath` in a `ScenePath` to create an `InstancePath` pointing to that element
-  const lastElementPath = last(path.sceneElementPaths)
+  const staticScene = dynamicScenePathToStaticScenePath(path)
+  const lastElementPath = last(staticScene.sceneElementPaths)
   if (lastElementPath == null) {
     return emptyInstancePath
   } else {
-    const targetSceneElementPaths = dropLast(path.sceneElementPaths)
-    const targetScenePath = scenePath(targetSceneElementPaths)
+    const targetSceneElementPaths = dropLast(staticScene.sceneElementPaths)
+    const targetScenePath = staticScenePath(targetSceneElementPaths)
     return staticInstancePath(targetScenePath, lastElementPath)
   }
 }
@@ -865,12 +877,12 @@ export function isFromSameSceneAs(a: TemplatePath, b: TemplatePath): boolean {
   return scenePathsEqual(scenePathPartOfTemplatePath(a), scenePathPartOfTemplatePath(b))
 }
 
+function dynamicElementPathToStaticElementPath(element: ElementPath): StaticElementPath {
+  return element.map(extractOriginalUidFromIndexedUid) as StaticElementPath
+}
+
 function dynamicScenePathToStaticScenePath(scene: ScenePath): StaticScenePath {
-  return staticScenePath(
-    scene.sceneElementPaths.map((sceneElementPath) =>
-      sceneElementPath.map(extractOriginalUidFromIndexedUid),
-    ),
-  )
+  return staticScenePath(scene.sceneElementPaths.map(dynamicElementPathToStaticElementPath))
 }
 
 export function dynamicPathToStaticPath(path: ScenePath): StaticScenePath
@@ -882,7 +894,7 @@ export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath 
   } else {
     return staticInstancePath(
       dynamicScenePathToStaticScenePath(path.scene),
-      path.element.map(extractOriginalUidFromIndexedUid),
+      dynamicElementPathToStaticElementPath(path.element),
     )
   }
 }
@@ -897,8 +909,8 @@ export function staticScenePathContainsElementPath(
   scene: ScenePath,
   elementPath: ElementPath,
 ): boolean {
-  return scene.sceneElementPaths.some((sceneElementPath) => {
-    const staticSceneElementPath = sceneElementPath.map(extractOriginalUidFromIndexedUid)
-    return elementPathsEqual(staticSceneElementPath, elementPath)
+  const staticScene = dynamicScenePathToStaticScenePath(scene)
+  return staticScene.sceneElementPaths.some((sceneElementPath) => {
+    return elementPathsEqual(sceneElementPath, elementPath)
   })
 }
