@@ -40,7 +40,7 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
       const newNamePath = newResult.name?.propertyPath != null ? newResult.name?.propertyPath : null
       const namePathEquals = PP.pathsEqual(oldNamePath, newNamePath)
       const nameVariableEquals = oldResult.name?.baseVariable === newResult.name?.baseVariable
-      return pathEquals || labelEquals || iconPropsEqual || namePathEquals || nameVariableEquals
+      return pathEquals && labelEquals && iconPropsEqual && namePathEquals && nameVariableEquals
     },
   )
 }
