@@ -172,7 +172,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
         onClick={toggleOpen}
       >
         <SmallerIcons.ExpansionArrowDown
-          isDisabled={popupEnabled}
+          isDisabled={!popupEnabled}
           color={getEditContextStyle().stroke as IcnColor}
           style={{
             flexGrow: 0,
