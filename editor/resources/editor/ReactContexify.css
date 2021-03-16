@@ -6,7 +6,7 @@
   border-radius: 1px;
   background-color: var(--contextmenu-background);
   box-sizing: border-box;
-  box-shadow: rgba(0, 0, 0, 0.3) 0 10px 20px;
+  box-shadow: rgb(218 218 218 / 30%) -1px 3px 4px 0px, inset 0px 0px 0px 1px hsl(0deg 0% 90%);
   padding: 4px 0;
 }
 .react-contexify .react-contexify__submenu {
@@ -20,7 +20,7 @@
 .react-contexify__submenu-arrow {
   font-size: 10px;
   position: absolute;
-  right: 10px;
+  right: 6px;
   line-height: 12px;
 }
 
@@ -33,15 +33,18 @@
 }
 
 .react-contexify__item {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500; /* medium */
   cursor: default;
   position: relative;
+  margin-left: 8px;
+  margin-right: 8px;
 }
 .react-contexify__item:not(.react-contexify__item--disabled):hover
   > .react-contexify__item__content {
   color: var(--contextmenu-highlightForeground);
   background-color: var(--contextmenu-highlightBackground);
+  border-radius: 2px;
 }
 .react-contexify__item:not(.react-contexify__item--disabled):hover > .react-contexify__submenu {
   pointer-events: initial;
@@ -49,10 +52,10 @@
 }
 .react-contexify__item--disabled {
   cursor: default;
-  opacity: 0.5;
+  opacity: 0.67;
 }
 .react-contexify__item__content {
-  min-width: 160px;
+  min-width: 190px;
   padding: 4px 12px;
   display: inline-block;
   text-align: left;
@@ -63,7 +66,6 @@
   font-size: inherit;
   margin-right: 6px;
 }
-
 
 @keyframes react-contexify__scaleIn {
   from {
@@ -140,7 +142,7 @@
 }
 .react-contexify__will-enter--flip {
   -webkit-backface-visibility: visible !important;
-          backface-visibility: visible !important;
+  backface-visibility: visible !important;
   transform-origin: top center;
   animation: react-contexify__flipInX 0.3s;
 }
@@ -149,7 +151,7 @@
   transform-origin: top center;
   animation: react-contexify__flipOutX 0.3s;
   -webkit-backface-visibility: visible !important;
-          backface-visibility: visible !important;
+  backface-visibility: visible !important;
 }
 
 @keyframes swing-in-top-fwd {

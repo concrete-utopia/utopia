@@ -201,7 +201,7 @@ const light = {
   navigatorComponentIconBorder: base.orange,
 
   // inverted: toasts, context menu, notifications
-  contextMenuBackground: lightPrimitives.neutralBackground,
+  contextMenuBackground: lightPrimitives.secondaryBackground,
   contextMenuForeground: lightPrimitives.neutralForeground,
   contextMenuHighlightForeground: base.white,
   contextMenuHighlightBackground: lightBase.primary,
@@ -520,6 +520,16 @@ const noticeStyles = {
   disconnected: { background: backgroundURLs.noise, color: 'white' },
 }
 
+const textNoticeStyles = {
+  info: {},
+  success: { color: base.neongreen.value },
+  primary: { color: base.blue.value },
+  notice: { color: base.darkgray.value },
+  warning: { color: base.red.value },
+  error: { color: base.red.value },
+  disconnected: { background: backgroundURLs.noise, color: 'white' },
+}
+
 const shadowStyles = {
   small: {
     boxShadow: `0px 1p 3px 0px rgba(0,0,0,.2)`,
@@ -543,6 +553,7 @@ export const UtopiaStyles = {
     ...backgroundURLs,
   },
   noticeStyles,
+  textNoticeStyles,
   textBackgroundStyles,
   shadowStyles,
   input,

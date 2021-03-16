@@ -11,6 +11,7 @@ import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import * as fastDeepEquals from 'fast-deep-equal'
 import { TemplatePath } from '../core/shared/project-file-types'
+import { Icons } from '../uuiui'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -103,7 +104,9 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
         hidden={item.isHidden ?? this.isHidden}
       >
         <span className='react-contexify-span'>{item.name}</span>
-        <span className='shortcut'>{item.shortcut}</span>
+        <span className='shortcut' style={{ opacity: 0.5 }}>
+          {item.shortcut}
+        </span>
       </Item>
     )
   }
@@ -116,7 +119,11 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
         {items.map((item: Submenu<T> | SimpleItem<T>, index: number) => {
           if (item.type === 'submenu') {
             return (
-              <SubmenuComponent key={`context-menu-${index}`} label={item.label}>
+              <SubmenuComponent
+                key={`context-menu-${index}`}
+                label={item.label}
+                arrow={<Icons.ExpansionArrowRight style={{ marginLeft: 8 }} />}
+              >
                 {item.items.map((submenuItem, submenuIndex) =>
                   this.renderItem(submenuItem, submenuIndex),
                 )}

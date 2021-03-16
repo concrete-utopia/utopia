@@ -9,6 +9,13 @@ body {
   overscroll-behavior-x: contain;
 }
 
+a {
+  text-decoration: none;
+  color: #007aff;
+}
+a:hover {
+}
+
 div,
 span,
 img,
