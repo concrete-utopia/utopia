@@ -9,7 +9,7 @@ import * as TP from '../../../core/shared/template-path'
 import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-state'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
-import { FlexRow, Icons } from '../../../uuiui'
+import { FlexRow, Icons, UtopiaTheme } from '../../../uuiui'
 import { TemplatePath } from 'src/core/shared/project-file-types'
 // import { getElementsToTarget } from '../../../components/inspector/common/inspector-utils'
 
@@ -80,8 +80,13 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
   })
 
   return (
-    <FlexRow style={{ paddingLeft: 6, paddingTop: 4 }}>
-      <Icons.Component />
+    <FlexRow
+      style={{
+        height: UtopiaTheme.layout.rowHeight.medium,
+        padding: `0px ${UtopiaTheme.layout.rowHorizontalPadding}px`,
+      }}
+    >
+      <Icons.Component style={{ marginRight: 4 }} />
       {elements}
     </FlexRow>
   )
