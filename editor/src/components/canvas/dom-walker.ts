@@ -393,7 +393,6 @@ function collectMetadata(
   )
 }
 
-// TODO Balazs Move me out of here!
 function getComputedStyle(
   element: HTMLElement,
   path: TemplatePath,
