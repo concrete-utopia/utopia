@@ -349,6 +349,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
         const parentProvidesLayout = element.parentElement === element.offsetParent
         const parentFlexDirection = parentElementStyle?.flexDirection ?? null
+        const flexDirection = elementStyle.flexDirection ?? null
 
         const margin = applicative4Either(
           applicativeSidesPxTransform,
@@ -394,6 +395,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           clientWidth,
           clientHeight,
           parentFlexDirection,
+          flexDirection,
           element.localName,
         )
       }
