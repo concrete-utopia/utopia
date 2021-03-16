@@ -13,11 +13,10 @@ import { FlexRow, Icons } from '../../../uuiui'
 import { TemplatePath } from 'src/core/shared/project-file-types'
 // import { getElementsToTarget } from '../../../components/inspector/common/inspector-utils'
 
-
 interface ElementPathElement {
   name?: string
   path: TemplatePath
-} 
+}
 
 export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
   const { dispatch, jsxMetadataKILLME, rootComponents, selectedViews } = useEditorState((store) => {

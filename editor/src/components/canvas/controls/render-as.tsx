@@ -19,7 +19,6 @@ import {
 } from '../../../shared/project-components'
 import { usePossiblyResolvedPackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
 
-
 export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
   const hookResult = useNamesAndIconsSelectedViews()
   const constrolStatus = 'simple'
