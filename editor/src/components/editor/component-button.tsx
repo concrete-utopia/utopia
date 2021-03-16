@@ -190,7 +190,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
               left: 0,
               top: 30,
               borderRadius: 2,
-              zIndex: 99999,
+              zIndex: 1,
               width: UtopiaTheme.layout.inspectorWidth,
               height: 100,
               background: UtopiaTheme.color.neutralBackground.value,

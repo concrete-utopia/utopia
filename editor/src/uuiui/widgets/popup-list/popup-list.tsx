@@ -40,6 +40,7 @@ interface PopupListProps {
   style?: React.CSSProperties
   containerMode?: ContainerMode
   controlStyles?: ControlStyles
+  autoFocus?: boolean
   disabled?: boolean
   icon?: IcnProps
 }
@@ -323,7 +324,7 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
           minWidth: 150,
           maxWidth: 250,
           boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 4px 11px',
-          zIndex: 1,
+          zIndex: 999999,
           boxSizing: 'border-box',
           borderRadius: UtopiaTheme.inputBorderRadius,
           position: 'absolute',
