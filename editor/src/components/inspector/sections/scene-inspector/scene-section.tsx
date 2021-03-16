@@ -17,6 +17,8 @@ import {
 import {
   isJSXAttributeOtherJavaScript,
   jsxAttributeOtherJavaScript,
+  jsxAttributeValue,
+  jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
 import { dropFileExtension } from '../../../../core/shared/file-utils'
 import { getWarningIconProps } from '../../../../uuiui/warning-icon'
@@ -44,6 +46,14 @@ import {
   SimpleNumberInput,
   NumberInput,
 } from '../../../../uuiui'
+import {
+  getComponentGroupsAsSelectOptions,
+  InsertableComponent,
+} from '../../../shared/project-components'
+import { usePossiblyResolvedPackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
+import { addImports, setSceneProp } from '../../../editor/actions/action-creators'
+import { ScenePath } from '../../../../core/shared/project-file-types'
+import { emptyComments } from '../../../../core/workers/parser-printer/parser-printer-comments'
 
 const simpleControlStatus: ControlStatus = 'simple'
 const simpleControlStyles = getControlStyles(simpleControlStatus)
@@ -63,55 +73,92 @@ function useSceneTarget() {
   )
 }
 
-export const SceneSection = betterReactMemo('SceneSection', () => {
+export interface SceneSectionProps {
+  scenePath: ScenePath
+}
+
+export const SceneSection = betterReactMemo('SceneSection', (props: SceneSectionProps) => {
   const frameLeft = useInspectorLayoutInfo('left')
   const frameTop = useInspectorLayoutInfo('top')
   const frameWidth = useInspectorLayoutInfo('Width')
   const frameHeight = useInspectorLayoutInfo('Height')
 
   const sceneTarget = useSceneTarget()
-  // TODO FIXME investigate this useKeepReferenceEqualityIfPossible here, might be expensive!
-  const { propertyControlsInfo, components, openFileFullPath } = useKeepReferenceEqualityIfPossible(
-    useEditorState((store) => {
-      return {
-        propertyControlsInfo: store.editor.propertyControlsInfo,
-        components: getOpenUtopiaJSXComponentsFromState(store.editor),
-        openFileFullPath: getOpenFilename(store.editor),
-      }
-    }, 'SceneSection'),
-  )
 
-  const filteredComponents = components.filter(
-    (component) => component.name !== BakedInStoryboardVariableName,
-  ) // FIXME getOpenUtopiaJSXComponentsFromState shouldn't return that one
+  const {
+    packageStatus,
+    propertyControlsInfo,
+    projectContents,
+    dispatch,
+    currentlyOpenFilename,
+  } = useEditorState((store) => {
+    return {
+      packageStatus: store.editor.nodeModules.packageStatus,
+      propertyControlsInfo: store.editor.propertyControlsInfo,
+      projectContents: store.editor.projectContents,
+      dispatch: store.dispatch,
+      currentlyOpenFilename: store.editor.canvas.openFile?.filename ?? null,
+    }
+  }, 'SceneSection')
 
-  const options: Array<SelectOption> =
-    openFileFullPath == null
+  const dependencies = usePossiblyResolvedPackageDependencies()
+
+  const insertableComponents = React.useMemo(() => {
+    return currentlyOpenFilename == null
       ? []
-      : filteredComponents.map((component) => {
-          const componentName = component.name
-          const defaultProps = defaultPropertiesForComponentInFile(
-            componentName,
-            dropFileExtension(openFileFullPath),
-            propertyControlsInfo,
-          )
-          const detectedProps = component.propsUsed
-          const warningMessage = findMissingDefaultsAndGetWarning(detectedProps, defaultProps)
-          const warningIconProps =
-            warningMessage == null ? undefined : getWarningIconProps(warningMessage)
-          return {
-            label: componentName,
-            value: componentName,
-            icon: warningIconProps,
-          } as SelectOption
-        })
+      : getComponentGroupsAsSelectOptions(
+          packageStatus,
+          propertyControlsInfo,
+          projectContents,
+          dependencies,
+          currentlyOpenFilename,
+        )
+  }, [packageStatus, propertyControlsInfo, projectContents, dependencies, currentlyOpenFilename])
+
+  const currentTargetComponentOption = React.useMemo(() => {
+    function searchOptions(selectOptions: Array<SelectOption>): SelectOption | undefined {
+      for (const innerOption of selectOptions) {
+        const innerResult = searchOption(innerOption)
+        if (innerResult != null) {
+          return innerResult
+        }
+      }
+      return undefined
+    }
+    function searchOption(selectOption: SelectOption): SelectOption | undefined {
+      if (selectOption.value != null) {
+        const value: InsertableComponent = selectOption.value
+        if (value.name === sceneTarget.value) {
+          return selectOption
+        }
+      }
+      if (selectOption.options != null) {
+        const optionsResult = searchOptions(selectOption.options)
+        if (optionsResult != null) {
+          return optionsResult
+        }
+      }
+      return undefined
+    }
+    return searchOptions(insertableComponents)
+  }, [insertableComponents, sceneTarget])
 
   const onSelect = React.useCallback(
     (selectOption: SelectOption) => {
-      const value = selectOption.value
-      sceneTarget.onSubmitValue(value)
+      const value: InsertableComponent = selectOption.value
+      dispatch(
+        [
+          addImports(value.importsToAdd),
+          setSceneProp(
+            props.scenePath,
+            PathForSceneComponent,
+            jsxAttributeOtherJavaScript(value.name, `return ${value.name}`, [value.name], null),
+          ),
+        ],
+        'everyone',
+      )
     },
-    [sceneTarget],
+    [props.scenePath, dispatch],
   )
 
   return (
@@ -128,14 +175,9 @@ export const SceneSection = betterReactMemo('SceneSection', () => {
           key='target-component'
           onSubmitValue={onSelect}
           controlStyles={simpleControlStyles}
-          value={
-            {
-              value: sceneTarget.value,
-              label: sceneTarget.value,
-            } as SelectOption
-          }
+          value={currentTargetComponentOption}
           style={{ gridColumn: '1 / span 21' }}
-          options={options}
+          options={insertableComponents}
         />
       </PropertyRow>
       <InspectorSubsectionHeader>Layout</InspectorSubsectionHeader>

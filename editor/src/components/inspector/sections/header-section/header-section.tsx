@@ -14,9 +14,10 @@ import {
 import { allHtmlElements } from '../../../../utils/html-elements'
 import { UtopiaTheme, UtopiaStyles, colorTheme, Section, H2, FlexRow } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
+import { Imports } from '../../../../core/shared/project-file-types'
 
 export interface HeaderSectionCoreProps extends ElementPathProps {
-  onElementTypeChange: (value: JSXElementName) => void
+  onElementTypeChange: (value: JSXElementName, importsToAdd: Imports) => void
   style?: React.CSSProperties
   className?: string
 }

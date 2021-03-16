@@ -37,7 +37,7 @@ describe('Scene Section', () => {
         selectedViews={selectedViews}
         editorStoreData={storeHookForTest}
       >
-        <SceneSection />
+        <SceneSection scenePath={ScenePathForTestUiJsFile} />
       </TestInspectorContextProvider>,
     )
 
