@@ -185,6 +185,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
       {isOpen ? (
         <OnClickOutsideHOC onClickOutside={closeAndEatEvent}>
           <div
+            tabIndex={0}
             style={{
               position: 'absolute',
               left: 0,
