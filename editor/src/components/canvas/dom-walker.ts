@@ -316,378 +316,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         return getCanvasRectangleFromElement(refOfContainer, props.scale)
       })
 
-      function getSpecialMeasurements(element: HTMLElement): SpecialSizeMeasurements {
-        const elementStyle = window.getComputedStyle(element)
-        const layoutSystemForChildren = elementLayoutSystem(elementStyle)
-        const position = getPosition(elementStyle)
-
-        const offset = {
-          x: roundToNearestHalf(element.offsetLeft),
-          y: roundToNearestHalf(element.offsetTop),
-        } as LocalPoint
-
-        const coordinateSystemBounds =
-          element.offsetParent instanceof HTMLElement
-            ? globalFrameForElement(element.offsetParent, props.scale, containerRect)
-            : null
-
-        const immediateParentBounds =
-          element.parentElement instanceof HTMLElement
-            ? globalFrameForElement(element.parentElement, props.scale, containerRect)
-            : null
-
-        const parentElementStyle =
-          element.parentElement == null ? null : window.getComputedStyle(element.parentElement)
-        const isParentNonStatic = isElementNonStatic(parentElementStyle)
-
-        const providesBoundsForChildren = isElementNonStatic(elementStyle)
-
-        const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
-        const parentProvidesLayout = element.parentElement === element.offsetParent
-        const parentFlexDirection = parentElementStyle?.flexDirection ?? null
-
-        const margin = applicative4Either(
-          applicativeSidesPxTransform,
-          parseCSSLength(elementStyle.marginTop),
-          parseCSSLength(elementStyle.marginRight),
-          parseCSSLength(elementStyle.marginBottom),
-          parseCSSLength(elementStyle.marginLeft),
-        )
-
-        const padding = applicative4Either(
-          applicativeSidesPxTransform,
-          parseCSSLength(elementStyle.paddingTop),
-          parseCSSLength(elementStyle.paddingRight),
-          parseCSSLength(elementStyle.paddingBottom),
-          parseCSSLength(elementStyle.paddingLeft),
-        )
-
-        let naturalWidth: number | null = null
-        let naturalHeight: number | null = null
-        if (element.tagName === 'IMG') {
-          naturalWidth = roundToNearestHalf((element as HTMLImageElement).naturalWidth)
-          naturalHeight = roundToNearestHalf((element as HTMLImageElement).naturalHeight)
-        }
-
-        let clientWidth = roundToNearestHalf(element.clientWidth)
-        let clientHeight = roundToNearestHalf(element.clientHeight)
-
-        return specialSizeMeasurements(
-          offset,
-          coordinateSystemBounds,
-          immediateParentBounds,
-          parentProvidesLayout,
-          isParentNonStatic,
-          parentLayoutSystem,
-          layoutSystemForChildren,
-          providesBoundsForChildren,
-          elementStyle.display,
-          position,
-          isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
-          isRight(padding) ? padding.value : sides(undefined, undefined, undefined, undefined),
-          naturalWidth,
-          naturalHeight,
-          clientWidth,
-          clientHeight,
-          parentFlexDirection,
-          element.localName,
-        )
-      }
-
-      function getComputedStyle(
-        element: HTMLElement,
-        path: TemplatePath,
-      ): { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null } {
-        const isSelected = selectedViews.some((sv) => TP.pathsEqual(sv, path))
-        if (!isSelected) {
-          // the element is not among the selected views, skip computing the style
-          return {
-            computedStyle: null,
-            attributeMetadata: null,
-          }
-        }
-        const elementStyle = window.getComputedStyle(element)
-        const attributesSetByStylesheet = getCachedAttributesComingFromStyleSheets(
-          invalidatedPathsForStylesheetCacheRef,
-          path,
-          element,
-        )
-        let computedStyle: ComputedStyle = {}
-        let attributeMetadata: StyleAttributeMetadata = {}
-        if (elementStyle != null) {
-          Object.keys(elementStyle).forEach((key) => {
-            // Accessing the value directly often doesn't work, and using `getPropertyValue` requires
-            // using dashed case rather than camel case
-            const caseCorrectedKey = camelCaseToDashed(key)
-            const propertyValue = elementStyle.getPropertyValue(caseCorrectedKey)
-            if (propertyValue != '') {
-              computedStyle[key] = propertyValue
-              const isSetFromStyleSheet = attributesSetByStylesheet.has(key)
-              if (isSetFromStyleSheet) {
-                attributeMetadata[key] = { fromStyleSheet: true }
-              }
-            }
-          })
-        }
-
-        return {
-          computedStyle: computedStyle,
-          attributeMetadata: attributeMetadata,
-        }
-      }
-
-      function walkScene(
-        scene: HTMLElement,
-        index: number,
-      ): ReadonlyArray<ElementInstanceMetadata> {
-        if (scene instanceof HTMLElement) {
-          // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
-          // and that they can only have a single root element
-          const sceneIndexAttr = scene.attributes.getNamedItemNS(null, 'data-utopia-scene-id')
-          const validPathsAttr = scene.attributes.getNamedItemNS(null, 'data-utopia-valid-paths')
-          const sceneID = sceneIndexAttr?.value ?? null
-          const scenePath = sceneID == null ? null : TP.fromString(sceneID)
-
-          if (
-            sceneID != null &&
-            scenePath != null &&
-            TP.isScenePath(scenePath) &&
-            validPathsAttr != null
-          ) {
-            const validPaths = validPathsAttr.value.split(' ')
-            let cachedMetadata: ElementInstanceMetadata | null = null
-            if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
-              if (!invalidatedSceneIDsRef.current.has(sceneID)) {
-                // we can use the cache, if it exists
-                const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
-                  scenePath,
-                  rootMetadataInStateRef.current,
-                )
-                if (elementFromCurrentMetadata != null) {
-                  cachedMetadata = elementFromCurrentMetadata
-                }
-              } else {
-                // we proceed with the walk
-                invalidatedSceneIDsRef.current.delete(sceneID) // Mutation!
-              }
-            }
-
-            if (cachedMetadata == null || !initComplete) {
-              const { childPaths: rootElements, rootMetadata } = walkSceneInner(
-                scene,
-                index,
-                scenePath,
-                validPaths,
-              )
-
-              const sceneMetadata = collectMetadata(
-                scene,
-                TP.instancePathForElementAtScenePath(scenePath),
-                canvasPoint({ x: 0, y: 0 }),
-                rootElements,
-                props.scale,
-                containerRect,
-                getComputedStyle,
-                getSpecialMeasurements,
-              )
-              return [...rootMetadata, sceneMetadata]
-            } else {
-              let rootMetadataAccumulator = [cachedMetadata]
-              // Push the cached metadata for everything from this scene downwards
-              Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
-                if (TP.isAncestorOf(elem.templatePath, scenePath)) {
-                  rootMetadataAccumulator.push(elem)
-                }
-              })
-              return rootMetadataAccumulator
-            }
-          }
-        }
-        return [] // verify
-      }
-
-      function walkCanvasRootFragment(
-        canvasRoot: HTMLElement,
-        index: number,
-        canvasRootPath: TemplatePath,
-        validPaths: Array<string>,
-      ): ReadonlyArray<ElementInstanceMetadata> {
-        if (
-          ObserversAvailable &&
-          invalidatedSceneIDsRef.current.size === 0 &&
-          rootMetadataInStateRef.current.length > 0 &&
-          initComplete
-        ) {
-          // no mutation happened on the entire canvas, just return the old metadata
-          return rootMetadataInStateRef.current
-        } else {
-          const { childPaths: rootElements, rootMetadata } = walkSceneInner(
-            canvasRoot,
-            index,
-            canvasRootPath,
-            validPaths,
-          )
-          // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
-          // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
-          // to provide a home for the the (really existing) childMetadata
-          const metadata: ElementInstanceMetadata = elementInstanceMetadata(
-            canvasRootPath as InstancePath,
-            left('Storyboard'),
-            {},
-            { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
-            { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
-            rootElements,
-            false,
-            false,
-            emptySpecialSizeMeasurements,
-            emptyComputedStyle,
-            emptyAttributeMetadatada,
-          )
-          return [...rootMetadata, metadata]
-        }
-      }
-
-      function walkSceneInner(
-        scene: HTMLElement,
-        index: number,
-        scenePath: TemplatePath,
-        validPaths: Array<string>,
-      ): { childPaths: Array<InstancePath>; rootMetadata: ReadonlyArray<ElementInstanceMetadata> } {
-        const globalFrame: CanvasRectangle = globalFrameForElement(
-          scene,
-          props.scale,
-          containerRect,
-        )
-
-        let childPaths: Array<InstancePath> = []
-        let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
-
-        scene.childNodes.forEach((childNode) => {
-          const { childPaths: childNodePaths, rootMetadata } = walkElements(
-            childNode,
-            index,
-            0,
-            globalFrame,
-            scenePath,
-            scenePath,
-            validPaths,
-          )
-
-          childPaths.push(...childNodePaths)
-          rootMetadataAccumulator.push(...rootMetadata)
-        })
-
-        return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
-      }
-
-      // Walks through the DOM producing the structure and values from within.
-      function walkElements(
-        element: Node,
-        index: number,
-        depth: number,
-        parentPoint: CanvasPoint,
-        originalParentPath: TemplatePath | null,
-        uniqueParentPath: TemplatePath,
-        validPaths: Array<string>,
-      ): {
-        childPaths: ReadonlyArray<InstancePath>
-        rootMetadata: ReadonlyArray<ElementInstanceMetadata>
-      } {
-        if (isScene(element)) {
-          // we found a nested scene, restart the walk
-          return { childPaths: [], rootMetadata: walkScene(element, index) }
-        }
-        if (element instanceof HTMLElement) {
-          // Determine the uid of this element if it has one.
-          const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
-          const parentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_PARENTS_KEY)
-          const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
-          const originalParentUIDsAttribute = getDOMAttribute(
-            element,
-            UTOPIA_UID_ORIGINAL_PARENTS_KEY,
-          )
-          const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
-
-          const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
-
-          // Build the path for this element, substituting an index in if there is no uid attribute.
-          function makeIndexElement(): id {
-            return `index-${index}`
-          }
-          const pathElement = Utils.defaultIfNullLazy<id>(uidAttribute, makeIndexElement)
-          const originalPathElement = Utils.defaultIfNull(uidAttribute, originalUIDAttribute)
-          const parentAttribute = Utils.defaultIfNull(
-            parentUIDsAttribute,
-            originalParentUIDsAttribute,
-          )
-
-          // Build the unique path for this element.
-          let uniquePath: TemplatePath = uniqueParentPath
-          if (parentUIDsAttribute != null) {
-            uniquePath = TP.appendToPath(uniquePath, parentUIDsAttribute.split('/'))
-          }
-          uniquePath = TP.appendToPath(uniquePath, pathElement)
-
-          const globalFrame = globalFrameForElement(element, props.scale, containerRect)
-
-          // Build the original path for this element.
-          let originalPath: TemplatePath | null = originalParentPath
-          if (originalPath != null) {
-            if (parentAttribute != null) {
-              originalPath = TP.appendToPath(originalPath, parentAttribute.split('/'))
-            }
-            if (originalPathElement != null) {
-              originalPath = TP.appendToPath(originalPath, originalPathElement)
-            }
-          }
-
-          // Check this is a path we're interested in, otherwise skip straight to the children
-          const pathIsValid = isValidPath(Utils.defaultIfNull(uniquePath, originalPath), validPaths)
-          const pathForChildren = pathIsValid ? uniquePath : uniqueParentPath
-
-          // Build the metadata for the children of this DOM node.
-          let childPaths: Array<InstancePath> = []
-          let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
-          if (traverseChildren) {
-            element.childNodes.forEach((child, childIndex) => {
-              const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
-                child,
-                childIndex,
-                depth + 1,
-                globalFrame,
-                originalPath,
-                pathForChildren,
-                validPaths,
-              )
-              childPaths.push(...childNodePaths)
-              rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
-            })
-          }
-
-          if (pathIsValid) {
-            const collectedMetadata = collectMetadata(
-              element,
-              uniquePath,
-              parentPoint,
-              childPaths,
-              props.scale,
-              containerRect,
-              getComputedStyle,
-              getSpecialMeasurements,
-            )
-            rootMetadataAccumulator = [...rootMetadataAccumulator, collectedMetadata]
-            return {
-              rootMetadata: rootMetadataAccumulator,
-              childPaths: [collectedMetadata.templatePath],
-            }
-          } else {
-            return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
-          }
-        } else {
-          return { childPaths: [], rootMetadata: [] }
-        }
-      }
-
       // This assumes that the canvas root is rendering a Storyboard fragment.
       // The necessary validPaths and the root fragment's template path comes from props,
       // because the fragment is invisible in the DOM.
@@ -696,6 +324,13 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         0,
         props.canvasRootElementTemplatePath,
         props.validRootPaths.map(TP.toString),
+        rootMetadataInStateRef,
+        invalidatedSceneIDsRef,
+        invalidatedPathsForStylesheetCacheRef,
+        selectedViews,
+        initComplete,
+        props.scale,
+        containerRect,
       )
       if (LogDomWalkerPerformance) {
         performance.mark('DOM_WALKER_END')
@@ -716,11 +351,8 @@ function collectMetadata(
   children: InstancePath[],
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-  getComputedStyle: (
-    element: HTMLElement,
-    path: TemplatePath,
-  ) => { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null },
-  getSpecialMeasurements: (element: HTMLElement) => SpecialSizeMeasurements,
+  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  selectedViews: Array<TemplatePath>,
 ) {
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
@@ -739,7 +371,12 @@ function collectMetadata(
     elementProps[UTOPIA_LABEL_KEY] = labelAttribute
   }
 
-  const { computedStyle, attributeMetadata } = getComputedStyle(element, instancePath)
+  const { computedStyle, attributeMetadata } = getComputedStyle(
+    element,
+    instancePath,
+    invalidatedPathsForStylesheetCacheRef,
+    selectedViews,
+  )
 
   return elementInstanceMetadata(
     instancePath,
@@ -750,9 +387,136 @@ function collectMetadata(
     children,
     false,
     false,
-    getSpecialMeasurements(element),
+    getSpecialMeasurements(element, scale, containerRectLazy),
     computedStyle,
     attributeMetadata,
+  )
+}
+
+// TODO Balazs Move me out of here!
+function getComputedStyle(
+  element: HTMLElement,
+  path: TemplatePath,
+  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  selectedViews: Array<TemplatePath>,
+): { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null } {
+  const isSelected = selectedViews.some((sv) => TP.pathsEqual(sv, path))
+  if (!isSelected) {
+    // the element is not among the selected views, skip computing the style
+    return {
+      computedStyle: null,
+      attributeMetadata: null,
+    }
+  }
+  const elementStyle = window.getComputedStyle(element)
+  const attributesSetByStylesheet = getCachedAttributesComingFromStyleSheets(
+    invalidatedPathsForStylesheetCacheRef,
+    path,
+    element,
+  )
+  let computedStyle: ComputedStyle = {}
+  let attributeMetadata: StyleAttributeMetadata = {}
+  if (elementStyle != null) {
+    Object.keys(elementStyle).forEach((key) => {
+      // Accessing the value directly often doesn't work, and using `getPropertyValue` requires
+      // using dashed case rather than camel case
+      const caseCorrectedKey = camelCaseToDashed(key)
+      const propertyValue = elementStyle.getPropertyValue(caseCorrectedKey)
+      if (propertyValue != '') {
+        computedStyle[key] = propertyValue
+        const isSetFromStyleSheet = attributesSetByStylesheet.has(key)
+        if (isSetFromStyleSheet) {
+          attributeMetadata[key] = { fromStyleSheet: true }
+        }
+      }
+    })
+  }
+
+  return {
+    computedStyle: computedStyle,
+    attributeMetadata: attributeMetadata,
+  }
+}
+
+function getSpecialMeasurements(
+  element: HTMLElement,
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+): SpecialSizeMeasurements {
+  const elementStyle = window.getComputedStyle(element)
+  const layoutSystemForChildren = elementLayoutSystem(elementStyle)
+  const position = getPosition(elementStyle)
+
+  const offset = {
+    x: roundToNearestHalf(element.offsetLeft),
+    y: roundToNearestHalf(element.offsetTop),
+  } as LocalPoint
+
+  const coordinateSystemBounds =
+    element.offsetParent instanceof HTMLElement
+      ? globalFrameForElement(element.offsetParent, scale, containerRectLazy)
+      : null
+
+  const immediateParentBounds =
+    element.parentElement instanceof HTMLElement
+      ? globalFrameForElement(element.parentElement, scale, containerRectLazy)
+      : null
+
+  const parentElementStyle =
+    element.parentElement == null ? null : window.getComputedStyle(element.parentElement)
+  const isParentNonStatic = isElementNonStatic(parentElementStyle)
+
+  const providesBoundsForChildren = isElementNonStatic(elementStyle)
+
+  const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
+  const parentProvidesLayout = element.parentElement === element.offsetParent
+  const parentFlexDirection = parentElementStyle?.flexDirection ?? null
+
+  const margin = applicative4Either(
+    applicativeSidesPxTransform,
+    parseCSSLength(elementStyle.marginTop),
+    parseCSSLength(elementStyle.marginRight),
+    parseCSSLength(elementStyle.marginBottom),
+    parseCSSLength(elementStyle.marginLeft),
+  )
+
+  const padding = applicative4Either(
+    applicativeSidesPxTransform,
+    parseCSSLength(elementStyle.paddingTop),
+    parseCSSLength(elementStyle.paddingRight),
+    parseCSSLength(elementStyle.paddingBottom),
+    parseCSSLength(elementStyle.paddingLeft),
+  )
+
+  let naturalWidth: number | null = null
+  let naturalHeight: number | null = null
+  if (element.tagName === 'IMG') {
+    naturalWidth = roundToNearestHalf((element as HTMLImageElement).naturalWidth)
+    naturalHeight = roundToNearestHalf((element as HTMLImageElement).naturalHeight)
+  }
+
+  let clientWidth = roundToNearestHalf(element.clientWidth)
+  let clientHeight = roundToNearestHalf(element.clientHeight)
+
+  return specialSizeMeasurements(
+    offset,
+    coordinateSystemBounds,
+    immediateParentBounds,
+    parentProvidesLayout,
+    isParentNonStatic,
+    parentLayoutSystem,
+    layoutSystemForChildren,
+    providesBoundsForChildren,
+    elementStyle.display,
+    position,
+    isRight(margin) ? margin.value : sides(undefined, undefined, undefined, undefined),
+    isRight(padding) ? padding.value : sides(undefined, undefined, undefined, undefined),
+    naturalWidth,
+    naturalHeight,
+    clientWidth,
+    clientHeight,
+    parentFlexDirection,
+    element.localName,
   )
 }
 
@@ -763,4 +527,315 @@ function globalFrameForElement(
 ) {
   const elementRect = getCanvasRectangleFromElement(element, scale)
   return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
+}
+
+function walkCanvasRootFragment(
+  canvasRoot: HTMLElement,
+  index: number,
+  canvasRootPath: TemplatePath,
+  validPaths: Array<string>,
+  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  selectedViews: Array<TemplatePath>,
+  initComplete: boolean,
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+): ReadonlyArray<ElementInstanceMetadata> {
+  if (
+    ObserversAvailable &&
+    invalidatedSceneIDsRef.current.size === 0 &&
+    rootMetadataInStateRef.current.length > 0 &&
+    initComplete
+  ) {
+    // no mutation happened on the entire canvas, just return the old metadata
+    return rootMetadataInStateRef.current
+  } else {
+    const { childPaths: rootElements, rootMetadata } = walkSceneInner(
+      canvasRoot,
+      index,
+      canvasRootPath,
+      validPaths,
+      rootMetadataInStateRef,
+      invalidatedSceneIDsRef,
+      invalidatedPathsForStylesheetCacheRef,
+      selectedViews,
+      initComplete,
+      scale,
+      containerRectLazy,
+    )
+    // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
+    // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
+    // to provide a home for the the (really existing) childMetadata
+    const metadata: ElementInstanceMetadata = elementInstanceMetadata(
+      canvasRootPath as InstancePath,
+      left('Storyboard'),
+      {},
+      { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
+      { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
+      rootElements,
+      false,
+      false,
+      emptySpecialSizeMeasurements,
+      emptyComputedStyle,
+      emptyAttributeMetadatada,
+    )
+    return [...rootMetadata, metadata]
+  }
+}
+
+function walkScene(
+  scene: HTMLElement,
+  index: number,
+  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  selectedViews: Array<TemplatePath>,
+  initComplete: boolean,
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+): ReadonlyArray<ElementInstanceMetadata> {
+  if (scene instanceof HTMLElement) {
+    // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
+    // and that they can only have a single root element
+    const sceneIndexAttr = scene.attributes.getNamedItemNS(null, 'data-utopia-scene-id')
+    const validPathsAttr = scene.attributes.getNamedItemNS(null, 'data-utopia-valid-paths')
+    const sceneID = sceneIndexAttr?.value ?? null
+    const scenePath = sceneID == null ? null : TP.fromString(sceneID)
+
+    if (
+      sceneID != null &&
+      scenePath != null &&
+      TP.isScenePath(scenePath) &&
+      validPathsAttr != null
+    ) {
+      const validPaths = validPathsAttr.value.split(' ')
+      let cachedMetadata: ElementInstanceMetadata | null = null
+      if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
+        if (!invalidatedSceneIDsRef.current.has(sceneID)) {
+          // we can use the cache, if it exists
+          const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
+            scenePath,
+            rootMetadataInStateRef.current,
+          )
+          if (elementFromCurrentMetadata != null) {
+            cachedMetadata = elementFromCurrentMetadata
+          }
+        } else {
+          // we proceed with the walk
+          invalidatedSceneIDsRef.current.delete(sceneID) // Mutation!
+        }
+      }
+
+      if (cachedMetadata == null || !initComplete) {
+        const { childPaths: rootElements, rootMetadata } = walkSceneInner(
+          scene,
+          index,
+          scenePath,
+          validPaths,
+          rootMetadataInStateRef,
+          invalidatedSceneIDsRef,
+          invalidatedPathsForStylesheetCacheRef,
+          selectedViews,
+          initComplete,
+          scale,
+          containerRectLazy,
+        )
+
+        const sceneMetadata = collectMetadata(
+          scene,
+          TP.instancePathForElementAtScenePath(scenePath),
+          canvasPoint({ x: 0, y: 0 }),
+          rootElements,
+          scale,
+          containerRectLazy,
+          invalidatedPathsForStylesheetCacheRef,
+          selectedViews,
+        )
+        return [...rootMetadata, sceneMetadata]
+      } else {
+        let rootMetadataAccumulator = [cachedMetadata]
+        // Push the cached metadata for everything from this scene downwards
+        Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
+          if (TP.isAncestorOf(elem.templatePath, scenePath)) {
+            rootMetadataAccumulator.push(elem)
+          }
+        })
+        return rootMetadataAccumulator
+      }
+    }
+  }
+  return [] // verify
+}
+
+function walkSceneInner(
+  scene: HTMLElement,
+  index: number,
+  scenePath: TemplatePath,
+  validPaths: Array<string>,
+  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  selectedViews: Array<TemplatePath>,
+  initComplete: boolean,
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+): { childPaths: Array<InstancePath>; rootMetadata: ReadonlyArray<ElementInstanceMetadata> } {
+  const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
+
+  let childPaths: Array<InstancePath> = []
+  let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
+
+  scene.childNodes.forEach((childNode) => {
+    const { childPaths: childNodePaths, rootMetadata } = walkElements(
+      childNode,
+      index,
+      0,
+      globalFrame,
+      scenePath,
+      scenePath,
+      validPaths,
+      rootMetadataInStateRef,
+      invalidatedSceneIDsRef,
+      invalidatedPathsForStylesheetCacheRef,
+      selectedViews,
+      initComplete,
+      scale,
+      containerRectLazy,
+    )
+
+    childPaths.push(...childNodePaths)
+    rootMetadataAccumulator.push(...rootMetadata)
+  })
+
+  return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
+}
+
+// Walks through the DOM producing the structure and values from within.
+function walkElements(
+  element: Node,
+  index: number,
+  depth: number,
+  parentPoint: CanvasPoint,
+  originalParentPath: TemplatePath | null,
+  uniqueParentPath: TemplatePath,
+  validPaths: Array<string>,
+  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  selectedViews: Array<TemplatePath>,
+  initComplete: boolean,
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+): {
+  childPaths: ReadonlyArray<InstancePath>
+  rootMetadata: ReadonlyArray<ElementInstanceMetadata>
+} {
+  if (isScene(element)) {
+    // we found a nested scene, restart the walk
+    return {
+      childPaths: [],
+      rootMetadata: walkScene(
+        element,
+        index,
+        rootMetadataInStateRef,
+        invalidatedSceneIDsRef,
+        invalidatedPathsForStylesheetCacheRef,
+        selectedViews,
+        initComplete,
+        scale,
+        containerRectLazy,
+      ),
+    }
+  }
+  if (element instanceof HTMLElement) {
+    // Determine the uid of this element if it has one.
+    const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
+    const parentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_PARENTS_KEY)
+    const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
+    const originalParentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_ORIGINAL_PARENTS_KEY)
+    const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
+
+    const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
+
+    // Build the path for this element, substituting an index in if there is no uid attribute.
+    function makeIndexElement(): id {
+      return `index-${index}`
+    }
+    const pathElement = Utils.defaultIfNullLazy<id>(uidAttribute, makeIndexElement)
+    const originalPathElement = Utils.defaultIfNull(uidAttribute, originalUIDAttribute)
+    const parentAttribute = Utils.defaultIfNull(parentUIDsAttribute, originalParentUIDsAttribute)
+
+    // Build the unique path for this element.
+    let uniquePath: TemplatePath = uniqueParentPath
+    if (parentUIDsAttribute != null) {
+      uniquePath = TP.appendToPath(uniquePath, parentUIDsAttribute.split('/'))
+    }
+    uniquePath = TP.appendToPath(uniquePath, pathElement)
+
+    const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+
+    // Build the original path for this element.
+    let originalPath: TemplatePath | null = originalParentPath
+    if (originalPath != null) {
+      if (parentAttribute != null) {
+        originalPath = TP.appendToPath(originalPath, parentAttribute.split('/'))
+      }
+      if (originalPathElement != null) {
+        originalPath = TP.appendToPath(originalPath, originalPathElement)
+      }
+    }
+
+    // Check this is a path we're interested in, otherwise skip straight to the children
+    const pathIsValid = isValidPath(Utils.defaultIfNull(uniquePath, originalPath), validPaths)
+    const pathForChildren = pathIsValid ? uniquePath : uniqueParentPath
+
+    // Build the metadata for the children of this DOM node.
+    let childPaths: Array<InstancePath> = []
+    let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
+    if (traverseChildren) {
+      element.childNodes.forEach((child, childIndex) => {
+        const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
+          child,
+          childIndex,
+          depth + 1,
+          globalFrame,
+          originalPath,
+          pathForChildren,
+          validPaths,
+          rootMetadataInStateRef,
+          invalidatedSceneIDsRef,
+          invalidatedPathsForStylesheetCacheRef,
+          selectedViews,
+          initComplete,
+          scale,
+          containerRectLazy,
+        )
+        childPaths.push(...childNodePaths)
+        rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
+      })
+    }
+
+    if (pathIsValid) {
+      const collectedMetadata = collectMetadata(
+        element,
+        uniquePath,
+        parentPoint,
+        childPaths,
+        scale,
+        containerRectLazy,
+        invalidatedPathsForStylesheetCacheRef,
+        selectedViews,
+      )
+      rootMetadataAccumulator = [...rootMetadataAccumulator, collectedMetadata]
+      return {
+        rootMetadata: rootMetadataAccumulator,
+        childPaths: [collectedMetadata.templatePath],
+      }
+    } else {
+      return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
+    }
+  } else {
+    return { childPaths: [], rootMetadata: [] }
+  }
 }
