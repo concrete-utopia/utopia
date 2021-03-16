@@ -16,8 +16,15 @@ import {
 import { betterReactMemo } from '../../uuiui-deps'
 import { RenderAsRow } from '../canvas/controls/render-as'
 import { string } from 'fast-check/*'
+import { useEditorState } from './store/store-hook'
 
 export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstanceIndicator', () => {
+  const { selectedViews } = useEditorState((store) => {
+    return { selectedViews: store.editor.selectedViews }
+  }, 'TopMenuContextProvider')
+
+  const popupEnabled = selectedViews.length > 0
+
   const [isOpen, setIsOpen] = React.useState(false)
   const toggleOpen = React.useCallback(() => {
     setIsOpen(!isOpen)
@@ -84,7 +91,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
         display: 'flex',
         alignItems: 'stretch',
         height: UtopiaTheme.layout.inputHeight.default,
-        maxWidth: 130,
+        flexBasis: 130,
       }}
     >
       <FlexRow
@@ -129,7 +136,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
           }}
         >
           {/* TODO replace me with the real icon */}
-          🙃 Element 59 🙃
+          {selectedViews.length}
         </span>
       </FlexRow>
 
@@ -137,6 +144,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
         className='ignore-react-onclickoutside'
         role='expansionButton'
         css={{
+          pointerEvents: popupEnabled ? 'initial' : 'none',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -164,6 +172,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
         onClick={toggleOpen}
       >
         <SmallerIcons.ExpansionArrowDown
+          isDisabled={popupEnabled}
           color={getEditContextStyle().stroke as IcnColor}
           style={{
             flexGrow: 0,
