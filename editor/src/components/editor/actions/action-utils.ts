@@ -133,6 +133,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'WRAP_IN_LAYOUTABLE':
     case 'UNWRAP_LAYOUTABLE':
     case 'UPDATE_JSX_ELEMENT_NAME':
+    case 'ADD_IMPORTS':
     case 'SET_ASPECT_RATIO_LOCK':
     case 'INSERT_DROPPED_IMAGE':
     case 'RESET_PROP_TO_DEFAULT':
