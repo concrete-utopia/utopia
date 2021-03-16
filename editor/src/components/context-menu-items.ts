@@ -3,6 +3,7 @@ import { TriggerEvent } from 'react-contexify'
 import { CanvasPoint } from '../core/shared/math-utils'
 import { InstancePath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
+import * as TP from '../core/shared/template-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import { EditorDispatch } from './editor/action-types'
@@ -130,6 +131,19 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
       ),
     )
     requireDispatch(dispatch)(actions, 'everyone')
+  },
+}
+
+export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
+  name: 'Set As Focused Element',
+  enabled: true,
+  action: (data, dispatch?: EditorDispatch) => {
+    if (data.selectedViews.length > 0) {
+      const sv = data.selectedViews[0]
+      requireDispatch(dispatch)([
+        EditorActions.setFocusedElement(TP.scenePathForElementAtInstancePath(sv)),
+      ])
+    }
   },
 }
 

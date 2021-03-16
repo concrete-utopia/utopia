@@ -35,6 +35,7 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   getJSXElementNameLastPart,
+  jsxElementNameEquals,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
@@ -162,6 +163,16 @@ function isHTMLComponentFromBaseName(baseName: string, imports: Imports): boolea
   } else {
     return intrinsicHTMLElementNamesAsStrings.includes(baseName)
   }
+}
+
+export function isImportedComponent(jsxElementName: JSXElementName, imports: Imports): boolean {
+  return Object.keys(imports).some((importKey) => {
+    const fromImports = imports[importKey]
+    return (
+      pluck(fromImports.importedFromWithin, 'name').includes(jsxElementName.baseVariable) ||
+      fromImports.importedWithName === jsxElementName.baseVariable
+    )
+  })
 }
 
 const defaultEmptyUtopiaComponent = EmptyUtopiaCanvasComponent

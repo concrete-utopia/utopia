@@ -259,6 +259,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -299,6 +300,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -326,9 +329,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -493,6 +498,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-label": "Hat",
@@ -534,6 +540,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -561,9 +569,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -641,6 +651,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "567",
@@ -655,6 +666,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -682,9 +695,11 @@ Object {
         "567",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -899,6 +914,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -913,6 +929,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -940,9 +958,11 @@ Object {
         "zzz",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -1281,6 +1301,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -1295,6 +1316,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -1322,9 +1345,11 @@ Object {
         "zzz",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -1378,9 +1403,11 @@ Object {
           "aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -1391,9 +1418,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -1487,6 +1516,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -1501,6 +1531,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -1528,9 +1560,11 @@ Object {
         "zzz",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -1572,6 +1606,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -1586,6 +1621,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -1614,9 +1651,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -1658,6 +1697,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -1672,6 +1712,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -1700,9 +1742,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -1853,6 +1897,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -1893,6 +1938,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -1920,9 +1967,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -2146,6 +2195,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -2160,6 +2210,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -2187,9 +2239,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -2415,6 +2469,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -2429,6 +2484,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -2456,9 +2513,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -2512,9 +2571,11 @@ Object {
           "aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -2525,9 +2586,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -2621,6 +2684,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -2635,6 +2699,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -2662,9 +2728,11 @@ Object {
         "zzz",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -2706,6 +2774,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -2720,6 +2789,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -2748,9 +2819,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -2792,6 +2865,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -2806,6 +2880,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -2834,9 +2910,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -3001,6 +3079,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -3015,6 +3094,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -3042,9 +3123,11 @@ Object {
         "zzz",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -3110,9 +3193,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-0",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-0",
+            ],
           ],
           "type": "scenepath",
         },
@@ -3351,6 +3436,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -3392,6 +3478,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -3419,9 +3507,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -3540,6 +3630,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -3582,6 +3673,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -3610,9 +3703,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -3685,9 +3780,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-0",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-0",
+            ],
           ],
           "type": "scenepath",
         },
@@ -3926,6 +4023,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -3967,6 +4065,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -3994,9 +4094,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -4115,6 +4217,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -4157,6 +4260,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -4185,9 +4290,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -4253,9 +4360,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-0",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-0",
+            ],
           ],
           "type": "scenepath",
         },
@@ -4542,6 +4651,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -4583,6 +4693,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -4610,9 +4722,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -4779,6 +4893,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -4827,6 +4942,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -4855,9 +4972,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -4923,9 +5042,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-0",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-0",
+            ],
           ],
           "type": "scenepath",
         },
@@ -5212,6 +5333,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -5253,6 +5375,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -5280,9 +5404,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -5449,6 +5575,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -5497,6 +5624,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -5525,9 +5654,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -5605,6 +5736,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -5619,6 +5751,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -5646,9 +5780,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -5805,9 +5941,11 @@ Object {
           "03a",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -6890,6 +7028,7 @@ export var storyboard = (props) => {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -6934,6 +7073,8 @@ export var storyboard = (props) => {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -6961,9 +7102,11 @@ export var storyboard = (props) => {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -7722,6 +7865,7 @@ export var storyboard = (props) => {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "03a",
@@ -7762,6 +7906,8 @@ export var storyboard = (props) => {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -7790,9 +7936,11 @@ export var storyboard = (props) => {
         "03a",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -7862,9 +8010,11 @@ Object {
           "aaa",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -7875,9 +8025,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -8001,6 +8153,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -8015,6 +8168,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -8042,9 +8197,11 @@ Object {
         "zzz",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -8101,6 +8258,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -8116,6 +8274,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -8144,9 +8304,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -8203,6 +8365,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -8218,6 +8381,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -8246,9 +8411,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -8388,6 +8555,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -8402,6 +8570,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -8429,9 +8599,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -8637,6 +8809,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -8677,6 +8850,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -8704,9 +8879,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -8768,9 +8945,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "eee",
-            "fff",
+          "sceneElementPaths": Array [
+            Array [
+              "eee",
+              "fff",
+            ],
           ],
           "type": "scenepath",
         },
@@ -8927,6 +9106,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -8946,6 +9126,8 @@ export var storyboard = (
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -8973,9 +9155,11 @@ export var storyboard = (
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "eee",
-          "fff",
+        "sceneElementPaths": Array [
+          Array [
+            "eee",
+            "fff",
+          ],
         ],
         "type": "scenepath",
       },
@@ -9081,6 +9265,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -9096,6 +9281,8 @@ export var storyboard = (
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -9124,9 +9311,11 @@ export var storyboard = (
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "eee",
-          "fff",
+        "sceneElementPaths": Array [
+          Array [
+            "eee",
+            "fff",
+          ],
         ],
         "type": "scenepath",
       },
@@ -9222,9 +9411,11 @@ Object {
           "d59",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -9378,6 +9569,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -9396,6 +9588,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -9423,9 +9617,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -9441,9 +9637,11 @@ Object {
           "dd5",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -9551,6 +9749,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "d59",
@@ -9591,6 +9790,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -9619,9 +9820,11 @@ Object {
         "d59",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -9684,6 +9887,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "dd5",
@@ -9725,6 +9929,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -9754,9 +9960,11 @@ Object {
         "dd5",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -9817,9 +10025,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-0",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-0",
+            ],
           ],
           "type": "scenepath",
         },
@@ -10003,6 +10213,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -10044,6 +10255,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -10071,9 +10284,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -10138,6 +10353,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -10178,6 +10394,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -10206,9 +10424,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-0",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
         ],
         "type": "scenepath",
       },
@@ -10432,6 +10652,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -10446,6 +10667,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -10473,9 +10696,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -10700,6 +10925,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -10714,6 +10940,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -10741,9 +10969,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -10974,6 +11204,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -10988,6 +11219,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -11015,9 +11248,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -11102,6 +11337,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -11116,6 +11352,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -11143,9 +11381,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -11193,6 +11433,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -11207,6 +11448,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -11234,9 +11477,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -11291,9 +11536,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "ccc",
-            "ddd",
+          "sceneElementPaths": Array [
+            Array [
+              "ccc",
+              "ddd",
+            ],
           ],
           "type": "scenepath",
         },
@@ -11440,6 +11687,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -11457,6 +11705,8 @@ export var storyboard = (
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -11484,9 +11734,11 @@ export var storyboard = (
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "ccc",
-          "ddd",
+        "sceneElementPaths": Array [
+          Array [
+            "ccc",
+            "ddd",
+          ],
         ],
         "type": "scenepath",
       },
@@ -11547,6 +11799,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -11567,6 +11820,8 @@ export var storyboard = (
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -11595,9 +11850,11 @@ export var storyboard = (
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "ccc",
-          "ddd",
+        "sceneElementPaths": Array [
+          Array [
+            "ccc",
+            "ddd",
+          ],
         ],
         "type": "scenepath",
       },
@@ -11833,6 +12090,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -11852,6 +12110,8 @@ export var storyboard = (
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -11879,9 +12139,11 @@ export var storyboard = (
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene",
+          ],
         ],
         "type": "scenepath",
       },
@@ -11974,6 +12236,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "BBB",
@@ -11989,6 +12252,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -12016,9 +12281,11 @@ Object {
         "BBB",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene",
+          ],
         ],
         "type": "scenepath",
       },
@@ -12093,9 +12360,11 @@ Object {
           "ddd",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "eee",
-            "fff",
+          "sceneElementPaths": Array [
+            Array [
+              "eee",
+              "fff",
+            ],
           ],
           "type": "scenepath",
         },
@@ -12434,6 +12703,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -12475,6 +12745,8 @@ export var storyboard = (
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -12502,9 +12774,11 @@ export var storyboard = (
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "eee",
-          "fff",
+        "sceneElementPaths": Array [
+          Array [
+            "eee",
+            "fff",
+          ],
         ],
         "type": "scenepath",
       },
@@ -12552,6 +12826,7 @@ export var storyboard = (
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "ddd",
@@ -12592,6 +12867,8 @@ export var storyboard = (
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -12620,9 +12897,11 @@ export var storyboard = (
         "ddd",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "eee",
-          "fff",
+        "sceneElementPaths": Array [
+          Array [
+            "eee",
+            "fff",
+          ],
         ],
         "type": "scenepath",
       },
@@ -12678,9 +12957,11 @@ Object {
           "bbb",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -12762,6 +13043,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -12776,6 +13058,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -12803,9 +13087,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -12862,6 +13148,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -12903,6 +13190,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -12931,9 +13220,11 @@ Object {
         "bbb",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -13011,6 +13302,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-factory-function-works": "true",
@@ -13026,6 +13318,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -13053,9 +13347,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -13314,6 +13610,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -13328,6 +13625,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -13355,9 +13654,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -13412,9 +13713,11 @@ Object {
           "cloner",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -13515,6 +13818,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz",
@@ -13529,6 +13833,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -13556,9 +13862,11 @@ Object {
         "zzz",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -13574,9 +13882,11 @@ Object {
           "cloned",
         ],
         "scene": Object {
-          "sceneElementPath": Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+            ],
           ],
           "type": "scenepath",
         },
@@ -13649,6 +13959,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "cloner",
@@ -13663,6 +13974,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -13691,9 +14004,11 @@ Object {
         "cloner",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -13741,6 +14056,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "cloned",
@@ -13759,6 +14075,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -13788,9 +14106,11 @@ Object {
         "cloned",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -13873,6 +14193,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -13887,6 +14208,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -13914,9 +14237,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },
@@ -14000,6 +14325,7 @@ Object {
       },
     },
     "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -14014,6 +14340,8 @@ Object {
         "x": 0,
         "y": 0,
       },
+      "display": "initial",
+      "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
         "width": 0,
@@ -14041,9 +14369,11 @@ Object {
         "aaa",
       ],
       "scene": Object {
-        "sceneElementPath": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
         "type": "scenepath",
       },

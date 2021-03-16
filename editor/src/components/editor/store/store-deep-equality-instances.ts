@@ -83,7 +83,7 @@ import {
   combine8EqualityCalls,
   undefinableDeepEquality,
   combine4EqualityCalls,
-  combine10EqualityCalls,
+  combine11EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   TemplatePathArrayKeepDeepEquality,
@@ -591,6 +591,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const clientWidthResult = oldSize.clientWidth === newSize.clientWidth
     const clientHeightResult = oldSize.clientHeight === newSize.clientHeight
     const parentFlexDirectionResult = oldSize.parentFlexDirection === newSize.parentFlexDirection
+    const displayEquals = oldSize.display === newSize.display
+    const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -607,7 +609,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       naturalHeightResult &&
       clientWidthResult &&
       clientHeightResult &&
-      parentFlexDirectionResult
+      parentFlexDirectionResult &&
+      displayEquals &&
+      htmlElementNameEquals
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -620,6 +624,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.parentLayoutSystem,
         newSize.layoutSystemForChildren,
         newSize.providesBoundsForChildren,
+        newSize.display,
         newSize.position,
         marginResult.value,
         paddingResult.value,
@@ -628,6 +633,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.clientWidth,
         newSize.clientHeight,
         newSize.parentFlexDirection,
+        newSize.htmlElementName,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
@@ -637,7 +643,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
 export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
-  return combine10EqualityCalls(
+  return combine11EqualityCalls(
     (metadata) => metadata.templatePath,
     InstancePathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -651,6 +657,8 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.children,
     InstancePathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
+    createCallWithTripleEquals(),
+    (metadata) => metadata.isEmotionOrStyledComponent,
     createCallWithTripleEquals(),
     (metadata) => metadata.specialSizeMeasurements,
     SpecialSizeMeasurementsKeepDeepEquality(),

@@ -178,6 +178,7 @@ import type {
   SelectFromFileAndPosition,
   SendCodeEditorInitialisation,
   CloseDesignerFile,
+  SetFocusedElement,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1229,5 +1230,12 @@ export function selectFromFileAndPosition(
 export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
   return {
     action: 'SEND_CODE_EDITOR_INITIALISATION',
+  }
+}
+
+export function setFocusedElement(focusedElementTemplatePath: ScenePath | null): SetFocusedElement {
+  return {
+    action: 'SET_FOCUSED_ELEMENT',
+    focusedElementPath: focusedElementTemplatePath,
   }
 }

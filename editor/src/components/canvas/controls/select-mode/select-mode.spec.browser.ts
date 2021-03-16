@@ -115,7 +115,9 @@ describe('Select Mode Selection', () => {
     await waitForAnimationFrame()
 
     const selectedViews1 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews1).toEqual([TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a'])])
+    expect(selectedViews1).toEqual([
+      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), ['a']),
+    ])
 
     await act(async () => {
       const domFinished = renderResult.getDomReportDispatched()
@@ -151,7 +153,7 @@ describe('Select Mode Selection', () => {
 
     const selectedViews2 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews2).toEqual([
-      TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a', 'b']),
+      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), ['a', 'b']),
     ])
 
     await act(async () => {
@@ -188,7 +190,7 @@ describe('Select Mode Selection', () => {
 
     const selectedViews3 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews3).toEqual([
-      TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a', 'b', 'c']),
+      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), ['a', 'b', 'c']),
     ])
 
     await act(async () => {
@@ -225,7 +227,7 @@ describe('Select Mode Selection', () => {
 
     const selectedViews4 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews4).toEqual([
-      TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a', 'b', 'c', 'd']),
+      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), ['a', 'b', 'c', 'd']),
     ])
 
     await act(async () => {
@@ -262,7 +264,13 @@ describe('Select Mode Selection', () => {
 
     const selectedViews5 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews5).toEqual([
-      TP.instancePath(['utopia-storyboard-uid', 'scene-aaa'], ['a', 'b', 'c', 'd', 'e']),
+      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), [
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+      ]),
     ])
 
     await act(async () => {
@@ -300,10 +308,14 @@ describe('Select Mode Selection', () => {
     // after 6 "double clicks", the `targetdiv` div should be selected
     const selectedViews6 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews6).toEqual([
-      TP.instancePath(
-        ['utopia-storyboard-uid', 'scene-aaa'],
-        ['a', 'b', 'c', 'd', 'e', 'targetdiv'],
-      ),
+      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), [
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+        'targetdiv',
+      ]),
     ])
   })
 })

@@ -8,7 +8,7 @@ import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
 import { ExpandableIndicator } from './expandable-indicator'
 import { ItemLabel } from './item-label'
-import { ItemPreview } from './item-preview'
+import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
@@ -20,6 +20,7 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
 import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
+import { LayoutIcon } from './layout-icon'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -31,7 +32,7 @@ export const BasePaddingUnit = 20
 export function getElementPadding(templatePath: TemplatePath): number {
   // if an element is the child of the Storyboard component, let's show it at the root level
   const extraDepthRemoval = TP.pathsEqual(
-    TP.scenePathForPath(templatePath),
+    TP.scenePathPartOfTemplatePath(templatePath),
     EmptyScenePathForStoryboard,
   )
   const depthOffset = extraDepthRemoval ? 2 : 0
@@ -181,17 +182,14 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       warningText = 'Element is trying to be position absolutely with an unconfigured parent'
     }
 
-    const preview =
-      warningText == null ? (
-        <ItemPreview
-          key={`preview-${label}`}
-          path={templatePath}
-          color={resultingStyle.iconColor}
-        />
-      ) : (
-        <WarningIcon tooltipText={warningText} />
-      )
-
+    const layoutIcon = (
+      <LayoutIcon
+        key={`layout-type-${label}`}
+        path={templatePath}
+        color={resultingStyle.iconColor}
+        warningText={warningText}
+      />
+    )
     const collapse = React.useCallback(
       (event: any) => collapseItem(dispatch, templatePath, event),
       [dispatch, templatePath],
@@ -230,7 +228,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             selected={selected}
             onMouseDown={collapse}
           />
-          {preview}
+          {layoutIcon}
           <ItemLabel
             key={`label-${label}`}
             testId={`navigator-item-label-${label}`}
@@ -241,6 +239,11 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             dispatch={dispatch}
             inputVisible={TP.pathsEqual(renamingTarget, templatePath)}
             elementOriginType={elementOriginType}
+          />
+          <ComponentPreview
+            key={`preview-${label}`}
+            path={templatePath}
+            color={resultingStyle.iconColor}
           />
         </FlexRow>
         <NavigatorItemActionSheet

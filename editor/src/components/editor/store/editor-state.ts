@@ -129,6 +129,7 @@ import {
   toUid,
   toString,
   dynamicPathToStaticPath,
+  scenePath,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notice'
@@ -338,6 +339,7 @@ export interface EditorState {
   safeMode: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
+  focusedElementPath: ScenePath | null
 }
 
 export interface StoredEditorState {
@@ -761,7 +763,7 @@ export function addSceneToJSXComponents(
     storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
   if (storyboardComponentUID != null) {
     const storyboardComponentTemplatePath = staticInstancePath(
-      [storyboardComponentUID],
+      scenePath([[storyboardComponentUID]]),
       [storyboardComponentUID],
     )
     return insertJSXElementChild(storyboardComponentTemplatePath, newSceneElement, components, null)
@@ -770,9 +772,9 @@ export function addSceneToJSXComponents(
   }
 }
 
-export function removeScene(model: EditorState, scenePath: ScenePath): EditorState {
+export function removeScene(model: EditorState, path: ScenePath): EditorState {
   return modifyOpenScenes_INTERNAL((components) => {
-    return removeJSXElementChild(createSceneTemplatePath(scenePath), components)
+    return removeJSXElementChild(createSceneTemplatePath(path), components)
   }, model)
 }
 
@@ -1109,6 +1111,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     safeMode: false,
     saveError: false,
     vscodeBridgeReady: false,
+    focusedElementPath: null,
   }
 }
 
@@ -1349,6 +1352,7 @@ export function editorModelFromPersistentModel(
     },
     codeEditorErrors: persistentModel.codeEditorErrors,
     vscodeBridgeReady: false,
+    focusedElementPath: null,
   }
   return editor
 }

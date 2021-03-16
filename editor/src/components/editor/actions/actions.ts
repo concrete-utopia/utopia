@@ -356,6 +356,7 @@ import {
   MarkVSCodeBridgeReady,
   SelectFromFileAndPosition,
   SendCodeEditorInitialisation,
+  SetFocusedElement,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -1019,6 +1020,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     safeMode: currentEditor.safeMode,
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
+    focusedElementPath: currentEditor.focusedElementPath,
   }
 }
 
@@ -1906,7 +1908,7 @@ export const UPDATE_FNS = {
     )
     const storyBoardPath = getStoryboardTemplatePath(components)
     const newSelection =
-      storyBoardPath != null ? [TP.scenePath([TP.toUid(storyBoardPath), sceneUID])] : []
+      storyBoardPath != null ? [TP.scenePath([[TP.toUid(storyBoardPath), sceneUID]])] : []
     return {
       ...addNewScene(editor, newScene),
       selectedViews: newSelection,
@@ -4194,6 +4196,12 @@ export const UPDATE_FNS = {
     sendCodeEditorDecorations(editor)
     sendSelectedElement(editor)
     return editor
+  },
+  SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      focusedElementPath: action.focusedElementPath,
+    }
   },
 }
 

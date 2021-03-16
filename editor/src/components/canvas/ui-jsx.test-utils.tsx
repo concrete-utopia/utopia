@@ -224,7 +224,7 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
 }
 
 const TestSceneUID = 'scene-aaa'
-export const TestScenePath = scenePath([BakedInStoryboardUID, TestSceneUID])
+export const TestScenePath = scenePath([[BakedInStoryboardUID, TestSceneUID]])
 
 export function makeTestProjectCodeWithSnippet(snippet: string): string {
   const code = `/** @jsx jsx */

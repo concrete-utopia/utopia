@@ -228,7 +228,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
                 logs={canvasConsoleLogs}
                 variant={'dark'}
                 styles={{
-                  BASE_FONT_FAMILY: 'utopian-inconsolata, mono',
+                  BASE_FONT_FAMILY: 'mono',
                 }}
               />
               {/* since we can't know the last console item as logged in console,

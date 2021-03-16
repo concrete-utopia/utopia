@@ -166,6 +166,10 @@ export function last<T>(array: Array<T>): T | undefined {
   return array[array.length - 1]
 }
 
+export function splitAt<T>(n: number, array: Array<T>): [Array<T>, Array<T>] {
+  return [take(n, array), drop(n, array)]
+}
+
 export function removeIndexFromArray<T>(index: number, arr: Array<T>): Array<T> {
   let result: Array<T> = [...arr]
   result.splice(index, 1)

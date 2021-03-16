@@ -33,6 +33,12 @@ export function buildSpyWrappedElement(
   }
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
+    /** This is not so nice, but the way to know if something is an emotion component is
+     * that it adds some extra properties to the Element itself, like __emotion_base,
+     * TODO move this out of metadata once we have syledcomponent editing
+     */
+    const isEmotionComponent = Element['__emotion_base'] != null
+    const isStyledComponent = Element['styledComponentId'] != null
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
       templatePath: templatePath,
@@ -41,12 +47,13 @@ export function buildSpyWrappedElement(
       localFrame: null,
       children: childrenTemplatePaths,
       componentInstance: false,
+      isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
     }
     const isChildOfRootScene = TP.pathsEqual(
-      TP.scenePathForPath(templatePath),
+      TP.scenePathPartOfTemplatePath(templatePath),
       EmptyScenePathForStoryboard,
     )
     if (!isChildOfRootScene || shouldIncludeCanvasRootInTheSpy) {
