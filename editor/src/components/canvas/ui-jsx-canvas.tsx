@@ -107,7 +107,7 @@ export interface UiJsxCanvasProps {
   editedTextElement: InstancePath | null
   fileBlobs: UIFileBase64Blobs
   mountCount: number
-  onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void
+  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   walkDOM: boolean
   imports: Imports
   topLevelElementsIncludingScenes: Array<TopLevelElement>
@@ -140,7 +140,7 @@ export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
   walkDOM: boolean,
-  onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void,
+  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
   dispatch: EditorDispatch,
@@ -434,7 +434,7 @@ export interface CanvasContainerProps {
   walkDOM: boolean
   scale: number
   offset: CanvasVector
-  onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void
+  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   canvasRootElementTemplatePath: TemplatePath
   validRootPaths: Array<StaticInstancePath>
   mountCount: number

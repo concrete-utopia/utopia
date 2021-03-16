@@ -920,7 +920,9 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
   }
 }
 
-export function saveDOMReport(elementMetadata: Array<ElementInstanceMetadata>): SaveDOMReport {
+export function saveDOMReport(
+  elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+): SaveDOMReport {
   return {
     action: 'SAVE_DOM_REPORT',
     elementMetadata: elementMetadata,

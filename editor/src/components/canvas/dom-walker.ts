@@ -314,12 +314,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         return getCanvasRectangleFromElement(refOfContainer, props.scale)
       })
 
-      function globalFrameForElement(element: HTMLElement): CanvasRectangle {
-        // Get the local frame from the DOM and calculate the global frame.
-        const elementRect = getCanvasRectangleFromElement(element, props.scale)
-        return Utils.offsetRect(elementRect, Utils.negate(containerRect()))
-      }
-
       function getSpecialMeasurements(element: HTMLElement): SpecialSizeMeasurements {
         const elementStyle = window.getComputedStyle(element)
         const layoutSystemForChildren = elementLayoutSystem(elementStyle)
@@ -332,12 +326,12 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
         const coordinateSystemBounds =
           element.offsetParent instanceof HTMLElement
-            ? globalFrameForElement(element.offsetParent)
+            ? globalFrameForElement(element.offsetParent, props.scale, containerRect)
             : null
 
         const immediateParentBounds =
           element.parentElement instanceof HTMLElement
-            ? globalFrameForElement(element.parentElement)
+            ? globalFrameForElement(element.parentElement, props.scale, containerRect)
             : null
 
         const parentElementStyle =
@@ -481,6 +475,10 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
                 TP.instancePathForElementAtScenePath(scenePath),
                 canvasPoint({ x: 0, y: 0 }),
                 rootElements,
+                props.scale,
+                containerRect,
+                getComputedStyle,
+                getSpecialMeasurements,
               )
               rootMetadata.push(sceneMetadata)
             } else {
@@ -538,7 +536,11 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         scenePath: TemplatePath,
         validPaths: Array<string>,
       ): Array<InstancePath> {
-        const globalFrame: CanvasRectangle = globalFrameForElement(scene)
+        const globalFrame: CanvasRectangle = globalFrameForElement(
+          scene,
+          props.scale,
+          containerRect,
+        )
 
         let childPaths: Array<InstancePath> = []
 
@@ -605,7 +607,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
           uniquePath = TP.appendToPath(uniquePath, pathElement)
 
-          const globalFrame = globalFrameForElement(element)
+          const globalFrame = globalFrameForElement(element, props.scale, containerRect)
 
           // Build the original path for this element.
           let originalPath: TemplatePath | null = originalParentPath
@@ -640,7 +642,16 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
           }
 
           if (pathIsValid) {
-            const collectedMetadata = collectMetadata(element, uniquePath, parentPoint, childPaths)
+            const collectedMetadata = collectMetadata(
+              element,
+              uniquePath,
+              parentPoint,
+              childPaths,
+              props.scale,
+              containerRect,
+              getComputedStyle,
+              getSpecialMeasurements,
+            )
             rootMetadata.push(collectedMetadata)
             return [collectedMetadata.templatePath]
           } else {
@@ -649,46 +660,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         } else {
           return []
         }
-      }
-
-      function collectMetadata(
-        element: HTMLElement,
-        instancePath: InstancePath,
-        parentPoint: CanvasPoint,
-        children: InstancePath[],
-      ): ElementInstanceMetadata {
-        const globalFrame = globalFrameForElement(element)
-        const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
-
-        const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
-        const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
-        const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
-        let elementProps: any = {}
-        if (uidAttribute != null) {
-          elementProps[UTOPIA_UID_KEY] = uidAttribute
-        }
-        if (originalUIDAttribute != null) {
-          elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
-        }
-        if (labelAttribute != null) {
-          elementProps[UTOPIA_LABEL_KEY] = labelAttribute
-        }
-
-        const { computedStyle, attributeMetadata } = getComputedStyle(element, instancePath)
-
-        return elementInstanceMetadata(
-          instancePath,
-          left(element.tagName.toLowerCase()),
-          elementProps,
-          globalFrame,
-          localFrame,
-          children,
-          false,
-          false,
-          getSpecialMeasurements(element),
-          computedStyle,
-          attributeMetadata,
-        )
       }
 
       let rootMetadata: Array<ElementInstanceMetadata> = []
@@ -711,4 +682,60 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   })
 
   return containerRef
+}
+
+function collectMetadata(
+  element: HTMLElement,
+  instancePath: InstancePath,
+  parentPoint: CanvasPoint,
+  children: InstancePath[],
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+  getComputedStyle: (
+    element: HTMLElement,
+    path: TemplatePath,
+  ) => { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null },
+  getSpecialMeasurements: (element: HTMLElement) => SpecialSizeMeasurements,
+) {
+  const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+  const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
+
+  const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
+  const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
+  const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
+  let elementProps: any = {}
+  if (uidAttribute != null) {
+    elementProps[UTOPIA_UID_KEY] = uidAttribute
+  }
+  if (originalUIDAttribute != null) {
+    elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
+  }
+  if (labelAttribute != null) {
+    elementProps[UTOPIA_LABEL_KEY] = labelAttribute
+  }
+
+  const { computedStyle, attributeMetadata } = getComputedStyle(element, instancePath)
+
+  return elementInstanceMetadata(
+    instancePath,
+    left(element.tagName.toLowerCase()),
+    elementProps,
+    globalFrame,
+    localFrame,
+    children,
+    false,
+    false,
+    getSpecialMeasurements(element),
+    computedStyle,
+    attributeMetadata,
+  )
+}
+
+function globalFrameForElement(
+  element: HTMLElement,
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+) {
+  const elementRect = getCanvasRectangleFromElement(element, scale)
+  return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
 }
