@@ -176,7 +176,7 @@ function getCachedAttributesComingFromStyleSheets(
   if (inCache && !invalidated) {
     return AttributesFromStyleSheetsCache.get(element)!
   }
-  invalidatedPathsForStylesheetCacheRef.current.delete(pathAsString)
+  invalidatedPathsForStylesheetCacheRef.current.delete(pathAsString) // Mutation!
   const value = getAttributesComingFromStyleSheets(element)
   AttributesFromStyleSheetsCache.set(element, value)
   return value
@@ -280,7 +280,9 @@ function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, ()
 
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const rootMetadataInStateRef = useRefEditorState((store) => store.editor.domMetadataKILLME)
+  const rootMetadataInStateRef = useRefEditorState(
+    (store) => store.editor.domMetadataKILLME as ReadonlyArray<ElementInstanceMetadata>,
+  )
   const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
@@ -466,7 +468,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
                 }
               } else {
                 // we proceed with the walk
-                invalidatedSceneIDsRef.current.delete(sceneID)
+                invalidatedSceneIDsRef.current.delete(sceneID) // Mutation!
               }
             }
 

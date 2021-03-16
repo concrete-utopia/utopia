@@ -1427,7 +1427,7 @@ export const MetadataUtils = {
   },
   findElementMetadata(
     target: TemplatePath,
-    elements: Array<ElementInstanceMetadata>,
+    elements: ReadonlyArray<ElementInstanceMetadata>,
   ): ElementInstanceMetadata | null {
     const pathToUse = TP.isScenePath(target) ? TP.instancePathForElementAtScenePath(target) : target
     return elements.find((elem) => TP.pathsEqual(pathToUse, elem.templatePath)) ?? null
