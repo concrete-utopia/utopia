@@ -26,7 +26,7 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
       rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
       selectedViews: store.editor.selectedViews,
     }
-  }, 'InspectorContextProvider')
+  }, 'TopMenuContextProvider')
 
   const onSelect = React.useCallback(
     (path) => dispatch([selectComponents([path], false)], 'everyone'),

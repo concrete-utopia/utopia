@@ -26,7 +26,7 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
 
   const { dispatch, selectedViews } = useEditorState((store) => {
     return { dispatch: store.dispatch, selectedViews: store.editor.selectedViews }
-  }, 'InspectorContextProvider')
+  }, 'TopMenuContextProvider')
 
   const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
     getElementsToTarget(selectedViews),
@@ -78,7 +78,7 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
   return (
     <GridRow padded={true} type='<---1fr--->|------172px-------|'>
       <span
-      style={{
+        style={{
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
