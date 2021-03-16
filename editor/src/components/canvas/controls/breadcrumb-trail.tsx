@@ -11,63 +11,62 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { FlexRow, Icons } from '../../../uuiui'
 import { TemplatePath } from 'src/core/shared/project-file-types'
+// import { getElementsToTarget } from '../../../components/inspector/common/inspector-utils'
+
 
 interface ElementPathElement {
   name?: string
   path: TemplatePath
-}
+} 
 
-const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
-  return {
-    dispatch: store.dispatch,
-    jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-    rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
-  }
-}, 'InspectorContextProvider')
-
-const onSelect = React.useCallback(
-  (path) => dispatch([selectComponents([path], false)], 'everyone'),
-  [dispatch],
-)
-
-const selectedViews = useEditorState(
-  (store) => store.editor.selectedViews,
-  'InspectorEntryPoint selectedViews',
-)
-const elementPath = useKeepReferenceEqualityIfPossible(
-  React.useMemo(() => {
-    if (selectedViews.length === 0) {
-      return []
+export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
+  const { dispatch, jsxMetadataKILLME, rootComponents, selectedViews } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
+      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
+      selectedViews: store.editor.selectedViews,
     }
-    let elements: Array<ElementPathElement> = []
-    Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-      // TODO Scene Implementation
-      if (TP.isInstancePath(path)) {
-        const component = MetadataUtils.getElementByInstancePathMaybe(
-          jsxMetadataKILLME.elements,
-          path,
-        )
-        if (component != null) {
-          elements.push({
-            name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
-            path: path,
-          })
-        }
-      } else {
-        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
-        if (scene != null) {
-          elements.push({
-            name: scene.label,
-            path: path,
-          })
-        }
-      }
-    })
-    return elements
-  }, [selectedViews, jsxMetadataKILLME]),
-)
+  }, 'InspectorContextProvider')
 
-const ElementPathButtons = betterReactMemo('ElementPathButtons', () => {
+  const onSelect = React.useCallback(
+    (path) => dispatch([selectComponents([path], false)], 'everyone'),
+    [dispatch],
+  )
+
+  const elementPath = useKeepReferenceEqualityIfPossible(
+    React.useMemo(() => {
+      if (selectedViews.length === 0) {
+        return []
+      }
+      let elements: Array<ElementPathElement> = []
+      Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
+        // TODO Scene Implementation
+        if (TP.isInstancePath(path)) {
+          const component = MetadataUtils.getElementByInstancePathMaybe(
+            jsxMetadataKILLME.elements,
+            path,
+          )
+          if (component != null) {
+            elements.push({
+              name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
+              path: path,
+            })
+          }
+        } else {
+          const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
+          if (scene != null) {
+            elements.push({
+              name: scene.label,
+              path: path,
+            })
+          }
+        }
+      })
+      return elements
+    }, [selectedViews, jsxMetadataKILLME]),
+  )
+
   const lastElemIndex = elementPath.length - 1
   const elements = elementPath.map((elem, index) => {
     const isSelected = index === lastElemIndex
@@ -87,8 +86,4 @@ const ElementPathButtons = betterReactMemo('ElementPathButtons', () => {
       {elements}
     </FlexRow>
   )
-})
-
-export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
-  return <ElementPathButtons />
 })

@@ -14,7 +14,7 @@ import {
   UtopiaTheme,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { NameRowCrumbs } from '../canvas/controls/namerowcrumbs'
+import { RenderAsRow } from '../canvas/controls/render-as'
 import { string } from 'fast-check/*'
 
 export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstanceIndicator', () => {
@@ -195,7 +195,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
             onMouseUp={(e) => e.stopPropagation()}
           >
             <BreadcrumbTrail />
-            <NameRowCrumbs />
+            <RenderAsRow />
           </div>
         </OnClickOutsideHOC>
       ) : null}

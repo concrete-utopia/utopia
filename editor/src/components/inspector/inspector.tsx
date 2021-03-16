@@ -94,6 +94,7 @@ import {
 } from '../../utils/react-performance'
 import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import { getElementsToTarget } from './common/inspector-utils'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -432,17 +433,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
   )
 })
 Inspector.displayName = 'Inspector'
-
-export function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
-  let result: Array<InstancePath> = []
-  Utils.fastForEach(paths, (path) => {
-    // TODO Scene Implementation
-    if (!TP.isScenePath(path) && !TP.containsPath(path, result)) {
-      result.push(path)
-    }
-  })
-  return result
-}
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 

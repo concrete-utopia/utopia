@@ -1,55 +1,48 @@
 import * as React from 'react'
-import { getOpenUtopiaJSXComponentsFromState } from '../../../components/editor/store/editor-state'
-import { useEditorState } from '../../../components/editor/store/store-hook'
-import { usePropControlledRef_DANGEROUS } from '../../../components/inspector/common/inspector-utils'
+import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-state'
+import { useEditorState } from '../../editor/store/store-hook'
+import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
 import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { betterReactMemo, getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
 import * as TP from '../../../core/shared/template-path'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { GridRow } from '../../../components/inspector/widgets/grid-row'
+import { GridRow } from '../../inspector/widgets/grid-row'
 import { PopupList } from '../../../uuiui'
 import { JSXElementName, jsxElementName } from '../../../core/shared/element-template'
-import { useNamesAndIconsSelectedViews } from '../../../components/inspector/common/name-and-icon-hook'
+import { useNamesAndIconsSelectedViews } from '../../inspector/common/name-and-icon-hook'
+import { getElementsToTarget } from '../../inspector/common/inspector-utils'
+import { Imports } from '../../../core/shared/project-file-types'
+import {
+  getComponentGroups,
+  getComponentGroupsAsSelectOptions,
+  InsertableComponent,
+} from '../../../shared/project-components'
+import { usePossiblyResolvedPackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
 
-const constrolStatus = 'simple'
-const controlStyles = getControlStyles(constrolStatus)
-const hookResult = useNamesAndIconsSelectedViews()
-const selectedViews = useEditorState(
-  (store) => store.editor.selectedViews,
-  'InspectorEntryPoint selectedViews',
-)
-const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
-  getElementsToTarget(selectedViews),
-)
-const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
-  return {
-    dispatch: store.dispatch,
-    jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-    rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
-  }
-}, 'InspectorContextProvider')
 
-const onElementTypeChange = React.useCallback(
-  (value: JSXElementName) => {
-    const actions = refElementsToTargetForUpdates.current.map((path) => {
-      return EditorActions.updateJSXElementName(path, value)
-    })
-    dispatch(actions, 'everyone')
-  },
-  [dispatch],
-)
+export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
+  const hookResult = useNamesAndIconsSelectedViews()
+  const constrolStatus = 'simple'
+  const controlStyles = getControlStyles(constrolStatus)
 
-function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
-  let result: Array<InstancePath> = []
-  Utils.fastForEach(paths, (path) => {
-    // TODO Scene Implementation
-    if (!TP.isScenePath(path) && !TP.containsPath(path, result)) {
-      result.push(path)
-    }
-  })
-  return result
-}
-const NameRow = betterReactMemo('NameRow', () => {
+  const { dispatch, selectedViews } = useEditorState((store) => {
+    return { dispatch: store.dispatch, selectedViews: store.editor.selectedViews }
+  }, 'InspectorContextProvider')
+
+  const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
+    getElementsToTarget(selectedViews),
+  )
+
+  const onElementTypeChange = React.useCallback(
+    (value: JSXElementName) => {
+      const actions = refElementsToTargetForUpdates.current.map((path) => {
+        return EditorActions.updateJSXElementName(path, value)
+      })
+      dispatch(actions, 'everyone')
+    },
+    [dispatch],
+  )
+
   const onSelect = React.useCallback((selectOption: SelectOption) => {
     const value = selectOption.value
     if (typeof value === 'string') {
@@ -81,14 +74,6 @@ const NameRow = betterReactMemo('NameRow', () => {
         />
       ) : null}
     </GridRow>
-  )
-})
-
-export const NameRowCrumbs = betterReactMemo('NameRowCrumbs', () => {
-  return (
-    <div>
-      <NameRow />
-    </div>
   )
 })
 
