@@ -25,7 +25,7 @@ import {
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
 } from '../shared/element-template'
-import { sampleImportsForTests } from './test-ui-js-file'
+import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { TemplatePath } from '../shared/project-file-types'
 import {

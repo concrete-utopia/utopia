@@ -11,7 +11,7 @@ import {
   enableWhyDidYouRenderOnComponent,
 } from '../../../../utils/react-memoize.test-utils'
 import { ComponentSection } from './component-section'
-import { ScenePathForTestUiJsFile } from '../../../../core/model/test-ui-js-file'
+import { ScenePathForTestUiJsFile } from '../../../../core/model/test-ui-js-file.test-utils'
 
 describe('Component Section', () => {
   enableWhyDidYouRenderOnComponent(ComponentSection)

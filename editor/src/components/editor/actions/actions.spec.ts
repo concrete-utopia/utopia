@@ -39,7 +39,7 @@ import {
 import { emptyImports, parseSuccess } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import { right, forceRight, left, isRight } from '../../../core/shared/either'
-import { createFakeMetadataForComponents } from '../../../utils/test-utils'
+import { createFakeMetadataForComponents } from '../../../utils/utils.test-utils'
 import Utils from '../../../utils/utils'
 import {
   canvasRectangle,
@@ -67,7 +67,7 @@ import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
   sampleDefaultImports,
-} from '../../../core/model/test-ui-js-file'
+} from '../../../core/model/test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { getDefaultUIJsFile, sampleCode } from '../../../core/model/new-project-files'
 import { TestScenePath } from '../../canvas/ui-jsx.test-utils'

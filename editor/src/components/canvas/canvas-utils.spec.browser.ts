@@ -18,7 +18,7 @@ import {
   singleResizeChange,
   EdgePosition,
 } from './canvas-types'
-import { wait } from '../../utils/test-utils'
+import { wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'

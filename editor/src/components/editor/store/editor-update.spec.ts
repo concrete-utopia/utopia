@@ -22,7 +22,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
-import { createEditorStates, createFakeMetadataForEditor } from '../../../utils/test-utils'
+import { createEditorStates, createFakeMetadataForEditor } from '../../../utils/utils.test-utils'
 import Utils from '../../../utils/utils'
 import { renameComponent, reparentComponents } from '../../navigator/actions'
 import * as TP from '../../../core/shared/template-path'
@@ -60,7 +60,7 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
-} from '../../../core/model/test-ui-js-file'
+} from '../../../core/model/test-ui-js-file.test-utils'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { getContentsTreeFileFromString } from '../../assets'
