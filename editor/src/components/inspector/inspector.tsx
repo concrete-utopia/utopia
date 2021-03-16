@@ -28,6 +28,7 @@ import {
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
 import {
+  Imports,
   InstancePath,
   LayoutWrapper,
   PropertyPath,
@@ -373,7 +374,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     if (props.elementPath.length == 0 || anyUnknownElements) {
       return <SettingsPanel />
     } else if (props.elementPath.length === 1 && TP.isScenePath(props.elementPath[0].path)) {
-      return <SceneSection />
+      return <SceneSection scenePath={props.elementPath[0].path} />
     } else {
       return (
         <React.Fragment>
@@ -747,9 +748,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   }, [dispatch, refElementsToTargetForUpdates])
 
   const onElementTypeChange = React.useCallback(
-    (value: JSXElementName) => {
-      const actions = refElementsToTargetForUpdates.current.map((path) => {
-        return EditorActions.updateJSXElementName(path, value)
+    (newElementName: JSXElementName, importsToAdd: Imports) => {
+      const actions = refElementsToTargetForUpdates.current.flatMap((path) => {
+        return EditorActions.updateJSXElementName(path, newElementName, importsToAdd)
       })
       dispatch(actions, 'everyone')
     },

@@ -357,6 +357,7 @@ import {
   SelectFromFileAndPosition,
   SendCodeEditorInitialisation,
   SetFocusedElement,
+  AddImports,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -488,6 +489,7 @@ import {
   finishCheckpointTimer,
   selectComponents,
   markVSCodeBridgeReady,
+  addImports,
 } from './action-creators'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
@@ -3799,22 +3801,7 @@ export const UPDATE_FNS = {
       MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, action.target),
     )
 
-    let updatedEditor = editor
-    if (action.elementName.baseVariable === 'animated') {
-      updatedEditor = modifyOpenParseSuccess((success) => {
-        const updatedImport = addImport(
-          'react-spring',
-          null,
-          [importAlias('animated')],
-          null,
-          success.imports,
-        )
-        return {
-          ...success,
-          imports: updatedImport,
-        }
-      }, editor)
-    }
+    const updatedEditor = UPDATE_FNS.ADD_IMPORTS(addImports(action.importsToAdd), editor)
 
     return modifyOpenJsxElementAtPath(
       action.target,
@@ -3846,6 +3833,14 @@ export const UPDATE_FNS = {
       },
       updatedEditor,
     )
+  },
+  ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
+    return modifyOpenParseSuccess((success) => {
+      return {
+        ...success,
+        imports: mergeImports(success.imports, action.importsToAdd),
+      }
+    }, editor)
   },
   SET_ASPECT_RATIO_LOCK: (action: SetAspectRatioLock, editor: EditorModel): EditorModel => {
     return modifyOpenJsxElementAtPath(
