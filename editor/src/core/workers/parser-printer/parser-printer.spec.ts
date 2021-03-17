@@ -66,6 +66,7 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model
 import { emptyComments } from './parser-printer-comments'
 import { optionalMap } from '../../shared/optional-utils'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
 
 describe('JSX parser', () => {
   it('parses the code when it is a var', () => {
@@ -832,7 +833,7 @@ return { getSizing: getSizing };`
       jsCode1,
       transpiledJsCode1,
       ['getSizing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -847,7 +848,7 @@ return { spacing: spacing };`
       jsCode2,
       transpiledJsCode2,
       ['spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -869,7 +870,7 @@ return { getSizing: getSizing, spacing: spacing };`
       combinedJsCode,
       transpiledcombinedJsCode,
       ['getSizing', 'spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -952,7 +953,7 @@ return { getSizing: getSizing };`
       jsCode,
       transpiledJsCode,
       ['getSizing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1051,7 +1052,7 @@ return { getSizing: getSizing };`
       jsCode,
       transpiledJsCode,
       ['getSizing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1134,7 +1135,7 @@ return {  };`
       jsCode,
       transpiledJsCode,
       [],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1214,7 +1215,7 @@ return { spacing: spacing };`
       'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1276,7 +1277,7 @@ return { bgs: bgs, bg: bg };`
       jsCode,
       transpiledJsCode,
       ['bgs', 'bg'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1350,7 +1351,7 @@ return { greys: greys };`
       jsCode,
       transpiledJsCode,
       ['greys'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1418,7 +1419,7 @@ return { a: a, b: b };`
       jsCode,
       transpiledJsCode,
       ['a', 'b'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1489,7 +1490,7 @@ return { a: a, b: b, c: c };`
       jsCode,
       transpiledJsCode,
       ['a', 'b', 'c'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1564,7 +1565,7 @@ return { a: a };`
       jsCode,
       transpiledJsCode,
       ['a'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1634,7 +1635,7 @@ return { a: a, b: b };`
       jsCode,
       transpiledJsCode,
       ['a', 'b'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1709,7 +1710,7 @@ return { bg: bg };`
       jsCode,
       transpiledJsCode,
       ['bg'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1798,7 +1799,7 @@ return { count: count };`
       jsCode,
       transpiledJSCode,
       ['count'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1877,7 +1878,7 @@ return { use20: use20 };`
       'var use20 = true',
       transpiledJSCode,
       ['use20'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -1937,7 +1938,7 @@ return { mySet: mySet };`
       'var mySet = new Set()',
       transpiledJSCode,
       ['mySet'],
-      ['Set'],
+      ['Set', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -2015,7 +2016,7 @@ return { spacing: spacing };`
       'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -2088,7 +2089,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   }, "hello");
 };
 return { MyComp: MyComp };`
-    const definedElseWhere = ['React']
+    const definedElseWhere = ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME]
     const MyComp = arbitraryJSBlock(
       jsCode,
       transpiledJsCode,
@@ -2612,7 +2613,7 @@ return { getSizing: getSizing };`
       jsCode1,
       transpiledJSCode1,
       ['getSizing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -2627,7 +2628,7 @@ return { spacing: spacing };`
       jsCode2,
       transpiledJSCode2,
       ['spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -2649,7 +2650,7 @@ return { getSizing: getSizing, spacing: spacing };`
       combinedJSCode,
       transpiledcombinedJSCode,
       ['getSizing', 'spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -3036,7 +3037,7 @@ return { test: test };`
       jsCode,
       transpiledJSCode,
       ['test'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -3141,7 +3142,7 @@ return { test: test };`
             jsCode,
             transpiledJSCode,
             ['test'],
-            [],
+            [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
             expect.objectContaining({
               sources: ['code.tsx'],
               version: 3,
@@ -3588,19 +3589,25 @@ export var App = props => {
 var b = 40;
 
 var MyCustomCompomnent = function MyCustomCompomnent(props) {
-  return React.createElement(View, {
-    "data-uid": "abc"
-  }, props.children);
+  return ${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("abc", {
+    props: props
+  });
 };
 return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
         ['a', 'b', 'MyCustomCompomnent'],
-        ['React', 'View'],
+        ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
         expect.objectContaining({
           sources: ['code.tsx'],
           version: 3,
           file: 'code.tsx',
         }),
-        {},
+        {
+          abc: expect.objectContaining({
+            name: expect.objectContaining({
+              baseVariable: 'View',
+            }),
+          }),
+        },
       ),
       false,
       emptyComments,
@@ -3798,7 +3805,7 @@ return {  };`
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
       [],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -3858,12 +3865,9 @@ for (var n = 0; n < 5; n++) {
   }
 
   var n2 = n * 2;
-  result.push(React.createElement("div", {
-    style: {
-      left: n,
-      top: n2
-    },
-    "data-uid": "bbb"
+  result.push(${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("bbb", {
+    n: n,
+    n2: n2
   }));
 }
 return { result: result };`
@@ -3871,13 +3875,19 @@ return { result: result };`
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
       ['result'],
-      ['React'],
+      ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
-      {},
+      {
+        bbb: expect.objectContaining({
+          name: expect.objectContaining({
+            baseVariable: 'div',
+          }),
+        }),
+      },
     )
     const innerBlock = jsxArbitraryBlock(
       'result',
@@ -4087,7 +4097,7 @@ export var whatever = props => {
       `var a = 30;
 return { a: a };`,
       ['a'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,

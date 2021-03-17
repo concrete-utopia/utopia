@@ -33,6 +33,7 @@ import {
 } from './parser-printer.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { emptyComments } from './parser-printer-comments'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
 
 describe('JSX parser', () => {
   it('should add in uid attributes for elements', () => {
@@ -312,7 +313,7 @@ return { arr: arr };`
       jsCode,
       transpiledJsCode,
       ['arr'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -411,7 +412,7 @@ return { arr: arr };`
       jsCode,
       transpiledJsCode,
       ['arr'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -511,7 +512,7 @@ return { arr: arr };`
       jsCode,
       transpiledJsCode,
       ['arr'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -699,7 +700,7 @@ return { arr: arr };`
       jsCode,
       transpiledJsCode,
       ['arr'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
@@ -887,7 +888,7 @@ return { arr: arr };`
       jsCode,
       transpiledJsCode,
       ['arr'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,

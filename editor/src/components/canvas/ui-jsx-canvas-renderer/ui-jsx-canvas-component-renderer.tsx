@@ -13,10 +13,15 @@ import {
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as TP from '../../../core/shared/template-path'
-import { renderCoreElement } from './ui-jsx-canvas-element-renderer-utils'
+import {
+  createLookupRender,
+  renderCoreElement,
+  utopiaCanvasJSXLookup,
+} from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
 import { ScenePath } from '../../../core/shared/project-file-types'
 import { UTOPIA_SCENE_PATH } from '../../../core/model/utopia-constants'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 
 export type ComponentRendererComponent = React.ComponentType<{ [UTOPIA_SCENE_PATH]: ScenePath }> & {
   topLevelElementName: string
@@ -80,7 +85,32 @@ export function createComponentRendererComponent(params: {
 
     let codeError: Error | null = null
 
+    const ownTemplatePath = optionalMap(
+      (p) => TP.instancePath(p, [getUtopiaID(utopiaJsxComponent.rootElement)]),
+      scenePath,
+    )
+
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
+      const lookupRenderer = createLookupRender(
+        ownTemplatePath,
+        scope,
+        realPassedProps,
+        mutableContext.requireResult,
+        hiddenInstances,
+        mutableContext.fileBlobs,
+        sceneContext.validPaths,
+        undefined,
+        metadataContext,
+        mutableContext.jsxFactoryFunctionName,
+        shouldIncludeCanvasRootInTheSpy,
+      )
+
+      scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
+        utopiaJsxComponent.arbitraryJSBlock.elementsWithin,
+        scope,
+        lookupRenderer,
+      )
+
       runBlockUpdatingScope(
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
@@ -92,11 +122,6 @@ export function createComponentRendererComponent(params: {
       if (isJSXFragment(element)) {
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
-        const ownTemplatePath = optionalMap(
-          (p) => TP.instancePath(p, [getUtopiaID(element)]),
-          scenePath,
-        )
-
         return renderCoreElement(
           element,
           ownTemplatePath,

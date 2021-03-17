@@ -337,7 +337,7 @@ export const UiJsxCanvas = betterReactMemo(
           hiddenInstances,
           fileBlobs,
           [],
-          [],
+          undefined,
           metadataContext,
           jsxFactoryFunction,
           props.shouldIncludeCanvasRootInTheSpy,
