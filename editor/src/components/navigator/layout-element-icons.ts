@@ -205,7 +205,10 @@ function createComponentIconProps(
   const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
   const element = TP.isInstancePath(path)
     ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
-    : null
+    : MetadataUtils.getElementByInstancePathMaybe(
+        metadata.elements,
+        TP.instancePathForElementAtScenePath(path),
+      )
   if (element?.isEmotionOrStyledComponent) {
     return {
       category: 'component',
