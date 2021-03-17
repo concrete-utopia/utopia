@@ -20,6 +20,7 @@ import {
 import { usePossiblyResolvedPackageDependencies } from '../../../components/editor/npm-dependency/npm-dependency'
 
 export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
+  const hookResult = useNamesAndIconsAllPaths()
   const constrolStatus = 'simple'
   const controlStyles = getControlStyles(constrolStatus)
 
