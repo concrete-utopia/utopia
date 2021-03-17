@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
+import { IconMap } from 'antd/lib/result'
 import * as React from 'react'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { LoginState } from '../../common/user'
@@ -21,6 +22,8 @@ import {
   MenuIcons,
   LargerIcons,
   Avatar,
+  Icn,
+  Icons,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
@@ -169,6 +172,66 @@ export const Menubar = betterReactMemo('Menubar', () => {
               selected={isPreviewPaneVisible}
               menuExpanded={false}
               icon={<LargerIcons.PreviewPane />}
+              onClick={togglePreviewPaneVisible}
+              style={{ cursor: 'pointer' }}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'Project'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={isPreviewPaneVisible}
+              menuExpanded={false}
+              icon={<MenuIcons.Project />}
+              onClick={togglePreviewPaneVisible}
+              style={{ cursor: 'pointer' }}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'StoryBoards'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={isPreviewPaneVisible}
+              menuExpanded={false}
+              icon={<Icons.Smiangle />}
+              onClick={togglePreviewPaneVisible}
+              style={{ cursor: 'pointer' }}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'Dependencies'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={isPreviewPaneVisible}
+              menuExpanded={false}
+              icon={<MenuIcons.Filestack />}
+              onClick={togglePreviewPaneVisible}
+              style={{ cursor: 'pointer' }}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'Sharing'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={isPreviewPaneVisible}
+              menuExpanded={false}
+              icon={<Icn category='element' type='ghost' width={18} height={18} color={'purple'} />}
+              onClick={togglePreviewPaneVisible}
+              style={{ cursor: 'pointer' }}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'Settings'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={isPreviewPaneVisible}
+              menuExpanded={false}
+              icon={<MenuIcons.Settings />}
               onClick={togglePreviewPaneVisible}
               style={{ cursor: 'pointer' }}
             />
