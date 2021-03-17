@@ -400,8 +400,8 @@ function useGetStoryboardRoot(
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements
-  storyboardRootElementPath: StaticInstancePath
-  rootValidPaths: Array<StaticInstancePath>
+  storyboardRootElementPath: InstancePath
+  rootValidPaths: Array<InstancePath>
   rootScenePath: ScenePath
 } {
   const StoryboardRootComponent = executionScope[BakedInStoryboardVariableName] as
@@ -445,7 +445,7 @@ export interface CanvasContainerProps {
   offset: CanvasVector
   onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   canvasRootElementTemplatePath: TemplatePath
-  validRootPaths: Array<StaticInstancePath>
+  validRootPaths: Array<InstancePath>
   mountCount: number
 }
 

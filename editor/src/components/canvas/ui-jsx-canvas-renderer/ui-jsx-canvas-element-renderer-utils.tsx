@@ -280,10 +280,12 @@ function renderJSXElement(
     templatePath,
   )
 
+  const staticValidPaths = validPaths.map(TP.dynamicPathToStaticPath)
+
   if (
     FinalElement != null &&
     templatePath != null &&
-    TP.containsPath(staticTemplatePathForGeneratedElement, validPaths)
+    TP.containsPath(staticTemplatePathForGeneratedElement, staticValidPaths)
   ) {
     let childrenTemplatePaths: InstancePath[] = []
 

@@ -882,19 +882,21 @@ export function dynamicPathToStaticPath(path: InstancePath): StaticInstancePath 
   )
 }
 
+// TODO maybe delete me
 export function scenePathContainsElementPath(scene: ScenePath, elementPath: ElementPath): boolean {
   return scene.sceneElementPaths.some((sceneElementPath) =>
     elementPathsEqual(sceneElementPath, elementPath),
   )
 }
 
-export function staticScenePathContainsElementPath(
+export function staticScenePathContainsElementPath( // TODO rename me!
   scene: ScenePath,
   elementPath: ElementPath,
-): boolean {
-  return scene.sceneElementPaths.some((sceneElementPath) => {
+): ScenePath | null {
+  const foundIndex = scene.sceneElementPaths.findIndex((sceneElementPath) => {
     // TODO RHEESE Change the types so we can have a StaticScenePath
     const staticSceneElementPath = sceneElementPath.map(extractOriginalUidFromIndexedUid)
     return elementPathsEqual(staticSceneElementPath, elementPath)
   })
+  return foundIndex === -1 ? null : scenePath(scene.sceneElementPaths.slice(0, foundIndex + 1))
 }
