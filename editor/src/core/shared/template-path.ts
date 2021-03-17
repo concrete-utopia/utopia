@@ -914,3 +914,35 @@ export function staticScenePathContainsElementPath(
     return elementPathsEqual(sceneElementPath, elementPath)
   })
 }
+
+export function isScenePathEmpty(path: TemplatePath): boolean {
+  if (isScenePath(path)) {
+    return path.sceneElementPaths.length === 0
+  } else {
+    return path.scene.sceneElementPaths.length === 0
+  }
+}
+
+interface DropFirstScenePathElementResultType {
+  newPath: InstancePath
+  droppedScenePathElements: StaticElementPath | null
+}
+
+export function dropFirstScenePathElement(
+  path: StaticInstancePath,
+): DropFirstScenePathElementResultType {
+  if (path.scene.sceneElementPaths.length === 0) {
+    return {
+      newPath: path,
+      droppedScenePathElements: null,
+    }
+  } else {
+    return {
+      newPath: {
+        ...path,
+        scene: scenePath(path.scene.sceneElementPaths.slice(1)),
+      },
+      droppedScenePathElements: path.scene.sceneElementPaths[0],
+    }
+  }
+}

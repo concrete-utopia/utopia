@@ -9,10 +9,11 @@ import {
   isJSXElement,
   isJSXAttributeFunctionCall,
   walkElements,
+  JSXElementName,
 } from '../../core/shared/element-template'
 import { walkAttributes } from '../../core/shared/jsx-attributes'
 import { pluck } from '../../core/shared/array-utils'
-import { importAlias } from '../../core/shared/project-file-types'
+import { importAlias, Imports } from '../../core/shared/project-file-types'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 // Adds an import for `UtopiaUtils` to the current open file.
@@ -62,4 +63,20 @@ export function addUtopiaUtilsImportIfUsed(editorState: EditorState): EditorStat
       return editorState
     }
   }
+}
+
+export function importedFromWhere(variableName: string, importsToSearch: Imports): string | null {
+  for (const importSource of Object.keys(importsToSearch)) {
+    const specificImport = importsToSearch[importSource]
+    if (specificImport.importedAs === variableName) {
+      return importSource
+    }
+    if (specificImport.importedWithName === variableName) {
+      return importSource
+    }
+    if (specificImport.importedFromWithin.some((within) => within.alias === variableName)) {
+      return importSource
+    }
+  }
+  return null
 }
