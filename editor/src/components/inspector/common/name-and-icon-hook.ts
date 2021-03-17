@@ -14,7 +14,6 @@ import {
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
 import { shallowEqual } from '../../../core/shared/equality-utils'
-import { arrayEquals } from '../../../core/shared/utils'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
 
 export interface NameAndIconResult {
@@ -22,17 +21,6 @@ export interface NameAndIconResult {
   name: JSXElementName | null
   label: string
   iconProps: IcnProps
-}
-
-function nameAndIconResultEquals(a: NameAndIconResult, b: NameAndIconResult): boolean {
-  const pathEquals = TP.pathsEqual(a.path, b.path)
-  const labelEquals = a.label === b.label
-  const iconPropsEqual = shallowEqual(a.iconProps, b.iconProps)
-  const oldNamePath = a.name?.propertyPath != null ? a.name?.propertyPath : null
-  const newNamePath = b.name?.propertyPath != null ? b.name?.propertyPath : null
-  const namePathEquals = PP.pathsEqual(oldNamePath, newNamePath)
-  const nameVariableEquals = a.name?.baseVariable === b.name?.baseVariable
-  return pathEquals || labelEquals || iconPropsEqual || namePathEquals || nameVariableEquals
 }
 
 export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
@@ -44,22 +32,15 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
       return getNameAndIconResult(path, components, metadata, imports)
     },
     'useNameAndIcon',
-    nameAndIconResultEquals,
-  )
-}
-
-export function useNamesAndIconsSelectedViews(): NameAndIconResult[] {
-  return useEditorState(
-    (store) => {
-      const metadata = store.editor.jsxMetadataKILLME
-      const components = getOpenUtopiaJSXComponentsFromState(store.editor)
-      const imports = getOpenImportsFromState(store.editor)
-      const selectedViews = store.editor.selectedViews
-      return selectedViews.map((path) => getNameAndIconResult(path, components, metadata, imports))
-    },
-    'useNameAndIconSelectedViews',
     (oldResult, newResult) => {
-      return arrayEquals(oldResult, newResult, nameAndIconResultEquals)
+      const pathEquals = TP.pathsEqual(oldResult.path, newResult.path)
+      const labelEquals = oldResult.label === newResult.label
+      const iconPropsEqual = shallowEqual(oldResult.iconProps, newResult.iconProps)
+      const oldNamePath = oldResult.name?.propertyPath != null ? oldResult.name?.propertyPath : null
+      const newNamePath = newResult.name?.propertyPath != null ? newResult.name?.propertyPath : null
+      const namePathEquals = PP.pathsEqual(oldNamePath, newNamePath)
+      const nameVariableEquals = oldResult.name?.baseVariable === newResult.name?.baseVariable
+      return pathEquals && labelEquals && iconPropsEqual && namePathEquals && nameVariableEquals
     },
   )
 }

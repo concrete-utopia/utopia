@@ -9,7 +9,7 @@ import * as EditorActions from '../../editor/actions/action-creators'
 import { GridRow } from '../../inspector/widgets/grid-row'
 import { PopupList } from '../../../uuiui'
 import { JSXElementName, jsxElementName } from '../../../core/shared/element-template'
-import { useNamesAndIconsSelectedViews } from '../../inspector/common/name-and-icon-hook'
+import { useNamesAndIconsAllPaths } from '../../inspector/common/name-and-icon-hook'
 import { getElementsToTarget } from '../../inspector/common/inspector-utils'
 import { Imports } from '../../../core/shared/project-file-types'
 import {
@@ -20,7 +20,7 @@ import {
 import { usePossiblyResolvedPackageDependencies } from '../../../components/editor/npm-dependency/npm-dependency'
 
 export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
-  const hookResult = useNamesAndIconsSelectedViews()
+  const hookResult = useNamesAndIconsAllPaths()
   const constrolStatus = 'simple'
   const controlStyles = getControlStyles(constrolStatus)
 
@@ -60,7 +60,6 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
     },
     'Name Row Values',
   )
-  console.log(hookResult[0].name, hookResult[0].label)
 
   const insertableComponents = React.useMemo(() => {
     if (fullPath == null) {
