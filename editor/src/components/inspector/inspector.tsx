@@ -66,10 +66,7 @@ import { CSSPosition } from './common/css-utils'
 import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
-import { ElementPathElement } from './sections/header-section/element-path'
 import { HeaderSection, HeaderSectionCoreProps } from './sections/header-section/header-section'
-import { LayoutWrapperCoreProps } from './sections/header-section/layout-wrapper-section'
-import { NameRowProps } from './sections/header-section/name-row'
 import {
   CSSTarget,
   cssTarget,
@@ -115,9 +112,7 @@ export interface InspectorPartProps<T> {
 export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
     HeaderSectionCoreProps,
-    TargetSelectorSectionProps,
-    LayoutWrapperCoreProps,
-    NameRowProps {
+    TargetSelectorSectionProps {
   selectedViews: Array<TemplatePath>
 }
 
@@ -370,55 +365,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     dispatch(actions, 'everyone')
   }, [dispatch, instancePaths, aspectRatioLocked])
 
-  function renderInspectorContents() {
-    if (props.elementPath.length == 0 || anyUnknownElements) {
-      return <SettingsPanel />
-    } else if (props.elementPath.length === 1 && TP.isScenePath(props.elementPath[0].path)) {
-      return <SceneSection scenePath={props.elementPath[0].path} />
-    } else {
-      return (
-        <React.Fragment>
-          <AlignmentButtons numberOfTargets={instancePaths.length} />
-          <RenderedLayoutSection
-            anyHTMLElements={anyHTMLElements}
-            layout={props.input.layout}
-            specialSizeMeasurements={props.input.specialSizeMeasurements}
-            isChildOfFlexComponent={props.input.isChildOfFlexComponent}
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            parentFlexAxis={props.input.parentFlexAxis}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-            position={props.input.position}
-          />
-          <ClassNameSubsection />
-          <StyleSection />
-          <WarningSubsection />
-          {anyComponents ? <ComponentSection isScene={false} /> : null}
-          <ImgSection />
-          <TargetSelectorSection
-            targets={props.targets}
-            selectedTargetPath={props.selectedTargetPath}
-            onSelectTarget={props.onSelectTarget}
-            onStyleSelectorRename={props.onStyleSelectorRename}
-            onStyleSelectorDelete={props.onStyleSelectorDelete}
-            onStyleSelectorInsert={props.onStyleSelectorInsert}
-          />
-          <EventHandlersSection />
-          <HeaderSection
-            elementPath={props.elementPath}
-            onSelect={props.onSelect}
-            label={props.input.label}
-            type={props.input.type}
-            onElementTypeChange={props.onElementTypeChange}
-            onWrap={props.onWrap}
-            onUnwrap={props.onUnwrap}
-            value={props.input.layoutWrapper}
-          />
-        </React.Fragment>
-      )
-    }
-  }
-  //first
   return (
     <div
       id='inspector'
@@ -428,9 +374,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         color: colorTheme.neutralForeground.value,
       }}
       onFocus={onFocus}
-    >
-      {renderInspectorContents()}
-    </div>
+    ></div>
   )
 })
 Inspector.displayName = 'Inspector'
@@ -622,42 +566,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     getElementsToTarget(selectedViews),
   )
 
-  const elementPath = useKeepReferenceEqualityIfPossible(
-    React.useMemo(() => {
-      if (selectedViews.length === 0) {
-        return []
-      }
-
-      let elements: Array<ElementPathElement> = []
-      Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-        // TODO Scene Implementation
-        if (TP.isInstancePath(path)) {
-          const component = MetadataUtils.getElementByInstancePathMaybe(
-            jsxMetadataKILLME.elements,
-            path,
-          )
-          if (component != null) {
-            elements.push({
-              name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
-              path: path,
-            })
-          }
-        } else {
-          const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
-          if (scene != null) {
-            elements.push({
-              name: scene.label,
-              path: path,
-            })
-          }
-        }
-      })
-      return elements
-    }, [selectedViews, jsxMetadataKILLME]),
-  )
-
-  // Memoized Callbacks
-
   const onSubmitValue = React.useCallback(
     (newModel: InspectorModel, paths: PropertyPath[]) => {
       const updates = paths.map((path) => {
@@ -765,11 +673,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         onSubmitValue={onSubmitValue}
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
-        elementPath={elementPath}
-        onSelect={onSelect}
         onSelectTarget={onSelectTarget}
-        onWrap={onWrap}
-        onUnwrap={onUnwrap}
         onElementTypeChange={onElementTypeChange}
         onStyleSelectorRename={onStyleSelectorRename}
         onStyleSelectorDelete={onStyleSelectorDelete}
