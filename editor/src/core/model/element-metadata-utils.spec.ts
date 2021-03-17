@@ -25,16 +25,18 @@ import {
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
 } from '../shared/element-template'
-import { sampleImportsForTests } from './test-ui-js-file'
+import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { TemplatePath } from '../shared/project-file-types'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestScenePath as TestScenePathForTestProject,
+  TestStaticScenePath as TestStaticScenePathForTestProject,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { createIndexedUid } from '../shared/uid-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { testStaticInstancePath } from '../shared/template-path.test-utils'
 
 const TestScenePath = 'scene-aaa'
 
@@ -437,13 +439,17 @@ describe('dynamicPathToStaticPath', () => {
     const staticPath = MetadataUtils.dynamicPathToStaticPath(
       TP.instancePath(TestScenePathForTestProject, ['aaa', createIndexedUid('bbb', 1)]),
     )
-    expect(staticPath).toEqual(TP.staticInstancePath(TestScenePathForTestProject, ['aaa', 'bbb']))
+    expect(staticPath).toEqual(
+      testStaticInstancePath(TestStaticScenePathForTestProject, ['aaa', 'bbb']),
+    )
   })
 
   it('finds an already static path all right', async () => {
     const staticPath = MetadataUtils.dynamicPathToStaticPath(
       TP.instancePath(TestScenePathForTestProject, ['aaa', 'ccc']),
     )
-    expect(staticPath).toEqual(TP.staticInstancePath(TestScenePathForTestProject, ['aaa', 'ccc']))
+    expect(staticPath).toEqual(
+      testStaticInstancePath(TestStaticScenePathForTestProject, ['aaa', 'ccc']),
+    )
   })
 })

@@ -30,7 +30,7 @@ import {
 } from '../../shared/element-template'
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports, parseSuccess } from '../common/project-file-utils'
-import { onlyImportReact, sampleImportsForTests } from '../../model/test-ui-js-file'
+import { onlyImportReact, sampleImportsForTests } from '../../model/test-ui-js-file.test-utils'
 import {
   isParseSuccess,
   importAlias,

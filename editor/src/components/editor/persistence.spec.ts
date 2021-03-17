@@ -7,7 +7,7 @@ import {
   loadFromLocalStorage,
 } from './persistence'
 import { NO_OP } from '../../core/shared/utils'
-import { createPersistentModel, delay } from '../../utils/test-utils'
+import { createPersistentModel, delay } from '../../utils/utils.test-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import { TextFile } from '../../core/shared/project-file-types'
 import { SaveProjectResponse } from './server'

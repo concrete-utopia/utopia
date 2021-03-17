@@ -10,7 +10,7 @@ import { CanvasVector, canvasRectangle } from '../../core/shared/math-utils'
 import { updateFramesOfScenesAndComponents } from './canvas-utils'
 import { ParseSuccess } from '../../core/shared/project-file-types'
 import { getComponentsFromTopLevelElements } from '../../core/model/project-file-utils'
-import { createFakeMetadataForParseSuccess } from '../../utils/test-utils'
+import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 import { applyUtopiaJSXComponentsChanges } from '../editor/store/editor-state'
 
 describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
