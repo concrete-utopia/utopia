@@ -454,10 +454,10 @@ export const MetadataUtils = {
     }
   },
   templatePathToStaticTemplatePath(path: TemplatePath | null): StaticTemplatePath | null {
-    if (path == null || TP.isScenePath(path)) {
+    if (path == null) {
       return path
     } else {
-      return this.dynamicPathToStaticPath(path)
+      return TP.dynamicPathToStaticPath(path)
     }
   },
   dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {

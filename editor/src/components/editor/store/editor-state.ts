@@ -56,6 +56,7 @@ import {
   EmptyExportsDetail,
   HighlightBounds,
   HighlightBoundsForUids,
+  StaticElementPath,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -130,6 +131,8 @@ import {
   toString,
   dynamicPathToStaticPath,
   scenePath,
+  staticScenePath,
+  staticElementPath,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notice'
@@ -763,8 +766,8 @@ export function addSceneToJSXComponents(
     storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
   if (storyboardComponentUID != null) {
     const storyboardComponentTemplatePath = staticInstancePath(
-      scenePath([[storyboardComponentUID]]),
-      [storyboardComponentUID],
+      staticScenePath([staticElementPath([storyboardComponentUID])]),
+      staticElementPath([storyboardComponentUID]),
     )
     return insertJSXElementChild(storyboardComponentTemplatePath, newSceneElement, components, null)
   } else {

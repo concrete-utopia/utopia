@@ -16,12 +16,14 @@ import {
   UtopiaJSXComponent,
   isJSXFragment,
   getJSXAttribute,
+  getJSXElementNameAsString,
 } from '../shared/element-template'
 import {
   Imports,
   ScenePath,
   StaticElementPath,
   StaticInstancePath,
+  StaticScenePath,
   StaticTemplatePath,
 } from '../shared/project-file-types'
 import * as TP from '../shared/template-path'
@@ -87,17 +89,30 @@ export function guaranteeUniqueUids(
 }
 
 export function getValidTemplatePaths(
-  topLevelElement: TopLevelElement,
-  scenePath: ScenePath,
+  topLevelElements: ReadonlyMap<string, UtopiaJSXComponent>,
+  focusedElementPath: ScenePath | null,
+  topLevelElementName: string | null,
+  scenePath: StaticScenePath,
 ): Array<StaticInstancePath> {
+  if (topLevelElementName == null) {
+    return []
+  }
+  const topLevelElement = topLevelElements.get(topLevelElementName)
   if (isUtopiaJSXComponent(topLevelElement)) {
-    return getValidTemplatePathsFromElement(topLevelElement.rootElement, scenePath)
+    return getValidTemplatePathsFromElement(
+      topLevelElements,
+      focusedElementPath,
+      topLevelElement.rootElement,
+      scenePath,
+    )
   } else {
     return []
   }
 }
 
 export function getValidTemplatePathsFromElement(
+  topLevelElements: ReadonlyMap<string, UtopiaJSXComponent>,
+  focusedElementPath: ScenePath | null,
   element: JSXElementChild,
   parentPath: StaticTemplatePath,
 ): Array<StaticInstancePath> {
@@ -105,18 +120,41 @@ export function getValidTemplatePathsFromElement(
     const uid = getUtopiaID(element)
     const path = TP.appendToPath(parentPath, uid)
     let paths = [path]
-    fastForEach(element.children, (c) => paths.push(...getValidTemplatePathsFromElement(c, path)))
+    fastForEach(element.children, (c) =>
+      paths.push(
+        ...getValidTemplatePathsFromElement(topLevelElements, focusedElementPath, c, path),
+      ),
+    )
+    const name = getJSXElementNameAsString(element.name)
+    if (
+      focusedElementPath != null &&
+      TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
+    ) {
+      paths = [
+        ...paths,
+        ...getValidTemplatePaths(
+          topLevelElements,
+          focusedElementPath,
+          name,
+          TP.staticScenePathForElementAtInstancePath(path),
+        ),
+      ]
+    }
     return paths
   } else if (isJSXArbitraryBlock(element)) {
     let paths: Array<StaticInstancePath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
-      paths.push(...getValidTemplatePathsFromElement(e, parentPath)),
+      paths.push(
+        ...getValidTemplatePathsFromElement(topLevelElements, focusedElementPath, e, parentPath),
+      ),
     )
     return paths
   } else if (isJSXFragment(element)) {
     let paths: Array<StaticInstancePath> = []
     fastForEach(Object.values(element.children), (e) =>
-      paths.push(...getValidTemplatePathsFromElement(e, parentPath)),
+      paths.push(
+        ...getValidTemplatePathsFromElement(topLevelElements, focusedElementPath, e, parentPath),
+      ),
     )
     return paths
   } else {

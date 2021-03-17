@@ -52,13 +52,14 @@ import {
 } from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { scenePath } from '../../core/shared/template-path'
+import { scenePath, staticScenePath } from '../../core/shared/template-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
 import { getContentsTreeFileFromString } from '../assets'
+import { testStaticScenePath } from '../../core/shared/template-path.test-utils'
 
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
@@ -224,7 +225,9 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
 }
 
 const TestSceneUID = 'scene-aaa'
-export const TestScenePath = scenePath([[BakedInStoryboardUID, TestSceneUID]])
+const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID]]
+export const TestScenePath = scenePath(TestSceneElementPaths)
+export const TestStaticScenePath = testStaticScenePath(TestSceneElementPaths)
 
 export function makeTestProjectCodeWithSnippet(snippet: string): string {
   const code = `/** @jsx jsx */
