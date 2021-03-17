@@ -1237,9 +1237,9 @@ export function clearTopLevelElementUniqueIDs(element: TopLevelElement): TopLeve
 }
 
 export function isUtopiaJSXComponent(
-  topLevelElement: TopLevelElement,
+  topLevelElement: TopLevelElement | null | undefined,
 ): topLevelElement is UtopiaJSXComponent {
-  return topLevelElement.type === 'UTOPIA_JSX_COMPONENT'
+  return topLevelElement?.type === 'UTOPIA_JSX_COMPONENT'
 }
 
 export function isArbitraryJSBlock(

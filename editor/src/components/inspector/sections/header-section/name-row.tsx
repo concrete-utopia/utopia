@@ -1,13 +1,21 @@
 import * as React from 'react'
 import { getControlStyles } from '../../common/control-status'
 import { SelectOption } from '../../controls/select-control'
-import { JSXElementName, jsxElementName } from '../../../../core/shared/element-template'
+import { JSXElementName } from '../../../../core/shared/element-template'
 import { GridRow } from '../../widgets/grid-row'
 import { PopupList } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
+import { Imports } from '../../../../core/shared/project-file-types'
+import {
+  getComponentGroups,
+  getComponentGroupsAsSelectOptions,
+  InsertableComponent,
+} from '../../../shared/project-components'
+import { useEditorState } from '../../../editor/store/store-hook'
+import { usePossiblyResolvedPackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
 
 export interface NameRowProps {
-  onElementTypeChange: (value: JSXElementName) => void
+  onElementTypeChange: (value: JSXElementName, importsToAdd: Imports) => void
 }
 
 export interface NameRowInnerProps extends NameRowProps {
@@ -18,16 +26,39 @@ export interface NameRowInnerProps extends NameRowProps {
 export const NameRow = betterReactMemo('NameRow', (props: NameRowInnerProps) => {
   const onSelect = React.useCallback(
     (selectOption: SelectOption) => {
-      const value = selectOption.value
-      if (typeof value === 'string') {
-        const elementName = jsxElementName(value, [])
-        props.onElementTypeChange(elementName)
-      } else {
-        props.onElementTypeChange(value)
-      }
+      const value: InsertableComponent = selectOption.value
+      props.onElementTypeChange(value.element.name, value.importsToAdd)
     },
     [props],
   )
+
+  const dependencies = usePossiblyResolvedPackageDependencies()
+
+  const { packageStatus, propertyControlsInfo, projectContents, fullPath } = useEditorState(
+    (store) => {
+      return {
+        packageStatus: store.editor.nodeModules.packageStatus,
+        propertyControlsInfo: store.editor.propertyControlsInfo,
+        projectContents: store.editor.projectContents,
+        fullPath: store.editor.canvas.openFile?.filename ?? null,
+      }
+    },
+    'Name Row Values',
+  )
+
+  const insertableComponents = React.useMemo(() => {
+    if (fullPath == null) {
+      return []
+    } else {
+      return getComponentGroupsAsSelectOptions(
+        packageStatus,
+        propertyControlsInfo,
+        projectContents,
+        dependencies,
+        fullPath,
+      )
+    }
+  }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath])
 
   return (
     <GridRow padded={true} type='<---1fr--->|------172px-------|'>
@@ -45,7 +76,7 @@ export const NameRow = betterReactMemo('NameRow', (props: NameRowInnerProps) => 
           disabled={!controlStyles.interactive}
           value={{ value: props.type, label: props.type }}
           onSubmitValue={onSelect}
-          options={typeOptions}
+          options={insertableComponents}
           containerMode='default'
         />
       )}
@@ -55,94 +86,3 @@ export const NameRow = betterReactMemo('NameRow', (props: NameRowInnerProps) => 
 
 const constrolStatus = 'simple'
 const controlStyles = getControlStyles(constrolStatus)
-
-const typeOptions: ReadonlyArray<SelectOption> = [
-  {
-    value: 'View',
-    label: 'View',
-    icon: {
-      category: 'element',
-      type: 'view',
-      width: 18,
-      height: 18,
-      color: 'black',
-    },
-  },
-  {
-    value: 'Rectangle',
-    label: 'Rectangle',
-    icon: {
-      category: 'element',
-      type: 'rectangle',
-      width: 18,
-      height: 18,
-      color: 'black',
-    },
-  },
-  {
-    value: 'Ellipse',
-    label: 'Ellipse',
-    icon: {
-      category: 'element',
-      type: 'ellipse',
-      width: 18,
-      height: 18,
-      color: 'black',
-    },
-  },
-  {
-    value: 'div',
-    label: 'div',
-    icon: {
-      category: 'element',
-      type: 'div',
-      width: 18,
-      height: 18,
-      color: 'black',
-    },
-  },
-  {
-    value: 'span',
-    label: 'span',
-    icon: {
-      category: 'element',
-      type: 'div',
-      width: 18,
-      height: 18,
-      color: 'black',
-    },
-  },
-  {
-    value: jsxElementName('animated', ['div']),
-    label: 'animated.div',
-    icon: {
-      category: 'element',
-      type: 'animated',
-      width: 18,
-      height: 18,
-      color: 'black',
-    },
-  },
-  {
-    value: 'img',
-    label: 'Image',
-    icon: {
-      category: 'element',
-      type: 'image',
-      width: 18,
-      height: 18,
-      color: 'black',
-    },
-  },
-  {
-    value: 'Text',
-    label: 'Text',
-    icon: {
-      category: 'element',
-      type: 'text',
-      width: 18,
-      height: 18,
-      color: 'black',
-    },
-  },
-]

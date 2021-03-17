@@ -67,6 +67,7 @@ import { CanvasContainerID } from './canvas-types'
 import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
+import { UTOPIA_SCENE_PATH } from '../../core/model/utopia-constants'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -118,6 +119,7 @@ export interface UiJsxCanvasProps {
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
+  focusedElementPath: ScenePath | null
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -214,6 +216,7 @@ export function pickUiJsxCanvasProps(
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
+      focusedElementPath: editor.focusedElementPath,
     }
   }
 }
@@ -331,7 +334,7 @@ export const UiJsxCanvas = betterReactMemo(
         jsxFactoryFunctionName: jsxFactoryFunction,
       })
 
-      const topLevelElementsMap = new Map(topLevelJsxComponents)
+      const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
       const {
         StoryboardRootComponent,
@@ -357,6 +360,7 @@ export const UiJsxCanvas = betterReactMemo(
                 topLevelElements: topLevelElementsMap,
                 canvasIsLive: canvasIsLive,
                 shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
+                focusedElementPath: props.focusedElementPath,
               }}
             >
               <CanvasContainer
@@ -368,15 +372,15 @@ export const UiJsxCanvas = betterReactMemo(
                 validRootPaths={rootValidPaths}
                 canvasRootElementTemplatePath={storyboardRootElementPath}
               >
-                <SceneLevelUtopiaContext.Provider
-                  value={{ validPaths: rootValidPaths, scenePath: rootScenePath }}
-                >
+                <SceneLevelUtopiaContext.Provider value={{ validPaths: rootValidPaths }}>
                   <ParentLevelUtopiaContext.Provider
                     value={{
                       templatePath: storyboardRootElementPath,
                     }}
                   >
-                    {StoryboardRootComponent == null ? null : <StoryboardRootComponent />}
+                    {StoryboardRootComponent == null ? null : (
+                      <StoryboardRootComponent {...{ [UTOPIA_SCENE_PATH]: rootScenePath }} />
+                    )}
                   </ParentLevelUtopiaContext.Provider>
                 </SceneLevelUtopiaContext.Provider>
               </CanvasContainer>
@@ -408,7 +412,12 @@ function useGetStoryboardRoot(
   const validPaths =
     storyboardRootJsxComponent == null
       ? []
-      : getValidTemplatePaths(storyboardRootJsxComponent, EmptyScenePathForStoryboard)
+      : getValidTemplatePaths(
+          topLevelElementsMap,
+          null,
+          BakedInStoryboardVariableName,
+          EmptyScenePathForStoryboard,
+        )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
 
   const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements = {

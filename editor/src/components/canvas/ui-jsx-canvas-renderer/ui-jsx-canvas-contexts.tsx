@@ -35,6 +35,7 @@ interface RerenderUtopiaContextProps {
   hiddenInstances: Array<TemplatePath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
+  focusedElementPath: ScenePath | null
 }
 
 export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
@@ -42,17 +43,16 @@ export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
   hiddenInstances: [],
   canvasIsLive: false,
   shouldIncludeCanvasRootInTheSpy: false,
+  focusedElementPath: null,
 })
 RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 
 interface SceneLevelContextProps {
   validPaths: Array<InstancePath>
-  scenePath: ScenePath
 }
 
 export const SceneLevelUtopiaContext = React.createContext<SceneLevelContextProps>({
   validPaths: [],
-  scenePath: EmptyScenePathForStoryboard,
 })
 SceneLevelUtopiaContext.displayName = 'SceneLevelUtopiaContext'
 

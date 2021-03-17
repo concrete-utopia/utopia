@@ -1,0 +1,489 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getComponentGroups returns all the various default groups 1`] = `
+Array [
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "App",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "/utopia/storyboard.js": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "App",
+                "name": "App",
+              },
+            ],
+            "importedWithName": null,
+          },
+        },
+        "name": "App",
+      },
+    ],
+    "source": Object {
+      "path": "/utopia/storyboard.js",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "div",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "div",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "span",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "span",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "button",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "button",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "input",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "react": Object {
+            "importedAs": "React",
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "input",
+      },
+    ],
+    "source": Object {
+      "type": "HTML_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "DatePicker",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "DatePicker",
+                "name": "DatePicker",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Date Picker",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Button",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Button",
+                "name": "Button",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Button",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "InputNumber",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "InputNumber",
+                "name": "InputNumber",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Number Input",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Row",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Row",
+                "name": "Row",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Row",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Col",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Col",
+                "name": "Col",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Col",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Space",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Space",
+                "name": "Space",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Space",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Menu",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Menu",
+                "name": "Menu",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Menu",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Menu",
+            "propertyPath": Object {
+              "propertyElements": Array [
+                "Item",
+              ],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Menu",
+                "name": "Menu",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Menu Item",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Menu",
+            "propertyPath": Object {
+              "propertyElements": Array [
+                "SubMenu",
+              ],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Menu",
+                "name": "Menu",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Menu SubMenu",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Menu",
+            "propertyPath": Object {
+              "propertyElements": Array [
+                "ItemGroup",
+              ],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Menu",
+                "name": "Menu",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Menu ItemGroup",
+      },
+      Object {
+        "element": Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Typography",
+            "propertyPath": Object {
+              "propertyElements": Array [
+                "Text",
+              ],
+            },
+          },
+          "props": Array [],
+          "type": "JSX_ELEMENT",
+        },
+        "importsToAdd": Object {
+          "antd": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [
+              Object {
+                "alias": "Typography",
+                "name": "Typography",
+              },
+            ],
+            "importedWithName": null,
+          },
+          "antd/dist/antd.css": Object {
+            "importedAs": null,
+            "importedFromWithin": Array [],
+            "importedWithName": null,
+          },
+        },
+        "name": "Typography Text",
+      },
+    ],
+    "source": Object {
+      "dependencyName": "antd",
+      "dependencyStatus": "loaded",
+      "type": "PROJECT_DEPENDENCY_GROUP",
+    },
+  },
+]
+`;
