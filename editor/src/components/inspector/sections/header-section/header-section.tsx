@@ -4,11 +4,6 @@ import * as TP from '../../../../core/shared/template-path'
 import { JSXElementName, jsxElementName } from '../../../../core/shared/element-template'
 import { useToggle, SeeMoreButton, SeeMoreHOC } from '../../widgets/see-more'
 import { GridRow } from '../../widgets/grid-row'
-import {
-  LayoutWrapperRow,
-  LayoutWrapperCoreProps,
-  LayoutWrapperRowProps,
-} from './layout-wrapper-section'
 import { allHtmlElements } from '../../../../utils/html-elements'
 import { UtopiaTheme, UtopiaStyles, colorTheme, Section, H2, FlexRow } from '../../../../uuiui'
 import { betterReactMemo } from '../../../../uuiui-deps'
@@ -19,10 +14,7 @@ export interface HeaderSectionCoreProps {
   style?: React.CSSProperties
   className?: string
 }
-export interface HeaderSectionProps
-  extends HeaderSectionCoreProps,
-    LayoutWrapperCoreProps,
-    LayoutWrapperRowProps {}
+export interface HeaderSectionProps extends HeaderSectionCoreProps {}
 
 const LargeRowWithMarginStyle = {
   marginLeft: '8px',
@@ -44,9 +36,7 @@ export const HeaderSection = betterReactMemo('HeaderSection', (props: HeaderSect
           toggleSeeMoreVisible={toggleSeeMoreVisible}
         />
       </GridRow>
-      <SeeMoreHOC visible={seeMoreVisible}>
-        <LayoutWrapperRow onWrap={props.onWrap} onUnwrap={props.onUnwrap} value={props.value} />
-      </SeeMoreHOC>
+      <SeeMoreHOC visible={seeMoreVisible}></SeeMoreHOC>
     </Section>
   )
 })
