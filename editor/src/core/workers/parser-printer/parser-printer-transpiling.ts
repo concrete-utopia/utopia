@@ -114,18 +114,27 @@ function babelRewriteJSXArbitraryBlockCode(
       }
     }
   }
+  function tagNameForNodeName(
+    nodeName:
+      | BabelTypes.JSXIdentifier
+      | BabelTypes.JSXMemberExpression
+      | BabelTypes.JSXNamespacedName,
+  ): string {
+    if (BabelTypes.isJSXIdentifier(nodeName)) {
+      return nodeName.name
+    } else if (BabelTypes.isJSXMemberExpression(nodeName)) {
+      return nodeName.property.name
+    } else {
+      return `${nodeName.namespace.name}.${nodeName.name}`
+    }
+  }
   function handleByPositionOrName(path: BabelTraverse.NodePath<BabelTypes.JSXElement>): void {
     const pathLocation: {
       line: number
       column: number
     } = path.node.loc?.start ?? { line: -1, column: -1 }
 
-    const name = path.node.openingElement.name
-    const tagName = BabelTypes.isJSXIdentifier(name)
-      ? name.name
-      : BabelTypes.isJSXMemberExpression(name)
-      ? name.property.name
-      : `${name.namespace.name}.${name.name}`
+    const tagName = tagNameForNodeName(path.node.openingElement.name)
 
     const foundByLocation = elementsWithin.find((e) => {
       return e.startLine === pathLocation.line && e.startColumn === pathLocation.column
