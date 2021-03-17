@@ -55,6 +55,7 @@ import { emptySet } from '../../core/shared/set-utils'
 import { useForceUpdate } from '../editor/hook-utils'
 import { extractOriginalUidFromIndexedUid, getUIDsOnDomELement } from '../../core/shared/uid-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -718,7 +719,6 @@ function walkSceneInner(
       0,
       globalFrame,
       scenePath,
-      scenePath,
       validPaths,
       rootMetadataInStateRef,
       invalidatedSceneIDsRef,
@@ -742,7 +742,6 @@ function walkElements(
   index: number,
   depth: number,
   parentPoint: CanvasPoint,
-  originalParentPath: TemplatePath | null,
   uniqueParentPath: TemplatePath,
   validPaths: Array<string>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
@@ -778,50 +777,15 @@ function walkElements(
     const uids = getUIDsOnDomELement(element)
     if (uids != null) {
       const results = uids.map((uidAttribute) => {
-        const parentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_PARENTS_KEY)
-        const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
-        const originalParentUIDsAttribute = getDOMAttribute(
-          element,
-          UTOPIA_UID_ORIGINAL_PARENTS_KEY,
-        )
         const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
 
         const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
 
-        // Build the path for this element, substituting an index in if there is no uid attribute.
-        function makeIndexElement(): id {
-          return `index-${index}`
-        }
-        const pathElement = Utils.defaultIfNullLazy<id>(uidAttribute, makeIndexElement)
-        const originalPathElement = Utils.defaultIfNull(uidAttribute, originalUIDAttribute)
-        const parentAttribute = Utils.defaultIfNull(
-          parentUIDsAttribute,
-          originalParentUIDsAttribute,
-        )
-
-        // Build the unique path for this element.
-        let uniquePath: TemplatePath = uniqueParentPath
-        if (parentUIDsAttribute != null) {
-          uniquePath = TP.appendToPath(uniquePath, parentUIDsAttribute.split('/'))
-        }
-        uniquePath = TP.appendToPath(uniquePath, pathElement)
-
         const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
-
-        // Build the original path for this element.
-        let originalPath: TemplatePath | null = originalParentPath
-        if (originalPath != null) {
-          if (parentAttribute != null) {
-            originalPath = TP.appendToPath(originalPath, parentAttribute.split('/'))
-          }
-          if (originalPathElement != null) {
-            originalPath = TP.appendToPath(originalPath, originalPathElement)
-          }
-        }
 
         // Check this is a path we're interested in, otherwise skip straight to the children
         const foundValidPath = findValidPath(uidAttribute, validPaths)
-        const pathForChildren = foundValidPath != null ? uniquePath : uniqueParentPath
+        const pathForChildren = foundValidPath ?? uniqueParentPath
 
         // Build the metadata for the children of this DOM node.
         let childPaths: Array<InstancePath> = []
@@ -833,7 +797,6 @@ function walkElements(
               childIndex,
               depth + 1,
               globalFrame,
-              originalPath,
               pathForChildren,
               validPaths,
               rootMetadataInStateRef,
