@@ -8,7 +8,11 @@ import * as TP from '../../../core/shared/template-path'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { GridRow } from '../../inspector/widgets/grid-row'
 import { PopupList } from '../../../uuiui'
-import { JSXElementName, jsxElementName } from '../../../core/shared/element-template'
+import {
+  JSXElementName,
+  jsxElementName,
+  jsxElementNameEquals,
+} from '../../../core/shared/element-template'
 import { useNamesAndIconsAllPaths } from '../../inspector/common/name-and-icon-hook'
 import { getElementsToTarget } from '../../inspector/common/inspector-utils'
 import { Imports } from '../../../core/shared/project-file-types'
@@ -78,6 +82,19 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
     }
   }, [packageStatus, propertyControlsInfo, projectContents, dependencies, fullPath])
 
+  const currentInsertableComponent: SelectOption | undefined = React.useMemo(() => {
+    if (hookResult.length > 0 && hookResult[0].name != null) {
+      const nameToSearchFor: JSXElementName = hookResult[0].name
+      for (const selectOption of insertableComponents) {
+        const insertableComponent: InsertableComponent = selectOption.value
+        if (jsxElementNameEquals(insertableComponent.element.name, nameToSearchFor)) {
+          return selectOption
+        }
+      }
+    }
+    return undefined
+  }, [insertableComponents, hookResult])
+
   return (
     <GridRow padded={true} type='<---1fr--->|------172px-------|'>
       <span
@@ -92,7 +109,7 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
       {hookResult.length >= 1 ? (
         <PopupList
           disabled={!controlStyles.interactive}
-          value={{ value: hookResult[0].name, label: hookResult[0].label }}
+          value={currentInsertableComponent}
           onSubmitValue={onSelect}
           options={insertableComponents}
           containerMode='default'
