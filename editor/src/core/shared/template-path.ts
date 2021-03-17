@@ -864,6 +864,17 @@ function dynamicScenePathToStaticScenePath(scene: ScenePath): ScenePath {
   )
 }
 
+export function dynamicTemplatePathToStaticTemplatePath(path: TemplatePath): StaticTemplatePath {
+  if (isScenePath(path)) {
+    return dynamicScenePathToStaticScenePath(path)
+  } else {
+    return staticInstancePath(
+      dynamicScenePathToStaticScenePath(path.scene),
+      path.element.map(extractOriginalUidFromIndexedUid),
+    )
+  }
+}
+
 export function dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
   return staticInstancePath(
     dynamicScenePathToStaticScenePath(path.scene),

@@ -5,7 +5,7 @@ import { isSceneElement, PathForResizeContent } from '../../../core/model/scene-
 import {
   UTOPIA_ORIGINAL_ID_KEY,
   UTOPIA_SCENE_PATH,
-  UTOPIA_UID_KEY,
+  UTOPIA_UIDS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
 import { flatMapEither, forEachRight } from '../../../core/shared/either'
@@ -35,7 +35,7 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
-import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { appendToUidString, createIndexedUid } from '../../../core/shared/uid-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
@@ -71,10 +71,9 @@ export function renderCoreElement(
         ...assembledProps,
       }
 
-      const uidForProps = Utils.defaultIfNull(assembledProps[UTOPIA_UID_KEY], uid)
-      if (uidForProps != null) {
-        passthroughProps[UTOPIA_UID_KEY] = uidForProps
-      }
+      const uidsFromProps = assembledProps[UTOPIA_UIDS_KEY]
+      const uidsToPass = appendToUidString(uidsFromProps, uid)
+      passthroughProps[UTOPIA_UIDS_KEY] = uidsToPass
 
       const originalIDForProps = Utils.defaultIfNull(
         assembledProps[UTOPIA_ORIGINAL_ID_KEY],
@@ -84,7 +83,7 @@ export function renderCoreElement(
         passthroughProps[UTOPIA_ORIGINAL_ID_KEY] = originalIDForProps
       }
 
-      const key = optionalMap(TP.toString, templatePath) ?? uidForProps
+      const key = optionalMap(TP.toString, templatePath) ?? uidsFromProps
 
       return renderJSXElement(
         key,

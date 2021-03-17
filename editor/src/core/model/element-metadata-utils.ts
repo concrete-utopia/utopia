@@ -95,8 +95,8 @@ import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
 import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
-import { UTOPIA_ORIGINAL_ID_KEY, UTOPIA_UID_KEY } from './utopia-constants'
-import { extractOriginalUidFromIndexedUid } from '../shared/uid-utils'
+import { UTOPIA_UIDS_KEY } from './utopia-constants'
+import { extractOriginalUidFromIndexedUid, uidsFromString } from '../shared/uid-utils'
 import { forEachValue, omit } from '../shared/object-utils'
 const ObjectPathImmutable: any = OPI
 
@@ -1140,12 +1140,10 @@ export const MetadataUtils = {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
 
-        const possibleUID: string | null | undefined = Utils.defaultIfNull(
-          spyElem.props[UTOPIA_UID_KEY],
-          spyElem.props[UTOPIA_ORIGINAL_ID_KEY],
-        )
-        if (possibleUID != null) {
-          const possibleElement = elementsByUID[possibleUID]
+        const possibleUIDs: Array<string> | null = uidsFromString(spyElem.props[UTOPIA_UIDS_KEY]) // TODO what about original-uid???
+
+        if (possibleUIDs != null) {
+          const possibleElement = elementsByUID[possibleUIDs[0]] // TODO we are arbitrarily picking the first UID here
           if (possibleElement != null) {
             if (!isIntrinsicElement(possibleElement.name)) {
               componentInstance = true
