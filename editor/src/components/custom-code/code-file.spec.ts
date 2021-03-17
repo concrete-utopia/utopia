@@ -467,11 +467,22 @@ function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {
 import * as React from 'react'
 import { Scene, Storyboard, jsx } from 'utopia-api'
 import { App } from '/src/app.js'
+
+export var SameFileApp = (props) => {
+  return <div data-uid='same-file-app-div' />
+}
+
 export var storyboard = (
   <Storyboard data-uid='storyboard-entity'>
     <Scene
-      data-uid='scene-entity'
+      data-uid='scene-1-entity'
       component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+    <Scene
+      data-uid='scene-2-entity'
+      component={SameFileApp}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
     />
@@ -514,7 +525,7 @@ import { App } from '/src/app.js'
 export var storyboard = (
   <Storyboard data-uid='storyboard-entity'>
     <Scene
-      data-uid='scene-entity'
+      data-uid='scene-1-entity'
       component={App}
       props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
@@ -558,12 +569,25 @@ function staticInstancePathFromString(path: string): StaticInstancePath {
 
 describe('normalisePathToUnderlyingTarget', () => {
   const projectContents = defaultProjectContentsForNormalising()
+  it('handles finding the target within the same file', () => {
+    const actualResult = normalisePathToUnderlyingTarget(
+      projectContents,
+      StoryboardFilePath,
+      staticInstancePathFromString('storyboard-entity/scene-2-entity:same-file-app-div'),
+    )
+    const expectedResult = normalisePathSuccess(
+      staticInstancePathFromString(':same-file-app-div'),
+      StoryboardFilePath,
+      getTextFileByPath(projectContents, StoryboardFilePath),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
   it('jumps across multiple files to reach the actual target', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
       StoryboardFilePath,
       staticInstancePathFromString(
-        'storyboard-entity/scene-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
+        'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
     )
     const expectedResult = normalisePathSuccess(
@@ -592,7 +616,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       '/src/nonexistant.js',
       staticInstancePathFromString(':card-outer-div/card-inner-div'),
     )
-    const expectedResult = normalisePathError('No text file found at /src/nonexistant.js')
+    const expectedResult = normalisePathUnableToProceed('/src/nonexistant.js')
     expect(actualResult).toEqual(expectedResult)
   })
   it('skips attempting to traverse when confronted with an unparsed code file', () => {
@@ -600,10 +624,10 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       '/utopia/unparsedstoryboard.js',
       staticInstancePathFromString(
-        'storyboard-entity/scene-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
+        'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
     )
-    const expectedResult = normalisePathUnableToProceed()
+    const expectedResult = normalisePathUnableToProceed('/utopia/unparsedstoryboard.js')
     expect(actualResult).toEqual(expectedResult)
   })
   it('handles hitting an external dependency', () => {
@@ -611,7 +635,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       StoryboardFilePath,
       staticInstancePathFromString(
-        'storyboard-entity/scene-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',
+        'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',
       ),
     )
     const expectedResult = normalisePathEndsAtDependency('utopia-api')

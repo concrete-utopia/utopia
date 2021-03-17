@@ -931,7 +931,7 @@ interface DropFirstScenePathElementResultType {
 export function dropFirstScenePathElement(
   path: StaticInstancePath,
 ): DropFirstScenePathElementResultType {
-  if (path.scene.sceneElementPaths.length === 0) {
+  if (isScenePathEmpty(path)) {
     return {
       newPath: path,
       droppedScenePathElements: null,

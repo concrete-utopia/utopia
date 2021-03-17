@@ -320,11 +320,13 @@ export function normalisePathError(errorMessage: string): NormalisePathError {
 
 export interface NormalisePathUnableToProceed {
   type: 'NORMALISE_PATH_UNABLE_TO_PROCEED'
+  filePath: string
 }
 
-export function normalisePathUnableToProceed(): NormalisePathUnableToProceed {
+export function normalisePathUnableToProceed(filePath: string): NormalisePathUnableToProceed {
   return {
     type: 'NORMALISE_PATH_UNABLE_TO_PROCEED',
+    filePath: filePath,
   }
 }
 
@@ -358,7 +360,7 @@ export function normalisePathToUnderlyingTarget(
     ) {
       // As the code is ahead this would potentially be looking at a path
       // which now doesn't exist.
-      return normalisePathUnableToProceed()
+      return normalisePathUnableToProceed(currentFilePath)
     } else {
       const staticPath = TP.dynamicPathToStaticPath(elementPath)
       const potentiallyDroppedFirstSceneElementResult = TP.dropFirstScenePathElement(staticPath)
@@ -392,7 +394,12 @@ export function normalisePathToUnderlyingTarget(
           } else {
             const nonNullTargetElement: JSXElement = targetElement
             function lookupElementImport(elementBaseVariable: string): NormalisePathResult {
-              const importedFrom = importedFromWhere(elementBaseVariable, parsedContent.imports)
+              const importedFrom = importedFromWhere(
+                currentFilePath,
+                elementBaseVariable,
+                parsedContent.topLevelElements,
+                parsedContent.imports,
+              )
               if (importedFrom == null) {
                 return normalisePathImportNotFound()
               } else {
@@ -436,6 +443,6 @@ export function normalisePathToUnderlyingTarget(
       }
     }
   } else {
-    return normalisePathError(`No text file found at ${currentFilePath}`)
+    return normalisePathUnableToProceed(currentFilePath)
   }
 }
