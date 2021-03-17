@@ -15,8 +15,14 @@ export type id = string
 
 export type ScenePath = {
   type: 'scenepath'
+  sceneElementPaths: ElementPath[]
+}
+
+export type StaticScenePath = {
+  type: 'scenepath'
   sceneElementPaths: StaticElementPath[]
 }
+
 export type StaticElementPath = StaticModifier & Array<id>
 export type ElementPath = Array<id> | StaticElementPath
 export type InstancePath = {
@@ -25,12 +31,12 @@ export type InstancePath = {
 }
 enum StaticModifier {}
 export type StaticInstancePath = {
-  scene: ScenePath
+  scene: StaticScenePath
   element: StaticElementPath
 }
 
-export type StaticTemplatePath = ScenePath | StaticInstancePath
-export type TemplatePath = StaticTemplatePath | InstancePath
+export type StaticTemplatePath = StaticScenePath | StaticInstancePath
+export type TemplatePath = StaticTemplatePath | ScenePath | InstancePath
 
 export type PropertyPathPart = string | number
 

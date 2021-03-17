@@ -9,7 +9,7 @@ import {
   setupReactWhyDidYouRender,
   enableWhyDidYouRenderOnComponent,
 } from '../../../../utils/react-memoize.test-utils'
-import { ScenePathForTestUiJsFile } from '../../../../core/model/test-ui-js-file'
+import { ScenePathForTestUiJsFile } from '../../../../core/model/test-ui-js-file.test-utils'
 
 describe('Scene Section', () => {
   enableWhyDidYouRenderOnComponent(SceneSection)
