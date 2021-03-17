@@ -298,7 +298,6 @@ function renderJSXElement(
     isComponentRendererComponent(FinalElement) && scenePathForElement != null
       ? { ...elementProps, [UTOPIA_SCENE_PATH]: scenePathForElement }
       : elementProps
-
   const finalProps =
     elementIsIntrinsic && !elementIsBaseHTML
       ? filterDataProps(elementPropsWithScenePath)

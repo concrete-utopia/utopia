@@ -359,7 +359,7 @@ export const UiJsxCanvas = betterReactMemo(
         jsxFactoryFunctionName: jsxFactoryFunction,
       })
 
-      const topLevelElementsMap = new Map(topLevelJsxComponents)
+      const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
       const {
         StoryboardRootComponent,

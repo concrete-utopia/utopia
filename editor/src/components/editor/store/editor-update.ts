@@ -246,6 +246,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UNWRAP_LAYOUTABLE(action, state)
     case 'UPDATE_JSX_ELEMENT_NAME':
       return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state)
+    case 'ADD_IMPORTS':
+      return UPDATE_FNS.ADD_IMPORTS(action, state)
     case 'SET_ASPECT_RATIO_LOCK':
       return UPDATE_FNS.SET_ASPECT_RATIO_LOCK(action, state)
     case 'TOGGLE_CANVAS_IS_LIVE':

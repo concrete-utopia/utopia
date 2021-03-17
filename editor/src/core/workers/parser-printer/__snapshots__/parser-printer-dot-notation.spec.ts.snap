@@ -181,10 +181,12 @@ export var storyboard = (props) => {
       "Storyboard",
       "Scene",
       "App",
+      "utopiaCanvasJSXLookup",
     ],
     "definedWithin": Array [
       "storyboard",
     ],
+    "elementsWithin": Object {},
     "javascript": "export var storyboard = (props) => {
   return (
     <Storyboard data-uid='utopia-storyboard-uid'>

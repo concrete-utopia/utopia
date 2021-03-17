@@ -1,4 +1,4 @@
-import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file'
+import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file.test-utils'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
 import * as TP from '../../../core/shared/template-path'
 import {
