@@ -20,7 +20,6 @@ import {
 import { usePossiblyResolvedPackageDependencies } from '../../../components/editor/npm-dependency/npm-dependency'
 
 export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
-  const hookResult = useNamesAndIconsAllPaths()
   const constrolStatus = 'simple'
   const controlStyles = getControlStyles(constrolStatus)
 
@@ -42,10 +41,13 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
     [dispatch, refElementsToTargetForUpdates],
   )
 
-  const onSelect = React.useCallback((selectOption: SelectOption) => {
-    const value: InsertableComponent = selectOption.value
-    onElementTypeChange(value.element.name, value.importsToAdd)
-  }, hookResult)
+  const onSelect = React.useCallback(
+    (selectOption: SelectOption) => {
+      const value: InsertableComponent = selectOption.value
+      onElementTypeChange(value.element.name, value.importsToAdd)
+    },
+    [onElementTypeChange],
+  )
 
   const dependencies = usePossiblyResolvedPackageDependencies()
 
