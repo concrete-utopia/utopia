@@ -31,6 +31,7 @@ import { jsxAttributesToProps } from '../../../core/shared/jsx-attributes'
 import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
+import { UTOPIA_SCENE_PATH } from '../../../core/model/utopia-constants'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -94,13 +95,14 @@ function useGetValidTemplatePaths(
   topLevelElementName: string | null,
   scenePath: ScenePath,
 ): Array<InstancePath> {
-  const utopiaJsxComponent = useContextSelector(RerenderUtopiaContext, (c) =>
-    c.topLevelElements.get(topLevelElementName ?? ''),
+  const topLevelElements = useContextSelector(RerenderUtopiaContext, (c) => c.topLevelElements)
+  const focusedElementPath = useContextSelector(RerenderUtopiaContext, (c) => c.focusedElementPath)
+  return getValidTemplatePaths(
+    topLevelElements,
+    focusedElementPath,
+    topLevelElementName,
+    TP.dynamicPathToStaticPath(scenePath),
   )
-  if (utopiaJsxComponent != null) {
-    return getValidTemplatePaths(utopiaJsxComponent, TP.dynamicPathToStaticPath(scenePath))
-  }
-  return []
 }
 
 interface SceneRootRendererProps {
@@ -135,6 +137,11 @@ export const SceneRootRenderer = betterReactMemo(
 
     useRunSpy(scenePath, templatePath, topLevelElementName, sceneProps)
 
+    const propsWithScenePath = {
+      ...sceneProps.props,
+      [UTOPIA_SCENE_PATH]: scenePath,
+    }
+
     const rootElement =
       sceneProps.component == null
         ? null
@@ -142,7 +149,7 @@ export const SceneRootRenderer = betterReactMemo(
             inScope,
             mutableUtopiaContext.jsxFactoryFunctionName,
             sceneProps.component,
-            sceneProps.props,
+            propsWithScenePath,
             undefined,
           )
 
@@ -157,7 +164,7 @@ export const SceneRootRenderer = betterReactMemo(
     }
 
     return (
-      <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths, scenePath: scenePath }}>
+      <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths }}>
         <View
           data-utopia-scene-id={TP.toString(scenePath)}
           data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}

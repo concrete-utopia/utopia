@@ -4,6 +4,7 @@ import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { isSceneElement, PathForResizeContent } from '../../../core/model/scene-utils'
 import {
   UTOPIA_ORIGINAL_ID_KEY,
+  UTOPIA_SCENE_PATH,
   UTOPIA_UID_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
@@ -36,10 +37,12 @@ import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
 import { createIndexedUid } from '../../../core/shared/uid-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 export function renderCoreElement(
   element: JSXElementChild,
-  templatePath: InstancePath,
+  templatePath: InstancePath | null,
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
@@ -81,8 +84,10 @@ export function renderCoreElement(
         passthroughProps[UTOPIA_ORIGINAL_ID_KEY] = originalIDForProps
       }
 
+      const key = optionalMap(TP.toString, templatePath) ?? uidForProps
+
       return renderJSXElement(
-        TP.toString(templatePath),
+        key,
         element,
         templatePath,
         parentComponentInputProps,
@@ -106,8 +111,6 @@ export function renderCoreElement(
         innerInScope: MapLike<any>,
       ): React.ReactElement {
         innerIndex++
-        const innerPath = TP.appendToPath(templatePath, `index-${innerIndex}`)
-
         const innerUID = getUtopiaID(innerElement)
         const withOriginalID = setJSXValueAtPath(
           innerElement.props,
@@ -123,6 +126,16 @@ export function renderCoreElement(
               jsxAttributeValue(generatedUID, emptyComments),
             ),
           withOriginalID,
+        )
+
+        // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
+        const templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
+          TP.parentPath,
+          templatePath,
+        )
+        const innerPath = optionalMap(
+          (p) => TP.appendToPath(p, generatedUID),
+          templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
         )
 
         let augmentedInnerElement = innerElement
@@ -190,7 +203,7 @@ export function renderCoreElement(
         inScope,
         jsxFactoryFunctionName,
         React.Fragment,
-        { key: TP.toString(templatePath) },
+        { key: templatePath == null ? uid : TP.toString(templatePath) },
         element.text,
       )
     }
@@ -203,7 +216,7 @@ export function renderCoreElement(
 function renderJSXElement(
   key: string,
   jsx: JSXElement,
-  templatePath: InstancePath,
+  templatePath: InstancePath | null,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   rootScope: MapLike<any>,
@@ -226,7 +239,7 @@ function renderJSXElement(
   const createChildrenElement = (
     child: JSXElementChild,
   ): React.ReactElement | Array<React.ReactElement> => {
-    const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
+    const childPath = optionalMap((p) => TP.appendToPath(p, getUtopiaID(child)), templatePath)
     return renderCoreElement(
       child,
       childPath,
@@ -253,16 +266,32 @@ function renderJSXElement(
   const elementIsIntrinsic = ElementFromScopeOrImport == null && isIntrinsicElement(jsx.name)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : ElementFromScopeOrImport
+  const scenePathForElement = optionalMap(TP.scenePathForElementAtInstancePath, templatePath)
+  const elementPropsWithScenePath =
+    isComponentRendererComponent(FinalElement) && scenePathForElement != null
+      ? { ...elementProps, [UTOPIA_SCENE_PATH]: scenePathForElement }
+      : elementProps
   const finalProps =
-    elementIsIntrinsic && !elementIsBaseHTML ? filterDataProps(elementProps) : elementProps
+    elementIsIntrinsic && !elementIsBaseHTML
+      ? filterDataProps(elementPropsWithScenePath)
+      : elementPropsWithScenePath
 
-  if (FinalElement != null && TP.containsPath(templatePath, validPaths)) {
+  const staticTemplatePathForGeneratedElement = optionalMap(
+    TP.dynamicPathToStaticPath,
+    templatePath,
+  )
+
+  if (
+    FinalElement != null &&
+    templatePath != null &&
+    TP.containsPath(staticTemplatePathForGeneratedElement, validPaths)
+  ) {
     let childrenTemplatePaths: InstancePath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {
       if (isJSXElement(child)) {
-        const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
-        if (TP.containsPath(childPath, validPaths)) {
+        const childPath = optionalMap((p) => TP.appendToPath(p, getUtopiaID(child)), templatePath)
+        if (childPath != null && TP.containsPath(childPath, validPaths)) {
           childrenTemplatePaths.push(childPath)
         }
       }
@@ -292,8 +321,8 @@ function renderJSXElement(
   }
 }
 
-function isHidden(hiddenInstances: TemplatePath[], templatePath: TemplatePath): boolean {
-  return hiddenInstances.some((path) => TP.pathsEqual(path, templatePath))
+function isHidden(hiddenInstances: TemplatePath[], templatePath: TemplatePath | null): boolean {
+  return templatePath != null && hiddenInstances.some((path) => TP.pathsEqual(path, templatePath))
 }
 
 function hideElement(props: any): any {

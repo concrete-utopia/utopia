@@ -14,7 +14,7 @@ import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
 
-// KILLME, except in 106 places
+// KILLME, except in 28 places
 export const toComponentId = toString
 
 // Probably KILLME too
@@ -235,8 +235,8 @@ export function asStatic(path: InstancePath): StaticInstancePath {
   return path as StaticInstancePath
 }
 
-export function isScenePath(path: TemplatePath): path is ScenePath {
-  return (path as any).type === 'scenepath'
+export function isScenePath(path: unknown): path is ScenePath {
+  return (path as any)?.type === 'scenepath'
 }
 
 export function isInstancePath(path: TemplatePath): path is InstancePath {
@@ -473,7 +473,7 @@ export function pathsEqual(l: TemplatePath | null, r: TemplatePath | null): bool
   }
 }
 
-export function containsPath(path: TemplatePath, paths: Array<TemplatePath>): boolean {
+export function containsPath(path: TemplatePath | null, paths: Array<TemplatePath>): boolean {
   const matchesPath = (p: TemplatePath) => pathsEqual(path, p)
   return paths.some(matchesPath)
 }
