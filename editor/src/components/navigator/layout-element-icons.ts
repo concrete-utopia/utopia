@@ -203,8 +203,13 @@ function createComponentIconProps(
   imports: Imports,
 ): IcnPropsBase | null {
   const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
-  const elementInstancePath = TP.isInstancePath(path) ? path : TP.instancePathForElementAtScenePath(path)
-  const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, elementInstancePath)
+  const elementInstancePath = TP.isInstancePath(path)
+    ? path
+    : TP.instancePathForElementAtScenePath(path)
+  const element = MetadataUtils.getElementByInstancePathMaybe(
+    metadata.elements,
+    elementInstancePath,
+  )
   if (element?.isEmotionOrStyledComponent) {
     return {
       category: 'component',
