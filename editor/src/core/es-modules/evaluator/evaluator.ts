@@ -69,7 +69,7 @@ function evaluateJs(
       code,
       [],
       errorHandler,
-    )()
+    )(null)
     return module
   }
 

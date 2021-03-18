@@ -8,7 +8,6 @@ import {
 } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
-import { SafeFunction } from '../../core/shared/code-exec-utils'
 import {
   getControlsForExternalDependencies,
   NodeModulesUpdate,

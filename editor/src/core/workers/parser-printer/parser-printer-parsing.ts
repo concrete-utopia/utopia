@@ -494,24 +494,22 @@ function parseOtherJavaScript<E extends TS.Node, T>(
   } else {
     let startLineShift: number = 0
     let startColumnShift: number = 0
-    fastForEach(expressionsAndTexts, (expressionAndText) => {
-      if (expressionAndText.expression != null) {
-        const startPosition = TS.getLineAndCharacterOfPosition(
-          sourceFile,
-          expressionAndText.startPos,
-        )
-        const line = startPosition.line - 1
-        const column = startPosition.character - 1
-        if (line > startLineShift) {
-          startLineShift = line
+    if (expressionsAndTexts[0].expression != null) {
+      const startPosition = TS.getLineAndCharacterOfPosition(
+        sourceFile,
+        expressionsAndTexts[0].startPos,
+      )
+      const line = startPosition.line - 1
+      const column = startPosition.character - 1
+      if (line > startLineShift) {
+        startLineShift = line
+        startColumnShift = column
+      } else if (line === startLineShift) {
+        if (column > startColumnShift) {
           startColumnShift = column
-        } else if (line === startLineShift) {
-          if (column > startColumnShift) {
-            startColumnShift = column
-          }
         }
       }
-    })
+    }
 
     let propsObjectName = initialPropsObjectName // nullified if re-defined within
     let definedWithin: Array<string> = []
@@ -685,7 +683,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
         currentScopeInner: Array<string>,
         statement: TS.Statement,
       ): Array<string> {
-        if (TS.isFunctionDeclaration(statement) && statement.name != null) {
+        if (TS.isFunctionLike(statement) && statement.name != null) {
           return addUniquely(currentScopeInner, statement.name.getText(sourceFile))
         } else if (TS.isVariableStatement(statement)) {
           return addVariableStatement(currentScopeInner, statement)
@@ -698,7 +696,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
         return node.statements.reduce((working, statement) => {
           return addStatement(working, statement)
         }, currentScope)
-      } else if (TS.isArrowFunction(node) || TS.isFunctionDeclaration(node)) {
+      } else if (TS.isFunctionLike(node)) {
         return node.parameters.reduce(
           (working, parameter) => addBindingName(working, parameter.name),
           currentScope,
@@ -880,7 +878,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
           expressionsNodes.push(expressionNode)
         }
         expressionsText.push(expressionText)
-        if (TS.isFunctionDeclaration(expression)) {
+        if (TS.isFunctionLike(expression)) {
           if (expression.name != null) {
             pushToDefinedWithinIfNotThere(expression.name.getText(sourceFile))
           }
@@ -2023,7 +2021,7 @@ export function parseArbitraryNodes(
     return createExpressionAndText(
       node,
       useFullText ? node.getFullText(sourceFile) : node.getText(sourceFile),
-      node.getStart(sourceFile, false),
+      useFullText ? node.getFullStart() : node.getStart(sourceFile, false),
     )
   })
   return parseOtherJavaScript(

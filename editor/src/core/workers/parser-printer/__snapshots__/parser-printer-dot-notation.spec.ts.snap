@@ -104,7 +104,7 @@ Array [
           "originalJavascript": "<div data-uid='bbb' />",
           "sourceMap": Object {
             "file": "code.tsx",
-            "mappings": "OAAA",
+            "mappings": "OAAA;AAAA;AAAA",
             "names": Array [],
             "sources": Array [
               "code.tsx",
@@ -134,7 +134,9 @@ export var storyboard = (props) => {
             ],
             "version": 3,
           },
-          "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"bbb\\", {});",
+          "transpiledJavascript": "return utopiaCanvasJSXLookup(\\"bbb\\", {
+  callerThis: this
+});",
           "type": "JSX_ARBITRARY_BLOCK",
           "uniqueID": "",
         },

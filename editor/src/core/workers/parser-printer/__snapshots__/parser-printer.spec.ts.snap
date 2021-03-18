@@ -84,15 +84,17 @@ function otherFn(n) {
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAICA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC;;AACAL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
+      "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
       "names": Array [
         "function",
         "cakeFn",
         "n",
         "{",
         "return",
-        "}",
+        "
+",
         "otherFn",
+        "}",
       ],
       "sources": Array [
         "code.tsx",
@@ -525,7 +527,7 @@ Object {
 const b = (n) => n > 0 ? n : a(10)",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAKCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+      "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
       "names": Array [
         "const",
         "a",
@@ -801,7 +803,7 @@ Object {
     "javascript": "const a = \\"cake\\"",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAWCA,IAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
       "names": Array [
         "const",
         "a",

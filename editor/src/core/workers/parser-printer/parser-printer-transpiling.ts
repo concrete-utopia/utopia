@@ -53,7 +53,14 @@ function babelRewriteJSXArbitraryBlockCode(
           BabelTypes.identifier(elsewhere),
         )
       })
-      const definedElsewherePassthrough = BabelTypes.objectExpression(passthroughProps)
+      const definedElsewherePassthrough = BabelTypes.objectExpression(
+        passthroughProps.concat(
+          BabelTypes.objectProperty(
+            BabelTypes.identifier('callerThis'),
+            BabelTypes.thisExpression(),
+          ),
+        ),
+      )
       const callArguments = [BabelTypes.stringLiteral(uid), definedElsewherePassthrough]
       // Weird cast because even though they're the same type there's a weird
       // disagreement between BabelTypes.Node and BabelTraverse.Node.

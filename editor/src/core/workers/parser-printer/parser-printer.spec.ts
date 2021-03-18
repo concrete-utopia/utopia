@@ -3233,7 +3233,9 @@ export var App = props => {
             `[1,2,3].map(x=> <View data-uid='abc' />)`,
             `[1, 2, 3].map(x => <View data-uid='abc' />);`,
             `return [1, 2, 3].map(function (x) {
-  return utopiaCanvasJSXLookup("abc", {});
+  return utopiaCanvasJSXLookup("abc", {
+    callerThis: this
+  });
 });`,
             ['React', 'View', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
@@ -3352,7 +3354,9 @@ export var App = props => {
             `[1, 2, 3].map((n) =>
 <div data-uid="abc" />);`,
             `return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup("abc", {});
+  return utopiaCanvasJSXLookup("abc", {
+    callerThis: this
+  });
 });`,
             ['React', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
@@ -3409,7 +3413,9 @@ export var App = props => {
             `[1, 2, 3].map((n) =>
 <div data-uid='abc' />);`,
             `return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup("abc", {});
+  return utopiaCanvasJSXLookup("abc", {
+    callerThis: this
+  });
 });`,
             ['React', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
@@ -3590,7 +3596,8 @@ var b = 40;
 
 var MyCustomCompomnent = function MyCustomCompomnent(props) {
   return ${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("abc", {
-    props: props
+    props: props,
+    callerThis: this
   });
 };
 return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
@@ -3867,7 +3874,8 @@ for (var n = 0; n < 5; n++) {
   var n2 = n * 2;
   result.push(${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("bbb", {
     n: n,
-    n2: n2
+    n2: n2,
+    callerThis: this
   }));
 }
 return { result: result };`
@@ -3946,7 +3954,8 @@ export var whatever = props => {
 });`
     const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("bbb", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });`
     const innerElement = jsxElement(
@@ -4042,7 +4051,8 @@ export var whatever = props => {
     const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("bbb", {
     n: n,
-    a: a
+    a: a,
+    callerThis: this
   });
 });`
     const innerElement = jsxElement(
@@ -4322,8 +4332,7 @@ export var App = props => {
 
     const position = consumer.getOriginalPosition(transpiledLine, transpiledCharacter)
 
-    // FIXME This should be line 16 char 9 but I cannot get this to work
-    expect(position).toEqual(expect.objectContaining({ line: 17, column: 10 }))
+    expect(position).toEqual(expect.objectContaining({ line: 16, column: 10 }))
   })
 
   it('maps a jsxAttributeOtherJavaScript correctly', () => {

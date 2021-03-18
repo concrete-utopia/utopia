@@ -204,7 +204,9 @@ export var whatever = props => (
     const codeBlock = jsxArbitraryBlock(
       `<MyComp data-uid='aab'/>`,
       `<MyComp data-uid='aab' />;`,
-      `return utopiaCanvasJSXLookup("aab", {});`,
+      `return utopiaCanvasJSXLookup("aab", {
+  callerThis: this
+});`,
       ['React', 'MyComp', 'utopiaCanvasJSXLookup'],
       expect.objectContaining({
         sources: ['code.tsx'],
@@ -273,7 +275,8 @@ export var whatever = (props) => {
           `return arr.map(function (_ref) {
   var n = _ref.n;
   return utopiaCanvasJSXLookup("aab", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });`,
           ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
@@ -370,7 +373,8 @@ export var whatever = (props) => {
           `return arr.map(function (_ref) {
   var n = _ref.a.n;
   return utopiaCanvasJSXLookup("aab", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });`,
           ['arr', 'React', 'View', 'utopiaCanvasJSXLookup'],
@@ -464,7 +468,8 @@ export var whatever = (props) => {
       n = _ref2[0];
 
   return utopiaCanvasJSXLookup(\"aab\", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });`
     const view = jsxElement(
@@ -566,7 +571,8 @@ export var whatever = (props) => {
           `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });`,
           ['React', 'utopiaCanvasJSXLookup'],
@@ -652,7 +658,8 @@ export var whatever = (props) => {
       n = _ref2$[0];
 
   return utopiaCanvasJSXLookup(\"aab\", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });`
     const view = jsxElement(
@@ -754,7 +761,8 @@ export var whatever = (props) => {
           `[1].map(n => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
   return utopiaCanvasJSXLookup("aab", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });`,
           ['React', 'utopiaCanvasJSXLookup'],
@@ -840,7 +848,8 @@ export var whatever = (props) => {
       n = _ref2$[0];
 
   return utopiaCanvasJSXLookup(\"aab\", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });`
     const view = jsxElement(
