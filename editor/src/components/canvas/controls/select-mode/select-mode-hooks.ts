@@ -499,16 +499,6 @@ export function useSelectModeSelectAndHover(
   return { onMouseMove, onMouseDown }
 }
 
-function usePreviewModeSelectAndHover(): {
-  onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-  onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
-} {
-  return useKeepShallowReferenceEquality({
-    onMouseMove: NO_OP,
-    onMouseDown: NO_OP,
-  })
-}
-
 export function useSelectAndHover(
   cmdPressed: boolean,
   setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
@@ -523,7 +513,11 @@ export function useSelectAndHover(
     setSelectedViewsForCanvasControlsOnly,
   )
   const insertModeCallbacks = useInsertModeSelectAndHover(modeType === 'insert', cmdPressed)
-  const previewModeCallbacks = usePreviewModeSelectAndHover()
+  const previewModeCallbacks = useSelectModeSelectAndHover(
+    modeType === 'live',
+    cmdPressed,
+    setSelectedViewsForCanvasControlsOnly,
+  )
   if (modeType === 'select') {
     return selectModeCallbacks
   } else if (modeType === 'insert') {
