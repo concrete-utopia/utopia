@@ -4,9 +4,6 @@ body {
     Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; /* from GitHub */
   font-size: 11px !important;
   overflow: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: geometricPrecision;
   cursor: default;
   outline: none;
   overscroll-behavior-x: contain;

@@ -497,6 +497,7 @@ function getSpecialMeasurements(
   const parentLayoutSystem = elementLayoutSystem(parentElementStyle)
   const parentProvidesLayout = element.parentElement === element.offsetParent
   const parentFlexDirection = parentElementStyle?.flexDirection ?? null
+  const flexDirection = elementStyle.flexDirection ?? null
 
   const margin = applicative4Either(
     applicativeSidesPxTransform,
@@ -542,6 +543,7 @@ function getSpecialMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    flexDirection,
     element.localName,
   )
 }

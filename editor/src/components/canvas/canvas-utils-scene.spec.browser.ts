@@ -12,7 +12,7 @@ import * as Prettier from 'prettier'
 import * as TP from '../../core/shared/template-path'
 
 import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
-import { createFakeMetadataForParseSuccess, wait } from '../../utils/test-utils'
+import { createFakeMetadataForParseSuccess, wait } from '../../utils/utils.test-utils'
 import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'

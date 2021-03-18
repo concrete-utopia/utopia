@@ -329,7 +329,7 @@ export function getStoryboardTemplatePath(
   )
   if (possiblyStoryboard != null) {
     const uid = getUtopiaID(possiblyStoryboard.rootElement)
-    return TP.staticInstancePath(EmptyScenePathForStoryboard, [uid])
+    return TP.staticInstancePath(EmptyScenePathForStoryboard, TP.staticElementPath([uid]))
   }
   return null
 }

@@ -98,7 +98,12 @@ function useGetValidTemplatePaths(
 ): Array<InstancePath> {
   const topLevelElements = useContextSelector(RerenderUtopiaContext, (c) => c.topLevelElements)
   const focusedElementPath = useContextSelector(RerenderUtopiaContext, (c) => c.focusedElementPath)
-  return getValidTemplatePaths(topLevelElements, focusedElementPath, topLevelElementName, scenePath)
+  return getValidTemplatePaths(
+    topLevelElements,
+    focusedElementPath,
+    topLevelElementName,
+    TP.dynamicPathToStaticPath(scenePath),
+  )
 }
 
 interface SceneRootRendererProps {

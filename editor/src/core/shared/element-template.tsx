@@ -1347,6 +1347,7 @@ export interface SpecialSizeMeasurements {
   clientWidth: number
   clientHeight: number
   parentFlexDirection: string | null
+  flexDirection: string | null
   htmlElementName: string
 }
 
@@ -1368,6 +1369,7 @@ export function specialSizeMeasurements(
   clientWidth: number,
   clientHeight: number,
   parentFlexDirection: string | null,
+  flexDirection: string | null,
   htmlElementName: string,
 ): SpecialSizeMeasurements {
   return {
@@ -1388,6 +1390,7 @@ export function specialSizeMeasurements(
     clientWidth,
     clientHeight,
     parentFlexDirection,
+    flexDirection,
     htmlElementName,
   }
 }
@@ -1412,6 +1415,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   0,
   0,
+  null,
   null,
   'div',
 )

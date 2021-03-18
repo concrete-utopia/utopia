@@ -10,7 +10,7 @@ import {
   CxCyWHSimplePins,
 } from './inspector.test-utils'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
-import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file'
+import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file.test-utils'
 import * as TP from '../../../core/shared/template-path'
 
 function frameInfoForPins(
