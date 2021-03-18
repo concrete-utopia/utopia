@@ -219,6 +219,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
         ...result.style,
         fontWeight: isScene ? 500 : 'inherit',
         opacity: fullyVisible ? 1 : 0.5,
+        boxShadow: isScene ? `inset 0 -1px ${colorTheme.inputBorder.value}` : undefined,
       }
 
       return result
@@ -235,14 +236,6 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       warningText = 'Element is trying to be position absolutely with an unconfigured parent'
     }
 
-    const layoutIcon = (
-      <LayoutIcon
-        key={`layout-type-${label}`}
-        path={templatePath}
-        color={resultingStyle.iconColor}
-        warningText={warningText}
-      />
-    )
     const collapse = React.useCallback(
       (event: any) => collapseItem(dispatch, templatePath, event),
       [dispatch, templatePath],
@@ -281,23 +274,23 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             selected={selected}
             onMouseDown={collapse}
           />
-          {layoutIcon}
-          <ItemLabel
-            key={`label-${label}`}
-            testId={`navigator-item-label-${label}`}
-            name={label}
-            isDynamic={isDynamic}
-            target={templatePath}
-            canRename={selected}
-            dispatch={dispatch}
-            inputVisible={TP.pathsEqual(renamingTarget, templatePath)}
-            elementOriginType={elementOriginType}
-          />
-          <ComponentPreview
-            key={`preview-${label}`}
-            path={templatePath}
-            color={resultingStyle.iconColor}
-          />
+          {TP.isScenePath(templatePath) ? (
+            <SceneNavigatorRowLabel
+              {...props}
+              collapse={collapse}
+              isDynamic={isDynamic}
+              iconColor={resultingStyle.iconColor}
+              warningText={warningText}
+            />
+          ) : (
+            <NavigatorRowLabel
+              {...props}
+              collapse={collapse}
+              isDynamic={isDynamic}
+              iconColor={resultingStyle.iconColor}
+              warningText={warningText}
+            />
+          )}
         </FlexRow>
         <NavigatorItemActionSheet
           templatePath={templatePath}
@@ -312,3 +305,94 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   },
 )
 NavigatorItem.displayName = 'NavigatorItem'
+
+interface NavigatorRowProps extends NavigatorItemInnerProps {
+  collapse: (event: any) => void
+  isDynamic: boolean
+  iconColor: IcnProps['color']
+  warningText: string | null
+}
+
+const NavigatorRowLabel = (props: NavigatorRowProps) => {
+  return (
+    <React.Fragment>
+      <LayoutIcon
+        key={`layout-type-${props.label}`}
+        path={props.templatePath}
+        color={props.iconColor}
+        warningText={props.warningText}
+      />
+      <ItemLabel
+        key={`label-${props.label}`}
+        testId={`navigator-item-label-${props.label}`}
+        name={props.label}
+        isDynamic={props.isDynamic}
+        target={props.templatePath}
+        canRename={props.selected}
+        dispatch={props.dispatch}
+        inputVisible={TP.pathsEqual(props.renamingTarget, props.templatePath)}
+        elementOriginType={props.elementOriginType}
+      />
+      <ComponentPreview
+        key={`preview-${props.label}`}
+        path={props.templatePath}
+        color={props.iconColor}
+      />
+    </React.Fragment>
+  )
+}
+
+const SceneNavigatorRowLabel = (props: NavigatorRowProps) => {
+  return (
+    <React.Fragment>
+      <LayoutIcon
+        key={`layout-type-${props.label}`}
+        path={props.templatePath}
+        color={props.iconColor}
+        warningText={props.warningText}
+      />
+      <span
+        style={{
+          marginLeft: 4,
+          marginRight: 4,
+          fontWeight: 600,
+        }}
+      >
+        Scene
+      </span>
+      <span
+        style={{
+          color: props.selected ? undefined : colorTheme.h3Foreground.value,
+          paddingRight: 4,
+        }}
+      >
+        editing
+      </span>
+      <div
+        style={{
+          display: 'flex',
+          backgroundColor: props.selected ? undefined : colorTheme.subduedBorder.value,
+          borderRadius: 1,
+          paddingRight: 4,
+        }}
+      >
+        <ItemLabel
+          key={`label-${props.label}`}
+          testId={`navigator-item-label-${props.label}`}
+          name={props.label}
+          isDynamic={props.isDynamic}
+          target={props.templatePath}
+          canRename={props.selected}
+          dispatch={props.dispatch}
+          inputVisible={TP.pathsEqual(props.renamingTarget, props.templatePath)}
+          elementOriginType={props.elementOriginType}
+        />
+        <ComponentPreview
+          key={`preview-${props.label}`}
+          path={props.templatePath}
+          color={props.iconColor}
+        />
+      </div>
+    </React.Fragment>
+  )
+}
