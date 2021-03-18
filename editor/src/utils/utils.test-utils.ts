@@ -37,7 +37,10 @@ import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import { parseSuccess } from '../core/workers/common/project-file-utils'
-import { sampleImportsForTests, sampleJsxComponentWithScene } from '../core/model/test-ui-js-file'
+import {
+  sampleImportsForTests,
+  sampleJsxComponentWithScene,
+} from '../core/model/test-ui-js-file.test-utils'
 import {
   RevisionsState,
   TemplatePath,

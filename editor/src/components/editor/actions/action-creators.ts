@@ -179,6 +179,7 @@ import type {
   SendCodeEditorInitialisation,
   CloseDesignerFile,
   SetFocusedElement,
+  AddImports,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1057,11 +1058,20 @@ export function unwrapLayoutable(target: InstancePath): UnwrapLayoutable {
 export function updateJSXElementName(
   target: InstancePath,
   elementName: JSXElementName,
+  importsToAdd: Imports,
 ): UpdateJSXElementName {
   return {
     action: 'UPDATE_JSX_ELEMENT_NAME',
     target: target,
     elementName: elementName,
+    importsToAdd: importsToAdd,
+  }
+}
+
+export function addImports(importsToAdd: Imports): AddImports {
+  return {
+    action: 'ADD_IMPORTS',
+    importsToAdd: importsToAdd,
   }
 }
 

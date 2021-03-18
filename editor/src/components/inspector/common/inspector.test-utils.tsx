@@ -9,7 +9,7 @@ import type {
   StaticInstancePath,
   TemplatePath,
 } from '../../../core/shared/project-file-types'
-import { createEditorStates } from '../../../utils/test-utils'
+import { createEditorStates } from '../../../utils/utils.test-utils'
 import utils from '../../../utils/utils'
 import { EditorDispatch } from '../../editor/action-types'
 import {
@@ -23,7 +23,7 @@ import * as TP from '../../../core/shared/template-path'
 import { InspectorContextProvider } from '../inspector'
 import { getControlStyles, PropertyStatus } from './control-status'
 import { InspectorInfo } from './property-path-hooks'
-import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file'
+import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file.test-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { Frame } from 'utopia-api'
 import { PinsInfo } from './layout-property-path-hooks'

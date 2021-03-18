@@ -16,7 +16,7 @@ Utopia runs in the browser! To run it, you'll need to run the server (locally) a
 ## Prerequisites
 
 - **If using Windows** you'll first need to set up the [Windows Subsystem for Linux (wsl)](https://docs.microsoft.com/en-us/windows/wsl/install-win10). All following steps and commands will assume you are using the wsl.
-- On **macOS** you need [brew](https://brew.sh/) and must run `brew install gmp` first
+- On **macOS** you need [brew](https://brew.sh/) and must run `brew install gmp` first. On new M1 Macbooks please follow [these steps](https://github.com/concrete-utopia/utopia#m1-macbook) to install brew and run the server the first time.
 - [nix-shell](https://nixos.org/download.html). If you are on macOS Catalina or later, you will be prompted to include an extra flag in the install script. If using Windows follow [this guide](https://nathan.gs/2019/04/12/nix-on-windows/). If you don't want to use nix, we have instructions [here](https://github.com/concrete-utopia/utopia#running-this-without-nix)
 - Recommended: [direnv](https://github.com/concrete-utopia/utopia#using-direnv-to-make-your-life-easier). If you don't have `direnv` installed, you'll need to run `nix-shell` before any of the `start` commands, and switching to nix will be a bit slower.
 
@@ -125,6 +125,14 @@ nix-shell
 watch-website
 ```
 
+
+### Build editor vscode
+
+```
+build-vscode
+watch-vscode-dev
+```
+
 ## Pull request bundle support.
 
 When a series of environment variables are set (see `Branches.hs`), the editor supports the ability to get a bundle of editor code from S3 that was created from a PR, and load that instead of the code currently held locally. Which means that changes can be tested without spinning up multiple environments.
@@ -137,6 +145,24 @@ Limitations:
 - Anything that isn't editor code will not be changed by this, such as the website code or the server endpoints.
 
 # Troubleshooting
+
+## M1 Macbook
+There are some extra steps to build server files, steps 11-14 are also needed when there are dependency changes for the server.
+
+1. Open Applications, locate the Terminal within the Utilities folder
+2. Select Terminal.app and right-click on it then “Duplicate”
+3. Rename the duplicated Terminal app to ‘Rosetta Terminal’
+4. Now select the new renamed ‘Rosetta Terminal’, right-click and choose “Get Info”
+5. Check the box for “Open using Rosetta”, then close the Get Info window
+6. Run the Rosetta Terminal
+7. Type `arch` first to make sure your terminal is good, this should show `i386` in the Rosetta Terminal
+8. Install homebrew there, please add `arch -x86_64` before pasting the install script
+9. Install gmp with `arch -x86_64 /usr/local/bin/brew install gmp`
+10. Close with cmd+q, open a normal Terminal and install direnv and nix-shell as the [description](https://github.com/concrete-utopia/utopia#prerequisites), then come back for the final 4 steps
+11. Run the Rosetta Terminal again
+12. Enter the utopia folder, `direnv` and run the `start-website-server` to build the server files here
+13. After you see a message about `Startup Processes Completed` exit terminal with cmd+q
+14. Open a normal Terminal, run the `start` script in the utopia folder.
 
 ## fsevents
 If you notice that 1 or more CPU cores are running 100% because of `node` processes, it is probably webpack-dev-server having trouble with `fsevents` on MacOS. To fix it, run `npm install fsevents` in the `utopia/editor` directory. see https://github.com/webpack/webpack/issues/701#issuecomment-216082726

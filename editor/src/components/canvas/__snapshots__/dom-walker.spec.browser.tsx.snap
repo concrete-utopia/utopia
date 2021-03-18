@@ -134,6 +134,7 @@ Object {
           "y": 0,
         },
         "display": "initial",
+        "flexDirection": null,
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
@@ -215,6 +216,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -367,6 +369,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -441,6 +444,7 @@ Object {
         "data-label": "Plane",
         "data-uid": "bbb~~~1",
         "data-utopia-original-uid": "bbb",
+        "skipDeepFreeze": true,
       },
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
@@ -452,6 +456,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -527,6 +532,7 @@ Object {
         "data-label": "Plane",
         "data-uid": "bbb~~~2",
         "data-utopia-original-uid": "bbb",
+        "skipDeepFreeze": true,
       },
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
@@ -538,6 +544,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -613,6 +620,7 @@ Object {
         "data-label": "Plane",
         "data-uid": "bbb~~~3",
         "data-utopia-original-uid": "bbb",
+        "skipDeepFreeze": true,
       },
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
@@ -624,6 +632,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -811,6 +820,7 @@ Object {
           "y": 0,
         },
         "display": "initial",
+        "flexDirection": null,
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
@@ -892,6 +902,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -999,6 +1010,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -1185,6 +1197,7 @@ Object {
           "y": 0,
         },
         "display": "initial",
+        "flexDirection": null,
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
@@ -1266,6 +1279,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -1389,6 +1403,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -1513,6 +1528,7 @@ Object {
         "clientWidth": 306,
         "coordinateSystemBounds": null,
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -1625,6 +1641,7 @@ Object {
           "y": 98,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 164,
@@ -1813,6 +1830,7 @@ Object {
           "y": 0,
         },
         "display": "initial",
+        "flexDirection": null,
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
@@ -1894,6 +1912,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -2018,6 +2037,7 @@ Object {
           "y": 0,
         },
         "display": "flex",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -2142,6 +2162,7 @@ Object {
         "clientWidth": 306,
         "coordinateSystemBounds": null,
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -2254,6 +2275,7 @@ Object {
           "y": 98,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 164,
@@ -2442,6 +2464,7 @@ Object {
           "y": 0,
         },
         "display": "initial",
+        "flexDirection": null,
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 0,
@@ -2523,6 +2546,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -2646,6 +2670,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -2774,6 +2799,7 @@ Object {
           "y": 0,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 812,
@@ -2886,6 +2912,7 @@ Object {
           "y": 98,
         },
         "display": "block",
+        "flexDirection": "row",
         "htmlElementName": "div",
         "immediateParentBounds": Object {
           "height": 124,

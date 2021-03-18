@@ -673,6 +673,12 @@ export interface UpdateJSXElementName {
   action: 'UPDATE_JSX_ELEMENT_NAME'
   target: InstancePath
   elementName: JSXElementName
+  importsToAdd: Imports
+}
+
+export interface AddImports {
+  action: 'ADD_IMPORTS'
+  importsToAdd: Imports
 }
 
 export interface SetAspectRatioLock {
@@ -897,6 +903,7 @@ export type EditorAction =
   | UnwrapLayoutable
   | SetAspectRatioLock
   | UpdateJSXElementName
+  | AddImports
   | ToggleCanvasIsLive
   | RenameStyleSelector
   | SetSafeMode

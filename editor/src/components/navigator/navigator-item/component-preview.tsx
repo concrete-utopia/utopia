@@ -15,7 +15,7 @@ export const ComponentPreview: React.FunctionComponent<ComponentPreviewProps> = 
   (props) => {
     const iconProps = useComponentIcon(props.path)
 
-    if (iconProps == null || TP.isScenePath(props.path)) {
+    if (iconProps == null) {
       return null
     } else {
       return (
