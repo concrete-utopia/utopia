@@ -23,6 +23,7 @@ import {
   ScenePath,
   StaticElementPath,
   StaticInstancePath,
+  StaticScenePath,
   StaticTemplatePath,
 } from '../shared/project-file-types'
 import * as TP from '../shared/template-path'
@@ -91,7 +92,7 @@ export function getValidTemplatePaths(
   topLevelElements: ReadonlyMap<string, UtopiaJSXComponent>,
   focusedElementPath: ScenePath | null,
   topLevelElementName: string | null,
-  scenePath: ScenePath,
+  scenePath: StaticScenePath,
 ): Array<StaticInstancePath> {
   if (topLevelElementName == null) {
     return []
@@ -135,7 +136,7 @@ export function getValidTemplatePathsFromElement(
           topLevelElements,
           focusedElementPath,
           name,
-          TP.scenePathForElementAtInstancePath(path),
+          TP.staticScenePathForElementAtInstancePath(path),
         ),
       ]
     }

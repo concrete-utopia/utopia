@@ -21,6 +21,8 @@ import {
 } from '../../../utils/react-performance'
 import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
+import { useEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -120,6 +122,52 @@ const dynamicSelected: ComputedLook = {
   iconColor: 'white',
 }
 
+function useStyleFullyVisible(path: TemplatePath): boolean {
+  return useEditorState((store) => {
+    const metadata = store.editor.jsxMetadataKILLME
+    const selectedViews = store.editor.selectedViews
+    const isSelected = selectedViews.some((selected) => TP.pathsEqual(path, selected))
+    const isParentOfSelected = selectedViews.some((selected) =>
+      TP.pathsEqual(path, TP.parentPath(selected)),
+    )
+    const isScenePath = TP.isScenePath(path)
+
+    const isContainingBlockAncestor = selectedViews.some((selected) => {
+      return TP.pathsEqual(MetadataUtils.findContainingBlock(metadata.elements, selected), path)
+    })
+
+    const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
+      const selectedSizeMeasurements = TP.isInstancePath(selected)
+        ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, selected)
+            ?.specialSizeMeasurements
+        : null
+      const parentPath = TP.parentPath(selected)
+      if (
+        selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
+        !isParentOfSelected &&
+        TP.isAncestorOf(selected, path) &&
+        parentPath != null
+      ) {
+        const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
+          metadata.elements,
+          parentPath,
+        )
+        return TP.pathsEqual(flexDirectionChange, path)
+      } else {
+        return false
+      }
+    })
+
+    return (
+      isScenePath ||
+      isSelected ||
+      isParentOfSelected ||
+      isContainingBlockAncestor ||
+      isFlexAncestorDirectionChange
+    )
+  }, 'NavigatorItem useStyleFullyVisible')
+}
+
 export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = betterReactMemo(
   'NavigatorItem',
   (props) => {
@@ -147,6 +195,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       elementOriginType === 'generated-static-definition-present'
 
     const isScene = TP.isScenePath(templatePath)
+    const fullyVisible = useStyleFullyVisible(templatePath)
 
     const computeResultingStyle = () => {
       let result = defaultUnselected
@@ -165,10 +214,11 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
         }
       }
 
-      // additional style for scenes
+      // additional style
       result.style = {
         ...result.style,
         fontWeight: isScene ? 500 : 'inherit',
+        opacity: fullyVisible ? 1 : 0.5,
         boxShadow: isScene ? `inset 0 -1px ${colorTheme.inputBorder.value}` : undefined,
       }
 
