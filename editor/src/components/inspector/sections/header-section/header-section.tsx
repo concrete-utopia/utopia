@@ -4,7 +4,7 @@ import * as TP from '../../../../core/shared/template-path'
 import { JSXElementName, jsxElementName } from '../../../../core/shared/element-template'
 import { useToggle, SeeMoreButton, SeeMoreHOC } from '../../widgets/see-more'
 import { GridRow } from '../../widgets/grid-row'
-import { NameRow, NameRowInnerProps } from './name-row'
+// import { NameRow, NameRowInnerProps } from './name-row'
 import { ElementPathButtons, ElementPathProps } from './element-path'
 import {
   LayoutWrapperRow,
@@ -23,7 +23,6 @@ export interface HeaderSectionCoreProps extends ElementPathProps {
 }
 export interface HeaderSectionProps
   extends HeaderSectionCoreProps,
-    NameRowInnerProps,
     LayoutWrapperCoreProps,
     LayoutWrapperRowProps {}
 
@@ -37,22 +36,22 @@ export const HeaderSection = betterReactMemo('HeaderSection', (props: HeaderSect
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
 
   const utopiaComponents = ['View', 'Rectangle', 'Oval', 'Image']
-  const utopiaThings = [...utopiaComponents, ...allHtmlElements]
+  // const utopiaThings = [...utopiaComponents, ...allHtmlElements]
 
-  const isNativeHtmlOrBuiltInElement = props.type !== null && utopiaThings.includes(props.type)
+  // const isNativeHtmlOrBuiltInElement = props.type !== null && utopiaThings.includes(props.type)
 
-  const renderedTitleStyle = isNativeHtmlOrBuiltInElement
-    ? {}
-    : { ...UtopiaStyles.textBackgroundStyles.primary }
+  // const renderedTitleStyle = isNativeHtmlOrBuiltInElement
+  //   ? {}
+  //   : { ...UtopiaStyles.textBackgroundStyles.primary }
 
   const renderedTitle = (
     <span>
-      <span style={{ ...renderedTitleStyle }}>{props.label}&nbsp;</span>
+      {/* <span style={{ ...renderedTitleStyle }}>{props.label}&nbsp;</span> */}
       <span
         style={{
-          background: isNativeHtmlOrBuiltInElement
-            ? colorTheme.subduedForeground.value
-            : UtopiaStyles.backgrounds.blue,
+          // background: isNativeHtmlOrBuiltInElement
+          //   ? colorTheme.subduedForeground.value
+          //   : UtopiaStyles.backgrounds.blue,
           color: 'white',
           borderRadius: 2,
           textTransform: 'uppercase',
@@ -60,7 +59,7 @@ export const HeaderSection = betterReactMemo('HeaderSection', (props: HeaderSect
           padding: '1px 2px',
         }}
       >
-        {props.type}
+        {/* {props.type} */}
       </span>
     </span>
   )

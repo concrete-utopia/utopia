@@ -69,7 +69,7 @@ import { EventHandlersSection } from './sections/event-handlers-section/event-ha
 import { ElementPathElement } from './sections/header-section/element-path'
 import { HeaderSection, HeaderSectionCoreProps } from './sections/header-section/header-section'
 import { LayoutWrapperCoreProps } from './sections/header-section/layout-wrapper-section'
-import { NameRowProps } from './sections/header-section/name-row'
+// import { NameRowProps } from './sections/header-section/name-row'
 import {
   CSSTarget,
   cssTarget,
@@ -116,8 +116,7 @@ export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
     HeaderSectionCoreProps,
     TargetSelectorSectionProps,
-    LayoutWrapperCoreProps,
-    NameRowProps {
+    LayoutWrapperCoreProps {
   selectedViews: Array<TemplatePath>
 }
 
@@ -407,8 +406,8 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
           <HeaderSection
             elementPath={props.elementPath}
             onSelect={props.onSelect}
-            label={props.input.label}
-            type={props.input.type}
+            // label={props.input.label}
+            // type={props.input.type}
             onElementTypeChange={props.onElementTypeChange}
             onWrap={props.onWrap}
             onUnwrap={props.onUnwrap}
