@@ -610,7 +610,7 @@ export interface SendLinterRequestMessage {
 
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
-  elementMetadata: Array<ElementInstanceMetadata>
+  elementMetadata: ReadonlyArray<ElementInstanceMetadata>
 }
 
 export interface SetProp {
