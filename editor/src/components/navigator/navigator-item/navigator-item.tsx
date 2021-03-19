@@ -123,7 +123,7 @@ const dynamicSelected: ComputedLook = {
 }
 
 const componentUnselected: ComputedLook = {
-  style: { background: 'white', color: colorTheme.neutralForeground.value },
+  style: { background: colorTheme.emphasizedBackground.value, color: colorTheme.neutralForeground.value },
   iconColor: 'orange',
 }
 const componentSelected: ComputedLook = {
