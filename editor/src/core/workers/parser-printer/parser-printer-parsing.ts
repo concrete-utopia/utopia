@@ -456,17 +456,20 @@ interface ExpressionAndText<E extends TS.Node> {
   expression: E | undefined
   text: string
   startPos: number
+  endPos: number
 }
 
 function createExpressionAndText<E extends TS.Node>(
   expression: E | undefined,
   text: string,
   startPos: number,
+  endPos: number,
 ): ExpressionAndText<E> {
   return {
     expression: expression,
     text: text,
     startPos: startPos,
+    endPos: endPos,
   }
 }
 
@@ -494,22 +497,7 @@ function parseOtherJavaScript<E extends TS.Node, T>(
   } else {
     let startLineShift: number = 0
     let startColumnShift: number = 0
-    if (expressionsAndTexts[0].expression != null) {
-      const startPosition = TS.getLineAndCharacterOfPosition(
-        sourceFile,
-        expressionsAndTexts[0].startPos,
-      )
-      const line = startPosition.line - 1
-      const column = startPosition.character - 1
-      if (line > startLineShift) {
-        startLineShift = line
-        startColumnShift = column
-      } else if (line === startLineShift) {
-        if (column > startColumnShift) {
-          startColumnShift = column
-        }
-      }
-    }
+    let lastBlockEndLine: number = 1
 
     let propsObjectName = initialPropsObjectName // nullified if re-defined within
     let definedWithin: Array<string> = []
@@ -859,6 +847,17 @@ function parseOtherJavaScript<E extends TS.Node, T>(
     let expressionsText: Array<string> = []
     let expressionsNodes: Array<typeof SourceNode> = []
     for (const expressionAndText of expressionsAndTexts) {
+      // Update the code offsets used when locating elements within
+      const startPosition = TS.getLineAndCharacterOfPosition(sourceFile, expressionAndText.startPos)
+      const endPosition = TS.getLineAndCharacterOfPosition(sourceFile, expressionAndText.endPos)
+      const shiftedBlockStartLine = startPosition.line - lastBlockEndLine
+      const column = startPosition.character - 1
+      if (shiftedBlockStartLine > 0) {
+        startLineShift += shiftedBlockStartLine
+      }
+      startColumnShift = column
+      lastBlockEndLine = endPosition.line
+
       const expression = expressionAndText.expression
       if (expression != null) {
         addIfDefinedElsewhere([], expression, false)
@@ -940,6 +939,7 @@ export function parseAttributeOtherJavaScript(
     expression,
     expression.getText(sourceFile),
     expression.getStart(sourceFile, false),
+    expression.getEnd(),
   )
   return parseOtherJavaScript(
     sourceFile,
@@ -1000,6 +1000,7 @@ function parseJSXArbitraryBlock(
     jsxExpression.expression,
     expressionFullText,
     jsxExpression.getFullStart() + 1,
+    jsxExpression.getEnd() + 2,
   )
 
   return parseOtherJavaScript(
@@ -2022,6 +2023,7 @@ export function parseArbitraryNodes(
       node,
       useFullText ? node.getFullText(sourceFile) : node.getText(sourceFile),
       useFullText ? node.getFullStart() : node.getStart(sourceFile, false),
+      node.getEnd(),
     )
   })
   return parseOtherJavaScript(

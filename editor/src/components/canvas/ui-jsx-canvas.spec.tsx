@@ -1159,6 +1159,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         }
       }
 
+      export const ParsedComponentToBreakUpArbitraryBlocks = (props) => {
+        return <div />
+      }
+
       export function getPicker() {
         class Picker extends React.Component {
           renderPicker(locale) {

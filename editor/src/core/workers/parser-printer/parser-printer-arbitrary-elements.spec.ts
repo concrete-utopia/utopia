@@ -13,6 +13,8 @@ import {
   defaultPropsParam,
   getJSXAttribute,
   jsxAttributesFromMap,
+  isArbitraryJSBlock,
+  ArbitraryJSBlock,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
@@ -21,6 +23,8 @@ import {
   addNamedExportToDetail,
   EmptyExportsDetail,
   foldParsedTextFile,
+  isParseFailure,
+  isParseSuccess,
   ParseSuccess,
 } from '../../shared/project-file-types'
 import { parseSuccess } from '../common/project-file-utils'
@@ -972,5 +976,207 @@ export var storyboard = (
 )`
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     expect(actualResult).toMatchSnapshot()
+  })
+
+  it('Correctly maps elements within arbitrary blocks including combined blocks', () => {
+    const code = `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+export class RenderPropsFunctionChild extends React.Component {
+  render() {
+    return this.props.children('huha')
+  }
+}
+
+export const ParsedComponentToBreakUpArbitraryBlocks = (props) => {
+  return <div />
+}
+
+export function getPicker() {
+  class Picker extends React.Component {
+    renderPicker(locale) {
+      return (
+        <RenderPropsFunctionChild>
+          {(size) => {
+            return (
+              <div id='nasty-div'>
+                {locale} {size}
+              </div>
+            )
+          }}
+        </RenderPropsFunctionChild>
+      )
+    }
+
+    render() {
+      return <RenderPropsFunctionChild>{this.renderPicker}</RenderPropsFunctionChild>
+    }
+  }
+
+  return Picker
+}
+
+const Thing = getPicker()
+
+export var App = (props) => {
+  return (
+    <Thing data-uid={'aaa'} />
+  )
+}
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)
+`
+    const parsedResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+    if (isParseSuccess(parsedResult)) {
+      const { combinedTopLevelArbitraryBlock, topLevelElements } = parsedResult
+      const getPickerBlock = topLevelElements.find(
+        (e) => isArbitraryJSBlock(e) && e.definedWithin.includes('getPicker'),
+      ) as ArbitraryJSBlock
+      const results = {
+        alone: {
+          elements: Object.keys(getPickerBlock.elementsWithin),
+          js: getPickerBlock?.transpiledJavascript,
+        },
+        combined: {
+          elements: Object.keys(combinedTopLevelArbitraryBlock!.elementsWithin),
+          js: combinedTopLevelArbitraryBlock!.transpiledJavascript,
+        },
+      }
+
+      // The first lookup call should match the first element, the second lookup call should match the second
+      expect(results.alone).toMatchInlineSnapshot(`
+        Object {
+          "elements": Array [
+            "cc6",
+            "bc4",
+          ],
+          "js": "function _createSuper(Derived) { return function () { var Super = babelHelpers.getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
+
+        function _isNativeReflectConstruct() { if (typeof Reflect === \\"undefined\\" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === \\"function\\") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+        function getPicker() {
+          var Picker = function (_React$Component) {
+            \\"use strict\\";
+
+            babelHelpers.inherits(Picker, _React$Component);
+
+            var _super = _createSuper(Picker);
+
+            function Picker() {
+              babelHelpers.classCallCheck(this, Picker);
+              return _super.apply(this, arguments);
+            }
+
+            babelHelpers.createClass(Picker, [{
+              key: \\"renderPicker\\",
+              value: function renderPicker(locale) {
+                return utopiaCanvasJSXLookup(\\"cc6\\", {
+                  locale: locale,
+                  React: React,
+                  utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
+                  callerThis: this
+                });
+              }
+            }, {
+              key: \\"render\\",
+              value: function render() {
+                return utopiaCanvasJSXLookup(\\"bc4\\", {
+                  callerThis: this
+                });
+              }
+            }]);
+            return Picker;
+          }(React.Component);
+
+          return Picker;
+        }
+        return { getPicker: getPicker };",
+        }
+      `)
+
+      // The first lookup call in getPicker should match the first element, the second lookup call should match the second
+      expect(results.combined).toMatchInlineSnapshot(`
+        Object {
+          "elements": Array [
+            "150",
+            "2f5",
+          ],
+          "js": "function _createSuper(Derived) { return function () { var Super = babelHelpers.getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
+
+        function _isNativeReflectConstruct() { if (typeof Reflect === \\"undefined\\" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === \\"function\\") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+        var RenderPropsFunctionChild = function (_React$Component) {
+          \\"use strict\\";
+
+          babelHelpers.inherits(RenderPropsFunctionChild, _React$Component);
+
+          var _super = _createSuper(RenderPropsFunctionChild);
+
+          function RenderPropsFunctionChild() {
+            babelHelpers.classCallCheck(this, RenderPropsFunctionChild);
+            return _super.apply(this, arguments);
+          }
+
+          babelHelpers.createClass(RenderPropsFunctionChild, [{
+            key: \\"render\\",
+            value: function render() {
+              return this.props.children('huha');
+            }
+          }]);
+          return RenderPropsFunctionChild;
+        }(React.Component);
+
+        function getPicker() {
+          var Picker = function (_React$Component2) {
+            \\"use strict\\";
+
+            babelHelpers.inherits(Picker, _React$Component2);
+
+            var _super2 = _createSuper(Picker);
+
+            function Picker() {
+              babelHelpers.classCallCheck(this, Picker);
+              return _super2.apply(this, arguments);
+            }
+
+            babelHelpers.createClass(Picker, [{
+              key: \\"renderPicker\\",
+              value: function renderPicker(locale) {
+                return utopiaCanvasJSXLookup(\\"150\\", {
+                  locale: locale,
+                  React: React,
+                  utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
+                  callerThis: this
+                });
+              }
+            }, {
+              key: \\"render\\",
+              value: function render() {
+                return utopiaCanvasJSXLookup(\\"2f5\\", {
+                  callerThis: this
+                });
+              }
+            }]);
+            return Picker;
+          }(React.Component);
+
+          return Picker;
+        }
+
+        var Thing = getPicker();
+        return { RenderPropsFunctionChild: RenderPropsFunctionChild, getPicker: getPicker, Thing: Thing };",
+        }
+      `)
+    } else {
+      fail(`Failed to parse code`)
+    }
   })
 })
