@@ -667,11 +667,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     [dispatch, refElementsToTargetForUpdates],
   )
 
-  // const onSelect = React.useCallback(
-  //   (path) => dispatch([selectComponents([path], false)], 'everyone'),
-  //   [dispatch],
-  // )
-
   const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
     targetsReferentiallyStable[0].path,
   )
@@ -739,16 +734,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     dispatch(actions, 'everyone')
   }, [dispatch, refElementsToTargetForUpdates])
 
-  // const onElementTypeChange = React.useCallback(
-  //   (newElementName: JSXElementName, importsToAdd: Imports) => {
-  //     const actions = refElementsToTargetForUpdates.current.flatMap((path) => {
-  //       return EditorActions.updateJSXElementName(path, newElementName, importsToAdd)
-  //     })
-  //     dispatch(actions, 'everyone')
-  //   },
-  //   [dispatch, refElementsToTargetForUpdates],
-  // )
-
   const inspector = isUIJSFile ? (
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
@@ -758,11 +743,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
         elementPath={elementPath}
-        // onSelect={onSelect}
         onSelectTarget={onSelectTarget}
-        // onWrap={onWrap}
-        // onUnwrap={onUnwrap}
-        // onElementTypeChange={onElementTypeChange}
         onStyleSelectorRename={onStyleSelectorRename}
         onStyleSelectorDelete={onStyleSelectorDelete}
         onStyleSelectorInsert={onStyleSelectorInsert}
