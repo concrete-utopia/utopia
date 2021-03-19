@@ -40,7 +40,7 @@ export function resolveParamsAndRunJsCode(
   // actually executing the JS code, rather than an error that would confuse the user
   const result = getOrUpdateFunctionCache(updatedBlock, requireResult, (e) => {
     throw e
-  })(...Object.values(definedElsewhereInfo))
+  })(currentScope['callerThis'], ...Object.values(definedElsewhereInfo))
   return result
 }
 

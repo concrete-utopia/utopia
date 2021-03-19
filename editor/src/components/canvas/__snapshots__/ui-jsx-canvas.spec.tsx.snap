@@ -118,7 +118,7 @@ Object {
           })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,aAAI;AACR;AADZ,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,aAAI;AACR;AAAA;AAAA;AADZ,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -154,7 +154,9 @@ Object {
               "version": 3,
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup(\\"bbb\\", {});
+  return utopiaCanvasJSXLookup(\\"bbb\\", {
+    callerThis: this
+  });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
             "uniqueID": "",
@@ -1232,7 +1234,7 @@ Object {
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACT;AAAA;AAAA;AADb,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACT;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -1267,7 +1269,8 @@ Object {
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -1994,7 +1997,7 @@ Object {
                })",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+                      "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
                       "names": Array [],
                       "sources": Array [
                         "code.tsx",
@@ -2035,7 +2038,8 @@ Object {
                     "transpiledJavascript": "return [4, 5, 6].map(function (m) {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
-    m: m
+    m: m,
+    callerThis: this
   });
 });",
                     "type": "JSX_ARBITRARY_BLOCK",
@@ -2084,7 +2088,7 @@ Object {
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACT;AAAA;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACT;AAAA;AAAA;AAAA;AAAA;AAAA;AADb,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -2126,7 +2130,8 @@ Object {
   return utopiaCanvasJSXLookup(\\"aaa\\", {
     n: n,
     React: React,
-    utopiaCanvasJSXLookup: utopiaCanvasJSXLookup
+    utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -2322,7 +2327,7 @@ Object {
                })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -2363,7 +2368,8 @@ Object {
             "transpiledJavascript": "return [4, 5, 6].map(function (m) {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
-    m: m
+    m: m,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -3068,7 +3074,7 @@ Object {
                })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -3109,7 +3115,8 @@ Object {
             "transpiledJavascript": "return [4, 5, 6].map(function (m) {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
-    m: m
+    m: m,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -3814,7 +3821,7 @@ Object {
                })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAa,aAAO;AACL;AAAA;AAAA;AAAA;AAAA;AADjB,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -3855,7 +3862,8 @@ Object {
             "transpiledJavascript": "return [4, 5, 6].map(function (m) {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
     n: n,
-    m: m
+    m: m,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -5226,7 +5234,7 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -5263,7 +5271,8 @@ Object {
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -6112,7 +6121,7 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -6150,7 +6159,8 @@ Object {
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -7371,7 +7381,7 @@ Object {
             })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAU,gBAAU;AACR;AADd,CAAE,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAU,gBAAU;AACR;AAAA;AAAA;AADd,CAAE,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -7406,7 +7416,9 @@ Object {
               "version": 3,
             },
             "transpiledJavascript": "return [1, 2].map(function (data) {
-  return utopiaCanvasJSXLookup(\\"aaa\\", {});
+  return utopiaCanvasJSXLookup(\\"aaa\\", {
+    callerThis: this
+  });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
             "uniqueID": "",
@@ -11235,7 +11247,7 @@ export var storyboard = (props) => {
         ))",
                 "sourceMap": Object {
                   "file": "code.tsx",
-                  "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,SACd;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
+                  "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,SACd;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
                   "names": Array [
                     "keyboardShortcuts",
                     "map",
@@ -11343,9 +11355,11 @@ export var storyboard = (props) => {
                 },
                 "transpiledJavascript": "return keyboardShortcuts.map(function (pair) {
   return React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
-    pair: pair
+    pair: pair,
+    callerThis: this
   }), utopiaCanvasJSXLookup(\\"999\\", {
-    pair: pair
+    pair: pair,
+    callerThis: this
   }));
 });",
                 "type": "JSX_ARBITRARY_BLOCK",
@@ -12398,7 +12412,7 @@ export var storyboard = (props) => {
         ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,SACd;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
+              "mappings": "OAACA,iBAAkBC,CAAlBD,IAAuBE,UAAD,IAACA;AAAAA,SACd;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,KADcA;AAAAA,CAAvBF",
               "names": Array [
                 "keyboardShortcuts",
                 "map",
@@ -12506,9 +12520,11 @@ export var storyboard = (props) => {
             },
             "transpiledJavascript": "return keyboardShortcuts.map(function (pair) {
   return React.createElement(React.Fragment, null, utopiaCanvasJSXLookup(\\"834\\", {
-    pair: pair
+    pair: pair,
+    callerThis: this
   }), utopiaCanvasJSXLookup(\\"999\\", {
-    pair: pair
+    pair: pair,
+    callerThis: this
   }));
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -18251,7 +18267,7 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW,UAAC,CAAD;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -18288,7 +18304,8 @@ Object {
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -19137,7 +19154,7 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
+              "mappings": "OAAE,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAW;AAAA;AAAA;AAAA;AAAA;AAAA,CAAX,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -19174,7 +19191,8 @@ Object {
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (div) {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
-    div: div
+    div: div,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -20026,7 +20044,7 @@ Object {
            ))",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAACA,YAAaC,CAAbD,IAAkB;AAAA,mDAAG,CAAH,CAAQ,CAAR,CAAa,CAAb;AAAA,MAAD,CAAC;;AAAA;AAAA;AAAA;AAAA,CAAlBA",
+              "mappings": "OAACA,YAAaC,CAAbD,IAAkB;AAAA,mDAAG,CAAH,CAAQ,CAAR,CAAa,CAAb;AAAA,MAAD,CAAC;;AAAA;AAAA;AAAA;AAAA;AAAA,CAAlBA",
               "names": Array [
                 "nestedThings",
                 "map",
@@ -20069,7 +20087,8 @@ Object {
       n = _ref$a$b$c[0];
 
   return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -21694,7 +21713,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"BBB\\">great</div>
+    <div data-uid=\\"BBB\\" data-utopia-original-uid=\\"2a2\\">great</div>
   </div>
 </div>
 "
@@ -23073,7 +23092,7 @@ Object {
            })",
             "sourceMap": Object {
               "file": "code.tsx",
-              "mappings": "OAAG,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,aAAI;AACR;AAAA;AAAA;AADb,CAAG,CAAD",
+              "mappings": "OAAG,CAAD,CAAC,EAAD,CAAC,EAAD,CAAC,EAAD,GAAC,CAAc,aAAI;AACR;AAAA;AAAA;AAAA;AADb,CAAG,CAAD",
               "names": Array [],
               "sources": Array [
                 "code.tsx",
@@ -23111,7 +23130,8 @@ Object {
             },
             "transpiledJavascript": "return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup(\\"bbb\\", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });",
             "type": "JSX_ARBITRARY_BLOCK",
@@ -25236,10 +25256,15 @@ exports[`UiJsxCanvas runtime errors arbitrary at the top of a component has corr
 Array [
   Object {
     "columnNumber": 10,
-    "lineNumber": 8,
+    "lineNumber": 7,
     "message": "a is not defined",
     "name": "ReferenceError",
     "originalCode": Array [
+      ScriptLine {
+        "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
+        "highlight": false,
+        "lineNumber": 4,
+      },
       ScriptLine {
         "content": "",
         "highlight": false,
@@ -25252,12 +25277,12 @@ Array [
       },
       ScriptLine {
         "content": "  '5' + a.a // 18,9",
-        "highlight": false,
+        "highlight": true,
         "lineNumber": 7,
       },
       ScriptLine {
         "content": "  return (",
-        "highlight": true,
+        "highlight": false,
         "lineNumber": 8,
       },
       ScriptLine {
@@ -25270,11 +25295,6 @@ Array [
         "highlight": false,
         "lineNumber": 10,
       },
-      ScriptLine {
-        "content": "    </MyComp>",
-        "highlight": false,
-        "lineNumber": 11,
-      },
     ],
   },
 ]
@@ -25284,10 +25304,15 @@ exports[`UiJsxCanvas runtime errors arbitrary at the top of a component has corr
 Array [
   Object {
     "columnNumber": 4,
-    "lineNumber": 8,
+    "lineNumber": 7,
     "message": "a is not defined",
     "name": "ReferenceError",
     "originalCode": Array [
+      ScriptLine {
+        "content": "const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>",
+        "highlight": false,
+        "lineNumber": 4,
+      },
       ScriptLine {
         "content": "",
         "highlight": false,
@@ -25300,12 +25325,12 @@ Array [
       },
       ScriptLine {
         "content": "  a.a // 18,3",
-        "highlight": false,
+        "highlight": true,
         "lineNumber": 7,
       },
       ScriptLine {
         "content": "  return (",
-        "highlight": true,
+        "highlight": false,
         "lineNumber": 8,
       },
       ScriptLine {
@@ -25317,11 +25342,6 @@ Array [
         "content": "      hello!",
         "highlight": false,
         "lineNumber": 10,
-      },
-      ScriptLine {
-        "content": "    </MyComp>",
-        "highlight": false,
-        "lineNumber": 11,
       },
     ],
   },
@@ -25356,10 +25376,15 @@ exports[`UiJsxCanvas runtime errors throws an error! 1`] = `
 Array [
   Object {
     "columnNumber": 2,
-    "lineNumber": 5,
+    "lineNumber": 4,
     "message": "a is not defined",
     "name": "ReferenceError",
     "originalCode": Array [
+      ScriptLine {
+        "content": "import * as React from \\"react\\"",
+        "highlight": false,
+        "lineNumber": 1,
+      },
       ScriptLine {
         "content": "import { View, jsx, Storyboard, Scene } from 'utopia-api'",
         "highlight": false,
@@ -25372,12 +25397,12 @@ Array [
       },
       ScriptLine {
         "content": "a.a // 16,1 this shall throw an error!",
-        "highlight": false,
+        "highlight": true,
         "lineNumber": 4,
       },
       ScriptLine {
         "content": "export var App = (props) => {",
-        "highlight": true,
+        "highlight": false,
         "lineNumber": 5,
       },
       ScriptLine {
@@ -25389,11 +25414,6 @@ Array [
         "content": "}",
         "highlight": false,
         "lineNumber": 7,
-      },
-      ScriptLine {
-        "content": "export var storyboard = (props) => {",
-        "highlight": false,
-        "lineNumber": 8,
       },
     ],
   },

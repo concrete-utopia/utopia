@@ -68,6 +68,11 @@ import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
 import { UTOPIA_SCENE_PATH } from '../../core/model/utopia-constants'
+import {
+  createLookupRender,
+  utopiaCanvasJSXLookup,
+} from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -324,6 +329,26 @@ export const UiJsxCanvas = betterReactMemo(
 
       // First make sure everything is in scope
       if (combinedTopLevelArbitraryBlock != null) {
+        const lookupRenderer = createLookupRender(
+          TP.emptyInstancePath,
+          executionScope,
+          {},
+          requireResult,
+          hiddenInstances,
+          fileBlobs,
+          [],
+          undefined,
+          metadataContext,
+          jsxFactoryFunction,
+          props.shouldIncludeCanvasRootInTheSpy,
+        )
+
+        executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
+          combinedTopLevelArbitraryBlock.elementsWithin,
+          executionScope,
+          lookupRenderer,
+        )
+
         runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
       }
 
