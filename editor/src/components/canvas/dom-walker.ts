@@ -367,6 +367,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
 function collectMetadata(
   element: HTMLElement,
+  uidAttribute: string | null,
   instancePath: InstancePath,
   parentPoint: CanvasPoint,
   children: InstancePath[],
@@ -374,50 +375,43 @@ function collectMetadata(
   containerRectLazy: () => CanvasRectangle,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<TemplatePath>,
-): Array<ElementInstanceMetadata> {
+): ElementInstanceMetadata {
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
-  const uids = getUIDsOnDomELement(element)
-  if (uids != null) {
-    return uids.map((uidAttribute) => {
-      const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
-      const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
-      let elementProps: any = {}
-      if (uidAttribute != null) {
-        elementProps[UTOPIA_UIDS_KEY] = uidAttribute // TODO Balazs we are making a fake prop with a single UID instead of the UID array – maybe this means changes to mergeComponentMetadata
-      }
-      if (originalUIDAttribute != null) {
-        elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
-      }
-      if (labelAttribute != null) {
-        elementProps[UTOPIA_LABEL_KEY] = labelAttribute
-      }
-
-      const { computedStyle, attributeMetadata } = getComputedStyle(
-        element,
-        instancePath,
-        invalidatedPathsForStylesheetCacheRef,
-        selectedViews,
-      )
-
-      return elementInstanceMetadata(
-        instancePath,
-        left(element.tagName.toLowerCase()),
-        elementProps,
-        globalFrame,
-        localFrame,
-        children,
-        false,
-        false,
-        getSpecialMeasurements(element, scale, containerRectLazy),
-        computedStyle,
-        attributeMetadata,
-      )
-    })
-  } else {
-    return []
+  const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
+  const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
+  let elementProps: any = {}
+  if (uidAttribute != null) {
+    elementProps[UTOPIA_UIDS_KEY] = uidAttribute // TODO Balazs we are making a fake prop with a single UID instead of the UID array – maybe this means changes to mergeComponentMetadata
   }
+  if (originalUIDAttribute != null) {
+    elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
+  }
+  if (labelAttribute != null) {
+    elementProps[UTOPIA_LABEL_KEY] = labelAttribute
+  }
+
+  const { computedStyle, attributeMetadata } = getComputedStyle(
+    element,
+    instancePath,
+    invalidatedPathsForStylesheetCacheRef,
+    selectedViews,
+  )
+
+  return elementInstanceMetadata(
+    instancePath,
+    left(element.tagName.toLowerCase()),
+    elementProps,
+    globalFrame,
+    localFrame,
+    children,
+    false,
+    false,
+    getSpecialMeasurements(element, scale, containerRectLazy),
+    computedStyle,
+    attributeMetadata,
+  )
 }
 
 function getComputedStyle(
@@ -670,8 +664,9 @@ function walkScene(
           containerRectLazy,
         )
 
-        const sceneMetadatas = collectMetadata(
+        const sceneMetadata = collectMetadata(
           scene,
+          null,
           TP.instancePathForElementAtScenePath(scenePath),
           canvasPoint({ x: 0, y: 0 }),
           rootElements,
@@ -680,7 +675,7 @@ function walkScene(
           invalidatedPathsForStylesheetCacheRef,
           selectedViews,
         )
-        return [...rootMetadata, ...sceneMetadatas]
+        return [...rootMetadata, sceneMetadata]
       } else {
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
@@ -759,7 +754,7 @@ function walkElements(
 } {
   if (isScene(element)) {
     // we found a nested scene, restart the walk
-    return {
+    const result = {
       childPaths: [],
       rootMetadata: walkScene(
         element,
@@ -773,6 +768,7 @@ function walkElements(
         containerRectLazy,
       ),
     }
+    return result
   }
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
@@ -819,8 +815,9 @@ function walkElements(
         )
 
         if (foundValidPath != null) {
-          const collectedMetadatas = collectMetadata(
+          const collectedMetadata = collectMetadata(
             element,
+            uidAttribute,
             foundValidPath,
             parentPoint,
             filteredChildPaths,
@@ -830,10 +827,10 @@ function walkElements(
             selectedViews,
           )
 
-          rootMetadataAccumulator = [...rootMetadataAccumulator, ...collectedMetadatas]
+          rootMetadataAccumulator = [...rootMetadataAccumulator, collectedMetadata]
           return {
             rootMetadata: rootMetadataAccumulator,
-            childPaths: [collectedMetadatas[0]?.templatePath],
+            childPaths: [collectedMetadata.templatePath],
           }
         } else {
           return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
