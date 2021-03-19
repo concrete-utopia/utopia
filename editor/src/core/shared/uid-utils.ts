@@ -213,7 +213,7 @@ export function fixUtopiaElement(
   return fixUtopiaElementInner(elementToFix)
 }
 
-export function uidsFromString(uidList: string): Array<string> {
+export function uidsFromString(uidList: string = ''): Array<string> {
   return uidList.split(' ')
 }
 
