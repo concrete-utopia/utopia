@@ -38,7 +38,7 @@ export function getElementPadding(templatePath: TemplatePath): number {
     EmptyScenePathForStoryboard,
   )
   const depthOffset = extraDepthRemoval ? 2 : 0
-  return (TP.depth(templatePath) - 1 - depthOffset) * BasePaddingUnit
+  return (TP.navigatorDepth(templatePath) - 1 - depthOffset) * BasePaddingUnit
 }
 
 export interface NavigatorItemInnerProps {
@@ -122,6 +122,64 @@ const dynamicSelected: ComputedLook = {
   iconColor: 'white',
 }
 
+const componentUnselected: ComputedLook = {
+  style: { background: 'white', color: colorTheme.neutralForeground.value },
+  iconColor: 'orange',
+}
+const componentSelected: ComputedLook = {
+  style: {
+    background: colorTheme.navigatorComponentSelected.value,
+    color: colorTheme.neutralForeground.value,
+  },
+  iconColor: 'orange',
+}
+
+const computeResultingStyle = (
+  selected: boolean,
+  isInsideComponent: boolean,
+  isDynamic: boolean,
+  isScene: boolean,
+  fullyVisible: boolean,
+  isFocusedComponent: boolean,
+) => {
+  let result = defaultUnselected
+  if (selected) {
+    if (isInsideComponent) {
+      result = componentSelected
+    } else if (isDynamic) {
+      result = dynamicSelected
+    } else {
+      result = defaultSelected
+    }
+  } else {
+    // unselected
+    if (isInsideComponent) {
+      result = componentUnselected
+    } else if (isDynamic) {
+      result = dynamicUnselected
+    } else {
+      result = defaultUnselected
+    }
+  }
+
+  let boxShadow: string | undefined = undefined
+  if (isScene) {
+    boxShadow = `inset 0 -1px ${colorTheme.inputBorder.value}`
+  } else if (isFocusedComponent) {
+    boxShadow = `inset 0 1px ${colorTheme.inputBorder.value}`
+  }
+
+  // additional style
+  result.style = {
+    ...result.style,
+    fontWeight: isScene ? 500 : 'inherit',
+    opacity: fullyVisible ? 1 : 0.5,
+    boxShadow: boxShadow,
+  }
+
+  return result
+}
+
 function useStyleFullyVisible(path: TemplatePath): boolean {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadataKILLME
@@ -158,12 +216,23 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
       }
     })
 
+    let isInsideFocusedComponent = TP.isInsideFocusedComponent(path)
+    if (store.editor.focusedElementPath != null && TP.isInstancePath(path)) {
+      const isFocusedComponent =
+        TP.staticScenePathContainsElementPath(
+          store.editor.focusedElementPath,
+          TP.elementPathForPath(path),
+        ) != null
+      isInsideFocusedComponent = isInsideFocusedComponent || isFocusedComponent
+    }
+
     return (
       isScenePath ||
       isSelected ||
       isParentOfSelected ||
       isContainingBlockAncestor ||
-      isFlexAncestorDirectionChange
+      isFlexAncestorDirectionChange ||
+      isInsideFocusedComponent
     )
   }, 'NavigatorItem useStyleFullyVisible')
 }
@@ -187,6 +256,18 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
+    const isFocusedComponent = useEditorState((store) => {
+      if (store.editor.focusedElementPath == null || TP.isScenePath(templatePath)) {
+        return false
+      } else {
+        return (
+          TP.staticScenePathContainsElementPath(
+            store.editor.focusedElementPath,
+            TP.elementPathForPath(templatePath),
+          ) != null
+        )
+      }
+    }, 'NavigatorItem isFocusedComponent')
 
     const childComponentCount = props.noOfChildren
 
@@ -194,38 +275,17 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       elementOriginType === 'unknown-element' ||
       elementOriginType === 'generated-static-definition-present'
 
-    const isScene = TP.isScenePath(templatePath)
+    const isInsideComponent = TP.isInsideFocusedComponent(templatePath) || isFocusedComponent
     const fullyVisible = useStyleFullyVisible(templatePath)
 
-    const computeResultingStyle = () => {
-      let result = defaultUnselected
-      if (selected) {
-        if (isDynamic) {
-          result = dynamicSelected
-        } else {
-          result = defaultSelected
-        }
-      } else {
-        // unselected
-        if (isDynamic) {
-          result = dynamicUnselected
-        } else {
-          result = defaultUnselected
-        }
-      }
-
-      // additional style
-      result.style = {
-        ...result.style,
-        fontWeight: isScene ? 500 : 'inherit',
-        opacity: fullyVisible ? 1 : 0.5,
-        boxShadow: isScene ? `inset 0 -1px ${colorTheme.inputBorder.value}` : undefined,
-      }
-
-      return result
-    }
-
-    const resultingStyle = computeResultingStyle()
+    const resultingStyle = computeResultingStyle(
+      selected,
+      isInsideComponent,
+      isDynamic,
+      TP.isScenePath(templatePath),
+      fullyVisible,
+      isFocusedComponent,
+    )
 
     let warningText: string | null = null
     if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
@@ -269,9 +329,9 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
         <FlexRow style={containerStyle}>
           <ExpandableIndicator
             key='expandable-indicator'
-            visible={childComponentCount > 0}
+            visible={childComponentCount > 0 || isFocusedComponent}
             collapsed={collapsed}
-            selected={selected}
+            selected={selected && !isInsideComponent}
             onMouseDown={collapse}
           />
           {TP.isScenePath(templatePath) ? (

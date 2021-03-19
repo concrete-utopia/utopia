@@ -798,11 +798,6 @@ export const MetadataUtils = {
         visibleNavigatorTargets.push(path)
       }
 
-      /**
-       * For ENI: this code snippet runs walkAndAddKeys for the focused elements. this means
-       * that they will appear in the navigator, but with wrong indentation. it is pretty brittle right now, scrolling
-       * on the canvas sometimes makes them disappear. I found that the most reliable way to make them show up is to press the `R` reload button on the bottom left of the screen (below the `P E` button)
-       */
       const matchingFocusPath =
         focusedElementPath == null
           ? null

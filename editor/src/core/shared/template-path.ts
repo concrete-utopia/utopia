@@ -360,6 +360,26 @@ export function depth(path: TemplatePath): number {
   }
 }
 
+export function navigatorDepth(path: TemplatePath): number {
+  if (isScenePath(path)) {
+    return 1
+  } else {
+    let scenePath = -1 // starts from -1 for the storyboard element
+    fastForEach(path.scene.sceneElementPaths, (elementPath) => {
+      scenePath += elementPath.length
+    })
+    return scenePath + path.element.length
+  }
+}
+
+export function isInsideFocusedComponent(path: TemplatePath): boolean {
+  if (isScenePath(path)) {
+    return false
+  } else {
+    return path.scene.sceneElementPaths.length > 1
+  }
+}
+
 function elementPathParent(path: ElementPath): ElementPath {
   return path.slice(0, path.length - 1)
 }

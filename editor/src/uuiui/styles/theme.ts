@@ -197,6 +197,8 @@ const light = {
   resizingDisplayForeground: createUtopiColor('hsl(0,0%,90%)', '90%', 'light'),
   navigatorResizeHintBorder: lightBase.primary,
   navigatorComponentName: lightBase.primary,
+  navigatorComponentSelected: base.orange.o(20),
+  navigatorComponentIconBorder: base.orange,
 
   // inverted: toasts, context menu, notifications
   contextMenuBackground: lightPrimitives.neutralBackground,
