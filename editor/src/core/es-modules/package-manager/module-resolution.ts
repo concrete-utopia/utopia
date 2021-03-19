@@ -16,6 +16,7 @@ import { setOptionalProp } from '../../shared/object-utils'
 import { getContentsTreeFileFromElements, ProjectContentTreeRoot } from '../../../components/assets'
 import { loaderExistsForFile } from '../../webpack-loaders/loaders'
 import { dropLast, last } from '../../shared/array-utils'
+import { normalizePath } from '../../../utils/path-utils'
 
 interface ResolveSuccess<T> {
   type: 'RESOLVE_SUCCESS'
@@ -89,21 +90,6 @@ function fileLookupResult(
 
 function pathToElements(path: string): string[] {
   return path.split('/')
-}
-
-function normalizePath(path: string[]): string[] {
-  return path.reduce((pathSoFar: string[], pathElem: string, index: number) => {
-    if (pathElem === '' && index !== 0) {
-      return pathSoFar
-    }
-    if (pathElem === '.') {
-      return pathSoFar
-    }
-    if (pathElem === '..') {
-      return pathSoFar.slice(0, -1)
-    }
-    return [...pathSoFar, pathElem]
-  }, [])
 }
 
 type FileLookupFn = (path: string[]) => FileLookupResult
