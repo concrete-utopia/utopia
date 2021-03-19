@@ -781,7 +781,10 @@ export const MetadataUtils = {
   createOrderedTemplatePathsFromElements(
     metadata: JSXMetadata,
     collapsedViews: Array<TemplatePath>,
+    focusedElementPath: ScenePath | null,
   ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
+    const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
+
     let navigatorTargets: Array<TemplatePath> = []
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
@@ -794,6 +797,28 @@ export const MetadataUtils = {
       if (!collapsedAncestor) {
         visibleNavigatorTargets.push(path)
       }
+
+      /**
+       * For ENI: this code snippet runs walkAndAddKeys for the focused elements. this means
+       * that they will appear in the navigator, but with wrong indentation. it is pretty brittle right now, scrolling
+       * on the canvas sometimes makes them disappear. I found that the most reliable way to make them show up is to press the `R` reload button on the bottom left of the screen (below the `P E` button)
+       */
+      const matchingFocusPath =
+        focusedElementPath == null
+          ? null
+          : TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
+      const focusedRootElementPaths =
+        matchingFocusPath == null
+          ? []
+          : allPaths.filter(
+              (p) =>
+                TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
+                TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
+            )
+      fastForEach(focusedRootElementPaths, (focusedRootElement) => {
+        walkAndAddKeys(focusedRootElement, collapsedAncestor || isCollapsed)
+      })
+
       fastForEach(reversedChildren, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
       })

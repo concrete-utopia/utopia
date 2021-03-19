@@ -1188,6 +1188,7 @@ export function deriveState(
   } = MetadataUtils.createOrderedTemplatePathsFromElements(
     editor.jsxMetadataKILLME,
     editor.navigator.collapsedViews,
+    editor.focusedElementPath,
   )
 
   const derived: DerivedState = {
