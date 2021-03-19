@@ -1,19 +1,13 @@
 .loading-screen {
-  /* background-image: linear-gradient(180deg, #baf0ff 0%, #84dcff 100%); */
-  /* background-image: linear-gradient(180deg, #fff4ba 0%, #84dcff 100%); */
   --stroke1: rgba(46, 179, 255, 0.5);
   --background: white;
 }
 
 @keyframes loadingKeyframes {
   from {
-    /* transform: rotateZ(0deg); */
-    /* height: 0px; */
     transform: translateY(812px) translateX(-440px);
   }
   to {
-    /* transform: rotateZ(300deg); */
-    /* height: 412px; */
     transform: translateY(0) translateX(0px);
   }
 }
@@ -62,7 +56,6 @@
   font-family: garamond;
   font-size: 48px;
   font-weight: 100;
-  -webkit-font-smoothing: none;
   text-rendering: geometricPrecision;
 }
 

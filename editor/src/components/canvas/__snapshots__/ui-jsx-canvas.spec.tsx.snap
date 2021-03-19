@@ -303,6 +303,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -425,6 +426,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -548,6 +550,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -671,6 +674,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -912,6 +916,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -1050,6 +1055,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -1314,6 +1320,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -1469,6 +1476,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -1625,6 +1633,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -1781,6 +1790,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -2171,6 +2181,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -2424,6 +2435,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -2586,6 +2598,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -2749,6 +2762,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -2912,6 +2926,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -3167,6 +3182,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -3329,6 +3345,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -3492,6 +3509,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -3655,6 +3673,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -3910,6 +3929,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -4072,6 +4092,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -4235,6 +4256,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -4398,6 +4420,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -4615,6 +4638,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -4705,6 +4729,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -4796,6 +4821,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -5022,6 +5048,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -5295,6 +5322,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -5497,6 +5525,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -5700,6 +5729,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -5903,6 +5933,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -6179,6 +6210,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -6382,6 +6414,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -6586,6 +6619,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -6790,6 +6824,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -7006,6 +7041,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -7109,6 +7145,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -7213,6 +7250,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -7429,6 +7467,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -7548,6 +7587,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -7668,6 +7708,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -8053,6 +8094,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -8261,6 +8303,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -8653,6 +8696,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -8861,6 +8905,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -9294,6 +9339,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -9556,6 +9602,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -9989,6 +10036,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -10251,6 +10299,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -10390,6 +10439,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -11714,6 +11764,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -12562,6 +12613,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -12912,6 +12964,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -13263,6 +13316,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -13614,6 +13668,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -14001,6 +14056,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -14236,6 +14292,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -14620,6 +14677,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -14851,6 +14909,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -15235,6 +15294,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -15466,6 +15526,7 @@ export var storyboard = (props) => {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -15730,6 +15791,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -15849,6 +15911,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -15969,6 +16032,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -16158,6 +16222,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -16438,6 +16503,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -16714,6 +16780,7 @@ export var storyboard = (
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -16882,6 +16949,7 @@ export var storyboard = (
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -17189,6 +17257,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -17404,6 +17473,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -17543,6 +17613,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -17869,6 +17940,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -18008,6 +18080,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -18282,6 +18355,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -18484,6 +18558,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -18687,6 +18762,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -18890,6 +18966,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -19165,6 +19242,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -19368,6 +19446,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -19572,6 +19651,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -19776,6 +19856,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -20057,6 +20138,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -20259,6 +20341,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -20462,6 +20545,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -20665,6 +20749,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -20739,7 +20824,204 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
 "
 `;
 
-exports[`UiJsxCanvas render renders a component with a fragment at the root 2`] = `Object {}`;
+exports[`UiJsxCanvas render renders a component with a fragment at the root 2`] = `
+Object {
+  "utopia-storyboard-uid/scene-aaa:aaa": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "hello",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "aaa",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
+      ],
+      "scene": Object {
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+  "utopia-storyboard-uid/scene-aaa:bbb": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "bello",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "bbb",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "bbb",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "bbb",
+      ],
+      "scene": Object {
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
 
 exports[`UiJsxCanvas render renders correctly with a context 1`] = `
 "<div
@@ -20957,6 +21239,7 @@ export var storyboard = (
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -21072,6 +21355,7 @@ export var storyboard = (
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -21362,6 +21646,7 @@ export var storyboard = (
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -21504,6 +21789,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -21997,6 +22283,7 @@ export var storyboard = (
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -22119,6 +22406,7 @@ export var storyboard = (
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -22310,6 +22598,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -22442,6 +22731,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -22582,6 +22872,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -22890,6 +23181,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -23102,6 +23394,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -23245,6 +23538,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -23459,6 +23753,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -23602,6 +23897,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -23816,6 +24112,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -23959,6 +24256,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -24169,6 +24467,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -24323,6 +24622,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -24424,6 +24724,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -24569,6 +24870,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,
@@ -24713,6 +25015,7 @@ Object {
         "y": 0,
       },
       "display": "initial",
+      "flexDirection": null,
       "htmlElementName": "div",
       "immediateParentBounds": Object {
         "height": 0,

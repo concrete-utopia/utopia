@@ -1450,8 +1450,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('renders a component with a fragment at the root', () => {
     testCanvasRender(
       null,
-      `import * as React from 'react'
+      `/** @jsx jsx */
+import * as React from 'react'
 import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
 export var Cat = (props) => {
   return (
     <React.Fragment>
@@ -1460,6 +1462,7 @@ export var Cat = (props) => {
     </React.Fragment>
   )
 }
+
 export var storyboard = (
   <Storyboard data-uid={'${BakedInStoryboardUID}'} >
     <Scene

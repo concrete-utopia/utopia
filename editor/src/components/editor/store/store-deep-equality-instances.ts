@@ -591,6 +591,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const clientWidthResult = oldSize.clientWidth === newSize.clientWidth
     const clientHeightResult = oldSize.clientHeight === newSize.clientHeight
     const parentFlexDirectionResult = oldSize.parentFlexDirection === newSize.parentFlexDirection
+    const flexDirectionResult = oldSize.flexDirection === newSize.flexDirection
     const displayEquals = oldSize.display === newSize.display
     const htmlElementNameEquals = oldSize.htmlElementName === newSize.htmlElementName
     const areEqual =
@@ -610,6 +611,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       clientWidthResult &&
       clientHeightResult &&
       parentFlexDirectionResult &&
+      flexDirectionResult &&
       displayEquals &&
       htmlElementNameEquals
     if (areEqual) {
@@ -633,6 +635,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.clientWidth,
         newSize.clientHeight,
         newSize.parentFlexDirection,
+        newSize.flexDirection,
         newSize.htmlElementName,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)

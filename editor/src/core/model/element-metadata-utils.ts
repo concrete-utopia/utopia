@@ -399,14 +399,8 @@ export const MetadataUtils = {
       return null
     }
   },
-  getFlexDirection: function (
-    instance: ElementInstanceMetadata | null,
-  ): 'row' | 'row-reverse' | 'column' | 'column-reverse' {
-    if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
-      return FlexLayoutHelpers.getFlexDirectionFromProps(instance.element.value.props)
-    } else {
-      return 'row' // TODO read this value from spy
-    }
+  getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
+    return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
   getFlexWrap: function (
     instance: ElementInstanceMetadata | null,
@@ -1427,7 +1421,7 @@ export const MetadataUtils = {
   },
   findElementMetadata(
     target: TemplatePath,
-    elements: Array<ElementInstanceMetadata>,
+    elements: ReadonlyArray<ElementInstanceMetadata>,
   ): ElementInstanceMetadata | null {
     const pathToUse = TP.isScenePath(target) ? TP.instancePathForElementAtScenePath(target) : target
     return elements.find((elem) => TP.pathsEqual(pathToUse, elem.templatePath)) ?? null
@@ -1496,6 +1490,44 @@ export const MetadataUtils = {
         : null
       withEachElement(elem, parent)
     })
+  },
+  findContainingBlock(
+    elementMap: ElementInstanceMetadataMap,
+    path: TemplatePath,
+  ): TemplatePath | null {
+    const specialSizeMeasurements = TP.isInstancePath(path)
+      ? this.getElementByInstancePathMaybe(elementMap, path)?.specialSizeMeasurements
+      : null
+    const parentPath = TP.parentPath(path)
+    if (parentPath == null || specialSizeMeasurements == null) {
+      return null
+    }
+    if (specialSizeMeasurements.immediateParentProvidesLayout) {
+      return parentPath
+    } else {
+      return this.findContainingBlock(elementMap, parentPath)
+    }
+  },
+  findNearestAncestorFlexDirectionChange(
+    elementMap: ElementInstanceMetadataMap,
+    path: TemplatePath,
+  ): TemplatePath | null {
+    const parentPath = TP.parentPath(path)
+    const specialSizeMeasurements = TP.isInstancePath(path)
+      ? this.getElementByInstancePathMaybe(elementMap, path)?.specialSizeMeasurements
+      : null
+    const parentSizeMeasurements =
+      parentPath != null && TP.isInstancePath(parentPath)
+        ? this.getElementByInstancePathMaybe(elementMap, parentPath)?.specialSizeMeasurements
+        : null
+    if (parentPath == null || specialSizeMeasurements == null || parentSizeMeasurements == null) {
+      return null
+    }
+    if (specialSizeMeasurements.flexDirection !== parentSizeMeasurements.flexDirection) {
+      return parentPath
+    } else {
+      return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
+    }
   },
 }
 

@@ -85,14 +85,14 @@ export function createComponentRendererComponent(params: {
 
     let codeError: Error | null = null
 
-    const ownTemplatePath = optionalMap(
+    const rootTemplatePath = optionalMap(
       (p) => TP.instancePath(p, [getUtopiaID(utopiaJsxComponent.rootElement)]),
       scenePath,
     )
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
-        ownTemplatePath,
+        rootTemplatePath,
         scope,
         realPassedProps,
         mutableContext.requireResult,
@@ -122,6 +122,11 @@ export function createComponentRendererComponent(params: {
       if (isJSXFragment(element)) {
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
+        const ownTemplatePath = optionalMap(
+          (p) => TP.instancePath(p, [getUtopiaID(element)]),
+          scenePath,
+        )
+
         return renderCoreElement(
           element,
           ownTemplatePath,
