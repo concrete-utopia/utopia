@@ -66,9 +66,6 @@ import { CSSPosition } from './common/css-utils'
 import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
-// import { HeaderSection } from './sections/header-section/header-section'
-// import { LayoutWrapperCoreProps } from './sections/header-section/layout-wrapper-section'
-// import { NameRowProps } from './sections/header-section/name-row'
 import {
   CSSTarget,
   cssTarget,

@@ -11,7 +11,7 @@ export interface PositionableProps
   wrappedComponent: React.JSXElementConstructor<any>
 }
 
-const tempFix = (props: any) => {
+const wrappedComponentProp = (props: any) => {
   return <div />
 }
 
@@ -37,7 +37,7 @@ export const Positionable: React.FunctionComponent<PositionableProps> = (
         ...ownStyle,
       }}
     >
-      <WrappedComponent wrappedComponent={tempFix} {...propsWithEventHandlers}>
+      <WrappedComponent wrappedComponent={wrappedComponentProp} {...propsWithEventHandlers}>
         {props.children}
       </WrappedComponent>
     </div>
