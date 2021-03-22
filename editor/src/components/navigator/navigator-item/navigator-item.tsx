@@ -2,7 +2,7 @@
 import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { JSXElementName } from '../../../core/shared/element-template'
-import { ElementOriginType, TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementOriginType, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
@@ -183,19 +183,14 @@ const computeResultingStyle = (
   return result
 }
 
-function useIsFocusedComponent(path: TemplatePath): boolean {
-  return useEditorState((store) => {
-    if (store.editor.focusedElementPath == null || TP.isScenePath(path)) {
-      return false
-    } else {
-      return (
-        TP.staticScenePathContainsElementPath(
-          store.editor.focusedElementPath,
-          TP.elementPathForPath(path),
-        ) != null
-      )
-    }
-  }, 'NavigatorItem isFocusedComponent')
+function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
+  if (focusedElementPath == null || TP.isScenePath(path)) {
+    return false
+  } else {
+    return (
+      TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path)) != null
+    )
+  }
 }
 
 function useStyleFullyVisible(path: TemplatePath): boolean {
@@ -234,8 +229,8 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
       }
     })
 
-    const isFocusedComponent = useIsFocusedComponent(path)
-    let isInsideFocusedComponent = isFocusedComponent || TP.isInsideFocusedComponent(path)
+    let isInsideFocusedComponent =
+      isFocused(store.editor.focusedElementPath, path) || TP.isInsideFocusedComponent(path)
 
     return (
       isScenePath ||
@@ -267,7 +262,10 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
-    const isFocusedComponent = useIsFocusedComponent(templatePath)
+    const isFocusedComponent = useEditorState(
+      (store) => isFocused(store.editor.focusedElementPath, templatePath),
+      'NavigatorItem isFocusedComponent',
+    )
 
     const childComponentCount = props.noOfChildren
 
