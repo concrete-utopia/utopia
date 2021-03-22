@@ -1153,11 +1153,12 @@ export const MetadataUtils = {
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
-
-        const possibleUIDs: Array<string> | null = uidsFromString(spyElem.props[UTOPIA_UIDS_KEY]) // TODO what about original-uid???
-
-        if (possibleUIDs != null) {
-          const possibleElement = elementsByUID[possibleUIDs[0]] // TODO we are arbitrarily picking the first UID here
+        if (isLeft(spyElem.element) && spyElem.element.value === 'Scene') {
+          // We have some weird special casing for Scenes (see https://github.com/concrete-utopia/utopia/pull/671)
+          jsxElement = spyElem.element
+        } else {
+          const elemUID: string | null = TP.toStaticUid(domElem.templatePath)
+          const possibleElement = elementsByUID[elemUID]
           if (possibleElement != null) {
             if (!isIntrinsicElement(possibleElement.name)) {
               componentInstance = true
@@ -1166,16 +1167,10 @@ export const MetadataUtils = {
           }
         }
 
-        // This is quite frankly awful
-        const elementToUse =
-          isLeft(spyElem.element) && spyElem.element.value === 'Scene'
-            ? spyElem.element
-            : jsxElement
-
         const elem: ElementInstanceMetadata = {
           ...domElem,
           props: spyElem.props,
-          element: elementToUse,
+          element: jsxElement,
           children: children,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,

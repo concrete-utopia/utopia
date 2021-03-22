@@ -87,7 +87,8 @@ export const SafeFunctionCurriedErrorHandler = {
     fn.displayName = UTOPIA_FUNCTION_ROOT_NAME
     const safeFn = (onError: ErrorHandler) => (...params: Array<unknown>) => {
       try {
-        return fn(...contextValues, ...params)
+        const [boundThis, ...otherParams] = params
+        return fn.bind(boundThis)(...contextValues, ...otherParams)
       } catch (e) {
         processErrorWithSourceMap(onError, e, code, sourceMap, true)
       }
