@@ -68,11 +68,14 @@ export var App = (props) => {
 exports[`JSX parser parses back and forth as a function, with an arbitrary piece of JavaScript 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
-    "definedElsewhere": Array [],
+    "definedElsewhere": Array [
+      "utopiaCanvasJSXLookup",
+    ],
     "definedWithin": Array [
       "cakeFn",
       "otherFn",
     ],
+    "elementsWithin": Object {},
     "javascript": "function cakeFn(n) {
   return n
 }
@@ -81,15 +84,17 @@ function otherFn(n) {
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAICA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACFC;;AACAL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFC",
+      "mappings": "AAGCA,SAASC,MAATD,CAAgBE,CAAhBF,EAAmBG;AACjBC,SAAOF,CAAPE;AACDC;;AACDL,SAASM,OAATN,CAAiBE,CAAjBF,EAAoBG;AAClBC,SAAOF,CAAPE;AACFG",
       "names": Array [
         "function",
         "cakeFn",
         "n",
         "{",
         "return",
-        "}",
+        "
+",
         "otherFn",
+        "}",
       ],
       "sources": Array [
         "code.tsx",
@@ -253,10 +258,13 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "type": "UNPARSED_CODE",
     },
     Object {
-      "definedElsewhere": Array [],
+      "definedElsewhere": Array [
+        "utopiaCanvasJSXLookup",
+      ],
       "definedWithin": Array [
         "cakeFn",
       ],
+      "elementsWithin": Object {},
       "javascript": "function cakeFn(n) {
   return n
 }",
@@ -308,10 +316,13 @@ return { cakeFn: cakeFn };",
       "type": "UNPARSED_CODE",
     },
     Object {
-      "definedElsewhere": Array [],
+      "definedElsewhere": Array [
+        "utopiaCanvasJSXLookup",
+      ],
       "definedWithin": Array [
         "otherFn",
       ],
+      "elementsWithin": Object {},
       "javascript": "function otherFn(n) {
   return n
 }",
@@ -504,16 +515,19 @@ export var whatever = (props) => {
 exports[`JSX parser parses fine with a circular dependency. 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
-    "definedElsewhere": Array [],
+    "definedElsewhere": Array [
+      "utopiaCanvasJSXLookup",
+    ],
     "definedWithin": Array [
       "a",
       "b",
     ],
+    "elementsWithin": Object {},
     "javascript": "const a = (n) => n > 0 ? n : b(10)
 const b = (n) => n > 0 ? n : a(10)",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAKCA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
+      "mappings": "AAICA,IAAMC,CAACC,GAAGC,SAAJF,CAAIE,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYE,CAACH,CAACI,EAADJ,CAApBA;AAAAA,CAAVH;;AAEAA,IAAMM,CAACJ,GAAGC,SAAJG,CAAIH,CAACC,CAADD;AAAAA,SAAOC,CAACF,GAAGG,CAAJD,GAAQA,CAARA,GAAYH,CAACE,CAACI,EAADJ,CAApBA;AAAAA,CAAVH",
       "names": Array [
         "const",
         "a",
@@ -619,10 +633,12 @@ return { a: a, b: b };",
     Object {
       "definedElsewhere": Array [
         "b",
+        "utopiaCanvasJSXLookup",
       ],
       "definedWithin": Array [
         "a",
       ],
+      "elementsWithin": Object {},
       "javascript": "const a = (n) => n > 0 ? n : b(10)",
       "sourceMap": Object {
         "file": "code.tsx",
@@ -722,10 +738,12 @@ return { a: a };",
     Object {
       "definedElsewhere": Array [
         "a",
+        "utopiaCanvasJSXLookup",
       ],
       "definedWithin": Array [
         "b",
       ],
+      "elementsWithin": Object {},
       "javascript": "const b = (n) => n > 0 ? n : a(10)",
       "sourceMap": Object {
         "file": "code.tsx",
@@ -775,14 +793,17 @@ return { b: b };",
 exports[`JSX parser parses the code when it has a JSX block with an object defined inside 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
-    "definedElsewhere": Array [],
+    "definedElsewhere": Array [
+      "utopiaCanvasJSXLookup",
+    ],
     "definedWithin": Array [
       "a",
     ],
+    "elementsWithin": Object {},
     "javascript": "const a = \\"cake\\"",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAWCA,IAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
       "names": Array [
         "const",
         "a",
@@ -919,10 +940,13 @@ return { a: a };",
       "type": "UNPARSED_CODE",
     },
     Object {
-      "definedElsewhere": Array [],
+      "definedElsewhere": Array [
+        "utopiaCanvasJSXLookup",
+      ],
       "definedWithin": Array [
         "a",
       ],
+      "elementsWithin": Object {},
       "javascript": "const a = \\"cake\\"",
       "sourceMap": Object {
         "file": "code.tsx",

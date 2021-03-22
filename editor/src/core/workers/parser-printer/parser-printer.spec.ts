@@ -66,6 +66,7 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model
 import { emptyComments } from './parser-printer-comments'
 import { optionalMap } from '../../shared/optional-utils'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
 
 describe('JSX parser', () => {
   it('parses the code when it is a var', () => {
@@ -832,12 +833,13 @@ return { getSizing: getSizing };`
       jsCode1,
       transpiledJsCode1,
       ['getSizing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const jsCode2 = `var spacing = 20`
     const transpiledJsCode2 = `var spacing = 20;
@@ -846,12 +848,13 @@ return { spacing: spacing };`
       jsCode2,
       transpiledJsCode2,
       ['spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const combinedJsCode = `function getSizing(n) {
   return 100 + n
@@ -867,12 +870,13 @@ return { getSizing: getSizing, spacing: spacing };`
       combinedJsCode,
       transpiledcombinedJsCode,
       ['getSizing', 'spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -949,12 +953,13 @@ return { getSizing: getSizing };`
       jsCode,
       transpiledJsCode,
       ['getSizing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1047,12 +1052,13 @@ return { getSizing: getSizing };`
       jsCode,
       transpiledJsCode,
       ['getSizing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1129,12 +1135,13 @@ return {  };`
       jsCode,
       transpiledJsCode,
       [],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -1208,12 +1215,13 @@ return { spacing: spacing };`
       'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
@@ -1269,12 +1277,13 @@ return { bgs: bgs, bg: bg };`
       jsCode,
       transpiledJsCode,
       ['bgs', 'bg'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1342,12 +1351,13 @@ return { greys: greys };`
       jsCode,
       transpiledJsCode,
       ['greys'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1409,12 +1419,13 @@ return { a: a, b: b };`
       jsCode,
       transpiledJsCode,
       ['a', 'b'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1479,12 +1490,13 @@ return { a: a, b: b, c: c };`
       jsCode,
       transpiledJsCode,
       ['a', 'b', 'c'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1553,12 +1565,13 @@ return { a: a };`
       jsCode,
       transpiledJsCode,
       ['a'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1622,12 +1635,13 @@ return { a: a, b: b };`
       jsCode,
       transpiledJsCode,
       ['a', 'b'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1696,12 +1710,13 @@ return { bg: bg };`
       jsCode,
       transpiledJsCode,
       ['bg'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const exported = utopiaJSXComponent(
       'whatever',
@@ -1784,12 +1799,13 @@ return { count: count };`
       jsCode,
       transpiledJSCode,
       ['count'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
@@ -1862,12 +1878,13 @@ return { use20: use20 };`
       'var use20 = true',
       transpiledJSCode,
       ['use20'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
@@ -1921,12 +1938,13 @@ return { mySet: mySet };`
       'var mySet = new Set()',
       transpiledJSCode,
       ['mySet'],
-      ['Set'],
+      ['Set', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const expectedResult = parseSuccess(
@@ -1998,12 +2016,13 @@ return { spacing: spacing };`
       'var spacing = 20',
       transpiledJSCode,
       ['spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [jsVariable, exported].map(clearTopLevelElementUniqueIDsAndEmptyBlocks)
     const imports = addImport('cake', null, [importAlias('cake')], null, sampleImportsForTests)
@@ -2070,7 +2089,7 @@ export var whatever = (props) => <View data-uid='aaa'>
   }, "hello");
 };
 return { MyComp: MyComp };`
-    const definedElseWhere = ['React']
+    const definedElseWhere = ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME]
     const MyComp = arbitraryJSBlock(
       jsCode,
       transpiledJsCode,
@@ -2081,6 +2100,7 @@ return { MyComp: MyComp };`
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const myCompAttributes: JSXAttributes = jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aab', emptyComments),
@@ -2593,12 +2613,13 @@ return { getSizing: getSizing };`
       jsCode1,
       transpiledJSCode1,
       ['getSizing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const jsCode2 = `var spacing = 20`
     const transpiledJSCode2 = `var spacing = 20;
@@ -2607,12 +2628,13 @@ return { spacing: spacing };`
       jsCode2,
       transpiledJSCode2,
       ['spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const combinedJSCode = `function getSizing(n) {
   return 100 + n
@@ -2628,12 +2650,13 @@ return { getSizing: getSizing, spacing: spacing };`
       combinedJSCode,
       transpiledcombinedJSCode,
       ['getSizing', 'spacing'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const topLevelElements = [arbitraryBlock1, arbitraryBlock2, exported].map(
       clearTopLevelElementUniqueIDsAndEmptyBlocks,
@@ -3014,12 +3037,13 @@ return { test: test };`
       jsCode,
       transpiledJSCode,
       ['test'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const expectedResult = parseSuccess(
       imports,
@@ -3118,12 +3142,13 @@ return { test: test };`
             jsCode,
             transpiledJSCode,
             ['test'],
-            [],
+            [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
             expect.objectContaining({
               sources: ['code.tsx'],
               version: 3,
               file: 'code.tsx',
             }),
+            {},
           ),
           false,
           emptyComments,
@@ -3208,7 +3233,9 @@ export var App = props => {
             `[1,2,3].map(x=> <View data-uid='abc' />)`,
             `[1, 2, 3].map(x => <View data-uid='abc' />);`,
             `return [1, 2, 3].map(function (x) {
-  return utopiaCanvasJSXLookup("abc", {});
+  return utopiaCanvasJSXLookup("abc", {
+    callerThis: this
+  });
 });`,
             ['React', 'View', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
@@ -3327,7 +3354,9 @@ export var App = props => {
             `[1, 2, 3].map((n) =>
 <div data-uid="abc" />);`,
             `return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup("abc", {});
+  return utopiaCanvasJSXLookup("abc", {
+    callerThis: this
+  });
 });`,
             ['React', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
@@ -3384,7 +3413,9 @@ export var App = props => {
             `[1, 2, 3].map((n) =>
 <div data-uid='abc' />);`,
             `return [1, 2, 3].map(function (n) {
-  return utopiaCanvasJSXLookup("abc", {});
+  return utopiaCanvasJSXLookup("abc", {
+    callerThis: this
+  });
 });`,
             ['React', 'utopiaCanvasJSXLookup'],
             expect.objectContaining({
@@ -3564,18 +3595,26 @@ export var App = props => {
 var b = 40;
 
 var MyCustomCompomnent = function MyCustomCompomnent(props) {
-  return React.createElement(View, {
-    "data-uid": "abc"
-  }, props.children);
+  return ${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("abc", {
+    props: props,
+    callerThis: this
+  });
 };
 return { a: a, b: b, MyCustomCompomnent: MyCustomCompomnent };`,
         ['a', 'b', 'MyCustomCompomnent'],
-        ['React', 'View'],
+        ['React', 'View', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
         expect.objectContaining({
           sources: ['code.tsx'],
           version: 3,
           file: 'code.tsx',
         }),
+        {
+          abc: expect.objectContaining({
+            name: expect.objectContaining({
+              baseVariable: 'View',
+            }),
+          }),
+        },
       ),
       false,
       emptyComments,
@@ -3773,12 +3812,13 @@ return {  };`
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
       [],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
     const view = jsxElement(
       'div',
@@ -3832,12 +3872,10 @@ for (var n = 0; n < 5; n++) {
   }
 
   var n2 = n * 2;
-  result.push(React.createElement("div", {
-    style: {
-      left: n,
-      top: n2
-    },
-    "data-uid": "bbb"
+  result.push(${JSX_CANVAS_LOOKUP_FUNCTION_NAME}("bbb", {
+    n: n,
+    n2: n2,
+    callerThis: this
   }));
 }
 return { result: result };`
@@ -3845,12 +3883,19 @@ return { result: result };`
       arbitraryBlockCode,
       arbitraryBlockTranspiledCode,
       ['result'],
-      ['React'],
+      ['React', JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {
+        bbb: expect.objectContaining({
+          name: expect.objectContaining({
+            baseVariable: 'div',
+          }),
+        }),
+      },
     )
     const innerBlock = jsxArbitraryBlock(
       'result',
@@ -3909,7 +3954,8 @@ export var whatever = props => {
 });`
     const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("bbb", {
-    n: n
+    n: n,
+    callerThis: this
   });
 });`
     const innerElement = jsxElement(
@@ -4005,7 +4051,8 @@ export var whatever = props => {
     const arbitraryBlockTranspiledCode = `return [1, 2, 3].map(function (n) {
   return utopiaCanvasJSXLookup("bbb", {
     n: n,
-    a: a
+    a: a,
+    callerThis: this
   });
 });`
     const innerElement = jsxElement(
@@ -4060,12 +4107,13 @@ export var whatever = props => {
       `var a = 30;
 return { a: a };`,
       ['a'],
-      [],
+      [JSX_CANVAS_LOOKUP_FUNCTION_NAME],
       expect.objectContaining({
         sources: ['code.tsx'],
         version: 3,
         file: 'code.tsx',
       }),
+      {},
     )
 
     const view = jsxElement(
@@ -4284,8 +4332,7 @@ export var App = props => {
 
     const position = consumer.getOriginalPosition(transpiledLine, transpiledCharacter)
 
-    // FIXME This should be line 16 char 9 but I cannot get this to work
-    expect(position).toEqual(expect.objectContaining({ line: 17, column: 10 }))
+    expect(position).toEqual(expect.objectContaining({ line: 16, column: 10 }))
   })
 
   it('maps a jsxAttributeOtherJavaScript correctly', () => {

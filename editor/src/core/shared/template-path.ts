@@ -916,3 +916,35 @@ export function staticScenePathContainsElementPath( // TODO rename me!
   })
   return foundIndex === -1 ? null : scenePath(scene.sceneElementPaths.slice(0, foundIndex + 1))
 }
+
+export function isScenePathEmpty(path: TemplatePath): boolean {
+  if (isScenePath(path)) {
+    return path.sceneElementPaths.length === 0
+  } else {
+    return path.scene.sceneElementPaths.length === 0
+  }
+}
+
+interface DropFirstScenePathElementResultType {
+  newPath: InstancePath
+  droppedScenePathElements: StaticElementPath | null
+}
+
+export function dropFirstScenePathElement(
+  path: StaticInstancePath,
+): DropFirstScenePathElementResultType {
+  if (isScenePathEmpty(path)) {
+    return {
+      newPath: path,
+      droppedScenePathElements: null,
+    }
+  } else {
+    return {
+      newPath: {
+        ...path,
+        scene: scenePath(path.scene.sceneElementPaths.slice(1)),
+      },
+      droppedScenePathElements: path.scene.sceneElementPaths[0],
+    }
+  }
+}
