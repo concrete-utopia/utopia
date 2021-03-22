@@ -11,6 +11,7 @@ export interface PositionableProps
   wrappedComponent: React.JSXElementConstructor<any>
 }
 
+// TODO Delete the entire Positionable component and remove it from the UI
 const wrappedComponentProp = (props: any) => {
   return <div />
 }
