@@ -395,8 +395,13 @@ function elementPathToUID(path: ElementPath): id {
 export function toTemplateId(path: InstancePath): id {
   return elementPathToUID(path.element)
 }
+
 export function toUid(path: InstancePath): id {
   return elementPathToUID(path.element)
+}
+
+export function toStaticUid(path: InstancePath): id {
+  return extractOriginalUidFromIndexedUid(toUid(path))
 }
 
 export function allTemplateIds(path: InstancePath): Array<id> {
