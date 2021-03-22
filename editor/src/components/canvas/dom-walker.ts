@@ -61,10 +61,10 @@ const MutationObserverConfig = { attributes: true, childList: true, subtree: tru
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
 
 function findValidPath(uid: string | null, validPathsString: Array<string>): InstancePath | null {
-  const validPaths = validPathsString.map(TP.fromString) // Hi Rheese :)
   if (uid == null) {
     return null
   }
+  const validPaths = validPathsString.map(TP.fromString) // Hi Rheese :)
   return (
     mapDropNulls((validPath) => {
       if (TP.isScenePath(validPath)) {
