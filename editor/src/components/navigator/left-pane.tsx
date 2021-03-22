@@ -44,7 +44,9 @@ import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
 import { GoogleFontsResourcesList } from './external-resources/google-fonts-resources-list'
-
+import { StoryboardFilePath } from '../editor/store/editor-state'
+import { boolean } from 'fast-check/*'
+import { getContentsTreeFileFromString } from '../assets'
 export interface LeftPaneProps {
   editorState: EditorState
   derivedState: DerivedState
@@ -286,30 +288,44 @@ const ProjectPane = betterReactMemo('ProjectPane', () => {
   )
 })
 
-const StoryboardListItem = styled.div({
+interface StoryboardListItemProps {
+  selected: boolean
+}
+
+const StoryboardListItem = styled.div<StoryboardListItemProps>((props) => ({
   flex: '96px 0 1',
   borderRadius: 4,
   padding: 8,
   display: 'flex',
-  cursor: 'pointer',
   flexDirection: 'column',
   justifyContent: 'flex-end',
-  backgroundColor: 'hsl(0,0%,90%)',
+  cursor: 'pointer',
   fontWeight: 500,
+  backgroundColor: 'hsl(0,0%,90%)',
+  boxShadow: props.selected ? 'inset 0px 0px 0px 2px #007AFF' : undefined,
   '&:hover': {
     boxShadow: 'inset 0px 0px 0px 2px  #007AFF',
   },
-})
+}))
 
 const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
-  const { dispatch } = useEditorState((store) => {
+  const { dispatch, openFile, projectContents } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
+      openFile: store.editor.canvas.openFile?.filename,
+      projectContents: store.editor.projectContents,
     }
   }, 'FileBrowser')
-  const storyboardFileAdd = React.useCallback(() => {
+
+  const handleStoryboardAdd = React.useCallback(() => {
     dispatch([EditorActions.addStoryboardFile()])
   }, [dispatch])
+
+  const storyboardList = [StoryboardFilePath]
+
+  const noStoryboardFileAvailable =
+    getContentsTreeFileFromString(projectContents, StoryboardFilePath) == null
+
   return (
     <FlexColumn
       id='leftPaneStoryboards'
@@ -331,35 +347,42 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
             <GridRow
               padded
               type='|--32px--|<--------auto-------->'
-              style={{ height: 'inherit', wordWrap: 'normal', whiteSpace: 'normal' }}
+              style={{
+                height: 'inherit',
+                wordWrap: 'normal',
+                whiteSpace: 'normal',
+                alignItems: 'flex-start',
+              }}
             >
-              <MenuIcons.Pyramid />
+              <MenuIcons.Pyramid style={{ marginTop: 2 }} />
               <span>
-                Storyboards let you display and edit components from one or more files in your
-                project.
+                Storyboards let you display and visually edit components. Limit 1 per project per
+                user.
               </span>
             </GridRow>
 
-            <StoryboardListItem style={{ background: UtopiaTheme.color.secondaryBackground.value }}>
-              <span>
-                Storyboard
-                <span style={{ opacity: 0.5, marginLeft: 4 }}>storybook.js</span>
-              </span>
-            </StoryboardListItem>
-            <StoryboardListItem style={{ background: UtopiaTheme.color.secondaryBackground.value }}>
-              <div>
-                Storyboard
-                <br />
-                <span style={{ opacity: 0.5, marginLeft: 4 }}>utopia/storybook.js</span>
-              </div>
-            </StoryboardListItem>
-            <Button
-              spotlight
-              highlight
-              style={{ height: 34, alignSelf: 'stretch', border: '1px dashed lightgrey' }}
-            >
-              Add Storyboard
-            </Button>
+            {storyboardList.map((item) => (
+              <StoryboardListItem
+                selected={openFile === item}
+                style={{ background: UtopiaTheme.color.secondaryBackground.value }}
+              >
+                <div>
+                  Storyboard Label
+                  <br />
+                  <span style={{ opacity: 0.5, marginLeft: 4 }}>{item}</span>
+                </div>
+              </StoryboardListItem>
+            ))}
+            {noStoryboardFileAvailable ? (
+              <Button
+                spotlight
+                highlight
+                style={{ height: 34, alignSelf: 'stretch', border: '1px dashed lightgrey' }}
+                onClick={handleStoryboardAdd}
+              >
+                Add Storyboard
+              </Button>
+            ) : null}
           </FlexColumn>
 
           <FlexRow
@@ -370,7 +393,7 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
               color: UtopiaTheme.color.subduedForeground.value,
             }}
           >
-            All Storyboards live in the&nbsp;
+            The storyboard lives in the&nbsp;
             <a
               css={{
                 color: colorTheme.primary.value,
@@ -384,18 +407,6 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
             </a>
             &nbsp;folder
           </FlexRow>
-          <GridRow padded type='<---1fr--->|------172px-------|'>
-            <Button
-              style={{ height: UtopiaTheme.layout.inputHeight.default }}
-              id='addStoryboard'
-              spotlight
-              highlight
-              onClick={storyboardFileAdd}
-            >
-              Add
-            </Button>
-            <label htmlFor='addStoryboard'>Adds a storyboard file</label>
-          </GridRow>
         </SectionBodyArea>
       </Section>
     </FlexColumn>
