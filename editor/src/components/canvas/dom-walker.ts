@@ -39,13 +39,7 @@ import {
   useRefEditorState,
   useSelectorWithCallback,
 } from '../editor/store/store-hook'
-import {
-  UTOPIA_DO_NOT_TRAVERSE_KEY,
-  UTOPIA_LABEL_KEY,
-  UTOPIA_UIDS_KEY,
-  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
-  UTOPIA_UID_PARENTS_KEY,
-} from '../../core/model/utopia-constants'
+import { UTOPIA_DO_NOT_TRAVERSE_KEY } from '../../core/model/utopia-constants'
 import ResizeObserver from 'resize-observer-polyfill'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
@@ -378,15 +372,6 @@ function collectMetadata(
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
-  const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
-  let elementProps: any = {}
-  if (uidAttribute != null) {
-    elementProps[UTOPIA_UIDS_KEY] = uidAttribute // TODO Balazs we are making a fake prop with a single UID instead of the UID array – maybe this means changes to mergeComponentMetadata
-  }
-  if (labelAttribute != null) {
-    elementProps[UTOPIA_LABEL_KEY] = labelAttribute
-  }
-
   const { computedStyle, attributeMetadata } = getComputedStyle(
     element,
     instancePath,
@@ -397,7 +382,7 @@ function collectMetadata(
   return elementInstanceMetadata(
     instancePath,
     left(element.tagName.toLowerCase()),
-    elementProps,
+    {},
     globalFrame,
     localFrame,
     children,
