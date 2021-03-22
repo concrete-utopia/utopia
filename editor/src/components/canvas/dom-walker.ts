@@ -611,7 +611,6 @@ function walkCanvasRootFragment(
     const { childPaths: rootElements, rootMetadata } = walkSceneInner(
       canvasRoot,
       index,
-      canvasRootPath,
       validPaths,
       rootMetadataInStateRef,
       invalidatedSceneIDsRef,
@@ -688,7 +687,6 @@ function walkScene(
         const { childPaths: rootElements, rootMetadata } = walkSceneInner(
           scene,
           index,
-          scenePath,
           validPaths,
           rootMetadataInStateRef,
           invalidatedSceneIDsRef,
@@ -728,7 +726,6 @@ function walkScene(
 function walkSceneInner(
   scene: HTMLElement,
   index: number,
-  scenePath: TemplatePath,
   validPaths: Array<string>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
@@ -749,7 +746,6 @@ function walkSceneInner(
       index,
       0,
       globalFrame,
-      scenePath,
       validPaths,
       rootMetadataInStateRef,
       invalidatedSceneIDsRef,
@@ -773,7 +769,6 @@ function walkElements(
   index: number,
   depth: number,
   parentPoint: CanvasPoint,
-  uniqueParentPath: TemplatePath,
   validPaths: Array<string>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
@@ -817,7 +812,6 @@ function walkElements(
 
       // Check this is a path we're interested in, otherwise skip straight to the children
       const foundValidPaths = mapDropNulls((uid) => findValidPath(uid, validPaths), uids)
-      const pathForChildren = foundValidPaths[0] ?? uniqueParentPath // TODO
 
       // Build the metadata for the children of this DOM node.
       let childPaths: Array<InstancePath> = []
@@ -829,7 +823,6 @@ function walkElements(
             childIndex,
             depth + 1,
             globalFrame,
-            pathForChildren,
             validPaths,
             rootMetadataInStateRef,
             invalidatedSceneIDsRef,
