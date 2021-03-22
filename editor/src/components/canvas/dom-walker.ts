@@ -42,7 +42,6 @@ import {
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_LABEL_KEY,
-  UTOPIA_ORIGINAL_ID_KEY,
   UTOPIA_UIDS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
   UTOPIA_UID_PARENTS_KEY,
@@ -379,14 +378,10 @@ function collectMetadata(
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
-  const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
   const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
   let elementProps: any = {}
   if (uidAttribute != null) {
     elementProps[UTOPIA_UIDS_KEY] = uidAttribute // TODO Balazs we are making a fake prop with a single UID instead of the UID array – maybe this means changes to mergeComponentMetadata
-  }
-  if (originalUIDAttribute != null) {
-    elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
   }
   if (labelAttribute != null) {
     elementProps[UTOPIA_LABEL_KEY] = labelAttribute

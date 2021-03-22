@@ -1232,11 +1232,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           \\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div
-            id=\\"nasty-div\\"
-            data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa scene-aaa\\"
-            data-utopia-original-uid=\\"2a7\\"
-          >
+          <div id=\\"nasty-div\\" data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa scene-aaa\\">
             huhahuha
           </div>
         </div>
