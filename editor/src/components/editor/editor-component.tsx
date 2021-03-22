@@ -293,9 +293,9 @@ export const EditorComponentInner = betterReactMemo(
               <div
                 className='LeftPaneShell'
                 style={{
+                  height: '100%',
                   transition: 'all .1s linear',
                   position: 'absolute',
-                  height: '100% !important',
                   width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
                   overflowX: 'scroll',
                   backgroundColor: UtopiaTheme.color.leftPaneBackground.value,

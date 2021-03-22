@@ -181,7 +181,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
       id='leftMenuBar'
       style={{
         flexGrow: 1,
-        backgroundColor: UtopiaTheme.color.neutralBackground.value,
+        backgroundColor: UtopiaTheme.color.leftMenuBackground.value,
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
