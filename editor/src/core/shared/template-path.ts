@@ -544,6 +544,16 @@ function elementIsDescendent(l: ElementPath, r: ElementPath): boolean {
   return elementPathsEqual(slicedL, r)
 }
 
+function scenePathIsDescendent(path: ScenePath, targetAncestor: ScenePath): boolean {
+  return targetAncestor.sceneElementPaths.every((elementPath, i) => {
+    if (path.sceneElementPaths[i] != null) {
+      return elementPathsEqual(elementPath, path.sceneElementPaths[i])
+    } else {
+      return false
+    }
+  })
+}
+
 // This is sooooo badly named! It should be `isDescendentOf`, and tbh that was probably me...
 // e.g. isAncestorOf(instancePath(['A'], ['B', 'C']), instancePath(['A'], ['B']) would return true,
 //      isAncestorOf(instancePath(['A'], ['B']), instancePath(['A'], ['B', 'C']) would return false
@@ -558,10 +568,10 @@ export function isAncestorOf(
     // we've already tested the case where they equals, and a scene can't be a descendent
     return false
   } else if (isScenePath(targetAncestor)) {
-    return scenePathsEqual(path.scene, targetAncestor)
+    return scenePathIsDescendent(path.scene, targetAncestor)
   } else {
     return (
-      scenePathsEqual(path.scene, targetAncestor.scene) &&
+      scenePathIsDescendent(path.scene, targetAncestor.scene) &&
       elementIsDescendent(path.element, targetAncestor.element)
     )
   }
