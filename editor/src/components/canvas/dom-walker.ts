@@ -68,7 +68,7 @@ function findValidPath(uid: string | null, validPathsString: Array<string>): Ins
   return (
     mapDropNulls((validPath) => {
       if (TP.isScenePath(validPath)) {
-        return null // TODO do we need to care about a scene path here?
+        return null
       }
       const lastPathElement = TP.toUid(validPath)
       if (
