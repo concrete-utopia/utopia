@@ -395,8 +395,13 @@ function elementPathToUID(path: ElementPath): id {
 export function toTemplateId(path: InstancePath): id {
   return elementPathToUID(path.element)
 }
+
 export function toUid(path: InstancePath): id {
   return elementPathToUID(path.element)
+}
+
+export function toStaticUid(path: InstancePath): id {
+  return extractOriginalUidFromIndexedUid(toUid(path))
 }
 
 export function allTemplateIds(path: InstancePath): Array<id> {
@@ -899,20 +904,22 @@ export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath 
   }
 }
 
+// TODO maybe delete me
 export function scenePathContainsElementPath(scene: ScenePath, elementPath: ElementPath): boolean {
   return scene.sceneElementPaths.some((sceneElementPath) =>
     elementPathsEqual(sceneElementPath, elementPath),
   )
 }
 
-export function staticScenePathContainsElementPath(
+export function staticScenePathContainsElementPath( // TODO rename me!
   scene: ScenePath,
   elementPath: ElementPath,
-): boolean {
+): ScenePath | null {
   const staticScene = dynamicScenePathToStaticScenePath(scene)
-  return staticScene.sceneElementPaths.some((sceneElementPath) => {
+  const foundIndex = staticScene.sceneElementPaths.findIndex((sceneElementPath) => {
     return elementPathsEqual(sceneElementPath, elementPath)
   })
+  return foundIndex === -1 ? null : scenePath(scene.sceneElementPaths.slice(0, foundIndex + 1))
 }
 
 export function isScenePathEmpty(path: TemplatePath): boolean {

@@ -95,8 +95,8 @@ import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
 import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
-import { UTOPIA_ORIGINAL_ID_KEY, UTOPIA_UID_KEY } from './utopia-constants'
-import { extractOriginalUidFromIndexedUid } from '../shared/uid-utils'
+import { UTOPIA_UIDS_KEY } from './utopia-constants'
+import { extractOriginalUidFromIndexedUid, uidsFromString } from '../shared/uid-utils'
 import { forEachValue, omit } from '../shared/object-utils'
 const ObjectPathImmutable: any = OPI
 
@@ -1133,13 +1133,12 @@ export const MetadataUtils = {
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
-
-        const possibleUID: string | null | undefined = Utils.defaultIfNull(
-          spyElem.props[UTOPIA_UID_KEY],
-          spyElem.props[UTOPIA_ORIGINAL_ID_KEY],
-        )
-        if (possibleUID != null) {
-          const possibleElement = elementsByUID[possibleUID]
+        if (isLeft(spyElem.element) && spyElem.element.value === 'Scene') {
+          // We have some weird special casing for Scenes (see https://github.com/concrete-utopia/utopia/pull/671)
+          jsxElement = spyElem.element
+        } else {
+          const elemUID: string | null = TP.toStaticUid(domElem.templatePath)
+          const possibleElement = elementsByUID[elemUID]
           if (possibleElement != null) {
             if (!isIntrinsicElement(possibleElement.name)) {
               componentInstance = true
@@ -1148,16 +1147,10 @@ export const MetadataUtils = {
           }
         }
 
-        // This is quite frankly awful
-        const elementToUse =
-          isLeft(spyElem.element) && spyElem.element.value === 'Scene'
-            ? spyElem.element
-            : jsxElement
-
         const elem: ElementInstanceMetadata = {
           ...domElem,
           props: spyElem.props,
-          element: elementToUse,
+          element: jsxElement,
           children: children,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,

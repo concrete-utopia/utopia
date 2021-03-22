@@ -43,7 +43,7 @@ import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_LABEL_KEY,
   UTOPIA_ORIGINAL_ID_KEY,
-  UTOPIA_UID_KEY,
+  UTOPIA_UIDS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
   UTOPIA_UID_PARENTS_KEY,
 } from '../../core/model/utopia-constants'
@@ -53,12 +53,33 @@ import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import { useForceUpdate } from '../editor/hook-utils'
+import { extractOriginalUidFromIndexedUid, getUIDsOnDomELement } from '../../core/shared/uid-utils'
+import { mapDropNulls } from '../../core/shared/array-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
 
-function isValidPath(path: TemplatePath | null, validPaths: Array<string>): boolean {
-  return path != null && validPaths.indexOf(TP.toString(path)) > -1
+function findValidPath(uid: string | null, validPathsString: Array<string>): InstancePath | null {
+  if (uid == null) {
+    return null
+  }
+  const validPaths = validPathsString.map(TP.fromString) // Hi Rheese :)
+  return (
+    mapDropNulls((validPath) => {
+      if (TP.isScenePath(validPath)) {
+        return null
+      }
+      const lastPathElement = TP.toUid(validPath)
+      if (
+        extractOriginalUidFromIndexedUid(uid) === extractOriginalUidFromIndexedUid(lastPathElement)
+      ) {
+        const parentPath = TP.parentPath(validPath)
+        return TP.appendToPath(parentPath, uid)
+      }
+      return null
+    }, validPaths)[0] ?? null
+  )
 }
 
 function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): DetectedLayoutSystem {
@@ -346,6 +367,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
 
 function collectMetadata(
   element: HTMLElement,
+  uidAttribute: string | null,
   instancePath: InstancePath,
   parentPoint: CanvasPoint,
   children: InstancePath[],
@@ -353,16 +375,15 @@ function collectMetadata(
   containerRectLazy: () => CanvasRectangle,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<TemplatePath>,
-) {
+): ElementInstanceMetadata {
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
-  const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
   const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
   const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
   let elementProps: any = {}
   if (uidAttribute != null) {
-    elementProps[UTOPIA_UID_KEY] = uidAttribute
+    elementProps[UTOPIA_UIDS_KEY] = uidAttribute // TODO Balazs we are making a fake prop with a single UID instead of the UID array – maybe this means changes to mergeComponentMetadata
   }
   if (originalUIDAttribute != null) {
     elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
@@ -645,6 +666,7 @@ function walkScene(
 
         const sceneMetadata = collectMetadata(
           scene,
+          null,
           TP.instancePathForElementAtScenePath(scenePath),
           canvasPoint({ x: 0, y: 0 }),
           rootElements,
@@ -694,7 +716,6 @@ function walkSceneInner(
       0,
       globalFrame,
       scenePath,
-      scenePath,
       validPaths,
       rootMetadataInStateRef,
       invalidatedSceneIDsRef,
@@ -718,7 +739,6 @@ function walkElements(
   index: number,
   depth: number,
   parentPoint: CanvasPoint,
-  originalParentPath: TemplatePath | null,
   uniqueParentPath: TemplatePath,
   validPaths: Array<string>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
@@ -734,7 +754,7 @@ function walkElements(
 } {
   if (isScene(element)) {
     // we found a nested scene, restart the walk
-    return {
+    const result = {
       childPaths: [],
       rootMetadata: walkScene(
         element,
@@ -748,93 +768,82 @@ function walkElements(
         containerRectLazy,
       ),
     }
+    return result
   }
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
-    const uidAttribute = getDOMAttribute(element, UTOPIA_UID_KEY)
-    const parentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_PARENTS_KEY)
-    const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
-    const originalParentUIDsAttribute = getDOMAttribute(element, UTOPIA_UID_ORIGINAL_PARENTS_KEY)
-    const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
+    const uids = getUIDsOnDomELement(element)
+    if (uids != null) {
+      const results = uids.map((uidAttribute) => {
+        const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
 
-    const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
+        const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
 
-    // Build the path for this element, substituting an index in if there is no uid attribute.
-    function makeIndexElement(): id {
-      return `index-${index}`
-    }
-    const pathElement = Utils.defaultIfNullLazy<id>(uidAttribute, makeIndexElement)
-    const originalPathElement = Utils.defaultIfNull(uidAttribute, originalUIDAttribute)
-    const parentAttribute = Utils.defaultIfNull(parentUIDsAttribute, originalParentUIDsAttribute)
+        const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
 
-    // Build the unique path for this element.
-    let uniquePath: TemplatePath = uniqueParentPath
-    if (parentUIDsAttribute != null) {
-      uniquePath = TP.appendToPath(uniquePath, parentUIDsAttribute.split('/'))
-    }
-    uniquePath = TP.appendToPath(uniquePath, pathElement)
+        // Check this is a path we're interested in, otherwise skip straight to the children
+        const foundValidPath = findValidPath(uidAttribute, validPaths)
+        const pathForChildren = foundValidPath ?? uniqueParentPath
 
-    const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+        // Build the metadata for the children of this DOM node.
+        let childPaths: Array<InstancePath> = []
+        let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
+        if (traverseChildren) {
+          element.childNodes.forEach((child, childIndex) => {
+            const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
+              child,
+              childIndex,
+              depth + 1,
+              globalFrame,
+              pathForChildren,
+              validPaths,
+              rootMetadataInStateRef,
+              invalidatedSceneIDsRef,
+              invalidatedPathsForStylesheetCacheRef,
+              selectedViews,
+              initComplete,
+              scale,
+              containerRectLazy,
+            )
+            childPaths.push(...childNodePaths)
+            rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
+          })
+        }
 
-    // Build the original path for this element.
-    let originalPath: TemplatePath | null = originalParentPath
-    if (originalPath != null) {
-      if (parentAttribute != null) {
-        originalPath = TP.appendToPath(originalPath, parentAttribute.split('/'))
-      }
-      if (originalPathElement != null) {
-        originalPath = TP.appendToPath(originalPath, originalPathElement)
-      }
-    }
-
-    // Check this is a path we're interested in, otherwise skip straight to the children
-    const pathIsValid = isValidPath(Utils.defaultIfNull(uniquePath, originalPath), validPaths)
-    const pathForChildren = pathIsValid ? uniquePath : uniqueParentPath
-
-    // Build the metadata for the children of this DOM node.
-    let childPaths: Array<InstancePath> = []
-    let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
-    if (traverseChildren) {
-      element.childNodes.forEach((child, childIndex) => {
-        const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
-          child,
-          childIndex,
-          depth + 1,
-          globalFrame,
-          originalPath,
-          pathForChildren,
-          validPaths,
-          rootMetadataInStateRef,
-          invalidatedSceneIDsRef,
-          invalidatedPathsForStylesheetCacheRef,
-          selectedViews,
-          initComplete,
-          scale,
-          containerRectLazy,
+        const filteredChildPaths = childPaths.filter((childPath) =>
+          TP.pathsEqual(foundValidPath, TP.parentPath(childPath)),
         )
-        childPaths.push(...childNodePaths)
-        rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
-      })
-    }
 
-    if (pathIsValid) {
-      const collectedMetadata = collectMetadata(
-        element,
-        uniquePath,
-        parentPoint,
-        childPaths,
-        scale,
-        containerRectLazy,
-        invalidatedPathsForStylesheetCacheRef,
-        selectedViews,
-      )
-      rootMetadataAccumulator = [...rootMetadataAccumulator, collectedMetadata]
-      return {
-        rootMetadata: rootMetadataAccumulator,
-        childPaths: [collectedMetadata.templatePath],
-      }
+        if (foundValidPath != null) {
+          const collectedMetadata = collectMetadata(
+            element,
+            uidAttribute,
+            foundValidPath,
+            parentPoint,
+            filteredChildPaths,
+            scale,
+            containerRectLazy,
+            invalidatedPathsForStylesheetCacheRef,
+            selectedViews,
+          )
+
+          rootMetadataAccumulator = [...rootMetadataAccumulator, collectedMetadata]
+          return {
+            rootMetadata: rootMetadataAccumulator,
+            childPaths: [collectedMetadata.templatePath],
+          }
+        } else {
+          return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
+        }
+      })
+      return results.reduce((acc, result) => {
+        return {
+          childPaths: acc.childPaths.concat(result.childPaths),
+          rootMetadata: acc.rootMetadata.concat(result.rootMetadata),
+        }
+      })
     } else {
-      return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
+      return { childPaths: [], rootMetadata: [] }
     }
   } else {
     return { childPaths: [], rootMetadata: [] }

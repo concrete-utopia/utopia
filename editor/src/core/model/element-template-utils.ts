@@ -18,13 +18,15 @@ import {
   getJSXAttribute,
   getJSXElementNameAsString,
 } from '../shared/element-template'
+import { optionalMap } from '../shared/optional-utils'
 import {
   Imports,
+  InstancePath,
   ScenePath,
   StaticElementPath,
   StaticInstancePath,
-  StaticScenePath,
   StaticTemplatePath,
+  TemplatePath,
 } from '../shared/project-file-types'
 import * as TP from '../shared/template-path'
 import {
@@ -92,8 +94,8 @@ export function getValidTemplatePaths(
   topLevelElements: ReadonlyMap<string, UtopiaJSXComponent>,
   focusedElementPath: ScenePath | null,
   topLevelElementName: string | null,
-  scenePath: StaticScenePath,
-): Array<StaticInstancePath> {
+  scenePath: ScenePath,
+): Array<InstancePath> {
   if (topLevelElementName == null) {
     return []
   }
@@ -114,8 +116,8 @@ export function getValidTemplatePathsFromElement(
   topLevelElements: ReadonlyMap<string, UtopiaJSXComponent>,
   focusedElementPath: ScenePath | null,
   element: JSXElementChild,
-  parentPath: StaticTemplatePath,
-): Array<StaticInstancePath> {
+  parentPath: TemplatePath,
+): Array<InstancePath> {
   if (isJSXElement(element)) {
     const uid = getUtopiaID(element)
     const path = TP.appendToPath(parentPath, uid)
@@ -126,23 +128,25 @@ export function getValidTemplatePathsFromElement(
       ),
     )
     const name = getJSXElementNameAsString(element.name)
-    if (
-      focusedElementPath != null &&
-      TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
-    ) {
+    const matchingFocusedPathPart =
+      focusedElementPath == null
+        ? null
+        : TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
+
+    if (matchingFocusedPathPart != null) {
       paths = [
         ...paths,
         ...getValidTemplatePaths(
           topLevelElements,
           focusedElementPath,
           name,
-          TP.staticScenePathForElementAtInstancePath(path),
+          matchingFocusedPathPart,
         ),
       ]
     }
     return paths
   } else if (isJSXArbitraryBlock(element)) {
-    let paths: Array<StaticInstancePath> = []
+    let paths: Array<InstancePath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
       paths.push(
         ...getValidTemplatePathsFromElement(topLevelElements, focusedElementPath, e, parentPath),
@@ -150,7 +154,7 @@ export function getValidTemplatePathsFromElement(
     )
     return paths
   } else if (isJSXFragment(element)) {
-    let paths: Array<StaticInstancePath> = []
+    let paths: Array<InstancePath> = []
     fastForEach(Object.values(element.children), (e) =>
       paths.push(
         ...getValidTemplatePathsFromElement(topLevelElements, focusedElementPath, e, parentPath),

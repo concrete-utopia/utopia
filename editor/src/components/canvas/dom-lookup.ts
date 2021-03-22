@@ -14,6 +14,7 @@ import {
 } from '../../core/shared/math-utils'
 import { TemplatePath } from '../../core/shared/project-file-types'
 import * as TP from '../../core/shared/template-path'
+import { getUIDsOnDomELement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
 
@@ -34,8 +35,8 @@ export function findFirstParentWithValidUID(
   validTemplatePathsForLookup: Array<string> | 'no-filter',
   target: Element,
 ): string | null {
-  const uid = getDOMAttribute(target, 'data-uid')
-  const originalUid = getDOMAttribute(target, 'data-utopia-original-uid')
+  const uids = getUIDsOnDomELement(target)
+  const originalUid = getDOMAttribute(target, 'data-utopia-original-uid') // TODO BALAZS What's up with original-uid?
   const validTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
   const validTemplatePaths =
     validTemplatePathsForLookup === 'no-filter'
@@ -43,8 +44,11 @@ export function findFirstParentWithValidUID(
       : R.intersection(validTemplatePathsForLookup, validTemplatePathsForScene)
   if (originalUid != null && validTemplatePaths.find((tp) => tp.endsWith(originalUid))) {
     return last(validTemplatePaths.filter((tp) => tp.endsWith(originalUid))) ?? null
-  } else if (uid != null && validTemplatePaths.find((tp) => tp.endsWith(uid))) {
-    return last(validTemplatePaths.filter((tp) => tp.endsWith(uid))) ?? null
+  } else if (
+    uids != null &&
+    validTemplatePaths.find((tp) => uids.some((uid) => tp.endsWith(uid)))
+  ) {
+    return last(validTemplatePaths.filter((tp) => uids.some((uid) => tp.endsWith(uid)))) ?? null
   } else {
     if (target.parentElement != null) {
       return findFirstParentWithValidUID(validTemplatePaths, target.parentElement)

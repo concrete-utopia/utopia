@@ -1138,7 +1138,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           \\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div data-uid=\\"aaa\\">hello</div>
+          <div data-uid=\\"ccc aaa scene-aaa\\">hello</div>
         </div>
       </div>
       "
@@ -1232,7 +1232,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           \\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div id=\\"nasty-div\\" data-uid=\\"aaa\\" data-utopia-original-uid=\\"2a7\\">
+          <div
+            id=\\"nasty-div\\"
+            data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa scene-aaa\\"
+            data-utopia-original-uid=\\"2a7\\"
+          >
             huhahuha
           </div>
         </div>
@@ -1301,7 +1305,7 @@ export var storyboard = (
         >
           <div
             style=\\"left: 0; top: 0; right: 0; bottom: 0; background-color: #ffffff;\\"
-            data-uid=\\"aaa\\"
+            data-uid=\\"aaa scene\\"
           >
             <div
               class=\\"ant-picker\\"

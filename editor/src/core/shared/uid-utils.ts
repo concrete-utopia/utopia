@@ -1,3 +1,4 @@
+import * as R from 'ramda'
 import { v4 as UUID } from 'uuid'
 import { Either, flatMapEither, isLeft, isRight, left, right } from './either'
 import {
@@ -21,6 +22,9 @@ import {
 import * as PP from './property-path'
 import { objectMap, objectValues } from './object-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { getDOMAttribute } from './dom-utils'
+import { UTOPIA_UIDS_KEY } from '../model/utopia-constants'
+import { optionalMap } from './optional-utils'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
@@ -208,6 +212,36 @@ export function fixUtopiaElement(
   }
 
   return fixUtopiaElementInner(elementToFix)
+}
+
+export function uidsFromString(uidList: string = ''): Array<string> {
+  return uidList.split(' ')
+}
+
+export function uidsToString(uidList: Array<string>): string {
+  return uidList.join(' ')
+}
+
+export function appendToUidString(
+  uidsString: string | null | undefined,
+  uidsToAppend: string | null | undefined,
+): string | null {
+  if (uidsToAppend == null) {
+    return uidsString ?? null
+  } else if (uidsString == null || uidsString.length === 0) {
+    return uidsToAppend
+  } else if (R.difference(uidsFromString(uidsToAppend), uidsFromString(uidsString)).length > 0) {
+    return `${uidsString} ${uidsToString(
+      R.difference(uidsFromString(uidsToAppend), uidsFromString(uidsString)),
+    )}`
+  } else {
+    return uidsString
+  }
+}
+
+export function getUIDsOnDomELement(element: Element): Array<string> | null {
+  const uidsAttribute = getDOMAttribute(element, UTOPIA_UIDS_KEY)
+  return optionalMap(uidsFromString, uidsAttribute)
 }
 
 export function findElementWithUID(
