@@ -301,6 +301,107 @@ const StoryboardListItem = styled.div({
   },
 })
 
+const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
+  const { dispatch } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+    }
+  }, 'FileBrowser')
+  const storyboardFileAdd = React.useCallback(() => {
+    dispatch([EditorActions.addStoryboardFile()])
+  }, [dispatch])
+  return (
+    <FlexColumn
+      id='leftPaneStoryboards'
+      key='leftPaneStoryboards'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+      }}
+    >
+      <Section data-name='FileBrowser' tabIndex={-1}>
+        <SectionTitleRow minimised={false}>
+          <FlexRow flexGrow={1} style={{ position: 'relative' }}>
+            <Title>Storyboards</Title>
+          </FlexRow>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <FlexColumn style={{ paddingLeft: 8, paddingRight: 8, gap: 16 }}>
+            <GridRow
+              padded
+              type='|--32px--|<--------auto-------->'
+              style={{ height: 'inherit', wordWrap: 'normal', whiteSpace: 'normal' }}
+            >
+              <MenuIcons.Pyramid />
+              <span>
+                Storyboards let you display and edit components from one or more files in your
+                project.
+              </span>
+            </GridRow>
+
+            <StoryboardListItem style={{ background: UtopiaTheme.color.secondaryBackground.value }}>
+              <span>
+                Storyboard
+                <span style={{ opacity: 0.5, marginLeft: 4 }}>storybook.js</span>
+              </span>
+            </StoryboardListItem>
+            <StoryboardListItem style={{ background: UtopiaTheme.color.secondaryBackground.value }}>
+              <div>
+                Storyboard
+                <br />
+                <span style={{ opacity: 0.5, marginLeft: 4 }}>utopia/storybook.js</span>
+              </div>
+            </StoryboardListItem>
+            <Button
+              spotlight
+              highlight
+              style={{ height: 34, alignSelf: 'stretch', border: '1px dashed lightgrey' }}
+            >
+              Add Storyboard
+            </Button>
+          </FlexColumn>
+
+          <FlexRow
+            style={{
+              height: 34,
+              paddingLeft: 8,
+              paddingRight: 8,
+              color: UtopiaTheme.color.subduedForeground.value,
+            }}
+          >
+            All Storyboards live in the&nbsp;
+            <a
+              css={{
+                color: colorTheme.primary.value,
+                cursor: 'pointer',
+                '&:hover': {
+                  filter: 'brightness(90%)',
+                },
+              }}
+            >
+              ./utopia
+            </a>
+            &nbsp;folder
+          </FlexRow>
+          <GridRow padded type='<---1fr--->|------172px-------|'>
+            <Button
+              style={{ height: UtopiaTheme.layout.inputHeight.default }}
+              id='addStoryboard'
+              spotlight
+              highlight
+              onClick={storyboardFileAdd}
+            >
+              Add
+            </Button>
+            <label htmlFor='addStoryboard'>Adds a storyboard file</label>
+          </GridRow>
+        </SectionBodyArea>
+      </Section>
+    </FlexColumn>
+  )
+})
+
 const ContentsPane = betterReactMemo('ProjectStructurePane', () => {
   return (
     <FlexColumn
