@@ -904,14 +904,7 @@ export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath 
   }
 }
 
-// TODO maybe delete me
-export function scenePathContainsElementPath(scene: ScenePath, elementPath: ElementPath): boolean {
-  return scene.sceneElementPaths.some((sceneElementPath) =>
-    elementPathsEqual(sceneElementPath, elementPath),
-  )
-}
-
-export function staticScenePathContainsElementPath( // TODO rename me!
+export function scenePathUpToElementPath(
   scene: ScenePath,
   elementPath: ElementPath,
 ): ScenePath | null {
