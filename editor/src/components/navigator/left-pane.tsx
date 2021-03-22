@@ -20,9 +20,12 @@ import {
   Title,
   SectionBodyArea,
   Button,
+  Icons,
+  MenuIcons,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
+import { InfoBox } from '../common/notices'
 import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import {
@@ -51,8 +54,12 @@ export interface LeftPaneProps {
 
 export const enum LeftMenuTab {
   UIInsert = 'ui-insert',
-  ProjectStructure = 'project-structure',
-  ProjectSettings = 'project-settings',
+  Project = 'project',
+  Storyboards = 'storyboards',
+  Contents = 'contents',
+  Settings = 'settings',
+  Sharing = 'sharing',
+  Github = 'github',
 }
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
@@ -78,7 +85,7 @@ export function updateLeftMenuExpanded(editorState: EditorState, expanded: boole
 export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): EditorState {
   switch (editorState.focusedPanel) {
     case 'misccodeeditor':
-      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.ProjectStructure)
+      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Contents)
     case 'inspector':
     case 'canvas':
     case 'uicodeeditor':
@@ -252,40 +259,111 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
           }
         }}
       >
-        {selectedTab === LeftMenuTab.ProjectStructure ? <ProjectStructurePane /> : null}
-        {selectedTab === LeftMenuTab.ProjectSettings ? <ProjectSettingsPanel /> : null}
+        {selectedTab === LeftMenuTab.Project ? <ProjectPane /> : null}
+        {selectedTab === LeftMenuTab.Storyboards ? <StoryboardsPane /> : null}
+        {selectedTab === LeftMenuTab.Contents ? <ContentsPane /> : null}
+        {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
+        {selectedTab === LeftMenuTab.Sharing ? <SharingPane /> : null}
+        {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
       </div>
     </div>
   )
 })
 
-const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
+const ProjectPane = betterReactMemo('ProjectPane', () => {
   return (
     <FlexColumn
-      id='leftPaneProjectStructure'
-      key='leftPaneProjectStructure'
+      id='leftPaneContents'
+      key='leftPaneContents'
       style={{
         display: 'relative',
         alignItems: 'stretch',
         paddingBottom: 50,
       }}
     >
-      <ProjectSettingsPanel />
+      <ProjectSettingsPane />
+    </FlexColumn>
+  )
+})
+
+const StoryboardListItem = styled.div({
+  flex: '96px 0 1',
+  borderRadius: 4,
+  padding: 8,
+  display: 'flex',
+  cursor: 'pointer',
+  flexDirection: 'column',
+  justifyContent: 'flex-end',
+  backgroundColor: 'hsl(0,0%,90%)',
+  fontWeight: 500,
+  '&:hover': {
+    boxShadow: 'inset 0px 0px 0px 2px  #007AFF',
+  },
+})
+
+const ContentsPane = betterReactMemo('ProjectStructurePane', () => {
+  return (
+    <FlexColumn
+      id='leftPaneContents'
+      key='leftPaneContents'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+      }}
+    >
       <FileBrowser />
       <DependencyList />
       <GenericExternalResourcesList />
       <GoogleFontsResourcesList />
-      {/* <ResizableFlexColumn
-        enable={{ bottom: true, right: false }}
-        minHeight={100}
-        style={{
-          borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
-          paddingBottom: 8,
-          marginBottom: 8,
-          overflow: 'scroll',
-        }}
-      >
-      </ResizableFlexColumn> */}
+    </FlexColumn>
+  )
+})
+
+const SettingsPane = betterReactMemo('SettingsPane', () => {
+  return (
+    <FlexColumn
+      id='leftPaneSettings'
+      key='leftPaneSettings'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+      }}
+    >
+      <h2>Settings go here</h2>
+    </FlexColumn>
+  )
+})
+
+const SharingPane = betterReactMemo('SharingPane', () => {
+  return (
+    <FlexColumn
+      id='leftPaneSharing'
+      key='leftPaneSharing'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+      }}
+    >
+      <h2>Sharing goes here</h2>
+    </FlexColumn>
+  )
+})
+
+const GithubPane = betterReactMemo('GithubPane', () => {
+  return (
+    <FlexColumn
+      id='leftPaneGithub'
+      key='leftPaneGithub'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+      }}
+    >
+      <h2>Github goes here</h2>
     </FlexColumn>
   )
 })
@@ -344,7 +422,7 @@ const SilentInput = styled.input({
   },
 })
 
-const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
+const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
   const {
     dispatch,
     projectName,
