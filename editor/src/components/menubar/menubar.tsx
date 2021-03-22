@@ -24,6 +24,7 @@ import {
   Avatar,
   Icn,
   Icons,
+  UtopiaTheme,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { EditorAction, EditorDispatch } from '../editor/action-types'
@@ -53,35 +54,51 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
   const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
 
-  var foregroundColor: IcnProps['color'] = 'black'
-  if (props.menuExpanded && props.selected) {
-    foregroundColor = 'white'
-  } else if (props.selected || hovered) {
-    foregroundColor = 'blue'
-  }
+  var foregroundColor: IcnProps['color'] = 'darkgray'
+  // if (props.menuExpanded && props.selected) {
+  //   foregroundColor = 'white'
+  // } else if (props.selected || hovered) {
+  //   foregroundColor = 'blue'
+  // }
 
   return (
     <Tile
-      style={{ width: 44, height: 44 }}
+      css={{
+        width: 44,
+        height: 44,
+        transition: 'all .1s ease-in-out',
+        borderLeft:
+          props.menuExpanded && props.selected ? '2px solid darkgray' : '1px solid transparent',
+        cursor: 'pointer',
+        '& > *': {
+          opacity: props.selected ? 1 : 0.33,
+          transform: props.selected ? 'translateX(1px)' : 'inherit',
+        },
+        '&:hover > *': {
+          opacity: 1,
+          transform: props.selected ? 'translateX(1px)' : 'inherit',
+        },
+        '&:active > *': {
+          transform: 'translateX(1px)',
+          opacity: 1,
+        },
+      }}
       onMouseOver={handleOnMouseOver}
       onMouseOut={handleOnMouseOut}
       onClick={props.onClick}
     >
-      <SquareButton
-        highlight
+      <div
         style={{
           ...props.style,
           borderRadius: 1,
           width: 28,
           height: 28,
-          background:
-            props.menuExpanded && props.selected ? UtopiaStyles.backgrounds.blue : 'transparent',
         }}
       >
         {React.cloneElement(props.icon, {
           color: foregroundColor,
         })}
-      </SquareButton>
+      </div>
     </Tile>
   )
 }
@@ -164,17 +181,78 @@ export const Menubar = betterReactMemo('Menubar', () => {
       id='leftMenuBar'
       style={{
         flexGrow: 1,
+        backgroundColor: UtopiaTheme.color.neutralBackground.value,
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
-        <Tooltip title={'Project Structure'} placement={'right'}>
+        <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+          <a href='/projects'>
+            <Avatar loginState={userState.loginState} size={28} />
+          </a>
+        </Tile>
+
+        <Tooltip title={'Project Info'} placement={'right'}>
           <span>
             <MenuTile
-              selected={selectedTab === LeftMenuTab.ProjectStructure}
+              selected={selectedTab === LeftMenuTab.Project}
               menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.Menu />}
-              onClick={onClickStructureTab}
-              style={{ cursor: 'pointer' }}
+              icon={<MenuIcons.Smiangle />}
+              onClick={onClickProjectTab}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'Storyboards'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={selectedTab === LeftMenuTab.Storyboards}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.Pyramid />}
+              onClick={onClickStoryboardsTab}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'Files, Dependencies, Fonts'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={selectedTab === LeftMenuTab.Contents}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.FileSkewed />}
+              onClick={onClickContentsTab}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'Settings'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={selectedTab === LeftMenuTab.Settings}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.Settings />}
+              onClick={onClickSettingsTab}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'Sharing'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={selectedTab === LeftMenuTab.Sharing}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.TwoGhosts />}
+              onClick={onClickSharingTab}
+            />
+          </span>
+        </Tooltip>
+
+        <Tooltip title={'Github'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={selectedTab === LeftMenuTab.Github}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.Octocat />}
+              onClick={onClickGithubTab}
             />
           </span>
         </Tooltip>
@@ -189,66 +267,10 @@ export const Menubar = betterReactMemo('Menubar', () => {
         <Tooltip title={'Embedded Preview'} placement={'right'}>
           <span>
             <MenuTile
-              selected={selectedTab === LeftMenuTab.Storyboards}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.Pyramid />}
-              onClick={onClickStoryboardsTab}
-            />
-          </span>
-        </Tooltip>
-
-        <Tooltip title={'Project'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={selectedTab === LeftMenuTab.Contents}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.FileSkewed />}
-              onClick={onClickContentsTab}
-            />
-          </span>
-        </Tooltip>
-
-        <Tooltip title={'StoryBoards'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={selectedTab === LeftMenuTab.Settings}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.Settings />}
-              onClick={onClickSettingsTab}
-            />
-          </span>
-        </Tooltip>
-
-        <Tooltip title={'Dependencies'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={selectedTab === LeftMenuTab.Sharing}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.TwoGhosts />}
-              onClick={onClickSharingTab}
-            />
-          </span>
-        </Tooltip>
-
-        <Tooltip title={'Sharing'} placement={'right'}>
-          <span>
-            <MenuTile
-              selected={selectedTab === LeftMenuTab.Github}
-              menuExpanded={leftMenuExpanded}
-              icon={<MenuIcons.Octocat />}
-              onClick={onClickGithubTab}
-            />
-          </span>
-        </Tooltip>
-
-        <Tooltip title={'Settings'} placement={'right'}>
-          <span>
-            <MenuTile
               selected={isPreviewPaneVisible}
               menuExpanded={false}
-              icon={<MenuIcons.Settings />}
+              icon={<LargerIcons.PreviewPane />}
               onClick={togglePreviewPaneVisible}
-              style={{ cursor: 'pointer' }}
             />
           </span>
         </Tooltip>
@@ -271,11 +293,6 @@ export const Menubar = betterReactMemo('Menubar', () => {
           <a onClick={onReparseClick}>R</a>
         </Tile>
       ) : null}
-      <Tile style={{ marginTop: 12, marginBottom: 12 }}>
-        <a href='/projects'>
-          <Avatar loginState={userState.loginState} size={28} />
-        </a>
-      </Tile>
     </FlexColumn>
   )
 })
