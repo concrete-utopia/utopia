@@ -140,7 +140,7 @@ export function getValidTemplatePathsFromElement(
           topLevelElements,
           focusedElementPath,
           name,
-          matchingFocusedPathPart, // TP.scenePathForElementAtInstancePath(path),
+          matchingFocusedPathPart,
         ),
       ]
     }
