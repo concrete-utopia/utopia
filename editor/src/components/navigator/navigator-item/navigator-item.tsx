@@ -123,7 +123,10 @@ const dynamicSelected: ComputedLook = {
 }
 
 const componentUnselected: ComputedLook = {
-  style: { background: colorTheme.emphasizedBackground.value, color: colorTheme.neutralForeground.value },
+  style: {
+    background: colorTheme.emphasizedBackground.value,
+    color: colorTheme.neutralForeground.value,
+  },
   iconColor: 'orange',
 }
 const componentSelected: ComputedLook = {
@@ -180,6 +183,21 @@ const computeResultingStyle = (
   return result
 }
 
+function useIsFocusedComponent(path: TemplatePath): boolean {
+  return useEditorState((store) => {
+    if (store.editor.focusedElementPath == null || TP.isScenePath(path)) {
+      return false
+    } else {
+      return (
+        TP.staticScenePathContainsElementPath(
+          store.editor.focusedElementPath,
+          TP.elementPathForPath(path),
+        ) != null
+      )
+    }
+  }, 'NavigatorItem isFocusedComponent')
+}
+
 function useStyleFullyVisible(path: TemplatePath): boolean {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadataKILLME
@@ -216,15 +234,8 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
       }
     })
 
-    let isInsideFocusedComponent = TP.isInsideFocusedComponent(path)
-    if (store.editor.focusedElementPath != null && TP.isInstancePath(path)) {
-      const isFocusedComponent =
-        TP.staticScenePathContainsElementPath(
-          store.editor.focusedElementPath,
-          TP.elementPathForPath(path),
-        ) != null
-      isInsideFocusedComponent = isInsideFocusedComponent || isFocusedComponent
-    }
+    const isFocusedComponent = useIsFocusedComponent(path)
+    let isInsideFocusedComponent = isFocusedComponent || TP.isInsideFocusedComponent(path)
 
     return (
       isScenePath ||
@@ -256,18 +267,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
-    const isFocusedComponent = useEditorState((store) => {
-      if (store.editor.focusedElementPath == null || TP.isScenePath(templatePath)) {
-        return false
-      } else {
-        return (
-          TP.staticScenePathContainsElementPath(
-            store.editor.focusedElementPath,
-            TP.elementPathForPath(templatePath),
-          ) != null
-        )
-      }
-    }, 'NavigatorItem isFocusedComponent')
+    const isFocusedComponent = useIsFocusedComponent(templatePath)
 
     const childComponentCount = props.noOfChildren
 

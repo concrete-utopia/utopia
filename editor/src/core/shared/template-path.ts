@@ -364,11 +364,11 @@ export function navigatorDepth(path: TemplatePath): number {
   if (isScenePath(path)) {
     return 1
   } else {
-    let scenePath = -1 // starts from -1 for the storyboard element
+    let scenePathLength = -1 // starts from -1 for the storyboard element
     fastForEach(path.scene.sceneElementPaths, (elementPath) => {
-      scenePath += elementPath.length
+      scenePathLength += elementPath.length
     })
-    return scenePath + path.element.length
+    return scenePathLength + path.element.length
   }
 }
 
