@@ -13,7 +13,7 @@ import {
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
 } from '../../core/shared/element-template'
-import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
+import { id, TemplatePath, InstancePath, ScenePath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import { applicative4Either, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
@@ -365,26 +365,51 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   return containerRef
 }
 
-function collectMetadata(
+function collectMetadataForElement(
   element: HTMLElement,
-  uidAttribute: string | null,
-  instancePath: InstancePath,
   parentPoint: CanvasPoint,
-  children: InstancePath[],
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<TemplatePath>,
-): ElementInstanceMetadata {
+) {
+  const tagName: string = element.tagName.toLowerCase()
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
 
   const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
   const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
-  let elementProps: any = {}
-  if (uidAttribute != null) {
-    elementProps[UTOPIA_UIDS_KEY] = uidAttribute // TODO Balazs we are making a fake prop with a single UID instead of the UID array – maybe this means changes to mergeComponentMetadata
+
+  const specialSizeMeasurementsObject = getSpecialMeasurements(element, scale, containerRectLazy)
+
+  return {
+    tagName: tagName,
+    globalFrame: globalFrame,
+    localFrame: localFrame,
+    originalUIDAttribute: originalUIDAttribute,
+    labelAttribute: labelAttribute,
+    specialSizeMeasurementsObject: specialSizeMeasurementsObject,
   }
+}
+
+function collectMetadata(
+  element: HTMLElement,
+  pathsForElement: Array<TemplatePath>, // TODO I don't like this
+  parentPoint: CanvasPoint,
+  unfilteredChildrenPaths: InstancePath[], // TODO I don't like this
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+  invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  selectedViews: Array<TemplatePath>,
+): Array<ElementInstanceMetadata> {
+  const {
+    tagName,
+    globalFrame,
+    localFrame,
+    originalUIDAttribute,
+    labelAttribute,
+    specialSizeMeasurementsObject,
+  } = collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
+
+  let elementProps: any = {}
   if (originalUIDAttribute != null) {
     elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
   }
@@ -394,34 +419,44 @@ function collectMetadata(
 
   const { computedStyle, attributeMetadata } = getComputedStyle(
     element,
-    instancePath,
+    pathsForElement,
     invalidatedPathsForStylesheetCacheRef,
     selectedViews,
   )
 
-  return elementInstanceMetadata(
-    instancePath,
-    left(element.tagName.toLowerCase()),
-    elementProps,
-    globalFrame,
-    localFrame,
-    children,
-    false,
-    false,
-    getSpecialMeasurements(element, scale, containerRectLazy),
-    computedStyle,
-    attributeMetadata,
-  )
+  return pathsForElement.map((path) => {
+    const filteredChildPaths = unfilteredChildrenPaths.filter((childPath) =>
+      TP.pathsEqual(path, TP.parentPath(childPath)),
+    )
+
+    const instancePath = TP.isInstancePath(path) ? path : TP.instancePathForElementAtScenePath(path)
+
+    return elementInstanceMetadata(
+      instancePath,
+      left(tagName),
+      elementProps,
+      globalFrame,
+      localFrame,
+      filteredChildPaths,
+      false,
+      false,
+      specialSizeMeasurementsObject,
+      computedStyle,
+      attributeMetadata,
+    )
+  })
 }
 
 function getComputedStyle(
   element: HTMLElement,
-  path: TemplatePath,
+  paths: Array<TemplatePath>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<TemplatePath>,
 ): { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null } {
-  const isSelected = selectedViews.some((sv) => TP.pathsEqual(sv, path))
-  if (!isSelected) {
+  const isSelectedOnAnyPaths = selectedViews.some((sv) =>
+    paths.some((path) => TP.pathsEqual(sv, path)),
+  )
+  if (!isSelectedOnAnyPaths) {
     // the element is not among the selected views, skip computing the style
     return {
       computedStyle: null,
@@ -431,7 +466,7 @@ function getComputedStyle(
   const elementStyle = window.getComputedStyle(element)
   const attributesSetByStylesheet = getCachedAttributesComingFromStyleSheets(
     invalidatedPathsForStylesheetCacheRef,
-    path,
+    paths[0], // TODO is this sufficient to use the first path element for caching?
     element,
   )
   let computedStyle: ComputedStyle = {}
@@ -666,8 +701,7 @@ function walkScene(
 
         const sceneMetadata = collectMetadata(
           scene,
-          null,
-          TP.instancePathForElementAtScenePath(scenePath),
+          [scenePath],
           canvasPoint({ x: 0, y: 0 }),
           rootElements,
           scale,
@@ -675,7 +709,7 @@ function walkScene(
           invalidatedPathsForStylesheetCacheRef,
           selectedViews,
         )
-        return [...rootMetadata, sceneMetadata]
+        return [...rootMetadata, ...sceneMetadata]
       } else {
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
@@ -773,75 +807,59 @@ function walkElements(
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
     const uids = getUIDsOnDomELement(element)
+
     if (uids != null) {
-      const results = uids.map((uidAttribute) => {
-        const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
+      const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
 
-        const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
+      const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
 
-        const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+      const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
 
-        // Check this is a path we're interested in, otherwise skip straight to the children
-        const foundValidPath = findValidPath(uidAttribute, validPaths)
-        const pathForChildren = foundValidPath ?? uniqueParentPath
+      // Check this is a path we're interested in, otherwise skip straight to the children
+      const foundValidPaths = mapDropNulls((uid) => findValidPath(uid, validPaths), uids)
+      const pathForChildren = foundValidPaths[0] ?? uniqueParentPath // TODO
 
-        // Build the metadata for the children of this DOM node.
-        let childPaths: Array<InstancePath> = []
-        let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
-        if (traverseChildren) {
-          element.childNodes.forEach((child, childIndex) => {
-            const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
-              child,
-              childIndex,
-              depth + 1,
-              globalFrame,
-              pathForChildren,
-              validPaths,
-              rootMetadataInStateRef,
-              invalidatedSceneIDsRef,
-              invalidatedPathsForStylesheetCacheRef,
-              selectedViews,
-              initComplete,
-              scale,
-              containerRectLazy,
-            )
-            childPaths.push(...childNodePaths)
-            rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
-          })
-        }
-
-        const filteredChildPaths = childPaths.filter((childPath) =>
-          TP.pathsEqual(foundValidPath, TP.parentPath(childPath)),
-        )
-
-        if (foundValidPath != null) {
-          const collectedMetadata = collectMetadata(
-            element,
-            uidAttribute,
-            foundValidPath,
-            parentPoint,
-            filteredChildPaths,
-            scale,
-            containerRectLazy,
+      // Build the metadata for the children of this DOM node.
+      let childPaths: Array<InstancePath> = []
+      let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
+      if (traverseChildren) {
+        element.childNodes.forEach((child, childIndex) => {
+          const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
+            child,
+            childIndex,
+            depth + 1,
+            globalFrame,
+            pathForChildren,
+            validPaths,
+            rootMetadataInStateRef,
+            invalidatedSceneIDsRef,
             invalidatedPathsForStylesheetCacheRef,
             selectedViews,
+            initComplete,
+            scale,
+            containerRectLazy,
           )
+          childPaths.push(...childNodePaths)
+          rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
+        })
+      }
 
-          rootMetadataAccumulator = [...rootMetadataAccumulator, collectedMetadata]
-          return {
-            rootMetadata: rootMetadataAccumulator,
-            childPaths: [collectedMetadata.templatePath],
-          }
-        } else {
-          return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
-        }
-      })
-      return results.reduce((acc, result) => {
-        return {
-          childPaths: acc.childPaths.concat(result.childPaths),
-          rootMetadata: acc.rootMetadata.concat(result.rootMetadata),
-        }
-      })
+      const collectedMetadata = collectMetadata(
+        element,
+        foundValidPaths,
+        parentPoint,
+        childPaths,
+        scale,
+        containerRectLazy,
+        invalidatedPathsForStylesheetCacheRef,
+        selectedViews,
+      )
+
+      rootMetadataAccumulator = [...rootMetadataAccumulator, ...collectedMetadata]
+      return {
+        rootMetadata: rootMetadataAccumulator,
+        childPaths: collectedMetadata.map((metadata) => metadata.templatePath), // TODO why not extract childPaths from the metadata?
+      }
     } else {
       return { childPaths: [], rootMetadata: [] }
     }
