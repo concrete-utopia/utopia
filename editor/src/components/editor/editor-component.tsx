@@ -217,7 +217,7 @@ export const EditorComponentInner = betterReactMemo(
               EditorModes.insertMode(false, dragAndDropInsertionSubject(null)),
             ),
             EditorActions.setPanelVisibility('leftmenu', true),
-            EditorActions.setLeftMenuTab(LeftMenuTab.ProjectStructure),
+            EditorActions.setLeftMenuTab(LeftMenuTab.Contents),
           ]
           dispatch(actions, 'everyone')
         }

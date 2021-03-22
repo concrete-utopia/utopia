@@ -121,8 +121,28 @@ export const Menubar = betterReactMemo('Menubar', () => {
     [dispatch, selectedTab],
   )
 
-  const onClickStructureTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.ProjectStructure)
+  const onClickProjectTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Project)
+  }, [onClickTab])
+
+  const onClickStoryboardsTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Storyboards)
+  }, [onClickTab])
+
+  const onClickContentsTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Contents)
+  }, [onClickTab])
+
+  const onClickSettingsTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Settings)
+  }, [onClickTab])
+
+  const onClickSharingTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Sharing)
+  }, [onClickTab])
+
+  const onClickGithubTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
 
   const togglePreviewPaneVisible = React.useCallback(
@@ -169,11 +189,10 @@ export const Menubar = betterReactMemo('Menubar', () => {
         <Tooltip title={'Embedded Preview'} placement={'right'}>
           <span>
             <MenuTile
-              selected={isPreviewPaneVisible}
-              menuExpanded={false}
-              icon={<LargerIcons.PreviewPane />}
-              onClick={togglePreviewPaneVisible}
-              style={{ cursor: 'pointer' }}
+              selected={selectedTab === LeftMenuTab.Storyboards}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.Pyramid />}
+              onClick={onClickStoryboardsTab}
             />
           </span>
         </Tooltip>
@@ -181,11 +200,10 @@ export const Menubar = betterReactMemo('Menubar', () => {
         <Tooltip title={'Project'} placement={'right'}>
           <span>
             <MenuTile
-              selected={isPreviewPaneVisible}
-              menuExpanded={false}
-              icon={<MenuIcons.Project />}
-              onClick={togglePreviewPaneVisible}
-              style={{ cursor: 'pointer' }}
+              selected={selectedTab === LeftMenuTab.Contents}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.FileSkewed />}
+              onClick={onClickContentsTab}
             />
           </span>
         </Tooltip>
@@ -193,11 +211,10 @@ export const Menubar = betterReactMemo('Menubar', () => {
         <Tooltip title={'StoryBoards'} placement={'right'}>
           <span>
             <MenuTile
-              selected={isPreviewPaneVisible}
-              menuExpanded={false}
-              icon={<Icons.Smiangle />}
-              onClick={togglePreviewPaneVisible}
-              style={{ cursor: 'pointer' }}
+              selected={selectedTab === LeftMenuTab.Settings}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.Settings />}
+              onClick={onClickSettingsTab}
             />
           </span>
         </Tooltip>
@@ -205,11 +222,10 @@ export const Menubar = betterReactMemo('Menubar', () => {
         <Tooltip title={'Dependencies'} placement={'right'}>
           <span>
             <MenuTile
-              selected={isPreviewPaneVisible}
-              menuExpanded={false}
-              icon={<MenuIcons.Filestack />}
-              onClick={togglePreviewPaneVisible}
-              style={{ cursor: 'pointer' }}
+              selected={selectedTab === LeftMenuTab.Sharing}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.TwoGhosts />}
+              onClick={onClickSharingTab}
             />
           </span>
         </Tooltip>
@@ -217,11 +233,10 @@ export const Menubar = betterReactMemo('Menubar', () => {
         <Tooltip title={'Sharing'} placement={'right'}>
           <span>
             <MenuTile
-              selected={isPreviewPaneVisible}
-              menuExpanded={false}
-              icon={<Icn category='element' type='ghost' width={18} height={18} color={'purple'} />}
-              onClick={togglePreviewPaneVisible}
-              style={{ cursor: 'pointer' }}
+              selected={selectedTab === LeftMenuTab.Github}
+              menuExpanded={leftMenuExpanded}
+              icon={<MenuIcons.Octocat />}
+              onClick={onClickGithubTab}
             />
           </span>
         </Tooltip>

@@ -1029,7 +1029,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       mouseOver: [],
     },
     leftMenu: {
-      selectedTab: LeftMenuTab.ProjectStructure,
+      selectedTab: LeftMenuTab.Contents,
       expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
@@ -1277,7 +1277,7 @@ export function editorModelFromPersistentModel(
       mouseOver: [],
     },
     leftMenu: {
-      selectedTab: LeftMenuTab.ProjectStructure,
+      selectedTab: LeftMenuTab.Contents,
       expanded: false,
       paneWidth: LeftPaneDefaultWidth,
     },
