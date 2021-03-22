@@ -134,8 +134,6 @@ export function getValidTemplatePathsFromElement(
         : TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
 
     if (matchingFocusedPathPart != null) {
-      // storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~2
-      // storyboard/scene:app-root/inner-div/card-instance
       paths = [
         ...paths,
         ...getValidTemplatePaths(
