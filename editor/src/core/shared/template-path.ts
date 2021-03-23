@@ -934,21 +934,13 @@ export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath 
   }
 }
 
-export function scenePathContainsElementPath( // TODO rename me!
+export function scenePathUpToElementPath(
   scene: ScenePath,
   elementPath: ElementPath,
+  convertSceneToStatic: 'dynamic-scene-path' | 'static-scene-path',
 ): ScenePath | null {
-  const foundIndex = scene.sceneElementPaths.findIndex((sceneElementPath) => {
-    return elementPathsEqual(sceneElementPath, elementPath)
-  })
-  return foundIndex === -1 ? null : scenePath(scene.sceneElementPaths.slice(0, foundIndex + 1))
-}
-
-export function staticScenePathContainsElementPath( // TODO rename me!
-  scene: ScenePath,
-  elementPath: ElementPath,
-): ScenePath | null {
-  const staticScene = dynamicScenePathToStaticScenePath(scene)
+  const staticScene =
+    convertSceneToStatic === 'static-scene-path' ? dynamicScenePathToStaticScenePath(scene) : scene
   const foundIndex = staticScene.sceneElementPaths.findIndex((sceneElementPath) => {
     return elementPathsEqual(sceneElementPath, elementPath)
   })

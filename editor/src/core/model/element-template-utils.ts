@@ -131,7 +131,7 @@ export function getValidTemplatePathsFromElement(
     const matchingFocusedPathPart =
       focusedElementPath == null
         ? null
-        : TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
+        : TP.scenePathUpToElementPath(focusedElementPath, TP.elementPathForPath(path))
 
     if (matchingFocusedPathPart != null) {
       paths = [
