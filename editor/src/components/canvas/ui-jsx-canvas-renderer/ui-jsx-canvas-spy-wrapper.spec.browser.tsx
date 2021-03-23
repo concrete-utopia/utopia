@@ -823,6 +823,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         ":storyboard-entity": Object {
           "children": Array [
             ":storyboard-entity/scene-1-entity",
+            ":storyboard-entity/scene-2-entity",
           ],
           "name": "Storyboard",
         },
@@ -855,6 +856,16 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "children": Array [],
           "name": "Rectangle",
         },
+        ":storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-2-entity:same-file-app-div",
+          ],
+          "name": "Scene",
+        },
+        "storyboard-entity/scene-2-entity:same-file-app-div": Object {
+          "children": Array [],
+          "name": "div",
+        },
       }
     `)
 
@@ -863,6 +874,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         ":storyboard-entity": Object {
           "children": Array [
             ":storyboard-entity/scene-1-entity",
+            ":storyboard-entity/scene-2-entity"
           ],
           "name": "div",
         },
@@ -894,6 +906,16 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "div",
         },
         "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        ":storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-2-entity:same-file-app-div",
+          ],
+          "name": "div",
+        },
+        "storyboard-entity/scene-2-entity:same-file-app-div": Object {
           "children": Array [],
           "name": "div",
         },
@@ -905,6 +927,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         ":storyboard-entity": Object {
           "children": Array [
             ":storyboard-entity/scene-1-entity",
+            ":storyboard-entity/scene-2-entity"
           ],
           "name": "Storyboard",
         },
@@ -938,6 +961,16 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
           "children": Array [],
           "name": "Rectangle",
+        },
+        ":storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-2-entity:same-file-app-div",
+          ],
+          "name": "Scene",
+        },
+        "storyboard-entity/scene-2-entity:same-file-app-div": Object {
+          "children": Array [],
+          "name": "div",
         },
       }
     `)
