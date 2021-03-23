@@ -359,7 +359,7 @@ class RetakeButton extends ReactComponent<ThumbnailProps> {
         // since `css= {{'&:hover' : {...}}}` renders to className, any style prop will overwrite it
         data-label='previewImageContainer'
         css={{
-          width: 100,
+          width: 172,
           height: 22,
           paddingLeft: 4,
           paddingRight: 4,
@@ -419,7 +419,7 @@ class RetakeButton extends ReactComponent<ThumbnailProps> {
             //  refreshButton set above for animations
             className='refreshButton'
             style={{
-              width: 100,
+              width: 172,
               height: UtopiaTheme.layout.rowHeight.medium,
               borderRadius: 1,
               display: 'flex',
