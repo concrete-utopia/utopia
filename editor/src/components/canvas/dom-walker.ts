@@ -370,7 +370,14 @@ function collectMetadataForElement(
   parentPoint: CanvasPoint,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-) {
+): {
+  tagName: string
+  globalFrame: CanvasRectangle
+  localFrame: LocalRectangle
+  originalUIDAttribute: string | null
+  labelAttribute: string | null
+  specialSizeMeasurementsObject: SpecialSizeMeasurements
+} {
   const tagName: string = element.tagName.toLowerCase()
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
@@ -392,9 +399,9 @@ function collectMetadataForElement(
 
 function collectMetadata(
   element: HTMLElement,
-  pathsForElement: Array<TemplatePath>, // TODO I don't like this
+  pathsForElement: Array<TemplatePath>,
   parentPoint: CanvasPoint,
-  unfilteredChildrenPaths: InstancePath[], // TODO I don't like this
+  unfilteredChildrenPaths: InstancePath[],
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
