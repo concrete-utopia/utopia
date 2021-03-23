@@ -8,7 +8,7 @@ import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
 import { UtopiaKeys, UTOPIA_UIDS_KEY, UTOPIA_UID_PARENTS_KEY } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
 import { PRODUCTION_ENV } from '../common/env-vars'
-import { appendToUidString, uidsFromString } from '../core/shared/uid-utils'
+import { appendToUidString, popFrontUID, uidsFromString } from '../core/shared/uid-utils'
 
 const realCreateElement = React.createElement
 
@@ -218,7 +218,10 @@ const mangleExoticType = Utils.memoize(
       parentUid: string | null,
     ) {
       const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
-      const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
+      const { head: dataUidsHead, tail: dataUidsTail } = popFrontUID(dataUids)
+      const uidsToAppend = dataUidsTail ?? dataUidsHead
+      const exoticParent = dataUidsTail == null ? null : dataUidsHead
+      const appendedUIDString = appendToUidString(existingChildUIDs, uidsToAppend)
       const existingParentIDs = child.props?.[UTOPIA_UID_PARENTS_KEY]
       if ((!React.isValidElement(child) as any) || child == null) {
         return child
@@ -226,13 +229,8 @@ const mangleExoticType = Utils.memoize(
         let pathParts: Array<string> = []
         // Added to here in reverse order, attempting to rebuild
         // what the path _should_ be.
-        if (typeof existingChildUIDs === 'string') {
-          const childUIDArray = uidsFromString(existingChildUIDs)
-          pathParts.push(childUIDArray[0]) // TODO Balazs we are arbitrarily picking the first element here
-        }
-        if (typeof dataUids === 'string') {
-          const uidArray = uidsFromString(dataUids)
-          pathParts.push(uidArray[0]) // TODO Balazs we are arbitrarily picking the first element here
+        if (exoticParent != null) {
+          pathParts.push(exoticParent)
         }
         if (typeof parentUid === 'string') {
           pathParts.push(parentUid)
@@ -240,7 +238,6 @@ const mangleExoticType = Utils.memoize(
         if (typeof existingParentIDs === 'string') {
           pathParts.push(existingParentIDs)
         }
-        let [_childUIDNotUsedDeleteME, ...parentParts] = pathParts
 
         // Setup the result.
         let additionalProps: any = {}
@@ -250,8 +247,8 @@ const mangleExoticType = Utils.memoize(
           additionalProps[UTOPIA_UIDS_KEY] = appendedUIDString
           shouldClone = true
         }
-        if (parentParts != null && parentParts.length > 0) {
-          additionalProps[UTOPIA_UID_PARENTS_KEY] = parentParts.reverse().join('/')
+        if (pathParts != null && pathParts.length > 0) {
+          additionalProps[UTOPIA_UID_PARENTS_KEY] = pathParts.reverse().join('/')
           shouldClone = true
         }
         if (shouldClone) {

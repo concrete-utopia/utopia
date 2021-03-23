@@ -20092,8 +20092,8 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\" data-utopia-parents=\\"scene-aaa\\">hello</div>
-    <div data-uid=\\"bbb scene-aaa\\" data-utopia-parents=\\"scene-aaa\\">bello</div>
+    <div data-uid=\\"aaa scene-aaa\\">hello</div>
+    <div data-uid=\\"bbb scene-aaa\\">bello</div>
   </div>
 </div>
 "
@@ -20147,7 +20147,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
-      "data-utopia-parents": "scene-aaa",
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -20245,7 +20244,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb scene-aaa",
-      "data-utopia-parents": "scene-aaa",
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -20326,7 +20324,7 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
     data-uid=\\"ccc\\"
   >
     <div
-      data-uid=\\"bbb aaa ddd\\"
+      data-uid=\\"bbb ddd\\"
       style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
       data-utopia-parents=\\"aaa\\"
     ></div>
@@ -20613,7 +20611,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
-      "data-uid": "bbb aaa ddd",
+      "data-uid": "bbb ddd",
       "data-utopia-parents": "aaa",
       "skipDeepFreeze": true,
       "style": Object {
