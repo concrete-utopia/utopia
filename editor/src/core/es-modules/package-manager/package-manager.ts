@@ -3,6 +3,8 @@ import {
   isEsCodeFile,
   ESCodeFile,
   isEsRemoteDependencyPlaceholder,
+  isTextFile,
+  isParseSuccess,
 } from '../../shared/project-file-types'
 import { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
 import { isResolveSuccess, resolveModule } from './module-resolution'
@@ -14,8 +16,9 @@ import { mapArrayToDictionary } from '../../shared/array-utils'
 import { updateNodeModulesContents } from '../../../components/editor/actions/action-creators'
 import { utopiaApiTypings } from './utopia-api-typings'
 import { resolveBuiltInDependency } from './built-in-dependencies'
-import { ProjectContentTreeRoot } from '../../../components/assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../../components/assets'
 import { applyLoaders } from '../../webpack-loaders/loaders'
+import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
 
@@ -39,6 +42,20 @@ export const getEditorRequireFn = (
   return getRequireFn(onRemoteModuleDownload, projectContents, nodeModules)
 }
 
+function resolveParseSuccess(
+  projectContents: ProjectContentTreeRoot,
+  importOrigin: string,
+  toImport: string,
+): any | null {
+  const absoluteImportedPath = absolutePathFromRelativePath(importOrigin, toImport)
+  const fileLookupResult = getContentsTreeFileFromString(projectContents, absoluteImportedPath)
+  if (isTextFile(fileLookupResult) && isParseSuccess(fileLookupResult.fileContents.parsed)) {
+    // jaj de jo!
+  } else {
+    return null
+  }
+}
+
 export function getRequireFn(
   onRemoteModuleDownload: (moduleDownload: Promise<NodeModules>) => void,
   projectContents: ProjectContentTreeRoot,
@@ -49,6 +66,11 @@ export function getRequireFn(
     const builtInDependency = resolveBuiltInDependency(toImport)
     if (builtInDependency != null) {
       return builtInDependency
+    }
+
+    const resolvedParseSuccess = resolveParseSuccess(projectContents, importOrigin, toImport)
+    if (resolvedParseSuccess != null) {
+      return resolvedParseSuccess
     }
 
     const resolveResult = resolveModule(projectContents, nodeModules, importOrigin, toImport)
