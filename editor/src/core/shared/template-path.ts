@@ -934,11 +934,14 @@ export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath 
   }
 }
 
-// TODO maybe delete me
-export function scenePathContainsElementPath(scene: ScenePath, elementPath: ElementPath): boolean {
-  return scene.sceneElementPaths.some((sceneElementPath) =>
-    elementPathsEqual(sceneElementPath, elementPath),
-  )
+export function scenePathContainsElementPath( // TODO rename me!
+  scene: ScenePath,
+  elementPath: ElementPath,
+): ScenePath | null {
+  const foundIndex = scene.sceneElementPaths.findIndex((sceneElementPath) => {
+    return elementPathsEqual(sceneElementPath, elementPath)
+  })
+  return foundIndex === -1 ? null : scenePath(scene.sceneElementPaths.slice(0, foundIndex + 1))
 }
 
 export function staticScenePathContainsElementPath( // TODO rename me!
