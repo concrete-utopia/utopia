@@ -595,18 +595,18 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
       {projectId == null ? null : (
         <FlexColumn>
           <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-            <span style={{ fontWeight: 700 }}>Project</span>
+            <span style={{ fontWeight: 800 }}>Project</span>
           </GridRow>
           <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-            <span style={{ fontWeight: 700 }}> Name </span>
+            <span style={{ fontWeight: 400 }}> Name </span>
             <StringInput testId='' value={projectName} />
           </GridRow>
           <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-            <span style={{ fontWeight: 700 }}> Description </span>
+            <span style={{ fontWeight: 400 }}> Description </span>
             <StringInput testId='' value={projectName} />
           </GridRow>
           <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-            <span style={{ fontWeight: 700 }}> Preview </span>
+            <span style={{ fontWeight: 400 }}> Preview </span>
             <FlexColumn>
               <ThumbnailComponentStripped
                 projectId={projectId}
