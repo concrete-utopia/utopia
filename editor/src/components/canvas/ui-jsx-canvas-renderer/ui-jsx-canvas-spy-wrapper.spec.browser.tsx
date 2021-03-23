@@ -10,9 +10,10 @@ import {
 import { canvasPoint, point } from '../../../core/shared/math-utils'
 import { objectMap } from '../../../core/shared/object-utils'
 import * as TP from '../../../core/shared/template-path'
+import { defaultProjectContentsForNormalising } from '../../custom-code/code-file.test-utils'
 import { setFocusedElement } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
-import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
+import { renderTestEditorWithCode, renderTestEditorWithProjectContent } from '../ui-jsx.test-utils'
 
 const exampleProject = `/** @jsx jsx */
 import * as React from "react";
@@ -773,6 +774,195 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene:app-root/inner-div/card-instance:button-instance/hi-element~~~3": Object {
           "children": Array [],
           "name": "HiElement",
+        },
+      }
+    `)
+  })
+})
+
+xdescribe('Spy Wrapper Multifile Template Path Tests', () => {
+  it('the Card instance is focused inside the main App component', async () => {
+    const { dispatch, getEditorState } = await renderTestEditorWithProjectContent(
+      defaultProjectContentsForNormalising(),
+    )
+    await dispatch(
+      [
+        setFocusedElement(
+          TP.scenePath([
+            ['storyboard-entity', 'scene-1-entity'],
+            ['app-outer-div', 'card-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+
+    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
+
+    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
+
+    const finalMetadata = getEditorState().editor.jsxMetadataKILLME
+    const sanitizedFinalMetadata = extractTemplatePathStuffFromElementInstanceMetadata(
+      finalMetadata,
+    )
+
+    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard-entity": Object {
+          "children": Array [
+            ":storyboard-entity/scene-1-entity",
+            ":storyboard-entity/scene-2-entity",
+          ],
+          "name": "Storyboard",
+        },
+        ":storyboard-entity/scene-1-entity": Object {
+          "children": Array [],
+          "name": "Scene",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div": Object {
+          "children": Array [
+            "storyboard-entity/scene-1-entity:app-outer-div/card-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance": Object {
+          "children": Array [],
+          "name": "Card",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div": Object {
+          "children": Array [
+            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div",
+            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle"
+          ],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
+          "children": Array [],
+          "name": "Rectangle",
+        },
+        ":storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-2-entity:same-file-app-div",
+          ],
+          "name": "Scene",
+        },
+        "storyboard-entity/scene-2-entity:same-file-app-div": Object {
+          "children": Array [],
+          "name": "div",
+        },
+      }
+    `)
+
+    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard-entity": Object {
+          "children": Array [
+            ":storyboard-entity/scene-1-entity",
+            ":storyboard-entity/scene-2-entity"
+          ],
+          "name": "div",
+        },
+        ":storyboard-entity/scene-1-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-1-entity:app-outer-div"
+          ],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div": Object {
+          "children": Array [
+            "storyboard-entity/scene-1-entity:app-outer-div/card-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div": Object {
+          "children": Array [
+            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div",
+            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle"
+          ],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        ":storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-2-entity:same-file-app-div",
+          ],
+          "name": "div",
+        },
+        "storyboard-entity/scene-2-entity:same-file-app-div": Object {
+          "children": Array [],
+          "name": "div",
+        },
+      }
+    `)
+
+    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard-entity": Object {
+          "children": Array [
+            ":storyboard-entity/scene-1-entity",
+            ":storyboard-entity/scene-2-entity"
+          ],
+          "name": "Storyboard",
+        },
+        ":storyboard-entity/scene-1-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-1-entity:app-outer-div"
+          ],
+          "name": "Scene",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div": Object {
+          "children": Array [
+            "storyboard-entity/scene-1-entity:app-outer-div/card-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance": Object {
+          "children": Array [],
+          "name": "Card",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div": Object {
+          "children": Array [
+            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div",
+            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle"
+          ],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div": Object {
+          "children": Array [],
+          "name": "div",
+        },
+        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
+          "children": Array [],
+          "name": "Rectangle",
+        },
+        ":storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-2-entity:same-file-app-div",
+          ],
+          "name": "Scene",
+        },
+        "storyboard-entity/scene-2-entity:same-file-app-div": Object {
+          "children": Array [],
+          "name": "div",
         },
       }
     `)
