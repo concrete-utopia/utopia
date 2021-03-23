@@ -42,11 +42,12 @@ export const H3 = styled(FlexRow)([
   },
 ])
 
-export const Subdued = styled(FlexRow)([
+export const Subdued = styled.span([
   disabledOpacityStyle,
   {
-    color: colorTheme.verySubduedForeground.value,
+    color: colorTheme.subduedForeground.value,
     letterSpacing: '0.1px',
+    lineHeight: '17px',
   },
 ])
 
