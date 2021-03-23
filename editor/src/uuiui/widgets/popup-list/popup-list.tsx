@@ -14,6 +14,7 @@ import Select, {
   SingleValueProps,
   ValueType,
 } from 'react-select'
+import { IndicatorProps } from 'react-select/src/components/indicators'
 import { MenuPortalProps } from 'react-select/src/components/Menu'
 import { styleFn } from 'react-select/src/styles'
 import { Icn, IcnProps, IcnSpacer } from '../../icn'
@@ -27,6 +28,7 @@ import {
   getControlStyles,
   SelectOption,
 } from '../../../uuiui-deps'
+import { Icons, SmallerIcons } from '../../../uuiui/icons'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -38,6 +40,7 @@ interface PopupListProps {
   style?: React.CSSProperties
   containerMode?: ContainerMode
   controlStyles?: ControlStyles
+  autoFocus?: boolean
   disabled?: boolean
   icon?: IcnProps
 }
@@ -93,7 +96,7 @@ const Option = (props: OptionProps<SelectOption>) => {
         {props.isSelected ? '✓' : ''}
       </FlexRow>
       {props.data.icon == null ? <IcnSpacer /> : <Icn {...props.data.icon} />}
-      {props.children}
+      <span style={{ paddingLeft: 8 }}>{props.children}</span>
     </FlexRow>
   )
 }
@@ -292,7 +295,7 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
           top: scrollTop,
         })
       }
-      setPopupHeight(menuHeight)
+      setPopupHeight(menuHeight + 20)
       setPopupTop(menuTop)
       setPopupLeft(referenceRect.left)
       setCroppedTop(isCroppedTop)
@@ -321,7 +324,7 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
           minWidth: 150,
           maxWidth: 250,
           boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 4px 11px',
-          zIndex: 1,
+          zIndex: 999999,
           boxSizing: 'border-box',
           borderRadius: UtopiaTheme.inputBorderRadius,
           position: 'absolute',
@@ -388,15 +391,23 @@ const MenuList = (props: MenuListComponentProps<SelectOption>) => {
   return <components.MenuList {...props} innerRef={ref} />
 }
 
-const DropdownIndicator = () => {
-  return <Icn category='controls/dropdown' type='carats' color='gray' width={11} height={11} />
+const DropdownIndicator: React.FunctionComponent<IndicatorProps<SelectOption>> = (
+  indicatorProps,
+) => {
+  return (
+    components.DropdownIndicator && (
+      <components.DropdownIndicator {...indicatorProps}>
+        <SmallerIcons.ExpansionArrowDown />
+      </components.DropdownIndicator>
+    )
+  )
 }
 
 const SingleValue = (props: SingleValueProps<SelectOption>) => {
   return (
     <components.SingleValue {...props}>
       {props.data.icon == null ? null : <Icn {...props.data.icon} />}
-      {props.children}
+      <span style={{ paddingLeft: 4 }}>{props.children}</span>
     </components.SingleValue>
   )
 }
@@ -532,8 +543,9 @@ export const PopupList = betterReactMemo<PopupListProps>(
           MenuPortal,
           DropdownIndicator,
           SingleValue,
-          Input,
         }}
+        openMenuOnFocus={true}
+        openMenuOnClick={true}
         value={value}
         onChange={selectOnSubmitValue}
         options={options}
@@ -544,13 +556,24 @@ export const PopupList = betterReactMemo<PopupListProps>(
           container,
           indicatorsContainer: (base) => ({
             ...base,
-            width: 11,
-            height: OptionHeight,
+            width: 14,
+            flexBasis: 14,
+            background: UtopiaTheme.color.inputBackground.shade(102).value,
+            // the control is on top of the input not inside it, so need to make space for input borders
+            height: OptionHeight - 2,
+            marginRight: 1,
+            marginTop: 1,
             padding: 0,
-            marginRight: 6,
+            display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
+            '&:hover': {
+              filter: 'brightness(.98)',
+            },
+            '&:active': {
+              filter: 'brightness(.95)',
+            },
           }),
           control: () => ({
             minHeight: OptionHeight,

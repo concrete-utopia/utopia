@@ -19,7 +19,6 @@ import {
   jsxAttributeValue,
   JSXElement,
   JSXElementName,
-  DetectedLayoutSystem,
   SpecialSizeMeasurements,
   emptySpecialSizeMeasurements,
   ComputedStyle,
@@ -62,15 +61,11 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { useEditorState } from '../editor/store/store-hook'
 import { CSSPosition } from './common/css-utils'
 import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
-import { ElementPathElement } from './sections/header-section/element-path'
-import { HeaderSection, HeaderSectionCoreProps } from './sections/header-section/header-section'
-import { LayoutWrapperCoreProps } from './sections/header-section/layout-wrapper-section'
-import { NameRowProps } from './sections/header-section/name-row'
 import {
   CSSTarget,
   cssTarget,
@@ -87,7 +82,6 @@ import {
   TargetSelectorSection,
   TargetSelectorSectionProps,
 } from './sections/target-selector-section'
-import { addStyleSheetToPage } from '../../core/shared/dom-utils'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import { arrayEquals } from '../../core/shared/utils'
 import {
@@ -97,6 +91,7 @@ import {
 } from '../../utils/react-performance'
 import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
+import { getElementsToTarget } from './common/inspector-utils'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -109,17 +104,20 @@ export interface InspectorModel {
   specialSizeMeasurements: SpecialSizeMeasurements
 }
 
+export interface ElementPathElement {
+  name?: string
+  path: TemplatePath
+}
+
 export interface InspectorPartProps<T> {
   input: T
   onSubmitValue: (output: T, paths: Array<PropertyPath>) => void
 }
 export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
-    HeaderSectionCoreProps,
-    TargetSelectorSectionProps,
-    LayoutWrapperCoreProps,
-    NameRowProps {
+    TargetSelectorSectionProps {
   selectedViews: Array<TemplatePath>
+  elementPath: Array<ElementPathElement>
 }
 
 interface AlignDistributeButtonProps {
@@ -405,16 +403,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
           <EventHandlersSection />
-          <HeaderSection
-            elementPath={props.elementPath}
-            onSelect={props.onSelect}
-            label={props.input.label}
-            type={props.input.type}
-            onElementTypeChange={props.onElementTypeChange}
-            onWrap={props.onWrap}
-            onUnwrap={props.onUnwrap}
-            value={props.input.layoutWrapper}
-          />
         </React.Fragment>
       )
     }
@@ -435,17 +423,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
   )
 })
 Inspector.displayName = 'Inspector'
-
-function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
-  let result: Array<InstancePath> = []
-  Utils.fastForEach(paths, (path) => {
-    // TODO Scene Implementation
-    if (!TP.isScenePath(path) && !TP.containsPath(path, result)) {
-      result.push(path)
-    }
-  })
-  return result
-}
 
 const DefaultStyleTargets: Array<CSSTarget> = [cssTarget(['style'], 0), cssTarget(['css'], 0)]
 
@@ -687,11 +664,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     [dispatch, refElementsToTargetForUpdates],
   )
 
-  const onSelect = React.useCallback(
-    (path) => dispatch([selectComponents([path], false)], 'everyone'),
-    [dispatch],
-  )
-
   const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
     targetsReferentiallyStable[0].path,
   )
@@ -759,16 +731,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     dispatch(actions, 'everyone')
   }, [dispatch, refElementsToTargetForUpdates])
 
-  const onElementTypeChange = React.useCallback(
-    (newElementName: JSXElementName, importsToAdd: Imports) => {
-      const actions = refElementsToTargetForUpdates.current.flatMap((path) => {
-        return EditorActions.updateJSXElementName(path, newElementName, importsToAdd)
-      })
-      dispatch(actions, 'everyone')
-    },
-    [dispatch, refElementsToTargetForUpdates],
-  )
-
   const inspector = isUIJSFile ? (
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
@@ -778,11 +740,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
         elementPath={elementPath}
-        onSelect={onSelect}
         onSelectTarget={onSelectTarget}
-        onWrap={onWrap}
-        onUnwrap={onUnwrap}
-        onElementTypeChange={onElementTypeChange}
         onStyleSelectorRename={onStyleSelectorRename}
         onStyleSelectorDelete={onStyleSelectorDelete}
         onStyleSelectorInsert={onStyleSelectorInsert}
