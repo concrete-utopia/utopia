@@ -1,7 +1,7 @@
 import { act, fireEvent } from '@testing-library/react'
 import * as TP from '../../../../core/shared/template-path'
 import { setElectronWindow } from '../../../../core/shared/test-setup.test-utils'
-import { wait } from '../../../../utils/test-utils'
+import { wait } from '../../../../utils/utils.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 

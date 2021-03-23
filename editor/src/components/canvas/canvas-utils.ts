@@ -2500,7 +2500,7 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
 
 export function cullSpyCollector(
   spyCollector: UiJsxCanvasContextData,
-  domMetadata: Array<ElementInstanceMetadata>,
+  domMetadata: ReadonlyArray<ElementInstanceMetadata>,
 ): void {
   // Note: Mutates `spyCollector`.
   // Collate all the valid paths.

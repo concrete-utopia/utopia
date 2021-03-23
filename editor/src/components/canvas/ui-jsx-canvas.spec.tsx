@@ -1138,7 +1138,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           \\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div data-uid=\\"aaa\\">hello</div>
+          <div data-uid=\\"ccc aaa scene-aaa\\">hello</div>
         </div>
       </div>
       "
@@ -1157,6 +1157,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         render() {
           return this.props.children('huha')
         }
+      }
+
+      export const ParsedComponentToBreakUpArbitraryBlocks = (props) => {
+        return <div />
       }
 
       export function getPicker() {
@@ -1228,7 +1232,13 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           \\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div id=\\"nasty-div\\" data-uid=\\"aaa\\">huha huha</div>
+          <div
+            id=\\"nasty-div\\"
+            data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa scene-aaa\\"
+            data-utopia-original-uid=\\"2a7\\"
+          >
+            huhahuha
+          </div>
         </div>
       </div>
       "
@@ -1295,7 +1305,7 @@ export var storyboard = (
         >
           <div
             style=\\"left: 0; top: 0; right: 0; bottom: 0; background-color: #ffffff;\\"
-            data-uid=\\"aaa\\"
+            data-uid=\\"aaa scene\\"
           >
             <div
               class=\\"ant-picker\\"
@@ -1444,8 +1454,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('renders a component with a fragment at the root', () => {
     testCanvasRender(
       null,
-      `import * as React from 'react'
+      `/** @jsx jsx */
+import * as React from 'react'
 import { Scene, Storyboard, View, jsx } from 'utopia-api'
+
 export var Cat = (props) => {
   return (
     <React.Fragment>
@@ -1454,6 +1466,7 @@ export var Cat = (props) => {
     </React.Fragment>
   )
 }
+
 export var storyboard = (
   <Storyboard data-uid={'${BakedInStoryboardUID}'} >
     <Scene

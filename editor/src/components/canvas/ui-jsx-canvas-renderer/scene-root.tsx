@@ -31,7 +31,8 @@ import { jsxAttributesToProps } from '../../../core/shared/jsx-attributes'
 import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
-import { UTOPIA_SCENE_PATH } from '../../../core/model/utopia-constants'
+import { UTOPIA_SCENE_PATH, UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
+import { optionalMap } from '../../../core/shared/optional-utils'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -97,7 +98,12 @@ function useGetValidTemplatePaths(
 ): Array<InstancePath> {
   const topLevelElements = useContextSelector(RerenderUtopiaContext, (c) => c.topLevelElements)
   const focusedElementPath = useContextSelector(RerenderUtopiaContext, (c) => c.focusedElementPath)
-  return getValidTemplatePaths(topLevelElements, focusedElementPath, topLevelElementName, scenePath)
+  return getValidTemplatePaths(
+    topLevelElements,
+    focusedElementPath,
+    topLevelElementName,
+    TP.dynamicPathToStaticPath(scenePath),
+  )
 }
 
 interface SceneRootRendererProps {
@@ -135,6 +141,7 @@ export const SceneRootRenderer = betterReactMemo(
     const propsWithScenePath = {
       ...sceneProps.props,
       [UTOPIA_SCENE_PATH]: scenePath,
+      [UTOPIA_UIDS_KEY]: uid,
     }
 
     const rootElement =

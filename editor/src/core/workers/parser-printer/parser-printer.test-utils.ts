@@ -563,7 +563,7 @@ export function jsxElementChildArbitrary(): Arbitrary<JSXElementChild> {
 }
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
-  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null))
+  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null, {}))
 }
 
 export function arbitraryComments(): Arbitrary<ParsedComments> {

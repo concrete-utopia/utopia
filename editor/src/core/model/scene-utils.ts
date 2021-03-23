@@ -40,7 +40,7 @@ import {
 } from '../shared/jsx-attributes'
 import { stripNulls } from '../shared/array-utils'
 import { isPercentPin } from 'utopia-api'
-import { UTOPIA_UID_KEY } from './utopia-constants'
+import { UTOPIA_UIDS_KEY } from './utopia-constants'
 import { getUtopiaID } from './element-template-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
@@ -150,7 +150,7 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
       [componentImportedAs],
       null,
     ),
-    [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
+    [UTOPIA_UIDS_KEY]: jsxAttributeValue(uid, emptyComments),
     props: jsxAttributeValue({}, emptyComments),
     style: jsxAttributeValue(
       {
@@ -168,7 +168,7 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
 
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
   const storyboardProps = jsxAttributesFromMap({
-    [UTOPIA_UID_KEY]: jsxAttributeValue(uid, emptyComments),
+    [UTOPIA_UIDS_KEY]: jsxAttributeValue(uid, emptyComments),
   })
   return jsxElement('Storyboard', storyboardProps, scenes)
 }
@@ -329,7 +329,7 @@ export function getStoryboardTemplatePath(
   )
   if (possiblyStoryboard != null) {
     const uid = getUtopiaID(possiblyStoryboard.rootElement)
-    return TP.staticInstancePath(EmptyScenePathForStoryboard, [uid])
+    return TP.staticInstancePath(EmptyScenePathForStoryboard, TP.staticElementPath([uid]))
   }
   return null
 }

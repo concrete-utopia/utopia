@@ -5,6 +5,7 @@ applyUIDMonkeyPatch()
 import * as ReactDOMServer from 'react-dom/server'
 import * as Prettier from 'prettier'
 import { DatePicker } from 'antd'
+import { BakedInStoryboardUID } from '../core/model/scene-utils'
 
 function renderToFormattedString(element: React.ReactElement) {
   const renderResult = ReactDOMServer.renderToStaticMarkup(element)
@@ -41,7 +42,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">
+      "<div data-uid=\\"cica test1\\">
         <div data-uid=\\"kutya\\">Hello!</div>
         <div data-uid=\\"majom\\">Hello!</div>
       </div>
@@ -159,7 +160,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-uid=\\"cica test1\\">Hello!</div>
       "
     `)
   })
@@ -199,7 +200,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestComponent data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\"><div>Hello!</div></div>
+      "<div data-uid=\\"cica test1\\"><div>Hello!</div></div>
       "
     `)
   })
@@ -275,7 +276,7 @@ describe('Monkey Function', () => {
     }
 
     expect(renderToFormattedString(<TestClass data-uid={'test1'} />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"test1\\">Hello!</div>
+      "<div data-uid=\\"cica test1\\">Hello!</div>
       "
     `)
   })
@@ -375,7 +376,7 @@ describe('Monkey Function', () => {
         </Storyboard>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene\\"><div data-uid=\\"cica\\">Hello!</div></div>
+      "<div data-uid=\\"scene ignore\\"><div data-uid=\\"cica\\">Hello!</div></div>
       "
     `)
   })
@@ -521,7 +522,7 @@ describe('Monkey Function', () => {
       )
     }
     expect(renderToFormattedString(<App data-uid='cica' />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\">
+      "<div data-uid=\\"zzz cica\\">
         <div data-uid=\\"aaa\\">
           <div data-uid=\\"bbb\\">4</div>
           <div data-uid=\\"bbb\\">5</div>
@@ -547,7 +548,7 @@ describe('Monkey Function', () => {
       return <div data-uid='zzz'>{[' ']}hello!</div>
     }
     expect(renderToFormattedString(<App data-uid='cica' />)).toMatchInlineSnapshot(`
-      "<div data-uid=\\"cica\\">hello!</div>
+      "<div data-uid=\\"zzz cica\\">hello!</div>
       "
     `)
   })
@@ -565,7 +566,7 @@ describe('Monkey Function', () => {
       )
     }
     var storyboard = (
-      <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+      <Storyboard data-uid={BakedInStoryboardUID}>
         <Scene
           style={{ left: 0, top: 0, width: 400, height: 400 }}
           component={App}
@@ -575,10 +576,13 @@ describe('Monkey Function', () => {
       </Storyboard>
     )
     expect(renderToFormattedString(storyboard)).toMatchInlineSnapshot(`
-      "<div style=\\"left: 0; top: 0; width: 400px; height: 400px;\\" data-uid=\\"scene-aaa\\">
+      "<div
+        style=\\"left: 0; top: 0; width: 400px; height: 400px;\\"
+        data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+      >
         <div data-uid=\\"zzz\\">
-          <div data-uid=\\"aaa\\">Hello World!!</div>
-          <div data-uid=\\"bbb\\">Hello Dolly!!</div>
+          <div data-uid=\\"ccc aaa\\">Hello World!!</div>
+          <div data-uid=\\"ddd bbb\\">Hello Dolly!!</div>
         </div>
       </div>
       "

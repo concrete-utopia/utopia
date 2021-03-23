@@ -3633,7 +3633,7 @@ export const UPDATE_FNS = {
 
     const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality())(
       editor.domMetadataKILLME,
-      action.elementMetadata,
+      action.elementMetadata as Array<ElementInstanceMetadata>, // we convert a ReadonlyArray to a regular array – it'd be nice to make more arrays readonly in the future
     ).value
     const finalSpyMetadata = JSXMetadataKeepDeepEquality()(editor.spyMetadataKILLME, spyResult)
       .value
@@ -4196,6 +4196,10 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       focusedElementPath: action.focusedElementPath,
+      canvas: {
+        ...editor.canvas,
+        mountCount: editor.canvas.mountCount + 1,
+      },
     }
   },
 }

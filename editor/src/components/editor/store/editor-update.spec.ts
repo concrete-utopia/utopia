@@ -22,7 +22,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
-import { createEditorStates, createFakeMetadataForEditor } from '../../../utils/test-utils'
+import { createEditorStates, createFakeMetadataForEditor } from '../../../utils/utils.test-utils'
 import Utils from '../../../utils/utils'
 import { renameComponent, reparentComponents } from '../../navigator/actions'
 import * as TP from '../../../core/shared/template-path'
@@ -60,13 +60,14 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
-} from '../../../core/model/test-ui-js-file'
+} from '../../../core/model/test-ui-js-file.test-utils'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
 import { getContentsTreeFileFromString } from '../../assets'
 import { forceParseSuccessFromFileOrFail } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { notice } from '../../common/notice'
+import { testStaticInstancePath } from '../../../core/shared/template-path.test-utils'
 
 const chaiExpect = Chai.expect
 
@@ -473,8 +474,8 @@ describe('action DELETE_VIEWS', () => {
       parseSuccess.topLevelElements,
     ).length
 
-    const firstTargetElementPath = TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb'])
-    const secondTargetElementPath = TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'iii'])
+    const firstTargetElementPath = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb'])
+    const secondTargetElementPath = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'iii'])
     const targetScenePath = ScenePath1ForTestUiJsFile
     const deleteAction = deleteViews([
       firstTargetElementPath,
@@ -570,15 +571,15 @@ describe('INSERT_JSX_ELEMENT', () => {
   }
 
   it('inserts an element', () => {
-    testInsertionToParent(TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa']))
-    testInsertionToParent(TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']))
-    testInsertionToParent(TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd', 'eee']))
+    testInsertionToParent(testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa']))
+    testInsertionToParent(testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']))
+    testInsertionToParent(testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd', 'eee']))
   })
 
   it('fails to insert to nonexistent parent', () => {
     expect(() => {
       testInsertionToParent(
-        TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'i-dont-exist']),
+        testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'i-dont-exist']),
       )
     }).toThrow()
   })
@@ -614,7 +615,7 @@ describe('INSERT_JSX_ELEMENT', () => {
     const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
     const insertedElement = findJSXElementChildAtPath(
       updatedComponents,
-      TP.staticInstancePath(ScenePathForTestUiJsFile, ['TestView']),
+      testStaticInstancePath(ScenePathForTestUiJsFile, ['TestView']),
     )
     expect(updatedComponents.length).toEqual(componentsBeforeInsert.length + 1)
     expect(insertedElement).toBeDefined()
@@ -656,7 +657,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
 describe('action UPDATE_FRAME_DIMENSIONS', () => {
   it('updates text element frame dimension', () => {
     const { editor, derivedState, dispatch } = createEditorStates()
-    const targetText = TP.staticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'hhh'])
+    const targetText = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'hhh'])
     const newWidth = 300
     const newHeight = 400
     const updateFrameDimensionsAction = updateFrameDimensions(targetText, newWidth, newHeight)

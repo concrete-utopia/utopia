@@ -95,8 +95,8 @@ import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
 import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
-import { UTOPIA_ORIGINAL_ID_KEY, UTOPIA_UID_KEY } from './utopia-constants'
-import { extractOriginalUidFromIndexedUid } from '../shared/uid-utils'
+import { UTOPIA_UIDS_KEY } from './utopia-constants'
+import { extractOriginalUidFromIndexedUid, uidsFromString } from '../shared/uid-utils'
 import { forEachValue, omit } from '../shared/object-utils'
 const ObjectPathImmutable: any = OPI
 
@@ -399,14 +399,8 @@ export const MetadataUtils = {
       return null
     }
   },
-  getFlexDirection: function (
-    instance: ElementInstanceMetadata | null,
-  ): 'row' | 'row-reverse' | 'column' | 'column-reverse' {
-    if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
-      return FlexLayoutHelpers.getFlexDirectionFromProps(instance.element.value.props)
-    } else {
-      return 'row' // TODO read this value from spy
-    }
+  getFlexDirection: function (instance: ElementInstanceMetadata | null): string {
+    return instance?.specialSizeMeasurements?.flexDirection ?? 'row'
   },
   getFlexWrap: function (
     instance: ElementInstanceMetadata | null,
@@ -460,10 +454,10 @@ export const MetadataUtils = {
     }
   },
   templatePathToStaticTemplatePath(path: TemplatePath | null): StaticTemplatePath | null {
-    if (path == null || TP.isScenePath(path)) {
+    if (path == null) {
       return path
     } else {
-      return this.dynamicPathToStaticPath(path)
+      return TP.dynamicPathToStaticPath(path)
     }
   },
   dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
@@ -787,7 +781,10 @@ export const MetadataUtils = {
   createOrderedTemplatePathsFromElements(
     metadata: JSXMetadata,
     collapsedViews: Array<TemplatePath>,
+    focusedElementPath: ScenePath | null,
   ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
+    const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
+
     let navigatorTargets: Array<TemplatePath> = []
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
@@ -800,6 +797,23 @@ export const MetadataUtils = {
       if (!collapsedAncestor) {
         visibleNavigatorTargets.push(path)
       }
+
+      const matchingFocusPath =
+        focusedElementPath == null
+          ? null
+          : TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
+      const focusedRootElementPaths =
+        matchingFocusPath == null
+          ? []
+          : allPaths.filter(
+              (p) =>
+                TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
+                TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
+            )
+      fastForEach(focusedRootElementPaths, (focusedRootElement) => {
+        walkAndAddKeys(focusedRootElement, collapsedAncestor || isCollapsed)
+      })
+
       fastForEach(reversedChildren, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
       })
@@ -1139,13 +1153,12 @@ export const MetadataUtils = {
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
-
-        const possibleUID: string | null | undefined = Utils.defaultIfNull(
-          spyElem.props[UTOPIA_UID_KEY],
-          spyElem.props[UTOPIA_ORIGINAL_ID_KEY],
-        )
-        if (possibleUID != null) {
-          const possibleElement = elementsByUID[possibleUID]
+        if (isLeft(spyElem.element) && spyElem.element.value === 'Scene') {
+          // We have some weird special casing for Scenes (see https://github.com/concrete-utopia/utopia/pull/671)
+          jsxElement = spyElem.element
+        } else {
+          const elemUID: string | null = TP.toStaticUid(domElem.templatePath)
+          const possibleElement = elementsByUID[elemUID]
           if (possibleElement != null) {
             if (!isIntrinsicElement(possibleElement.name)) {
               componentInstance = true
@@ -1154,16 +1167,10 @@ export const MetadataUtils = {
           }
         }
 
-        // This is quite frankly awful
-        const elementToUse =
-          isLeft(spyElem.element) && spyElem.element.value === 'Scene'
-            ? spyElem.element
-            : jsxElement
-
         const elem: ElementInstanceMetadata = {
           ...domElem,
           props: spyElem.props,
-          element: elementToUse,
+          element: jsxElement,
           children: children,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
@@ -1427,7 +1434,7 @@ export const MetadataUtils = {
   },
   findElementMetadata(
     target: TemplatePath,
-    elements: Array<ElementInstanceMetadata>,
+    elements: ReadonlyArray<ElementInstanceMetadata>,
   ): ElementInstanceMetadata | null {
     const pathToUse = TP.isScenePath(target) ? TP.instancePathForElementAtScenePath(target) : target
     return elements.find((elem) => TP.pathsEqual(pathToUse, elem.templatePath)) ?? null
@@ -1496,6 +1503,44 @@ export const MetadataUtils = {
         : null
       withEachElement(elem, parent)
     })
+  },
+  findContainingBlock(
+    elementMap: ElementInstanceMetadataMap,
+    path: TemplatePath,
+  ): TemplatePath | null {
+    const specialSizeMeasurements = TP.isInstancePath(path)
+      ? this.getElementByInstancePathMaybe(elementMap, path)?.specialSizeMeasurements
+      : null
+    const parentPath = TP.parentPath(path)
+    if (parentPath == null || specialSizeMeasurements == null) {
+      return null
+    }
+    if (specialSizeMeasurements.immediateParentProvidesLayout) {
+      return parentPath
+    } else {
+      return this.findContainingBlock(elementMap, parentPath)
+    }
+  },
+  findNearestAncestorFlexDirectionChange(
+    elementMap: ElementInstanceMetadataMap,
+    path: TemplatePath,
+  ): TemplatePath | null {
+    const parentPath = TP.parentPath(path)
+    const specialSizeMeasurements = TP.isInstancePath(path)
+      ? this.getElementByInstancePathMaybe(elementMap, path)?.specialSizeMeasurements
+      : null
+    const parentSizeMeasurements =
+      parentPath != null && TP.isInstancePath(parentPath)
+        ? this.getElementByInstancePathMaybe(elementMap, parentPath)?.specialSizeMeasurements
+        : null
+    if (parentPath == null || specialSizeMeasurements == null || parentSizeMeasurements == null) {
+      return null
+    }
+    if (specialSizeMeasurements.flexDirection !== parentSizeMeasurements.flexDirection) {
+      return parentPath
+    } else {
+      return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
+    }
   },
 }
 

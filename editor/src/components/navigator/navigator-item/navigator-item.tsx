@@ -2,7 +2,7 @@
 import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { JSXElementName } from '../../../core/shared/element-template'
-import { ElementOriginType, TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementOriginType, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'
@@ -21,6 +21,8 @@ import {
 } from '../../../utils/react-performance'
 import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../../uuiui'
 import { LayoutIcon } from './layout-icon'
+import { useEditorState } from '../../editor/store/store-hook'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -36,7 +38,7 @@ export function getElementPadding(templatePath: TemplatePath): number {
     EmptyScenePathForStoryboard,
   )
   const depthOffset = extraDepthRemoval ? 2 : 0
-  return (TP.depth(templatePath) - 1 - depthOffset) * BasePaddingUnit
+  return (TP.navigatorDepth(templatePath) - 1 - depthOffset) * BasePaddingUnit
 }
 
 export interface NavigatorItemInnerProps {
@@ -120,6 +122,127 @@ const dynamicSelected: ComputedLook = {
   iconColor: 'white',
 }
 
+const componentUnselected: ComputedLook = {
+  style: {
+    background: colorTheme.emphasizedBackground.value,
+    color: colorTheme.neutralForeground.value,
+  },
+  iconColor: 'orange',
+}
+const componentSelected: ComputedLook = {
+  style: {
+    background: colorTheme.navigatorComponentSelected.value,
+    color: colorTheme.neutralForeground.value,
+  },
+  iconColor: 'orange',
+}
+
+const computeResultingStyle = (
+  selected: boolean,
+  isInsideComponent: boolean,
+  isDynamic: boolean,
+  isScene: boolean,
+  fullyVisible: boolean,
+  isFocusedComponent: boolean,
+) => {
+  let result = defaultUnselected
+  if (selected) {
+    if (isInsideComponent) {
+      result = componentSelected
+    } else if (isDynamic) {
+      result = dynamicSelected
+    } else {
+      result = defaultSelected
+    }
+  } else {
+    // unselected
+    if (isInsideComponent) {
+      result = componentUnselected
+    } else if (isDynamic) {
+      result = dynamicUnselected
+    } else {
+      result = defaultUnselected
+    }
+  }
+
+  let boxShadow: string | undefined = undefined
+  if (isScene) {
+    boxShadow = `inset 0 -1px ${colorTheme.inputBorder.value}`
+  } else if (isFocusedComponent) {
+    boxShadow = `inset 0 1px ${colorTheme.inputBorder.value}`
+  }
+
+  // additional style
+  result.style = {
+    ...result.style,
+    fontWeight: isScene ? 500 : 'inherit',
+    opacity: fullyVisible ? 1 : 0.5,
+    boxShadow: boxShadow,
+  }
+
+  return result
+}
+
+function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
+  if (focusedElementPath == null || TP.isScenePath(path)) {
+    return false
+  } else {
+    return (
+      TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path)) != null
+    )
+  }
+}
+
+function useStyleFullyVisible(path: TemplatePath): boolean {
+  return useEditorState((store) => {
+    const metadata = store.editor.jsxMetadataKILLME
+    const selectedViews = store.editor.selectedViews
+    const isSelected = selectedViews.some((selected) => TP.pathsEqual(path, selected))
+    const isParentOfSelected = selectedViews.some((selected) =>
+      TP.pathsEqual(path, TP.parentPath(selected)),
+    )
+    const isScenePath = TP.isScenePath(path)
+
+    const isContainingBlockAncestor = selectedViews.some((selected) => {
+      return TP.pathsEqual(MetadataUtils.findContainingBlock(metadata.elements, selected), path)
+    })
+
+    const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
+      const selectedSizeMeasurements = TP.isInstancePath(selected)
+        ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, selected)
+            ?.specialSizeMeasurements
+        : null
+      const parentPath = TP.parentPath(selected)
+      if (
+        selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
+        !isParentOfSelected &&
+        TP.isAncestorOf(selected, path) &&
+        parentPath != null
+      ) {
+        const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
+          metadata.elements,
+          parentPath,
+        )
+        return TP.pathsEqual(flexDirectionChange, path)
+      } else {
+        return false
+      }
+    })
+
+    let isInsideFocusedComponent =
+      isFocused(store.editor.focusedElementPath, path) || TP.isInsideFocusedComponent(path)
+
+    return (
+      isScenePath ||
+      isSelected ||
+      isParentOfSelected ||
+      isContainingBlockAncestor ||
+      isFlexAncestorDirectionChange ||
+      isInsideFocusedComponent
+    )
+  }, 'NavigatorItem useStyleFullyVisible')
+}
+
 export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = betterReactMemo(
   'NavigatorItem',
   (props) => {
@@ -139,6 +262,10 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     } = props
 
     const domElementRef = useScrollToThisIfSelected(selected)
+    const isFocusedComponent = useEditorState(
+      (store) => isFocused(store.editor.focusedElementPath, templatePath),
+      'NavigatorItem isFocusedComponent',
+    )
 
     const childComponentCount = props.noOfChildren
 
@@ -146,32 +273,17 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       elementOriginType === 'unknown-element' ||
       elementOriginType === 'generated-static-definition-present'
 
-    const isScene = TP.isScenePath(templatePath)
+    const isInsideComponent = TP.isInsideFocusedComponent(templatePath) || isFocusedComponent
+    const fullyVisible = useStyleFullyVisible(templatePath)
 
-    const computeResultingStyle = () => {
-      let result = defaultUnselected
-      if (selected) {
-        if (isDynamic) {
-          result = dynamicSelected
-        } else {
-          result = defaultSelected
-        }
-      } else {
-        // unselected
-        if (isDynamic) {
-          result = dynamicUnselected
-        } else {
-          result = defaultUnselected
-        }
-      }
-
-      // additional style for scenes
-      result.style = { ...result.style, fontWeight: isScene ? 500 : 'inherit' }
-
-      return result
-    }
-
-    const resultingStyle = computeResultingStyle()
+    const resultingStyle = computeResultingStyle(
+      selected,
+      isInsideComponent,
+      isDynamic,
+      TP.isScenePath(templatePath),
+      fullyVisible,
+      isFocusedComponent,
+    )
 
     let warningText: string | null = null
     if (elementWarnings.dynamicSceneChildWidthHeightPercentage) {
@@ -182,14 +294,6 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       warningText = 'Element is trying to be position absolutely with an unconfigured parent'
     }
 
-    const layoutIcon = (
-      <LayoutIcon
-        key={`layout-type-${label}`}
-        path={templatePath}
-        color={resultingStyle.iconColor}
-        warningText={warningText}
-      />
-    )
     const collapse = React.useCallback(
       (event: any) => collapseItem(dispatch, templatePath, event),
       [dispatch, templatePath],
@@ -223,28 +327,28 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
         <FlexRow style={containerStyle}>
           <ExpandableIndicator
             key='expandable-indicator'
-            visible={childComponentCount > 0}
+            visible={childComponentCount > 0 || isFocusedComponent}
             collapsed={collapsed}
-            selected={selected}
+            selected={selected && !isInsideComponent}
             onMouseDown={collapse}
           />
-          {layoutIcon}
-          <ItemLabel
-            key={`label-${label}`}
-            testId={`navigator-item-label-${label}`}
-            name={label}
-            isDynamic={isDynamic}
-            target={templatePath}
-            canRename={selected}
-            dispatch={dispatch}
-            inputVisible={TP.pathsEqual(renamingTarget, templatePath)}
-            elementOriginType={elementOriginType}
-          />
-          <ComponentPreview
-            key={`preview-${label}`}
-            path={templatePath}
-            color={resultingStyle.iconColor}
-          />
+          {TP.isScenePath(templatePath) ? (
+            <SceneNavigatorRowLabel
+              {...props}
+              collapse={collapse}
+              isDynamic={isDynamic}
+              iconColor={resultingStyle.iconColor}
+              warningText={warningText}
+            />
+          ) : (
+            <NavigatorRowLabel
+              {...props}
+              collapse={collapse}
+              isDynamic={isDynamic}
+              iconColor={resultingStyle.iconColor}
+              warningText={warningText}
+            />
+          )}
         </FlexRow>
         <NavigatorItemActionSheet
           templatePath={templatePath}
@@ -259,3 +363,94 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   },
 )
 NavigatorItem.displayName = 'NavigatorItem'
+
+interface NavigatorRowProps extends NavigatorItemInnerProps {
+  collapse: (event: any) => void
+  isDynamic: boolean
+  iconColor: IcnProps['color']
+  warningText: string | null
+}
+
+const NavigatorRowLabel = (props: NavigatorRowProps) => {
+  return (
+    <React.Fragment>
+      <LayoutIcon
+        key={`layout-type-${props.label}`}
+        path={props.templatePath}
+        color={props.iconColor}
+        warningText={props.warningText}
+      />
+      <ItemLabel
+        key={`label-${props.label}`}
+        testId={`navigator-item-label-${props.label}`}
+        name={props.label}
+        isDynamic={props.isDynamic}
+        target={props.templatePath}
+        canRename={props.selected}
+        dispatch={props.dispatch}
+        inputVisible={TP.pathsEqual(props.renamingTarget, props.templatePath)}
+        elementOriginType={props.elementOriginType}
+      />
+      <ComponentPreview
+        key={`preview-${props.label}`}
+        path={props.templatePath}
+        color={props.iconColor}
+      />
+    </React.Fragment>
+  )
+}
+
+const SceneNavigatorRowLabel = (props: NavigatorRowProps) => {
+  return (
+    <React.Fragment>
+      <LayoutIcon
+        key={`layout-type-${props.label}`}
+        path={props.templatePath}
+        color={props.iconColor}
+        warningText={props.warningText}
+      />
+      <span
+        style={{
+          marginLeft: 4,
+          marginRight: 4,
+          fontWeight: 600,
+        }}
+      >
+        Scene
+      </span>
+      <span
+        style={{
+          color: props.selected ? undefined : colorTheme.h3Foreground.value,
+          paddingRight: 4,
+        }}
+      >
+        editing
+      </span>
+      <div
+        style={{
+          display: 'flex',
+          backgroundColor: props.selected ? undefined : colorTheme.subduedBorder.value,
+          borderRadius: 1,
+          paddingRight: 4,
+        }}
+      >
+        <ItemLabel
+          key={`label-${props.label}`}
+          testId={`navigator-item-label-${props.label}`}
+          name={props.label}
+          isDynamic={props.isDynamic}
+          target={props.templatePath}
+          canRename={props.selected}
+          dispatch={props.dispatch}
+          inputVisible={TP.pathsEqual(props.renamingTarget, props.templatePath)}
+          elementOriginType={props.elementOriginType}
+        />
+        <ComponentPreview
+          key={`preview-${props.label}`}
+          path={props.templatePath}
+          color={props.iconColor}
+        />
+      </div>
+    </React.Fragment>
+  )
+}

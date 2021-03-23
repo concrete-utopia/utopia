@@ -1,6 +1,7 @@
 import * as Chai from 'chai'
 import * as TP from './template-path'
 import { BakedInStoryboardUID } from '../model/scene-utils'
+import { testStaticInstancePath, testStaticScenePath } from './template-path.test-utils'
 const chaiExpect = Chai.expect
 
 describe('serialization', function () {
@@ -186,17 +187,17 @@ describe('Scenes, Instances and Element Paths', () => {
   const cardInstanceElementPath = ['app-root', 'card-instance']
   const cardRootElementPath = ['card-root']
 
-  const appScenePath = TP.scenePath([appInstanceElementPath])
-  const cardScenePath = TP.scenePath([appInstanceElementPath, cardInstanceElementPath])
-  const cardRootScenePath = TP.scenePath([
+  const appScenePath = testStaticScenePath([appInstanceElementPath])
+  const cardScenePath = testStaticScenePath([appInstanceElementPath, cardInstanceElementPath])
+  const cardRootScenePath = testStaticScenePath([
     appInstanceElementPath,
     cardInstanceElementPath,
     cardRootElementPath,
   ])
 
-  const appInstancePath = TP.instancePath(TP.emptyScenePath, appInstanceElementPath)
-  const cardInstancePath = TP.instancePath(appScenePath, cardInstanceElementPath)
-  const cardRootInstancePath = TP.instancePath(cardScenePath, cardRootElementPath)
+  const appInstancePath = testStaticInstancePath(TP.emptyScenePath, appInstanceElementPath)
+  const cardInstancePath = testStaticInstancePath(appScenePath, cardInstanceElementPath)
+  const cardRootInstancePath = testStaticInstancePath(cardScenePath, cardRootElementPath)
 
   it('scenePathPartOfTemplatePath returns the scene path part of a given instance path', () => {
     expect(TP.scenePathPartOfTemplatePath(TP.emptyInstancePath)).toEqual(TP.emptyScenePath)
