@@ -1,7 +1,6 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
-import { rgb } from 'chroma-js'
 import * as React from 'react'
 import { Component as ReactComponent } from 'react'
 import { thumbnailURL } from '../../common/server'
@@ -20,7 +19,6 @@ import {
   FlexRow,
   Title,
   SectionBodyArea,
-  Button,
   StringInput,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
