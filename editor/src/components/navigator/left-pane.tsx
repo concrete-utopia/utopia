@@ -20,6 +20,8 @@ import {
   Title,
   SectionBodyArea,
   StringInput,
+  Button,
+  marginTop,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
@@ -271,7 +273,7 @@ const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
       }}
     >
       <ProjectSettingsPanel />
-      <FileBrowser />
+      {/* <FileBrowser /> */}
       <DependencyList />
       <GenericExternalResourcesList />
       <GoogleFontsResourcesList />
@@ -344,7 +346,7 @@ const SilentInput = styled.input({
   },
 })
 
-class ThumbnailComponentStripped extends ReactComponent<ThumbnailProps> {
+class RetakeButton extends ReactComponent<ThumbnailProps> {
   render() {
     const urlToRequest: string = `${thumbnailURL(this.props.projectId)}?lastUpdated=${
       this.props.thumbnailLastGenerated
@@ -357,10 +359,10 @@ class ThumbnailComponentStripped extends ReactComponent<ThumbnailProps> {
         // since `css= {{'&:hover' : {...}}}` renders to className, any style prop will overwrite it
         data-label='previewImageContainer'
         css={{
-          width: 172,
+          width: 100,
           height: 22,
-          // paddingLeft: 4,
-          // paddingRight: 4,
+          paddingLeft: 4,
+          paddingRight: 4,
           '& .refreshButton': {
             backgroundColor: colorTheme.emphasizedBackground.o(70).value,
             transition:
@@ -413,11 +415,11 @@ class ThumbnailComponentStripped extends ReactComponent<ThumbnailProps> {
             transform: 'scale(1.0)',
           }}
         >
-          {/* <div
+          <div
             //  refreshButton set above for animations
             className='refreshButton'
             style={{
-              width: 160,
+              width: 100,
               height: UtopiaTheme.layout.rowHeight.medium,
               borderRadius: 1,
               display: 'flex',
@@ -425,50 +427,102 @@ class ThumbnailComponentStripped extends ReactComponent<ThumbnailProps> {
               justifyContent: 'center',
             }}
           >
-            <span style={{ fontWeight: 500 }}>Retake</span>
-          </div> */}
+            <span style={{ fontWeight: 500 }}>Retake Snapshot</span>
+          </div>
         </div>
       </div>
     )
   }
 }
 
-class ThumbnailButton extends ReactComponent<ThumbnailProps> {
+class ThumbnailComponentStripped extends ReactComponent<ThumbnailProps> {
   render() {
     const urlToRequest: string = `${thumbnailURL(this.props.projectId)}?lastUpdated=${
       this.props.thumbnailLastGenerated
     }`
     return (
-      <div
-        data-label='ReloadButtonContainer'
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          // required to create its own stacking context and remain above the image
-          transform: 'scale(1.0)',
-        }}
-      >
+      <FlexColumn>
         <div
-          //  refreshButton set above for animations
-          className='refreshButton'
-          style={{
-            width: 160,
-            height: UtopiaTheme.layout.rowHeight.medium,
-            borderRadius: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+          onClick={this.props.action}
+          style={{ position: 'relative', cursor: 'pointer' }}
+          // all of these are defined via `css` rather than `style` so that they are animateable;
+          // since `css= {{'&:hover' : {...}}}` renders to className, any style prop will overwrite it
+          data-label='previewImageContainer'
+          css={{
+            width: 172,
+            height: 50,
+            // paddingLeft: 4,
+            // paddingRight: 4,
+            // paddingBottom: 3,
+            '& .refreshButton': {
+              backgroundColor: colorTheme.emphasizedBackground.o(70).value,
+              transition:
+                'background-color .4s linear, border .4s linear, color .4s linear, box-shadow .1s linear',
+              color: '#ccc',
+              border: `1px solid ${colorTheme.secondaryBorder.value}`,
+            },
+            '&:hover .refreshButton': {
+              border: `1px solid ${colorTheme.primary.value}`,
+              textShadow: `0px 0px 0px ${colorTheme.primary.value}`,
+              backgroundColor: colorTheme.emphasizedBackground.o(70).value,
+              color: colorTheme.primary.value,
+            },
+            '&:active .refreshButton': {
+              transform: 'scale(0.98)',
+              boxShadow: `2px 2px 0px 0px ${colorTheme.primary.value}`,
+            },
           }}
         >
-          <span style={{ fontWeight: 500 }}>Retake</span>
+          <div
+            css={{
+              boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
+              borderRadius: 1,
+              display: 'block',
+              width: '100%',
+              height: '100%',
+              transition: 'all .4s ease-in-out',
+              backgroundImage: `url('${urlToRequest}')`,
+              backgroundSize: 'cover',
+              backgroundColor: colorTheme.canvasBackground.value,
+              opacity: 1,
+              '.previewImageContainer:hover &': {
+                transform: 'scale(1.1) skewX(-2deg) skewY(-2deg)',
+                opacity: 0.7,
+              },
+            }}
+          />
+          <div
+            data-label='ReloadButtonContainer'
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              // required to create its own stacking context and remain above the image
+              transform: 'scale(1.0)',
+            }}
+          >
+            {/* <div
+              //  refreshButton set above for animations
+              className='refreshButton'
+              style={{
+                width: 160,
+                height: UtopiaTheme.layout.rowHeight.medium,
+                borderRadius: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <span style={{ fontWeight: 500 }}>Retake</span>
+            </div> */}
+          </div>
         </div>
-      </div>
+      </FlexColumn>
     )
   }
 }
@@ -541,7 +595,7 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
       {projectId == null ? null : (
         <FlexColumn>
           <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-            <span style={{ fontWeight: 500 }}>Project</span>
+            <span style={{ fontWeight: 700 }}>Project</span>
           </GridRow>
           <GridRow padded={true} type='<---1fr--->|------172px-------|'>
             <span style={{ fontWeight: 700 }}> Name </span>
@@ -552,20 +606,24 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
             <StringInput testId='' value={projectName} />
           </GridRow>
           <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-            <span style={{ fontWeight: 700 }}> Preview </span>
-            <ThumbnailComponentStripped
-              projectId={projectId}
-              action={triggerRegenerateThumbnail}
-              thumbnailLastGenerated={thumbnailLastGenerated}
-            />
+            <span style={{ fontWeight: 700, marginTop: -30 }}> Preview </span>
+            <FlexColumn>
+              <ThumbnailComponentStripped
+                projectId={projectId}
+                action={triggerRegenerateThumbnail}
+                thumbnailLastGenerated={thumbnailLastGenerated}
+              />
+            </FlexColumn>
           </GridRow>
-          {/* <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-          <ThumbnailButton
-            projectId={projectId}
-            action={triggerRegenerateThumbnail}
-            thumbnailLastGenerated={thumbnailLastGenerated}
-            />
-          </GridRow> */}
+          <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+            <div style={{ paddingLeft: 70, paddingTop: 10, paddingBottom: 10 }}>
+              <RetakeButton
+                projectId={projectId}
+                action={triggerRegenerateThumbnail}
+                thumbnailLastGenerated={thumbnailLastGenerated}
+              />
+            </div>
+          </GridRow>
         </FlexColumn>
       )}
     </FlexColumn>
