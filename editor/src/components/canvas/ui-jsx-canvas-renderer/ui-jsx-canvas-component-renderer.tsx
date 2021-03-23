@@ -6,7 +6,7 @@ import { JSXElementChild, isJSXFragment } from '../../../core/shared/element-tem
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { UiJsxCanvasContext, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import {
-  MutableUtopiaContext,
+  MutableUtopiaContextProps,
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
 } from './ui-jsx-canvas-contexts'
@@ -40,6 +40,7 @@ export function isComponentRendererComponent(
 
 export function createComponentRendererComponent(params: {
   topLevelElementName: string
+  mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>
 }): ComponentRendererComponent {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
@@ -49,7 +50,8 @@ export function createComponentRendererComponent(params: {
 
     const scenePath: ScenePath | null = TP.isScenePath(scenePathAny) ? scenePathAny : null
 
-    const { current: mutableContext } = React.useContext(MutableUtopiaContext)
+    const mutableContext = params.mutableContextRef.current
+
     const utopiaJsxComponent = useContextSelector(RerenderUtopiaContext, (c) =>
       c.topLevelElements.get(params.topLevelElementName),
     )

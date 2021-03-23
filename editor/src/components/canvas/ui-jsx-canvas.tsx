@@ -317,7 +317,10 @@ export const UiJsxCanvas = betterReactMemo(
           if (!(topLevelElement.name in topLevelComponentRendererComponents.current)) {
             topLevelComponentRendererComponents.current[
               topLevelElement.name
-            ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
+            ] = createComponentRendererComponent({
+              topLevelElementName: topLevelElement.name,
+              mutableContextRef: mutableContextRef,
+            })
           }
         }
       })
