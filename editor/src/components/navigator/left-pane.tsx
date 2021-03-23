@@ -8,6 +8,8 @@ import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
+import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
+import { shareURLForProject } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
 import {
   PopupList,
@@ -22,6 +24,8 @@ import {
   Button,
   Icons,
   MenuIcons,
+  StringInput,
+  Subdued,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
@@ -243,6 +247,7 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
         position: 'relative',
         backgroundColor: colorTheme.leftPaneBackground.value,
         borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
+        paddingLeft: 4,
       }}
       onMouseDown={() => closeTextEditorIfPresent()}
     >
@@ -336,7 +341,7 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
         paddingBottom: 50,
       }}
     >
-      <Section data-name='FileBrowser' tabIndex={-1}>
+      <Section data-name='Storyboards' tabIndex={-1}>
         <SectionTitleRow minimised={false}>
           <FlexRow flexGrow={1} style={{ position: 'relative' }}>
             <Title>Storyboards</Title>
@@ -352,13 +357,18 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
                 wordWrap: 'normal',
                 whiteSpace: 'normal',
                 alignItems: 'flex-start',
+                minHeight: 34,
+                paddingTop: 8,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingBottom: 8,
+                letterSpacing: 0.1,
+                lineHeight: '17px',
+                fontSize: '11px',
               }}
             >
               <MenuIcons.Pyramid style={{ marginTop: 2 }} />
-              <span>
-                Storyboards let you display and visually edit components. Limit 1 per project per
-                user.
-              </span>
+              <span>Storyboards let you display and visually edit components.</span>
             </GridRow>
 
             {storyboardList.map((item) => (
@@ -383,30 +393,24 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
                 Add Storyboard
               </Button>
             ) : null}
-          </FlexColumn>
-
-          <FlexRow
-            style={{
-              height: 34,
-              paddingLeft: 8,
-              paddingRight: 8,
-              color: UtopiaTheme.color.subduedForeground.value,
-            }}
-          >
-            The storyboard lives in the&nbsp;
-            <a
-              css={{
-                color: colorTheme.primary.value,
-                cursor: 'pointer',
-                '&:hover': {
-                  filter: 'brightness(90%)',
-                },
+            <div
+              style={{
+                height: 'initial',
+                minHeight: 34,
+                alignItems: 'flex-start',
+                paddingTop: 8,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingBottom: 8,
+                whiteSpace: 'pre-wrap',
+                letterSpacing: 0.1,
+                lineHeight: '17px',
+                fontSize: '11px',
               }}
             >
-              ./utopia
-            </a>
-            &nbsp;folder
-          </FlexRow>
+              <Subdued>The storyboard location and name are fixed for now.</Subdued>
+            </div>
+          </FlexColumn>
         </SectionBodyArea>
       </Section>
     </FlexColumn>
@@ -443,23 +447,164 @@ const SettingsPane = betterReactMemo('SettingsPane', () => {
         paddingBottom: 50,
       }}
     >
-      <h2>Settings go here</h2>
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={() => {}}>
+          <Title style={{ flexGrow: 1 }}>Sharing</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>Placeholder</SectionBodyArea>
+      </Section>
     </FlexColumn>
   )
 })
 
 const SharingPane = betterReactMemo('SharingPane', () => {
+  const [temporaryCopySuccess, setTemporaryCopySuccess] = React.useState(false)
+  const { projectId, projectName } = useEditorState((store) => {
+    return {
+      projectId: store.editor.id,
+      projectName: store.editor.projectName,
+    }
+  }, 'Menubar')
+  const previewURL =
+    projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
+
+  const handleCopyProjectURL = () => {
+    navigator.clipboard.writeText(previewURL)
+    setTemporaryCopySuccess(true)
+    setTimeout(() => {
+      setTemporaryCopySuccess(false)
+    }, 1500)
+  }
+
   return (
     <FlexColumn
       id='leftPaneSharing'
       key='leftPaneSharing'
-      style={{
+      css={{
         display: 'relative',
         alignItems: 'stretch',
-        paddingBottom: 50,
+        gap: 24,
+        paddingBottom: 36,
       }}
     >
-      <h2>Sharing goes here</h2>
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={() => {}}>
+          <Title style={{ flexGrow: 1 }}>Sharing</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: 34,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            Share the URL to this project to let others view your code and fork it. Only you can
+            make changes.
+          </div>
+        </SectionBodyArea>
+      </Section>
+
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={() => {}}>
+          <Title style={{ flexGrow: 1 }}>Collaborate</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: 34,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            <p style={{ marginTop: 0, marginBottom: 12 }}>
+              All Utopia projects are{' '}
+              <a href='#' style={{ textDecoration: 'none', color: '#007AFF' }}>
+                👁👄👁 public
+              </a>{' '}
+              by default. This means other people can discover and fork your project.
+            </p>
+            <p style={{ marginTop: 0, marginBottom: 12 }}>
+              We'll introduce private and team projects soon.
+            </p>
+          </div>
+        </SectionBodyArea>
+      </Section>
+
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={() => {}}>
+          <Title style={{ flexGrow: 1 }}>Run and Embed</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: 34,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            You can share and embed a URL to the{' '}
+            <a
+              target='_blank'
+              rel='noopener noreferrer'
+              style={{ textDecoration: 'none', color: '#007AFF' }}
+              href={previewURL}
+            >
+              running application
+            </a>
+            &nbsp;without the editor or design tool.
+          </div>
+          <GridRow type='<--------auto-------->|--45px--|' padded>
+            <StringInput testId='externalProjectURL' value={previewURL} readOnly />
+            <Button
+              spotlight
+              highlight
+              disabled={temporaryCopySuccess}
+              onClick={handleCopyProjectURL}
+            >
+              {temporaryCopySuccess ? '✓' : 'Copy'}
+            </Button>
+          </GridRow>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: 34,
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              color: UtopiaTheme.color.subduedForeground.value,
+            }}
+          >
+            <Subdued>Old URLs will continue to work if you rename your project.</Subdued>
+          </div>
+        </SectionBodyArea>
+      </Section>
     </FlexColumn>
   )
 })
@@ -475,7 +620,35 @@ const GithubPane = betterReactMemo('GithubPane', () => {
         paddingBottom: 50,
       }}
     >
-      <h2>Github goes here</h2>
+      <FlexRow
+        style={{ paddingLeft: 8, paddingRight: 8, height: UtopiaTheme.layout.gridRowHeight.normal }}
+      >
+        <Title>Github</Title>
+      </FlexRow>
+      <div
+        style={{
+          height: 'initial',
+          minHeight: 34,
+          alignItems: 'flex-start',
+          paddingTop: 8,
+          paddingLeft: 8,
+          paddingRight: 8,
+          paddingBottom: 8,
+          whiteSpace: 'pre-wrap',
+          letterSpacing: 0.1,
+          lineHeight: '17px',
+          fontSize: '11px',
+        }}
+      >
+        You can import a new project from Github. It might take a few minutes, and will show up in{' '}
+        <a href='/projects'>your projects</a> (not here).
+      </div>
+      <GridRow padded type='<--------auto-------->|--45px--|'>
+        <StringInput testId='importProject' value='' />
+        <Button spotlight highlight>
+          Start
+        </Button>
+      </GridRow>
     </FlexColumn>
   )
 })
