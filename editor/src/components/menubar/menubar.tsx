@@ -257,7 +257,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </span>
         </Tooltip>
 
-        <a target='_blank' rel='noopener noreferrer' href={previewURL}>
+        <a style={{ marginTop: 32 }} target='_blank' rel='noopener noreferrer' href={previewURL}>
           <Tooltip title={'Launch External Preview'} placement={'right'}>
             <span>
               <MenuTile selected={false} menuExpanded={false} icon={<MenuIcons.ExternalLink />} />
