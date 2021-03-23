@@ -187,7 +187,13 @@ function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): bo
   if (focusedElementPath == null || TP.isScenePath(path)) {
     return false
   } else {
-    return TP.scenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path)) != null
+    return (
+      TP.scenePathUpToElementPath(
+        focusedElementPath,
+        TP.elementPathForPath(path),
+        'dynamic-scene-path',
+      ) != null
+    )
   }
 }
 
