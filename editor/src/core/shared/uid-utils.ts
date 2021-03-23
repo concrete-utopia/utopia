@@ -222,6 +222,21 @@ export function uidsToString(uidList: Array<string>): string {
   return uidList.join(' ')
 }
 
+export function popFrontUID(
+  uidList: string | null | undefined,
+): { head: string | null; tail: string | null } {
+  if (uidList == null) {
+    return { head: null, tail: null }
+  }
+  const uids = uidsFromString(uidList)
+  const head = uids[0]
+  const tail = uids.slice(1)
+  return {
+    head: uids[0],
+    tail: tail.length > 0 ? uidsToString(tail) : null,
+  }
+}
+
 export function appendToUidString(
   uidsString: string | null | undefined,
   uidsToAppendString: string | null | undefined,

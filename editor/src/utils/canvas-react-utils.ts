@@ -8,7 +8,7 @@ import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
 import { UtopiaKeys, UTOPIA_UIDS_KEY, UTOPIA_UID_PARENTS_KEY } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
 import { PRODUCTION_ENV } from '../common/env-vars'
-import { appendToUidString, uidsFromString } from '../core/shared/uid-utils'
+import { appendToUidString, popFrontUID, uidsFromString } from '../core/shared/uid-utils'
 
 const realCreateElement = React.createElement
 
@@ -210,38 +210,19 @@ const mangleClassType = Utils.memoize(
   },
 )
 
+function uidsWithoutExoticUID(uids: string | null): string | null {
+  const { head: uidsHead, tail: uidsTail } = popFrontUID(uids)
+  return uidsTail ?? uidsHead
+}
+
 const mangleExoticType = Utils.memoize(
   (type: React.ComponentType): React.FunctionComponent => {
-    function updateChild(
-      child: React.ReactElement,
-      dataUids: string | null,
-      parentUid: string | null,
-    ) {
+    function updateChild(child: React.ReactElement, dataUids: string | null) {
       const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
       const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
-      const existingParentIDs = child.props?.[UTOPIA_UID_PARENTS_KEY]
       if ((!React.isValidElement(child) as any) || child == null) {
         return child
       } else {
-        let pathParts: Array<string> = []
-        // Added to here in reverse order, attempting to rebuild
-        // what the path _should_ be.
-        if (typeof existingChildUIDs === 'string') {
-          const childUIDArray = uidsFromString(existingChildUIDs)
-          pathParts.push(childUIDArray[0]) // TODO Balazs we are arbitrarily picking the first element here
-        }
-        if (typeof dataUids === 'string') {
-          const uidArray = uidsFromString(dataUids)
-          pathParts.push(uidArray[0]) // TODO Balazs we are arbitrarily picking the first element here
-        }
-        if (typeof parentUid === 'string') {
-          pathParts.push(parentUid)
-        }
-        if (typeof existingParentIDs === 'string') {
-          pathParts.push(existingParentIDs)
-        }
-        let [_childUIDNotUsedDeleteME, ...parentParts] = pathParts
-
         // Setup the result.
         let additionalProps: any = {}
         let shouldClone: boolean = false
@@ -250,10 +231,7 @@ const mangleExoticType = Utils.memoize(
           additionalProps[UTOPIA_UIDS_KEY] = appendedUIDString
           shouldClone = true
         }
-        if (parentParts != null && parentParts.length > 0) {
-          additionalProps[UTOPIA_UID_PARENTS_KEY] = parentParts.reverse().join('/')
-          shouldClone = true
-        }
+
         if (shouldClone) {
           return React.cloneElement(child, additionalProps)
         } else {
@@ -271,7 +249,8 @@ const mangleExoticType = Utils.memoize(
      * Instead of that we render these fragment-like components, and mangle with their children
      */
     const wrapperComponent = (p: any, context?: any) => {
-      if (p?.[UTOPIA_UIDS_KEY] == null) {
+      const uids = p?.[UTOPIA_UIDS_KEY]
+      if (uids == null) {
         // early return for the cases where there's no data-uid
         return realCreateElement(type, p)
       } else if (p?.children == null || typeof p.children === 'string') {
@@ -283,14 +262,16 @@ const mangleExoticType = Utils.memoize(
           const originalFunction = p.children
           children = function (...params: any[]) {
             const originalResponse = originalFunction(...params)
-            return attachDataUidToRoot(originalResponse, p?.[UTOPIA_UIDS_KEY])
+            return attachDataUidToRoot(originalResponse, uids)
           }
-        } else if (Array.isArray(p?.children)) {
-          children = React.Children.map(p?.children, (child) =>
-            updateChild(child, p?.[UTOPIA_UIDS_KEY], p?.[UTOPIA_UID_PARENTS_KEY]),
-          )
         } else {
-          children = updateChild(p.children, p?.[UTOPIA_UIDS_KEY], p?.[UTOPIA_UID_PARENTS_KEY])
+          const uidsToPass = uidsWithoutExoticUID(uids)
+
+          if (Array.isArray(p?.children)) {
+            children = React.Children.map(p?.children, (child) => updateChild(child, uidsToPass))
+          } else {
+            children = updateChild(p.children, uidsToPass)
+          }
         }
         let mangledProps = {
           ...p,

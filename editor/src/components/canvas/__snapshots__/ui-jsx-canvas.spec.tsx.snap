@@ -20092,8 +20092,8 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
     \\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\" data-utopia-parents=\\"scene-aaa\\">hello</div>
-    <div data-uid=\\"bbb scene-aaa\\" data-utopia-parents=\\"scene-aaa\\">bello</div>
+    <div data-uid=\\"aaa scene-aaa\\">hello</div>
+    <div data-uid=\\"bbb scene-aaa\\">bello</div>
   </div>
 </div>
 "
@@ -20147,7 +20147,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
-      "data-utopia-parents": "scene-aaa",
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -20245,7 +20244,6 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb scene-aaa",
-      "data-utopia-parents": "scene-aaa",
       "skipDeepFreeze": true,
     },
     "specialSizeMeasurements": Object {
@@ -20326,9 +20324,8 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
     data-uid=\\"ccc\\"
   >
     <div
-      data-uid=\\"bbb aaa ddd\\"
+      data-uid=\\"bbb ddd\\"
       style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
-      data-utopia-parents=\\"aaa\\"
     ></div>
   </div>
 </div>
@@ -20613,8 +20610,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "localFrame": null,
     "props": Object {
-      "data-uid": "bbb aaa ddd",
-      "data-utopia-parents": "aaa",
+      "data-uid": "bbb ddd",
       "skipDeepFreeze": true,
       "style": Object {
         "backgroundColor": "#EB1010",
@@ -20660,6 +20656,148 @@ export var storyboard = (
       "element": Array [
         "aaa",
         "bbb",
+      ],
+      "scene": Object {
+        "sceneElementPaths": Array [
+          Array [
+            "ccc",
+            "ddd",
+          ],
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
+exports[`UiJsxCanvas render renders correctly with a nested context in another component 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+  data-utopia-valid-paths=\\":ccc :ccc/ddd\\"
+>
+  <div
+    data-utopia-scene-id=\\"ccc/ddd\\"
+    data-utopia-valid-paths=\\"ccc/ddd:card\\"
+    style=\\"
+      position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 375px;
+      height: 812px;
+    \\"
+    data-uid=\\"ccc\\"
+  >
+    <div
+      data-uid=\\"bbb card ddd\\"
+      style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
+    ></div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render renders correctly with a nested context in another component 2`] = `
+Object {
+  "ccc/ddd:card": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "Card",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "card",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "card ddd",
+      "data-utopia-scene-path": Object {
+        "sceneElementPaths": Array [
+          Array [
+            "ccc",
+            "ddd",
+          ],
+          Array [
+            "card",
+          ],
+        ],
+        "type": "scenepath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "card",
       ],
       "scene": Object {
         "sceneElementPaths": Array [
