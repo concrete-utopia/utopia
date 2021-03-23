@@ -937,8 +937,10 @@ export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath 
 export function scenePathUpToElementPath(
   scene: ScenePath,
   elementPath: ElementPath,
+  convertSceneToStatic: 'dynamic-scene-path' | 'static-scene-path',
 ): ScenePath | null {
-  const staticScene = dynamicScenePathToStaticScenePath(scene)
+  const staticScene =
+    convertSceneToStatic === 'static-scene-path' ? dynamicScenePathToStaticScenePath(scene) : scene
   const foundIndex = staticScene.sceneElementPaths.findIndex((sceneElementPath) => {
     return elementPathsEqual(sceneElementPath, elementPath)
   })

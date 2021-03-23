@@ -799,7 +799,11 @@ export const MetadataUtils = {
       const matchingFocusPath =
         focusedElementPath == null
           ? null
-          : TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
+          : TP.scenePathUpToElementPath(
+              focusedElementPath,
+              TP.elementPathForPath(path),
+              'dynamic-scene-path',
+            )
       const focusedRootElementPaths =
         matchingFocusPath == null
           ? []
