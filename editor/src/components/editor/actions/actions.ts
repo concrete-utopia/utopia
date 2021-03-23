@@ -4196,6 +4196,10 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       focusedElementPath: action.focusedElementPath,
+      canvas: {
+        ...editor.canvas,
+        mountCount: editor.canvas.mountCount + 1,
+      },
     }
   },
 }
