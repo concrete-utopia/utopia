@@ -1599,6 +1599,48 @@ export var storyboard = (
     )
   })
 
+  it('renders correctly with a nested context in another component', () => {
+    testCanvasRender(
+      null,
+      `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+const AppContext = React.createContext({})
+const InnerContext = React.createContext({})
+
+export var Card = (props) => {
+  return (
+    <AppContext.Provider value={{color: 'blue'}} data-uid={'aaa'}>
+      <InnerContext.Provider value={{otherColor: 'red'}} data-uid={'inner'}>
+        <div
+          data-uid={'bbb'}
+          style={{ width: '100%', height: '100%', backgroundColor: '#EB1010' }}
+        />
+      </InnerContext.Provider>
+    </AppContext.Provider>
+  )
+}
+
+export var App = (props) => {
+  return (
+    <Card data-uid='card' />
+  )
+}
+
+export var storyboard = (
+  <Storyboard  data-uid={'ccc'}>
+    <Scene
+      data-uid={'ddd'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)`,
+    )
+  })
+
   it('renderrs correctly when a component is passed in via a prop', () => {
     testCanvasRender(
       null,
