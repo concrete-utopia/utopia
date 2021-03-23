@@ -50,7 +50,7 @@ function resolveParseSuccess(
   const absoluteImportedPath = absolutePathFromRelativePath(importOrigin, toImport)
   const fileLookupResult = getContentsTreeFileFromString(projectContents, absoluteImportedPath)
   if (isTextFile(fileLookupResult) && isParseSuccess(fileLookupResult.fileContents.parsed)) {
-    // jaj de jo!
+    // create an object with all the exports of the file, but all UtopiaJSXComponents replaced with a ComponentRendererComponent
   } else {
     return null
   }
