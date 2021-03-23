@@ -781,7 +781,10 @@ export const MetadataUtils = {
   createOrderedTemplatePathsFromElements(
     metadata: JSXMetadata,
     collapsedViews: Array<TemplatePath>,
+    focusedElementPath: ScenePath | null,
   ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
+    const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
+
     let navigatorTargets: Array<TemplatePath> = []
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
@@ -794,6 +797,23 @@ export const MetadataUtils = {
       if (!collapsedAncestor) {
         visibleNavigatorTargets.push(path)
       }
+
+      const matchingFocusPath =
+        focusedElementPath == null
+          ? null
+          : TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
+      const focusedRootElementPaths =
+        matchingFocusPath == null
+          ? []
+          : allPaths.filter(
+              (p) =>
+                TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
+                TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
+            )
+      fastForEach(focusedRootElementPaths, (focusedRootElement) => {
+        walkAndAddKeys(focusedRootElement, collapsedAncestor || isCollapsed)
+      })
+
       fastForEach(reversedChildren, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
       })

@@ -35,10 +35,10 @@ const darkBase = lightBase
 const lightPrimitives = {
   // backgrounds
   emphasizedBackground: createUtopiColor('hsl(0,0%,100%)', 'eg Navigator, Inspector', 'white'),
-  slightlyEmphasizedBackground: createUtopiColor('hsl(0,0%,99.5%)', '', 'offWhite'),
-  aboveNeutralBackground: createUtopiColor('hsl(0,0%,99%)', '', ''),
-  neutralBackground: createUtopiColor('hsl(0,0%,98%)', 'eg Navigator, Inspector', 'offWhite'),
-  secondaryBackground: createUtopiColor('hsl(0,0%,96%)', 'eg Canvas', 'offWhite'),
+  slightlyEmphasizedBackground: createUtopiColor('hsl(0,0%,99%)', '', 'offWhite'),
+  aboveNeutralBackground: createUtopiColor('hsl(0,0%,98%)', '', ''),
+  neutralBackground: createUtopiColor('hsl(0,0%,97%)', 'eg Navigator, Inspector', 'offWhite'),
+  secondaryBackground: createUtopiColor('hsl(0,0%,95%)', 'eg Canvas', 'offWhite'),
   subtleBackground: createUtopiColor('hsl(0,0%,82%)', 'eg Canvas', 'offWhite'),
   neutralInvertedBackground: createUtopiColor('hsl(0,0%,10%)', 'almost fully inverted', 'black'),
   emphasizedInvertedBackground: createUtopiColor('hsl(0,0%,0%)', 'black', 'black'),
@@ -197,6 +197,8 @@ const light = {
   resizingDisplayForeground: createUtopiColor('hsl(0,0%,90%)', '90%', 'light'),
   navigatorResizeHintBorder: lightBase.primary,
   navigatorComponentName: lightBase.primary,
+  navigatorComponentSelected: base.orange.o(20),
+  navigatorComponentIconBorder: base.orange,
 
   // inverted: toasts, context menu, notifications
   contextMenuBackground: lightPrimitives.neutralBackground,
