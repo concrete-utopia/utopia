@@ -10,7 +10,6 @@ import {
   IcnColor,
   OnClickOutsideHOC,
   SmallerIcons,
-  stroke,
   UtopiaTheme,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'

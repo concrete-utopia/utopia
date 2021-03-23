@@ -8,11 +8,7 @@ import * as TP from '../../../core/shared/template-path'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { GridRow } from '../../inspector/widgets/grid-row'
 import { PopupList } from '../../../uuiui'
-import {
-  JSXElementName,
-  jsxElementName,
-  jsxElementNameEquals,
-} from '../../../core/shared/element-template'
+import { JSXElementName, jsxElementNameEquals } from '../../../core/shared/element-template'
 import { useNamesAndIconsAllPaths } from '../../inspector/common/name-and-icon-hook'
 import { getElementsToTarget } from '../../inspector/common/inspector-utils'
 import { Imports } from '../../../core/shared/project-file-types'
