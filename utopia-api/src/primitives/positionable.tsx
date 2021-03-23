@@ -11,6 +11,11 @@ export interface PositionableProps
   wrappedComponent: React.JSXElementConstructor<any>
 }
 
+// TODO Delete the entire Positionable component and remove it from the UI
+const wrappedComponentProp = (props: any) => {
+  return <div />
+}
+
 export const Positionable: React.FunctionComponent<PositionableProps> = (
   props: PositionableProps,
 ) => {
@@ -33,7 +38,9 @@ export const Positionable: React.FunctionComponent<PositionableProps> = (
         ...ownStyle,
       }}
     >
-      <WrappedComponent {...propsWithEventHandlers}>{props.children}</WrappedComponent>
+      <WrappedComponent wrappedComponent={wrappedComponentProp} {...propsWithEventHandlers}>
+        {props.children}
+      </WrappedComponent>
     </div>
   )
 }

@@ -55,6 +55,16 @@ export const LargerIcons = {
   PreviewPane: makeIcon({ type: 'previewpane', color: 'black', width: 22, height: 18 }),
 }
 
+export const SmallerIcons = {
+  ExpansionArrowDown: makeIcon({
+    category: 'controls/input',
+    type: 'down',
+    color: 'darkgray',
+    width: 11,
+    height: 11,
+  }),
+}
+
 export const Icons = {
   Bin: makeIcon({ type: 'bin', color: 'gray' }),
   Cross: makeIcon({ type: 'cross-medium', color: 'gray' }),

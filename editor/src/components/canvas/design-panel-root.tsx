@@ -191,7 +191,6 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
                 alignItems: 'stretch',
                 justifyContent: 'stretch',
                 backgroundColor: 'transparent',
-                overflowX: 'hidden',
               }}
             >
               <TopMenu />

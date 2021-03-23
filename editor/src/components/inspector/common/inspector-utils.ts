@@ -1,4 +1,7 @@
 import * as React from 'react'
+import { TemplatePath, InstancePath } from 'src/core/shared/project-file-types'
+import { Utils } from '../../../uuiui-deps'
+import * as TP from '../../../core/shared/template-path'
 import { colorTheme } from '../../../uuiui'
 import { useForceUpdate } from '../../editor/hook-utils'
 import { OnSubmitValue } from '../controls/control'
@@ -180,4 +183,15 @@ export const checkerboardBackground: Pick<
 
 export function clampString(value: string, maxLength: number) {
   return value.length > maxLength ? `${value.substring(0, maxLength)}…` : value
+}
+
+export function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
+  let result: Array<InstancePath> = []
+  Utils.fastForEach(paths, (path) => {
+    // TODO Scene Implementation
+    if (!TP.isScenePath(path) && !TP.containsPath(path, result)) {
+      result.push(path)
+    }
+  })
+  return result
 }
