@@ -450,7 +450,7 @@ class ThumbnailComponentStripped extends ReactComponent<ThumbnailProps> {
           data-label='previewImageContainer'
           css={{
             width: 172,
-            height: 50,
+            height: 22,
             // paddingLeft: 4,
             // paddingRight: 4,
             // paddingBottom: 3,
@@ -606,7 +606,7 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
             <StringInput testId='' value={projectName} />
           </GridRow>
           <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-            <span style={{ fontWeight: 700, marginTop: -30 }}> Preview </span>
+            <span style={{ fontWeight: 700 }}> Preview </span>
             <FlexColumn>
               <ThumbnailComponentStripped
                 projectId={projectId}
@@ -616,7 +616,7 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
             </FlexColumn>
           </GridRow>
           <GridRow padded={true} type='<---1fr--->|------172px-------|'>
-            <div style={{ paddingLeft: 70, paddingTop: 10, paddingBottom: 10 }}>
+            <div style={{ paddingLeft: 70 }}>
               <RetakeButton
                 projectId={projectId}
                 action={triggerRegenerateThumbnail}
