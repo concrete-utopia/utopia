@@ -705,194 +705,6 @@ const SilentInput = styled.input({
   },
 })
 
-class ThumbnailComponentStripped extends ReactComponent<ThumbnailProps> {
-  render() {
-    const urlToRequest: string = `${thumbnailURL(this.props.projectId)}?lastUpdated=${
-      this.props.thumbnailLastGenerated
-    }`
-    return (
-      <FlexColumn style={{ paddingLeft: 8 }}>
-        <GridRow
-          padded
-          type='<---1fr--->|------172px-------|'
-          style={{
-            height: 'inherit',
-            wordWrap: 'normal',
-            whiteSpace: 'normal',
-            alignItems: 'flex-start',
-            minHeight: 34,
-            letterSpacing: 0.1,
-            lineHeight: '17px',
-            fontSize: '11px',
-          }}
-        >
-          <div
-            onClick={this.props.action}
-            style={{ position: 'relative', cursor: 'pointer' }}
-            // all of these are defined via `css` rather than `style` so that they are animateable;
-            // since `css= {{'&:hover' : {...}}}` renders to className, any style prop will overwrite it
-            data-label='previewImageContainer'
-            css={{
-              width: 150,
-              height: 22,
-              '& .refreshButton': {
-                backgroundColor: colorTheme.emphasizedBackground.o(70).value,
-                transition:
-                  'background-color .4s linear, border .4s linear, color .4s linear, box-shadow .1s linear',
-                color: '#ccc',
-                border: `1px solid ${colorTheme.secondaryBorder.value}`,
-              },
-              '&:hover .refreshButton': {
-                border: `1px solid ${colorTheme.primary.value}`,
-                textShadow: `0px 0px 0px ${colorTheme.primary.value}`,
-                backgroundColor: colorTheme.emphasizedBackground.o(70).value,
-                color: colorTheme.primary.value,
-              },
-              '&:active .refreshButton': {
-                transform: 'scale(0.98)',
-                boxShadow: `2px 2px 0px 0px ${colorTheme.primary.value}`,
-              },
-            }}
-          >
-            <div
-              css={{
-                boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
-                borderRadius: 1,
-                display: 'block',
-                width: '100%',
-                height: '100%',
-                transition: 'all .4s ease-in-out',
-                backgroundImage: `url('${urlToRequest}')`,
-                backgroundSize: 'cover',
-                backgroundColor: colorTheme.canvasBackground.value,
-                opacity: 1,
-                '.previewImageContainer:hover &': {
-                  transform: 'scale(1.1) skewX(-2deg) skewY(-2deg)',
-                  opacity: 0.7,
-                },
-              }}
-            />
-            <div
-              data-label='ReloadButtonContainer'
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                // required to create its own stacking context and remain above the image
-                transform: 'scale(1.0)',
-              }}
-            ></div>
-          </div>
-        </GridRow>
-
-        <GridRow
-          padded
-          type='<---1fr--->|------172px-------|'
-          style={{
-            height: 'inherit',
-            wordWrap: 'normal',
-            whiteSpace: 'normal',
-            alignItems: 'flex-start',
-            minHeight: 34,
-            paddingTop: 8,
-            paddingLeft: 8,
-            paddingRight: 8,
-            paddingBottom: 8,
-            letterSpacing: 0.1,
-            lineHeight: '17px',
-            fontSize: '11px',
-          }}
-        >
-          <div
-            onClick={this.props.action}
-            style={{ position: 'relative', cursor: 'pointer' }}
-            // all of these are defined via `css` rather than `style` so that they are animateable;
-            // since `css= {{'&:hover' : {...}}}` renders to className, any style prop will overwrite it
-            data-label='previewImageContainer'
-            css={{
-              width: 150,
-              height: 22,
-              paddingLeft: 4,
-              paddingRight: 4,
-              '& .refreshButton': {
-                backgroundColor: colorTheme.emphasizedBackground.o(70).value,
-                transition:
-                  'background-color .4s linear, border .4s linear, color .4s linear, box-shadow .1s linear',
-                color: '#ccc',
-                border: `1px solid ${colorTheme.secondaryBorder.value}`,
-              },
-              '&:hover .refreshButton': {
-                border: `1px solid ${colorTheme.primary.value}`,
-                textShadow: `0px 0px 0px ${colorTheme.primary.value}`,
-                backgroundColor: colorTheme.emphasizedBackground.o(70).value,
-                color: colorTheme.primary.value,
-              },
-              '&:active .refreshButton': {
-                transform: 'scale(0.98)',
-                boxShadow: `2px 2px 0px 0px ${colorTheme.primary.value}`,
-              },
-            }}
-          >
-            <div
-              css={{
-                boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
-                borderRadius: 1,
-                display: 'block',
-                width: '100%',
-                height: '100%',
-                transition: 'all .4s ease-in-out',
-                backgroundImage: `url('${urlToRequest}')`,
-                backgroundSize: 'cover',
-                backgroundColor: colorTheme.canvasBackground.value,
-                opacity: 1,
-                '.previewImageContainer:hover &': {
-                  transform: 'scale(1.1) skewX(-2deg) skewY(-2deg)',
-                  opacity: 0.7,
-                },
-              }}
-            />
-            <div
-              data-label='ReloadButtonContainer'
-              style={{
-                position: 'absolute',
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                // required to create its own stacking context and remain above the image
-                transform: 'scale(1.0)',
-              }}
-            >
-              <div
-                //  refreshButton set above for animations
-                className='refreshButton'
-                style={{
-                  width: 172,
-                  height: UtopiaTheme.layout.rowHeight.medium,
-                  borderRadius: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <span style={{ fontWeight: 500 }}>Retake Snapshot</span>
-              </div>
-            </div>
-          </div>
-        </GridRow>
-      </FlexColumn>
-    )
-  }
-}
-
 const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
   const {
     dispatch,
@@ -956,6 +768,8 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
     e.stopPropagation()
   }, [])
 
+  const urlToRequest = `${thumbnailURL(projectId!)}?lastUpdated=${thumbnailLastGenerated}`
+
   return (
     <FlexColumn
       id='leftPaneProject'
@@ -978,80 +792,29 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
             {userState.loginState.type === 'NOT_LOGGED_IN' ? (
               <span>Log in or sign up to see settings</span>
             ) : (
-              <div
-                style={{
-                  height: 'initial',
-                  minHeight: 34,
-                  alignItems: 'flex-start',
-                  paddingTop: 8,
-                  paddingLeft: 8,
-                  paddingRight: 8,
-                  paddingBottom: 8,
-                  whiteSpace: 'pre-wrap',
-                  letterSpacing: 0.1,
-                  lineHeight: '17px',
-                  fontSize: '11px',
-                }}
-              >
-                <FlexColumn>
-                  <SectionBodyArea minimised={false}>
-                    <GridRow padded type='<---1fr--->|------172px-------|'>
-                      <p style={{ paddingRight: 28 }}> Name </p>
-                      <StringInput testId='' value={projectName} style={{ width: 150 }} />
-                    </GridRow>
-                    <GridRow
-                      padded
-                      type='<---1fr--->|------172px-------|'
-                      style={{
-                        height: 'inherit',
-                        wordWrap: 'normal',
-                        whiteSpace: 'normal',
-                        alignItems: 'flex-start',
-                        minHeight: 34,
-                        paddingTop: 8,
-                        paddingLeft: 8,
-                        paddingRight: 8,
-                        paddingBottom: 8,
-                        letterSpacing: 0.1,
-                        lineHeight: '17px',
-                        fontSize: '11px',
-                      }}
-                    >
-                      <span> Description </span>
-                      <StringInput
-                        testId=''
-                        value={projectName}
-                        style={{ width: 150 }}
-                      ></StringInput>
-                    </GridRow>
-                    <GridRow
-                      padded
-                      type='<---1fr--->|------172px-------|'
-                      style={{
-                        height: 'inherit',
-                        wordWrap: 'normal',
-                        whiteSpace: 'normal',
-                        alignItems: 'flex-start',
-                        minHeight: 34,
-                        paddingTop: 8,
-                        paddingLeft: 8,
-                        paddingRight: 8,
-                        paddingBottom: 8,
-                        letterSpacing: 0.1,
-                        lineHeight: '17px',
-                        fontSize: '11px',
-                      }}
-                    >
-                      <span> Preview </span>
-                      <ThumbnailComponentStripped
-                        projectId={projectId}
-                        action={triggerRegenerateThumbnail}
-                        thumbnailLastGenerated={thumbnailLastGenerated}
-                      />
-                    </GridRow>
-                  </SectionBodyArea>
-                </FlexColumn>
-              </div>
+              <FlexColumn>
+                <SectionBodyArea minimised={false}>
+                  <GridRow padded type='<---1fr--->|------172px-------|'>
+                    <p style={{ paddingRight: 28 }}> Name </p>
+                    <StringInput testId='' value={projectName} style={{ width: 150 }} />
+                  </GridRow>
+                  <GridRow padded type='<---1fr--->|------172px-------|'>
+                    <span> Description </span>
+                    <StringInput testId='' value={projectName} style={{ width: 150 }}></StringInput>
+                  </GridRow>
+                  <GridRow padded type='<---1fr--->|------172px-------|'>
+                    <span> Preview </span>
+                    <div>
+                      <img src={urlToRequest} />
+                      <FlexRow>
+                        <Button spotlight highlight onClick={triggerRegenerateThumbnail} style={{}}>
+                          Refresh
+                        </Button>
+                      </FlexRow>
+                    </div>
+                  </GridRow>
+                </SectionBodyArea>
+              </FlexColumn>
             )}
           </SectionBodyArea>
         </Section>
