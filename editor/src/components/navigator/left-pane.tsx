@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
+import { rgb } from 'chroma-js'
 import * as React from 'react'
 import { Component as ReactComponent } from 'react'
 import { thumbnailURL } from '../../common/server'
@@ -20,6 +21,7 @@ import {
   Title,
   SectionBodyArea,
   Button,
+  StringInput,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
@@ -344,6 +346,135 @@ const SilentInput = styled.input({
   },
 })
 
+class ThumbnailComponentStripped extends ReactComponent<ThumbnailProps> {
+  render() {
+    const urlToRequest: string = `${thumbnailURL(this.props.projectId)}?lastUpdated=${
+      this.props.thumbnailLastGenerated
+    }`
+    return (
+      <div
+        onClick={this.props.action}
+        style={{ position: 'relative', cursor: 'pointer' }}
+        // all of these are defined via `css` rather than `style` so that they are animateable;
+        // since `css= {{'&:hover' : {...}}}` renders to className, any style prop will overwrite it
+        data-label='previewImageContainer'
+        css={{
+          width: 172,
+          height: 22,
+          // paddingLeft: 4,
+          // paddingRight: 4,
+          '& .refreshButton': {
+            backgroundColor: colorTheme.emphasizedBackground.o(70).value,
+            transition:
+              'background-color .4s linear, border .4s linear, color .4s linear, box-shadow .1s linear',
+            color: '#ccc',
+            border: `1px solid ${colorTheme.secondaryBorder.value}`,
+          },
+          '&:hover .refreshButton': {
+            border: `1px solid ${colorTheme.primary.value}`,
+            textShadow: `0px 0px 0px ${colorTheme.primary.value}`,
+            backgroundColor: colorTheme.emphasizedBackground.o(70).value,
+            color: colorTheme.primary.value,
+          },
+          '&:active .refreshButton': {
+            transform: 'scale(0.98)',
+            boxShadow: `2px 2px 0px 0px ${colorTheme.primary.value}`,
+          },
+        }}
+      >
+        <div
+          css={{
+            boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
+            borderRadius: 1,
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            transition: 'all .4s ease-in-out',
+            backgroundImage: `url('${urlToRequest}')`,
+            backgroundSize: 'cover',
+            backgroundColor: colorTheme.canvasBackground.value,
+            opacity: 1,
+            '.previewImageContainer:hover &': {
+              transform: 'scale(1.1) skewX(-2deg) skewY(-2deg)',
+              opacity: 0.7,
+            },
+          }}
+        />
+        <div
+          data-label='ReloadButtonContainer'
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            // required to create its own stacking context and remain above the image
+            transform: 'scale(1.0)',
+          }}
+        >
+          {/* <div
+            //  refreshButton set above for animations
+            className='refreshButton'
+            style={{
+              width: 160,
+              height: UtopiaTheme.layout.rowHeight.medium,
+              borderRadius: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>Retake</span>
+          </div> */}
+        </div>
+      </div>
+    )
+  }
+}
+
+class ThumbnailButton extends ReactComponent<ThumbnailProps> {
+  render() {
+    const urlToRequest: string = `${thumbnailURL(this.props.projectId)}?lastUpdated=${
+      this.props.thumbnailLastGenerated
+    }`
+    return (
+      <div
+        data-label='ReloadButtonContainer'
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          // required to create its own stacking context and remain above the image
+          transform: 'scale(1.0)',
+        }}
+      >
+        <div
+          //  refreshButton set above for animations
+          className='refreshButton'
+          style={{
+            width: 160,
+            height: UtopiaTheme.layout.rowHeight.medium,
+            borderRadius: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <span style={{ fontWeight: 500 }}>Retake</span>
+        </div>
+      </div>
+    )
+  }
+}
+
 const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
   const {
     dispatch,
@@ -410,32 +541,34 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
   return (
     <FlexColumn key='leftPaneProjectTab'>
       {projectId == null ? null : (
-        <Section data-name='ProjectSettings' onFocus={onFocus} tabIndex={-1}>
-          <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
-            <FlexRow flexGrow={1} style={{ position: 'relative' }}>
-              <SilentInput
-                key='leftPaneProjectName'
-                onClick={dontPropagate}
-                onKeyPress={handleKeyPress}
-                onBlur={handleBlur}
-                defaultValue={projectName}
-              />
-            </FlexRow>
-          </SectionTitleRow>
-          <SectionBodyArea minimised={minimised}>
-            {userState.loginState.type === 'NOT_LOGGED_IN' ? (
-              <span>Log in or sign up to see settings</span>
-            ) : (
-              <div>
-                <ThumbnailComponent
-                  projectId={projectId}
-                  action={triggerRegenerateThumbnail}
-                  thumbnailLastGenerated={thumbnailLastGenerated}
-                />
-              </div>
-            )}
-          </SectionBodyArea>
-        </Section>
+        <FlexColumn>
+          <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+            <span style={{ fontWeight: 500 }}>Project</span>
+          </GridRow>
+          <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+            <span style={{ fontWeight: 700 }}> Name </span>
+            <StringInput testId='' value={projectName} />
+          </GridRow>
+          <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+            <span style={{ fontWeight: 700 }}> Description </span>
+            <StringInput testId='' value={projectName} />
+          </GridRow>
+          <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+            <span style={{ fontWeight: 700 }}> Preview </span>
+            <ThumbnailComponentStripped
+              projectId={projectId}
+              action={triggerRegenerateThumbnail}
+              thumbnailLastGenerated={thumbnailLastGenerated}
+            />
+          </GridRow>
+          {/* <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+          <ThumbnailButton
+            projectId={projectId}
+            action={triggerRegenerateThumbnail}
+            thumbnailLastGenerated={thumbnailLastGenerated}
+            />
+          </GridRow> */}
+        </FlexColumn>
       )}
     </FlexColumn>
   )
