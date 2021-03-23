@@ -3,7 +3,6 @@ import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { isSceneElement, PathForResizeContent } from '../../../core/model/scene-utils'
 import {
-  UTOPIA_ORIGINAL_ID_KEY,
   UTOPIA_SCENE_PATH,
   UTOPIA_UIDS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
@@ -58,20 +57,11 @@ export function createLookupRender(
   return (element: JSXElement, scope: MapLike<any>): React.ReactElement => {
     index++
     const innerUID = getUtopiaID(element)
-    const withOriginalID = setJSXValueAtPath(
-      element.props,
-      PP.create([UTOPIA_ORIGINAL_ID_KEY]),
-      jsxAttributeValue(innerUID, emptyComments),
-    )
     const generatedUID = createIndexedUid(innerUID, index)
-    const withGeneratedUID = flatMapEither(
-      (attrs) =>
-        setJSXValueAtPath(
-          attrs,
-          PP.create(['data-uid']),
-          jsxAttributeValue(generatedUID, emptyComments),
-        ),
-      withOriginalID,
+    const withGeneratedUID = setJSXValueAtPath(
+      element.props,
+      PP.create(['data-uid']),
+      jsxAttributeValue(generatedUID, emptyComments),
     )
 
     // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
@@ -145,14 +135,6 @@ export function renderCoreElement(
       const uidsFromProps = assembledProps[UTOPIA_UIDS_KEY]
       const uidsToPass = appendToUidString(uidsFromProps, uid)
       passthroughProps[UTOPIA_UIDS_KEY] = uidsToPass
-
-      const originalIDForProps = Utils.defaultIfNull(
-        assembledProps[UTOPIA_ORIGINAL_ID_KEY],
-        parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
-      )
-      if (originalIDForProps != null) {
-        passthroughProps[UTOPIA_ORIGINAL_ID_KEY] = originalIDForProps
-      }
 
       const key = optionalMap(TP.toString, templatePath) ?? uidsFromProps
 
