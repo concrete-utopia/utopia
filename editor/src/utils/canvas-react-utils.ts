@@ -143,7 +143,7 @@ function attachDataUidToRoot(
         [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids),
       })
     } else {
-      return React.cloneElement(originalResponse) // This is probably an unnecessary clone
+      return originalResponse
     }
   }
 }

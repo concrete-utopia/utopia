@@ -95,9 +95,7 @@ import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
 import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
-import { UTOPIA_UIDS_KEY } from './utopia-constants'
-import { extractOriginalUidFromIndexedUid, uidsFromString } from '../shared/uid-utils'
-import { forEachValue, omit } from '../shared/object-utils'
+import { omit } from '../shared/object-utils'
 const ObjectPathImmutable: any = OPI
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
@@ -801,7 +799,11 @@ export const MetadataUtils = {
       const matchingFocusPath =
         focusedElementPath == null
           ? null
-          : TP.staticScenePathContainsElementPath(focusedElementPath, TP.elementPathForPath(path))
+          : TP.scenePathUpToElementPath(
+              focusedElementPath,
+              TP.elementPathForPath(path),
+              'dynamic-scene-path',
+            )
       const focusedRootElementPaths =
         matchingFocusPath == null
           ? []

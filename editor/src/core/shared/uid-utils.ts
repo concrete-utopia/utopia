@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { v4 as UUID } from 'uuid'
 import { Either, flatMapEither, isLeft, isRight, left, right } from './either'
 import {
@@ -25,6 +24,7 @@ import { emptyComments } from '../workers/parser-printer/parser-printer-comments
 import { getDOMAttribute } from './dom-utils'
 import { UTOPIA_UIDS_KEY } from '../model/utopia-constants'
 import { optionalMap } from './optional-utils'
+import { addAllUniquely } from './array-utils'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
@@ -224,18 +224,17 @@ export function uidsToString(uidList: Array<string>): string {
 
 export function appendToUidString(
   uidsString: string | null | undefined,
-  uidsToAppend: string | null | undefined,
+  uidsToAppendString: string | null | undefined,
 ): string | null {
-  if (uidsToAppend == null) {
+  if (uidsToAppendString == null) {
     return uidsString ?? null
   } else if (uidsString == null || uidsString.length === 0) {
-    return uidsToAppend
-  } else if (R.difference(uidsFromString(uidsToAppend), uidsFromString(uidsString)).length > 0) {
-    return `${uidsString} ${uidsToString(
-      R.difference(uidsFromString(uidsToAppend), uidsFromString(uidsString)),
-    )}`
+    return uidsToAppendString
   } else {
-    return uidsString
+    const existingUIDs = uidsFromString(uidsString)
+    const uidsToAppend = uidsFromString(uidsToAppendString)
+    const updatedUIDs = addAllUniquely(existingUIDs, uidsToAppend)
+    return uidsToString(updatedUIDs)
   }
 }
 

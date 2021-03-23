@@ -39,14 +39,7 @@ import {
   useRefEditorState,
   useSelectorWithCallback,
 } from '../editor/store/store-hook'
-import {
-  UTOPIA_DO_NOT_TRAVERSE_KEY,
-  UTOPIA_LABEL_KEY,
-  UTOPIA_ORIGINAL_ID_KEY,
-  UTOPIA_UIDS_KEY,
-  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
-  UTOPIA_UID_PARENTS_KEY,
-} from '../../core/model/utopia-constants'
+import { UTOPIA_DO_NOT_TRAVERSE_KEY } from '../../core/model/utopia-constants'
 import ResizeObserver from 'resize-observer-polyfill'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
@@ -374,16 +367,11 @@ function collectMetadataForElement(
   tagName: string
   globalFrame: CanvasRectangle
   localFrame: LocalRectangle
-  originalUIDAttribute: string | null
-  labelAttribute: string | null
   specialSizeMeasurementsObject: SpecialSizeMeasurements
 } {
   const tagName: string = element.tagName.toLowerCase()
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
-
-  const originalUIDAttribute = getDOMAttribute(element, UTOPIA_ORIGINAL_ID_KEY)
-  const labelAttribute = getDOMAttribute(element, UTOPIA_LABEL_KEY)
 
   const specialSizeMeasurementsObject = getSpecialMeasurements(element, scale, containerRectLazy)
 
@@ -391,8 +379,6 @@ function collectMetadataForElement(
     tagName: tagName,
     globalFrame: globalFrame,
     localFrame: localFrame,
-    originalUIDAttribute: originalUIDAttribute,
-    labelAttribute: labelAttribute,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
   }
 }
@@ -411,18 +397,8 @@ function collectMetadata(
     tagName,
     globalFrame,
     localFrame,
-    originalUIDAttribute,
-    labelAttribute,
     specialSizeMeasurementsObject,
   } = collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
-
-  let elementProps: any = {}
-  if (originalUIDAttribute != null) {
-    elementProps[UTOPIA_ORIGINAL_ID_KEY] = originalUIDAttribute
-  }
-  if (labelAttribute != null) {
-    elementProps[UTOPIA_LABEL_KEY] = labelAttribute
-  }
 
   const { computedStyle, attributeMetadata } = getComputedStyle(
     element,
@@ -441,7 +417,7 @@ function collectMetadata(
     return elementInstanceMetadata(
       instancePath,
       left(tagName),
-      elementProps,
+      {},
       globalFrame,
       localFrame,
       filteredChildPaths,
