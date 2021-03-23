@@ -159,7 +159,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         ":storyboard/scene": Object {
           "children": Array [
             "storyboard/scene:app-root",
-            "storyboard/scene:app-root/inner-div",
           ],
           "name": "div",
         },
@@ -193,7 +192,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         ":storyboard/scene": Object {
           "children": Array [
             "storyboard/scene:app-root",
-            "storyboard/scene:app-root/inner-div",
           ],
           "name": "Scene",
         },
@@ -300,7 +298,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         ":storyboard/scene": Object {
           "children": Array [
             "storyboard/scene:app-root",
-            "storyboard/scene:app-root/inner-div",
           ],
           "name": "div",
         },
@@ -354,7 +351,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         ":storyboard/scene": Object {
           "children": Array [
             "storyboard/scene:app-root",
-            "storyboard/scene:app-root/inner-div",
           ],
           "name": "Scene",
         },
@@ -486,7 +482,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         ":storyboard/scene": Object {
           "children": Array [
             "storyboard/scene:app-root",
-            "storyboard/scene:app-root/inner-div",
           ],
           "name": "div",
         },
@@ -544,7 +539,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         ":storyboard/scene": Object {
           "children": Array [
             "storyboard/scene:app-root",
-            "storyboard/scene:app-root/inner-div",
           ],
           "name": "Scene",
         },
@@ -680,7 +674,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         ":storyboard/scene": Object {
           "children": Array [
             "storyboard/scene:app-root",
-            "storyboard/scene:app-root/inner-div",
           ],
           "name": "div",
         },
@@ -738,7 +731,6 @@ describe('Spy Wrapper Template Path Tests', () => {
         ":storyboard/scene": Object {
           "children": Array [
             "storyboard/scene:app-root",
-            "storyboard/scene:app-root/inner-div",
           ],
           "name": "Scene",
         },
