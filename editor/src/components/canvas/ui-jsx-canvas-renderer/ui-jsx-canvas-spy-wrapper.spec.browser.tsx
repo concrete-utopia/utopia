@@ -789,7 +789,7 @@ describe('Spy Wrapper Template Path Tests', () => {
 })
 
 describe('Spy Wrapper Multifile Template Path Tests', () => {
-  it('a component instance is focused inside the main App component', async () => {
+  it('the Card instance is focused inside the main App component', async () => {
     const { dispatch, getEditorState } = await renderTestEditorWithProjectContent(
       defaultProjectContentsForNormalising(),
     )
