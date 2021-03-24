@@ -725,6 +725,7 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
   }, 'ProjectSettingsPanel')
 
   const [name, changeProjectName] = React.useState(projectName)
+  const [requestingPreviewImage, setRequestingPreviewImage] = React.useState(false)
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('projectsettings')], 'leftpane')
@@ -738,7 +739,9 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
   )
 
   const triggerRegenerateThumbnail = React.useCallback(() => {
+    setRequestingPreviewImage(true)
     dispatch([regenerateThumbnail()])
+    setTimeout(() => setRequestingPreviewImage(false), 2000)
   }, [dispatch])
 
   const onFocus = React.useCallback(
@@ -798,10 +801,33 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
             ) : (
               <FlexColumn>
                 <SectionBodyArea minimised={false}>
+                  <GridRow
+                    padded
+                    type='<-------------1fr------------->'
+                    style={{
+                      height: 'inherit',
+                      wordWrap: 'normal',
+                      whiteSpace: 'normal',
+                      alignItems: 'flex-start',
+                      minHeight: 34,
+                      paddingTop: 8,
+                      paddingLeft: 8,
+                      paddingRight: 8,
+                      paddingBottom: 8,
+                      letterSpacing: 0.1,
+                      lineHeight: '17px',
+                      fontSize: '11px',
+                    }}
+                  >
+                    <Subdued>
+                      These help you organise your projects. We also use them when you embed or
+                      share your project on social media and chat apps.
+                    </Subdued>
+                  </GridRow>
                   <GridRow padded type='<---1fr--->|------172px-------|'>
-                    <p style={{ paddingRight: 28 }}> Name </p>
+                    <span>Name</span>
                     <StringInput
-                      testId=''
+                      testId='projectName'
                       value={name}
                       onChange={onChangeProjectName}
                       onKeyDown={handleKeyPress}
@@ -811,57 +837,57 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
                   </GridRow>
                   <GridRow padded type='<---1fr--->|------172px-------|'>
                     <span> Description </span>
-                    <StringInput testId='' value={projectName} style={{ width: 150 }}></StringInput>
+                    <StringInput
+                      testId='projectDescription'
+                      value={projectName}
+                      style={{ width: 150 }}
+                    />
                   </GridRow>
-                  <GridRow padded type='<---1fr--->|------172px-------|'>
+                  <GridRow
+                    padded
+                    type='<---1fr--->|------172px-------|'
+                    style={{ alignItems: 'start', height: 'initial', paddingTop: 8 }}
+                  >
                     <span> Preview </span>
-                    <FlexColumn style={{ width: '100%' }}>
-                      <div>
-                        <div
-                          // onClick={triggerRegenerateThumbnail}
-                          // style={{ position: 'relative', cursor: 'pointer' }}
-                          // all of these are defined via `css` rather than `style` so that they are animateable;
-                          // since `css= {{'&:hover' : {...}}}` renders to className, any style prop will overwrite it
-                          data-label='previewImageContainer'
-                          css={{
-                            width: 172,
-                            height: 22,
-                            paddingLeft: 4,
-                            paddingRight: 4,
-                            '& .refreshButton': {
-                              backgroundColor: colorTheme.emphasizedBackground.o(70).value,
-                              transition:
-                                'background-color .4s linear, border .4s linear, color .4s linear, box-shadow .1s linear',
-                              color: '#ccc',
-                              border: `1px solid ${colorTheme.secondaryBorder.value}`,
-                            },
-                          }}
-                        >
-                          <div
-                            css={{
-                              boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
-                              borderRadius: 1,
-                              display: 'block',
-                              width: '100%',
-                              height: '100%',
-                              transition: 'all .4s ease-in-out',
-                              backgroundImage: `url('${urlToRequest}')`,
-                              backgroundSize: 'cover',
-                              backgroundColor: colorTheme.canvasBackground.value,
-                              opacity: 1,
-                              '.previewImageContainer:hover &': {
-                                transform: 'scale(1.1) skewX(-2deg) skewY(-2deg)',
-                                opacity: 0.7,
-                              },
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <FlexRow style={{ flexGrow: 1 }}>
-                        <Button spotlight highlight onClick={triggerRegenerateThumbnail} style={{}}>
-                          Refresh
-                        </Button>
-                      </FlexRow>
+                    <FlexColumn style={{ gap: 8 }}>
+                      <div
+                        css={{
+                          boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
+                          borderRadius: 1,
+                          display: 'block',
+                          justifySelf: 'stretch',
+                          aspectRatio: '16 / 9',
+                          backgroundImage: `url('${urlToRequest}')`,
+                          backgroundSize: 'cover',
+                          backgroundColor: colorTheme.canvasBackground.value,
+                        }}
+                      />
+                      <Button
+                        disabled={requestingPreviewImage}
+                        spotlight
+                        highlight
+                        onClick={triggerRegenerateThumbnail}
+                        css={{
+                          position: 'relative',
+                          textAlign: 'center',
+                          '&:before': {
+                            transition: requestingPreviewImage
+                              ? 'right 2.5s ease-in-out'
+                              : 'inherit',
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            right: requestingPreviewImage ? 0 : '100%',
+                            background: requestingPreviewImage
+                              ? UtopiaTheme.color.primary.value
+                              : 'transparent',
+                            content: '""',
+                          },
+                        }}
+                      >
+                        {requestingPreviewImage ? 'Refreshing' : 'Refresh'}
+                      </Button>
                     </FlexColumn>
                   </GridRow>
                 </SectionBodyArea>
