@@ -73,6 +73,7 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
+import { getTopLevelElements } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -163,21 +164,19 @@ export function pickUiJsxCanvasProps(
     )
 
     let imports: Imports = emptyImports
-    let topLevelElementsIncludingScenes: Array<TopLevelElement> = emptyTopLevelElements
     let jsxFactoryFunction: string | null = null
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
 
+    const topLevelElementsIncludingScenes = getTopLevelElements(uiFilePath, editor, derived)
     if (uiFile != null && isParseSuccess(uiFile.fileContents.parsed)) {
       const success = uiFile.fileContents.parsed
       const transientCanvasState = derived.canvas.transientState
       imports = uiFile.fileContents.parsed.imports
-      topLevelElementsIncludingScenes = success.topLevelElements
       jsxFactoryFunction = success.jsxFactoryFunction
       combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
       const transientFileState = transientCanvasState.fileState
       if (transientFileState != null) {
         imports = transientFileState.imports
-        topLevelElementsIncludingScenes = transientFileState.topLevelElementsIncludingScenes
       }
     }
     const requireFn = editor.codeResultCache.requireFn

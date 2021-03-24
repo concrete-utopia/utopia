@@ -43,6 +43,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { useEditorState } from '../../editor/store/store-hook'
 import { getFileForName, getOpenUIJSFileKey } from '../../editor/store/editor-state'
 import { fastForEach } from '../../../core/shared/utils'
+import { getTopLevelElements } from './ui-jsx-canvas-top-level-elements'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -106,24 +107,23 @@ function useGetValidTemplatePaths(
   topLevelElementName: string | null,
   scenePath: ScenePath,
 ): Array<InstancePath> {
-  const topLevelElements: Map<string, UtopiaJSXComponent> = useEditorState((store) => {
+  const topLevelJSXComponentsMap: Map<string, UtopiaJSXComponent> = useEditorState((store) => {
     const uiFilePath = getOpenUIJSFileKey(store.editor)
-    const projectFile = uiFilePath ? getFileForName(uiFilePath, store.editor) : null
-    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-      let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
-      fastForEach(projectFile.fileContents.parsed.topLevelElements, (topLevelElement) => {
-        if (isUtopiaJSXComponent(topLevelElement)) {
-          topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-        }
-      })
-      return topLevelJsxComponents
-    } else {
-      return {} as Map<string, UtopiaJSXComponent>
+    if (uiFilePath == null) {
+      return new Map()
     }
+    const topLevelElements = getTopLevelElements(uiFilePath, store.editor, store.derived)
+    let topLevelJSXComponents: Map<string, UtopiaJSXComponent> = new Map()
+    fastForEach(topLevelElements, (topLevelElement) => {
+      if (isUtopiaJSXComponent(topLevelElement)) {
+        topLevelJSXComponents.set(topLevelElement.name, topLevelElement)
+      }
+    })
+    return topLevelJSXComponents
   }, 'useGetValidTemplatePaths')
   const focusedElementPath = useContextSelector(RerenderUtopiaContext, (c) => c.focusedElementPath)
   return getValidTemplatePaths(
-    topLevelElements,
+    topLevelJSXComponentsMap,
     focusedElementPath,
     topLevelElementName,
     TP.dynamicPathToStaticPath(scenePath),
