@@ -1138,7 +1138,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           \\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div data-uid=\\"aaa\\">hello</div>
+          <div data-uid=\\"ccc aaa scene-aaa\\">hello</div>
         </div>
       </div>
       "
@@ -1232,7 +1232,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           \\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div id=\\"nasty-div\\" data-uid=\\"aaa\\" data-utopia-original-uid=\\"2a7\\">
+          <div id=\\"nasty-div\\" data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa scene-aaa\\">
             huhahuha
           </div>
         </div>
@@ -1301,7 +1301,7 @@ export var storyboard = (
         >
           <div
             style=\\"left: 0; top: 0; right: 0; bottom: 0; background-color: #ffffff;\\"
-            data-uid=\\"aaa\\"
+            data-uid=\\"aaa scene\\"
           >
             <div
               class=\\"ant-picker\\"
@@ -1583,6 +1583,48 @@ export var App = (props) => {
         
       />
     </AppContext.Provider>
+  )
+}
+
+export var storyboard = (
+  <Storyboard  data-uid={'ccc'}>
+    <Scene
+      data-uid={'ddd'}
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)`,
+    )
+  })
+
+  it('renders correctly with a nested context in another component', () => {
+    testCanvasRender(
+      null,
+      `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+
+const AppContext = React.createContext({})
+const InnerContext = React.createContext({})
+
+export var Card = (props) => {
+  return (
+    <AppContext.Provider value={{color: 'blue'}} data-uid={'aaa'}>
+      <InnerContext.Provider value={{otherColor: 'red'}} data-uid={'inner'}>
+        <div
+          data-uid={'bbb'}
+          style={{ width: '100%', height: '100%', backgroundColor: '#EB1010' }}
+        />
+      </InnerContext.Provider>
+    </AppContext.Provider>
+  )
+}
+
+export var App = (props) => {
+  return (
+    <Card data-uid='card' />
   )
 }
 

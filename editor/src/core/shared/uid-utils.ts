@@ -21,6 +21,10 @@ import {
 import * as PP from './property-path'
 import { objectMap, objectValues } from './object-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { getDOMAttribute } from './dom-utils'
+import { UTOPIA_UIDS_KEY } from '../model/utopia-constants'
+import { optionalMap } from './optional-utils'
+import { addAllUniquely } from './array-utils'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
@@ -208,6 +212,50 @@ export function fixUtopiaElement(
   }
 
   return fixUtopiaElementInner(elementToFix)
+}
+
+export function uidsFromString(uidList: string = ''): Array<string> {
+  return uidList.split(' ')
+}
+
+export function uidsToString(uidList: Array<string>): string {
+  return uidList.join(' ')
+}
+
+export function popFrontUID(
+  uidList: string | null | undefined,
+): { head: string | null; tail: string | null } {
+  if (uidList == null) {
+    return { head: null, tail: null }
+  }
+  const uids = uidsFromString(uidList)
+  const head = uids[0]
+  const tail = uids.slice(1)
+  return {
+    head: uids[0],
+    tail: tail.length > 0 ? uidsToString(tail) : null,
+  }
+}
+
+export function appendToUidString(
+  uidsString: string | null | undefined,
+  uidsToAppendString: string | null | undefined,
+): string | null {
+  if (uidsToAppendString == null) {
+    return uidsString ?? null
+  } else if (uidsString == null || uidsString.length === 0) {
+    return uidsToAppendString
+  } else {
+    const existingUIDs = uidsFromString(uidsString)
+    const uidsToAppend = uidsFromString(uidsToAppendString)
+    const updatedUIDs = addAllUniquely(existingUIDs, uidsToAppend)
+    return uidsToString(updatedUIDs)
+  }
+}
+
+export function getUIDsOnDomELement(element: Element): Array<string> | null {
+  const uidsAttribute = getDOMAttribute(element, UTOPIA_UIDS_KEY)
+  return optionalMap(uidsFromString, uidsAttribute)
 }
 
 export function findElementWithUID(

@@ -27,12 +27,16 @@ export function appendToPath(firstPart: string, secondPart: string): string {
   return `${left}/${right}`
 }
 
+// TODO!!! this should be replaced with a more comprehensive module resolution, a generic version of `resolveModule`.
+// The reason is that a user might import something like `src/folder/index.js` as `import { ComponentFromIndex } from "./folder"` and rely on JS module resolution to find index.js for them
+
 export function absolutePathFromRelativePath(origin: string, relativePath: string): string {
   if (relativePath.startsWith('/')) {
     // Not actually relative in this case.
     return relativePath
   } else {
     const joinedPath = appendToPath(origin, relativePath)
+    // TODO this is not calling normalizePath, but it seems like it should
     const normalized = joinedPath.split('/')
     return `/${normalized.join('/')}`
   }

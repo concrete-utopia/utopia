@@ -921,7 +921,7 @@ function timeLimitPromise<T>(promise: Promise<T>, limitms: number, message: stri
     const timeoutID = setTimeout(() => {
       clearTimeout(timeoutID)
       reject(message)
-    })
+    }, limitms)
   })
   return Promise.race([promise, timeoutPromise])
 }

@@ -330,7 +330,7 @@ Object {
         "y": 0,
       },
       "props": Object {
-        "data-uid": "aaa",
+        "data-uid": "aaa scene-aaa",
         "skipDeepFreeze": true,
         "style": Object {
           "alignContent": undefined,
@@ -443,7 +443,6 @@ Object {
       "props": Object {
         "data-label": "Plane",
         "data-uid": "bbb~~~1",
-        "data-utopia-original-uid": "bbb",
         "skipDeepFreeze": true,
       },
       "specialSizeMeasurements": Object {
@@ -531,7 +530,6 @@ Object {
       "props": Object {
         "data-label": "Plane",
         "data-uid": "bbb~~~2",
-        "data-utopia-original-uid": "bbb",
         "skipDeepFreeze": true,
       },
       "specialSizeMeasurements": Object {
@@ -619,7 +617,6 @@ Object {
       "props": Object {
         "data-label": "Plane",
         "data-uid": "bbb~~~3",
-        "data-utopia-original-uid": "bbb",
         "skipDeepFreeze": true,
       },
       "specialSizeMeasurements": Object {
@@ -971,7 +968,7 @@ Object {
       },
       "props": Object {
         "data-label": "Hat",
-        "data-uid": "aaa",
+        "data-uid": "aaa scene-aaa",
         "skipDeepFreeze": true,
         "style": Object {
           "alignContent": undefined,
@@ -1363,7 +1360,7 @@ Object {
         "y": 0,
       },
       "props": Object {
-        "data-uid": "05c",
+        "data-uid": "05c scene-aaa",
         "skipDeepFreeze": true,
         "style": Object {
           "alignContent": undefined,
@@ -1996,7 +1993,7 @@ Object {
         "y": 0,
       },
       "props": Object {
-        "data-uid": "05c",
+        "data-uid": "05c scene-aaa",
         "skipDeepFreeze": true,
         "style": Object {
           "alignContent": undefined,
@@ -2630,7 +2627,7 @@ Object {
         "y": 0,
       },
       "props": Object {
-        "data-uid": "05c",
+        "data-uid": "05c scene-aaa",
         "skipDeepFreeze": true,
         "style": Object {
           "alignContent": undefined,

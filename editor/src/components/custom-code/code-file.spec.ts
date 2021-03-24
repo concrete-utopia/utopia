@@ -1,7 +1,6 @@
 import {
   generateCodeResultCache,
   normalisePathEndsAtDependency,
-  normalisePathError,
   normalisePathSuccess,
   normalisePathToUnderlyingTarget,
   normalisePathUnableToProceed,
@@ -18,36 +17,10 @@ import {
   initBrowserFS,
 } from '../../core/workers/ts/ts-worker'
 import { NO_OP, fastForEach } from '../../core/shared/utils'
-import {
-  NodeModules,
-  esCodeFile,
-  ProjectContents,
-  RevisionsState,
-  textFile,
-  textFileContents,
-  unparsed,
-  TextFile,
-  isTextFile,
-  codeFile,
-  ProjectFile,
-  StaticInstancePath,
-} from '../../core/shared/project-file-types'
+import { NodeModules, esCodeFile } from '../../core/shared/project-file-types'
 import { MapLike } from 'typescript'
 import { objectMap } from '../../core/shared/object-utils'
-import {
-  getDefaultUIJsFile,
-  getSamplePreviewFile,
-  getSamplePreviewHTMLFile,
-} from '../../core/model/new-project-files'
-import { directory, updateFileContents } from '../../core/model/project-file-utils'
-import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
-import {
-  PersistentModel,
-  DefaultPackageJson,
-  StoryboardFilePath,
-  persistentModelForProjectContents,
-} from '../editor/store/editor-state'
-import { lintAndParse, parseCode } from '../../core/workers/parser-printer/parser-printer'
+import { StoryboardFilePath } from '../editor/store/editor-state'
 import * as TP from '../../core/shared/template-path'
 import {
   defaultProjectContentsForNormalising,
