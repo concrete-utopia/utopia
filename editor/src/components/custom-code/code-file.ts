@@ -346,6 +346,26 @@ export type NormalisePathResult =
   | NormalisePathEndsAtDependency
   | NormalisePathSuccess
 
+export function normalisePathSuccessOrThrowError(
+  normalisePathResult: NormalisePathResult,
+): NormalisePathSuccess {
+  switch (normalisePathResult.type) {
+    case 'NORMALISE_PATH_SUCCESS':
+      return normalisePathResult
+    case 'NORMALISE_PATH_ERROR':
+      throw new Error(normalisePathResult.errorMessage)
+    case 'NORMALISE_PATH_IMPORT_NOT_FOUND':
+      throw new Error(`Could not find an import.`)
+    case 'NORMALISE_PATH_UNABLE_TO_PROCEED':
+      throw new Error(`Could not proceed past ${normalisePathResult.filePath}.`)
+    case 'NORMALISE_PATH_ENDS_AT_DEPENDENCY':
+      throw new Error(`Reached an external dependency ${normalisePathResult.dependency}.`)
+    default:
+      const _exhaustiveCheck: never = normalisePathResult
+      throw new Error(`Unhandled case ${JSON.stringify(normalisePathResult)}`)
+  }
+}
+
 export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
   currentFilePath: string,
