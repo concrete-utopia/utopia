@@ -115,7 +115,7 @@ export function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {
   return contentsToTree(projectContents)
 }
 
-function createCodeFile(path: string, contents: string): TextFile {
+export function createCodeFile(path: string, contents: string): TextFile {
   const result = lintAndParse(path, contents)
   return textFile(textFileContents(contents, result, RevisionsState.CodeAhead), null, Date.now())
 }

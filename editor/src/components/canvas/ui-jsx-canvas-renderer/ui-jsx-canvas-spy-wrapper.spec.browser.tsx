@@ -1,3 +1,4 @@
+import { directory } from '../../../core/model/project-file-utils'
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { bimapEither, foldEither, mapEither } from '../../../core/shared/either'
 import {
@@ -9,9 +10,24 @@ import {
 } from '../../../core/shared/element-template'
 import { canvasPoint, point } from '../../../core/shared/math-utils'
 import { objectMap } from '../../../core/shared/object-utils'
+import {
+  isTextFile,
+  ProjectContents,
+  ProjectFile,
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../../core/shared/project-file-types'
 import * as TP from '../../../core/shared/template-path'
-import { defaultProjectContentsForNormalising } from '../../custom-code/code-file.test-utils'
+import { parseCode } from '../../../core/workers/parser-printer/parser-printer'
+import { contentsToTree, ProjectContentTreeRoot } from '../../assets'
+import {
+  createCodeFile,
+  defaultProjectContentsForNormalising,
+} from '../../custom-code/code-file.test-utils'
 import { setFocusedElement } from '../../editor/actions/action-creators'
+import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import CanvasActions from '../canvas-actions'
 import { renderTestEditorWithCode, renderTestEditorWithProjectContent } from '../ui-jsx.test-utils'
 
@@ -963,6 +979,170 @@ xdescribe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard-entity/scene-2-entity:same-file-app-div": Object {
           "children": Array [],
           "name": "div",
+        },
+      }
+    `)
+  })
+})
+
+export function spicySoybeanProject(): ProjectContentTreeRoot {
+  let projectContents: ProjectContents = {
+    '/package.json': textFile(
+      textFileContents(
+        JSON.stringify(DefaultPackageJson, null, 2),
+        unparsed,
+        RevisionsState.BothMatch,
+      ),
+      null,
+      0,
+    ),
+    '/src': directory(),
+    '/utopia': directory(),
+    [StoryboardFilePath]: createCodeFile(
+      StoryboardFilePath,
+      `/** @jsx jsx */
+      import * as React from 'react'
+      import { Scene, Storyboard, jsx } from 'utopia-api'
+      import { Cat } from '../src/cat'
+
+      export var App = (props) => {
+        return (
+          <div data-uid='app-root'>
+            <Cat data-uid='cat-instance'>
+              world
+            </Cat>
+          </div>
+        )
+      }
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <Scene data-uid='scene' component={App} />
+        </Storyboard>
+      )      
+  `,
+    ),
+    '/src/button.js': createCodeFile(
+      '/src/button.js',
+      `import * as React from 'react'
+      export const Button = props => <button data-uid='button-root'>{props.children}</button>
+  `,
+    ),
+    '/src/cat.js': createCodeFile(
+      '/src/cat.js',
+      `import * as React from 'react'
+      import { Button } from './button'
+      
+      export var Cat = props => <Button data-uid='cat-root'>hi {props.children}</Button>
+  `,
+    ),
+  }
+
+  projectContents = objectMap((projectFile: ProjectFile, fullPath: string) => {
+    if (isTextFile(projectFile)) {
+      const code = projectFile.fileContents.code
+      const parsedFile = parseCode(fullPath, code)
+      return textFile(textFileContents(code, parsedFile, RevisionsState.BothMatch), null, 1000)
+    } else {
+      return projectFile
+    }
+  }, projectContents)
+
+  return contentsToTree(projectContents)
+}
+
+describe('Spy Wrapper Multifile Bugs', () => {
+  it('The component Cat is imported from cat.js it should be visible in the spy', async () => {
+    const { dispatch, getEditorState } = await renderTestEditorWithProjectContent(
+      spicySoybeanProject(),
+    )
+
+    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+
+    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
+
+    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
+
+    const finalMetadata = getEditorState().editor.jsxMetadataKILLME
+    const sanitizedFinalMetadata = extractTemplatePathStuffFromElementInstanceMetadata(
+      finalMetadata,
+    )
+
+    expect(sanitizedSpyData).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard": Object {
+          "children": Array [
+            ":storyboard/scene",
+          ],
+          "name": "Storyboard",
+        },
+        ":storyboard/scene": Object {
+          "children": Array [],
+          "name": "Scene",
+        },
+        "storyboard/scene:app-root": Object {
+          "children": Array [
+            "storyboard/scene:app-root/cat-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/cat-instance": Object {
+          "children": Array [],
+          "name": "Cat",
+        },
+      }
+    `)
+
+    expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard": Object {
+          "children": Array [],
+          "name": "Storyboard",
+        },
+        ":storyboard/scene": Object {
+          "children": Array [
+            "storyboard/scene:app-root",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root": Object {
+          "children": Array [
+            "storyboard/scene:app-root/cat-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/cat-instance": Object {
+          "children": Array [],
+          "name": "div",
+        },
+      }
+    `)
+
+    expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
+      Object {
+        ":storyboard": Object {
+          "children": Array [
+            ":storyboard/scene",
+          ],
+          "name": "Storyboard",
+        },
+        ":storyboard/scene": Object {
+          "children": Array [
+            "storyboard/scene:app-root",
+          ],
+          "name": "Scene",
+        },
+        "storyboard/scene:app-root": Object {
+          "children": Array [
+            "storyboard/scene:app-root/cat-instance",
+          ],
+          "name": "div",
+        },
+        "storyboard/scene:app-root/cat-instance": Object {
+          "children": Array [],
+          "name": "Cat",
         },
       }
     `)
