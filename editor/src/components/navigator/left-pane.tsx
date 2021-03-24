@@ -534,10 +534,8 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           >
             <p style={{ marginTop: 0, marginBottom: 12 }}>
               All Utopia projects are{' '}
-              <a href='#' style={{ textDecoration: 'none', color: '#007AFF' }}>
-                👁👄👁 public
-              </a>{' '}
-              by default. This means other people can discover and fork your project.
+              <span style={{ textDecoration: 'none', fontWeight: 600 }}>👁 public</span> by default.
+              This means other people can discover and fork your project.
             </p>
             <p style={{ marginTop: 0, marginBottom: 12 }}>
               We'll introduce private and team projects soon.
