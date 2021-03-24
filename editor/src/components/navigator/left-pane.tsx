@@ -449,9 +449,33 @@ const SettingsPane = betterReactMemo('SettingsPane', () => {
     >
       <Section>
         <SectionTitleRow minimised={false} toggleMinimised={() => {}}>
-          <Title style={{ flexGrow: 1 }}>Sharing</Title>
+          <Title style={{ flexGrow: 1 }}>Settings</Title>
         </SectionTitleRow>
-        <SectionBodyArea minimised={false}>Placeholder</SectionBodyArea>
+        <SectionBodyArea minimised={false}>
+          <FlexRow>
+            <div
+              style={{
+                height: 'initial',
+                minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+                alignItems: 'flex-start',
+                paddingTop: 8,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingBottom: 8,
+                whiteSpace: 'pre-wrap',
+                letterSpacing: 0.1,
+                lineHeight: '17px',
+                fontSize: '11px',
+              }}
+            >
+              <Subdued>
+                Settings can be changed in the code editor by opening the comand palette and
+                searching for Settings (CMD+P on Mac, CTRL+P on Mac / Linux). We store settings with
+                each project.
+              </Subdued>
+            </div>
+          </FlexRow>
+        </SectionBodyArea>
       </Section>
     </FlexColumn>
   )
