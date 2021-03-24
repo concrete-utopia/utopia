@@ -519,7 +519,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: 34,
+              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -544,7 +544,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: 34,
+              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -575,7 +575,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: 34,
+              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -612,13 +612,16 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: 34,
+              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
               paddingRight: 8,
               paddingBottom: 8,
               whiteSpace: 'pre-wrap',
-              color: UtopiaTheme.color.subduedForeground.value,
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
             }}
           >
             <Subdued>Old URLs will continue to work if you rename your project.</Subdued>
