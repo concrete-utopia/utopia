@@ -68,6 +68,11 @@ import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
 import { UTOPIA_SCENE_PATH } from '../../core/model/utopia-constants'
+import {
+  createLookupRender,
+  utopiaCanvasJSXLookup,
+} from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -108,7 +113,7 @@ export interface UiJsxCanvasProps {
   editedTextElement: InstancePath | null
   fileBlobs: UIFileBase64Blobs
   mountCount: number
-  onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void
+  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   walkDOM: boolean
   imports: Imports
   topLevelElementsIncludingScenes: Array<TopLevelElement>
@@ -142,7 +147,7 @@ export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
   walkDOM: boolean,
-  onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void,
+  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
   dispatch: EditorDispatch,
@@ -324,6 +329,26 @@ export const UiJsxCanvas = betterReactMemo(
 
       // First make sure everything is in scope
       if (combinedTopLevelArbitraryBlock != null) {
+        const lookupRenderer = createLookupRender(
+          TP.emptyInstancePath,
+          executionScope,
+          {},
+          requireResult,
+          hiddenInstances,
+          fileBlobs,
+          [],
+          undefined,
+          metadataContext,
+          jsxFactoryFunction,
+          props.shouldIncludeCanvasRootInTheSpy,
+        )
+
+        executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
+          combinedTopLevelArbitraryBlock.elementsWithin,
+          executionScope,
+          lookupRenderer,
+        )
+
         runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
       }
 
@@ -400,8 +425,8 @@ function useGetStoryboardRoot(
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements
-  storyboardRootElementPath: StaticInstancePath
-  rootValidPaths: Array<StaticInstancePath>
+  storyboardRootElementPath: InstancePath
+  rootValidPaths: Array<InstancePath>
   rootScenePath: ScenePath
 } {
   const StoryboardRootComponent = executionScope[BakedInStoryboardVariableName] as
@@ -443,9 +468,9 @@ export interface CanvasContainerProps {
   walkDOM: boolean
   scale: number
   offset: CanvasVector
-  onDomReport: (elementMetadata: Array<ElementInstanceMetadata>) => void
+  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   canvasRootElementTemplatePath: TemplatePath
-  validRootPaths: Array<StaticInstancePath>
+  validRootPaths: Array<InstancePath>
   mountCount: number
 }
 

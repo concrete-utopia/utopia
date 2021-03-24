@@ -8,7 +8,6 @@ import {
 } from '../../core/workers/ts/ts-worker'
 import { PropertyControls } from 'utopia-api'
 import { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
-import { SafeFunction } from '../../core/shared/code-exec-utils'
 import {
   getControlsForExternalDependencies,
   NodeModulesUpdate,
@@ -19,6 +18,13 @@ import {
   esCodeFile,
   ProjectContents,
   isEsCodeFile,
+  TemplatePath,
+  TextFile,
+  isTextFile,
+  RevisionsState,
+  InstancePath,
+  StaticInstancePath,
+  isParseSuccess,
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
@@ -27,7 +33,19 @@ import { updateNodeModulesContents } from '../editor/actions/action-creators'
 import { fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
-import { ProjectContentTreeRoot } from '../assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import { Either, left, right } from '../../core/shared/either'
+import * as TP from '../../core/shared/template-path'
+import {
+  getJSXAttribute,
+  isIntrinsicElement,
+  isJSXAttributeOtherJavaScript,
+  JSXElement,
+} from '../../core/shared/element-template'
+import { findElementWithUID } from '../../core/shared/uid-utils'
+import { importedFromWhere } from '../editor/import-utils'
+import { absolutePathFromRelativePath } from '../../utils/path-utils'
+
 export interface CodeResult {
   exports: ModuleExportTypes
   transpiledCode: string | null
@@ -253,4 +271,197 @@ export function codeCacheToBuildResult(cache: {
       errors: [], // TODO: this is ugly, these errors are the build errors which are not stored in CodeResultCache, but directly in EditorState.codeEditorErrors
     }
   }, cache)
+}
+
+export interface NormalisePathSuccess {
+  type: 'NORMALISE_PATH_SUCCESS'
+  normalisedPath: StaticInstancePath
+  filePath: string
+  textFile: TextFile
+}
+
+export function normalisePathSuccess(
+  normalisedPath: StaticInstancePath,
+  filePath: string,
+  textFile: TextFile,
+): NormalisePathSuccess {
+  return {
+    type: 'NORMALISE_PATH_SUCCESS',
+    normalisedPath: normalisedPath,
+    filePath: filePath,
+    textFile: textFile,
+  }
+}
+
+export interface NormalisePathEndsAtDependency {
+  type: 'NORMALISE_PATH_ENDS_AT_DEPENDENCY'
+  dependency: string
+}
+
+export function normalisePathEndsAtDependency(dependency: string): NormalisePathEndsAtDependency {
+  return {
+    type: 'NORMALISE_PATH_ENDS_AT_DEPENDENCY',
+    dependency: dependency,
+  }
+}
+
+export interface NormalisePathError {
+  type: 'NORMALISE_PATH_ERROR'
+  errorMessage: string
+}
+
+export function normalisePathError(errorMessage: string): NormalisePathError {
+  return {
+    type: 'NORMALISE_PATH_ERROR',
+    errorMessage: errorMessage,
+  }
+}
+
+export interface NormalisePathUnableToProceed {
+  type: 'NORMALISE_PATH_UNABLE_TO_PROCEED'
+  filePath: string
+}
+
+export function normalisePathUnableToProceed(filePath: string): NormalisePathUnableToProceed {
+  return {
+    type: 'NORMALISE_PATH_UNABLE_TO_PROCEED',
+    filePath: filePath,
+  }
+}
+
+export interface NormalisePathImportNotFound {
+  type: 'NORMALISE_PATH_IMPORT_NOT_FOUND'
+}
+
+export function normalisePathImportNotFound(): NormalisePathImportNotFound {
+  return {
+    type: 'NORMALISE_PATH_IMPORT_NOT_FOUND',
+  }
+}
+
+export type NormalisePathResult =
+  | NormalisePathError
+  | NormalisePathUnableToProceed
+  | NormalisePathImportNotFound
+  | NormalisePathEndsAtDependency
+  | NormalisePathSuccess
+
+export function normalisePathSuccessOrThrowError(
+  normalisePathResult: NormalisePathResult,
+): NormalisePathSuccess {
+  switch (normalisePathResult.type) {
+    case 'NORMALISE_PATH_SUCCESS':
+      return normalisePathResult
+    case 'NORMALISE_PATH_ERROR':
+      throw new Error(normalisePathResult.errorMessage)
+    case 'NORMALISE_PATH_IMPORT_NOT_FOUND':
+      throw new Error(`Could not find an import.`)
+    case 'NORMALISE_PATH_UNABLE_TO_PROCEED':
+      throw new Error(`Could not proceed past ${normalisePathResult.filePath}.`)
+    case 'NORMALISE_PATH_ENDS_AT_DEPENDENCY':
+      throw new Error(`Reached an external dependency ${normalisePathResult.dependency}.`)
+    default:
+      const _exhaustiveCheck: never = normalisePathResult
+      throw new Error(`Unhandled case ${JSON.stringify(normalisePathResult)}`)
+  }
+}
+
+export function normalisePathToUnderlyingTarget(
+  projectContents: ProjectContentTreeRoot,
+  currentFilePath: string,
+  elementPath: InstancePath,
+): NormalisePathResult {
+  const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
+  if (isTextFile(currentFile)) {
+    if (
+      currentFile.fileContents.revisionsState === RevisionsState.CodeAhead ||
+      !isParseSuccess(currentFile.fileContents.parsed)
+    ) {
+      // As the code is ahead this would potentially be looking at a path
+      // which now doesn't exist.
+      return normalisePathUnableToProceed(currentFilePath)
+    } else {
+      const staticPath = TP.dynamicPathToStaticPath(elementPath)
+      const potentiallyDroppedFirstSceneElementResult = TP.dropFirstScenePathElement(staticPath)
+      if (potentiallyDroppedFirstSceneElementResult.droppedScenePathElements == null) {
+        // As the scene path is empty, there's no more traversing to do, the target is in this file.
+        return normalisePathSuccess(staticPath, currentFilePath, currentFile)
+      } else {
+        const droppedPathPart = potentiallyDroppedFirstSceneElementResult.droppedScenePathElements
+        if (droppedPathPart.length === 0) {
+          return normalisePathError(
+            `Unable to handle empty scene path part for ${TP.toString(elementPath)}`,
+          )
+        } else {
+          // Now need to identify the element relating to the last part of the dropped scene path.
+          const lastScenePathPart = droppedPathPart[droppedPathPart.length - 1]
+
+          // Walk the parsed representation to find the element with the given uid.
+          const parsedContent = currentFile.fileContents.parsed
+          let targetElement: JSXElement | null = null
+          for (const topLevelElement of parsedContent.topLevelElements) {
+            const possibleTarget = findElementWithUID(topLevelElement, lastScenePathPart)
+            if (possibleTarget != null) {
+              targetElement = possibleTarget
+              break
+            }
+          }
+
+          // Identify where the component is imported from or if it's in the same file.
+          if (targetElement == null) {
+            return normalisePathImportNotFound()
+          } else {
+            const nonNullTargetElement: JSXElement = targetElement
+            function lookupElementImport(elementBaseVariable: string): NormalisePathResult {
+              const importedFrom = importedFromWhere(
+                currentFilePath,
+                elementBaseVariable,
+                parsedContent.topLevelElements,
+                parsedContent.imports,
+              )
+              if (importedFrom == null) {
+                return normalisePathImportNotFound()
+              } else {
+                if (importedFrom === 'utopia-api' && elementBaseVariable === 'Scene') {
+                  // Navigate around the scene with the special case handling.
+                  const componentAttr = getJSXAttribute(nonNullTargetElement.props, 'component')
+                  if (componentAttr != null && isJSXAttributeOtherJavaScript(componentAttr)) {
+                    return lookupElementImport(componentAttr.javascript)
+                  } else {
+                    return normalisePathError(
+                      `Unable to handle Scene component definition for ${TP.toString(elementPath)}`,
+                    )
+                  }
+                } else if (importedFrom.includes('/')) {
+                  const absoluteImportedPath = absolutePathFromRelativePath(
+                    currentFilePath,
+                    importedFrom,
+                  )
+                  return normalisePathToUnderlyingTarget(
+                    projectContents,
+                    absoluteImportedPath,
+                    potentiallyDroppedFirstSceneElementResult.newPath,
+                  )
+                } else {
+                  return normalisePathEndsAtDependency(importedFrom)
+                }
+              }
+            }
+            // Handle things like divs.
+            if (isIntrinsicElement(targetElement.name)) {
+              return normalisePathSuccess(
+                TP.dynamicPathToStaticPath(potentiallyDroppedFirstSceneElementResult.newPath),
+                currentFilePath,
+                currentFile,
+              )
+            } else {
+              return lookupElementImport(targetElement.name.baseVariable)
+            }
+          }
+        }
+      }
+    }
+  } else {
+    return normalisePathUnableToProceed(currentFilePath)
+  }
 }

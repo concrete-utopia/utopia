@@ -95,9 +95,7 @@ import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
 import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
-import { UTOPIA_ORIGINAL_ID_KEY, UTOPIA_UID_KEY } from './utopia-constants'
-import { extractOriginalUidFromIndexedUid } from '../shared/uid-utils'
-import { forEachValue, omit } from '../shared/object-utils'
+import { omit } from '../shared/object-utils'
 const ObjectPathImmutable: any = OPI
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
@@ -781,7 +779,10 @@ export const MetadataUtils = {
   createOrderedTemplatePathsFromElements(
     metadata: JSXMetadata,
     collapsedViews: Array<TemplatePath>,
+    focusedElementPath: ScenePath | null,
   ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
+    const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
+
     let navigatorTargets: Array<TemplatePath> = []
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
@@ -794,6 +795,27 @@ export const MetadataUtils = {
       if (!collapsedAncestor) {
         visibleNavigatorTargets.push(path)
       }
+
+      const matchingFocusPath =
+        focusedElementPath == null
+          ? null
+          : TP.scenePathUpToElementPath(
+              focusedElementPath,
+              TP.elementPathForPath(path),
+              'dynamic-scene-path',
+            )
+      const focusedRootElementPaths =
+        matchingFocusPath == null
+          ? []
+          : allPaths.filter(
+              (p) =>
+                TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
+                TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
+            )
+      fastForEach(focusedRootElementPaths, (focusedRootElement) => {
+        walkAndAddKeys(focusedRootElement, collapsedAncestor || isCollapsed)
+      })
+
       fastForEach(reversedChildren, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
       })
@@ -1133,13 +1155,12 @@ export const MetadataUtils = {
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
-
-        const possibleUID: string | null | undefined = Utils.defaultIfNull(
-          spyElem.props[UTOPIA_UID_KEY],
-          spyElem.props[UTOPIA_ORIGINAL_ID_KEY],
-        )
-        if (possibleUID != null) {
-          const possibleElement = elementsByUID[possibleUID]
+        if (isLeft(spyElem.element) && spyElem.element.value === 'Scene') {
+          // We have some weird special casing for Scenes (see https://github.com/concrete-utopia/utopia/pull/671)
+          jsxElement = spyElem.element
+        } else {
+          const elemUID: string | null = TP.toStaticUid(domElem.templatePath)
+          const possibleElement = elementsByUID[elemUID]
           if (possibleElement != null) {
             if (!isIntrinsicElement(possibleElement.name)) {
               componentInstance = true
@@ -1148,16 +1169,10 @@ export const MetadataUtils = {
           }
         }
 
-        // This is quite frankly awful
-        const elementToUse =
-          isLeft(spyElem.element) && spyElem.element.value === 'Scene'
-            ? spyElem.element
-            : jsxElement
-
         const elem: ElementInstanceMetadata = {
           ...domElem,
           props: spyElem.props,
-          element: elementToUse,
+          element: jsxElement,
           children: children,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
@@ -1421,7 +1436,7 @@ export const MetadataUtils = {
   },
   findElementMetadata(
     target: TemplatePath,
-    elements: Array<ElementInstanceMetadata>,
+    elements: ReadonlyArray<ElementInstanceMetadata>,
   ): ElementInstanceMetadata | null {
     const pathToUse = TP.isScenePath(target) ? TP.instancePathForElementAtScenePath(target) : target
     return elements.find((elem) => TP.pathsEqual(pathToUse, elem.templatePath)) ?? null

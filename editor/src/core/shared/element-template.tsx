@@ -938,6 +938,7 @@ export function arbitraryJSBlock(
   definedWithin: Array<string>,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
+  elementsWithin: ElementsWithin,
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
@@ -947,6 +948,7 @@ export function arbitraryJSBlock(
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uniqueID: UUID(),
+    elementsWithin: elementsWithin,
   }
 }
 
@@ -1131,6 +1133,7 @@ export interface ArbitraryJSBlock {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uniqueID: string
+  elementsWithin: ElementsWithin
 }
 
 export interface ImportStatement {

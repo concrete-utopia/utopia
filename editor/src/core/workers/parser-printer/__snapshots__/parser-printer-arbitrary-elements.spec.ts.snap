@@ -3,11 +3,14 @@
 exports[`JSX parser circularly referenced arbitrary blocks parse and produce a combined block 1`] = `
 Object {
   "combinedTopLevelArbitraryBlock": Object {
-    "definedElsewhere": Array [],
+    "definedElsewhere": Array [
+      "utopiaCanvasJSXLookup",
+    ],
     "definedWithin": Array [
       "a",
       "b",
     ],
+    "elementsWithin": Object {},
     "javascript": "function a(n) {
   if (n <= 0) {
     return 0
@@ -25,7 +28,7 @@ function b(n) {
 }",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAMCA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWHA;;AAEAX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
+      "mappings": "AAICA,SAASC,CAATD,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAOC,CAACC,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AAWFA;;AAEDX,SAASQ,CAATR,CAAWE,CAAXF,EAAcG;AACZC,MAAIF,CAACG,IAAIC,CAATF,EAAYD;AACVI,WAAOD,CAAPC;AACDF,GAFDD,MAEOD;AACLI,WAAON,CAACQ,CAACP,CAACG,GAAGK,CAALD,CAARF;AACDI;AACHC",
       "names": Array [
         "function",
         "a",
@@ -208,10 +211,12 @@ return { a: a, b: b };",
     Object {
       "definedElsewhere": Array [
         "b",
+        "utopiaCanvasJSXLookup",
       ],
       "definedWithin": Array [
         "a",
       ],
+      "elementsWithin": Object {},
       "javascript": "function a(n) {
   if (n <= 0) {
     return 0
@@ -531,10 +536,12 @@ export var storyboard = (
     Object {
       "definedElsewhere": Array [
         "a",
+        "utopiaCanvasJSXLookup",
       ],
       "definedWithin": Array [
         "b",
       ],
+      "elementsWithin": Object {},
       "javascript": "function b(n) {
   if (n <= 0) {
     return 0

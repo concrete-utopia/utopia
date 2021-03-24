@@ -3,9 +3,8 @@ import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { isSceneElement, PathForResizeContent } from '../../../core/model/scene-utils'
 import {
-  UTOPIA_ORIGINAL_ID_KEY,
   UTOPIA_SCENE_PATH,
-  UTOPIA_UID_KEY,
+  UTOPIA_UIDS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
 import { flatMapEither, forEachRight } from '../../../core/shared/either'
@@ -35,10 +34,72 @@ import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
 import { buildSpyWrappedElement } from './ui-jsx-canvas-spy-wrapper'
-import { createIndexedUid } from '../../../core/shared/uid-utils'
+import { appendToUidString, createIndexedUid } from '../../../core/shared/uid-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
+
+export function createLookupRender(
+  templatePath: InstancePath | null,
+  rootScope: MapLike<any>,
+  parentComponentInputProps: MapLike<any>,
+  requireResult: MapLike<any>,
+  hiddenInstances: Array<TemplatePath>,
+  fileBlobs: UIFileBase64Blobs,
+  validPaths: Array<InstancePath>,
+  reactChildren: React.ReactNode | undefined,
+  metadataContext: UiJsxCanvasContextData,
+  jsxFactoryFunctionName: string | null,
+  shouldIncludeCanvasRootInTheSpy: boolean,
+): (element: JSXElement, scope: MapLike<any>) => React.ReactElement {
+  let index = 0
+
+  return (element: JSXElement, scope: MapLike<any>): React.ReactElement => {
+    index++
+    const innerUID = getUtopiaID(element)
+    const generatedUID = createIndexedUid(innerUID, index)
+    const withGeneratedUID = setJSXValueAtPath(
+      element.props,
+      PP.create(['data-uid']),
+      jsxAttributeValue(generatedUID, emptyComments),
+    )
+
+    // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
+    const templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
+      TP.parentPath,
+      templatePath,
+    )
+    const innerPath = optionalMap(
+      (p) => TP.appendToPath(p, generatedUID),
+      templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
+    )
+
+    let augmentedInnerElement = element
+    forEachRight(withGeneratedUID, (attrs) => {
+      augmentedInnerElement = {
+        ...augmentedInnerElement,
+        props: attrs,
+      }
+    })
+    return renderCoreElement(
+      augmentedInnerElement,
+      innerPath,
+      rootScope,
+      scope,
+      parentComponentInputProps,
+      requireResult,
+      hiddenInstances,
+      fileBlobs,
+      validPaths,
+      generatedUID,
+      reactChildren,
+      metadataContext,
+      jsxFactoryFunctionName,
+      null,
+      shouldIncludeCanvasRootInTheSpy,
+    )
+  }
+}
 
 export function renderCoreElement(
   element: JSXElementChild,
@@ -71,20 +132,11 @@ export function renderCoreElement(
         ...assembledProps,
       }
 
-      const uidForProps = Utils.defaultIfNull(assembledProps[UTOPIA_UID_KEY], uid)
-      if (uidForProps != null) {
-        passthroughProps[UTOPIA_UID_KEY] = uidForProps
-      }
+      const uidsFromProps = assembledProps[UTOPIA_UIDS_KEY]
+      const uidsToPass = appendToUidString(uidsFromProps, uid)
+      passthroughProps[UTOPIA_UIDS_KEY] = uidsToPass
 
-      const originalIDForProps = Utils.defaultIfNull(
-        assembledProps[UTOPIA_ORIGINAL_ID_KEY],
-        parentComponentInputProps[UTOPIA_ORIGINAL_ID_KEY],
-      )
-      if (originalIDForProps != null) {
-        passthroughProps[UTOPIA_ORIGINAL_ID_KEY] = originalIDForProps
-      }
-
-      const key = optionalMap(TP.toString, templatePath) ?? uidForProps
+      const key = optionalMap(TP.toString, templatePath) ?? uidsFromProps
 
       return renderJSXElement(
         key,
@@ -105,64 +157,20 @@ export function renderCoreElement(
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
-      let innerIndex: number = 0
-      function innerRender(
-        innerElement: JSXElement,
-        innerInScope: MapLike<any>,
-      ): React.ReactElement {
-        innerIndex++
-        const innerUID = getUtopiaID(innerElement)
-        const withOriginalID = setJSXValueAtPath(
-          innerElement.props,
-          PP.create([UTOPIA_ORIGINAL_ID_KEY]),
-          jsxAttributeValue(innerUID, emptyComments),
-        )
-        const generatedUID = createIndexedUid(innerUID, innerIndex)
-        const withGeneratedUID = flatMapEither(
-          (attrs) =>
-            setJSXValueAtPath(
-              attrs,
-              PP.create(['data-uid']),
-              jsxAttributeValue(generatedUID, emptyComments),
-            ),
-          withOriginalID,
-        )
+      const innerRender = createLookupRender(
+        templatePath,
+        rootScope,
+        parentComponentInputProps,
+        requireResult,
+        hiddenInstances,
+        fileBlobs,
+        validPaths,
+        reactChildren,
+        metadataContext,
+        jsxFactoryFunctionName,
+        shouldIncludeCanvasRootInTheSpy,
+      )
 
-        // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-        const templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
-          TP.parentPath,
-          templatePath,
-        )
-        const innerPath = optionalMap(
-          (p) => TP.appendToPath(p, generatedUID),
-          templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
-        )
-
-        let augmentedInnerElement = innerElement
-        forEachRight(withGeneratedUID, (attrs) => {
-          augmentedInnerElement = {
-            ...augmentedInnerElement,
-            props: attrs,
-          }
-        })
-        return renderCoreElement(
-          augmentedInnerElement,
-          innerPath,
-          rootScope,
-          innerInScope,
-          parentComponentInputProps,
-          requireResult,
-          hiddenInstances,
-          fileBlobs,
-          validPaths,
-          generatedUID,
-          reactChildren,
-          metadataContext,
-          jsxFactoryFunctionName,
-          null,
-          shouldIncludeCanvasRootInTheSpy,
-        )
-      }
       const blockScope = {
         ...inScope,
         [JSX_CANVAS_LOOKUP_FUNCTION_NAME]: utopiaCanvasJSXLookup(
@@ -281,10 +289,12 @@ function renderJSXElement(
     templatePath,
   )
 
+  const staticValidPaths = validPaths.map(TP.dynamicPathToStaticPath)
+
   if (
     FinalElement != null &&
     templatePath != null &&
-    TP.containsPath(staticTemplatePathForGeneratedElement, validPaths)
+    TP.containsPath(staticTemplatePathForGeneratedElement, staticValidPaths)
   ) {
     let childrenTemplatePaths: InstancePath[] = []
 
@@ -336,7 +346,7 @@ function hideElement(props: any): any {
   } as any
 }
 
-function utopiaCanvasJSXLookup(
+export function utopiaCanvasJSXLookup(
   elementsWithin: ElementsWithin,
   executionScope: MapLike<any>,
   render: (element: JSXElement, inScope: MapLike<any>) => React.ReactElement,

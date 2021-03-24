@@ -1,4 +1,10 @@
-import { generateCodeResultCache } from './code-file'
+import {
+  generateCodeResultCache,
+  normalisePathEndsAtDependency,
+  normalisePathSuccess,
+  normalisePathToUnderlyingTarget,
+  normalisePathUnableToProceed,
+} from './code-file'
 import {
   ExportsInfo,
   MultiFileBuildResult,
@@ -14,6 +20,13 @@ import { NO_OP, fastForEach } from '../../core/shared/utils'
 import { NodeModules, esCodeFile } from '../../core/shared/project-file-types'
 import { MapLike } from 'typescript'
 import { objectMap } from '../../core/shared/object-utils'
+import { StoryboardFilePath } from '../editor/store/editor-state'
+import * as TP from '../../core/shared/template-path'
+import {
+  defaultProjectContentsForNormalising,
+  getTextFileByPath,
+  instancePathFromString,
+} from './code-file.test-utils'
 
 function transpileCode(
   rootFilenames: Array<string>,
@@ -405,5 +418,81 @@ describe('Creating require function', () => {
     )
 
     expect(() => codeResultCache.requireFn('/', 'foo', false)).toThrowErrorMatchingSnapshot()
+  })
+})
+
+describe('normalisePathToUnderlyingTarget', () => {
+  const projectContents = defaultProjectContentsForNormalising()
+  it('handles finding the target within the same file', () => {
+    const actualResult = normalisePathToUnderlyingTarget(
+      projectContents,
+      StoryboardFilePath,
+      instancePathFromString('storyboard-entity/scene-2-entity:same-file-app-div'),
+    )
+    const expectedResult = normalisePathSuccess(
+      TP.dynamicPathToStaticPath(instancePathFromString(':same-file-app-div')),
+      StoryboardFilePath,
+      getTextFileByPath(projectContents, StoryboardFilePath),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('jumps across multiple files to reach the actual target', () => {
+    const actualResult = normalisePathToUnderlyingTarget(
+      projectContents,
+      StoryboardFilePath,
+      instancePathFromString(
+        'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
+      ),
+    )
+    const expectedResult = normalisePathSuccess(
+      TP.dynamicPathToStaticPath(instancePathFromString(':card-outer-div/card-inner-div')),
+      '/src/card.js',
+      getTextFileByPath(projectContents, '/src/card.js'),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('returns the same path because there are no hops to take', () => {
+    const actualResult = normalisePathToUnderlyingTarget(
+      projectContents,
+      '/src/card.js',
+      instancePathFromString(':card-outer-div/card-inner-div'),
+    )
+    const expectedResult = normalisePathSuccess(
+      TP.dynamicPathToStaticPath(instancePathFromString(':card-outer-div/card-inner-div')),
+      '/src/card.js',
+      getTextFileByPath(projectContents, '/src/card.js'),
+    )
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('gives an error when a file does not exist', () => {
+    const actualResult = normalisePathToUnderlyingTarget(
+      projectContents,
+      '/src/nonexistant.js',
+      instancePathFromString(':card-outer-div/card-inner-div'),
+    )
+    const expectedResult = normalisePathUnableToProceed('/src/nonexistant.js')
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('skips attempting to traverse when confronted with an unparsed code file', () => {
+    const actualResult = normalisePathToUnderlyingTarget(
+      projectContents,
+      '/utopia/unparsedstoryboard.js',
+      instancePathFromString(
+        'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
+      ),
+    )
+    const expectedResult = normalisePathUnableToProceed('/utopia/unparsedstoryboard.js')
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('handles hitting an external dependency', () => {
+    const actualResult = normalisePathToUnderlyingTarget(
+      projectContents,
+      StoryboardFilePath,
+      instancePathFromString(
+        'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',
+      ),
+    )
+    const expectedResult = normalisePathEndsAtDependency('utopia-api')
+    expect(actualResult).toEqual(expectedResult)
   })
 })

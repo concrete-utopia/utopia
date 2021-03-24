@@ -26,7 +26,6 @@ export interface ButtonProps {
 export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   label: 'button',
   cursor: 'pointer',
-  minHeight: UtopiaTheme.layout.inputHeight.default,
   display: props.hidden ? 'none' : 'flex',
   flexGrow: 0,
   flexShrink: 0,

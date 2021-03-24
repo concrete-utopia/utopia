@@ -48,6 +48,8 @@ import {
   createEditorState,
   deriveState,
   EditorStore,
+  PersistentModel,
+  persistentModelForProjectContents,
   StoryboardFilePath,
 } from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
@@ -58,7 +60,7 @@ import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
-import { getContentsTreeFileFromString } from '../assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { testStaticScenePath } from '../../core/shared/template-path.test-utils'
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -68,6 +70,13 @@ process.on('unhandledRejection', (reason, promise) => {
 jest.mock('../../core/vscode/vscode-bridge')
 
 export async function renderTestEditorWithCode(appUiJsFileCode: string) {
+  return renderTestEditorWithModel(createTestProjectWithCode(appUiJsFileCode))
+}
+export async function renderTestEditorWithProjectContent(projectContent: ProjectContentTreeRoot) {
+  return renderTestEditorWithModel(persistentModelForProjectContents(projectContent))
+}
+
+export async function renderTestEditorWithModel(model: PersistentModel) {
   const renderCountBaseline = renderCount
 
   let emptyEditorState = createEditorState(NO_OP)
@@ -175,7 +184,7 @@ export async function renderTestEditorWithCode(appUiJsFileCode: string) {
             reject(e)
           }
         },
-        createTestProjectWithCode(appUiJsFileCode),
+        model,
         'Test',
         '0',
         initialEditorStore.workers,

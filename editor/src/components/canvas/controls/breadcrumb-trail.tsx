@@ -11,7 +11,6 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { FlexRow, Icons, UtopiaTheme } from '../../../uuiui'
 import { TemplatePath } from 'src/core/shared/project-file-types'
-// import { getElementsToTarget } from '../../../components/inspector/common/inspector-utils'
 
 interface ElementPathElement {
   name?: string

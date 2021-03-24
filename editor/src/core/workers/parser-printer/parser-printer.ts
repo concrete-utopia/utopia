@@ -8,7 +8,6 @@ import {
   sortBy,
   findLastIndex,
 } from '../../shared/array-utils'
-import { SafeFunction } from '../../shared/code-exec-utils'
 import {
   Either,
   eitherToMaybe,
@@ -1113,7 +1112,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
             names.push(variableDeclaration.name.getText(sourceFile))
           }
         }
-      } else if (TS.isFunctionDeclaration(node)) {
+      } else if (TS.isFunctionLike(node)) {
         if (node.name != null) {
           names.push(node.name.getText(sourceFile))
         }

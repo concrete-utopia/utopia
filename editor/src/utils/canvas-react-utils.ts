@@ -5,9 +5,10 @@ import { omitWithPredicate } from '../core/shared/object-utils'
 import { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
 import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
-import { UtopiaKeys, UTOPIA_UID_KEY, UTOPIA_UID_PARENTS_KEY } from '../core/model/utopia-constants'
+import { UtopiaKeys, UTOPIA_UIDS_KEY, UTOPIA_UID_PARENTS_KEY } from '../core/model/utopia-constants'
 import { v4 } from 'uuid'
 import { PRODUCTION_ENV } from '../common/env-vars'
+import { appendToUidString, popFrontUID, uidsFromString } from '../core/shared/uid-utils'
 
 const realCreateElement = React.createElement
 
@@ -24,7 +25,7 @@ export function applyUIDMonkeyPatch(): void {
   }
 }
 
-function getDisplayName(type: any) {
+function getDisplayName(type: any): string {
   // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
   if (typeof type === 'function') {
     return type.displayName || type.name || 'Unknown'
@@ -32,6 +33,13 @@ function getDisplayName(type: any) {
     return type.toString()
   } else if (typeof type === 'string') {
     return type
+  } else if (typeof type === 'object') {
+    // Typically React context, memo, or forwardRef
+    const wrapper = type.$$typeof == null ? 'Unknown object' : getDisplayName(type.$$typeof)
+    const wrappedType = type.type ?? type.render
+    const wrapped = wrappedType == null ? '' : `(${getDisplayName(wrappedType)})`
+
+    return `${wrapper}${wrapped}`
   } else {
     return 'Unknown'
   }
@@ -119,28 +127,30 @@ function shouldIncludeDataUID(type: any): boolean {
 
 function attachDataUidToRoot(
   originalResponse: React.ReactElement | null | undefined,
-  dataUid: string | null,
+  dataUids: string | null,
 ): React.ReactElement | null
 function attachDataUidToRoot(
   originalResponse: Array<React.ReactElement | null>,
-  dataUid: string | null,
+  dataUids: string | null,
 ): Array<React.ReactElement | null>
 function attachDataUidToRoot(
   originalResponse: React.ReactElement | Array<React.ReactElement | null> | null | undefined,
-  dataUid: string | null,
+  dataUids: string | null,
 ): React.ReactElement | Array<React.ReactElement | null> | null {
-  if (originalResponse == null || dataUid == null) {
+  if (originalResponse == null || dataUids == null) {
     return originalResponse as any
   } else if (Array.isArray(originalResponse)) {
     // the response was an array of elements
-    return originalResponse.map((element) => attachDataUidToRoot(element, dataUid))
+    return originalResponse.map((element) => attachDataUidToRoot(element, dataUids))
   } else if (!React.isValidElement(originalResponse as any)) {
     return originalResponse
   } else {
     if (shouldIncludeDataUID(originalResponse.type)) {
-      return React.cloneElement(originalResponse, { [UTOPIA_UID_KEY]: dataUid })
+      return React.cloneElement(originalResponse, {
+        [UTOPIA_UIDS_KEY]: appendToUidString(originalResponse.props[UTOPIA_UIDS_KEY], dataUids),
+      })
     } else {
-      return React.cloneElement(originalResponse)
+      return originalResponse
     }
   }
 }
@@ -155,7 +165,7 @@ const mangleFunctionType = Utils.memoize(
         performance.mark(`render_start_${uuid}`)
       }
       let originalTypeResponse = (type as React.FunctionComponent)(p, context)
-      const res = attachDataUidToRoot(originalTypeResponse, (p as any)?.[UTOPIA_UID_KEY])
+      const res = attachDataUidToRoot(originalTypeResponse, (p as any)?.[UTOPIA_UIDS_KEY])
       if (MeasureRenderTimes) {
         performance.mark(`render_end_${uuid}`)
         performance.measure(
@@ -207,47 +217,28 @@ const mangleClassType = Utils.memoize(
   },
 )
 
+function uidsWithoutExoticUID(uids: string | null): string | null {
+  const { head: uidsHead, tail: uidsTail } = popFrontUID(uids)
+  return uidsTail ?? uidsHead
+}
+
 const mangleExoticType = Utils.memoize(
   (type: React.ComponentType): React.FunctionComponent => {
-    function updateChild(
-      child: React.ReactElement,
-      dataUid: string | null,
-      parentUid: string | null,
-    ) {
-      const existingChildUID = child.props?.[UTOPIA_UID_KEY]
-      const existingParentIDs = child.props?.[UTOPIA_UID_PARENTS_KEY]
+    function updateChild(child: React.ReactElement, dataUids: string | null) {
+      const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
+      const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)
       if ((!React.isValidElement(child) as any) || child == null) {
         return child
       } else {
-        let pathParts: Array<string> = []
-        // Added to here in reverse order, attempting to rebuild
-        // what the path _should_ be.
-        if (typeof existingChildUID === 'string') {
-          pathParts.push(existingChildUID)
-        }
-        if (typeof dataUid === 'string') {
-          pathParts.push(dataUid)
-        }
-        if (typeof parentUid === 'string') {
-          pathParts.push(parentUid)
-        }
-        if (typeof existingParentIDs === 'string') {
-          pathParts.push(existingParentIDs)
-        }
-        let [childUID, ...parentParts] = pathParts
-
         // Setup the result.
         let additionalProps: any = {}
         let shouldClone: boolean = false
 
-        if (childUID != null) {
-          additionalProps[UTOPIA_UID_KEY] = childUID
+        if (appendedUIDString != null) {
+          additionalProps[UTOPIA_UIDS_KEY] = appendedUIDString
           shouldClone = true
         }
-        if (parentParts != null && parentParts.length > 0) {
-          additionalProps[UTOPIA_UID_PARENTS_KEY] = parentParts.reverse().join('/')
-          shouldClone = true
-        }
+
         if (shouldClone) {
           return React.cloneElement(child, additionalProps)
         } else {
@@ -265,7 +256,8 @@ const mangleExoticType = Utils.memoize(
      * Instead of that we render these fragment-like components, and mangle with their children
      */
     const wrapperComponent = (p: any, context?: any) => {
-      if (p?.[UTOPIA_UID_KEY] == null) {
+      const uids = p?.[UTOPIA_UIDS_KEY]
+      if (uids == null) {
         // early return for the cases where there's no data-uid
         return realCreateElement(type, p)
       } else if (p?.children == null || typeof p.children === 'string') {
@@ -277,21 +269,23 @@ const mangleExoticType = Utils.memoize(
           const originalFunction = p.children
           children = function (...params: any[]) {
             const originalResponse = originalFunction(...params)
-            return attachDataUidToRoot(originalResponse, p?.[UTOPIA_UID_KEY])
+            return attachDataUidToRoot(originalResponse, uids)
           }
-        } else if (Array.isArray(p?.children)) {
-          children = React.Children.map(p?.children, (child) =>
-            updateChild(child, p?.[UTOPIA_UID_KEY], p?.[UTOPIA_UID_PARENTS_KEY]),
-          )
         } else {
-          children = updateChild(p.children, p?.[UTOPIA_UID_KEY], p?.[UTOPIA_UID_PARENTS_KEY])
+          const uidsToPass = uidsWithoutExoticUID(uids)
+
+          if (Array.isArray(p?.children)) {
+            children = React.Children.map(p?.children, (child) => updateChild(child, uidsToPass))
+          } else {
+            children = updateChild(p.children, uidsToPass)
+          }
         }
         let mangledProps = {
           ...p,
           children: children,
         }
 
-        delete mangledProps[UTOPIA_UID_KEY]
+        delete mangledProps[UTOPIA_UIDS_KEY]
         return realCreateElement(type as any, mangledProps)
       }
     }

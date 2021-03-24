@@ -1,5 +1,5 @@
 import { v4 as UUID } from 'uuid'
-import { Either, flatMapEither, isLeft, left, right } from './either'
+import { Either, flatMapEither, isLeft, isRight, left, right } from './either'
 import {
   JSXAttributes,
   jsxAttributeValue,
@@ -10,6 +10,7 @@ import {
   isJSXArbitraryBlock,
   setJSXAttributesAttribute,
   getJSXAttribute,
+  TopLevelElement,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -18,8 +19,12 @@ import {
   setJSXValueAtPath,
 } from './jsx-attributes'
 import * as PP from './property-path'
-import { objectMap } from './object-utils'
+import { objectMap, objectValues } from './object-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { getDOMAttribute } from './dom-utils'
+import { UTOPIA_UIDS_KEY } from '../model/utopia-constants'
+import { optionalMap } from './optional-utils'
+import { addAllUniquely } from './array-utils'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
@@ -207,4 +212,110 @@ export function fixUtopiaElement(
   }
 
   return fixUtopiaElementInner(elementToFix)
+}
+
+export function uidsFromString(uidList: string = ''): Array<string> {
+  return uidList.split(' ')
+}
+
+export function uidsToString(uidList: Array<string>): string {
+  return uidList.join(' ')
+}
+
+export function popFrontUID(
+  uidList: string | null | undefined,
+): { head: string | null; tail: string | null } {
+  if (uidList == null) {
+    return { head: null, tail: null }
+  }
+  const uids = uidsFromString(uidList)
+  const head = uids[0]
+  const tail = uids.slice(1)
+  return {
+    head: uids[0],
+    tail: tail.length > 0 ? uidsToString(tail) : null,
+  }
+}
+
+export function appendToUidString(
+  uidsString: string | null | undefined,
+  uidsToAppendString: string | null | undefined,
+): string | null {
+  if (uidsToAppendString == null) {
+    return uidsString ?? null
+  } else if (uidsString == null || uidsString.length === 0) {
+    return uidsToAppendString
+  } else {
+    const existingUIDs = uidsFromString(uidsString)
+    const uidsToAppend = uidsFromString(uidsToAppendString)
+    const updatedUIDs = addAllUniquely(existingUIDs, uidsToAppend)
+    return uidsToString(updatedUIDs)
+  }
+}
+
+export function getUIDsOnDomELement(element: Element): Array<string> | null {
+  const uidsAttribute = getDOMAttribute(element, UTOPIA_UIDS_KEY)
+  return optionalMap(uidsFromString, uidsAttribute)
+}
+
+export function findElementWithUID(
+  topLevelElement: TopLevelElement,
+  targetUID: string,
+): JSXElement | null {
+  function findForJSXElementChild(element: JSXElementChild): JSXElement | null {
+    switch (element.type) {
+      case 'JSX_ELEMENT':
+        return findForJSXElement(element)
+      case 'JSX_FRAGMENT':
+        for (const child of element.children) {
+          const childResult = findForJSXElementChild(child)
+          if (childResult != null) {
+            return childResult
+          }
+        }
+        return null
+      case 'JSX_TEXT_BLOCK':
+        return null
+      case 'JSX_ARBITRARY_BLOCK':
+        if (targetUID in element.elementsWithin) {
+          return element.elementsWithin[targetUID]
+        }
+        for (const elementWithin of objectValues(element.elementsWithin)) {
+          const elementWithinResult = findForJSXElement(elementWithin)
+          if (elementWithinResult != null) {
+            return elementWithinResult
+          }
+        }
+        return null
+      default:
+        const _exhaustiveCheck: never = element
+        throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
+    }
+  }
+
+  function findForJSXElement(element: JSXElement): JSXElement | null {
+    const parsedUID = parseUID(element.props)
+    if (isRight(parsedUID) && parsedUID.value === targetUID) {
+      return element
+    } else {
+      for (const child of element.children) {
+        const childResult = findForJSXElementChild(child)
+        if (childResult != null) {
+          return childResult
+        }
+      }
+    }
+    return null
+  }
+
+  switch (topLevelElement.type) {
+    case 'UTOPIA_JSX_COMPONENT':
+      return findForJSXElementChild(topLevelElement.rootElement)
+    case 'ARBITRARY_JS_BLOCK':
+      return null
+    case 'UNPARSED_CODE':
+      return null
+    case 'IMPORT_STATEMENT':
+      return null
+  }
 }

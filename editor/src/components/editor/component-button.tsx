@@ -10,7 +10,6 @@ import {
   IcnColor,
   OnClickOutsideHOC,
   SmallerIcons,
-  stroke,
   UtopiaTheme,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
@@ -48,6 +47,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
 
   const [currentEditContext, setCurrentEditContext] = React.useState(editContext.COMPONENT)
 
+  // TODO replace this with a function that enters focus mode
   const TODOREPLACEMEcycleEditContext = () => {
     const nextEditContext = (currentEditContext + 1) % 4
     setCurrentEditContext(nextEditContext)
@@ -96,6 +96,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
     >
       <FlexRow
         role='button'
+        // TODO replace me with the right function call from above
         onClick={TODOREPLACEMEcycleEditContext}
         css={{
           flexGrow: 1,
@@ -135,7 +136,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
             paddingRight: 8,
           }}
         >
-          {/* TODO replace me with the real icon */}
+          {/* TODO replace me with the real label */}
           {selectedViews.length}
         </span>
       </FlexRow>

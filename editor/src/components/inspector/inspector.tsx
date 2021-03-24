@@ -66,10 +66,6 @@ import { CSSPosition } from './common/css-utils'
 import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
-import { ElementPathElement } from './sections/header-section/element-path'
-import { HeaderSection, HeaderSectionCoreProps } from './sections/header-section/header-section'
-import { LayoutWrapperCoreProps } from './sections/header-section/layout-wrapper-section'
-import { NameRowProps } from './sections/header-section/name-row'
 import {
   CSSTarget,
   cssTarget,
@@ -108,17 +104,20 @@ export interface InspectorModel {
   specialSizeMeasurements: SpecialSizeMeasurements
 }
 
+export interface ElementPathElement {
+  name?: string
+  path: TemplatePath
+}
+
 export interface InspectorPartProps<T> {
   input: T
   onSubmitValue: (output: T, paths: Array<PropertyPath>) => void
 }
 export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
-    HeaderSectionCoreProps,
-    TargetSelectorSectionProps,
-    LayoutWrapperCoreProps,
-    NameRowProps {
+    TargetSelectorSectionProps {
   selectedViews: Array<TemplatePath>
+  elementPath: Array<ElementPathElement>
 }
 
 interface AlignDistributeButtonProps {
@@ -404,16 +403,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
             onStyleSelectorInsert={props.onStyleSelectorInsert}
           />
           <EventHandlersSection />
-          <HeaderSection
-            elementPath={props.elementPath}
-            onSelect={props.onSelect}
-            label={props.input.label}
-            type={props.input.type}
-            onElementTypeChange={props.onElementTypeChange}
-            onWrap={props.onWrap}
-            onUnwrap={props.onUnwrap}
-            value={props.input.layoutWrapper}
-          />
         </React.Fragment>
       )
     }
@@ -675,11 +664,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     [dispatch, refElementsToTargetForUpdates],
   )
 
-  const onSelect = React.useCallback(
-    (path) => dispatch([selectComponents([path], false)], 'everyone'),
-    [dispatch],
-  )
-
   const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
     targetsReferentiallyStable[0].path,
   )
@@ -747,16 +731,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     dispatch(actions, 'everyone')
   }, [dispatch, refElementsToTargetForUpdates])
 
-  const onElementTypeChange = React.useCallback(
-    (newElementName: JSXElementName, importsToAdd: Imports) => {
-      const actions = refElementsToTargetForUpdates.current.flatMap((path) => {
-        return EditorActions.updateJSXElementName(path, newElementName, importsToAdd)
-      })
-      dispatch(actions, 'everyone')
-    },
-    [dispatch, refElementsToTargetForUpdates],
-  )
-
   const inspector = isUIJSFile ? (
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
@@ -766,11 +740,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
         elementPath={elementPath}
-        onSelect={onSelect}
         onSelectTarget={onSelectTarget}
-        onWrap={onWrap}
-        onUnwrap={onUnwrap}
-        onElementTypeChange={onElementTypeChange}
         onStyleSelectorRename={onStyleSelectorRename}
         onStyleSelectorDelete={onStyleSelectorDelete}
         onStyleSelectorInsert={onStyleSelectorInsert}

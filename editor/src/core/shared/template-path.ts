@@ -360,6 +360,26 @@ export function depth(path: TemplatePath): number {
   }
 }
 
+export function navigatorDepth(path: TemplatePath): number {
+  if (isScenePath(path)) {
+    return 1
+  } else {
+    let scenePathLength = -1 // starts from -1 for the storyboard element
+    fastForEach(path.scene.sceneElementPaths, (elementPath) => {
+      scenePathLength += elementPath.length
+    })
+    return scenePathLength + path.element.length
+  }
+}
+
+export function isInsideFocusedComponent(path: TemplatePath): boolean {
+  if (isScenePath(path)) {
+    return false
+  } else {
+    return path.scene.sceneElementPaths.length > 1
+  }
+}
+
 function elementPathParent(path: ElementPath): ElementPath {
   return path.slice(0, path.length - 1)
 }
@@ -395,8 +415,13 @@ function elementPathToUID(path: ElementPath): id {
 export function toTemplateId(path: InstancePath): id {
   return elementPathToUID(path.element)
 }
+
 export function toUid(path: InstancePath): id {
   return elementPathToUID(path.element)
+}
+
+export function toStaticUid(path: InstancePath): id {
+  return extractOriginalUidFromIndexedUid(toUid(path))
 }
 
 export function allTemplateIds(path: InstancePath): Array<id> {
@@ -539,6 +564,16 @@ function elementIsDescendent(l: ElementPath, r: ElementPath): boolean {
   return elementPathsEqual(slicedL, r)
 }
 
+function scenePathIsDescendent(path: ScenePath, targetAncestor: ScenePath): boolean {
+  return targetAncestor.sceneElementPaths.every((elementPath, i) => {
+    if (path.sceneElementPaths[i] != null) {
+      return elementPathsEqual(elementPath, path.sceneElementPaths[i])
+    } else {
+      return false
+    }
+  })
+}
+
 // This is sooooo badly named! It should be `isDescendentOf`, and tbh that was probably me...
 // e.g. isAncestorOf(instancePath(['A'], ['B', 'C']), instancePath(['A'], ['B']) would return true,
 //      isAncestorOf(instancePath(['A'], ['B']), instancePath(['A'], ['B', 'C']) would return false
@@ -553,10 +588,10 @@ export function isAncestorOf(
     // we've already tested the case where they equals, and a scene can't be a descendent
     return false
   } else if (isScenePath(targetAncestor)) {
-    return scenePathsEqual(path.scene, targetAncestor)
+    return scenePathIsDescendent(path.scene, targetAncestor)
   } else {
     return (
-      scenePathsEqual(path.scene, targetAncestor.scene) &&
+      scenePathIsDescendent(path.scene, targetAncestor.scene) &&
       elementIsDescendent(path.element, targetAncestor.element)
     )
   }
@@ -899,18 +934,47 @@ export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath 
   }
 }
 
-export function scenePathContainsElementPath(scene: ScenePath, elementPath: ElementPath): boolean {
-  return scene.sceneElementPaths.some((sceneElementPath) =>
-    elementPathsEqual(sceneElementPath, elementPath),
-  )
-}
-
-export function staticScenePathContainsElementPath(
+export function scenePathUpToElementPath(
   scene: ScenePath,
   elementPath: ElementPath,
-): boolean {
-  const staticScene = dynamicScenePathToStaticScenePath(scene)
-  return staticScene.sceneElementPaths.some((sceneElementPath) => {
+  convertSceneToStatic: 'dynamic-scene-path' | 'static-scene-path',
+): ScenePath | null {
+  const staticScene =
+    convertSceneToStatic === 'static-scene-path' ? dynamicScenePathToStaticScenePath(scene) : scene
+  const foundIndex = staticScene.sceneElementPaths.findIndex((sceneElementPath) => {
     return elementPathsEqual(sceneElementPath, elementPath)
   })
+  return foundIndex === -1 ? null : scenePath(scene.sceneElementPaths.slice(0, foundIndex + 1))
+}
+
+export function isScenePathEmpty(path: TemplatePath): boolean {
+  if (isScenePath(path)) {
+    return path.sceneElementPaths.length === 0
+  } else {
+    return path.scene.sceneElementPaths.length === 0
+  }
+}
+
+interface DropFirstScenePathElementResultType {
+  newPath: InstancePath
+  droppedScenePathElements: StaticElementPath | null
+}
+
+export function dropFirstScenePathElement(
+  path: StaticInstancePath,
+): DropFirstScenePathElementResultType {
+  if (isScenePathEmpty(path)) {
+    return {
+      newPath: path,
+      droppedScenePathElements: null,
+    }
+  } else {
+    return {
+      newPath: {
+        ...path,
+        scene: scenePath(path.scene.sceneElementPaths.slice(1)),
+      },
+      droppedScenePathElements: path.scene.sceneElementPaths[0],
+    }
+  }
 }
