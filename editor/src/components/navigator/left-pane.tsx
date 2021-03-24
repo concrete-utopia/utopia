@@ -724,6 +724,8 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
     }
   }, 'ProjectSettingsPanel')
 
+  const [name, changeProjectName] = React.useState(projectName)
+
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('projectsettings')], 'leftpane')
   }, [dispatch])
@@ -766,6 +768,10 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
     e.stopPropagation()
   }, [])
 
+  const onChangeProjectName = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    changeProjectName(event.target.value)
+  }, [])
+
   const urlToRequest = `${thumbnailURL(projectId!)}?lastUpdated=${thumbnailLastGenerated}`
 
   return (
@@ -794,7 +800,14 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
                 <SectionBodyArea minimised={false}>
                   <GridRow padded type='<---1fr--->|------172px-------|'>
                     <p style={{ paddingRight: 28 }}> Name </p>
-                    <StringInput testId='' value={projectName} style={{ width: 150 }} />
+                    <StringInput
+                      testId=''
+                      value={name}
+                      onChange={onChangeProjectName}
+                      onKeyDown={handleKeyPress}
+                      style={{ width: 150 }}
+                      onBlur={handleBlur}
+                    />
                   </GridRow>
                   <GridRow padded type='<---1fr--->|------172px-------|'>
                     <span> Description </span>
@@ -802,14 +815,54 @@ const ProjectSettingsPane = betterReactMemo('ProjectSettingsPanel', () => {
                   </GridRow>
                   <GridRow padded type='<---1fr--->|------172px-------|'>
                     <span> Preview </span>
-                    <div>
-                      <img src={urlToRequest} />
-                      <FlexRow>
+                    <FlexColumn style={{ width: '100%' }}>
+                      <div>
+                        <div
+                          // onClick={triggerRegenerateThumbnail}
+                          // style={{ position: 'relative', cursor: 'pointer' }}
+                          // all of these are defined via `css` rather than `style` so that they are animateable;
+                          // since `css= {{'&:hover' : {...}}}` renders to className, any style prop will overwrite it
+                          data-label='previewImageContainer'
+                          css={{
+                            width: 172,
+                            height: 22,
+                            paddingLeft: 4,
+                            paddingRight: 4,
+                            '& .refreshButton': {
+                              backgroundColor: colorTheme.emphasizedBackground.o(70).value,
+                              transition:
+                                'background-color .4s linear, border .4s linear, color .4s linear, box-shadow .1s linear',
+                              color: '#ccc',
+                              border: `1px solid ${colorTheme.secondaryBorder.value}`,
+                            },
+                          }}
+                        >
+                          <div
+                            css={{
+                              boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
+                              borderRadius: 1,
+                              display: 'block',
+                              width: '100%',
+                              height: '100%',
+                              transition: 'all .4s ease-in-out',
+                              backgroundImage: `url('${urlToRequest}')`,
+                              backgroundSize: 'cover',
+                              backgroundColor: colorTheme.canvasBackground.value,
+                              opacity: 1,
+                              '.previewImageContainer:hover &': {
+                                transform: 'scale(1.1) skewX(-2deg) skewY(-2deg)',
+                                opacity: 0.7,
+                              },
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <FlexRow style={{ flexGrow: 1 }}>
                         <Button spotlight highlight onClick={triggerRegenerateThumbnail} style={{}}>
                           Refresh
                         </Button>
                       </FlexRow>
-                    </div>
+                    </FlexColumn>
                   </GridRow>
                 </SectionBodyArea>
               </FlexColumn>
