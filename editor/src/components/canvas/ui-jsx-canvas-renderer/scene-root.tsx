@@ -9,8 +9,15 @@ import {
   emptyComputedStyle,
   JSXElement,
   emptyAttributeMetadatada,
+  isUtopiaJSXComponent,
+  UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import { InstancePath, ScenePath } from '../../../core/shared/project-file-types'
+import {
+  InstancePath,
+  isParseSuccess,
+  isTextFile,
+  ScenePath,
+} from '../../../core/shared/project-file-types'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
 import { UiJsxCanvasContextData, UiJsxCanvasContext } from '../ui-jsx-canvas'
 import {
@@ -33,6 +40,9 @@ import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
 import { UTOPIA_SCENE_PATH, UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { useEditorState } from '../../editor/store/store-hook'
+import { getFileForName, getOpenUIJSFileKey } from '../../editor/store/editor-state'
+import { fastForEach } from '../../../core/shared/utils'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -96,7 +106,21 @@ function useGetValidTemplatePaths(
   topLevelElementName: string | null,
   scenePath: ScenePath,
 ): Array<InstancePath> {
-  const topLevelElements = useContextSelector(RerenderUtopiaContext, (c) => c.topLevelElements)
+  const topLevelElements: Map<string, UtopiaJSXComponent> = useEditorState((store) => {
+    const uiFilePath = getOpenUIJSFileKey(store.editor)
+    const projectFile = uiFilePath ? getFileForName(uiFilePath, store.editor) : null
+    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+      let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
+      fastForEach(projectFile.fileContents.parsed.topLevelElements, (topLevelElement) => {
+        if (isUtopiaJSXComponent(topLevelElement)) {
+          topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
+        }
+      })
+      return topLevelJsxComponents
+    } else {
+      return {} as Map<string, UtopiaJSXComponent>
+    }
+  }, 'useGetValidTemplatePaths')
   const focusedElementPath = useContextSelector(RerenderUtopiaContext, (c) => c.focusedElementPath)
   return getValidTemplatePaths(
     topLevelElements,

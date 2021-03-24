@@ -31,7 +31,6 @@ export function updateMutableUtopiaContextWithNewProps(
 }
 
 interface RerenderUtopiaContextProps {
-  topLevelElements: ReadonlyMap<string, UtopiaJSXComponent>
   hiddenInstances: Array<TemplatePath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
@@ -39,7 +38,6 @@ interface RerenderUtopiaContextProps {
 }
 
 export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
-  topLevelElements: new Map(),
   hiddenInstances: [],
   canvasIsLive: false,
   shouldIncludeCanvasRootInTheSpy: false,

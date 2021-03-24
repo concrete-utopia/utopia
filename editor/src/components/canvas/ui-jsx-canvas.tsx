@@ -320,6 +320,7 @@ export const UiJsxCanvas = betterReactMemo(
             ] = createComponentRendererComponent({
               topLevelElementName: topLevelElement.name,
               mutableContextRef: mutableContextRef,
+              filePath: uiFilePath,
             })
           }
         }
@@ -385,7 +386,6 @@ export const UiJsxCanvas = betterReactMemo(
             <RerenderUtopiaContext.Provider
               value={{
                 hiddenInstances: hiddenInstances,
-                topLevelElements: topLevelElementsMap,
                 canvasIsLive: canvasIsLive,
                 shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
                 focusedElementPath: props.focusedElementPath,
