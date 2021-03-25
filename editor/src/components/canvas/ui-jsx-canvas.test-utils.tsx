@@ -136,6 +136,33 @@ export function renderCanvasReturnResultAndError(
     parsedCode,
   )
 
+  const storeHookForTest = getStoreHook(NO_OP)
+  storeHookForTest.updateStore((store) => {
+    const projectContents: ProjectContents = {
+      utopia: directory(),
+      [uiFilePath]: textFile(
+        textFileContents(code, parsedCode, RevisionsState.BothMatch),
+        null,
+        1000,
+      ),
+    }
+    const updatedEditor = {
+      ...store.editor,
+      canvas: {
+        ...store.editor.canvas,
+        openFile: {
+          filename: uiFilePath,
+        },
+      },
+      projectContents: contentsToTree(projectContents),
+    }
+    return {
+      ...store,
+      editor: updatedEditor,
+      derived: deriveState(updatedEditor, store.derived),
+    }
+  })
+
   function clearConsoleLogs(): void {
     consoleLogs = []
   }
@@ -166,6 +193,8 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: null,
+      projectContents: storeHookForTest.api.getState().editor.projectContents,
+      transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
     }
   } else {
     canvasProps = {
@@ -187,6 +216,8 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: null,
+      projectContents: storeHookForTest.api.getState().editor.projectContents,
+      transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
     }
   }
 
@@ -194,33 +225,6 @@ export function renderCanvasReturnResultAndError(
     ...canvasProps,
     spyEnabled: false,
   }
-
-  const storeHookForTest = getStoreHook(NO_OP)
-  storeHookForTest.updateStore((store) => {
-    const projectContents: ProjectContents = {
-      utopia: directory(),
-      [uiFilePath]: textFile(
-        textFileContents(code, parsedCode, RevisionsState.BothMatch),
-        null,
-        1000,
-      ),
-    }
-    const updatedEditor = {
-      ...store.editor,
-      canvas: {
-        ...store.editor.canvas,
-        openFile: {
-          filename: uiFilePath,
-        },
-      },
-      projectContents: contentsToTree(projectContents),
-    }
-    return {
-      ...store,
-      editor: updatedEditor,
-      derived: deriveState(updatedEditor, store.derived),
-    }
-  })
 
   let formattedSpyEnabled
   let errorsReportedSpyEnabled = []

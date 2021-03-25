@@ -29,6 +29,7 @@ import {
   ParentLevelUtopiaContext,
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
+  UtopiaProjectContext,
 } from './ui-jsx-canvas-contexts'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import * as TP from '../../../core/shared/template-path'
@@ -43,7 +44,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { useEditorState } from '../../editor/store/store-hook'
 import { getFileForName, getOpenUIJSFileKey } from '../../editor/store/editor-state'
 import { fastForEach } from '../../../core/shared/utils'
-import { getTopLevelElements } from './ui-jsx-canvas-top-level-elements'
+import { getTopLevelElements, useGetTopLevelElements } from './ui-jsx-canvas-top-level-elements'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -107,23 +108,20 @@ function useGetValidTemplatePaths(
   topLevelElementName: string | null,
   scenePath: ScenePath,
 ): Array<InstancePath> {
-  const topLevelJSXComponentsMap: Map<string, UtopiaJSXComponent> = useEditorState((store) => {
-    const uiFilePath = getOpenUIJSFileKey(store.editor)
-    if (uiFilePath == null) {
-      return new Map()
+  const uiFilePath = useContextSelector(UtopiaProjectContext, (c) => c.openStoryboardFilePathKILLME)
+
+  const topLevelElements = useGetTopLevelElements(uiFilePath ?? '')
+  let topLevelJSXComponents: Map<string, UtopiaJSXComponent> = new Map()
+  fastForEach(topLevelElements, (topLevelElement) => {
+    if (isUtopiaJSXComponent(topLevelElement)) {
+      topLevelJSXComponents.set(topLevelElement.name, topLevelElement)
     }
-    const topLevelElements = getTopLevelElements(uiFilePath, store.editor, store.derived)
-    let topLevelJSXComponents: Map<string, UtopiaJSXComponent> = new Map()
-    fastForEach(topLevelElements, (topLevelElement) => {
-      if (isUtopiaJSXComponent(topLevelElement)) {
-        topLevelJSXComponents.set(topLevelElement.name, topLevelElement)
-      }
-    })
-    return topLevelJSXComponents
-  }, 'useGetValidTemplatePaths')
+  })
+
   const focusedElementPath = useContextSelector(RerenderUtopiaContext, (c) => c.focusedElementPath)
+
   return getValidTemplatePaths(
-    topLevelJSXComponentsMap,
+    topLevelJSXComponents,
     focusedElementPath,
     topLevelElementName,
     TP.dynamicPathToStaticPath(scenePath),
