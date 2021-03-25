@@ -281,10 +281,14 @@ export const UiJsxCanvas = betterReactMemo(
     unimportAllButTheseCSSFiles(cssImports)
 
     let mutableContextRef = React.useRef<MutableUtopiaContextProps>({
-      fileBlobs: fileBlobs,
-      requireResult: {},
-      rootScope: {},
-      jsxFactoryFunctionName: null,
+      [uiFilePath]: {
+        mutableContext: {
+          fileBlobs: fileBlobs,
+          requireResult: {},
+          rootScope: {},
+          jsxFactoryFunctionName: null,
+        },
+      },
     })
 
     if (clearErrors != null) {
@@ -324,6 +328,7 @@ export const UiJsxCanvas = betterReactMemo(
           metadataContext,
           jsxFactoryFunction,
           props.shouldIncludeCanvasRootInTheSpy,
+          uiFilePath,
         )
 
         executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -336,10 +341,14 @@ export const UiJsxCanvas = betterReactMemo(
       }
 
       updateMutableUtopiaContextWithNewProps(mutableContextRef, {
-        requireResult: requireResult,
-        rootScope: executionScope,
-        fileBlobs: fileBlobs,
-        jsxFactoryFunctionName: jsxFactoryFunction,
+        [uiFilePath]: {
+          mutableContext: {
+            requireResult: requireResult,
+            rootScope: executionScope,
+            fileBlobs: fileBlobs,
+            jsxFactoryFunctionName: jsxFactoryFunction,
+          },
+        },
       })
 
       const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))

@@ -130,13 +130,15 @@ function useGetValidTemplatePaths(
 
 interface SceneRootRendererProps {
   sceneElement: JSXElement
+  filePath: string
   style?: React.CSSProperties
 }
 
 export const SceneRootRenderer = betterReactMemo(
   'SceneRootRenderer',
   (props: SceneRootRendererProps) => {
-    const mutableUtopiaContext = React.useContext(MutableUtopiaContext).current
+    const mutableUtopiaContext = React.useContext(MutableUtopiaContext).current[props.filePath]
+      .mutableContext
     const inScope = mutableUtopiaContext.rootScope
     const requireResult = mutableUtopiaContext.requireResult
     const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
