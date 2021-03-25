@@ -7,7 +7,7 @@
   background-color: var(--contextmenu-background);
   box-sizing: border-box;
   box-shadow: rgb(218 218 218 / 30%) -1px 3px 4px 0px, inset 0px 0px 0px 1px hsl(0deg 0% 90%);
-  padding: 4px 0;
+  padding: 4px 2px;
 }
 .react-contexify .react-contexify__submenu {
   position: absolute;

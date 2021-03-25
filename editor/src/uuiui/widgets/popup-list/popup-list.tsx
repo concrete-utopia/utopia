@@ -601,7 +601,7 @@ export const PopupList = betterReactMemo<PopupListProps>(
           }),
           menuList: (_, menuListProps) => {
             return {
-              backgroundColor: controlStyles.backgroundColor,
+              backgroundColor: colorTheme.contextMenuBackground.value,
               padding: 0,
               boxSizing: 'border-box',
               label: 'menuList',
