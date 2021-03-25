@@ -301,10 +301,11 @@ export const UiJsxCanvas = betterReactMemo(
 
       const { scope, requireResult, topLevelJsxComponents } = useExecutionScope(
         uiFilePath,
-        imports,
         customRequire,
         mutableContextRef,
-        topLevelElementsIncludingScenes,
+        props.projectContents,
+        uiFilePath,
+        props.transientFileState,
       )
 
       const executionScope = scope
