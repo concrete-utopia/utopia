@@ -1775,6 +1775,7 @@ export function modifyUnderlyingTarget(
 ): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editorState.projectContents,
+    editorState.nodeModules.files,
     currentFilePath,
     target,
   )
