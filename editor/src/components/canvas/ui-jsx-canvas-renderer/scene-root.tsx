@@ -2,13 +2,15 @@ import * as React from 'react'
 import { View } from 'utopia-api'
 import { useContextSelector } from 'use-context-selector'
 import * as fastDeepEquals from 'fast-deep-equal'
-import { getValidTemplatePaths } from '../../../core/model/element-template-utils'
+import { getUtopiaID, getValidTemplatePaths } from '../../../core/model/element-template-utils'
 import { left } from '../../../core/shared/either'
 import {
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
   JSXElement,
   emptyAttributeMetadatada,
+  isJSXElement,
+  getJSXElementNameAsString,
 } from '../../../core/shared/element-template'
 import { InstancePath, ScenePath } from '../../../core/shared/project-file-types'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
@@ -23,7 +25,10 @@ import {
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
 } from './ui-jsx-canvas-contexts'
-import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
+import {
+  renderComponentUsingJsxFactoryFunction,
+  renderCoreElement,
+} from './ui-jsx-canvas-element-renderer-utils'
 import * as TP from '../../../core/shared/template-path'
 import * as PP from '../../../core/shared/property-path'
 import { betterReactMemo } from '../../../uuiui-deps'
@@ -33,6 +38,7 @@ import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
 import { UTOPIA_SCENE_PATH, UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { flattenArray, mapDropNulls } from '../../../core/shared/array-utils'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -119,41 +125,161 @@ export const SceneRootRenderer = betterReactMemo(
     const requireResult = mutableUtopiaContext.requireResult
     const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
     const parentPath = useContextSelector(ParentLevelUtopiaContext, (c) => c.templatePath)
-    const uid = getUtopiaIDFromJSXElement(props.sceneElement)
+    const sceneUID = getUtopiaIDFromJSXElement(props.sceneElement)
 
     if (parentPath == null) {
-      throw new Error(`Utopia Error: no parent template path provided for Scene (uid: ${uid})`)
+      throw new Error(`Utopia Error: no parent template path provided for Scene (uid: ${sceneUID})`)
     }
 
     const sceneProps: SceneProps = React.useMemo(
       () => jsxAttributesToProps(inScope, props.sceneElement.props, requireResult),
       [inScope, props.sceneElement.props, requireResult],
     )
-    const templatePath = React.useMemo(() => TP.appendToPath(parentPath, uid), [parentPath, uid])
+    const templatePath = React.useMemo(() => TP.appendToPath(parentPath, sceneUID), [
+      parentPath,
+      sceneUID,
+    ])
     const scenePath = TP.scenePathForElementAtInstancePath(templatePath)
 
-    const topLevelElementName = getTopLevelElementName(sceneProps.component)
+    const childrenWithPathsAndNames = props.sceneElement.children.map((child) => {
+      const uid = getUtopiaID(child)
+      const instance = TP.appendToPath(templatePath, uid)
+      const scene = TP.scenePathForElementAtInstancePath(instance)
+      return {
+        child: child,
+        instance: instance,
+        scene: scene,
+        uid: uid,
+        name: isJSXElement(child) ? getJSXElementNameAsString(child.name) : null,
+      }
+    })
 
-    const validPaths = useGetValidTemplatePaths(topLevelElementName, scenePath)
+    const jsxElementChildren = mapDropNulls(
+      ({ instance, scene, name }) =>
+        name == null ? null : { scene: scene, name: name, instance: instance },
+      childrenWithPathsAndNames,
+    )
 
-    useRunSpy(scenePath, templatePath, topLevelElementName, sceneProps)
+    const topLevelElements = useContextSelector(RerenderUtopiaContext, (c) => c.topLevelElements)
+    const focusedElementPath = useContextSelector(
+      RerenderUtopiaContext,
+      (c) => c.focusedElementPath,
+    )
 
-    const propsWithScenePath = {
-      ...sceneProps.props,
-      [UTOPIA_SCENE_PATH]: scenePath,
-      [UTOPIA_UIDS_KEY]: uid,
+    const unflattenedValidPaths = jsxElementChildren.map(({ name, scene }) =>
+      getValidTemplatePaths(topLevelElements, focusedElementPath, name, scene),
+    )
+    const validPaths = [
+      templatePath,
+      ...jsxElementChildren.map(({ instance }) => instance),
+      ...flattenArray(unflattenedValidPaths),
+    ]
+
+    // const baseValidPaths = useGetValidTemplatePaths(
+    //   topLevelElements[0].name,
+    //   topLevelElements[0].scene,
+    // )
+    // const validPaths = baseValidPaths
+    // .concat(
+    //   childrenWithPathsAndNames.map(({ instance }) => instance),
+    // )
+
+    let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
+    const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
+
+    const shouldIncludeCanvasRootInTheSpy = useContextSelector(
+      RerenderUtopiaContext,
+      (c) => c.shouldIncludeCanvasRootInTheSpy,
+    )
+
+    const sceneResizesContent = Boolean(
+      utils.path(PP.getElements(PathForResizeContent), props) ?? false,
+    )
+
+    // useRunSpy(scenePath, templatePath, topLevelElements[0].name, sceneProps)
+    // useRunSpy(scenePath, topLevelElements[0].instance, topLevelElements[0].name, sceneProps)
+
+    // Add metadata for the actual scene
+    if (shouldIncludeCanvasRootInTheSpy) {
+      metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
+        element: left('Scene'),
+        templatePath: templatePath,
+        props: {},
+        globalFrame: null,
+        localFrame: null,
+        children: childrenWithPathsAndNames.map(({ instance }) => instance),
+        // children: [],
+        componentInstance: false,
+        isEmotionOrStyledComponent: false,
+        specialSizeMeasurements: emptySpecialSizeMeasurements,
+        computedStyle: emptyComputedStyle,
+        attributeMetadatada: emptyAttributeMetadatada,
+      }
     }
 
-    const rootElement =
-      sceneProps.component == null
-        ? null
-        : renderComponentUsingJsxFactoryFunction(
-            inScope,
-            mutableUtopiaContext.jsxFactoryFunctionName,
-            sceneProps.component,
-            propsWithScenePath,
-            undefined,
-          )
+    metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
+      scenePath: scenePath,
+      templatePath: templatePath,
+      component: childrenWithPathsAndNames[0]?.name,
+      sceneResizesContent: sceneResizesContent,
+      globalFrame: null,
+      label: (sceneProps.props ?? {})['data-label'],
+      style: sceneProps.props?.style ?? {},
+    }
+
+    const renderedChildren = childrenWithPathsAndNames.map(
+      ({ name, child, instance, scene, uid }, index) => {
+        const propsWithScenePath = {
+          ...sceneProps.props,
+          [UTOPIA_SCENE_PATH]: scene,
+          [UTOPIA_UIDS_KEY]: uid,
+        }
+
+        if (shouldIncludeCanvasRootInTheSpy) {
+          metadataContext.current.spyValues.metadata[TP.toComponentId(instance)] = {
+            element: left('Scene'),
+            templatePath: instance,
+            props: {},
+            globalFrame: null,
+            localFrame: null,
+            children: [],
+            componentInstance: false,
+            isEmotionOrStyledComponent: false,
+            specialSizeMeasurements: emptySpecialSizeMeasurements,
+            computedStyle: emptyComputedStyle,
+            attributeMetadatada: emptyAttributeMetadatada,
+          }
+        }
+
+        metadataContext.current.spyValues.scenes[TP.toString(scene)] = {
+          scenePath: scene,
+          templatePath: instance,
+          component: name,
+          sceneResizesContent: sceneResizesContent,
+          globalFrame: null,
+          label: propsWithScenePath['data-label'],
+          style: propsWithScenePath.style ?? {},
+        }
+
+        return renderCoreElement(
+          child,
+          instance,
+          inScope,
+          inScope,
+          propsWithScenePath,
+          requireResult,
+          hiddenInstances,
+          mutableUtopiaContext.fileBlobs,
+          validPaths,
+          undefined,
+          undefined,
+          metadataContext,
+          mutableUtopiaContext.jsxFactoryFunctionName,
+          null, // TODO Code error
+          shouldIncludeCanvasRootInTheSpy,
+        )
+      },
+    )
 
     const sceneStyle: React.CSSProperties = {
       position: 'relative',
@@ -168,11 +294,12 @@ export const SceneRootRenderer = betterReactMemo(
     return (
       <SceneLevelUtopiaContext.Provider value={{ validPaths: validPaths }}>
         <View
+          data-uid={sceneUID}
           data-utopia-scene-id={TP.toString(scenePath)}
           data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
           style={sceneStyle}
         >
-          {rootElement}
+          {renderedChildren}
         </View>
       </SceneLevelUtopiaContext.Provider>
     )

@@ -384,6 +384,24 @@ function elementPathParent(path: ElementPath): ElementPath {
   return path.slice(0, path.length - 1)
 }
 
+function scenePathParent(path: ScenePath): ScenePath | null {
+  let mutatedSceneElementPaths = [...path.sceneElementPaths]
+  let lastElementPath = mutatedSceneElementPaths.pop()
+  if (lastElementPath == null) {
+    return null
+  } else {
+    const parentOfLastElementPath = elementPathParent(lastElementPath)
+    if (parentOfLastElementPath.length > 0) {
+      mutatedSceneElementPaths.push(parentOfLastElementPath)
+    }
+    if (mutatedSceneElementPaths.length > 0) {
+      return scenePath(mutatedSceneElementPaths)
+    } else {
+      return null
+    }
+  }
+}
+
 export function instancePathParent(path: StaticInstancePath): ScenePath | StaticInstancePath
 export function instancePathParent(path: InstancePath): TemplatePath
 export function instancePathParent(path: InstancePath): TemplatePath {
@@ -395,13 +413,13 @@ export function instancePathParent(path: InstancePath): TemplatePath {
   }
 }
 
-export function parentPath(path: ScenePath): null
+export function parentPath(path: ScenePath): ScenePath | null
 export function parentPath(path: StaticInstancePath): StaticTemplatePath
 export function parentPath(path: InstancePath): TemplatePath
 export function parentPath(path: TemplatePath): TemplatePath | null
 export function parentPath(path: TemplatePath): TemplatePath | null {
   if (isScenePath(path)) {
-    return null
+    return scenePathParent(path)
   } else {
     return instancePathParent(path)
   }
