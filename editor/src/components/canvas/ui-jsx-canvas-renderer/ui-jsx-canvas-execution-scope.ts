@@ -1,11 +1,6 @@
 import * as React from 'react'
 import type { MapLike } from 'typescript'
-import {
-  isUtopiaJSXComponent,
-  TopLevelElement,
-  UtopiaJSXComponent,
-} from '../../../core/shared/element-template'
-import { Imports } from '../../../core/shared/project-file-types'
+import { isUtopiaJSXComponent, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { fastForEach } from '../../../core/shared/utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'

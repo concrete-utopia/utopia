@@ -304,7 +304,7 @@ export const UiJsxCanvas = betterReactMemo(
         customRequire,
         mutableContextRef,
         props.projectContents,
-        uiFilePath,
+        uiFilePath, // this is the storyboard filepath
         props.transientFileState,
       )
 
