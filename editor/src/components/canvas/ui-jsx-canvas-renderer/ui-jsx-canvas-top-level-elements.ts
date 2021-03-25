@@ -28,7 +28,8 @@ export function getTopLevelElementsFromEditorState(
   )
 }
 
-const EmptyProjectContents: TopLevelElement[] = []
+const EmptyTopLevelElements: TopLevelElement[] = []
+const EmptyImports: Imports = {}
 export function getTopLevelElements(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
@@ -52,8 +53,8 @@ export function getTopLevelElements(
     }
   } else {
     return {
-      topLevelElements: EmptyProjectContents,
-      imports: {},
+      topLevelElements: EmptyTopLevelElements,
+      imports: EmptyImports,
     }
   }
 }
@@ -65,6 +66,6 @@ export function useGetTopLevelElements(filePath: string): TopLevelElement[] {
       c.projectContents,
       c.openStoryboardFilePathKILLME,
       c.transientFileState,
-    )
-  }).topLevelElements
+    ).topLevelElements
+  })
 }
