@@ -1,6 +1,6 @@
 import { useContextSelector } from 'use-context-selector'
 import { TopLevelElement } from '../../../core/shared/element-template'
-import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import { Imports, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../assets'
 import {
   DerivedState,
@@ -16,7 +16,10 @@ export function getTopLevelElementsFromEditorState(
   filePath: string,
   editor: EditorState,
   derived: DerivedState,
-): TopLevelElement[] {
+): {
+  topLevelElements: TopLevelElement[]
+  imports: Imports
+} {
   return getTopLevelElements(
     filePath,
     editor.projectContents,
@@ -31,15 +34,27 @@ export function getTopLevelElements(
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
   transientFileState: TransientFileState | null,
-): TopLevelElement[] {
+): {
+  topLevelElements: TopLevelElement[]
+  imports: Imports
+} {
   const projectFile = getContentsTreeFileFromString(projectContents, filePath)
   if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
     if (openStoryboardFileNameKILLME === filePath && transientFileState != null) {
-      return transientFileState.topLevelElementsIncludingScenes
+      return {
+        topLevelElements: transientFileState.topLevelElementsIncludingScenes,
+        imports: transientFileState.imports,
+      }
     }
-    return projectFile.fileContents.parsed.topLevelElements
+    return {
+      topLevelElements: projectFile.fileContents.parsed.topLevelElements,
+      imports: projectFile.fileContents.parsed.imports,
+    }
   } else {
-    return EmptyProjectContents
+    return {
+      topLevelElements: EmptyProjectContents,
+      imports: {},
+    }
   }
 }
 
@@ -51,5 +66,5 @@ export function useGetTopLevelElements(filePath: string): TopLevelElement[] {
       c.openStoryboardFilePathKILLME,
       c.transientFileState,
     )
-  })
+  }).topLevelElements
 }

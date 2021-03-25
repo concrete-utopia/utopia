@@ -172,25 +172,17 @@ export function pickUiJsxCanvasProps(
       Utils.optionalFlatMap((key) => editor.canvas.base64Blobs[key], getOpenUIJSFileKey(editor)),
     )
 
-    let imports: Imports = emptyImports
     let jsxFactoryFunction: string | null = null
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
 
-    const topLevelElementsIncludingScenes = getTopLevelElementsFromEditorState(
-      uiFilePath,
-      editor,
-      derived,
-    )
+    const {
+      topLevelElements: topLevelElementsIncludingScenes,
+      imports,
+    } = getTopLevelElementsFromEditorState(uiFilePath, editor, derived)
     if (uiFile != null && isParseSuccess(uiFile.fileContents.parsed)) {
       const success = uiFile.fileContents.parsed
-      const transientCanvasState = derived.canvas.transientState
-      imports = uiFile.fileContents.parsed.imports
       jsxFactoryFunction = success.jsxFactoryFunction
       combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
-      const transientFileState = transientCanvasState.fileState
-      if (transientFileState != null) {
-        imports = transientFileState.imports
-      }
     }
     const requireFn = editor.codeResultCache.requireFn
 
