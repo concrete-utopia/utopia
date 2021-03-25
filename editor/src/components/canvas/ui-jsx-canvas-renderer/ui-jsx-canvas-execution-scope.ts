@@ -15,7 +15,7 @@ import { getTopLevelElements } from './ui-jsx-canvas-top-level-elements'
 export function useExecutionScope(
   filePath: string,
   customRequire: (importOrigin: string, toImport: string) => any,
-  mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>, // TODO this is only for the storyboard now
+  mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>,
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
   transientFileState: TransientFileState | null,
