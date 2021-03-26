@@ -263,16 +263,7 @@ export const UiJsxCanvas = betterReactMemo(
     )
     unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
 
-    let mutableContextRef = React.useRef<MutableUtopiaContextProps>({
-      [uiFilePath]: {
-        mutableContext: {
-          fileBlobs: fileBlobsForFileKILLME,
-          requireResult: {},
-          rootScope: {},
-          jsxFactoryFunctionName: null,
-        },
-      },
-    })
+    let mutableContextRef = React.useRef<MutableUtopiaContextProps>({})
 
     let topLevelComponentRendererComponents = React.useRef<
       MapLike<MapLike<ComponentRendererComponent>>
