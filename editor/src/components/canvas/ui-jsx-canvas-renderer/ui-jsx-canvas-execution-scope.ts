@@ -89,6 +89,11 @@ export function createExecutionScope(
     }
   })
 
+  executionScope = {
+    ...executionScope,
+    ...topLevelComponentRendererComponentsForFile,
+  }
+
   // First make sure everything is in scope
   if (combinedTopLevelArbitraryBlock != null && openStoryboardFileNameKILLME != null) {
     const lookupRenderer = createLookupRender(
@@ -116,10 +121,7 @@ export function createExecutionScope(
   }
 
   return {
-    scope: {
-      ...executionScope,
-      ...topLevelComponentRendererComponentsForFile,
-    },
+    scope: executionScope,
     topLevelJsxComponents: topLevelJsxComponents,
     requireResult: requireResult,
   }
