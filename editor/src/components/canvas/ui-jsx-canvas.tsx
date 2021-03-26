@@ -278,6 +278,7 @@ export const UiJsxCanvas = betterReactMemo(
       linkTags,
       combinedTopLevelArbitraryBlock,
       projectContents,
+      transientFileState,
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -324,6 +325,17 @@ export const UiJsxCanvas = betterReactMemo(
             (resolvedFilePath) => {
               const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
               if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+                const parseSuccess = projectFile.fileContents.parsed
+                const { scope } = createExecutionScope(
+                  resolvedFilePath,
+                  customRequire,
+                  mutableContextRef,
+                  topLevelComponentRendererComponents,
+                  projectContents,
+                  uiFilePath,
+                  transientFileState,
+                )
+
                 return right(projectFile.fileContents.parsed)
               } else {
                 return left(`File ${resolvedFilePath} is not a ParseSuccess`)
@@ -342,8 +354,8 @@ export const UiJsxCanvas = betterReactMemo(
             resovedParseSuccess,
           )
         },
-        // TODO I don't like projectContents here because that means dragging smth on the Canvas would recreate the customRequire fn
-        [requireFn, resolve, projectContents],
+        // TODO I don't like projectContents and transientFileState here because that means dragging smth on the Canvas would recreate the customRequire fn
+        [requireFn, resolve, projectContents, transientFileState, uiFilePath],
       )
 
       const { scope, requireResult, topLevelJsxComponents } = createExecutionScope(
