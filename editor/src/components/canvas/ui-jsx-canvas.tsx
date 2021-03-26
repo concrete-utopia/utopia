@@ -328,6 +328,7 @@ export const UiJsxCanvas = betterReactMemo(
       updateMutableUtopiaContextWithNewProps(mutableContextRef, {
         ...mutableContextRef.current,
         [uiFilePath]: {
+          // TODO we want to run it for all the files not just the UI File
           mutableContext: {
             requireResult: requireResult,
             rootScope: executionScope,
