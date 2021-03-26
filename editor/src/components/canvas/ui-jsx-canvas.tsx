@@ -158,7 +158,7 @@ export function pickUiJsxCanvasProps(
   if (uiFile == null || uiFilePath == null) {
     return null
   } else {
-    const { imports } = getParseSuccessOrTransientForFilePath(
+    const { imports: imports_KILLME_ONLY_USED_FOR_CSS } = getParseSuccessOrTransientForFilePath(
       uiFilePath,
       editor.projectContents,
       uiFilePath,
@@ -197,7 +197,7 @@ export function pickUiJsxCanvasProps(
       mountCount: editor.canvas.mountCount,
       onDomReport: onDomReport,
       walkDOM: walkDOM,
-      imports_KILLME_ONLY_USED_FOR_CSS: imports,
+      imports_KILLME_ONLY_USED_FOR_CSS: imports_KILLME_ONLY_USED_FOR_CSS,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       canvasIsLive: isLiveMode(editor.mode),
