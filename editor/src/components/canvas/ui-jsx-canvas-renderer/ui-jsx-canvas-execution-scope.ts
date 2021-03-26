@@ -8,7 +8,11 @@ import {
 import { fastForEach } from '../../../core/shared/utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
-import { TransientFileState, UIFileBase64Blobs } from '../../editor/store/editor-state'
+import {
+  CanvasBase64Blobs,
+  TransientFileState,
+  UIFileBase64Blobs,
+} from '../../editor/store/editor-state'
 import {
   ComponentRendererComponent,
   createComponentRendererComponent,
@@ -21,6 +25,9 @@ import * as TP from '../../../core/shared/template-path'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
+import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
+
+const emptyFileBlobs: UIFileBase64Blobs = {}
 
 export function createExecutionScope(
   filePath: string,
@@ -33,7 +40,7 @@ export function createExecutionScope(
   openStoryboardFileNameKILLME: string | null,
   transientFileState: TransientFileState | null,
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
-  fileBlobs: UIFileBase64Blobs, // this is only for the storyboard file now,
+  fileBlobs: CanvasBase64Blobs,
   hiddenInstances: TemplatePath[],
   metadataContext: UiJsxCanvasContextData,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -48,6 +55,8 @@ export function createExecutionScope(
   }
   let topLevelComponentRendererComponentsForFile =
     topLevelComponentRendererComponents.current[filePath]
+
+  const fileBlobsForFile = defaultIfNull(emptyFileBlobs, fileBlobs[filePath])
 
   const { topLevelElements, imports, jsxFactoryFunction } = getParseSuccessOrTransientForFilePath(
     filePath,
@@ -88,7 +97,7 @@ export function createExecutionScope(
       {},
       requireResult,
       hiddenInstances,
-      fileBlobs,
+      fileBlobsForFile,
       [],
       undefined,
       metadataContext,

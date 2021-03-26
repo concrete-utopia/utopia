@@ -35,6 +35,7 @@ import {
   ConsoleLog,
   getIndexHtmlFileFromEditorState,
   TransientFileState,
+  CanvasBase64Blobs,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import { useDomWalker } from './dom-walker'
@@ -116,7 +117,8 @@ export interface UiJsxCanvasProps {
   requireFn: UtopiaRequireFn | null
   hiddenInstances: TemplatePath[]
   editedTextElement: InstancePath | null
-  fileBlobs: UIFileBase64Blobs
+  fileBlobsForFileKILLME: UIFileBase64Blobs
+  base64FileBlobs: CanvasBase64Blobs
   mountCount: number
   onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   walkDOM: boolean
@@ -206,7 +208,8 @@ export function pickUiJsxCanvasProps(
       requireFn: requireFn,
       hiddenInstances: hiddenInstances,
       editedTextElement: editedTextElement,
-      fileBlobs: defaultedFileBlobs,
+      fileBlobsForFileKILLME: defaultedFileBlobs,
+      base64FileBlobs: editor.canvas.base64Blobs,
       mountCount: editor.canvas.mountCount,
       onDomReport: onDomReport,
       walkDOM: walkDOM,
@@ -246,7 +249,7 @@ export const UiJsxCanvas = betterReactMemo(
       uiFilePath,
       requireFn,
       hiddenInstances,
-      fileBlobs,
+      fileBlobsForFileKILLME,
       walkDOM,
       onDomReport,
       topLevelElementsIncludingScenes,
@@ -258,6 +261,7 @@ export const UiJsxCanvas = betterReactMemo(
       canvasIsLive,
       linkTags,
       combinedTopLevelArbitraryBlock,
+      base64FileBlobs,
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -277,7 +281,7 @@ export const UiJsxCanvas = betterReactMemo(
     let mutableContextRef = React.useRef<MutableUtopiaContextProps>({
       [uiFilePath]: {
         mutableContext: {
-          fileBlobs: fileBlobs,
+          fileBlobs: fileBlobsForFileKILLME,
           requireResult: {},
           rootScope: {},
           jsxFactoryFunctionName: null,
@@ -310,7 +314,7 @@ export const UiJsxCanvas = betterReactMemo(
         uiFilePath, // this is the storyboard filepath
         props.transientFileState,
         combinedTopLevelArbitraryBlock,
-        fileBlobs,
+        base64FileBlobs,
         hiddenInstances,
         metadataContext,
         props.shouldIncludeCanvasRootInTheSpy,
@@ -325,7 +329,7 @@ export const UiJsxCanvas = betterReactMemo(
           mutableContext: {
             requireResult: requireResult,
             rootScope: executionScope,
-            fileBlobs: fileBlobs,
+            fileBlobs: fileBlobsForFileKILLME,
             jsxFactoryFunctionName: jsxFactoryFunction,
           },
         },

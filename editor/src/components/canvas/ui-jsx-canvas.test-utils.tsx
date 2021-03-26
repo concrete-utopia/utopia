@@ -99,7 +99,7 @@ export function renderCanvasReturnResultAndError(
   }> = []
   const uiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
   const requireFn: UiJsxCanvasProps['requireFn'] = dumbRequireFn
-  const fileBlobs: UiJsxCanvasProps['fileBlobs'] = {}
+  const fileBlobs: UiJsxCanvasProps['fileBlobsForFileKILLME'] = {}
   const reportError: CanvasReactErrorCallback['reportError'] = (
     editedFile: string,
     error: FancyError,
@@ -174,7 +174,8 @@ export function renderCanvasReturnResultAndError(
       uiFileCode: code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
-      fileBlobs: fileBlobs,
+      fileBlobsForFileKILLME: fileBlobs,
+      base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
       offset: canvasPoint({ x: 0, y: 0 }),
@@ -202,7 +203,8 @@ export function renderCanvasReturnResultAndError(
       uiFileCode: code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
-      fileBlobs: fileBlobs,
+      fileBlobsForFileKILLME: fileBlobs,
+      base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
       walkDOM: false,
