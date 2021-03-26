@@ -30,7 +30,10 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-pr
 import { useEditorState } from '../../editor/store/store-hook'
 import { getFileForName } from '../../editor/store/editor-state'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { getTopLevelElements, useGetTopLevelElements } from './ui-jsx-canvas-top-level-elements'
+import {
+  getParseSuccessOrTransientForFilePath,
+  useGetTopLevelElements,
+} from './ui-jsx-canvas-top-level-elements'
 
 export type ComponentRendererComponent = React.ComponentType<{ [UTOPIA_SCENE_PATH]: ScenePath }> & {
   topLevelElementName: string

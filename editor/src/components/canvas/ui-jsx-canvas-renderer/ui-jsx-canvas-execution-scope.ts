@@ -1,16 +1,36 @@
 import * as React from 'react'
 import type { MapLike } from 'typescript'
-import { isUtopiaJSXComponent, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  ArbitraryJSBlock,
+  isUtopiaJSXComponent,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import { fastForEach } from '../../../core/shared/utils'
 import { ProjectContentTreeRoot } from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
-import { TransientFileState } from '../../editor/store/editor-state'
+import {
+  CanvasBase64Blobs,
+  TransientFileState,
+  UIFileBase64Blobs,
+} from '../../editor/store/editor-state'
 import {
   ComponentRendererComponent,
   createComponentRendererComponent,
 } from './ui-jsx-canvas-component-renderer'
-import { MutableUtopiaContextProps } from './ui-jsx-canvas-contexts'
-import { getTopLevelElements } from './ui-jsx-canvas-top-level-elements'
+import {
+  MutableUtopiaContextProps,
+  updateMutableUtopiaContextWithNewProps,
+} from './ui-jsx-canvas-contexts'
+import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
+import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
+import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-top-level-elements'
+import * as TP from '../../../core/shared/template-path'
+import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { TemplatePath } from '../../../core/shared/project-file-types'
+import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
+import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
+
+const emptyFileBlobs: UIFileBase64Blobs = {}
 
 export function createExecutionScope(
   filePath: string,
@@ -21,7 +41,11 @@ export function createExecutionScope(
   >,
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
-  transientFileState: TransientFileState | null,
+  transientFileStateKILLME: TransientFileState | null,
+  fileBlobs: CanvasBase64Blobs,
+  hiddenInstances: TemplatePath[],
+  metadataContext: UiJsxCanvasContextData,
+  shouldIncludeCanvasRootInTheSpy: boolean,
 ): {
   scope: MapLike<any>
   topLevelJsxComponents: Map<string, UtopiaJSXComponent>
@@ -33,11 +57,19 @@ export function createExecutionScope(
   }
   let topLevelComponentRendererComponentsForFile =
     topLevelComponentRendererComponents.current[filePath]
-  const { topLevelElements, imports } = getTopLevelElements(
+
+  const fileBlobsForFile = defaultIfNull(emptyFileBlobs, fileBlobs[filePath])
+
+  const {
+    topLevelElements,
+    imports,
+    jsxFactoryFunction,
+    combinedTopLevelArbitraryBlock,
+  } = getParseSuccessOrTransientForFilePath(
     filePath,
     projectContents,
     openStoryboardFileNameKILLME,
-    transientFileState,
+    transientFileStateKILLME,
   )
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
@@ -64,11 +96,52 @@ export function createExecutionScope(
     }
   })
 
-  return {
-    scope: {
-      ...executionScope,
-      ...topLevelComponentRendererComponentsForFile,
+  executionScope = {
+    ...executionScope,
+    ...topLevelComponentRendererComponentsForFile,
+  }
+
+  // First make sure everything is in scope
+  if (combinedTopLevelArbitraryBlock != null && openStoryboardFileNameKILLME != null) {
+    const lookupRenderer = createLookupRender(
+      TP.emptyInstancePath,
+      executionScope,
+      {},
+      requireResult,
+      hiddenInstances,
+      fileBlobsForFile,
+      [],
+      undefined,
+      metadataContext,
+      jsxFactoryFunction,
+      shouldIncludeCanvasRootInTheSpy,
+      openStoryboardFileNameKILLME,
+    )
+
+    executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
+      combinedTopLevelArbitraryBlock.elementsWithin,
+      executionScope,
+      lookupRenderer,
+    )
+
+    runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
+  }
+
+  // WARNING: mutating the mutableContextRef
+  updateMutableUtopiaContextWithNewProps(mutableContextRef, {
+    ...mutableContextRef.current,
+    [filePath]: {
+      mutableContext: {
+        requireResult: requireResult,
+        rootScope: executionScope,
+        fileBlobs: fileBlobsForFile,
+        jsxFactoryFunctionName: jsxFactoryFunction,
+      },
     },
+  })
+
+  return {
+    scope: executionScope,
     topLevelJsxComponents: topLevelJsxComponents,
     requireResult: requireResult,
   }

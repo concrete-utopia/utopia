@@ -113,7 +113,6 @@ export function renderCanvasReturnResultAndError(
   }> = []
   const uiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
   const requireFn: UiJsxCanvasProps['requireFn'] = dumbRequireFn
-  const fileBlobs: UiJsxCanvasProps['fileBlobs'] = {}
   const reportError: CanvasReactErrorCallback['reportError'] = (
     editedFile: string,
     error: FancyError,
@@ -128,27 +127,8 @@ export function renderCanvasReturnResultAndError(
     (_) => emptyImports(),
     parsedCode,
   )
-  const topLevelElements: Array<TopLevelElement> = foldParsedTextFile(
-    (_) => [],
-    (success) => success.topLevelElements,
-    (_) => [],
-    parsedCode,
-  )
-  const jsxFactoryFunction = foldParsedTextFile(
-    (_) => null,
-    (success) => success.jsxFactoryFunction,
-    (_) => null,
-    parsedCode,
-  )
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
-
-  const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = foldParsedTextFile(
-    (_) => null,
-    (success) => success.combinedTopLevelArbitraryBlock,
-    (_) => null,
-    parsedCode,
-  )
 
   const storeHookForTest = getStoreHook(NO_OP)
   storeHookForTest.updateStore((store) => {
@@ -189,7 +169,7 @@ export function renderCanvasReturnResultAndError(
       uiFilePath: uiFilePath,
       requireFn: requireFn,
       resolve: dumbResolveFn,
-      fileBlobs: fileBlobs,
+      base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
       offset: canvasPoint({ x: 0, y: 0 }),
@@ -198,15 +178,12 @@ export function renderCanvasReturnResultAndError(
       editedTextElement: null,
       mountCount: 0,
       walkDOM: false,
-      imports: imports,
-      topLevelElementsIncludingScenes: topLevelElements,
-      jsxFactoryFunction: jsxFactoryFunction,
+      imports_KILLME_ONLY_USED_FOR_CSS: imports,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
-      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
       transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
@@ -218,19 +195,16 @@ export function renderCanvasReturnResultAndError(
       uiFilePath: uiFilePath,
       requireFn: requireFn,
       resolve: dumbResolveFn,
-      fileBlobs: fileBlobs,
+      base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
       walkDOM: false,
-      imports: imports,
-      topLevelElementsIncludingScenes: topLevelElements,
-      jsxFactoryFunction: jsxFactoryFunction,
+      imports_KILLME_ONLY_USED_FOR_CSS: imports,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
-      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
       transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
