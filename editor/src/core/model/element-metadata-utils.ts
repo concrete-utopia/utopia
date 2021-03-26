@@ -830,9 +830,11 @@ export const MetadataUtils = {
         fastForEach(root.rootElements, (rootElement) => {
           walkAndAddKeys(rootElement, isCollapsed)
         })
-      } else {
-        return walkAndAddKeys(root.templatePath, false)
       }
+      // } else {
+
+      return walkAndAddKeys(root.templatePath, false)
+      // }
     })
 
     return {

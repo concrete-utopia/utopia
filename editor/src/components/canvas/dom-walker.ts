@@ -648,13 +648,14 @@ function walkScene(
       TP.isScenePath(scenePath) &&
       validPathsAttr != null
     ) {
+      const templatePath = TP.instancePathForElementAtScenePath(scenePath)
       const validPaths = validPathsAttr.value.split(' ')
       let cachedMetadata: ElementInstanceMetadata | null = null
       if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
         if (!invalidatedSceneIDsRef.current.has(sceneID)) {
           // we can use the cache, if it exists
           const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
-            scenePath,
+            templatePath,
             rootMetadataInStateRef.current,
           )
           if (elementFromCurrentMetadata != null) {
@@ -682,7 +683,7 @@ function walkScene(
 
         const sceneMetadata = collectMetadata(
           scene,
-          [scenePath],
+          [templatePath],
           canvasPoint({ x: 0, y: 0 }),
           rootElements,
           scale,
@@ -695,7 +696,7 @@ function walkScene(
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
         Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
-          if (TP.isAncestorOf(elem.templatePath, scenePath)) {
+          if (TP.isAncestorOf(elem.templatePath, templatePath)) {
             rootMetadataAccumulator.push(elem)
           }
         })
