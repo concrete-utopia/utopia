@@ -123,7 +123,6 @@ export interface UiJsxCanvasProps {
   onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   walkDOM: boolean
   imports: Imports
-  topLevelElementsIncludingScenes: Array<TopLevelElement>
   jsxFactoryFunction: string | null
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean // FOR ui-jsx-canvas.spec TESTS ONLY!!!! this prevents us from having to update the legacy test snapshots
@@ -169,7 +168,6 @@ export function pickUiJsxCanvasProps(
     )
 
     const {
-      topLevelElements: topLevelElementsIncludingScenes,
       imports,
       jsxFactoryFunction,
       combinedTopLevelArbitraryBlock,
@@ -214,7 +212,6 @@ export function pickUiJsxCanvasProps(
       onDomReport: onDomReport,
       walkDOM: walkDOM,
       imports: imports,
-      topLevelElementsIncludingScenes: topLevelElementsIncludingScenes,
       jsxFactoryFunction: jsxFactoryFunction,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
@@ -252,7 +249,6 @@ export const UiJsxCanvas = betterReactMemo(
       fileBlobsForFileKILLME,
       walkDOM,
       onDomReport,
-      topLevelElementsIncludingScenes,
       imports,
       jsxFactoryFunction,
       clearErrors,
