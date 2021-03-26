@@ -34,6 +34,7 @@ import {
   UIFileBase64Blobs,
   ConsoleLog,
   getIndexHtmlFileFromEditorState,
+  TransientFileState,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import { useDomWalker } from './dom-walker'
@@ -61,6 +62,7 @@ import {
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
   updateMutableUtopiaContextWithNewProps,
+  UtopiaProjectContext,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-scope-utils'
 import { CanvasContainerID } from './canvas-types'
@@ -73,6 +75,11 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
+import {
+  getTopLevelElements,
+  getTopLevelElementsFromEditorState,
+} from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
+import { ProjectContentTreeRoot } from '../assets'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -125,6 +132,8 @@ export interface UiJsxCanvasProps {
   linkTags: string
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
   focusedElementPath: ScenePath | null
+  projectContents: ProjectContentTreeRoot
+  transientFileState: TransientFileState | null
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -163,21 +172,23 @@ export function pickUiJsxCanvasProps(
     )
 
     let imports: Imports = emptyImports
-    let topLevelElementsIncludingScenes: Array<TopLevelElement> = emptyTopLevelElements
     let jsxFactoryFunction: string | null = null
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
 
+    const topLevelElementsIncludingScenes = getTopLevelElementsFromEditorState(
+      uiFilePath,
+      editor,
+      derived,
+    )
     if (uiFile != null && isParseSuccess(uiFile.fileContents.parsed)) {
       const success = uiFile.fileContents.parsed
       const transientCanvasState = derived.canvas.transientState
       imports = uiFile.fileContents.parsed.imports
-      topLevelElementsIncludingScenes = success.topLevelElements
       jsxFactoryFunction = success.jsxFactoryFunction
       combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
       const transientFileState = transientCanvasState.fileState
       if (transientFileState != null) {
         imports = transientFileState.imports
-        topLevelElementsIncludingScenes = transientFileState.topLevelElementsIncludingScenes
       }
     }
     const requireFn = editor.codeResultCache.requireFn
@@ -222,6 +233,8 @@ export function pickUiJsxCanvasProps(
       linkTags: linkTags,
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: editor.focusedElementPath,
+      projectContents: editor.projectContents,
+      transientFileState: derived.canvas.transientState.fileState,
     }
   }
 }
@@ -317,7 +330,11 @@ export const UiJsxCanvas = betterReactMemo(
           if (!(topLevelElement.name in topLevelComponentRendererComponents.current)) {
             topLevelComponentRendererComponents.current[
               topLevelElement.name
-            ] = createComponentRendererComponent({ topLevelElementName: topLevelElement.name })
+            ] = createComponentRendererComponent({
+              topLevelElementName: topLevelElement.name,
+              mutableContextRef: mutableContextRef,
+              filePath: uiFilePath,
+            })
           }
         }
       })
@@ -382,33 +399,40 @@ export const UiJsxCanvas = betterReactMemo(
             <RerenderUtopiaContext.Provider
               value={{
                 hiddenInstances: hiddenInstances,
-                topLevelElements: topLevelElementsMap,
                 canvasIsLive: canvasIsLive,
                 shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
                 focusedElementPath: props.focusedElementPath,
               }}
             >
-              <CanvasContainer
-                mountCount={props.mountCount}
-                walkDOM={walkDOM}
-                scale={scale}
-                offset={offset}
-                onDomReport={onDomReport}
-                validRootPaths={rootValidPaths}
-                canvasRootElementTemplatePath={storyboardRootElementPath}
+              <UtopiaProjectContext.Provider
+                value={{
+                  projectContents: props.projectContents,
+                  transientFileState: props.transientFileState,
+                  openStoryboardFilePathKILLME: props.uiFilePath,
+                }}
               >
-                <SceneLevelUtopiaContext.Provider value={{ validPaths: rootValidPaths }}>
-                  <ParentLevelUtopiaContext.Provider
-                    value={{
-                      templatePath: storyboardRootElementPath,
-                    }}
-                  >
-                    {StoryboardRootComponent == null ? null : (
-                      <StoryboardRootComponent {...{ [UTOPIA_SCENE_PATH]: rootScenePath }} />
-                    )}
-                  </ParentLevelUtopiaContext.Provider>
-                </SceneLevelUtopiaContext.Provider>
-              </CanvasContainer>
+                <CanvasContainer
+                  mountCount={props.mountCount}
+                  walkDOM={walkDOM}
+                  scale={scale}
+                  offset={offset}
+                  onDomReport={onDomReport}
+                  validRootPaths={rootValidPaths}
+                  canvasRootElementTemplatePath={storyboardRootElementPath}
+                >
+                  <SceneLevelUtopiaContext.Provider value={{ validPaths: rootValidPaths }}>
+                    <ParentLevelUtopiaContext.Provider
+                      value={{
+                        templatePath: storyboardRootElementPath,
+                      }}
+                    >
+                      {StoryboardRootComponent == null ? null : (
+                        <StoryboardRootComponent {...{ [UTOPIA_SCENE_PATH]: rootScenePath }} />
+                      )}
+                    </ParentLevelUtopiaContext.Provider>
+                  </SceneLevelUtopiaContext.Provider>
+                </CanvasContainer>
+              </UtopiaProjectContext.Provider>
             </RerenderUtopiaContext.Provider>
           </MutableUtopiaContext.Provider>
         </>

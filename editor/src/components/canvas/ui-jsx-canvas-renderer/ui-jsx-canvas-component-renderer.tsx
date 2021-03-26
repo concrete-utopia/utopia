@@ -2,11 +2,16 @@ import * as React from 'react'
 import { MapLike } from 'typescript'
 import { PropertyControls } from 'utopia-api'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
-import { JSXElementChild, isJSXFragment } from '../../../core/shared/element-template'
+import {
+  JSXElementChild,
+  isJSXFragment,
+  isUtopiaJSXComponent,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { UiJsxCanvasContext, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import {
-  MutableUtopiaContext,
+  MutableUtopiaContextProps,
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
 } from './ui-jsx-canvas-contexts'
@@ -19,9 +24,13 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
-import { ScenePath } from '../../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile, ScenePath } from '../../../core/shared/project-file-types'
 import { UTOPIA_SCENE_PATH } from '../../../core/model/utopia-constants'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
+import { useEditorState } from '../../editor/store/store-hook'
+import { getFileForName } from '../../editor/store/editor-state'
+import { mapDropNulls } from '../../../core/shared/array-utils'
+import { getTopLevelElements, useGetTopLevelElements } from './ui-jsx-canvas-top-level-elements'
 
 export type ComponentRendererComponent = React.ComponentType<{ [UTOPIA_SCENE_PATH]: ScenePath }> & {
   topLevelElementName: string
@@ -40,6 +49,8 @@ export function isComponentRendererComponent(
 
 export function createComponentRendererComponent(params: {
   topLevelElementName: string
+  filePath: string
+  mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>
 }): ComponentRendererComponent {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
@@ -49,10 +60,15 @@ export function createComponentRendererComponent(params: {
 
     const scenePath: ScenePath | null = TP.isScenePath(scenePathAny) ? scenePathAny : null
 
-    const { current: mutableContext } = React.useContext(MutableUtopiaContext)
-    const utopiaJsxComponent = useContextSelector(RerenderUtopiaContext, (c) =>
-      c.topLevelElements.get(params.topLevelElementName),
-    )
+    const mutableContext = params.mutableContextRef.current
+
+    const topLevelElements = useGetTopLevelElements(params.filePath)
+
+    const utopiaJsxComponent: UtopiaJSXComponent | null =
+      topLevelElements.find((elem): elem is UtopiaJSXComponent => {
+        return isUtopiaJSXComponent(elem) && elem.name === params.topLevelElementName
+      }) ?? null
+
     const shouldIncludeCanvasRootInTheSpy = useContextSelector(
       RerenderUtopiaContext,
       (c) => c.shouldIncludeCanvasRootInTheSpy,
