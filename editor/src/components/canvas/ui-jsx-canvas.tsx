@@ -147,9 +147,6 @@ export type CanvasReactErrorCallback = CanvasReactReportErrorCallback &
 
 export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactClearErrorsCallback
 
-const emptyImports: Imports = {}
-const emptyTopLevelElements: Array<TopLevelElement> = []
-
 export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
