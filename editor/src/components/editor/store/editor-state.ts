@@ -27,6 +27,7 @@ import {
   getUtopiaJSXComponentsFromSuccess,
   saveTextFileContents,
   getHighlightBoundsFromParseResult,
+  updateFileContents,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
@@ -57,6 +58,7 @@ import {
   HighlightBounds,
   HighlightBoundsForUids,
   StaticElementPath,
+  textFile,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -102,6 +104,8 @@ import { EditorPanel } from '../../common/actions/index'
 import {
   CodeResultCache,
   generateCodeResultCache,
+  normalisePathSuccessOrThrowError,
+  normalisePathToUnderlyingTarget,
   PropertyControlsInfo,
 } from '../../custom-code/code-file'
 import { EditorModes, Mode } from '../editor-modes'
@@ -1720,4 +1724,94 @@ export function getTemplatePathsInBounds(
     }
     return paths
   }
+}
+
+export function modifyParseSuccessAtPath(
+  filePath: string,
+  editorState: EditorState,
+  modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
+): EditorState {
+  const projectFile = getContentsTreeFileFromString(editorState.projectContents, filePath)
+  if (isTextFile(projectFile)) {
+    const parsedFileContents = projectFile.fileContents.parsed
+    if (isParseSuccess(parsedFileContents)) {
+      const updatedParseSuccess = modifyParseSuccess(parsedFileContents)
+      // Try to keep referential equality as much as possible.
+      if (updatedParseSuccess === parsedFileContents) {
+        return editorState
+      } else {
+        const updatedFile = saveTextFileContents(
+          projectFile,
+          textFileContents(
+            projectFile.fileContents.code,
+            updatedParseSuccess,
+            RevisionsState.ParsedAhead,
+          ),
+          false,
+        )
+        return {
+          ...editorState,
+          projectContents: addFileToProjectContents(
+            editorState.projectContents,
+            filePath,
+            updatedFile,
+          ),
+        }
+      }
+    } else {
+      throw new Error(`File ${filePath} is not currently parsed.`)
+    }
+  } else {
+    throw new Error(`No text file found at ${filePath}`)
+  }
+}
+
+export function modifyUnderlyingTarget(
+  target: InstancePath,
+  currentFilePath: string,
+  editorState: EditorState,
+  modifyElement: (element: JSXElement) => JSXElement = (element) => element,
+  modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess = (success) => success,
+): EditorState {
+  const underlyingTarget = normalisePathToUnderlyingTarget(
+    editorState.projectContents,
+    currentFilePath,
+    target,
+  )
+  const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+
+  function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
+    // Apply the ParseSuccess level changes.
+    let updatedParseSuccess: ParseSuccess = modifyParseSuccess(oldParseSuccess)
+
+    // Apply the JSXElement level changes.
+    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(updatedParseSuccess)
+    let elementModified: boolean = false
+    function innerModifyElement(element: JSXElement): JSXElement {
+      const updatedElement = modifyElement(element)
+      elementModified = updatedElement !== element
+      return updatedElement
+    }
+    const updatedUtopiaJSXComponents = transformElementAtPath(
+      oldUtopiaJSXComponents,
+      targetSuccess.normalisedPath,
+      innerModifyElement,
+    )
+    // Try to keep the old structures where possible.
+    if (elementModified) {
+      const newTopLevelElements = applyUtopiaJSXComponentsChanges(
+        updatedParseSuccess.topLevelElements,
+        updatedUtopiaJSXComponents,
+      )
+
+      return {
+        ...updatedParseSuccess,
+        topLevelElements: newTopLevelElements,
+      }
+    } else {
+      return updatedParseSuccess
+    }
+  }
+
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editorState, innerModifyParseSuccess)
 }

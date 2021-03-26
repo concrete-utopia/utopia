@@ -110,7 +110,7 @@ function useGetValidTemplatePaths(
 ): Array<InstancePath> {
   const uiFilePath = useContextSelector(UtopiaProjectContext, (c) => c.openStoryboardFilePathKILLME)
 
-  const topLevelElements = useGetTopLevelElements(uiFilePath ?? '')
+  const topLevelElements = useGetTopLevelElements(uiFilePath)
   let topLevelJSXComponents: Map<string, UtopiaJSXComponent> = new Map()
   fastForEach(topLevelElements, (topLevelElement) => {
     if (isUtopiaJSXComponent(topLevelElement)) {

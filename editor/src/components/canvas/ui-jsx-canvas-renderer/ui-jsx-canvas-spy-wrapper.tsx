@@ -100,4 +100,4 @@ const SpyWrapper: React.FunctionComponent<SpyWrapperProps> = (props) => {
     passThroughProps,
   )
 }
-SpyWrapper.displayName = 'SpyWapper'
+SpyWrapper.displayName = 'SpyWrapper'

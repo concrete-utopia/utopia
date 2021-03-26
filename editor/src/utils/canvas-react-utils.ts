@@ -25,7 +25,7 @@ export function applyUIDMonkeyPatch(): void {
   }
 }
 
-function getDisplayName(type: any) {
+function getDisplayName(type: any): string {
   // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
   if (typeof type === 'function') {
     return type.displayName || type.name || 'Unknown'
@@ -33,6 +33,13 @@ function getDisplayName(type: any) {
     return type.toString()
   } else if (typeof type === 'string') {
     return type
+  } else if (typeof type === 'object') {
+    // Typically React context, memo, or forwardRef
+    const wrapper = type.$$typeof == null ? 'Unknown object' : getDisplayName(type.$$typeof)
+    const wrappedType = type.type ?? type.render
+    const wrapped = wrappedType == null ? '' : `(${getDisplayName(wrappedType)})`
+
+    return `${wrapper}${wrapped}`
   } else {
     return 'Unknown'
   }

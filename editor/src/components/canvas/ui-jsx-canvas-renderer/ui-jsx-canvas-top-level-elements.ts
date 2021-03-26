@@ -59,8 +59,11 @@ export function getTopLevelElements(
   }
 }
 
-export function useGetTopLevelElements(filePath: string): TopLevelElement[] {
+export function useGetTopLevelElements(filePath: string | null): TopLevelElement[] {
   return useContextSelector(UtopiaProjectContext, (c) => {
+    if (filePath == null) {
+      return EmptyTopLevelElements
+    }
     return getTopLevelElements(
       filePath,
       c.projectContents,
