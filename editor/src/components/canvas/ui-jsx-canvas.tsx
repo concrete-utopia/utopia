@@ -288,7 +288,7 @@ export const UiJsxCanvas = betterReactMemo(
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => {
           const filePathResolveResult = resolve(importOrigin, toImport)
-          const resovedParseSuccess: Either<string, ParseSuccess> = flatMapEither(
+          const resovedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
             (resolvedFilePath) => {
               const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
               if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
@@ -305,8 +305,8 @@ export const UiJsxCanvas = betterReactMemo(
                   metadataContext,
                   shouldIncludeCanvasRootInTheSpy,
                 )
-
-                return right(projectFile.fileContents.parsed)
+                // TODO filter scope to only really exported elements
+                return right(scope)
               } else {
                 return left(`File ${resolvedFilePath} is not a ParseSuccess`)
               }
@@ -318,8 +318,9 @@ export const UiJsxCanvas = betterReactMemo(
               // We did not find a ParseSuccess, fallback to standard require Fn
               return requireFn(importOrigin, toImport, false)
             },
-            (parseSuccess) => {
-              // we found a ParseSuccess, let's create an export map with ComponentRendererComponents!
+            (scope) => {
+              // Return an artificial exports object that contains our ComponentRendererComponents
+              return scope
             },
             resovedParseSuccess,
           )
