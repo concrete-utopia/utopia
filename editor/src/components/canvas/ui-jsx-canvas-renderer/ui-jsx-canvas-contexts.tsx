@@ -8,19 +8,18 @@ import { ProjectContentTreeRoot } from '../../assets'
 import type { TransientFileState, UIFileBase64Blobs } from '../../editor/store/editor-state'
 
 export interface MutableUtopiaContextProps {
-  requireResult: MapLike<any>
-  fileBlobs: UIFileBase64Blobs
-  rootScope: MapLike<any>
-  jsxFactoryFunctionName: string | null
+  [filePath: string]: {
+    mutableContext: {
+      requireResult: MapLike<any>
+      fileBlobs: UIFileBase64Blobs
+      rootScope: MapLike<any>
+      jsxFactoryFunctionName: string | null
+    }
+  }
 }
 
 export const MutableUtopiaContext = React.createContext<{ current: MutableUtopiaContextProps }>({
-  current: {
-    requireResult: {},
-    fileBlobs: {},
-    rootScope: {},
-    jsxFactoryFunctionName: null,
-  },
+  current: {},
 })
 MutableUtopiaContext.displayName = 'MutableUtopiaContext'
 

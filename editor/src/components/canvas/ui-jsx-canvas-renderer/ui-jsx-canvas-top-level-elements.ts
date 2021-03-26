@@ -1,6 +1,6 @@
 import { useContextSelector } from 'use-context-selector'
 import { TopLevelElement } from '../../../core/shared/element-template'
-import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import { Imports, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../assets'
 import {
   DerivedState,
@@ -16,7 +16,10 @@ export function getTopLevelElementsFromEditorState(
   filePath: string,
   editor: EditorState,
   derived: DerivedState,
-): TopLevelElement[] {
+): {
+  topLevelElements: TopLevelElement[]
+  imports: Imports
+} {
   return getTopLevelElements(
     filePath,
     editor.projectContents,
@@ -25,34 +28,47 @@ export function getTopLevelElementsFromEditorState(
   )
 }
 
-const EmptyProjectContents: TopLevelElement[] = []
+const EmptyTopLevelElements: TopLevelElement[] = []
+const EmptyImports: Imports = {}
 export function getTopLevelElements(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
   transientFileState: TransientFileState | null,
-): TopLevelElement[] {
+): {
+  topLevelElements: TopLevelElement[]
+  imports: Imports
+} {
   const projectFile = getContentsTreeFileFromString(projectContents, filePath)
   if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
     if (openStoryboardFileNameKILLME === filePath && transientFileState != null) {
-      return transientFileState.topLevelElementsIncludingScenes
+      return {
+        topLevelElements: transientFileState.topLevelElementsIncludingScenes,
+        imports: transientFileState.imports,
+      }
     }
-    return projectFile.fileContents.parsed.topLevelElements
+    return {
+      topLevelElements: projectFile.fileContents.parsed.topLevelElements,
+      imports: projectFile.fileContents.parsed.imports,
+    }
   } else {
-    return EmptyProjectContents
+    return {
+      topLevelElements: EmptyTopLevelElements,
+      imports: EmptyImports,
+    }
   }
 }
 
 export function useGetTopLevelElements(filePath: string | null): TopLevelElement[] {
   return useContextSelector(UtopiaProjectContext, (c) => {
     if (filePath == null) {
-      return EmptyProjectContents
+      return EmptyTopLevelElements
     }
     return getTopLevelElements(
       filePath,
       c.projectContents,
       c.openStoryboardFilePathKILLME,
       c.transientFileState,
-    )
+    ).topLevelElements
   })
 }

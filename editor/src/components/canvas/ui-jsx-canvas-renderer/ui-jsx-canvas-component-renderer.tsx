@@ -60,7 +60,7 @@ export function createComponentRendererComponent(params: {
 
     const scenePath: ScenePath | null = TP.isScenePath(scenePathAny) ? scenePathAny : null
 
-    const mutableContext = params.mutableContextRef.current
+    const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
     const topLevelElements = useGetTopLevelElements(params.filePath)
 
@@ -119,6 +119,7 @@ export function createComponentRendererComponent(params: {
         metadataContext,
         mutableContext.jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
+        params.filePath,
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -159,6 +160,7 @@ export function createComponentRendererComponent(params: {
           mutableContext.jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,
+          params.filePath,
         )
       }
     }

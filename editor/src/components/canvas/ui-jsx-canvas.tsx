@@ -80,6 +80,7 @@ import {
   getTopLevelElementsFromEditorState,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { ProjectContentTreeRoot } from '../assets'
+import { useExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -171,25 +172,17 @@ export function pickUiJsxCanvasProps(
       Utils.optionalFlatMap((key) => editor.canvas.base64Blobs[key], getOpenUIJSFileKey(editor)),
     )
 
-    let imports: Imports = emptyImports
     let jsxFactoryFunction: string | null = null
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
 
-    const topLevelElementsIncludingScenes = getTopLevelElementsFromEditorState(
-      uiFilePath,
-      editor,
-      derived,
-    )
+    const {
+      topLevelElements: topLevelElementsIncludingScenes,
+      imports,
+    } = getTopLevelElementsFromEditorState(uiFilePath, editor, derived)
     if (uiFile != null && isParseSuccess(uiFile.fileContents.parsed)) {
       const success = uiFile.fileContents.parsed
-      const transientCanvasState = derived.canvas.transientState
-      imports = uiFile.fileContents.parsed.imports
       jsxFactoryFunction = success.jsxFactoryFunction
       combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
-      const transientFileState = transientCanvasState.fileState
-      if (transientFileState != null) {
-        imports = transientFileState.imports
-      }
     }
     const requireFn = editor.codeResultCache.requireFn
 
@@ -287,13 +280,15 @@ export const UiJsxCanvas = betterReactMemo(
     )
     unimportAllButTheseCSSFiles(cssImports)
 
-    let topLevelComponentRendererComponents = React.useRef<MapLike<ComponentRendererComponent>>({})
-
     let mutableContextRef = React.useRef<MutableUtopiaContextProps>({
-      fileBlobs: fileBlobs,
-      requireResult: {},
-      rootScope: {},
-      jsxFactoryFunctionName: null,
+      [uiFilePath]: {
+        mutableContext: {
+          fileBlobs: fileBlobs,
+          requireResult: {},
+          rootScope: {},
+          jsxFactoryFunctionName: null,
+        },
+      },
     })
 
     if (clearErrors != null) {
@@ -308,41 +303,16 @@ export const UiJsxCanvas = betterReactMemo(
         [requireFn],
       )
 
-      const requireResult: MapLike<any> = importResultFromImports(
+      const { scope, requireResult, topLevelJsxComponents } = useExecutionScope(
         uiFilePath,
-        imports,
         customRequire,
+        mutableContextRef,
+        props.projectContents,
+        uiFilePath, // this is the storyboard filepath
+        props.transientFileState,
       )
 
-      const userRequireFn = React.useCallback(
-        (toImport: string) => customRequire(uiFilePath, toImport),
-        [uiFilePath, customRequire],
-      )
-      let executionScope: MapLike<any> = { require: userRequireFn, ...requireResult }
-      // TODO All of this is run on every interaction o_O
-
-      let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
-
-      // Make sure there is something in scope for all of the top level components
-      Utils.fastForEach(topLevelElementsIncludingScenes, (topLevelElement) => {
-        if (isUtopiaJSXComponent(topLevelElement)) {
-          topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-          if (!(topLevelElement.name in topLevelComponentRendererComponents.current)) {
-            topLevelComponentRendererComponents.current[
-              topLevelElement.name
-            ] = createComponentRendererComponent({
-              topLevelElementName: topLevelElement.name,
-              mutableContextRef: mutableContextRef,
-              filePath: uiFilePath,
-            })
-          }
-        }
-      })
-
-      executionScope = {
-        ...executionScope,
-        ...topLevelComponentRendererComponents.current,
-      }
+      const executionScope = scope
 
       // First make sure everything is in scope
       if (combinedTopLevelArbitraryBlock != null) {
@@ -358,6 +328,7 @@ export const UiJsxCanvas = betterReactMemo(
           metadataContext,
           jsxFactoryFunction,
           props.shouldIncludeCanvasRootInTheSpy,
+          uiFilePath,
         )
 
         executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -370,10 +341,14 @@ export const UiJsxCanvas = betterReactMemo(
       }
 
       updateMutableUtopiaContextWithNewProps(mutableContextRef, {
-        requireResult: requireResult,
-        rootScope: executionScope,
-        fileBlobs: fileBlobs,
-        jsxFactoryFunctionName: jsxFactoryFunction,
+        [uiFilePath]: {
+          mutableContext: {
+            requireResult: requireResult,
+            rootScope: executionScope,
+            fileBlobs: fileBlobs,
+            jsxFactoryFunctionName: jsxFactoryFunction,
+          },
+        },
       })
 
       const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
