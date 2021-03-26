@@ -36,7 +36,7 @@ export function createExecutionScope(
   fileBlobs: UIFileBase64Blobs, // this is only for the storyboard file now,
   hiddenInstances: TemplatePath[],
   metadataContext: UiJsxCanvasContextData,
-  jsxFactoryFunction: string | null,
+  jsxFactoryFunction: string | null, // this is only for the storyboard file now
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): {
   scope: MapLike<any>
