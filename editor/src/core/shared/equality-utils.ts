@@ -18,6 +18,22 @@ export function abstractEquals(
   if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
     return false
   }
+
+  // code from https://github.com/epoberezkin/fast-deep-equal/blob/a33d49ab5cc659e331ff445109f35dd323230d41/src/index.jst#L25-L39
+  if (objA instanceof Map && objB instanceof Map) {
+    if (objA.size !== objB.size) return false
+    for (const i of objA.entries()) if (!objB.has(i[0])) return false
+    for (const i of objA.entries())
+      if (!nestedEqualityFn(i[1], objB.get(i[0]), debugMode)) return false
+    return true
+  }
+
+  if (objA instanceof Set && objB instanceof Set) {
+    if (objA.size !== objB.size) return false
+    for (const i of objA.entries()) if (!objB.has(i[0])) return false
+    return true
+  }
+
   const keysA = Object.keys(objA)
   const keysB = Object.keys(objB)
   if (keysA.length !== keysB.length) return false

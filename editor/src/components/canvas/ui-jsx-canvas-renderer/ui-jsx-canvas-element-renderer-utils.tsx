@@ -51,6 +51,7 @@ export function createLookupRender(
   metadataContext: UiJsxCanvasContextData,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  filePath: string,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactElement {
   let index = 0
 
@@ -97,6 +98,7 @@ export function createLookupRender(
       jsxFactoryFunctionName,
       null,
       shouldIncludeCanvasRootInTheSpy,
+      filePath,
     )
   }
 }
@@ -117,12 +119,13 @@ export function renderCoreElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  filePath: string,
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
   }
   if (isJSXElement(element) && isSceneElement(element)) {
-    return <SceneRootRenderer sceneElement={element} />
+    return <SceneRootRenderer sceneElement={element} filePath={filePath} />
   }
   switch (element.type) {
     case 'JSX_ELEMENT': {
@@ -154,6 +157,7 @@ export function renderCoreElement(
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
+        filePath,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -169,6 +173,7 @@ export function renderCoreElement(
         metadataContext,
         jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
+        filePath,
       )
 
       const blockScope = {
@@ -200,6 +205,7 @@ export function renderCoreElement(
           jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,
+          filePath,
         )
         renderedChildren.push(renderResult)
       })
@@ -237,6 +243,7 @@ function renderJSXElement(
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  filePath: string,
 ): React.ReactElement {
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, templatePath)) {
@@ -264,6 +271,7 @@ function renderJSXElement(
       jsxFactoryFunctionName,
       codeError,
       shouldIncludeCanvasRootInTheSpy,
+      filePath,
     )
   }
 
