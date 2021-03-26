@@ -278,7 +278,7 @@ export const UiJsxCanvas = betterReactMemo(
     const cssImports = useKeepReferenceEqualityIfPossible(
       normalizedCssImportsFromImports(uiFilePath, imports),
     )
-    unimportAllButTheseCSSFiles(cssImports)
+    unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
 
     let mutableContextRef = React.useRef<MutableUtopiaContextProps>({
       [uiFilePath]: {
@@ -326,6 +326,7 @@ export const UiJsxCanvas = betterReactMemo(
       const executionScope = scope
 
       updateMutableUtopiaContextWithNewProps(mutableContextRef, {
+        ...mutableContextRef.current,
         [uiFilePath]: {
           mutableContext: {
             requireResult: requireResult,
