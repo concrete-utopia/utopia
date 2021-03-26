@@ -122,8 +122,7 @@ export interface UiJsxCanvasProps {
   mountCount: number
   onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   walkDOM: boolean
-  imports: Imports
-  jsxFactoryFunction: string | null
+  imports_KILLME_ONLY_USED_FOR_CSS: Imports
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean // FOR ui-jsx-canvas.spec TESTS ONLY!!!! this prevents us from having to update the legacy test snapshots
   clearConsoleLogs: () => void
@@ -155,7 +154,6 @@ export function pickUiJsxCanvasProps(
   onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
-  dispatch: EditorDispatch,
 ): UiJsxCanvasProps | null {
   const uiFile = getOpenUIJSFile(editor)
   const uiFilePath = getOpenUIJSFileKey(editor)
@@ -167,11 +165,7 @@ export function pickUiJsxCanvasProps(
       Utils.optionalFlatMap((key) => editor.canvas.base64Blobs[key], getOpenUIJSFileKey(editor)),
     )
 
-    const {
-      imports,
-      jsxFactoryFunction,
-      combinedTopLevelArbitraryBlock,
-    } = getParseSuccessOrTransientForFilePath(
+    const { imports, combinedTopLevelArbitraryBlock } = getParseSuccessOrTransientForFilePath(
       uiFilePath,
       editor.projectContents,
       uiFilePath,
@@ -211,8 +205,7 @@ export function pickUiJsxCanvasProps(
       mountCount: editor.canvas.mountCount,
       onDomReport: onDomReport,
       walkDOM: walkDOM,
-      imports: imports,
-      jsxFactoryFunction: jsxFactoryFunction,
+      imports_KILLME_ONLY_USED_FOR_CSS: imports,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       canvasIsLive: isLiveMode(editor.mode),
@@ -249,8 +242,7 @@ export const UiJsxCanvas = betterReactMemo(
       fileBlobsForFileKILLME,
       walkDOM,
       onDomReport,
-      imports,
-      jsxFactoryFunction,
+      imports_KILLME_ONLY_USED_FOR_CSS: imports,
       clearErrors,
       clearConsoleLogs,
       addToConsoleLogs,
@@ -301,7 +293,7 @@ export const UiJsxCanvas = betterReactMemo(
         [requireFn],
       )
 
-      const { scope, requireResult, topLevelJsxComponents } = createExecutionScope(
+      const { scope, topLevelJsxComponents } = createExecutionScope(
         uiFilePath,
         customRequire,
         mutableContextRef,
@@ -317,19 +309,6 @@ export const UiJsxCanvas = betterReactMemo(
       )
 
       const executionScope = scope
-
-      updateMutableUtopiaContextWithNewProps(mutableContextRef, {
-        ...mutableContextRef.current,
-        [uiFilePath]: {
-          // TODO we want to run it for all the files not just the UI File
-          mutableContext: {
-            requireResult: requireResult,
-            rootScope: executionScope,
-            fileBlobs: fileBlobsForFileKILLME,
-            jsxFactoryFunctionName: jsxFactoryFunction,
-          },
-        },
-      })
 
       const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 

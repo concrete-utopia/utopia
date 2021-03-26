@@ -17,7 +17,10 @@ import {
   ComponentRendererComponent,
   createComponentRendererComponent,
 } from './ui-jsx-canvas-component-renderer'
-import { MutableUtopiaContextProps } from './ui-jsx-canvas-contexts'
+import {
+  MutableUtopiaContextProps,
+  updateMutableUtopiaContextWithNewProps,
+} from './ui-jsx-canvas-contexts'
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-top-level-elements'
@@ -119,6 +122,19 @@ export function createExecutionScope(
 
     runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
   }
+
+  // WARNING: mutating the mutableContextRef
+  updateMutableUtopiaContextWithNewProps(mutableContextRef, {
+    ...mutableContextRef.current,
+    [filePath]: {
+      mutableContext: {
+        requireResult: requireResult,
+        rootScope: executionScope,
+        fileBlobs: fileBlobsForFile,
+        jsxFactoryFunctionName: jsxFactoryFunction,
+      },
+    },
+  })
 
   return {
     scope: executionScope,

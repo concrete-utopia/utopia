@@ -114,18 +114,6 @@ export function renderCanvasReturnResultAndError(
     (_) => emptyImports(),
     parsedCode,
   )
-  const topLevelElements: Array<TopLevelElement> = foldParsedTextFile(
-    (_) => [],
-    (success) => success.topLevelElements,
-    (_) => [],
-    parsedCode,
-  )
-  const jsxFactoryFunction = foldParsedTextFile(
-    (_) => null,
-    (success) => success.jsxFactoryFunction,
-    (_) => null,
-    parsedCode,
-  )
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
 
@@ -184,8 +172,7 @@ export function renderCanvasReturnResultAndError(
       editedTextElement: null,
       mountCount: 0,
       walkDOM: false,
-      imports: imports,
-      jsxFactoryFunction: jsxFactoryFunction,
+      imports_KILLME_ONLY_USED_FOR_CSS: imports,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
       clearConsoleLogs: clearConsoleLogs,
@@ -207,8 +194,7 @@ export function renderCanvasReturnResultAndError(
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
       walkDOM: false,
-      imports: imports,
-      jsxFactoryFunction: jsxFactoryFunction,
+      imports_KILLME_ONLY_USED_FOR_CSS: imports,
       canvasIsLive: false,
       shouldIncludeCanvasRootInTheSpy: false,
       clearConsoleLogs: clearConsoleLogs,
