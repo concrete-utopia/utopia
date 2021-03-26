@@ -117,7 +117,6 @@ export interface UiJsxCanvasProps {
   requireFn: UtopiaRequireFn | null
   hiddenInstances: TemplatePath[]
   editedTextElement: InstancePath | null
-  fileBlobsForFileKILLME: UIFileBase64Blobs
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
   onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
@@ -159,11 +158,6 @@ export function pickUiJsxCanvasProps(
   if (uiFile == null || uiFilePath == null) {
     return null
   } else {
-    const defaultedFileBlobs = Utils.defaultIfNull(
-      emptyFileBlobs,
-      Utils.optionalFlatMap((key) => editor.canvas.base64Blobs[key], getOpenUIJSFileKey(editor)),
-    )
-
     const { imports } = getParseSuccessOrTransientForFilePath(
       uiFilePath,
       editor.projectContents,
@@ -199,7 +193,6 @@ export function pickUiJsxCanvasProps(
       requireFn: requireFn,
       hiddenInstances: hiddenInstances,
       editedTextElement: editedTextElement,
-      fileBlobsForFileKILLME: defaultedFileBlobs,
       base64FileBlobs: editor.canvas.base64Blobs,
       mountCount: editor.canvas.mountCount,
       onDomReport: onDomReport,
@@ -237,7 +230,6 @@ export const UiJsxCanvas = betterReactMemo(
       uiFilePath,
       requireFn,
       hiddenInstances,
-      fileBlobsForFileKILLME,
       walkDOM,
       onDomReport,
       imports_KILLME_ONLY_USED_FOR_CSS: imports,
