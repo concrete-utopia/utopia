@@ -41,7 +41,7 @@ export function createExecutionScope(
   >,
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
-  transientFileState: TransientFileState | null,
+  transientFileStateKILLME: TransientFileState | null,
   fileBlobs: CanvasBase64Blobs,
   hiddenInstances: TemplatePath[],
   metadataContext: UiJsxCanvasContextData,
@@ -69,7 +69,7 @@ export function createExecutionScope(
     filePath,
     projectContents,
     openStoryboardFileNameKILLME,
-    transientFileState,
+    transientFileStateKILLME,
   )
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
