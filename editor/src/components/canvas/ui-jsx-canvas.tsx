@@ -315,35 +315,15 @@ export const UiJsxCanvas = betterReactMemo(
         props.projectContents,
         uiFilePath, // this is the storyboard filepath
         props.transientFileState,
+        combinedTopLevelArbitraryBlock,
+        fileBlobs,
+        hiddenInstances,
+        metadataContext,
+        jsxFactoryFunction,
+        props.shouldIncludeCanvasRootInTheSpy,
       )
 
       const executionScope = scope
-
-      // First make sure everything is in scope
-      if (combinedTopLevelArbitraryBlock != null) {
-        const lookupRenderer = createLookupRender(
-          TP.emptyInstancePath,
-          executionScope,
-          {},
-          requireResult,
-          hiddenInstances,
-          fileBlobs,
-          [],
-          undefined,
-          metadataContext,
-          jsxFactoryFunction,
-          props.shouldIncludeCanvasRootInTheSpy,
-          uiFilePath,
-        )
-
-        executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
-          combinedTopLevelArbitraryBlock.elementsWithin,
-          executionScope,
-          lookupRenderer,
-        )
-
-        runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
-      }
 
       updateMutableUtopiaContextWithNewProps(mutableContextRef, {
         [uiFilePath]: {
