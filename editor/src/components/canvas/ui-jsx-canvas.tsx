@@ -75,10 +75,7 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
-import {
-  getTopLevelElements,
-  getTopLevelElementsFromEditorState,
-} from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
+import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { ProjectContentTreeRoot } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 
@@ -172,18 +169,18 @@ export function pickUiJsxCanvasProps(
       Utils.optionalFlatMap((key) => editor.canvas.base64Blobs[key], getOpenUIJSFileKey(editor)),
     )
 
-    let jsxFactoryFunction: string | null = null
-    let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
-
     const {
       topLevelElements: topLevelElementsIncludingScenes,
       imports,
-    } = getTopLevelElementsFromEditorState(uiFilePath, editor, derived)
-    if (uiFile != null && isParseSuccess(uiFile.fileContents.parsed)) {
-      const success = uiFile.fileContents.parsed
-      jsxFactoryFunction = success.jsxFactoryFunction
-      combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
-    }
+      jsxFactoryFunction,
+      combinedTopLevelArbitraryBlock,
+    } = getParseSuccessOrTransientForFilePath(
+      uiFilePath,
+      editor.projectContents,
+      uiFilePath,
+      derived.canvas.transientState.fileState,
+    )
+
     const requireFn = editor.codeResultCache.requireFn
 
     let linkTags = ''
@@ -319,7 +316,6 @@ export const UiJsxCanvas = betterReactMemo(
         fileBlobs,
         hiddenInstances,
         metadataContext,
-        jsxFactoryFunction,
         props.shouldIncludeCanvasRootInTheSpy,
       )
 

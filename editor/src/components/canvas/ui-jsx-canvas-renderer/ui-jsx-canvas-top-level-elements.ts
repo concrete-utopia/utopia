@@ -1,70 +1,58 @@
 import { useContextSelector } from 'use-context-selector'
-import { TopLevelElement } from '../../../core/shared/element-template'
+import { ArbitraryJSBlock, TopLevelElement } from '../../../core/shared/element-template'
 import { Imports, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../assets'
-import {
-  DerivedState,
-  EditorState,
-  getFileForName,
-  getOpenUIJSFileKey,
-  TransientFileState,
-} from '../../editor/store/editor-state'
-import { useEditorState } from '../../editor/store/store-hook'
+import { TransientFileState } from '../../editor/store/editor-state'
 import { UtopiaProjectContext } from './ui-jsx-canvas-contexts'
 
-export function getTopLevelElementsFromEditorState(
-  filePath: string,
-  editor: EditorState,
-  derived: DerivedState,
-): {
+interface GetParseSuccessOrTransientResult {
   topLevelElements: TopLevelElement[]
   imports: Imports
-} {
-  return getTopLevelElements(
-    filePath,
-    editor.projectContents,
-    getOpenUIJSFileKey(editor),
-    derived.canvas.transientState.fileState,
-  )
+  jsxFactoryFunction: string | null
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
 }
 
-const EmptyTopLevelElements: TopLevelElement[] = []
-const EmptyImports: Imports = {}
-export function getTopLevelElements(
+const EmptyResult: GetParseSuccessOrTransientResult = {
+  topLevelElements: [],
+  imports: {},
+  jsxFactoryFunction: null,
+  combinedTopLevelArbitraryBlock: null,
+}
+
+export function getParseSuccessOrTransientForFilePath(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
   transientFileState: TransientFileState | null,
-): {
-  topLevelElements: TopLevelElement[]
-  imports: Imports
-} {
+): GetParseSuccessOrTransientResult {
   const projectFile = getContentsTreeFileFromString(projectContents, filePath)
   if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+    const parseSuccess = projectFile.fileContents.parsed
     if (openStoryboardFileNameKILLME === filePath && transientFileState != null) {
       return {
         topLevelElements: transientFileState.topLevelElementsIncludingScenes,
         imports: transientFileState.imports,
+        jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
+        combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
       }
     }
     return {
-      topLevelElements: projectFile.fileContents.parsed.topLevelElements,
-      imports: projectFile.fileContents.parsed.imports,
+      topLevelElements: parseSuccess.topLevelElements,
+      imports: parseSuccess.imports,
+      jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
+      combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
     }
   } else {
-    return {
-      topLevelElements: EmptyTopLevelElements,
-      imports: EmptyImports,
-    }
+    return EmptyResult
   }
 }
 
 export function useGetTopLevelElements(filePath: string | null): TopLevelElement[] {
   return useContextSelector(UtopiaProjectContext, (c) => {
     if (filePath == null) {
-      return EmptyTopLevelElements
+      return EmptyResult.topLevelElements
     }
-    return getTopLevelElements(
+    return getParseSuccessOrTransientForFilePath(
       filePath,
       c.projectContents,
       c.openStoryboardFilePathKILLME,

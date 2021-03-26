@@ -16,7 +16,7 @@ import {
 import { MutableUtopiaContextProps } from './ui-jsx-canvas-contexts'
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
-import { getTopLevelElements } from './ui-jsx-canvas-top-level-elements'
+import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-top-level-elements'
 import * as TP from '../../../core/shared/template-path'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { TemplatePath } from '../../../core/shared/project-file-types'
@@ -36,7 +36,6 @@ export function createExecutionScope(
   fileBlobs: UIFileBase64Blobs, // this is only for the storyboard file now,
   hiddenInstances: TemplatePath[],
   metadataContext: UiJsxCanvasContextData,
-  jsxFactoryFunction: string | null, // this is only for the storyboard file now
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): {
   scope: MapLike<any>
@@ -49,7 +48,8 @@ export function createExecutionScope(
   }
   let topLevelComponentRendererComponentsForFile =
     topLevelComponentRendererComponents.current[filePath]
-  const { topLevelElements, imports } = getTopLevelElements(
+
+  const { topLevelElements, imports, jsxFactoryFunction } = getParseSuccessOrTransientForFilePath(
     filePath,
     projectContents,
     openStoryboardFileNameKILLME,
