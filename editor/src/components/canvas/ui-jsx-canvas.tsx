@@ -20,8 +20,18 @@ import {
   TemplatePath,
   isParseSuccess,
   StaticInstancePath,
+  ParseSuccess,
+  isTextFile,
 } from '../../core/shared/project-file-types'
-import { isRight } from '../../core/shared/either'
+import {
+  Either,
+  flatMapEither,
+  foldEither,
+  isRight,
+  left,
+  mapEither,
+  right,
+} from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { UtopiaRequireFn } from '../custom-code/code-file'
@@ -79,7 +89,7 @@ import {
   getTopLevelElements,
   getTopLevelElementsFromEditorState,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
-import { ProjectContentTreeRoot } from '../assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { useExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
@@ -116,7 +126,8 @@ export interface UiJsxCanvasProps {
   scale: number
   uiFileCode: string
   uiFilePath: string
-  requireFn: UtopiaRequireFn | null
+  requireFn: UtopiaRequireFn
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: TemplatePath[]
   editedTextElement: InstancePath | null
   fileBlobs: UIFileBase64Blobs
@@ -210,6 +221,7 @@ export function pickUiJsxCanvasProps(
       uiFileCode: uiFile.fileContents.code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
+      resolve: editor.codeResultCache.resolve,
       hiddenInstances: hiddenInstances,
       editedTextElement: editedTextElement,
       fileBlobs: defaultedFileBlobs,
@@ -251,6 +263,7 @@ export const UiJsxCanvas = betterReactMemo(
       scale,
       uiFilePath,
       requireFn,
+      resolve,
       hiddenInstances,
       fileBlobs,
       walkDOM,
@@ -264,6 +277,7 @@ export const UiJsxCanvas = betterReactMemo(
       canvasIsLive,
       linkTags,
       combinedTopLevelArbitraryBlock,
+      projectContents,
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -297,10 +311,35 @@ export const UiJsxCanvas = betterReactMemo(
       clearErrors()
     }
 
+    // TODO requireFn can never be null
     if (requireFn != null) {
       const customRequire = React.useCallback(
-        (importOrigin: string, toImport: string) => requireFn(importOrigin, toImport, false),
-        [requireFn],
+        (importOrigin: string, toImport: string) => {
+          const filePathResolveResult = resolve(importOrigin, toImport)
+          const resovedParseSuccess: Either<string, ParseSuccess> = flatMapEither(
+            (resolvedFilePath) => {
+              const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
+              if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+                return right(projectFile.fileContents.parsed)
+              } else {
+                return left(`File ${resolvedFilePath} is not a ParseSuccess`)
+              }
+            },
+            filePathResolveResult,
+          )
+          return foldEither(
+            () => {
+              // We did not find a ParseSuccess, fallback to standard require Fn
+              return requireFn(importOrigin, toImport, false)
+            },
+            (parseSuccess) => {
+              // we found a ParseSuccess, let's create an export map with ComponentRendererComponents!
+            },
+            resovedParseSuccess,
+          )
+        },
+        // TODO I don't like projectContents here because that means dragging smth on the Canvas would recreate the customRequire fn
+        [requireFn, resolve, projectContents],
       )
 
       const { scope, requireResult, topLevelJsxComponents } = useExecutionScope(

@@ -11,7 +11,7 @@ import {
   parseString,
   ParseResult,
 } from '../../../utils/value-parser-utils'
-import { applicative3Either, foldEither } from '../../shared/either'
+import { applicative3Either, Either, foldEither, left, right } from '../../shared/either'
 import { setOptionalProp } from '../../shared/object-utils'
 import { getContentsTreeFileFromElements, ProjectContentTreeRoot } from '../../../components/assets'
 import { loaderExistsForFile } from '../../webpack-loaders/loaders'
@@ -347,5 +347,19 @@ export function resolveModule(
         pathToElements(toImport),
       )
     }
+  }
+}
+
+export function resolveModulePath(
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  importOrigin: string,
+  toImport: string,
+): Either<string, string> {
+  const resolveResult = resolveModule(projectContents, nodeModules, importOrigin, toImport)
+  if (isResolveSuccess(resolveResult)) {
+    return right(resolveResult.success.path)
+  } else {
+    return left(`Cannot find module ${toImport}`)
   }
 }

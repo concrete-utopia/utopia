@@ -9,7 +9,7 @@ import * as UUIUI from '../../uuiui'
 import * as ANTD from 'antd'
 
 import { FancyError } from '../../core/shared/code-exec-utils'
-import { isRight, right } from '../../core/shared/either'
+import { Either, isRight, left, right } from '../../core/shared/either'
 import {
   ElementInstanceMetadata,
   clearJSXElementUniqueIDs,
@@ -71,6 +71,20 @@ export const dumbRequireFn: RequireFn = (importOrigin: string, toImport: string)
       return ANTD
     default:
       throw new Error(`Unhandled values of ${importOrigin} and ${toImport}.`)
+  }
+}
+
+export function dumbResolveFn(importOrigin: string, toImport: string): Either<string, string> {
+  const normalizedName = normalizeName(importOrigin, toImport)
+  switch (normalizedName) {
+    case 'utopia-api':
+    case 'react':
+    case 'react-dom':
+    case 'uuiui':
+    case 'antd':
+      return right(`/node_modules/${normalizedName}/index.js`) // ¯\_(ツ)_/¯
+    default:
+      return left(`Test error, the dumbResolveFn did not know about this file: ${toImport}`)
   }
 }
 
@@ -174,6 +188,7 @@ export function renderCanvasReturnResultAndError(
       uiFileCode: code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
+      resolve: dumbResolveFn,
       fileBlobs: fileBlobs,
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
@@ -202,6 +217,7 @@ export function renderCanvasReturnResultAndError(
       uiFileCode: code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
+      resolve: dumbResolveFn,
       fileBlobs: fileBlobs,
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,

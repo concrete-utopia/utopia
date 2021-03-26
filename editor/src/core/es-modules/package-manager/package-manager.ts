@@ -5,7 +5,7 @@ import {
   isEsRemoteDependencyPlaceholder,
 } from '../../shared/project-file-types'
 import { RequireFn, TypeDefinitions } from '../../shared/npm-dependency-types'
-import { isResolveSuccess, resolveModule } from './module-resolution'
+import { isResolveSuccess, resolveModule, resolveModulePath } from './module-resolution'
 import { evaluator } from '../evaluator/evaluator'
 import { fetchMissingFileDependency } from './fetch-packages'
 import { EditorDispatch } from '../../../components/editor/action-types'
@@ -16,6 +16,8 @@ import { utopiaApiTypings } from './utopia-api-typings'
 import { resolveBuiltInDependency } from './built-in-dependencies'
 import { ProjectContentTreeRoot } from '../../../components/assets'
 import { applyLoaders } from '../../webpack-loaders/loaders'
+import { string } from 'prop-types'
+import { Either } from '../../shared/either'
 
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
 
@@ -24,6 +26,12 @@ export function createDependencyNotFoundError(importOrigin: string, toImport: st
   error.name = DependencyNotFoundErrorName
   return error
 }
+
+export const getEditorResolveFunction = (
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+) => (importOrigin: string, toImport: string): Either<string, string> =>
+  resolveModulePath(projectContents, nodeModules, importOrigin, toImport)
 
 export const getEditorRequireFn = (
   projectContents: ProjectContentTreeRoot,
