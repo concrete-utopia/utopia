@@ -866,7 +866,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         ":storyboard-entity": Object {
           "children": Array [
             ":storyboard-entity/scene-1-entity",
-            ":storyboard-entity/scene-2-entity"
+            ":storyboard-entity/scene-2-entity",
           ],
           "name": "div",
         },
@@ -919,7 +919,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         ":storyboard-entity": Object {
           "children": Array [
             ":storyboard-entity/scene-1-entity",
-            ":storyboard-entity/scene-2-entity"
+            ":storyboard-entity/scene-2-entity",
           ],
           "name": "Storyboard",
         },
