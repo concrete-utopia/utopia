@@ -12,10 +12,13 @@ import {
 import { MutableUtopiaContextProps } from './ui-jsx-canvas-contexts'
 import { getTopLevelElements } from './ui-jsx-canvas-top-level-elements'
 
-export function useExecutionScope(
+export function createExecutionScope(
   filePath: string,
   customRequire: (importOrigin: string, toImport: string) => any,
   mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>,
+  topLevelComponentRendererComponents: React.MutableRefObject<
+    MapLike<MapLike<ComponentRendererComponent>>
+  >,
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
   transientFileState: TransientFileState | null,
@@ -24,6 +27,12 @@ export function useExecutionScope(
   topLevelJsxComponents: Map<string, UtopiaJSXComponent>
   requireResult: MapLike<any>
 } {
+  if (topLevelComponentRendererComponents.current[filePath] == null) {
+    // we make sure that the ref has an entry for this filepath
+    topLevelComponentRendererComponents.current[filePath] = {}
+  }
+  let topLevelComponentRendererComponentsForFile =
+    topLevelComponentRendererComponents.current[filePath]
   const { topLevelElements, imports } = getTopLevelElements(
     filePath,
     projectContents,
@@ -32,22 +41,19 @@ export function useExecutionScope(
   )
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
-  const userRequireFn = React.useCallback((toImport: string) => customRequire(filePath, toImport), [
-    filePath,
-    customRequire,
-  ])
+  const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback
+
   let executionScope: MapLike<any> = { require: userRequireFn, ...requireResult }
   // TODO All of this is run on every interaction o_O
 
   let topLevelJsxComponents: Map<string, UtopiaJSXComponent> = new Map()
-  let topLevelComponentRendererComponents = React.useRef<MapLike<ComponentRendererComponent>>({}) // these are only the storyboard components now
 
   // Make sure there is something in scope for all of the top level components
   fastForEach(topLevelElements, (topLevelElement) => {
     if (isUtopiaJSXComponent(topLevelElement)) {
       topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
-      if (!(topLevelElement.name in topLevelComponentRendererComponents.current)) {
-        topLevelComponentRendererComponents.current[
+      if (!(topLevelElement.name in topLevelComponentRendererComponentsForFile)) {
+        topLevelComponentRendererComponentsForFile[
           topLevelElement.name
         ] = createComponentRendererComponent({
           topLevelElementName: topLevelElement.name,
@@ -61,7 +67,7 @@ export function useExecutionScope(
   return {
     scope: {
       ...executionScope,
-      ...topLevelComponentRendererComponents.current,
+      ...topLevelComponentRendererComponentsForFile,
     },
     topLevelJsxComponents: topLevelJsxComponents,
     requireResult: requireResult,

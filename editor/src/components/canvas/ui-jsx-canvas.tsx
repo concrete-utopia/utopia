@@ -90,7 +90,7 @@ import {
   getTopLevelElementsFromEditorState,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
-import { useExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -305,6 +305,10 @@ export const UiJsxCanvas = betterReactMemo(
       },
     })
 
+    let topLevelComponentRendererComponents = React.useRef<
+      MapLike<MapLike<ComponentRendererComponent>>
+    >({})
+
     if (clearErrors != null) {
       // a new canvas render, a new chance at having no errors
       // FIXME This is illegal! The line below is triggering a re-render
@@ -342,10 +346,11 @@ export const UiJsxCanvas = betterReactMemo(
         [requireFn, resolve, projectContents],
       )
 
-      const { scope, requireResult, topLevelJsxComponents } = useExecutionScope(
+      const { scope, requireResult, topLevelJsxComponents } = createExecutionScope(
         uiFilePath,
         customRequire,
         mutableContextRef,
+        topLevelComponentRendererComponents,
         props.projectContents,
         uiFilePath, // this is the storyboard filepath
         props.transientFileState,
