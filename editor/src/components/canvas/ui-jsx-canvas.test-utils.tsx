@@ -117,13 +117,6 @@ export function renderCanvasReturnResultAndError(
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
 
-  const combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = foldParsedTextFile(
-    (_) => null,
-    (success) => success.combinedTopLevelArbitraryBlock,
-    (_) => null,
-    parsedCode,
-  )
-
   const storeHookForTest = getStoreHook(NO_OP)
   storeHookForTest.updateStore((store) => {
     const projectContents: ProjectContents = {
@@ -178,7 +171,6 @@ export function renderCanvasReturnResultAndError(
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
-      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
       transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
@@ -200,7 +192,6 @@ export function renderCanvasReturnResultAndError(
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       linkTags: '',
-      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
       transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,

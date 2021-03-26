@@ -128,7 +128,6 @@ export interface UiJsxCanvasProps {
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
-  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
   focusedElementPath: ScenePath | null
   projectContents: ProjectContentTreeRoot
   transientFileState: TransientFileState | null
@@ -165,7 +164,7 @@ export function pickUiJsxCanvasProps(
       Utils.optionalFlatMap((key) => editor.canvas.base64Blobs[key], getOpenUIJSFileKey(editor)),
     )
 
-    const { imports, combinedTopLevelArbitraryBlock } = getParseSuccessOrTransientForFilePath(
+    const { imports } = getParseSuccessOrTransientForFilePath(
       uiFilePath,
       editor.projectContents,
       uiFilePath,
@@ -211,7 +210,6 @@ export function pickUiJsxCanvasProps(
       canvasIsLive: isLiveMode(editor.mode),
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
-      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: editor.focusedElementPath,
       projectContents: editor.projectContents,
       transientFileState: derived.canvas.transientState.fileState,
@@ -248,7 +246,6 @@ export const UiJsxCanvas = betterReactMemo(
       addToConsoleLogs,
       canvasIsLive,
       linkTags,
-      combinedTopLevelArbitraryBlock,
       base64FileBlobs,
     } = props
 
@@ -301,7 +298,6 @@ export const UiJsxCanvas = betterReactMemo(
         props.projectContents,
         uiFilePath, // this is the storyboard filepath
         props.transientFileState,
-        combinedTopLevelArbitraryBlock,
         base64FileBlobs,
         hiddenInstances,
         metadataContext,

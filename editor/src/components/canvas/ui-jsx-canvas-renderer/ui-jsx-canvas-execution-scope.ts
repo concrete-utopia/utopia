@@ -42,7 +42,6 @@ export function createExecutionScope(
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
   transientFileState: TransientFileState | null,
-  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
   fileBlobs: CanvasBase64Blobs,
   hiddenInstances: TemplatePath[],
   metadataContext: UiJsxCanvasContextData,
@@ -61,7 +60,12 @@ export function createExecutionScope(
 
   const fileBlobsForFile = defaultIfNull(emptyFileBlobs, fileBlobs[filePath])
 
-  const { topLevelElements, imports, jsxFactoryFunction } = getParseSuccessOrTransientForFilePath(
+  const {
+    topLevelElements,
+    imports,
+    jsxFactoryFunction,
+    combinedTopLevelArbitraryBlock,
+  } = getParseSuccessOrTransientForFilePath(
     filePath,
     projectContents,
     openStoryboardFileNameKILLME,
