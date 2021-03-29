@@ -1,6 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
+import { IconMap } from 'antd/lib/result'
 import * as React from 'react'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import {

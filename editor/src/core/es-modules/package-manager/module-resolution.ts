@@ -16,7 +16,7 @@ import { setOptionalProp } from '../../shared/object-utils'
 import { getContentsTreeFileFromElements, ProjectContentTreeRoot } from '../../../components/assets'
 import { loaderExistsForFile } from '../../webpack-loaders/loaders'
 import { dropLast, last } from '../../shared/array-utils'
-import { normalizePath } from '../../../utils/path-utils'
+import { getPartsFromPath, makePathFromParts, normalizePath } from '../../../utils/path-utils'
 
 interface ResolveSuccess<T> {
   type: 'RESOLVE_SUCCESS'
@@ -88,10 +88,6 @@ function fileLookupResult(
   }
 }
 
-function pathToElements(path: string): string[] {
-  return path.split('/')
-}
-
 type FileLookupFn = (path: string[]) => FileLookupResult
 const fallbackLookup: (lookupFn: FileLookupFn) => FileLookupFn = (lookupFn: FileLookupFn) => {
   return (path: string[]) => {
@@ -142,7 +138,7 @@ const nodeModulesFileLookup: (nodeModules: NodeModules) => FileLookupFn = (
   nodeModules: NodeModules,
 ) => {
   return fallbackLookup((path: string[]) => {
-    const filename = path.join('/')
+    const filename = makePathFromParts(path)
     return fileLookupResult(filename, nodeModules[filename])
   })
 }
@@ -167,11 +163,10 @@ const projectContentsFileLookup: (projectContents: ProjectContentTreeRoot) => Fi
   projectContents: ProjectContentTreeRoot,
 ) => {
   return fallbackLookup((path: string[]) => {
-    const withoutLeadingSlash = path.filter((s) => s.length > 0)
-    const projectFile = getContentsTreeFileFromElements(projectContents, withoutLeadingSlash)
+    const projectFile = getContentsTreeFileFromElements(projectContents, path)
     const fileContents = projectFile == null ? null : getProjectFileContentsAsString(projectFile)
     if (fileContents != null) {
-      const filename = path.join('/')
+      const filename = makePathFromParts(path)
       return fileLookupResult(filename, esCodeFile(fileContents, null))
     } else {
       return resolveNotPresent
@@ -226,14 +221,14 @@ function processPackageJson(
   return foldEither(
     (_) => resolveNotPresent,
     (packageJson) => {
-      const moduleName: string = packageJson.name ?? containerFolder.join('/')
+      const moduleName: string = packageJson.name ?? makePathFromParts(containerFolder)
       const mainEntry: string | null = packageJson.main ?? null
       const moduleEntry: string | null = packageJson.module ?? null
       if (moduleEntry != null && mainEntry == null) {
-        return resolveSuccess(normalizePath([...containerFolder, ...pathToElements(moduleName)]))
+        return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(moduleName)]))
       }
       if (mainEntry != null) {
-        return resolveSuccess(normalizePath([...containerFolder, ...pathToElements(mainEntry)]))
+        return resolveSuccess(normalizePath([...containerFolder, ...getPartsFromPath(mainEntry)]))
       }
       return resolveNotPresent
     },
@@ -274,11 +269,6 @@ function resolveNonRelativeModule(
   importOrigin: string[],
   toImport: string[],
 ): FileLookupResult {
-  if (importOrigin.length === 0) {
-    // we exhausted all folders without success
-    return resolveNotPresent
-  }
-
   return failoverResolveResults([
     // 1. look for ./node_modules/<package_name>.js
     () => fileLookupFn([...importOrigin, 'node_modules', ...toImport]),
@@ -290,7 +280,14 @@ function resolveNonRelativeModule(
       return fileLookupFn(indexJsPath)
     },
     // 4. repeat in the parent folder
-    () => resolveNonRelativeModule(fileLookupFn, importOrigin.slice(0, -1), toImport),
+    () => {
+      if (importOrigin.length === 0) {
+        // we exhausted all folders without success
+        return resolveNotPresent
+      } else {
+        return resolveNonRelativeModule(fileLookupFn, importOrigin.slice(0, -1), toImport)
+      }
+    },
   ])
 }
 
@@ -331,20 +328,20 @@ export function resolveModule(
     return resolveRelativeModule(
       lookupFn,
       [], // this import is relative to the root
-      pathToElements(toImport),
+      getPartsFromPath(toImport),
     )
   } else {
     if (toImport.startsWith('.')) {
       return resolveRelativeModule(
         lookupFn,
-        pathToElements(importOrigin).slice(0, -1),
-        pathToElements(toImport),
+        getPartsFromPath(importOrigin).slice(0, -1),
+        getPartsFromPath(toImport),
       )
     } else {
       return resolveNonRelativeModule(
         lookupFn,
-        pathToElements(importOrigin).slice(0, -1),
-        pathToElements(toImport),
+        getPartsFromPath(importOrigin).slice(0, -1),
+        getPartsFromPath(toImport),
       )
     }
   }

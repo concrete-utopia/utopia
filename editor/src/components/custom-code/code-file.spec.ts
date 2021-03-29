@@ -426,6 +426,7 @@ describe('normalisePathToUnderlyingTarget', () => {
   it('handles finding the target within the same file', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
+      SampleNodeModules,
       StoryboardFilePath,
       instancePathFromString('storyboard-entity/scene-2-entity:same-file-app-div'),
     )
@@ -439,6 +440,7 @@ describe('normalisePathToUnderlyingTarget', () => {
   it('jumps across multiple files to reach the actual target', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
+      SampleNodeModules,
       StoryboardFilePath,
       instancePathFromString(
         'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
@@ -454,6 +456,7 @@ describe('normalisePathToUnderlyingTarget', () => {
   it('returns the same path because there are no hops to take', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
+      SampleNodeModules,
       '/src/card.js',
       instancePathFromString(':card-outer-div/card-inner-div'),
     )
@@ -467,6 +470,7 @@ describe('normalisePathToUnderlyingTarget', () => {
   it('gives an error when a file does not exist', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
+      SampleNodeModules,
       '/src/nonexistant.js',
       instancePathFromString(':card-outer-div/card-inner-div'),
     )
@@ -476,6 +480,7 @@ describe('normalisePathToUnderlyingTarget', () => {
   it('skips attempting to traverse when confronted with an unparsed code file', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
+      SampleNodeModules,
       '/utopia/unparsedstoryboard.js',
       instancePathFromString(
         'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
@@ -487,6 +492,7 @@ describe('normalisePathToUnderlyingTarget', () => {
   it('handles hitting an external dependency', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
+      SampleNodeModules,
       StoryboardFilePath,
       instancePathFromString(
         'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',

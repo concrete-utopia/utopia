@@ -35,6 +35,7 @@ import {
   ConsoleLog,
   getIndexHtmlFileFromEditorState,
   TransientFileState,
+  CanvasBase64Blobs,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import { useDomWalker } from './dom-walker'
@@ -75,12 +76,9 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
-import {
-  getTopLevelElements,
-  getTopLevelElementsFromEditorState,
-} from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
+import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { ProjectContentTreeRoot } from '../assets'
-import { useExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -119,19 +117,16 @@ export interface UiJsxCanvasProps {
   requireFn: UtopiaRequireFn | null
   hiddenInstances: TemplatePath[]
   editedTextElement: InstancePath | null
-  fileBlobs: UIFileBase64Blobs
+  base64FileBlobs: CanvasBase64Blobs
   mountCount: number
   onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   walkDOM: boolean
-  imports: Imports
-  topLevelElementsIncludingScenes: Array<TopLevelElement>
-  jsxFactoryFunction: string | null
+  imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean // FOR ui-jsx-canvas.spec TESTS ONLY!!!! this prevents us from having to update the legacy test snapshots
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
-  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
   focusedElementPath: ScenePath | null
   projectContents: ProjectContentTreeRoot
   transientFileState: TransientFileState | null
@@ -150,9 +145,6 @@ export type CanvasReactErrorCallback = CanvasReactReportErrorCallback &
 
 export type UiJsxCanvasPropsWithErrorCallback = UiJsxCanvasProps & CanvasReactClearErrorsCallback
 
-const emptyImports: Imports = {}
-const emptyTopLevelElements: Array<TopLevelElement> = []
-
 export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
@@ -160,30 +152,19 @@ export function pickUiJsxCanvasProps(
   onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
-  dispatch: EditorDispatch,
 ): UiJsxCanvasProps | null {
   const uiFile = getOpenUIJSFile(editor)
   const uiFilePath = getOpenUIJSFileKey(editor)
   if (uiFile == null || uiFilePath == null) {
     return null
   } else {
-    const defaultedFileBlobs = Utils.defaultIfNull(
-      emptyFileBlobs,
-      Utils.optionalFlatMap((key) => editor.canvas.base64Blobs[key], getOpenUIJSFileKey(editor)),
+    const { imports: imports_KILLME } = getParseSuccessOrTransientForFilePath(
+      uiFilePath,
+      editor.projectContents,
+      uiFilePath,
+      derived.canvas.transientState.fileState,
     )
 
-    let jsxFactoryFunction: string | null = null
-    let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
-
-    const {
-      topLevelElements: topLevelElementsIncludingScenes,
-      imports,
-    } = getTopLevelElementsFromEditorState(uiFilePath, editor, derived)
-    if (uiFile != null && isParseSuccess(uiFile.fileContents.parsed)) {
-      const success = uiFile.fileContents.parsed
-      jsxFactoryFunction = success.jsxFactoryFunction
-      combinedTopLevelArbitraryBlock = success.combinedTopLevelArbitraryBlock
-    }
     const requireFn = editor.codeResultCache.requireFn
 
     let linkTags = ''
@@ -212,19 +193,16 @@ export function pickUiJsxCanvasProps(
       requireFn: requireFn,
       hiddenInstances: hiddenInstances,
       editedTextElement: editedTextElement,
-      fileBlobs: defaultedFileBlobs,
+      base64FileBlobs: editor.canvas.base64Blobs,
       mountCount: editor.canvas.mountCount,
       onDomReport: onDomReport,
       walkDOM: walkDOM,
-      imports: imports,
-      topLevelElementsIncludingScenes: topLevelElementsIncludingScenes,
-      jsxFactoryFunction: jsxFactoryFunction,
+      imports_KILLME: imports_KILLME,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       canvasIsLive: isLiveMode(editor.mode),
       shouldIncludeCanvasRootInTheSpy: true,
       linkTags: linkTags,
-      combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: editor.focusedElementPath,
       projectContents: editor.projectContents,
       transientFileState: derived.canvas.transientState.fileState,
@@ -252,18 +230,15 @@ export const UiJsxCanvas = betterReactMemo(
       uiFilePath,
       requireFn,
       hiddenInstances,
-      fileBlobs,
       walkDOM,
       onDomReport,
-      topLevelElementsIncludingScenes,
-      imports,
-      jsxFactoryFunction,
+      imports_KILLME: imports, // FIXME this is the storyboard imports object used only for the cssimport
       clearErrors,
       clearConsoleLogs,
       addToConsoleLogs,
       canvasIsLive,
       linkTags,
-      combinedTopLevelArbitraryBlock,
+      base64FileBlobs,
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -278,18 +253,13 @@ export const UiJsxCanvas = betterReactMemo(
     const cssImports = useKeepReferenceEqualityIfPossible(
       normalizedCssImportsFromImports(uiFilePath, imports),
     )
-    unimportAllButTheseCSSFiles(cssImports)
+    unimportAllButTheseCSSFiles(cssImports) // TODO this needs to support more than just the storyboard file!!!!!
 
-    let mutableContextRef = React.useRef<MutableUtopiaContextProps>({
-      [uiFilePath]: {
-        mutableContext: {
-          fileBlobs: fileBlobs,
-          requireResult: {},
-          rootScope: {},
-          jsxFactoryFunctionName: null,
-        },
-      },
-    })
+    let mutableContextRef = React.useRef<MutableUtopiaContextProps>({})
+
+    let topLevelComponentRendererComponents = React.useRef<
+      MapLike<MapLike<ComponentRendererComponent>>
+    >({})
 
     if (clearErrors != null) {
       // a new canvas render, a new chance at having no errors
@@ -303,53 +273,21 @@ export const UiJsxCanvas = betterReactMemo(
         [requireFn],
       )
 
-      const { scope, requireResult, topLevelJsxComponents } = useExecutionScope(
+      const { scope, topLevelJsxComponents } = createExecutionScope(
         uiFilePath,
         customRequire,
         mutableContextRef,
+        topLevelComponentRendererComponents,
         props.projectContents,
         uiFilePath, // this is the storyboard filepath
         props.transientFileState,
+        base64FileBlobs,
+        hiddenInstances,
+        metadataContext,
+        props.shouldIncludeCanvasRootInTheSpy,
       )
 
       const executionScope = scope
-
-      // First make sure everything is in scope
-      if (combinedTopLevelArbitraryBlock != null) {
-        const lookupRenderer = createLookupRender(
-          TP.emptyInstancePath,
-          executionScope,
-          {},
-          requireResult,
-          hiddenInstances,
-          fileBlobs,
-          [],
-          undefined,
-          metadataContext,
-          jsxFactoryFunction,
-          props.shouldIncludeCanvasRootInTheSpy,
-          uiFilePath,
-        )
-
-        executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
-          combinedTopLevelArbitraryBlock.elementsWithin,
-          executionScope,
-          lookupRenderer,
-        )
-
-        runBlockUpdatingScope(requireResult, combinedTopLevelArbitraryBlock, executionScope)
-      }
-
-      updateMutableUtopiaContextWithNewProps(mutableContextRef, {
-        [uiFilePath]: {
-          mutableContext: {
-            requireResult: requireResult,
-            rootScope: executionScope,
-            fileBlobs: fileBlobs,
-            jsxFactoryFunctionName: jsxFactoryFunction,
-          },
-        },
-      })
 
       const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
