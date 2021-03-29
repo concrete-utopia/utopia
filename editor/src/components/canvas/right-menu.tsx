@@ -15,8 +15,11 @@ import {
   Tooltip,
   LargerIcons,
   MenuIcons,
+  FlexColumn,
+  Tile,
 } from '../../uuiui'
 import { betterReactMemo, Utils } from '../../uuiui-deps'
+import { MenuTile } from '../menubar/menubar'
 
 export const enum RightMenuTab {
   Insert = 'insert',
@@ -186,115 +189,113 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
   return (
-    <SimpleFlexColumn
-      data-label='canvas-menu'
+    <FlexColumn
+      id='canvas-menu'
       style={{
-        borderLeft: `1px solid #d3d3d369`,
         alignSelf: 'stretch',
+        borderLeft: `1px solid #d3d3d369`,
         width: UtopiaTheme.layout.canvasMenuWidth,
       }}
     >
-      <SimpleFlexColumn data-title='group' style={{ marginBottom: 24 }}>
+      <FlexColumn style={{ flexGrow: 1 }}>
         <Tooltip title={'Inspector'} placement='left'>
           <span>
-            <RightMenuTile
+            <MenuTile
               selected={isInspectorSelected}
-              highlightSelected={isRightMenuExpanded}
+              menuExpanded={isRightMenuExpanded}
               icon={<LargerIcons.Hamburgermenu />}
               onClick={onShowInspectorTab}
             />
           </span>
         </Tooltip>
+
         <Tooltip title={'Insert'} placement='left'>
           <span>
-            <RightMenuTile
+            <MenuTile
               selected={isInsertMenuSelected}
-              highlightSelected={isRightMenuExpanded}
+              menuExpanded={isRightMenuExpanded}
               icon={<LargerIcons.PlusButton />}
               onClick={onShowInsertTab}
             />
           </span>
         </Tooltip>
-      </SimpleFlexColumn>
-      <SimpleFlexColumn data-title='group' style={{ marginBottom: 24 }}>
+
         <Tooltip title={'Live Preview'} placement='left'>
           <span>
-            <RightMenuTile
+            <MenuTile
               selected={isCanvasLive}
-              highlightSelected={false}
+              menuExpanded={false}
               icon={<LargerIcons.PlayButton />}
               onClick={toggleLiveCanvas}
             />
           </span>
         </Tooltip>
+
         <Tooltip title='Reset canvas' placement='left'>
           <span>
-            <RightMenuTile
-              selected={false}
-              highlightSelected={false}
-              icon={<LargerIcons.Refresh />}
-            />
+            <MenuTile selected={false} menuExpanded={false} icon={<LargerIcons.Refresh />} />
           </span>
         </Tooltip>
-      </SimpleFlexColumn>
 
-      <SimpleFlexColumn data-title='group' style={{ marginBottom: 24, flexGrow: 1 }}>
         <Tooltip title='Zoom in' placement='left'>
           <span>
-            <RightMenuTile
+            <MenuTile
               selected={false}
-              highlightSelected={false}
+              menuExpanded={false}
               icon={<LargerIcons.MagnifyingGlassPlus />}
               onClick={zoomIn}
             />
           </span>
         </Tooltip>
+
         <span style={{ fontSize: 9, width: '100%', textAlign: 'center' }} onClick={zoom100pct}>
           {zoomLevel}x
         </span>
+
         <Tooltip title='Zoom out' placement='left'>
           <span>
-            <RightMenuTile
+            <MenuTile
               selected={false}
-              highlightSelected={false}
+              menuExpanded={false}
               icon={<LargerIcons.MagnifyingGlassMinus />}
               onClick={zoomOut}
             />
           </span>
         </Tooltip>
-      </SimpleFlexColumn>
-      <SimpleFlexColumn data-title='group' style={{ marginBottom: 8 }}>
+
         <Tooltip title={'Show or hide extra canvas controls'} placement={'left'}>
           <span>
-            <RightMenuTile
+            <MenuTile
               selected={isAdditionalControlsVisible}
-              highlightSelected={false}
+              menuExpanded={false}
               icon={<LargerIcons.Canvas />}
               onClick={toggleAdditionalControlsVisible}
             />
           </span>
         </Tooltip>
+
         <Tooltip title={'Show or hide code'} placement={'left'}>
           <span>
-            <RightMenuTile
+            <MenuTile
               selected={isCodePaneVisible}
-              highlightSelected={false}
+              menuExpanded={false}
               icon={<LargerIcons.Code />}
               onClick={toggleCodePaneVisible}
             />
           </span>
         </Tooltip>
+
         <Tooltip title={'Show or hide preview'} placement={'left'}>
           <span>
-            <RightMenuTile
+            <MenuTile
               selected={isPreviewPaneVisible}
-              highlightSelected={false}
+              menuExpanded={false}
               icon={<LargerIcons.PreviewPane />}
               onClick={togglePreviewPaneVisible}
             />
           </span>
         </Tooltip>
-      </SimpleFlexColumn>
-    </SimpleFlexColumn>
+      </FlexColumn>
+    </FlexColumn>
   )
 })
