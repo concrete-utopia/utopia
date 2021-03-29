@@ -4,7 +4,7 @@ import {
   PossiblyUnversionedNpmDependency,
   resolvedNpmDependency,
 } from '../../core/shared/npm-dependency-types'
-import { defaultProject } from '../../sample-projects/sample-project-utils'
+import { simpleDefaultProject } from '../../sample-projects/sample-project-utils'
 import { PropertyControlsInfo } from '../custom-code/code-file'
 import { getComponentGroups } from './project-components'
 
@@ -22,7 +22,7 @@ describe('getComponentGroups', () => {
     const actualResult = getComponentGroups(
       packageStatus,
       propertyControlsInfo,
-      defaultProject().projectContents,
+      simpleDefaultProject().projectContents,
       dependencies,
       '/src/app.js',
     )
