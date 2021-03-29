@@ -128,8 +128,8 @@ const light = {
   ...lightControls,
 
   // big sections
-  leftMenuBackground: lightPrimitives.slightlyEmphasizedBackground,
-  leftPaneBackground: lightPrimitives.slightlyEmphasizedBackground,
+  leftMenuBackground: lightPrimitives.neutralBackground,
+  leftPaneBackground: lightPrimitives.neutralBackground,
   canvasBackground: lightPrimitives.secondaryBackground,
   canvasLiveBackground: lightPrimitives.secondaryBackground.shade(30),
   canvasLiveBorder: lightBase.primary,

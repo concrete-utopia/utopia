@@ -51,7 +51,7 @@ export function createExecutionScope(
   topLevelJsxComponents: Map<string, UtopiaJSXComponent>
   requireResult: MapLike<any>
 } {
-  if (topLevelComponentRendererComponents.current[filePath] == null) {
+  if (!(filePath in topLevelComponentRendererComponents.current)) {
     // we make sure that the ref has an entry for this filepath
     topLevelComponentRendererComponents.current[filePath] = {}
   }

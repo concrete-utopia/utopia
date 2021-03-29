@@ -147,17 +147,8 @@ export const FileBrowser = betterReactMemo('FileBrowser', () => {
     [dispatch, focusedPanel],
   )
 
-  const storyboardFileAdd = React.useCallback(() => {
-    dispatch([EditorActions.addStoryboardFile()])
-  }, [dispatch])
-
   return (
     <>
-      <Section data-name='AddStoryboardFile'>
-        <SectionBodyArea minimised={false}>
-          <Button onClick={storyboardFileAdd}>Add Storyboard File</Button>
-        </SectionBodyArea>
-      </Section>
       <Section data-name='FileBrowser' onFocus={onFocus} tabIndex={-1}>
         <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
           <FlexRow flexGrow={1} style={{ position: 'relative' }}>

@@ -2,15 +2,15 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as React from 'react'
-import { Component as ReactComponent } from 'react'
 import { thumbnailURL } from '../../common/server'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
+import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
+import { shareURLForProject } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
 import {
-  PopupList,
   colorTheme,
   UtopiaTheme,
   FlexColumn,
@@ -20,10 +20,13 @@ import {
   Title,
   SectionBodyArea,
   Button,
+  MenuIcons,
+  StringInput,
+  Subdued,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
-import { EditorAction, EditorDispatch, LoginState } from '../editor/action-types'
+import { EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import {
   clearSelection,
@@ -35,13 +38,12 @@ import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-s
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
-import { getControlStyles } from '../inspector/common/control-status'
-import { SelectOption } from '../inspector/controls/select-control'
 import { GridRow } from '../inspector/widgets/grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
 import { GoogleFontsResourcesList } from './external-resources/google-fonts-resources-list'
-
+import { StoryboardFilePath } from '../editor/store/editor-state'
+import { getContentsTreeFileFromString } from '../assets'
 export interface LeftPaneProps {
   editorState: EditorState
   derivedState: DerivedState
@@ -51,8 +53,12 @@ export interface LeftPaneProps {
 
 export const enum LeftMenuTab {
   UIInsert = 'ui-insert',
-  ProjectStructure = 'project-structure',
-  ProjectSettings = 'project-settings',
+  Project = 'project',
+  Storyboards = 'storyboards',
+  Contents = 'contents',
+  Settings = 'settings',
+  Sharing = 'sharing',
+  Github = 'github',
 }
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
@@ -78,116 +84,12 @@ export function updateLeftMenuExpanded(editorState: EditorState, expanded: boole
 export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): EditorState {
   switch (editorState.focusedPanel) {
     case 'misccodeeditor':
-      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.ProjectStructure)
+      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Contents)
     case 'inspector':
     case 'canvas':
     case 'uicodeeditor':
     default:
       return editorState
-  }
-}
-
-function setTab(tab: LeftMenuTab): EditorAction {
-  return {
-    action: 'SET_LEFT_MENU_TAB',
-    tab: tab,
-  }
-}
-
-interface ThumbnailProps {
-  action: () => void
-  projectId: string
-  thumbnailLastGenerated: number
-}
-
-const previewImageContainerPadding = 4
-
-class ThumbnailComponent extends ReactComponent<ThumbnailProps> {
-  render() {
-    const urlToRequest: string = `${thumbnailURL(this.props.projectId)}?lastUpdated=${
-      this.props.thumbnailLastGenerated
-    }`
-    return (
-      <div
-        onClick={this.props.action}
-        style={{ position: 'relative', cursor: 'pointer' }}
-        // all of these are defined via `css` rather than `style` so that they are animateable;
-        // since `css= {{'&:hover' : {...}}}` renders to className, any style prop will overwrite it
-        data-label='previewImageContainer'
-        css={{
-          width: LeftPaneDefaultWidth - previewImageContainerPadding * 2,
-          height: (LeftPaneDefaultWidth - previewImageContainerPadding * 2) / 1.6,
-          paddingLeft: 4,
-          paddingRight: 4,
-          '& .refreshButton': {
-            backgroundColor: colorTheme.emphasizedBackground.o(70).value,
-            transition:
-              'background-color .4s linear, border .4s linear, color .4s linear, box-shadow .1s linear',
-            color: '#ccc',
-            border: `1px solid ${colorTheme.secondaryBorder.value}`,
-          },
-          '&:hover .refreshButton': {
-            border: `1px solid ${colorTheme.primary.value}`,
-            textShadow: `0px 0px 0px ${colorTheme.primary.value}`,
-            backgroundColor: colorTheme.emphasizedBackground.o(70).value,
-            color: colorTheme.primary.value,
-          },
-          '&:active .refreshButton': {
-            transform: 'scale(0.98)',
-            boxShadow: `2px 2px 0px 0px ${colorTheme.primary.value}`,
-          },
-        }}
-      >
-        <div
-          css={{
-            boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
-            borderRadius: 1,
-            display: 'block',
-            width: '100%',
-            height: '100%',
-            transition: 'all .4s ease-in-out',
-            backgroundImage: `url('${urlToRequest}')`,
-            backgroundSize: 'cover',
-            backgroundColor: colorTheme.canvasBackground.value,
-            opacity: 1,
-            '.previewImageContainer:hover &': {
-              transform: 'scale(1.1) skewX(-2deg) skewY(-2deg)',
-              opacity: 0.7,
-            },
-          }}
-        />
-        <div
-          data-label='ReloadButtonContainer'
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            // required to create its own stacking context and remain above the image
-            transform: 'scale(1.0)',
-          }}
-        >
-          <div
-            //  refreshButton set above for animations
-            className='refreshButton'
-            style={{
-              width: 160,
-              height: UtopiaTheme.layout.rowHeight.medium,
-              borderRadius: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <span style={{ fontWeight: 500 }}>Retake</span>
-          </div>
-        </div>
-      </div>
-    )
   }
 }
 
@@ -234,6 +136,7 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
         position: 'relative',
         backgroundColor: colorTheme.leftPaneBackground.value,
         borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
+        paddingLeft: 4,
       }}
       onMouseDown={() => closeTextEditorIfPresent()}
     >
@@ -252,40 +155,397 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
           }
         }}
       >
-        {selectedTab === LeftMenuTab.ProjectStructure ? <ProjectStructurePane /> : null}
-        {selectedTab === LeftMenuTab.ProjectSettings ? <ProjectSettingsPanel /> : null}
+        {selectedTab === LeftMenuTab.Project ? <ProjectPane /> : null}
+        {selectedTab === LeftMenuTab.Storyboards ? <StoryboardsPane /> : null}
+        {selectedTab === LeftMenuTab.Contents ? <ContentsPane /> : null}
+        {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
+        {selectedTab === LeftMenuTab.Sharing ? <SharingPane /> : null}
+        {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
       </div>
     </div>
   )
 })
 
-const ProjectStructurePane = betterReactMemo('ProjectStructurePane', () => {
+interface StoryboardListItemProps {
+  selected: boolean
+}
+
+const StoryboardListItem = styled.div<StoryboardListItemProps>((props) => ({
+  flex: '96px 0 1',
+  borderRadius: 4,
+  padding: 8,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-end',
+  cursor: 'pointer',
+  fontWeight: 500,
+  backgroundColor: 'hsl(0,0%,90%)',
+  boxShadow: props.selected ? 'inset 0px 0px 0px 2px #007AFF' : undefined,
+  '&:hover': {
+    boxShadow: 'inset 0px 0px 0px 2px  #007AFF',
+  },
+}))
+
+const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
+  const { dispatch, openFile, projectContents } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+      openFile: store.editor.canvas.openFile?.filename,
+      projectContents: store.editor.projectContents,
+    }
+  }, 'FileBrowser')
+
+  const handleStoryboardAdd = React.useCallback(() => {
+    dispatch([EditorActions.addStoryboardFile()])
+  }, [dispatch])
+
+  const storyboardList = [StoryboardFilePath]
+
+  const noStoryboardFileAvailable =
+    getContentsTreeFileFromString(projectContents, StoryboardFilePath) == null
+
   return (
     <FlexColumn
-      id='leftPaneProjectStructure'
-      key='leftPaneProjectStructure'
+      id='leftPaneStoryboards'
+      key='leftPaneStoryboards'
       style={{
         display: 'relative',
         alignItems: 'stretch',
         paddingBottom: 50,
       }}
     >
-      <ProjectSettingsPanel />
+      <Section data-name='Storyboards' tabIndex={-1}>
+        <SectionTitleRow minimised={false}>
+          <FlexRow flexGrow={1} style={{ position: 'relative' }}>
+            <Title>Storyboards</Title>
+          </FlexRow>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <FlexColumn style={{ paddingLeft: 8, paddingRight: 8, gap: 16 }}>
+            <GridRow
+              padded
+              type='|--32px--|<--------auto-------->'
+              style={{
+                height: 'inherit',
+                wordWrap: 'normal',
+                whiteSpace: 'normal',
+                alignItems: 'flex-start',
+                minHeight: 34,
+                paddingTop: 8,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingBottom: 8,
+                letterSpacing: 0.1,
+                lineHeight: '17px',
+                fontSize: '11px',
+              }}
+            >
+              <MenuIcons.Pyramid style={{ marginTop: 2 }} />
+              <span>Storyboards let you display and visually edit components.</span>
+            </GridRow>
+
+            {storyboardList.map((item) => (
+              <StoryboardListItem
+                selected={openFile === item}
+                style={{ background: UtopiaTheme.color.secondaryBackground.value }}
+                key='mainStoryboard'
+              >
+                <div>
+                  Storyboard Label
+                  <br />
+                  <span style={{ opacity: 0.5, marginLeft: 4 }}>{item}</span>
+                </div>
+              </StoryboardListItem>
+            ))}
+            {noStoryboardFileAvailable ? (
+              <Button
+                spotlight
+                highlight
+                style={{ height: 34, alignSelf: 'stretch', border: '1px dashed lightgrey' }}
+                onClick={handleStoryboardAdd}
+              >
+                Add Storyboard
+              </Button>
+            ) : null}
+            <div
+              style={{
+                height: 'initial',
+                minHeight: 34,
+                alignItems: 'flex-start',
+                paddingTop: 8,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingBottom: 8,
+                whiteSpace: 'pre-wrap',
+                letterSpacing: 0.1,
+                lineHeight: '17px',
+                fontSize: '11px',
+              }}
+            >
+              <Subdued>The storyboard location and name are fixed for now.</Subdued>
+            </div>
+          </FlexColumn>
+        </SectionBodyArea>
+      </Section>
+    </FlexColumn>
+  )
+})
+
+const ContentsPane = betterReactMemo('ProjectStructurePane', () => {
+  return (
+    <FlexColumn
+      id='leftPaneContents'
+      key='leftPaneContents'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+      }}
+    >
       <FileBrowser />
       <DependencyList />
       <GenericExternalResourcesList />
       <GoogleFontsResourcesList />
-      {/* <ResizableFlexColumn
-        enable={{ bottom: true, right: false }}
-        minHeight={100}
+    </FlexColumn>
+  )
+})
+
+const SettingsPane = betterReactMemo('SettingsPane', () => {
+  return (
+    <FlexColumn
+      id='leftPaneSettings'
+      key='leftPaneSettings'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+      }}
+    >
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
+          <Title style={{ flexGrow: 1 }}>Settings</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <FlexRow>
+            <div
+              style={{
+                height: 'initial',
+                minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+                alignItems: 'flex-start',
+                paddingTop: 8,
+                paddingLeft: 8,
+                paddingRight: 8,
+                paddingBottom: 8,
+                whiteSpace: 'pre-wrap',
+                letterSpacing: 0.1,
+                lineHeight: '17px',
+                fontSize: '11px',
+              }}
+            >
+              <Subdued>
+                Settings can be changed in the code editor by opening the comand palette and
+                searching for Settings (CMD+P on Mac, CTRL+P on Mac / Linux). We store settings with
+                each project.
+              </Subdued>
+            </div>
+          </FlexRow>
+        </SectionBodyArea>
+      </Section>
+    </FlexColumn>
+  )
+})
+
+const SharingPane = betterReactMemo('SharingPane', () => {
+  const [temporaryCopySuccess, setTemporaryCopySuccess] = React.useState(false)
+  const { projectId, projectName } = useEditorState((store) => {
+    return {
+      projectId: store.editor.id,
+      projectName: store.editor.projectName,
+    }
+  }, 'Menubar')
+  const previewURL =
+    projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
+
+  const handleCopyProjectURL = () => {
+    window.navigator.clipboard.writeText(previewURL)
+    setTemporaryCopySuccess(true)
+    setTimeout(() => {
+      setTemporaryCopySuccess(false)
+    }, 1500)
+  }
+
+  return (
+    <FlexColumn
+      id='leftPaneSharing'
+      key='leftPaneSharing'
+      css={{
+        display: 'relative',
+        alignItems: 'stretch',
+        gap: 24,
+        paddingBottom: 36,
+      }}
+    >
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
+          <Title style={{ flexGrow: 1 }}>Sharing</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            Share the URL to this project to let others view your code and fork it. Only you can
+            make changes.
+          </div>
+        </SectionBodyArea>
+      </Section>
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
+          <Title style={{ flexGrow: 1 }}>Collaborate</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            <p style={{ marginTop: 0, marginBottom: 12 }}>
+              All Utopia projects are{' '}
+              <span style={{ textDecoration: 'none', fontWeight: 600 }}>👁 public</span> by default.
+              This means other people can discover and fork your project.
+            </p>
+            <p style={{ marginTop: 0, marginBottom: 12 }}>
+              We'll introduce private and team projects soon.
+            </p>
+          </div>
+        </SectionBodyArea>
+      </Section>
+      <Section>
+        <SectionTitleRow minimised={false} toggleMinimised={NO_OP}>
+          <Title style={{ flexGrow: 1 }}>Run and Embed</Title>
+        </SectionTitleRow>
+        <SectionBodyArea minimised={false}>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            You can share and embed a URL to the{' '}
+            <a
+              target='_blank'
+              rel='noopener noreferrer'
+              style={{ textDecoration: 'none', color: '#007AFF' }}
+              href={previewURL}
+            >
+              running application
+            </a>
+            &nbsp;without the editor or design tool.
+          </div>
+          <GridRow type='<--------auto-------->|--45px--|' padded>
+            <StringInput testId='externalProjectURL' value={previewURL} readOnly />
+            <Button
+              spotlight
+              highlight
+              disabled={temporaryCopySuccess}
+              onClick={handleCopyProjectURL}
+            >
+              {temporaryCopySuccess ? '✓' : 'Copy'}
+            </Button>
+          </GridRow>
+          <div
+            style={{
+              height: 'initial',
+              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              alignItems: 'flex-start',
+              paddingTop: 8,
+              paddingLeft: 8,
+              paddingRight: 8,
+              paddingBottom: 8,
+              whiteSpace: 'pre-wrap',
+              letterSpacing: 0.1,
+              lineHeight: '17px',
+              fontSize: '11px',
+            }}
+          >
+            <Subdued>Old URLs will continue to work if you rename your project.</Subdued>
+          </div>
+        </SectionBodyArea>
+      </Section>
+    </FlexColumn>
+  )
+})
+
+const GithubPane = betterReactMemo('GithubPane', () => {
+  return (
+    <FlexColumn
+      id='leftPaneGithub'
+      key='leftPaneGithub'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+      }}
+    >
+      <FlexRow
+        style={{ paddingLeft: 8, paddingRight: 8, height: UtopiaTheme.layout.gridRowHeight.normal }}
+      >
+        <Title>Github</Title>
+      </FlexRow>
+      <div
         style={{
-          borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
+          height: 'initial',
+          minHeight: 34,
+          alignItems: 'flex-start',
+          paddingTop: 8,
+          paddingLeft: 8,
+          paddingRight: 8,
           paddingBottom: 8,
-          marginBottom: 8,
-          overflow: 'scroll',
+          whiteSpace: 'pre-wrap',
+          letterSpacing: 0.1,
+          lineHeight: '17px',
+          fontSize: '11px',
         }}
       >
-      </ResizableFlexColumn> */}
+        You can import a new project from Github. It might take a few minutes, and will show up in{' '}
+        <a href='/projects'>your projects</a> (not here).
+      </div>
+      <GridRow padded type='<--------auto-------->|--45px--|'>
+        <StringInput testId='importProject' value='' />
+        <Button spotlight highlight>
+          Start
+        </Button>
+      </GridRow>
     </FlexColumn>
   )
 })
@@ -324,27 +584,7 @@ export const InsertMenuPane = betterReactMemo('InsertMenuPane', () => {
   )
 })
 
-const SilentInput = styled.input({
-  height: UtopiaTheme.layout.inputHeight.default,
-  paddingBottom: 2,
-  border: '1px solid transparent',
-  backgroundColor: 'transparent',
-  fontWeight: 600,
-  cursor: 'pointer',
-  transition: 'all .2s ease-in-out',
-  '&:hover, &:active': {
-    color: `${colorTheme.primary.value}`,
-    cursor: 'text',
-  },
-  '&:focus': {
-    paddingLeft: 2,
-    color: `${colorTheme.primary.value}`,
-    borderBottom: `1px solid ${colorTheme.primary.value}`,
-    cursor: 'text',
-  },
-})
-
-const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
+const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
   const {
     dispatch,
     projectName,
@@ -365,6 +605,9 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
     }
   }, 'ProjectSettingsPanel')
 
+  const [name, changeProjectName] = React.useState(projectName)
+  const [requestingPreviewImage, setRequestingPreviewImage] = React.useState(false)
+
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('projectsettings')], 'leftpane')
   }, [dispatch])
@@ -377,7 +620,9 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
   )
 
   const triggerRegenerateThumbnail = React.useCallback(() => {
+    setRequestingPreviewImage(true)
     dispatch([regenerateThumbnail()])
+    setTimeout(() => setRequestingPreviewImage(false), 2000)
   }, [dispatch])
 
   const onFocus = React.useCallback(
@@ -403,40 +648,141 @@ const ProjectSettingsPanel = betterReactMemo('ProjectSettingsPanel', () => {
     }
   }, [])
 
-  const dontPropagate = React.useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
+  const onChangeProjectName = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    changeProjectName(event.target.value)
   }, [])
 
+  const urlToRequest = `${thumbnailURL(projectId!)}?lastUpdated=${thumbnailLastGenerated}`
+
   return (
-    <FlexColumn key='leftPaneProjectTab'>
-      {projectId == null ? null : (
-        <Section data-name='ProjectSettings' onFocus={onFocus} tabIndex={-1}>
-          <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
-            <FlexRow flexGrow={1} style={{ position: 'relative' }}>
-              <SilentInput
-                key='leftPaneProjectName'
-                onClick={dontPropagate}
-                onKeyPress={handleKeyPress}
-                onBlur={handleBlur}
-                defaultValue={projectName}
-              />
-            </FlexRow>
-          </SectionTitleRow>
-          <SectionBodyArea minimised={minimised}>
-            {userState.loginState.type === 'NOT_LOGGED_IN' ? (
-              <span>Log in or sign up to see settings</span>
-            ) : (
-              <div>
-                <ThumbnailComponent
-                  projectId={projectId}
-                  action={triggerRegenerateThumbnail}
-                  thumbnailLastGenerated={thumbnailLastGenerated}
-                />
-              </div>
-            )}
-          </SectionBodyArea>
-        </Section>
-      )}
+    <FlexColumn
+      id='leftPaneContents'
+      key='leftPaneContents'
+      style={{
+        display: 'relative',
+        alignItems: 'stretch',
+        paddingBottom: 50,
+      }}
+    >
+      <FlexColumn
+        id='leftPaneProject'
+        key='leftPaneProjectTab'
+        css={{
+          display: 'relative',
+          alignItems: 'stretch',
+          gap: 24,
+          paddingBottom: 36,
+        }}
+      >
+        {projectId == null ? null : (
+          <Section data-name='ProjectSettings' onFocus={onFocus} tabIndex={-1}>
+            <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
+              <FlexRow flexGrow={1} style={{ position: 'relative' }}>
+                <Title style={{ flexGrow: 1 }}> Project </Title>
+              </FlexRow>
+            </SectionTitleRow>
+            <SectionBodyArea minimised={minimised}>
+              {userState.loginState.type === 'NOT_LOGGED_IN' ? (
+                <span>Log in or sign up to see settings</span>
+              ) : (
+                <FlexColumn>
+                  <SectionBodyArea minimised={false}>
+                    <GridRow
+                      padded
+                      type='<-------------1fr------------->'
+                      style={{
+                        height: 'inherit',
+                        wordWrap: 'normal',
+                        whiteSpace: 'normal',
+                        alignItems: 'flex-start',
+                        minHeight: 34,
+                        paddingTop: 8,
+                        paddingLeft: 8,
+                        paddingRight: 8,
+                        paddingBottom: 8,
+                        letterSpacing: 0.1,
+                        lineHeight: '17px',
+                        fontSize: '11px',
+                      }}
+                    >
+                      <Subdued>
+                        These help you organise your projects. We also use them when you embed or
+                        share your project on social media and chat apps.
+                      </Subdued>
+                    </GridRow>
+                    <GridRow padded type='<---1fr--->|------172px-------|'>
+                      <span>Name</span>
+                      <StringInput
+                        testId='projectName'
+                        value={name}
+                        onChange={onChangeProjectName}
+                        onKeyDown={handleKeyPress}
+                        style={{ width: 150 }}
+                        onBlur={handleBlur}
+                      />
+                    </GridRow>
+                    <GridRow padded type='<---1fr--->|------172px-------|'>
+                      <span> Description </span>
+                      <StringInput
+                        testId='projectDescription'
+                        value={projectName}
+                        style={{ width: 150 }}
+                      />
+                    </GridRow>
+                    <GridRow
+                      padded
+                      type='<---1fr--->|------172px-------|'
+                      style={{ alignItems: 'start', height: 'initial', paddingTop: 8 }}
+                    >
+                      <span> Preview </span>
+                      <FlexColumn style={{ gap: 8 }}>
+                        <div
+                          css={{
+                            boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
+                            borderRadius: 1,
+                            display: 'block',
+                            justifySelf: 'stretch',
+                            aspectRatio: '16 / 9',
+                            backgroundImage: `url('${urlToRequest}')`,
+                            backgroundSize: 'cover',
+                            backgroundColor: colorTheme.canvasBackground.value,
+                          }}
+                        />
+                        <Button
+                          disabled={requestingPreviewImage}
+                          spotlight
+                          highlight
+                          onClick={triggerRegenerateThumbnail}
+                          css={{
+                            position: 'relative',
+                            textAlign: 'center',
+                            '&:before': {
+                              transition: requestingPreviewImage
+                                ? 'right 2.5s ease-in-out'
+                                : 'inherit',
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              right: requestingPreviewImage ? 0 : '100%',
+                              background: requestingPreviewImage
+                                ? UtopiaTheme.color.primary.value
+                                : 'transparent',
+                              content: '""',
+                            },
+                          }}
+                        >
+                          {requestingPreviewImage ? 'Refreshing' : 'Refresh'}
+                        </Button>
+                      </FlexColumn>
+                    </GridRow>
+                  </SectionBodyArea>
+                </FlexColumn>
+              )}
+            </SectionBodyArea>
+          </Section>
+        )}
+      </FlexColumn>
     </FlexColumn>
   )
 })

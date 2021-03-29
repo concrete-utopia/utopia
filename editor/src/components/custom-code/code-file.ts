@@ -47,7 +47,7 @@ import {
 } from '../../core/shared/element-template'
 import { findElementWithUID } from '../../core/shared/uid-utils'
 import { importedFromWhere } from '../editor/import-utils'
-import { absolutePathFromRelativePath } from '../../utils/path-utils'
+import { resolveModule } from '../../core/es-modules/package-manager/module-resolution'
 
 export interface CodeResult {
   exports: ModuleExportTypes
@@ -374,6 +374,7 @@ export function normalisePathSuccessOrThrowError(
 
 export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
   currentFilePath: string,
   elementPath: InstancePath,
 ): NormalisePathResult {
@@ -438,18 +439,43 @@ export function normalisePathToUnderlyingTarget(
                       `Unable to handle Scene component definition for ${TP.toString(elementPath)}`,
                     )
                   }
-                } else if (importedFrom.includes('/')) {
-                  const absoluteImportedPath = absolutePathFromRelativePath(
+                } else {
+                  const resolutionResult = resolveModule(
+                    projectContents,
+                    nodeModules,
                     currentFilePath,
                     importedFrom,
                   )
-                  return normalisePathToUnderlyingTarget(
-                    projectContents,
-                    absoluteImportedPath,
-                    potentiallyDroppedFirstSceneElementResult.newPath,
-                  )
-                } else {
-                  return normalisePathEndsAtDependency(importedFrom)
+                  switch (resolutionResult.type) {
+                    case 'RESOLVE_SUCCESS':
+                      const successResult = resolutionResult.success
+                      // Avoid drilling into node_modules because we can't do anything useful with
+                      // the contents of files in there.
+                      if (successResult.path.startsWith('/node_modules/')) {
+                        const splitPath = successResult.path.split('/')
+                        return normalisePathEndsAtDependency(splitPath[2])
+                      } else {
+                        switch (successResult.file.type) {
+                          case 'ES_CODE_FILE':
+                            return normalisePathToUnderlyingTarget(
+                              projectContents,
+                              nodeModules,
+                              successResult.path,
+                              potentiallyDroppedFirstSceneElementResult.newPath,
+                            )
+                          case 'ES_REMOTE_DEPENDENCY_PLACEHOLDER':
+                            return normalisePathUnableToProceed(successResult.path)
+                          default:
+                            const _exhaustiveCheck: never = successResult.file
+                            throw new Error(`Unhandled case ${JSON.stringify(successResult.file)}`)
+                        }
+                      }
+                    case 'RESOLVE_NOT_PRESENT':
+                      return normalisePathError(`Unable to find resolve path at ${importedFrom}`)
+                    default:
+                      const _exhaustiveCheck: never = resolutionResult
+                      throw new Error(`Unhandled case ${JSON.stringify(resolutionResult)}`)
+                  }
                 }
               }
             }
