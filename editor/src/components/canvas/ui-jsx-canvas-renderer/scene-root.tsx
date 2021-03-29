@@ -114,6 +114,7 @@ function useGetValidTemplatePaths(
 ): Array<InstancePath> {
   const uiFilePath = useContextSelector(UtopiaProjectContext, (c) => c.openStoryboardFilePathKILLME)
   const projectContents = useContextSelector(UtopiaProjectContext, (c) => c.projectContents)
+  const resolve = useContextSelector(UtopiaProjectContext, (c) => c.resolve)
 
   const topLevelElements = useGetTopLevelElements(uiFilePath)
   let topLevelJSXComponents: Map<string, UtopiaJSXComponent> = new Map()
@@ -135,6 +136,7 @@ function useGetValidTemplatePaths(
     TP.dynamicPathToStaticPath(scenePath),
     projectContents,
     uiFilePath,
+    resolve,
   )
 }
 

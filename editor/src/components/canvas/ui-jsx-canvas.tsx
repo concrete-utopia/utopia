@@ -363,7 +363,13 @@ export const UiJsxCanvas = betterReactMemo(
         storyboardRootElementPath,
         storyboardRootSceneMetadata,
         rootScenePath,
-      } = useGetStoryboardRoot(topLevelElementsMap, executionScope, projectContents, uiFilePath)
+      } = useGetStoryboardRoot(
+        topLevelElementsMap,
+        executionScope,
+        projectContents,
+        uiFilePath,
+        resolve,
+      )
 
       if (props.shouldIncludeCanvasRootInTheSpy) {
         metadataContext.current.spyValues.scenes[
@@ -388,6 +394,7 @@ export const UiJsxCanvas = betterReactMemo(
                   projectContents: props.projectContents,
                   transientFileState: props.transientFileState,
                   openStoryboardFilePathKILLME: props.uiFilePath,
+                  resolve: props.resolve,
                 }}
               >
                 <CanvasContainer
@@ -427,6 +434,7 @@ function useGetStoryboardRoot(
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements
@@ -448,6 +456,7 @@ function useGetStoryboardRoot(
           EmptyScenePathForStoryboard,
           projectContents,
           uiFilePath,
+          resolve,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
 

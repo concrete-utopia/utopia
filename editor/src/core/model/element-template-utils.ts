@@ -1,6 +1,7 @@
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import Utils, { IndexPosition } from '../../utils/utils'
+import { Either, isRight } from '../shared/either'
 import {
   ElementInstanceMetadata,
   ElementsWithin,
@@ -100,33 +101,39 @@ export function getValidTemplatePaths(
   scenePath: ScenePath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<InstancePath> {
   if (topLevelElementName == null) {
     return []
   }
   const file = getContentsTreeFileFromString(projectContents, filePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    const importOrigin = importedFromWhere(
+    const importSource = importedFromWhere(
       filePath,
       topLevelElementName,
       file.fileContents.parsed.topLevelElements,
       file.fileContents.parsed.imports,
     )
-    if (importOrigin != null) {
-      const importOriginFile = getContentsTreeFileFromString(projectContents, importOrigin)
-      if (isTextFile(importOriginFile) && isParseSuccess(importOriginFile.fileContents.parsed)) {
-        const topLevelElement = importOriginFile.fileContents.parsed.topLevelElements.find(
-          (element): element is UtopiaJSXComponent =>
-            isUtopiaJSXComponent(element) && element.name === topLevelElementName,
-        )
-        if (topLevelElement != null) {
-          return getValidTemplatePathsFromElement(
-            focusedElementPath,
-            topLevelElement.rootElement,
-            scenePath,
-            projectContents,
-            importOrigin,
+    if (importSource != null) {
+      const resolvedImportSource = resolve(filePath, importSource)
+      if (isRight(resolvedImportSource)) {
+        const resolvedFilePath = resolvedImportSource.value
+        const importSourceFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
+        if (isTextFile(importSourceFile) && isParseSuccess(importSourceFile.fileContents.parsed)) {
+          const topLevelElement = importSourceFile.fileContents.parsed.topLevelElements.find(
+            (element): element is UtopiaJSXComponent =>
+              isUtopiaJSXComponent(element) && element.name === topLevelElementName,
           )
+          if (topLevelElement != null) {
+            return getValidTemplatePathsFromElement(
+              focusedElementPath,
+              topLevelElement.rootElement,
+              scenePath,
+              projectContents,
+              resolvedFilePath,
+              resolve,
+            )
+          }
         }
       }
     }
@@ -140,6 +147,7 @@ export function getValidTemplatePathsFromElement(
   parentPath: TemplatePath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<InstancePath> {
   if (isJSXElement(element)) {
     const uid = getUtopiaID(element)
@@ -147,7 +155,14 @@ export function getValidTemplatePathsFromElement(
     let paths = [path]
     fastForEach(element.children, (c) =>
       paths.push(
-        ...getValidTemplatePathsFromElement(focusedElementPath, c, path, projectContents, filePath),
+        ...getValidTemplatePathsFromElement(
+          focusedElementPath,
+          c,
+          path,
+          projectContents,
+          filePath,
+          resolve,
+        ),
       ),
     )
     const name = getJSXElementNameAsString(element.name)
@@ -168,6 +183,7 @@ export function getValidTemplatePathsFromElement(
           matchingFocusedPathPart,
           projectContents,
           filePath,
+          resolve,
         ),
       ]
     }
@@ -182,6 +198,7 @@ export function getValidTemplatePathsFromElement(
           parentPath,
           projectContents,
           filePath,
+          resolve,
         ),
       ),
     )
@@ -196,6 +213,7 @@ export function getValidTemplatePathsFromElement(
           parentPath,
           projectContents,
           filePath,
+          resolve,
         ),
       ),
     )
