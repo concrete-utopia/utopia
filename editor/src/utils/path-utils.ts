@@ -1,6 +1,6 @@
 export function normalizePath(path: Array<string>): Array<string> {
   return path.reduce((pathSoFar: Array<string>, pathElem: string, index: number) => {
-    if (pathElem === '' && index !== 0) {
+    if (pathElem === '') {
       return pathSoFar
     }
     if (pathElem === '.') {
@@ -27,17 +27,31 @@ export function appendToPath(firstPart: string, secondPart: string): string {
   return `${left}/${right}`
 }
 
-// TODO!!! this should be replaced with a more comprehensive module resolution, a generic version of `resolveModule`.
-// The reason is that a user might import something like `src/folder/index.js` as `import { ComponentFromIndex } from "./folder"` and rely on JS module resolution to find index.js for them
+export function makePathFromParts(parts: Array<string>): string {
+  return `/${parts.join('/')}`
+}
 
-export function absolutePathFromRelativePath(origin: string, relativePath: string): string {
+export function getPartsFromPath(path: string): Array<string> {
+  return stripLeadingSlash(path).split('/')
+}
+
+export function absolutePathFromRelativePath(
+  origin: string,
+  originIsDir: boolean,
+  relativePath: string,
+): string {
   if (relativePath.startsWith('/')) {
     // Not actually relative in this case.
     return relativePath
   } else {
-    const joinedPath = appendToPath(origin, relativePath)
-    // TODO this is not calling normalizePath, but it seems like it should
-    const normalized = joinedPath.split('/')
-    return `/${normalized.join('/')}`
+    let originDir: string
+    if (originIsDir) {
+      originDir = origin
+    } else {
+      originDir = makePathFromParts(getPartsFromPath(origin).slice(0, -1))
+    }
+    const joinedPath = appendToPath(originDir, relativePath)
+    const normalized = normalizePath(joinedPath.split('/'))
+    return makePathFromParts(normalized)
   }
 }
