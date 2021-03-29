@@ -88,6 +88,9 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
           borderRadius: 1,
           width: 28,
           height: 28,
+          display: 'flex',
+          alignContent: 'center',
+          justifyContent: 'center',
         }}
       >
         {React.cloneElement(props.icon, {
