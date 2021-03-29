@@ -288,7 +288,7 @@ export const UiJsxCanvas = betterReactMemo(
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => {
           const filePathResolveResult = resolve(importOrigin, toImport)
-          const resovedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
+          const resolvedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
             (resolvedFilePath) => {
               const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
               if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
@@ -330,7 +330,7 @@ export const UiJsxCanvas = betterReactMemo(
               // Return an artificial exports object that contains our ComponentRendererComponents
               return scope
             },
-            resovedParseSuccess,
+            resolvedParseSuccess,
           )
         },
         // TODO I don't like projectContents and transientFileState here because that means dragging smth on the Canvas would recreate the customRequire fn
