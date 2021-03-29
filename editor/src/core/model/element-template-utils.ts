@@ -1,5 +1,5 @@
-import { ProjectContentTreeRoot } from '../../components/assets'
-import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
+import { importedFromWhere } from '../../components/editor/import-utils'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
   ElementInstanceMetadata,
@@ -24,6 +24,8 @@ import { optionalMap } from '../shared/optional-utils'
 import {
   Imports,
   InstancePath,
+  isParseSuccess,
+  isTextFile,
   ScenePath,
   StaticElementPath,
   StaticInstancePath,
@@ -93,60 +95,59 @@ export function guaranteeUniqueUids(
 }
 
 export function getValidTemplatePaths(
-  topLevelElements: ReadonlyMap<string, UtopiaJSXComponent>,
   focusedElementPath: ScenePath | null,
   topLevelElementName: string | null,
   scenePath: ScenePath,
   projectContents: ProjectContentTreeRoot,
-  uiFilePath: string,
+  filePath: string,
 ): Array<InstancePath> {
   if (topLevelElementName == null) {
     return []
   }
-  const topLevelElement = topLevelElements.get(topLevelElementName)
-  if (isUtopiaJSXComponent(topLevelElement)) {
-    return getValidTemplatePathsFromElement(
-      topLevelElements,
-      focusedElementPath,
-      topLevelElement.rootElement,
-      scenePath,
-      projectContents,
-      uiFilePath,
+  const file = getContentsTreeFileFromString(projectContents, filePath)
+  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    const importOrigin = importedFromWhere(
+      filePath,
+      topLevelElementName,
+      file.fileContents.parsed.topLevelElements,
+      file.fileContents.parsed.imports,
     )
-  } else {
-    return []
+    if (importOrigin != null) {
+      const importOriginFile = getContentsTreeFileFromString(projectContents, importOrigin)
+      if (isTextFile(importOriginFile) && isParseSuccess(importOriginFile.fileContents.parsed)) {
+        const topLevelElement = importOriginFile.fileContents.parsed.topLevelElements.find(
+          (element): element is UtopiaJSXComponent =>
+            isUtopiaJSXComponent(element) && element.name === topLevelElementName,
+        )
+        if (topLevelElement != null) {
+          return getValidTemplatePathsFromElement(
+            focusedElementPath,
+            topLevelElement.rootElement,
+            scenePath,
+            projectContents,
+            importOrigin,
+          )
+        }
+      }
+    }
   }
+  return []
 }
 
 export function getValidTemplatePathsFromElement(
-  topLevelElements: ReadonlyMap<string, UtopiaJSXComponent>,
   focusedElementPath: ScenePath | null,
   element: JSXElementChild,
   parentPath: TemplatePath,
   projectContents: ProjectContentTreeRoot,
-  uiFilePath: string,
+  filePath: string,
 ): Array<InstancePath> {
   if (isJSXElement(element)) {
     const uid = getUtopiaID(element)
     const path = TP.appendToPath(parentPath, uid)
-    const normalisedPathResult = normalisePathToUnderlyingTarget(
-      projectContents,
-      {},
-      uiFilePath,
-      path,
-    )
-    console.log('normalisedPathResult', normalisedPathResult)
     let paths = [path]
     fastForEach(element.children, (c) =>
       paths.push(
-        ...getValidTemplatePathsFromElement(
-          topLevelElements,
-          focusedElementPath,
-          c,
-          path,
-          projectContents,
-          uiFilePath,
-        ),
+        ...getValidTemplatePathsFromElement(focusedElementPath, c, path, projectContents, filePath),
       ),
     )
     const name = getJSXElementNameAsString(element.name)
@@ -158,17 +159,15 @@ export function getValidTemplatePathsFromElement(
             TP.elementPathForPath(path),
             'static-scene-path',
           )
-
     if (matchingFocusedPathPart != null) {
       paths = [
         ...paths,
         ...getValidTemplatePaths(
-          topLevelElements,
           focusedElementPath,
           name,
           matchingFocusedPathPart,
           projectContents,
-          uiFilePath,
+          filePath,
         ),
       ]
     }
@@ -178,12 +177,11 @@ export function getValidTemplatePathsFromElement(
     fastForEach(Object.values(element.elementsWithin), (e) =>
       paths.push(
         ...getValidTemplatePathsFromElement(
-          topLevelElements,
           focusedElementPath,
           e,
           parentPath,
           projectContents,
-          uiFilePath,
+          filePath,
         ),
       ),
     )
@@ -193,12 +191,11 @@ export function getValidTemplatePathsFromElement(
     fastForEach(Object.values(element.children), (e) =>
       paths.push(
         ...getValidTemplatePathsFromElement(
-          topLevelElements,
           focusedElementPath,
           e,
           parentPath,
           projectContents,
-          uiFilePath,
+          filePath,
         ),
       ),
     )

@@ -443,7 +443,6 @@ function useGetStoryboardRoot(
     storyboardRootJsxComponent == null
       ? []
       : getValidTemplatePaths(
-          topLevelElementsMap,
           null,
           BakedInStoryboardVariableName,
           EmptyScenePathForStoryboard,

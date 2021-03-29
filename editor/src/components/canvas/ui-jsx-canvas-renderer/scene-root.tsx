@@ -130,7 +130,6 @@ function useGetValidTemplatePaths(
   }
 
   return getValidTemplatePaths(
-    topLevelJSXComponents,
     focusedElementPath,
     topLevelElementName,
     TP.dynamicPathToStaticPath(scenePath),
