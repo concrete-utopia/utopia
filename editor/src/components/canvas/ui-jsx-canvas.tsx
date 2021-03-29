@@ -121,7 +121,7 @@ export interface UiJsxCanvasProps {
   mountCount: number
   onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
   walkDOM: boolean
-  imports_KILLME_ONLY_USED_FOR_CSS: Imports
+  imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean // FOR ui-jsx-canvas.spec TESTS ONLY!!!! this prevents us from having to update the legacy test snapshots
   clearConsoleLogs: () => void
@@ -158,7 +158,7 @@ export function pickUiJsxCanvasProps(
   if (uiFile == null || uiFilePath == null) {
     return null
   } else {
-    const { imports: imports_KILLME_ONLY_USED_FOR_CSS } = getParseSuccessOrTransientForFilePath(
+    const { imports: imports_KILLME } = getParseSuccessOrTransientForFilePath(
       uiFilePath,
       editor.projectContents,
       uiFilePath,
@@ -197,7 +197,7 @@ export function pickUiJsxCanvasProps(
       mountCount: editor.canvas.mountCount,
       onDomReport: onDomReport,
       walkDOM: walkDOM,
-      imports_KILLME_ONLY_USED_FOR_CSS: imports_KILLME_ONLY_USED_FOR_CSS,
+      imports_KILLME: imports_KILLME,
       clearConsoleLogs: clearConsoleLogs,
       addToConsoleLogs: addToConsoleLogs,
       canvasIsLive: isLiveMode(editor.mode),
@@ -232,7 +232,7 @@ export const UiJsxCanvas = betterReactMemo(
       hiddenInstances,
       walkDOM,
       onDomReport,
-      imports_KILLME_ONLY_USED_FOR_CSS: imports,
+      imports_KILLME: imports, // FIXME this is the storyboard imports object used only for the cssimport
       clearErrors,
       clearConsoleLogs,
       addToConsoleLogs,
