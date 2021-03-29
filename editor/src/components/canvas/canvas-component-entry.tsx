@@ -40,7 +40,6 @@ export const CanvasComponentEntry = betterReactMemo(
           onDomReport,
           clearConsoleLogs,
           addToConsoleLogs,
-          store.dispatch,
         ),
       'CanvasComponentEntry canvasProps',
     )

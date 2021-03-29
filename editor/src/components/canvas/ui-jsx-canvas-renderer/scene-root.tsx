@@ -44,7 +44,10 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import { useEditorState } from '../../editor/store/store-hook'
 import { getFileForName, getOpenUIJSFileKey } from '../../editor/store/editor-state'
 import { fastForEach } from '../../../core/shared/utils'
-import { getTopLevelElements, useGetTopLevelElements } from './ui-jsx-canvas-top-level-elements'
+import {
+  getParseSuccessOrTransientForFilePath,
+  useGetTopLevelElements,
+} from './ui-jsx-canvas-top-level-elements'
 
 interface SceneProps {
   component?: React.ComponentType | null
