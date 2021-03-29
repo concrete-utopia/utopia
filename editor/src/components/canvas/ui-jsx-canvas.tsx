@@ -283,7 +283,7 @@ export const UiJsxCanvas = betterReactMemo(
       clearErrors()
     }
 
-    // TODO requireFn can never be null
+    // TODO after merge requireFn can never be null
     if (requireFn != null) {
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => {
@@ -305,8 +305,16 @@ export const UiJsxCanvas = betterReactMemo(
                   metadataContext,
                   shouldIncludeCanvasRootInTheSpy,
                 )
-                // TODO filter scope to only really exported elements
-                return right(scope)
+                const exportsDetail = projectFile.fileContents.parsed.exportsDetail
+                let filteredScope: MapLike<any> = {}
+                for (const s of Object.keys(scope)) {
+                  if (s in exportsDetail.namedExports) {
+                    filteredScope[s] = scope[s]
+                  } else if (s === exportsDetail.defaultExport?.name) {
+                    filteredScope[s] = scope[s]
+                  }
+                }
+                return right(filteredScope)
               } else {
                 return left(`File ${resolvedFilePath} is not a ParseSuccess`)
               }
