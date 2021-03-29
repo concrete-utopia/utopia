@@ -1,7 +1,9 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
+import { CreateStyled } from '@emotion/styled/types/base'
 import { IconMap } from 'antd/lib/result'
+import { eqProps } from 'ramda'
 import * as React from 'react'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { LoginState } from '../../common/user'
@@ -33,17 +35,23 @@ import { EditorState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { LeftMenuTab } from '../navigator/left-pane'
 
-const Tile = styled.div({
+interface TileProp {
+  size: keyof typeof UtopiaTheme.layout.rowHeight
+}
+
+const Tile = styled.div<TileProp>((props) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
-})
+  width: props.size,
+}))
 
 export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
   selected: boolean
   menuExpanded: boolean
   icon: React.ReactElement<IcnProps>
+  size: keyof typeof UtopiaTheme.layout.rowHeight
 }
 
 // export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
@@ -53,13 +61,13 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
 
   const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
   const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
-
   var foregroundColor: IcnProps['color'] = 'darkgray'
 
   return (
     <Tile
+      size={props.size}
       css={{
-        width: 44,
+        // width: 44,
         height: 44,
         transition: 'all .1s ease-in-out',
         borderLeft:
@@ -183,7 +191,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
-        <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+        <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
           <a href='/projects'>
             <Avatar loginState={userState.loginState} size={28} />
           </a>
@@ -196,6 +204,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Smiangle />}
               onClick={onClickProjectTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -207,6 +216,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Pyramid />}
               onClick={onClickStoryboardsTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -218,6 +228,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.FileSkewed />}
               onClick={onClickContentsTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -229,6 +240,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Settings />}
               onClick={onClickSettingsTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -240,6 +252,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.TwoGhosts />}
               onClick={onClickSharingTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -251,6 +264,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Octocat />}
               onClick={onClickGithubTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -258,7 +272,12 @@ export const Menubar = betterReactMemo('Menubar', () => {
         <a style={{ marginTop: 32 }} target='_blank' rel='noopener noreferrer' href={previewURL}>
           <Tooltip title={'Launch External Preview'} placement={'right'}>
             <span>
-              <MenuTile selected={false} menuExpanded={false} icon={<MenuIcons.ExternalLink />} />
+              <MenuTile
+                selected={false}
+                menuExpanded={false}
+                icon={<MenuIcons.ExternalLink />}
+                size='large'
+              />
             </span>
           </Tooltip>
         </a>
@@ -269,25 +288,26 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={false}
               icon={<LargerIcons.PreviewPane />}
               onClick={togglePreviewPaneVisible}
+              size='large'
             />
           </span>
         </Tooltip>
       </FlexColumn>
       {isFeatureEnabled('Performance Test Triggers') ? (
         <React.Fragment>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerScrollTest}>P S</a>
           </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerResizeTest}>P R</a>
           </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerSelectionTest}>P E</a>
           </Tile>
         </React.Fragment>
       ) : null}
       {isFeatureEnabled('Re-parse Project Button') ? (
-        <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+        <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
           <a onClick={onReparseClick}>R</a>
         </Tile>
       ) : null}

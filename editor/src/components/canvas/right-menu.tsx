@@ -194,7 +194,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
       style={{
         alignSelf: 'stretch',
         borderLeft: `1px solid #d3d3d369`,
-        width: UtopiaTheme.layout.canvasMenuWidth,
+        width: UtopiaTheme.layout.rowHeight.mediumLarge,
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
@@ -205,6 +205,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               menuExpanded={isRightMenuExpanded}
               icon={<LargerIcons.Hamburgermenu />}
               onClick={onShowInspectorTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -216,6 +217,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               menuExpanded={isRightMenuExpanded}
               icon={<LargerIcons.PlusButton />}
               onClick={onShowInsertTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -227,13 +229,19 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               menuExpanded={false}
               icon={<LargerIcons.PlayButton />}
               onClick={toggleLiveCanvas}
+              size='large'
             />
           </span>
         </Tooltip>
 
         <Tooltip title='Reset canvas' placement='left'>
           <span>
-            <MenuTile selected={false} menuExpanded={false} icon={<LargerIcons.Refresh />} />
+            <MenuTile
+              selected={false}
+              menuExpanded={false}
+              icon={<LargerIcons.Refresh />}
+              size='large'
+            />
           </span>
         </Tooltip>
 
@@ -244,6 +252,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               menuExpanded={false}
               icon={<LargerIcons.MagnifyingGlassPlus />}
               onClick={zoomIn}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -259,6 +268,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               menuExpanded={false}
               icon={<LargerIcons.MagnifyingGlassMinus />}
               onClick={zoomOut}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -270,6 +280,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               menuExpanded={false}
               icon={<LargerIcons.Canvas />}
               onClick={toggleAdditionalControlsVisible}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -281,6 +292,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               menuExpanded={false}
               icon={<LargerIcons.Code />}
               onClick={toggleCodePaneVisible}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -292,6 +304,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               menuExpanded={false}
               icon={<LargerIcons.PreviewPane />}
               onClick={togglePreviewPaneVisible}
+              size='large'
             />
           </span>
         </Tooltip>
