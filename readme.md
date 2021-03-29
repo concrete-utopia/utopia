@@ -1,6 +1,5 @@
 ![](https://github.com/concrete-utopia/utopia/workflows/Build%20And%20Release%20On%20Push%20To%20Master/badge.svg) <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 # Welcome to Utopia!
