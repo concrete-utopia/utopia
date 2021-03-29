@@ -1,3 +1,5 @@
+import { ProjectContentTreeRoot } from '../../components/assets'
+import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
   ElementInstanceMetadata,
@@ -95,6 +97,8 @@ export function getValidTemplatePaths(
   focusedElementPath: ScenePath | null,
   topLevelElementName: string | null,
   scenePath: ScenePath,
+  projectContents: ProjectContentTreeRoot,
+  uiFilePath: string,
 ): Array<InstancePath> {
   if (topLevelElementName == null) {
     return []
@@ -106,6 +110,8 @@ export function getValidTemplatePaths(
       focusedElementPath,
       topLevelElement.rootElement,
       scenePath,
+      projectContents,
+      uiFilePath,
     )
   } else {
     return []
@@ -117,14 +123,30 @@ export function getValidTemplatePathsFromElement(
   focusedElementPath: ScenePath | null,
   element: JSXElementChild,
   parentPath: TemplatePath,
+  projectContents: ProjectContentTreeRoot,
+  uiFilePath: string,
 ): Array<InstancePath> {
   if (isJSXElement(element)) {
     const uid = getUtopiaID(element)
     const path = TP.appendToPath(parentPath, uid)
+    const normalisedPathResult = normalisePathToUnderlyingTarget(
+      projectContents,
+      {},
+      uiFilePath,
+      path,
+    )
+    console.log('normalisedPathResult', normalisedPathResult)
     let paths = [path]
     fastForEach(element.children, (c) =>
       paths.push(
-        ...getValidTemplatePathsFromElement(topLevelElements, focusedElementPath, c, path),
+        ...getValidTemplatePathsFromElement(
+          topLevelElements,
+          focusedElementPath,
+          c,
+          path,
+          projectContents,
+          uiFilePath,
+        ),
       ),
     )
     const name = getJSXElementNameAsString(element.name)
@@ -145,6 +167,8 @@ export function getValidTemplatePathsFromElement(
           focusedElementPath,
           name,
           matchingFocusedPathPart,
+          projectContents,
+          uiFilePath,
         ),
       ]
     }
@@ -153,7 +177,14 @@ export function getValidTemplatePathsFromElement(
     let paths: Array<InstancePath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
       paths.push(
-        ...getValidTemplatePathsFromElement(topLevelElements, focusedElementPath, e, parentPath),
+        ...getValidTemplatePathsFromElement(
+          topLevelElements,
+          focusedElementPath,
+          e,
+          parentPath,
+          projectContents,
+          uiFilePath,
+        ),
       ),
     )
     return paths
@@ -161,7 +192,14 @@ export function getValidTemplatePathsFromElement(
     let paths: Array<InstancePath> = []
     fastForEach(Object.values(element.children), (e) =>
       paths.push(
-        ...getValidTemplatePathsFromElement(topLevelElements, focusedElementPath, e, parentPath),
+        ...getValidTemplatePathsFromElement(
+          topLevelElements,
+          focusedElementPath,
+          e,
+          parentPath,
+          projectContents,
+          uiFilePath,
+        ),
       ),
     )
     return paths

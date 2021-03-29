@@ -48,6 +48,7 @@ import {
   getParseSuccessOrTransientForFilePath,
   useGetTopLevelElements,
 } from './ui-jsx-canvas-top-level-elements'
+import { ProjectContentTreeRoot } from '../../assets'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -112,6 +113,7 @@ function useGetValidTemplatePaths(
   scenePath: ScenePath,
 ): Array<InstancePath> {
   const uiFilePath = useContextSelector(UtopiaProjectContext, (c) => c.openStoryboardFilePathKILLME)
+  const projectContents = useContextSelector(UtopiaProjectContext, (c) => c.projectContents)
 
   const topLevelElements = useGetTopLevelElements(uiFilePath)
   let topLevelJSXComponents: Map<string, UtopiaJSXComponent> = new Map()
@@ -128,6 +130,8 @@ function useGetValidTemplatePaths(
     focusedElementPath,
     topLevelElementName,
     TP.dynamicPathToStaticPath(scenePath),
+    projectContents,
+    uiFilePath,
   )
 }
 

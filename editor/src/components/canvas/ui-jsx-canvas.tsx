@@ -363,7 +363,7 @@ export const UiJsxCanvas = betterReactMemo(
         storyboardRootElementPath,
         storyboardRootSceneMetadata,
         rootScenePath,
-      } = useGetStoryboardRoot(topLevelElementsMap, executionScope)
+      } = useGetStoryboardRoot(topLevelElementsMap, executionScope, projectContents, uiFilePath)
 
       if (props.shouldIncludeCanvasRootInTheSpy) {
         metadataContext.current.spyValues.scenes[
@@ -425,6 +425,8 @@ export const UiJsxCanvas = betterReactMemo(
 function useGetStoryboardRoot(
   topLevelElementsMap: Map<string, UtopiaJSXComponent>,
   executionScope: MapLike<any>,
+  projectContents: ProjectContentTreeRoot,
+  uiFilePath: string,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements
@@ -445,6 +447,8 @@ function useGetStoryboardRoot(
           null,
           BakedInStoryboardVariableName,
           EmptyScenePathForStoryboard,
+          projectContents,
+          uiFilePath,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
 
