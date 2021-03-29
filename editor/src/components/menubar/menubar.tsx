@@ -97,7 +97,7 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
           width: 28,
           height: 28,
           display: 'flex',
-          alignContent: 'center',
+          alignItems: 'center',
           justifyContent: 'center',
         }}
       >
