@@ -125,6 +125,10 @@ function useGetValidTemplatePaths(
 
   const focusedElementPath = useContextSelector(RerenderUtopiaContext, (c) => c.focusedElementPath)
 
+  if (uiFilePath == null) {
+    return []
+  }
+
   return getValidTemplatePaths(
     topLevelJSXComponents,
     focusedElementPath,
