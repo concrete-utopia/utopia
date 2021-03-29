@@ -11,12 +11,9 @@ import {
   UtopiaTheme,
   SquareButton,
   UtopiaStyles,
-  SimpleFlexColumn,
   Tooltip,
   LargerIcons,
-  MenuIcons,
   FlexColumn,
-  Tile,
 } from '../../uuiui'
 import { betterReactMemo, Utils } from '../../uuiui-deps'
 import { MenuTile } from '../menubar/menubar'

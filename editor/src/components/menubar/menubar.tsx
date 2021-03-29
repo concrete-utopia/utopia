@@ -1,12 +1,8 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
-import { CreateStyled } from '@emotion/styled/types/base'
-import { IconMap } from 'antd/lib/result'
-import { eqProps } from 'ramda'
 import * as React from 'react'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
-import { LoginState } from '../../common/user'
 import {
   useTriggerScrollPerformanceTest,
   useTriggerResizePerformanceTest,
@@ -17,21 +13,16 @@ import { shareURLForProject } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   IcnProps,
-  SquareButton,
-  UtopiaStyles,
   FlexColumn,
   Tooltip,
   MenuIcons,
   LargerIcons,
   Avatar,
-  Icn,
-  Icons,
   UtopiaTheme,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { EditorAction, EditorDispatch } from '../editor/action-types'
+import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
-import { EditorState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { LeftMenuTab } from '../navigator/left-pane'
 
@@ -54,8 +45,6 @@ export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
   size: keyof typeof UtopiaTheme.layout.rowHeight
 }
 
-// export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
-
 export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   const [hovered, setHovered] = React.useState(false)
 
@@ -67,7 +56,6 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
     <Tile
       size={props.size}
       css={{
-        // width: 44,
         height: 44,
         transition: 'all .1s ease-in-out',
         borderLeft:
