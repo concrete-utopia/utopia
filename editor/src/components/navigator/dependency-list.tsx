@@ -31,6 +31,7 @@ import {
   SquareButton,
   FunctionIcons,
   SectionBodyArea,
+  Section,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 
@@ -440,7 +441,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     }
 
     return (
-      <div onFocus={this.onFocus} tabIndex={-1} id={this.DependencyListContainerId}>
+      <Section onFocus={this.onFocus} tabIndex={-1} id={this.DependencyListContainerId}>
         <SectionTitleRow
           minimised={this.props.minimised}
           toggleMinimised={this.props.toggleMinimised}
@@ -484,7 +485,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
             />
           ) : null}
         </SectionBodyArea>
-      </div>
+      </Section>
     )
   }
 }
