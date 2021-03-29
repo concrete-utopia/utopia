@@ -55,11 +55,6 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
 
   var foregroundColor: IcnProps['color'] = 'darkgray'
-  // if (props.menuExpanded && props.selected) {
-  //   foregroundColor = 'white'
-  // } else if (props.selected || hovered) {
-  //   foregroundColor = 'blue'
-  // }
 
   return (
     <Tile
