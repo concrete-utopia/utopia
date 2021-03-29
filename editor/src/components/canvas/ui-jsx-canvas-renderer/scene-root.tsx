@@ -9,8 +9,15 @@ import {
   emptyComputedStyle,
   JSXElement,
   emptyAttributeMetadatada,
+  isUtopiaJSXComponent,
+  UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import { InstancePath, ScenePath } from '../../../core/shared/project-file-types'
+import {
+  InstancePath,
+  isParseSuccess,
+  isTextFile,
+  ScenePath,
+} from '../../../core/shared/project-file-types'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
 import { UiJsxCanvasContextData, UiJsxCanvasContext } from '../ui-jsx-canvas'
 import {
@@ -22,6 +29,7 @@ import {
   ParentLevelUtopiaContext,
   RerenderUtopiaContext,
   SceneLevelUtopiaContext,
+  UtopiaProjectContext,
 } from './ui-jsx-canvas-contexts'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 import * as TP from '../../../core/shared/template-path'
@@ -33,6 +41,10 @@ import utils from '../../../utils/utils'
 import { PathForResizeContent } from '../../../core/model/scene-utils'
 import { UTOPIA_SCENE_PATH, UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import { useEditorState } from '../../editor/store/store-hook'
+import { getFileForName, getOpenUIJSFileKey } from '../../editor/store/editor-state'
+import { fastForEach } from '../../../core/shared/utils'
+import { getTopLevelElements, useGetTopLevelElements } from './ui-jsx-canvas-top-level-elements'
 
 interface SceneProps {
   component?: React.ComponentType | null
@@ -96,10 +108,20 @@ function useGetValidTemplatePaths(
   topLevelElementName: string | null,
   scenePath: ScenePath,
 ): Array<InstancePath> {
-  const topLevelElements = useContextSelector(RerenderUtopiaContext, (c) => c.topLevelElements)
+  const uiFilePath = useContextSelector(UtopiaProjectContext, (c) => c.openStoryboardFilePathKILLME)
+
+  const topLevelElements = useGetTopLevelElements(uiFilePath)
+  let topLevelJSXComponents: Map<string, UtopiaJSXComponent> = new Map()
+  fastForEach(topLevelElements, (topLevelElement) => {
+    if (isUtopiaJSXComponent(topLevelElement)) {
+      topLevelJSXComponents.set(topLevelElement.name, topLevelElement)
+    }
+  })
+
   const focusedElementPath = useContextSelector(RerenderUtopiaContext, (c) => c.focusedElementPath)
+
   return getValidTemplatePaths(
-    topLevelElements,
+    topLevelJSXComponents,
     focusedElementPath,
     topLevelElementName,
     TP.dynamicPathToStaticPath(scenePath),
@@ -108,13 +130,15 @@ function useGetValidTemplatePaths(
 
 interface SceneRootRendererProps {
   sceneElement: JSXElement
+  filePath: string
   style?: React.CSSProperties
 }
 
 export const SceneRootRenderer = betterReactMemo(
   'SceneRootRenderer',
   (props: SceneRootRendererProps) => {
-    const mutableUtopiaContext = React.useContext(MutableUtopiaContext).current
+    const mutableUtopiaContext = React.useContext(MutableUtopiaContext).current[props.filePath]
+      .mutableContext
     const inScope = mutableUtopiaContext.rootScope
     const requireResult = mutableUtopiaContext.requireResult
     const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)

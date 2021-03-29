@@ -18,12 +18,20 @@ import {
 } from '../../core/shared/element-template'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { RequireFn } from '../../core/shared/npm-dependency-types'
-import { Imports, foldParsedTextFile } from '../../core/shared/project-file-types'
+import {
+  Imports,
+  foldParsedTextFile,
+  codeFile,
+  textFile,
+  textFileContents,
+  RevisionsState,
+  ProjectContents,
+} from '../../core/shared/project-file-types'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { Utils } from '../../uuiui-deps'
 import { normalizeName } from '../custom-code/custom-code-utils'
-import { ConsoleLog } from '../editor/store/editor-state'
+import { ConsoleLog, deriveState } from '../editor/store/editor-state'
 import {
   UiJsxCanvasProps,
   UiJsxCanvasContextData,
@@ -37,6 +45,8 @@ import { CanvasErrorBoundary } from './canvas-component-entry'
 import { EditorStateContext } from '../editor/store/store-hook'
 import { getStoreHook } from '../inspector/common/inspector.test-utils'
 import { NO_OP } from '../../core/shared/utils'
+import { directory } from '../../core/model/project-file-utils'
+import { contentsToTree } from '../assets'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -126,6 +136,33 @@ export function renderCanvasReturnResultAndError(
     parsedCode,
   )
 
+  const storeHookForTest = getStoreHook(NO_OP)
+  storeHookForTest.updateStore((store) => {
+    const projectContents: ProjectContents = {
+      utopia: directory(),
+      [uiFilePath]: textFile(
+        textFileContents(code, parsedCode, RevisionsState.BothMatch),
+        null,
+        1000,
+      ),
+    }
+    const updatedEditor = {
+      ...store.editor,
+      canvas: {
+        ...store.editor.canvas,
+        openFile: {
+          filename: uiFilePath,
+        },
+      },
+      projectContents: contentsToTree(projectContents),
+    }
+    return {
+      ...store,
+      editor: updatedEditor,
+      derived: deriveState(updatedEditor, store.derived),
+    }
+  })
+
   function clearConsoleLogs(): void {
     consoleLogs = []
   }
@@ -156,6 +193,8 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: null,
+      projectContents: storeHookForTest.api.getState().editor.projectContents,
+      transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
     }
   } else {
     canvasProps = {
@@ -177,6 +216,8 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
       focusedElementPath: null,
+      projectContents: storeHookForTest.api.getState().editor.projectContents,
+      transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
     }
   }
 
@@ -184,8 +225,6 @@ export function renderCanvasReturnResultAndError(
     ...canvasProps,
     spyEnabled: false,
   }
-
-  const storeHookForTest = getStoreHook(NO_OP)
 
   let formattedSpyEnabled
   let errorsReportedSpyEnabled = []
