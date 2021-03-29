@@ -95,7 +95,7 @@ const Option = (props: OptionProps<SelectOption>) => {
       <FlexRow style={{ width: CheckboxWidth, padding: CheckboxPadding, flexShrink: 0 }}>
         {props.isSelected ? '✓' : ''}
       </FlexRow>
-      {props.data.icon == null ? <IcnSpacer /> : <Icn {...props.data.icon} />}
+      {props.data.icon == null ? null : <Icn {...props.data.icon} />}
       <span style={{ paddingLeft: 8 }}>{props.children}</span>
     </FlexRow>
   )
@@ -598,10 +598,11 @@ export const PopupList = betterReactMemo<PopupListProps>(
             boxSizing: 'border-box',
             height: '100%',
             width: '100%',
+            padding: '4px 8px',
           }),
           menuList: (_, menuListProps) => {
             return {
-              backgroundColor: colorTheme.contextMenuBackground.value,
+              // backgroundColor: colorTheme.contextMenuBackground.value,
               padding: 0,
               boxSizing: 'border-box',
               label: 'menuList',
@@ -614,6 +615,7 @@ export const PopupList = betterReactMemo<PopupListProps>(
             paddingLeft: '4px',
             fontWeight: 500,
             userSelect: 'none',
+            borderRadius: 2,
             fontSize: 11,
             backgroundColor: optionProps.isFocused
               ? colorTheme.contextMenuHighlightBackground.value
