@@ -27,11 +27,11 @@ import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actio
 import { useEditorState } from '../editor/store/store-hook'
 import { LeftMenuTab } from '../navigator/left-pane'
 
-interface TileProp {
+interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight
 }
 
-const Tile = styled.div<TileProp>((props) => ({
+const Tile = styled.div<TileProps>((props) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
@@ -39,7 +39,7 @@ const Tile = styled.div<TileProp>((props) => ({
   width: props.size,
 }))
 
-export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement>, TileProps {
   selected: boolean
   menuExpanded: boolean
   icon: React.ReactElement<IcnProps>
