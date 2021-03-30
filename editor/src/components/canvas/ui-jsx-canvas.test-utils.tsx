@@ -47,6 +47,7 @@ import { getStoreHook } from '../inspector/common/inspector.test-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { directory } from '../../core/model/project-file-utils'
 import { contentsToTree } from '../assets'
+import { MapLike } from 'typescript'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -104,11 +105,12 @@ export function stripUidsFromMetadata(metadata: ElementInstanceMetadata): Elemen
 const UiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
 export function renderCanvasReturnResultAndError(
   possibleProps: PartialCanvasProps | null,
-  code: string,
+  uiFileCode: string,
+  codeFilesString: MapLike<string>,
 ) {
   const spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
-  const parsedCode = testParseCode(code)
+  const parsedUIFileCode = testParseCode(uiFileCode)
   let errorsReported: Array<{
     editedFile: string
     error: FancyError
@@ -127,21 +129,28 @@ export function renderCanvasReturnResultAndError(
     (_) => emptyImports(),
     (success) => success.imports,
     (_) => emptyImports(),
-    parsedCode,
+    parsedUIFileCode,
   )
   let canvasProps: UiJsxCanvasPropsWithErrorCallback
   let consoleLogs: Array<ConsoleLog> = []
 
   const storeHookForTest = getStoreHook(NO_OP)
+  let projectContents: ProjectContents = {
+    [UiFilePath]: textFile(
+      textFileContents(uiFileCode, parsedUIFileCode, RevisionsState.BothMatch),
+      null,
+      1000,
+    ),
+  }
+  for (const filename in codeFilesString) {
+    const parsedCode = testParseCode(codeFilesString[filename])
+    projectContents[filename] = textFile(
+      textFileContents(codeFilesString[filename], parsedCode, RevisionsState.BothMatch),
+      null,
+      1000,
+    )
+  }
   storeHookForTest.updateStore((store) => {
-    const projectContents: ProjectContents = {
-      utopia: directory(),
-      [UiFilePath]: textFile(
-        textFileContents(code, parsedCode, RevisionsState.BothMatch),
-        null,
-        1000,
-      ),
-    }
     const updatedEditor = {
       ...store.editor,
       canvas: {
@@ -167,7 +176,7 @@ export function renderCanvasReturnResultAndError(
   }
   if (possibleProps == null) {
     canvasProps = {
-      uiFileCode: code,
+      uiFileCode: uiFileCode,
       uiFilePath: UiFilePath,
       requireFn: requireFn,
       resolve: dumbResolveFn,
@@ -193,7 +202,7 @@ export function renderCanvasReturnResultAndError(
   } else {
     canvasProps = {
       ...possibleProps,
-      uiFileCode: code,
+      uiFileCode: uiFileCode,
       uiFilePath: UiFilePath,
       requireFn: requireFn,
       resolve: dumbResolveFn,
@@ -225,7 +234,7 @@ export function renderCanvasReturnResultAndError(
       <EditorStateContext.Provider value={storeHookForTest}>
         <UiJsxCanvasContext.Provider value={spyCollector}>
           <CanvasErrorBoundary
-            fileCode={code}
+            fileCode={uiFileCode}
             filePath={UiFilePath}
             reportError={reportError}
             requireFn={canvasProps.requireFn}
@@ -269,13 +278,21 @@ export function renderCanvasReturnResultAndError(
 }
 
 export function testCanvasRender(possibleProps: PartialCanvasProps | null, code: string): void {
+  testCanvasRenderMultifile(possibleProps, code, {})
+}
+
+export function testCanvasRenderMultifile(
+  possibleProps: PartialCanvasProps | null,
+  uiFileCode: string,
+  codeFilesString: MapLike<string>,
+): void {
   const {
     formattedSpyEnabled,
     formattedSpyDisabled,
     errorsReportedSpyEnabled,
     errorsReportedSpyDisabled,
     spyValues,
-  } = renderCanvasReturnResultAndError(possibleProps, code)
+  } = renderCanvasReturnResultAndError(possibleProps, uiFileCode, codeFilesString)
   if (errorsReportedSpyEnabled.length > 0) {
     throw new Error(`Canvas Tests, Spy Enabled: Errors reported: ${errorsReportedSpyEnabled}`)
   }
@@ -296,13 +313,21 @@ export function testCanvasRenderInline(
   possibleProps: PartialCanvasProps | null,
   code: string,
 ): string {
+  return testCanvasRenderInlineMultifile(possibleProps, code, {})
+}
+
+export function testCanvasRenderInlineMultifile(
+  possibleProps: PartialCanvasProps | null,
+  uiFileCode: string,
+  codeFilesString: MapLike<string>,
+): string {
   const {
     formattedSpyEnabled,
     formattedSpyDisabled,
     errorsReportedSpyEnabled,
     errorsReportedSpyDisabled,
     spyValues,
-  } = renderCanvasReturnResultAndError(possibleProps, code)
+  } = renderCanvasReturnResultAndError(possibleProps, uiFileCode, codeFilesString)
   if (errorsReportedSpyEnabled.length > 0) {
     console.error(errorsReportedSpyEnabled)
   }
@@ -321,9 +346,18 @@ export function testCanvasRenderInline(
 }
 
 export function testCanvasError(possibleProps: PartialCanvasProps | null, code: string): void {
+  testCanvasErrorMultifile(possibleProps, code, {})
+}
+
+export function testCanvasErrorMultifile(
+  possibleProps: PartialCanvasProps | null,
+  uiFileCode: string,
+  codeFilesString: MapLike<string>,
+): void {
   const { errorsReportedSpyEnabled, errorsReportedSpyDisabled } = renderCanvasReturnResultAndError(
     possibleProps,
-    code,
+    uiFileCode,
+    codeFilesString,
   )
 
   expect(errorsReportedSpyEnabled.length).toEqual(errorsReportedSpyDisabled.length)
