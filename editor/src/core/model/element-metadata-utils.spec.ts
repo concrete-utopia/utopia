@@ -6,10 +6,9 @@ import {
   LocalRectangle,
   CanvasRectangle,
 } from '../shared/math-utils'
-import { right } from '../shared/either'
+import { left, right } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   emptySpecialSizeMeasurements,
   JSXElementName,
@@ -50,11 +49,14 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -66,11 +68,14 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -86,11 +91,14 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   },
   element: right(jsxTestElement('View', [], [])),
   children: [],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentMetadataChild3: ElementInstanceMetadata = {
@@ -103,11 +111,14 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [testComponentMetadataGrandchild.templatePath],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -121,33 +132,49 @@ const testComponentRoot1: ElementInstanceMetadata = {
     testComponentMetadataChild2.templatePath,
     testComponentMetadataChild3.templatePath,
   ],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
-const testComponentScene: ComponentMetadata = {
-  scenePath: TP.scenePath([[BakedInStoryboardUID, TestScenePath]]),
+const testComponentScene: ElementInstanceMetadata = {
   templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'scene-aaa']),
-  component: 'MyView',
-  rootElements: [testComponentRoot1.templatePath],
-  sceneResizesContent: false,
+  props: {
+    style: {
+      width: 100,
+      height: 100,
+    },
+  },
   globalFrame: canvasRectangle({
     x: 0,
     y: 0,
     width: 100,
     height: 100,
   }),
-  style: {
-    width: 100,
-    height: 100,
-  },
+  element: left('Scene'),
+  children: [],
+  rootElements: [testComponentRoot1.templatePath],
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  componentInstance: false,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: 'MyView',
+  label: null,
 }
 
-const testComponentMetadata: Array<ComponentMetadata> = [testComponentScene]
+const testComponentMetadataMap: ElementInstanceMetadataMap = {
+  [TP.toString(testComponentScene.templatePath)]: testComponentScene,
+}
+
 const testElementMetadataMap: ElementInstanceMetadataMap = {
+  ...testComponentMetadataMap,
   [TP.toString(testComponentMetadataChild1.templatePath)]: testComponentMetadataChild1,
   [TP.toString(testComponentMetadataChild2.templatePath)]: testComponentMetadataChild2,
   [TP.toString(testComponentMetadataChild3.templatePath)]: testComponentMetadataChild3,
@@ -155,7 +182,7 @@ const testElementMetadataMap: ElementInstanceMetadataMap = {
   [TP.toString(testComponentRoot1.templatePath)]: testComponentRoot1,
 }
 
-const testJsxMetadata = jsxMetadata(testComponentMetadata, testElementMetadataMap)
+const testJsxMetadata = jsxMetadata(testElementMetadataMap)
 
 describe('findElements', () => {
   it('Finds the element metadata', () => {
@@ -229,11 +256,14 @@ describe('targetElementSupportsChildren', () => {
       props: {},
       element: right(jsxTestElement(elementName, [], [])),
       children: [],
+      rootElements: [],
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
+      componentName: null,
+      label: null,
     }
   }
 
@@ -267,6 +297,7 @@ describe('targetElementSupportsChildren', () => {
 describe('isPinnedAndNotAbsolutePositioned', () => {
   it('returns true for a pinned element that is not absolute positioned', () => {
     const elementMapForTest: ElementInstanceMetadataMap = {
+      ...testComponentMetadataMap,
       [TP.toString(testComponentRoot1.templatePath)]: {
         ...testComponentRoot1,
         specialSizeMeasurements: {
@@ -278,13 +309,14 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        jsxMetadata(testComponentMetadata, elementMapForTest),
+        jsxMetadata(elementMapForTest),
         TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
       ),
     ).toEqual(true)
   })
   it('returns false for a flex element that is not absolute positioned', () => {
     const elementMapForTest: ElementInstanceMetadataMap = {
+      ...testComponentMetadataMap,
       [TP.toString(testComponentRoot1.templatePath)]: {
         ...testComponentRoot1,
         specialSizeMeasurements: {
@@ -296,13 +328,14 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        jsxMetadata(testComponentMetadata, elementMapForTest),
+        jsxMetadata(elementMapForTest),
         TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
       ),
     ).toEqual(false)
   })
   it('returns false for a pinned element that is absolute positioned', () => {
     const elementMapForTest: ElementInstanceMetadataMap = {
+      ...testComponentMetadataMap,
       [TP.toString(testComponentRoot1.templatePath)]: {
         ...testComponentRoot1,
         specialSizeMeasurements: {
@@ -314,13 +347,14 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        jsxMetadata(testComponentMetadata, elementMapForTest),
+        jsxMetadata(elementMapForTest),
         TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
       ),
     ).toEqual(false)
   })
   it('returns false for a flex element that is absolute positioned', () => {
     const elementMapForTest: ElementInstanceMetadataMap = {
+      ...testComponentMetadataMap,
       [TP.toString(testComponentRoot1.templatePath)]: {
         ...testComponentRoot1,
         specialSizeMeasurements: {
@@ -332,7 +366,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        jsxMetadata(testComponentMetadata, elementMapForTest),
+        jsxMetadata(elementMapForTest),
         TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
       ),
     ).toEqual(false)
@@ -359,11 +393,14 @@ describe('getElementLabel', () => {
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
     [],
+    [],
     false,
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
     emptyAttributeMetadatada,
+    null,
+    null,
   )
   const divElement = jsxElement(
     'div',
@@ -379,36 +416,56 @@ describe('getElementLabel', () => {
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
     [spanElementMetadata.templatePath],
+    [],
     false,
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
     emptyAttributeMetadatada,
+    null,
+    null,
   )
-  const elements: ElementInstanceMetadataMap = {
-    [TP.toString(spanElementMetadata.templatePath)]: spanElementMetadata,
-    [TP.toString(divElementMetadata.templatePath)]: divElementMetadata,
-  }
-  const components: Array<ComponentMetadata> = [
+
+  const sceneElementMetadata = elementInstanceMetadata(
+    instancePath,
+    left('Scene'),
     {
-      scenePath: scenePath,
-      templatePath: instancePath,
-      component: 'App',
-      sceneResizesContent: false,
-      rootElements: [divElementMetadata.templatePath],
-      globalFrame: canvasRectangle({
-        x: 0,
-        y: 0,
-        width: 100,
-        height: 100,
-      }),
+      'data-uid': 'scene-0',
       style: {
         width: 100,
         height: 100,
       },
     },
-  ]
-  const metadata = jsxMetadata(components, elements)
+    canvasRectangle({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    }),
+    localRectangle({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    }),
+    [],
+    [divElementMetadata.templatePath],
+    false,
+    false,
+    emptySpecialSizeMeasurements,
+    emptyComputedStyle,
+    emptyAttributeMetadatada,
+    'App',
+    null,
+  )
+
+  const elements: ElementInstanceMetadataMap = {
+    [TP.toString(sceneElementMetadata.templatePath)]: sceneElementMetadata,
+    [TP.toString(spanElementMetadata.templatePath)]: spanElementMetadata,
+    [TP.toString(divElementMetadata.templatePath)]: divElementMetadata,
+  }
+
+  const metadata = jsxMetadata(elements)
   it('the label of a spin containing text is that text', () => {
     const actualResult = MetadataUtils.getElementLabel(spanPath, metadata)
     expect(actualResult).toEqual('test text')
@@ -419,7 +476,7 @@ describe('getAllPaths', () => {
   it('returns the paths in a depth first manner', () => {
     const actualResult = MetadataUtils.getAllPaths(testJsxMetadata)
     const expectedResult: Array<TemplatePath> = [
-      testComponentScene.scenePath,
+      testComponentScene.templatePath,
       testComponentRoot1.templatePath,
       testComponentMetadataChild1.templatePath,
       testComponentMetadataChild2.templatePath,

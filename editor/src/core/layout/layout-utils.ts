@@ -21,7 +21,6 @@ import {
 } from '../shared/math-utils'
 import { findJSXElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import {
-  ComponentMetadata,
   DetectedLayoutSystem,
   isJSXElement,
   jsxAttributeValue,
@@ -298,7 +297,7 @@ export function switchLayoutMetadata(
       }
     },
   )
-  return jsxMetadata(metadata.components, updatedElements)
+  return jsxMetadata(updatedElements)
 }
 
 export function switchPinnedChildToFlex(

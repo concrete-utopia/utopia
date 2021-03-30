@@ -2,7 +2,7 @@ import * as React from 'react'
 import { FlexStretch, Sides } from 'utopia-api'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import {
-  getSceneMetadataOrElementInstanceMetadata,
+  getElementInstanceMetadata,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
@@ -28,17 +28,14 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
   getTargetStretch = (): FlexStretch => {
     const target = this.props.targetElement
     const parentPath = TP.parentPath(this.props.target)
-    const sceneMetadataOrElementMetadata = getSceneMetadataOrElementInstanceMetadata(
-      parentPath,
-      this.props.componentMetadata,
-    )
+    const elementMetadata = getElementInstanceMetadata(parentPath, this.props.componentMetadata)
     const defaultStretch = 'none'
-    if (sceneMetadataOrElementMetadata == null) {
+    if (elementMetadata == null) {
       return defaultStretch
     } else {
       return defaultEither(
         defaultStretch,
-        LayoutHelpers.getFlexStretchForChild(sceneMetadataOrElementMetadata, target),
+        LayoutHelpers.getFlexStretchForChild(elementMetadata, target),
       )
     }
   }

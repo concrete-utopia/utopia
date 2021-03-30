@@ -2,7 +2,6 @@ import * as json5 from 'json5'
 import * as R from 'ramda'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   getElementsByUIDFromTopLevelElements,

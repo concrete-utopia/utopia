@@ -1,10 +1,6 @@
 import * as R from 'ramda'
 import { findElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import {
-  ComponentMetadata,
-  ElementInstanceMetadata,
-  JSXMetadata,
-} from '../../core/shared/element-template'
+import { ElementInstanceMetadata, JSXMetadata } from '../../core/shared/element-template'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
 import {

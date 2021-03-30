@@ -1330,29 +1330,17 @@ export const MetadataUtils = {
     }
 
     // Everything about this feels wrong
-    const originalMetadata = getSceneMetadataOrElementInstanceMetadata(oldPath, metadata)
+    const originalMetadata = getElementInstanceMetadata(oldPath, metadata)
     if (originalMetadata == null) {
       return metadata
-    } else if (isLeft(originalMetadata) && TP.isScenePath(newPath)) {
-      const componentMetadata = originalMetadata.value
-      // FIXME I think this is wrong and we need to duplicate the children
-      const updatedScenes: ComponentMetadata[] = [
-        ...metadata.components,
-        {
-          ...componentMetadata,
-          scenePath: newPath,
-        },
-      ]
-      return jsxMetadata(updatedScenes, metadata.elements)
-    } else if (
-      isRight(originalMetadata) &&
-      TP.isInstancePath(oldPath) &&
-      TP.isInstancePath(newPath)
-    ) {
+    } else {
+      const oldPathAsInstancePath = TP.instancePathForElementAtPath(oldPath)
+      const newPathAsInstancePath = TP.instancePathForElementAtPath(newPath)
+
       const duplicatedElementPath = duplicateElementMetadata(
-        originalMetadata.value,
-        oldPath,
-        newPath,
+        originalMetadata,
+        oldPathAsInstancePath,
+        newPathAsInstancePath,
         newElement,
       )
       const updatedElements = this.updateParentWithNewChildPath(
@@ -1364,9 +1352,7 @@ export const MetadataUtils = {
         },
       )
 
-      return jsxMetadata(metadata.components, updatedElements)
-    } else {
-      return metadata
+      return jsxMetadata(updatedElements)
     }
   },
   transformAllPathsInMetadata(
@@ -1600,42 +1586,34 @@ export function findJSXElementAtPath(
   }, elem)
 }
 
-export function getSceneMetadataOrElementInstanceMetadata(
+export function getElementInstanceMetadata(
   target: TemplatePath,
   metadata: JSXMetadata,
-): Either<ComponentMetadata, ElementInstanceMetadata> | null {
-  if (TP.isScenePath(target)) {
-    const sceneMetadata = MetadataUtils.findSceneByTemplatePath(metadata.components, target)
-    return optionalMap((m) => left<ComponentMetadata, ElementInstanceMetadata>(m), sceneMetadata)
-  } else {
-    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
-    return optionalMap((m) => right<ComponentMetadata, ElementInstanceMetadata>(m), elementMetadata)
-  }
+): ElementInstanceMetadata | null {
+  const targetInstancePath = TP.isInstancePath(target)
+    ? target
+    : TP.instancePathForElementAtScenePath(target)
+  return MetadataUtils.getElementByInstancePathMaybe(metadata.elements, targetInstancePath)
 }
 
 export function getScenePropsOrElementAttributes(
   target: TemplatePath,
   metadata: JSXMetadata,
 ): PropsOrJSXAttributes | null {
-  const targetMetadata = getSceneMetadataOrElementInstanceMetadata(target, metadata)
+  const targetMetadata = getElementInstanceMetadata(target, metadata)
   if (targetMetadata == null) {
     return null
   } else {
     return foldEither(
-      () => left(null),
-      (elementMetadata) =>
-        foldEither(
-          () => null,
-          (element) => {
-            if (isJSXElement(element)) {
-              return right(element.props)
-            } else {
-              return null
-            }
-          },
-          elementMetadata.element,
-        ),
-      targetMetadata,
+      () => null,
+      (element) => {
+        if (isJSXElement(element)) {
+          return right(element.props)
+        } else {
+          return null
+        }
+      },
+      targetMetadata.element,
     )
   }
 }

@@ -1266,22 +1266,16 @@ export type StyleAttributeMetadataEntry = { fromStyleSheet: boolean } // TODO re
 export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntry | undefined }
 
 export interface JSXMetadata {
-  components: Array<ComponentMetadata>
   elements: ElementInstanceMetadataMap
 }
 
-export function jsxMetadata(
-  components: Array<ComponentMetadata>,
-  elements: ElementInstanceMetadataMap,
-): JSXMetadata {
+export function jsxMetadata(elements: ElementInstanceMetadataMap): JSXMetadata {
   return {
-    components: components,
     elements: elements,
   }
 }
 
 export const emptyJsxMetadata: JSXMetadata = {
-  components: [],
   elements: {},
 }
 
@@ -1294,11 +1288,14 @@ export interface ElementInstanceMetadata {
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
   children: Array<InstancePath>
+  rootElements: Array<InstancePath>
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
   attributeMetadatada: StyleAttributeMetadata | null
+  componentName: string | null
+  label: string | null
 }
 
 export function elementInstanceMetadata(
@@ -1308,11 +1305,14 @@ export function elementInstanceMetadata(
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
   children: Array<InstancePath>,
+  rootElements: Array<InstancePath>,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
   attributeMetadatada: StyleAttributeMetadata | null,
+  componentName: string | null,
+  label: string | null,
 ): ElementInstanceMetadata {
   return {
     templatePath: templatePath,
@@ -1321,11 +1321,14 @@ export function elementInstanceMetadata(
     globalFrame: globalFrame,
     localFrame: localFrame,
     children: children,
+    rootElements: rootElements,
     componentInstance: componentInstance,
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
     attributeMetadatada: attributeMetadatada,
+    componentName: componentName,
+    label: label,
   }
 }
 

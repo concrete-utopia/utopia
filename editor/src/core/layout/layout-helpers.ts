@@ -29,7 +29,6 @@ import {
   JSXAttributes,
   jsxAttributeValue,
   JSXElement,
-  ComponentMetadata,
   UtopiaJSXComponent,
   JSXMetadata,
 } from '../shared/element-template'
@@ -304,25 +303,19 @@ export const LayoutHelpers = {
     )
   },
   getFlexStretchForChild(
-    parent: Either<ComponentMetadata, ElementInstanceMetadata>,
+    parent: ElementInstanceMetadata,
     child: ElementInstanceMetadata,
   ): Either<string, FlexStretch> {
     const parentScenePropsOrElementAttributes: PropsOrJSXAttributes | null = foldEither(
-      (parentScene) => left(parentScene.globalFrame),
-      (elementMetadata) => {
-        return foldEither(
-          (_) => null,
-          (success) => {
-            if (isJSXElement(success)) {
-              return right(success.props)
-            } else {
-              return null
-            }
-          },
-          elementMetadata.element,
-        )
+      (_) => null,
+      (success) => {
+        if (isJSXElement(success)) {
+          return right(success.props)
+        } else {
+          return null
+        }
       },
-      parent,
+      parent.element,
     )
     if (parentScenePropsOrElementAttributes == null) {
       return left('Unknown parent attributes.')

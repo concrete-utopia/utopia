@@ -36,7 +36,6 @@ import {
   convertMetadataMap,
 } from '../../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   DetectedLayoutSystem,
   ElementInstanceMetadata,
   getJSXElementNameAsString,

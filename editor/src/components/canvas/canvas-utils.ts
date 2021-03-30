@@ -35,7 +35,6 @@ import {
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   isJSXElement,
   jsxAttributeValue,
   JSXElement,

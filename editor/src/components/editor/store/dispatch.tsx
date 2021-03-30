@@ -5,7 +5,7 @@ import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata, JSXMetadata } from '../../../core/shared/element-template'
+import { JSXMetadata } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import {
   fileTypeFromFileName,

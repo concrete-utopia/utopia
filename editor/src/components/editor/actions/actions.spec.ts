@@ -16,7 +16,6 @@ import {
   clearTopLevelElementUniqueIDs,
   emptyComputedStyle,
   jsxMetadata,
-  ComponentMetadata,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
@@ -846,14 +845,28 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     'bbb',
   ])
 
-  const componentMetadata: ComponentMetadata = {
-    scenePath: scenePath,
+  const sceneElementMetadata: ElementInstanceMetadata = {
     templatePath: sceneTemplatePath,
-    component: 'App',
+    element: left('Scene'),
+    props: {
+      'data-uid': 'scene-0',
+      sceneResizesContent: false,
+      style: {
+        width: 100,
+        height: 100,
+      },
+    },
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-    sceneResizesContent: false,
-    style: { width: 100, height: 100 },
+    localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+    children: [],
     rootElements: [rootElementPath],
+    componentInstance: false,
+    isEmotionOrStyledComponent: false,
+    specialSizeMeasurements: emptySpecialSizeMeasurements,
+    computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
+    componentName: 'App',
+    label: null,
   }
 
   const rootElementMetadata: ElementInstanceMetadata = {
@@ -865,11 +878,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     children: [childElementPath],
+    rootElements: [],
     componentInstance: false,
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
+    componentName: null,
+    label: null,
   }
 
   const childElementMetadata: ElementInstanceMetadata = {
@@ -887,14 +903,18 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 200, height: 300 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
     children: [],
+    rootElements: [],
     componentInstance: false,
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
+    componentName: null,
+    label: null,
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {
+    [TP.toString(sceneTemplatePath)]: sceneElementMetadata,
     [TP.toString(rootElementPath)]: rootElementMetadata,
     [TP.toString(childElementPath)]: childElementMetadata,
   }
@@ -904,7 +924,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     projectContents: contentsToTree({
       [StoryboardFilePath]: fileForUI,
     }),
-    jsxMetadataKILLME: jsxMetadata([componentMetadata], elementMetadataMap),
+    jsxMetadataKILLME: jsxMetadata(elementMetadataMap),
     selectedViews: [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), ['aaa'])],
   })
   it('switches from pins to flex correctly', () => {
