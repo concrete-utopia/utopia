@@ -1,5 +1,4 @@
 import * as stringHash from 'string-hash'
-import { fileTypeFromFileName } from '../model/project-file-utils'
 import { size, Size } from './math-utils'
 
 export interface ImageResult {
@@ -25,18 +24,6 @@ export interface TextResult {
 }
 
 export type FileResult = ImageResult | AssetResult | TextResult
-
-export function extractFile(file: File): Promise<FileResult> {
-  const fileType = fileTypeFromFileName(file.name)
-  switch (fileType) {
-    case 'TEXT_FILE':
-      return extractText(file)
-    case 'IMAGE_FILE':
-      return extractImage(file)
-    case 'ASSET_FILE':
-      return extractAsset(file)
-  }
-}
 
 export function extractText(file: File): Promise<TextResult> {
   return new Promise((resolve, reject) => {

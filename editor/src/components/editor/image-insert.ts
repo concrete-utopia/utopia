@@ -1,5 +1,5 @@
-import { fileTypeFromFileName } from '../../core/model/project-file-utils'
-import { extractFile, extractImage, FileResult } from '../../core/shared/file-utils'
+import { extractFile, fileTypeFromFileName } from '../../core/model/project-file-utils'
+import { extractImage, FileResult } from '../../core/shared/file-utils'
 import { codeFile } from '../../core/shared/project-file-types'
 import { notice } from '../common/notice'
 import { EditorAction, EditorDispatch } from './action-types'
