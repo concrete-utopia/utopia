@@ -20,8 +20,18 @@ import {
   TemplatePath,
   isParseSuccess,
   StaticInstancePath,
+  ParseSuccess,
+  isTextFile,
 } from '../../core/shared/project-file-types'
-import { isRight } from '../../core/shared/either'
+import {
+  Either,
+  flatMapEither,
+  foldEither,
+  isRight,
+  left,
+  mapEither,
+  right,
+} from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { UtopiaRequireFn } from '../custom-code/code-file'
@@ -77,7 +87,7 @@ import {
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
 import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
-import { ProjectContentTreeRoot } from '../assets'
+import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
@@ -114,7 +124,8 @@ export interface UiJsxCanvasProps {
   scale: number
   uiFileCode: string
   uiFilePath: string
-  requireFn: UtopiaRequireFn | null
+  requireFn: UtopiaRequireFn
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: TemplatePath[]
   editedTextElement: InstancePath | null
   base64FileBlobs: CanvasBase64Blobs
@@ -191,6 +202,7 @@ export function pickUiJsxCanvasProps(
       uiFileCode: uiFile.fileContents.code,
       uiFilePath: uiFilePath,
       requireFn: requireFn,
+      resolve: editor.codeResultCache.resolve,
       hiddenInstances: hiddenInstances,
       editedTextElement: editedTextElement,
       base64FileBlobs: editor.canvas.base64Blobs,
@@ -229,6 +241,7 @@ export const UiJsxCanvas = betterReactMemo(
       scale,
       uiFilePath,
       requireFn,
+      resolve,
       hiddenInstances,
       walkDOM,
       onDomReport,
@@ -239,6 +252,9 @@ export const UiJsxCanvas = betterReactMemo(
       canvasIsLive,
       linkTags,
       base64FileBlobs,
+      projectContents,
+      transientFileState,
+      shouldIncludeCanvasRootInTheSpy,
     } = props
 
     // FIXME This is illegal! The two lines below are triggering a re-render
@@ -267,10 +283,68 @@ export const UiJsxCanvas = betterReactMemo(
       clearErrors()
     }
 
+    // TODO after merge requireFn can never be null
     if (requireFn != null) {
       const customRequire = React.useCallback(
-        (importOrigin: string, toImport: string) => requireFn(importOrigin, toImport, false),
-        [requireFn],
+        (importOrigin: string, toImport: string) => {
+          const filePathResolveResult = resolve(importOrigin, toImport)
+          const resolvedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
+            (resolvedFilePath) => {
+              const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
+              if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+                const { scope } = createExecutionScope(
+                  resolvedFilePath,
+                  customRequire,
+                  mutableContextRef,
+                  topLevelComponentRendererComponents,
+                  projectContents,
+                  uiFilePath,
+                  transientFileState,
+                  base64FileBlobs,
+                  hiddenInstances,
+                  metadataContext,
+                  shouldIncludeCanvasRootInTheSpy,
+                )
+                const exportsDetail = projectFile.fileContents.parsed.exportsDetail
+                let filteredScope: MapLike<any> = {}
+                for (const s of Object.keys(scope)) {
+                  if (s in exportsDetail.namedExports) {
+                    filteredScope[s] = scope[s]
+                  } else if (s === exportsDetail.defaultExport?.name) {
+                    filteredScope[s] = scope[s]
+                  }
+                }
+                return right(filteredScope)
+              } else {
+                return left(`File ${resolvedFilePath} is not a ParseSuccess`)
+              }
+            },
+            filePathResolveResult,
+          )
+          return foldEither(
+            () => {
+              // We did not find a ParseSuccess, fallback to standard require Fn
+              return requireFn(importOrigin, toImport, false)
+            },
+            (scope) => {
+              // Return an artificial exports object that contains our ComponentRendererComponents
+              return scope
+            },
+            resolvedParseSuccess,
+          )
+        },
+        // TODO I don't like projectContents and transientFileState here because that means dragging smth on the Canvas would recreate the customRequire fn
+        [
+          requireFn,
+          resolve,
+          projectContents,
+          transientFileState,
+          uiFilePath,
+          base64FileBlobs,
+          hiddenInstances,
+          metadataContext,
+          shouldIncludeCanvasRootInTheSpy,
+        ],
       )
 
       const { scope, topLevelJsxComponents } = createExecutionScope(
@@ -297,7 +371,13 @@ export const UiJsxCanvas = betterReactMemo(
         storyboardRootElementPath,
         storyboardRootSceneMetadata,
         rootScenePath,
-      } = useGetStoryboardRoot(topLevelElementsMap, executionScope)
+      } = useGetStoryboardRoot(
+        topLevelElementsMap,
+        executionScope,
+        projectContents,
+        uiFilePath,
+        resolve,
+      )
 
       if (props.shouldIncludeCanvasRootInTheSpy) {
         metadataContext.current.spyValues.scenes[
@@ -322,6 +402,7 @@ export const UiJsxCanvas = betterReactMemo(
                   projectContents: props.projectContents,
                   transientFileState: props.transientFileState,
                   openStoryboardFilePathKILLME: props.uiFilePath,
+                  resolve: props.resolve,
                 }}
               >
                 <CanvasContainer
@@ -359,6 +440,9 @@ export const UiJsxCanvas = betterReactMemo(
 function useGetStoryboardRoot(
   topLevelElementsMap: Map<string, UtopiaJSXComponent>,
   executionScope: MapLike<any>,
+  projectContents: ProjectContentTreeRoot,
+  uiFilePath: string,
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements
@@ -375,10 +459,12 @@ function useGetStoryboardRoot(
     storyboardRootJsxComponent == null
       ? []
       : getValidTemplatePaths(
-          topLevelElementsMap,
           null,
           BakedInStoryboardVariableName,
           EmptyScenePathForStoryboard,
+          projectContents,
+          uiFilePath,
+          resolve,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
 
