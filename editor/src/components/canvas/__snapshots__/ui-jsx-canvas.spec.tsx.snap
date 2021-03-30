@@ -14990,6 +14990,283 @@ export var storyboard = (props) => {
 }
 `;
 
+exports[`UiJsxCanvas render multifile projects renders a canvas with App being imported from a file 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"
+    all: initial;
+    position: absolute;
+    zoom: 100%;
+    transform: translate3d(0px, 0px, 0);
+  \\"
+  data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
+>
+  <div
+    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div utopia-storyboard-uid/scene-0:app-outer-div/inner-div\\"
+    style=\\"
+      position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      height: 200px;
+      left: 59px;
+      width: 200px;
+      top: 79px;
+    \\"
+    data-uid=\\"utopia-storyboard-uid\\"
+  >
+    <div data-uid=\\"app-outer-div scene-0\\">
+      <div data-uid=\\"inner-div\\">hello</div>
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render multifile projects renders a canvas with App being imported from a file 2`] = `
+Object {
+  "utopia-storyboard-uid/scene-0:app-outer-div": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [
+      Object {
+        "element": Array [
+          "app-outer-div",
+          "inner-div",
+        ],
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-0",
+            ],
+          ],
+          "type": "scenepath",
+        },
+      },
+    ],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "text": "hello",
+                "type": "JSX_TEXT_BLOCK",
+                "uniqueID": "",
+              },
+            ],
+            "name": Object {
+              "baseVariable": "div",
+              "propertyPath": Object {
+                "propertyElements": Array [],
+              },
+            },
+            "props": Array [
+              Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "key": "data-uid",
+                "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "ATTRIBUTE_VALUE",
+                  "value": "inner-div",
+                },
+              },
+            ],
+            "type": "JSX_ELEMENT",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "app-outer-div",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "app-outer-div scene-0",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "app-outer-div",
+      ],
+      "scene": Object {
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+  "utopia-storyboard-uid/scene-0:app-outer-div/inner-div": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [
+          Object {
+            "text": "hello",
+            "type": "JSX_TEXT_BLOCK",
+            "uniqueID": "",
+          },
+        ],
+        "name": Object {
+          "baseVariable": "div",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "inner-div",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
+    "localFrame": null,
+    "props": Object {
+      "data-uid": "inner-div",
+      "skipDeepFreeze": true,
+    },
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "app-outer-div",
+        "inner-div",
+      ],
+      "scene": Object {
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-0",
+          ],
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
 exports[`UiJsxCanvas render mutated variable refers to code component 1`] = `
 "<div
   id=\\"canvas-container\\"

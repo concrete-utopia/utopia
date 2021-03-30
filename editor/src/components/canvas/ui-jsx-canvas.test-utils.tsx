@@ -57,8 +57,18 @@ export interface PartialCanvasProps {
   mountCount: UiJsxCanvasProps['mountCount']
 }
 
-export const dumbRequireFn: RequireFn = (importOrigin: string, toImport: string) => {
+export const dumbRequireFn = (filenames: Array<string>) => (
+  importOrigin: string,
+  toImport: string,
+): RequireFn => {
+  return requireTestFiles(filenames, importOrigin, toImport)
+}
+
+function requireTestFiles(filenames: Array<string>, importOrigin: string, toImport: string): any {
   const normalizedName = normalizeName(importOrigin, toImport)
+  if (filenames.includes(normalizedName)) {
+    return right(normalizedName)
+  }
   switch (normalizedName) {
     case 'utopia-api':
       return UtopiaAPI
@@ -75,8 +85,22 @@ export const dumbRequireFn: RequireFn = (importOrigin: string, toImport: string)
   }
 }
 
-export function dumbResolveFn(importOrigin: string, toImport: string): Either<string, string> {
+export const dumbResolveFn = (filenames: Array<string>) => (
+  importOrigin: string,
+  toImport: string,
+): Either<string, string> => {
+  return resolveTestFiles(filenames, importOrigin, toImport)
+}
+
+function resolveTestFiles(
+  filenames: Array<string>,
+  importOrigin: string,
+  toImport: string,
+): Either<string, string> {
   const normalizedName = normalizeName(importOrigin, toImport)
+  if (filenames.includes(normalizedName)) {
+    return right(normalizedName)
+  }
   switch (normalizedName) {
     case 'utopia-api':
     case 'react':
@@ -116,7 +140,7 @@ export function renderCanvasReturnResultAndError(
     error: FancyError
     errorInfo?: React.ErrorInfo
   }> = []
-  const requireFn: UiJsxCanvasProps['requireFn'] = dumbRequireFn
+  const requireFn: UiJsxCanvasProps['requireFn'] = dumbRequireFn(Object.keys(codeFilesString))
   const reportError: CanvasReactErrorCallback['reportError'] = (
     editedFile: string,
     error: FancyError,
@@ -179,7 +203,7 @@ export function renderCanvasReturnResultAndError(
       uiFileCode: uiFileCode,
       uiFilePath: UiFilePath,
       requireFn: requireFn,
-      resolve: dumbResolveFn,
+      resolve: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,
@@ -205,7 +229,7 @@ export function renderCanvasReturnResultAndError(
       uiFileCode: uiFileCode,
       uiFilePath: UiFilePath,
       requireFn: requireFn,
-      resolve: dumbResolveFn,
+      resolve: dumbResolveFn(Object.keys(codeFilesString)),
       base64FileBlobs: {},
       onDomReport: Utils.NO_OP,
       clearErrors: clearErrors,

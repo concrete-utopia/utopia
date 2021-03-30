@@ -4,6 +4,7 @@ import {
   testCanvasRender,
   testCanvasError,
   testCanvasRenderInline,
+  testCanvasRenderMultifile,
 } from './ui-jsx-canvas.test-utils'
 
 describe('UiJsxCanvas render', () => {
@@ -1981,6 +1982,43 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         )
       }
       `,
+    )
+  })
+})
+
+describe('UiJsxCanvas render multifile projects', () => {
+  it('renders a canvas with App being imported from a file', () => {
+    testCanvasRenderMultifile(
+      null,
+      `/** @jsx jsx */
+      import * as React from 'react'
+      import { jsx, Storyboard, Scene } from 'utopia-api'
+      import { App } from 'app.js'
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              static
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              component={App}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
+              data-uid={'scene-0'}
+            />
+          </Storyboard>
+        )
+      }
+      `,
+      {
+        'app.js': `/** @jsx jsx */
+      import * as React from 'react'
+      import { jsx } from 'utopia-api'
+      export var App = (props) => {
+        return <div data-uid='app-outer-div'>
+          <div data-uid='inner-div'>hello</div>
+        </div>
+      }`,
+      },
     )
   })
 })
