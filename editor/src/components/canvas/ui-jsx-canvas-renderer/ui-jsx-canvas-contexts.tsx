@@ -52,7 +52,10 @@ interface UtopiaProjectContextProps {
   transientFileState: TransientFileState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
 }
-const EmptyResolve = (): Either<string, string> => left('')
+const EmptyResolve = (importOrigin: string, toImport: string): Either<string, string> => {
+  return left(`Error while resolving ${toImport}, the resolver is missing`)
+}
+
 export const UtopiaProjectContext = createContext<UtopiaProjectContextProps>({
   projectContents: {},
   openStoryboardFilePathKILLME: null,
