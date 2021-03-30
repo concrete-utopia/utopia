@@ -1,4 +1,4 @@
-import { defaultProject } from '../sample-projects/sample-project-utils'
+import { defaultProject, simpleDefaultProject } from '../sample-projects/sample-project-utils'
 import {
   initTsIncrementalBuild,
   BuildResultMessage,
@@ -11,7 +11,7 @@ import { InitialNpmTypeDefinitions } from './npmBundle'
 import * as fs from 'fs'
 
 function getBuildResultMessageForDefaultProject(onResult: (result: BuildResultMessage) => void) {
-  const project = defaultProject()
+  const project = simpleDefaultProject()
   // can I make a worker?!?!?!
   initTsIncrementalBuild(
     InitialNpmTypeDefinitions,
