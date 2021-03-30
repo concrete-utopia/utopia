@@ -195,15 +195,12 @@ export const MetadataUtils = {
   ): Array<ElementInstanceMetadata> {
     return Object.values(elementMap).filter(predicate)
   },
-  getViewZIndexFromMetadata(metadata: JSXMetadata, target: TemplatePath): number {
-    if (TP.isScenePath(target)) {
-      return metadata.components.findIndex((s) => TP.pathsEqual(s.scenePath, target))
-    } else {
-      const siblings = MetadataUtils.getSiblings(metadata, target)
-      return siblings.findIndex((child) => {
-        return getUtopiaID(child) === TP.toTemplateId(target)
-      })
-    }
+  getViewZIndexFromMetadata(metadata: JSXMetadata, targetPath: TemplatePath): number {
+    const target = TP.instancePathForElementAtPath(targetPath)
+    const siblings = MetadataUtils.getSiblings(metadata, target)
+    return siblings.findIndex((child) => {
+      return getUtopiaID(child) === TP.toTemplateId(target)
+    })
   },
   getParent(metadata: JSXMetadata, target: TemplatePath | null): ElementInstanceMetadata | null {
     if (target == null) {
@@ -225,14 +222,9 @@ export const MetadataUtils = {
     const parentPath = TP.parentPath(target)
     if (parentPath == null) {
       return []
-    } else if (TP.isScenePath(parentPath)) {
-      // really this is overkill, since the only "sibling" is itself, but I'm keeping this here so TS
-      // can flag it when we support multiple root elements on a component
-      const rootElementPaths =
-        MetadataUtils.findSceneByTemplatePath(metadata.components, target)?.rootElements ?? []
-      return MetadataUtils.getElementsByInstancePath(metadata.elements, rootElementPaths)
     } else {
-      const parent = metadata.elements[TP.toString(parentPath)]
+      const parentInstance = TP.instancePathForElementAtPath(parentPath)
+      const parent = metadata.elements[TP.toString(parentInstance)]
       return parent == null
         ? []
         : MetadataUtils.getElementsByInstancePath(metadata.elements, parent.children)
@@ -1553,21 +1545,18 @@ export function convertMetadataMap(
 }
 
 export function findElementAtPath(
-  target: TemplatePath | null,
+  targetPath: TemplatePath | null,
   components: Array<UtopiaJSXComponent>,
 ): JSXElementChild | null {
-  if (target == null) {
+  if (targetPath == null) {
     return null
   } else {
-    if (TP.isScenePath(target)) {
+    const target = TP.instancePathForElementAtPath(targetPath)
+    const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+    if (staticTarget == null) {
       return null
     } else {
-      const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
-      if (staticTarget == null) {
-        return null
-      } else {
-        return findJSXElementChildAtPath(components, staticTarget)
-      }
+      return findJSXElementChildAtPath(components, staticTarget)
     }
   }
 }

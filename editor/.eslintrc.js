@@ -22,7 +22,7 @@ module.exports = {
     'no-unused-expressions': 'warn',
     'no-await-in-loop': 'warn',
     'no-template-curly-in-string': 'warn',
-    'array-callback-return': 'warn',
+    'array-callback-return': 'error',
     'block-scoped-var': 'error',
     'no-param-reassign': 'error',
     'no-restricted-globals': [

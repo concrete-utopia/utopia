@@ -70,7 +70,7 @@ function getNameAndIconResult(
   metadata: JSXMetadata,
   imports: Imports,
 ): NameAndIconResult {
-  const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
+  const elementName = MetadataUtils.getJSXElementName(path, components, metadata.elements)
   return {
     path: path,
     name: elementName,

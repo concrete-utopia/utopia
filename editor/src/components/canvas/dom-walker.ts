@@ -319,7 +319,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       // Get some base values relating to the div this component creates.
       const refOfContainer = containerRef.current
       if (ObserversAvailable && resizeObserver != null && mutationObserver != null) {
-        Array.from(document.querySelectorAll(`#${CanvasContainerID} *`)).map((elem) => {
+        Array.from(document.querySelectorAll(`#${CanvasContainerID} *`)).forEach((elem) => {
           resizeObserver.observe(elem)
         })
         mutationObserver.observe(refOfContainer, MutationObserverConfig)
