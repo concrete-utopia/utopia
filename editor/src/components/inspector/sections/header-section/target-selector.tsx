@@ -14,6 +14,7 @@ import {
   SquareButton,
   FunctionIcons,
   OnClickOutsideHOC,
+  UIRow,
 } from '../../../../uuiui'
 import { betterReactMemo, ContextMenuWrapper } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
@@ -329,8 +330,9 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
       data={null}
       dispatch={dispatch}
     >
-      <FlexRow
+      <UIRow
         tabIndex={0}
+        rowHeight={UtopiaTheme.layout.rowHeight.medium - 2}
         style={{
           flexShrink: 0,
           position: 'relative',
@@ -341,7 +343,7 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
           paddingLeft: 8 + 10 * (target.path.length - 1),
           paddingRight: 12,
           borderRadius: UtopiaTheme.inputBorderRadius,
-          height: UtopiaTheme.layout.rowHeight.medium - 2,
+
           fontWeight: isSelected ? 600 : 400,
           fontStyle: target.selectorLength > 0 ? undefined : 'italic',
           backgroundImage: isSelected ? UtopiaStyles.backgrounds.blue : undefined,
@@ -372,7 +374,7 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
             <div>{target.selectorLength === 0 ? null : target.selectorLength}</div>
           </React.Fragment>
         )}
-      </FlexRow>
+      </UIRow>
     </ContextMenuWrapper>
   )
 })
@@ -398,11 +400,11 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
   const titleStyle = selectedItem[0] === 'style' ? undefined : { color: colorTheme.primary.value }
 
   return (
-    <FlexRow
+    <UIRow
+      rowHeight={UtopiaTheme.layout.rowHeight.large}
       style={{
         paddingLeft: 8,
         paddingRight: 8,
-        height: UtopiaTheme.layout.rowHeight.large,
         backgroundColor: colorTheme.slightlyEmphasizedBackground.value,
         cursor: 'pointer',
       }}
@@ -431,7 +433,7 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
           />
         </SquareButton>
       </SectionActionSheet>
-    </FlexRow>
+    </UIRow>
   )
 })
 
@@ -469,9 +471,9 @@ const AddingRow = betterReactMemo('AddingRow', (props: AddingRowProps) => {
   }, [])
 
   return (
-    <FlexRow
+    <UIRow
+      rowHeight={UtopiaTheme.layout.rowHeight.medium}
       style={{
-        height: UtopiaTheme.layout.rowHeight.medium,
         minHeight: UtopiaTheme.layout.rowHeight.medium,
         marginRight: 8,
         marginBottom: 4,
@@ -488,7 +490,7 @@ const AddingRow = betterReactMemo('AddingRow', (props: AddingRowProps) => {
           value={value}
         />
       </OnClickOutsideHOC>
-    </FlexRow>
+    </UIRow>
   )
 })
 

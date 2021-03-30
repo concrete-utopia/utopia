@@ -22,6 +22,7 @@ import { betterReactMemo } from '../../utils/react-performance'
 import { TabComponent } from '../../uuiui/tab'
 import { Icons } from '../../uuiui/icons'
 import { SimpleFlexColumn } from '../../uuiui/widgets/layout/flex-column'
+import { UIRow } from 'src/uuiui'
 
 interface ErrorMessageRowProps {
   errorMessage: ErrorMessage
@@ -265,9 +266,9 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
           boxShadow: `0px 1px 0px 0px ${UtopiaTheme.color.subduedBorder.value}`,
         }}
       >
-        <FlexRow
+        <UIRow
+          rowHeight={UtopiaTheme.layout.rowHeight.small}
           style={{
-            height: UtopiaTheme.layout.rowHeight.small,
             borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
             alignItems: 'stretch',
           }}
@@ -322,7 +323,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
               </span>
             }
           />
-        </FlexRow>
+        </UIRow>
         {isOpen ? getTabContents() : null}
       </Resizable>
     )

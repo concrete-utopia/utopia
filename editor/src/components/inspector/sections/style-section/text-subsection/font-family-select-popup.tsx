@@ -3,7 +3,7 @@ import { VariableSizeList } from 'react-window'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
-import { FlexColumn, UtopiaTheme, FlexRow, StringInput } from '../../../../../uuiui'
+import { FlexColumn, UtopiaTheme, FlexRow, StringInput, UIRow } from '../../../../../uuiui'
 import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
 import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
 import {
@@ -504,7 +504,7 @@ export const FontFamilySelectPopup = betterReactMemo(
           }}
           onKeyDown={onWrapperKeyDown}
         >
-          <FlexRow style={{ padding: 12 }}>
+          <UIRow padding={12}>
             <StringInput
               testId='font-family-search'
               ref={stringInputRef}
@@ -514,7 +514,7 @@ export const FontFamilySelectPopup = betterReactMemo(
               onChange={onChange}
               style={{ flexGrow: 1 }}
             />
-          </FlexRow>
+          </UIRow>
           <VariableSizeList
             ref={variableSizeListRef}
             itemSize={getItemSize}
