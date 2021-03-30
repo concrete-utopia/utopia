@@ -51,6 +51,7 @@ import {
   ProjectContentTreeRoot,
   transformContentsTree,
 } from '../../components/assets'
+import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -381,6 +382,18 @@ export function fileTypeFromFileName(
     } else {
       return 'ASSET_FILE'
     }
+  }
+}
+
+export function extractFile(file: File): Promise<FileResult> {
+  const fileType = fileTypeFromFileName(file.name)
+  switch (fileType) {
+    case 'TEXT_FILE':
+      return extractText(file)
+    case 'IMAGE_FILE':
+      return extractImage(file)
+    case 'ASSET_FILE':
+      return extractAsset(file)
   }
 }
 

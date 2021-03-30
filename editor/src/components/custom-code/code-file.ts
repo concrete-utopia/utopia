@@ -28,7 +28,10 @@ import {
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
-import { getEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import {
+  getEditorRequireFn,
+  getEditorResolveFunction,
+} from '../../core/es-modules/package-manager/package-manager'
 import { updateNodeModulesContents } from '../editor/actions/action-creators'
 import { fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
@@ -75,6 +78,7 @@ export type CodeResultCache = {
   exportsInfo: ReadonlyArray<ExportsInfo>
   error: Error | null
   requireFn: UtopiaRequireFn
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>
   projectModules: MultiFileBuildResult
 }
 
@@ -237,6 +241,7 @@ export function generateCodeResultCache(
   sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents, onlyProjectFiles)
 
   const requireFn = getEditorRequireFn(projectContents, nodeModules, dispatch)
+  const resolveFn = getEditorResolveFunction(projectContents, nodeModules)
 
   let cache: { [code: string]: CodeResult } = {}
   Utils.fastForEach(exportsInfo, (result) => {
@@ -252,6 +257,7 @@ export function generateCodeResultCache(
     cache: cache,
     error: null,
     requireFn: requireFn,
+    resolve: resolveFn,
     projectModules: projectModules,
   }
 }

@@ -3088,6 +3088,7 @@ export const UPDATE_FNS = {
         exportsInfo: action.codeResultCache.exportsInfo,
         error: action.codeResultCache.error,
         requireFn: action.codeResultCache.requireFn,
+        resolve: action.codeResultCache.resolve,
         projectModules: action.codeResultCache.projectModules,
       },
     }
