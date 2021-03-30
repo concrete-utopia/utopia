@@ -161,6 +161,17 @@ export const MetadataUtils = {
       )
     })
   },
+  findElementByTemplatePath(
+    elementMap: ElementInstanceMetadataMap,
+    path: TemplatePath | null,
+  ): ElementInstanceMetadata | null {
+    if (path == null) {
+      return null
+    } else {
+      const targetPath = TP.instancePathForElementAtPath(path)
+      return elementMap[TP.toString(targetPath)] ?? null
+    }
+  },
   getElementByInstancePathMaybe(
     elementMap: ElementInstanceMetadataMap,
     path: InstancePath | null,
@@ -226,10 +237,8 @@ export const MetadataUtils = {
     if (parentPath == null) {
       return []
     } else if (TP.isScenePath(parentPath)) {
-      // really this is overkill, since the only "sibling" is itself, but I'm keeping this here so TS
-      // can flag it when we support multiple root elements on a component
-      const rootElementPaths =
-        MetadataUtils.findSceneByTemplatePath(metadata.components, target)?.rootElements ?? []
+      const parentMetadata = MetadataUtils.findElementByTemplatePath(metadata.elements, parentPath)
+      const rootElementPaths = parentMetadata?.rootElements ?? []
       return MetadataUtils.getElementsByInstancePath(metadata.elements, rootElementPaths)
     } else {
       const parent = metadata.elements[TP.toString(parentPath)]
@@ -536,11 +545,10 @@ export const MetadataUtils = {
     metadata: JSXMetadata,
     target: TemplatePath,
   ): Array<ElementInstanceMetadata> {
+    const element = MetadataUtils.findElementByTemplatePath(metadata.elements, target)
     if (TP.isScenePath(target)) {
-      const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, target)
-      return MetadataUtils.getElementsByInstancePath(metadata.elements, scene?.rootElements ?? [])
+      return MetadataUtils.getElementsByInstancePath(metadata.elements, element?.rootElements ?? [])
     } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
       return MetadataUtils.getElementsByInstancePath(metadata.elements, element?.children ?? [])
     }
   },
@@ -641,7 +649,7 @@ export const MetadataUtils = {
     const scenePaths = this.getAllScenePathsIncludingStoryboardForOrphans(metadata.components)
 
     fastForEach(scenePaths, (scenePath) => {
-      const scene = metadata.components.find((s) => TP.pathsEqual(scenePath, s.scenePath))
+      const scene = MetadataUtils.findElementByTemplatePath(metadata.elements, scenePath)
       if (scene != null) {
         result.push(scenePath)
         scene.rootElements.forEach(recurseElement)
@@ -1132,23 +1140,23 @@ export const MetadataUtils = {
       // internals of draft-js showing up underneath Text elements.
       const shouldNotTraverse = Utils.path(['props', 'data-utopia-do-not-traverse'], fromDOM)
       let children: Array<InstancePath>
+      let rootElements: Array<InstancePath>
       if (shouldNotTraverse) {
         children = []
+        rootElements = []
       } else {
-        const spyChildren = spyElem?.children
-        children =
-          spyChildren == null
-            ? domElem.children
-            : TP.addPathsIfMissing(spyChildren, domElem.children)
+        children = TP.addPathsIfMissing(spyElem?.children ?? [], domElem.children)
+        rootElements = TP.addPathsIfMissing(spyElem?.rootElements ?? [], domElem.rootElements)
       }
 
       if (spyElem == null) {
         const elem =
-          children === domElem.children
+          children === domElem.children && rootElements === domElem.rootElements
             ? domElem
             : {
                 ...domElem,
                 children: children,
+                rootElements: rootElements,
               }
         workingElements[TP.toString(domElem.templatePath)] = elem
         newlyFoundElements.push(domElem.templatePath)
@@ -1174,6 +1182,7 @@ export const MetadataUtils = {
           props: spyElem.props,
           element: jsxElement,
           children: children,
+          rootElements: rootElements,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
         }
@@ -1323,6 +1332,7 @@ export const MetadataUtils = {
         templatePath: newTemplatePath,
         element: newElementInner,
         children: [], // all descendants have new UID-s
+        rootElements: [], // all descendants have new UID-s
       }
 
       workingElements[TP.toString(newTemplatePath)] = newElementMetadata
@@ -1412,6 +1422,7 @@ export const MetadataUtils = {
             ...existing,
             templatePath: replacement,
             children: updateChildren(existing.children),
+            rootElements: updateChildren(existing.rootElements),
           }
         }
       },

@@ -1064,7 +1064,7 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
 
       return element.children.every((childPath) => {
         const child = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, childPath)
-        child == null || isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child)
+        return child == null || isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child)
       })
     }
     const emptyGroups = MetadataUtils.findElements(

@@ -6,7 +6,7 @@ import {
   LocalRectangle,
   CanvasRectangle,
 } from '../shared/math-utils'
-import { right } from '../shared/either'
+import { left, right } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 import {
   ComponentMetadata,
@@ -161,6 +161,28 @@ const testComponentScene: ComponentMetadata = {
   },
 }
 
+const testComponentSceneElement: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestScenePath]),
+  props: {
+    style: {
+      width: 100,
+      height: 100,
+    },
+  },
+  element: left('Scene'),
+  children: [],
+  rootElements: [testComponentRoot1.templatePath],
+  componentInstance: false,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: 'MyView',
+  label: null,
+}
+
 const testComponentMetadata: Array<ComponentMetadata> = [testComponentScene]
 const testElementMetadataMap: ElementInstanceMetadataMap = {
   [TP.toString(testComponentMetadataChild1.templatePath)]: testComponentMetadataChild1,
@@ -168,6 +190,7 @@ const testElementMetadataMap: ElementInstanceMetadataMap = {
   [TP.toString(testComponentMetadataChild3.templatePath)]: testComponentMetadataChild3,
   [TP.toString(testComponentMetadataGrandchild.templatePath)]: testComponentMetadataGrandchild,
   [TP.toString(testComponentRoot1.templatePath)]: testComponentRoot1,
+  [TP.toString(testComponentSceneElement.templatePath)]: testComponentSceneElement,
 }
 
 const testJsxMetadata = jsxMetadata(testComponentMetadata, testElementMetadataMap)
