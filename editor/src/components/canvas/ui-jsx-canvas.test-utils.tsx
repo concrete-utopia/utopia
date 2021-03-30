@@ -83,6 +83,8 @@ export function dumbResolveFn(importOrigin: string, toImport: string): Either<st
     case 'uuiui':
     case 'antd':
       return right(`/node_modules/${normalizedName}/index.js`) // ¯\_(ツ)_/¯
+    case UiFilePath:
+      return right(UiFilePath)
     default:
       return left(`Test error, the dumbResolveFn did not know about this file: ${toImport}`)
   }
@@ -99,6 +101,7 @@ export function stripUidsFromMetadata(metadata: ElementInstanceMetadata): Elemen
   }
 }
 
+const UiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
 export function renderCanvasReturnResultAndError(
   possibleProps: PartialCanvasProps | null,
   code: string,
@@ -111,7 +114,6 @@ export function renderCanvasReturnResultAndError(
     error: FancyError
     errorInfo?: React.ErrorInfo
   }> = []
-  const uiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
   const requireFn: UiJsxCanvasProps['requireFn'] = dumbRequireFn
   const reportError: CanvasReactErrorCallback['reportError'] = (
     editedFile: string,
@@ -134,7 +136,7 @@ export function renderCanvasReturnResultAndError(
   storeHookForTest.updateStore((store) => {
     const projectContents: ProjectContents = {
       utopia: directory(),
-      [uiFilePath]: textFile(
+      [UiFilePath]: textFile(
         textFileContents(code, parsedCode, RevisionsState.BothMatch),
         null,
         1000,
@@ -145,7 +147,7 @@ export function renderCanvasReturnResultAndError(
       canvas: {
         ...store.editor.canvas,
         openFile: {
-          filename: uiFilePath,
+          filename: UiFilePath,
         },
       },
       projectContents: contentsToTree(projectContents),
@@ -166,7 +168,7 @@ export function renderCanvasReturnResultAndError(
   if (possibleProps == null) {
     canvasProps = {
       uiFileCode: code,
-      uiFilePath: uiFilePath,
+      uiFilePath: UiFilePath,
       requireFn: requireFn,
       resolve: dumbResolveFn,
       base64FileBlobs: {},
@@ -192,7 +194,7 @@ export function renderCanvasReturnResultAndError(
     canvasProps = {
       ...possibleProps,
       uiFileCode: code,
-      uiFilePath: uiFilePath,
+      uiFilePath: UiFilePath,
       requireFn: requireFn,
       resolve: dumbResolveFn,
       base64FileBlobs: {},
@@ -224,7 +226,7 @@ export function renderCanvasReturnResultAndError(
         <UiJsxCanvasContext.Provider value={spyCollector}>
           <CanvasErrorBoundary
             fileCode={code}
-            filePath={uiFilePath}
+            filePath={UiFilePath}
             reportError={reportError}
             requireFn={canvasProps.requireFn}
           >
