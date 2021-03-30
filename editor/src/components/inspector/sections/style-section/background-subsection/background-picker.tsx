@@ -7,6 +7,8 @@ import {
   Icn,
   NumberInput,
   PopupList,
+  UtopiaTheme,
+  UtopiaStyles,
 } from '../../../../../uuiui'
 import { ControlStatus } from '../../../common/control-status'
 import {
@@ -521,13 +523,11 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
         className='colorPicker-wrapper'
         style={{
           width: colorPickerWidth,
-          borderRadius: 4,
           position: 'absolute',
           overflow: 'hidden',
-          backgroundColor: colorTheme.inspectorBackground.value,
-          boxShadow: `0 3px 6px ${colorTheme.canvasBackground.shade(140).o(40).value}`,
           zIndex: 2,
           marginBottom: 32,
+          ...UtopiaStyles.popup,
         }}
         onMouseDown={stopPropagation}
       >

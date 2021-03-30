@@ -18,7 +18,7 @@ import { IndicatorProps } from 'react-select/src/components/indicators'
 import { MenuPortalProps } from 'react-select/src/components/Menu'
 import { styleFn } from 'react-select/src/styles'
 import { Icn, IcnProps, IcnSpacer } from '../../icn'
-import { colorTheme, UtopiaTheme } from '../../styles/theme'
+import { colorTheme, UtopiaStyles, UtopiaTheme } from '../../styles/theme'
 import { FlexRow } from '../layout/flex-row'
 import { isOptionType } from '../../../utils/utils'
 import {
@@ -320,18 +320,16 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
         onMouseUpCapture={onMouseUp}
         id='menuPortal'
         style={{
-          backgroundColor: colorTheme.neutralBackground.value,
           minWidth: 150,
           maxWidth: 250,
-          boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 4px 11px',
           zIndex: 999999,
           boxSizing: 'border-box',
-          borderRadius: UtopiaTheme.inputBorderRadius,
           position: 'absolute',
           height: popupHeight,
           top: popupTop,
           left: popupLeft - CheckboxInset + ValueContainerLeftPadding,
           overflow: 'hidden',
+          ...UtopiaStyles.popup,
         }}
       >
         <div

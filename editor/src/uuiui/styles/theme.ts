@@ -539,6 +539,14 @@ const shadowStyles = {
   },
 }
 
+const popup: React.CSSProperties = {
+  background: lightPrimitives.neutralBackground.value,
+  boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 2px 7px',
+  paddingTop: 4,
+  paddingBottom: 4,
+  borderRadius: 4,
+}
+
 const textBackgroundStyles = {
   primary: {
     color: colorTheme.primary.value,
@@ -557,6 +565,7 @@ export const UtopiaStyles = {
   textBackgroundStyles,
   shadowStyles,
   input,
+  popup,
   flexRow,
   flexColumn,
   flexCenter,
