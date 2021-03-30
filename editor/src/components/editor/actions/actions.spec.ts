@@ -865,11 +865,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
     children: [childElementPath],
+    rootElements: [],
     componentInstance: false,
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
+    componentName: null,
+    label: null,
   }
 
   const childElementMetadata: ElementInstanceMetadata = {
@@ -887,11 +890,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 200, height: 300 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
     children: [],
+    rootElements: [],
     componentInstance: false,
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
+    componentName: null,
+    label: null,
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {

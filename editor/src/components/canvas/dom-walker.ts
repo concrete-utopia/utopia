@@ -421,11 +421,14 @@ function collectMetadata(
       globalFrame,
       localFrame,
       filteredChildPaths,
+      [],
       false,
       false,
       specialSizeMeasurementsObject,
       computedStyle,
       attributeMetadata,
+      null,
+      null,
     )
   })
 }
@@ -613,11 +616,14 @@ function walkCanvasRootFragment(
       { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
       { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
       rootElements,
+      [], // FIXME This should be rootElements and the children should be the actual children
       false,
       false,
       emptySpecialSizeMeasurements,
       emptyComputedStyle,
       emptyAttributeMetadatada,
+      null,
+      null,
     )
     return [...rootMetadata, metadata]
   }

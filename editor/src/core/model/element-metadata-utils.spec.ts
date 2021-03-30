@@ -50,11 +50,14 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -66,11 +69,14 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -86,11 +92,14 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   },
   element: right(jsxTestElement('View', [], [])),
   children: [],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentMetadataChild3: ElementInstanceMetadata = {
@@ -103,11 +112,14 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [testComponentMetadataGrandchild.templatePath],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -121,11 +133,14 @@ const testComponentRoot1: ElementInstanceMetadata = {
     testComponentMetadataChild2.templatePath,
     testComponentMetadataChild3.templatePath,
   ],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentScene: ComponentMetadata = {
@@ -229,11 +244,14 @@ describe('targetElementSupportsChildren', () => {
       props: {},
       element: right(jsxTestElement(elementName, [], [])),
       children: [],
+      rootElements: [],
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
+      componentName: null,
+      label: null,
     }
   }
 
@@ -359,11 +377,14 @@ describe('getElementLabel', () => {
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
     [],
+    [],
     false,
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
     emptyAttributeMetadatada,
+    null,
+    null,
   )
   const divElement = jsxElement(
     'div',
@@ -379,11 +400,14 @@ describe('getElementLabel', () => {
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
     [spanElementMetadata.templatePath],
+    [],
     false,
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
     emptyAttributeMetadatada,
+    null,
+    null,
   )
   const elements: ElementInstanceMetadataMap = {
     [TP.toString(spanElementMetadata.templatePath)]: spanElementMetadata,

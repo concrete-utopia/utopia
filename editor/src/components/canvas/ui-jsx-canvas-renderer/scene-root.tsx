@@ -82,18 +82,36 @@ function useRunSpy(
     style: props.style ?? {},
   }
   if (shouldIncludeCanvasRootInTheSpy) {
+    let capturedProps: {
+      resizesContent?: boolean
+      style?: React.CSSProperties
+      'data-uid'?: string
+    } = {}
+    if (resizesContent) {
+      capturedProps.resizesContent = true
+    }
+    if (props.style != null) {
+      capturedProps.style = props.style
+    }
+    if (props['data-uid'] != null) {
+      capturedProps['data-uid'] = props['data-uid']
+    }
+
     metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = {
       element: left('Scene'),
       templatePath: templatePath,
-      props: {},
+      props: capturedProps,
       globalFrame: null,
       localFrame: null,
       children: [],
+      rootElements: [],
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
+      componentName: componentName,
+      label: props['data-label'] ?? null,
     }
   }
 }
