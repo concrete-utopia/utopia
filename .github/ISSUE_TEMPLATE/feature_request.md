@@ -1,3 +1,12 @@
+---
+name: Feature request
+about: Report a missing or intentionally regressed feature or enhancement
+title: ''
+labels: ''
+assignees: ''
+
+---
+
 **Problem**
 Describe the user-facing problem the missing feature should address or solve
 
