@@ -70,8 +70,13 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
       >
-        <UIGridRow tall alignItems='start' padded={true} type='<---1fr--->|------172px-------|'>
-          <UIGridRow tall alignItems='start' padded={false} type='<-auto-><----------1fr--------->'>
+        <UIGridRow tall alignItems='start' padded={true} layout='<---1fr--->|------172px-------|'>
+          <UIGridRow
+            tall
+            alignItems='start'
+            padded={false}
+            layout='<-auto-><----------1fr--------->'
+          >
             <CheckboxInput
               onChange={onEnabledChange}
               checked={props.value.enabled}
@@ -92,7 +97,12 @@ export const RadialGradientBackgroundLayer = betterReactMemo<RadialGradientBackg
               setOpenPopup={props.setOpenPopup}
             />
           </UIGridRow>
-          <UIGridRow tall alignItems='start' padded={false} type='<-------1fr------>|----80px----|'>
+          <UIGridRow
+            tall
+            alignItems='start'
+            padded={false}
+            layout='<-------1fr------>|----80px----|'
+          >
             <FlexRow style={{ alignItems: 'start' }} onMouseDown={stopPropagation}>
               <PopupList
                 value={{

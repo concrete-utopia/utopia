@@ -78,7 +78,7 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
                 <UIGridRow
                   key={`event-handler-row-${handlerName}`}
                   padded={true}
-                  type='<--1fr--><--1fr-->'
+                  layout='<--1fr--><--1fr-->'
                 >
                   <EventHandlerControl handlerName={handlerName} value={eventHandlerValue} />
                 </UIGridRow>

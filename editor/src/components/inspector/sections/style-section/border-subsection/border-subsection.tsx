@@ -140,7 +140,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
   ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderWidth))
 
   const allOrSplitControls = (
-    <UIGridRow tall alignItems='start' padded={false} type='<-------1fr------>|----80px----|'>
+    <UIGridRow tall alignItems='start' padded={false} layout='<-------1fr------>|----80px----|'>
       <StringColorControl
         id='border-color'
         key='border-color'
@@ -207,12 +207,12 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
         isCSSUnknownFunctionParameters(value) ? (
           <FakeUnknownArrayItem controlStatus={controlStatus} />
         ) : (
-          <UIGridRow tall alignItems='start' padded={true} type='<---1fr--->|------172px-------|'>
+          <UIGridRow tall alignItems='start' padded={true} layout='<---1fr--->|------172px-------|'>
             <UIGridRow
               tall
               alignItems='start'
               padded={false}
-              type='<-auto-><----------1fr--------->'
+              layout='<-auto-><----------1fr--------->'
             >
               <CheckboxInput
                 id={`shadow-enable-disable`}

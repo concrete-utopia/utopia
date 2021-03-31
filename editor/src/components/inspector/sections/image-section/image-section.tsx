@@ -90,7 +90,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
         style={{ gridColumn: '1 / span 4' }}
         data={null}
       >
-        <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+        <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
           <PropertyLabel target={imgSrcProp}>Source</PropertyLabel>
           <StringControl
             id='image-src'
@@ -109,7 +109,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
         style={{ gridColumn: '1 / span 4' }}
         data={null}
       >
-        <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+        <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
           <PropertyLabel target={imgAltProp}>Alt Text</PropertyLabel>
           <StringControl
             id='image-alt'
@@ -122,7 +122,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
           />
         </UIGridRow>
       </InspectorContextMenuWrapper>
-      <UIGridRow padded type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded layout='<---1fr--->|------172px-------|'>
         <PropertyLabel target={imgAltProp}>Density</PropertyLabel>
         <ImageDensityControl
           dispatch={dispatch}

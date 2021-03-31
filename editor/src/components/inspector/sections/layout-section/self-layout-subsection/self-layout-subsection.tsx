@@ -40,7 +40,7 @@ export const SelfLayoutSubsection = betterReactMemo(
     return (
       <>
         <InspectorSubsectionHeader>Position and Dimensions</InspectorSubsectionHeader>
-        <UIGridRow padded type='<-------------1fr------------->'>
+        <UIGridRow padded layout='<-------------1fr------------->'>
           <LayoutTypePicker value={activeTab} setActiveTab={setActiveTab} />
         </UIGridRow>
         <GiganticSizePinsSubsection

@@ -92,7 +92,7 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
   }, [insertableComponents, hookResult])
 
   return (
-    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
       <span
         style={{
           whiteSpace: 'nowrap',

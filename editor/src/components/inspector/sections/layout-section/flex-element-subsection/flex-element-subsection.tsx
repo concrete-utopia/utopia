@@ -19,7 +19,7 @@ const alignSelfProp = [createLayoutPropertyPath('alignSelf')]
 export const FlexElementSubsection = betterReactMemo('FlexElementSubsection', () => {
   return (
     <>
-      <UIGridRow tall padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow tall padded={true} layout='<---1fr--->|------172px-------|'>
         <PropertyLabel
           target={marginProps}
           style={{ paddingBottom: 12 }}
@@ -29,7 +29,7 @@ export const FlexElementSubsection = betterReactMemo('FlexElementSubsection', ()
         </PropertyLabel>
         <MarginControl />
       </UIGridRow>
-      <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
         <PropertyLabel target={alignSelfProp}>Align Self</PropertyLabel>
         <AlignSelfControl />
       </UIGridRow>

@@ -41,7 +41,7 @@ export const BlendModeRow = betterReactMemo('BlendModeRow', () => {
       items={blendModeContextMenuItems}
       data={null}
     >
-      <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
         <PropertyLabel target={blendModeProp}>Blendmode</PropertyLabel>
         <PopupList
           containerMode='default'

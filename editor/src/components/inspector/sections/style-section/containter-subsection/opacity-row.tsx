@@ -62,9 +62,9 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
       items={opacityContextMenuItems}
       data={null}
     >
-      <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
         <PropertyLabel target={opacityProp}>Opacity</PropertyLabel>
-        <UIGridRow padded={false} type='<--------auto-------->|--45px--|'>
+        <UIGridRow padded={false} layout='<--------auto-------->|--45px--|'>
           <SliderControl
             DEPRECATED_controlOptions={sliderControlOptions}
             id={`opacity-slider`}

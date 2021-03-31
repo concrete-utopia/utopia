@@ -11,7 +11,7 @@ export const GoogleFontsResourcesListItem = betterReactMemo<GoogleFontsResources
   'GoogleFontsResourcesListItem',
   ({ value }) => {
     return (
-      <UIGridRow padded={false} type='<-------1fr------>|----80px----|'>
+      <UIGridRow padded={false} layout='<-------1fr------>|----80px----|'>
         <div
           style={{
             textOverflow: 'ellipsis',

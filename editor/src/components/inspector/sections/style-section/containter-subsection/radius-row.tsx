@@ -239,7 +239,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
     >
       <UIGridRow
         padded={true}
-        type='<---1fr--->|------172px-------|'
+        layout='<---1fr--->|------172px-------|'
         style={{ paddingLeft: 0, maxWidth: '100%' }}
       >
         <PopupList
@@ -298,7 +298,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
             />
           </div>
         ) : (
-          <UIGridRow padded={false} type='<--------auto-------->|--45px--|'>
+          <UIGridRow padded={false} layout='<--------auto-------->|--45px--|'>
             <SliderControl
               id='radius-all-slider'
               key='radius-all-slider'

@@ -380,7 +380,7 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
   }, [togglePin])
 
   return (
-    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
       <div
         id='width-height-row-toggles'
         style={{
@@ -404,7 +404,7 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
           </>
         ) : null}
       </div>
-      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} layout='|--67px--||16px||--67px--||16px|'>
         {widthControl}
         <SquareButton onClick={toggleAspectRatioLock} style={{ width: 16, height: 16 }}>
           {aspectRatioLocked ? <Icons.LockClosed /> : <Icons.LockOpen />}
@@ -428,9 +428,9 @@ const minimumsProps = [createLayoutPropertyPath('minWidth'), createLayoutPropert
 
 const MinimumsRow = betterReactMemo('MinimumsRow', () => {
   return (
-    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
       <PropertyLabel target={minimumsProps}>Minimum</PropertyLabel>
-      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} layout='|--67px--||16px||--67px--||16px|'>
         {flexStyleNumberControl('W', 'minWidth')}
         {spacingButton}
         {flexStyleNumberControl('H', 'minHeight')}
@@ -444,9 +444,9 @@ const maximumsProps = [createLayoutPropertyPath('maxWidth'), createLayoutPropert
 
 const MaximumsRow = betterReactMemo('MaximumsRow', () => {
   return (
-    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
       <PropertyLabel target={maximumsProps}>Maximum</PropertyLabel>
-      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} layout='|--67px--||16px||--67px--||16px|'>
         {flexStyleNumberControl('W', 'maxWidth')}
         {spacingButton}
         {flexStyleNumberControl('H', 'maxHeight')}
@@ -460,9 +460,9 @@ const flexWidthHeightProps = [createLayoutPropertyPath('Width'), createLayoutPro
 
 const FlexWidthHeightRow = betterReactMemo('FixedWidthHeightRow', () => {
   return (
-    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexWidthHeightProps}>Size</PropertyLabel>
-      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} layout='|--67px--||16px||--67px--||16px|'>
         {flexLayoutNumberControl('W', 'Width')}
         {spacingButton}
         {flexLayoutNumberControl('H', 'Height')}
@@ -479,9 +479,9 @@ const flexGrowShrinkProps = [
 
 const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
   return (
-    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexGrowShrinkProps}>Flex</PropertyLabel>
-      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} layout='|--67px--||16px||--67px--||16px|'>
         <FlexShorthandNumberControl label='G' styleProp='flexGrow' />
         {spacingButton}
         <FlexShorthandNumberControl label='S' styleProp='flexShrink' />
@@ -535,7 +535,7 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
     <UIGridRow
       alignItems='start'
       padded={true}
-      type='<---1fr--->|------172px-------|'
+      layout='<---1fr--->|------172px-------|'
       style={{ height: undefined }}
     >
       <PinControls
@@ -545,13 +545,13 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
         togglePin={togglePin}
       />
       <FlexColumn>
-        <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+        <UIGridRow padded={false} layout='|--67px--||16px||--67px--||16px|'>
           {firstXAxisControl}
           {spacingButton}
           {firstYAxisControl}
           {spacingButton}
         </UIGridRow>
-        <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+        <UIGridRow padded={false} layout='|--67px--||16px||--67px--||16px|'>
           {secondXAxisControl}
           {spacingButton}
           {secondYAxisControl}

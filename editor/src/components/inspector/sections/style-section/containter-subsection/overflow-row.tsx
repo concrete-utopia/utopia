@@ -46,7 +46,7 @@ export const OverflowRow = betterReactMemo('OverflowRow', () => {
       data={null}
       items={overflowContextMenuItems}
     >
-      <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} layout='<---1fr--->|------172px-------|'>
         <PropertyLabel target={overflowProp}>Overflow</PropertyLabel>
         <OptionChainControl
           id={'overflow-control'}
