@@ -31,6 +31,7 @@ import { RightMenuTab } from '../right-menu'
 import { getSelectableViews } from './select-mode/select-mode-hooks'
 import { getAllTargetsAtPoint } from '../dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export const SnappingThreshold = 5
 
@@ -495,8 +496,14 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllStoryboardAncestorPaths(this.props.componentMetadata.elements)
-    const rootsAsScenes = roots.map(TP.scenePathForElementAtInstancePath) // FIXME Bin this after separating Scene from the component it renders
+    const rootElements = MetadataUtils.getAllStoryboardAncestors(this.props.componentMetadata)
+    const roots = mapDropNulls(
+      (e) =>
+        MetadataUtils.elementIsScene(e)
+          ? TP.scenePathForElementAtInstancePath(e.templatePath) // FIXME Use the instance path after we separate Scene from the component it renders
+          : null,
+      rootElements,
+    )
     let labelDirectlySelectable = this.props.highlightsEnabled
 
     // TODO future span element should be included here
@@ -524,7 +531,7 @@ export class SelectModeControlContainer extends React.Component<
         }}
         onContextMenu={this.onContextMenu}
       >
-        {rootsAsScenes.map((root) => {
+        {roots.map((root) => {
           return (
             <React.Fragment key={`${TP.toComponentId(root)}}-root-controls`}>
               {this.renderLabel(root, allElementsDirectlySelectable || labelDirectlySelectable)}

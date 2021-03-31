@@ -186,6 +186,14 @@ function isEmptyScenePath(scene: ScenePath): boolean {
   return isEmptyElementPathsArray(scene.sceneElementPaths)
 }
 
+export function isEmptyPath(path: TemplatePath): boolean {
+  if (isScenePath(path)) {
+    return isEmptyScenePath(path)
+  } else {
+    return path.element.length === 0 && isEmptyScenePath(path.scene)
+  }
+}
+
 function newInstancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
   return {
     scene: scene,

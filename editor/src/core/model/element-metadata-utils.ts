@@ -615,7 +615,7 @@ export const MetadataUtils = {
   getAllCanvasRootPaths(metadata: JSXMetadata): TemplatePath[] {
     const rootScenesAndElements = MetadataUtils.getAllStoryboardAncestors(metadata)
     return flatMapArray<ElementInstanceMetadata, TemplatePath>((root) => {
-      if (root.rootElements != null) {
+      if (root.rootElements.length > 0) {
         return root.rootElements
       } else {
         return [root.templatePath]
@@ -1108,6 +1108,9 @@ export const MetadataUtils = {
   getDuplicationParentTargets(targets: TemplatePath[]): TemplatePath | null {
     return TP.getCommonParent(targets)
   },
+  elementIsScene(element: ElementInstanceMetadata): boolean {
+    return isLeft(element.element) && element.element.value === 'Scene'
+  },
   mergeComponentMetadata(
     elementsByUID: ElementsByUID,
     fromSpy: JSXMetadata,
@@ -1154,7 +1157,7 @@ export const MetadataUtils = {
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
-        if (isLeft(spyElem.element) && spyElem.element.value === 'Scene') {
+        if (MetadataUtils.elementIsScene(spyElem)) {
           // We have some weird special casing for Scenes (see https://github.com/concrete-utopia/utopia/pull/671)
           jsxElement = spyElem.element
         } else {
