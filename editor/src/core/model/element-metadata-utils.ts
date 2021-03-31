@@ -817,9 +817,8 @@ export const MetadataUtils = {
 
     const reverseCanvasRoots = MetadataUtils.getAllStoryboardAncestors(metadata).reverse()
     fastForEach(reverseCanvasRoots, (root) => {
-      const rootPath = root.templatePath
-      if (TP.isStoryboardAncestor(rootPath)) {
-        const rootScenePath = TP.scenePathForElementAtInstancePath(rootPath)
+      if (MetadataUtils.elementIsScene(root)) {
+        const rootScenePath = TP.scenePathForElementAtInstancePath(root.templatePath)
         const isCollapsed = TP.containsPath(rootScenePath, collapsedViews)
         navigatorTargets.push(rootScenePath)
         visibleNavigatorTargets.push(rootScenePath)
