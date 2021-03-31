@@ -96,6 +96,7 @@ import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-ut
 import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
+import { childPaths } from 'utopia-vscode-common'
 const ObjectPathImmutable: any = OPI
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
@@ -552,8 +553,9 @@ export const MetadataUtils = {
     target: TemplatePath,
   ): Array<InstancePath> {
     const element = MetadataUtils.findElementByTemplatePath(elements, target)
-    const paths = TP.isScenePath(target) ? element?.rootElements : element?.children
-    return paths ?? []
+    const rootElements = element?.rootElements ?? []
+    const children = element?.children ?? []
+    return [...rootElements, ...children]
   },
   getImmediateChildren(
     metadata: JSXMetadata,
@@ -605,63 +607,6 @@ export const MetadataUtils = {
     return storyboardMetadata == null
       ? []
       : MetadataUtils.getImmediateChildrenPaths(metadata, storyboardMetadata.templatePath)
-  },
-  getCanvasRootScenesAndElements(
-    metadata: JSXMetadata,
-  ): Array<ComponentMetadata | ElementInstanceMetadata> {
-    const rootChildrenPathsOfStoryboard = MetadataUtils.getAllStoryboardAncestorPaths(
-      metadata.elements,
-    )
-    return MetadataUtils.getElementsByInstancePath(metadata.elements, rootChildrenPathsOfStoryboard)
-    // return rootChildrenOfStoryboard.map(path => MetadataUtils
-    // const rootChildrenOfStoryboard = flatMapArray(
-    //   (path) => MetadataUtils.getImmediateChildren(metadata, path),
-    //   rootChildrenPathsOfStoryboard,
-    // )
-    // return rootChildrenOfStoryboard.map((child) => {
-    //   if (isLeft(child.element) && child.element.value === 'Scene') {
-    //     const foundScenePath = TP.scenePath([child.templatePath.element])
-    //     const realSceneRoot = MetadataUtils.findSceneByTemplatePath(
-    //       metadata.components,
-    //       foundScenePath,
-    //     )
-    //     if (realSceneRoot != null) {
-    //       return realSceneRoot
-    //     }
-    //   }
-    //   return child
-    // })
-
-    // The spy metadata has a new special scene (its scene path is _empty array_ 🤯)
-    // which represents the "Storyboard" element (nee Canvas Metadata).
-    // We want to show the scene- and non-scene-children of Storyboard as the root elements
-    // Scenes are already the roots in this `scenes` array, we want to take the non-scene
-    // children of Storyboard and put them right next to the scene roots as siblings.
-    // We want to filter out the Storyboard element itself, and hide the "Storyboard Scene".
-    // We also want to show the scene and non-scene siblings in their original order, not the order determined by the spy
-
-    // const storyboardRoot = this.findStoryboardRoot(metadata.components)
-    // if (storyboardRoot == null) {
-    //   return []
-    // } else {
-    //   const rootChildrenOfStoryboard = flatMapArray(
-    //     (path) => MetadataUtils.getImmediateChildren(metadata, path),
-    //     storyboardRoot.rootElements,
-    //   )
-    //   return rootChildrenOfStoryboard.map((child) => {
-    //     if (isLeft(child.element) && child.element.value === 'Scene') {
-    //       const foundScenePath = TP.scenePath([child.templatePath.element])
-    //       const realSceneRoot = MetadataUtils.findSceneByTemplatePath(
-    //         metadata.components,
-    //         foundScenePath,
-    //       )
-    //       if (realSceneRoot != null) {
-    //         return realSceneRoot
-    //       }
-    //     }
-    //     return child
-    //   })
-    // }
   },
   getAllCanvasRootPaths(metadata: JSXMetadata): TemplatePath[] {
     const rootScenesAndElements = MetadataUtils.getAllStoryboardAncestors(metadata)

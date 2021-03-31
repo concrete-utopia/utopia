@@ -173,22 +173,7 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
-        Object {
-          "element": Array [
-            "aaa",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
+      "children": Array [],
       "componentInstance": false,
       "componentName": "App",
       "computedStyle": null,
@@ -898,22 +883,7 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
-        Object {
-          "element": Array [
-            "aaa",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
+      "children": Array [],
       "componentInstance": false,
       "componentName": "App",
       "computedStyle": null,
@@ -1308,22 +1278,7 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
-        Object {
-          "element": Array [
-            "05c",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
+      "children": Array [],
       "componentInstance": false,
       "componentName": "App",
       "computedStyle": null,
@@ -1980,22 +1935,7 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
-        Object {
-          "element": Array [
-            "05c",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
+      "children": Array [],
       "componentInstance": false,
       "componentName": "App",
       "computedStyle": null,
@@ -2653,22 +2593,7 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
-        Object {
-          "element": Array [
-            "05c",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
+      "children": Array [],
       "componentInstance": false,
       "componentName": "App",
       "computedStyle": null,

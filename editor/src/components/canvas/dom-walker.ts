@@ -419,11 +419,9 @@ function collectMetadata(
       if (TP.pathsEqual(path, TP.parentPath(childPath))) {
         if (isRootElement(childPath)) {
           filteredRootElements.push(childPath)
+        } else {
+          filteredChildPaths.push(childPath)
         }
-
-        // FIXME We shouldn't include root elements in with the children, but right now a lot of
-        // logic relies on that implicitly
-        filteredChildPaths.push(childPath)
       }
     })
 
