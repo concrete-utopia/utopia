@@ -776,45 +776,54 @@ export const MetadataUtils = {
   findStoryboardRoot(roots: Array<ComponentMetadata>): ComponentMetadata | null {
     return roots.find((root) => TP.pathsEqual(root.scenePath, EmptyScenePathForStoryboard)) ?? null
   },
+  getAllChildrenIncludingUnfurledFocusedComponents(
+    path: InstancePath,
+    metadata: JSXMetadata,
+    focusedElementPath: ScenePath | null,
+  ): Array<InstancePath> {
+    const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
+    const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
+    const children = element?.children ?? []
+
+    const matchingFocusPath =
+      focusedElementPath == null
+        ? null
+        : TP.scenePathUpToElementPath(
+            focusedElementPath,
+            TP.elementPathForPath(path),
+            'dynamic-scene-path',
+          )
+    const focusedRootElementPaths =
+      matchingFocusPath == null
+        ? []
+        : allPaths.filter(
+            (p) =>
+              TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
+              TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
+          )
+
+    return [...children, ...focusedRootElementPaths]
+  },
   createOrderedTemplatePathsFromElements(
     metadata: JSXMetadata,
     collapsedViews: Array<TemplatePath>,
     focusedElementPath: ScenePath | null,
   ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
-    const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
-
     let navigatorTargets: Array<TemplatePath> = []
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
     function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
-      const children = element?.children ?? []
+      const childrenIncludingFocusedElements = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+        path,
+        metadata,
+        focusedElementPath,
+      )
+      const reversedChildren = R.reverse(childrenIncludingFocusedElements)
       const isCollapsed = TP.containsPath(path, collapsedViews)
-      const reversedChildren = R.reverse(children)
       navigatorTargets.push(path)
       if (!collapsedAncestor) {
         visibleNavigatorTargets.push(path)
       }
-
-      const matchingFocusPath =
-        focusedElementPath == null
-          ? null
-          : TP.scenePathUpToElementPath(
-              focusedElementPath,
-              TP.elementPathForPath(path),
-              'dynamic-scene-path',
-            )
-      const focusedRootElementPaths =
-        matchingFocusPath == null
-          ? []
-          : allPaths.filter(
-              (p) =>
-                TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
-                TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
-            )
-      fastForEach(focusedRootElementPaths, (focusedRootElement) => {
-        walkAndAddKeys(focusedRootElement, collapsedAncestor || isCollapsed)
-      })
 
       fastForEach(reversedChildren, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
