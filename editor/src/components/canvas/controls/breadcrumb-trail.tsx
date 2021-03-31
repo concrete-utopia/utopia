@@ -10,7 +10,7 @@ import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-s
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { Icons, UIRow, UtopiaTheme } from '../../../uuiui'
-import { TemplatePath } from 'src/core/shared/project-file-types'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 
 interface ElementPathElement {
   name?: string
