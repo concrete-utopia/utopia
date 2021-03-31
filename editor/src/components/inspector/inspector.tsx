@@ -59,6 +59,7 @@ import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
   getOpenImportsFromState,
   getOpenUtopiaJSXComponentsFromState,
+  getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -293,8 +294,8 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     aspectRatioLocked,
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadataKILLME
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     const imports = getOpenImportsFromState(store.editor)
+    const rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor)
     let anyComponentsInner: boolean = false
     let anyHTMLElementsInner: boolean = false
     let anyUnknownElementsInner: boolean = false
@@ -757,13 +758,19 @@ export const InspectorContextProvider = betterReactMemo<{
   children: React.ReactNode
 }>('InspectorContextProvider', (props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
+  const { dispatch, jsxMetadataKILLME } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
     }
   }, 'InspectorContextProvider')
+
+  const rootComponents = useKeepReferenceEqualityIfPossible(
+    useEditorState(
+      (store) => getOpenUtopiaJSXComponentsFromStateMultifile(store.editor),
+      'InspectorContextProvider rootComponents',
+    ),
+  )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newSpiedProps: Array<{ [key: string]: any }> = []
