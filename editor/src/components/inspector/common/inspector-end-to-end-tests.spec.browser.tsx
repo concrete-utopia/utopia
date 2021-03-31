@@ -8,12 +8,24 @@ import * as TP from '../../../core/shared/template-path'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithProjectContent,
   TestScenePath,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { PrettierConfig } from '../../../core/workers/parser-printer/prettier-utils'
 import * as Prettier from 'prettier'
 import { act } from 'react-test-renderer'
+import { contentsToTree } from '../../assets'
+import {
+  ProjectContents,
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../../core/shared/project-file-types'
+import { directory } from '../../../core/model/project-file-utils'
+import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
+import { createCodeFile } from '../../custom-code/code-file.test-utils'
 
 describe('inspector tests with real metadata', () => {
   it('padding controls', async () => {
@@ -1686,6 +1698,92 @@ describe('inspector tests with real metadata', () => {
     expect(flexShrink.value).toMatchInlineSnapshot(`"0"`)
     expect(
       flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+  })
+  it('Shows multifile selected element properties', async () => {
+    let projectContents: ProjectContents = {
+      '/package.json': textFile(
+        textFileContents(
+          JSON.stringify(DefaultPackageJson, null, 2),
+          unparsed,
+          RevisionsState.BothMatch,
+        ),
+        null,
+        0,
+      ),
+      '/src': directory(),
+      '/utopia': directory(),
+      [StoryboardFilePath]: createCodeFile(
+        StoryboardFilePath,
+        `/** @jsx jsx */
+  import * as React from 'react'
+  import { Scene, Storyboard, jsx } from 'utopia-api'
+  import { App } from '/src/app.js'
+
+  export var storyboard = (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        data-uid='scene-1'
+        component={App}
+        props={{}}
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      />
+    </Storyboard>
+  )`,
+      ),
+      '/src/app.js': createCodeFile(
+        '/src/app.js',
+        `/** @jsx jsx */
+  import * as React from 'react'
+  import { jsx } from 'utopia-api'
+  export var App = (props) => {
+    return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
+      <div data-uid='app-inner-div' style={{padding: 8, paddingLeft: 10, width: '100%', minHeight: 25}}/>
+    </div>
+  }`,
+      ),
+    }
+
+    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+
+    await renderResult.dispatch(
+      [
+        selectComponents(
+          [
+            TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-1']]), [
+              'app-outer-div',
+              'app-inner-div',
+            ]),
+          ],
+          false,
+        ),
+      ],
+      false,
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+      'utopia-storyboard-uid/scene-1:app-outer-div/app-inner-div'
+    ]
+
+    const flexPaddingTopControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-T',
+    )) as HTMLInputElement
+    const flexPaddingLeftControl = (await renderResult.renderedDOM.findByTestId(
+      'flexPadding-L',
+    )) as HTMLInputElement
+
+    // Padding top is coming from the shorthand `padding` value.
+    expect(metadata.computedStyle?.['paddingTop']).toMatchInlineSnapshot(`"8px"`)
+    expect(flexPaddingTopControl.value).toMatchInlineSnapshot(`"8"`)
+    expect(
+      flexPaddingTopControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+    ).toMatchInlineSnapshot(`"simple"`)
+
+    // Padding left is coming from the `paddingLeft` value.
+    expect(metadata.computedStyle?.['paddingLeft']).toMatchInlineSnapshot(`"10px"`)
+    expect(flexPaddingLeftControl.value).toMatchInlineSnapshot(`"10"`)
+    expect(
+      flexPaddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     ).toMatchInlineSnapshot(`"simple"`)
   })
 })
