@@ -102,9 +102,12 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
           contextMenu.hideAll()
         }}
         hidden={item.isHidden ?? this.isHidden}
+        style={{ height: item.isSeparator ? 9 : 24, display: 'flex', alignItems: 'center' }}
       >
-        <span className='react-contexify-span'>{item.name}</span>
-        <span className='shortcut' style={{ opacity: 0.5 }}>
+        <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
+          {item.name}
+        </span>
+        <span style={{ flexGrow: 0, flexShrink: 0, opacity: 0.6 }} className='shortcut'>
           {item.shortcut}
         </span>
       </Item>
@@ -121,7 +124,11 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
             return (
               <SubmenuComponent
                 key={`context-menu-${index}`}
-                label={item.label}
+                label={
+                  <span style={{ height: 24, display: 'flex', alignItems: 'center' }}>
+                    {item.label}
+                  </span>
+                }
                 arrow={<Icons.ExpansionArrowRight style={{ marginLeft: 8 }} />}
               >
                 {item.items.map((submenuItem, submenuIndex) =>

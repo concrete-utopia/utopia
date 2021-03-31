@@ -7,7 +7,7 @@
   background-color: var(--contextmenu-background);
   box-sizing: border-box;
   box-shadow: rgb(218 218 218 / 30%) -1px 3px 4px 0px, inset 0px 0px 0px 1px hsl(0deg 0% 90%);
-  padding: 4px 2px;
+  padding: 4px 0px;
 }
 .react-contexify .react-contexify__submenu {
   position: absolute;
@@ -32,16 +32,15 @@
   background-color: var(--contextmenu-separator);
 }
 
+/* this contains dividers, too - so not giving it a height */
 .react-contexify__item {
-  font-size: 11px;
-  font-weight: 500; /* medium */
   cursor: default;
   position: relative;
   margin-left: 8px;
   margin-right: 8px;
+  color: var(--contextmenu-foreground);
 }
-.react-contexify__item:not(.react-contexify__item--disabled):hover
-  > .react-contexify__item__content {
+.react-contexify__item:not(.react-contexify__item--disabled):hover {
   color: var(--contextmenu-highlightForeground);
   background-color: var(--contextmenu-highlightBackground);
   border-radius: 2px;
@@ -56,12 +55,14 @@
 }
 .react-contexify__item__content {
   min-width: 190px;
-  padding: 4px 12px;
-  display: inline-block;
+  padding-left: 8px;
+  padding-right: 8px;
+  display: flex;
+  align-items: center;
   text-align: left;
   white-space: nowrap;
-  color: var(--contextmenu-foreground);
 }
+
 .react-contexify__item__icon {
   font-size: inherit;
   margin-right: 6px;
