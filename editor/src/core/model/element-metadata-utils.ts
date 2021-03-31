@@ -532,17 +532,21 @@ export const MetadataUtils = {
     })
     return jsxMetadata(metadata.components, elements)
   },
+  getImmediateChildrenPaths(metadata: JSXMetadata, target: TemplatePath): Array<InstancePath> {
+    if (TP.isScenePath(target)) {
+      const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, target)
+      return scene?.rootElements ?? []
+    } else {
+      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
+      return element?.children ?? []
+    }
+  },
   getImmediateChildren(
     metadata: JSXMetadata,
     target: TemplatePath,
   ): Array<ElementInstanceMetadata> {
-    if (TP.isScenePath(target)) {
-      const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, target)
-      return MetadataUtils.getElementsByInstancePath(metadata.elements, scene?.rootElements ?? [])
-    } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
-      return MetadataUtils.getElementsByInstancePath(metadata.elements, element?.children ?? [])
-    }
+    const childPaths = this.getImmediateChildrenPaths(metadata, target)
+    return MetadataUtils.getElementsByInstancePath(metadata.elements, childPaths)
   },
   getChildrenHandlingGroups(
     metadata: JSXMetadata,
@@ -777,13 +781,12 @@ export const MetadataUtils = {
     return roots.find((root) => TP.pathsEqual(root.scenePath, EmptyScenePathForStoryboard)) ?? null
   },
   getAllChildrenIncludingUnfurledFocusedComponents(
-    path: InstancePath,
+    path: TemplatePath,
     metadata: JSXMetadata,
     focusedElementPath: ScenePath | null,
   ): Array<InstancePath> {
     const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
-    const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
-    const children = element?.children ?? []
+    const children = MetadataUtils.getImmediateChildrenPaths(metadata, path)
 
     const matchingFocusPath =
       focusedElementPath == null
@@ -803,6 +806,20 @@ export const MetadataUtils = {
           )
 
     return [...children, ...focusedRootElementPaths]
+  },
+  getAllChildrenElementsIncludingUnfurledFocusedComponents(
+    path: TemplatePath,
+    metadata: JSXMetadata,
+    focusedElementPath: ScenePath | null,
+  ): Array<ElementInstanceMetadata> {
+    const childrenPaths = this.getAllChildrenIncludingUnfurledFocusedComponents(
+      path,
+      metadata,
+      focusedElementPath,
+    )
+    return mapDropNulls((childPath) => {
+      return this.getElementByInstancePathMaybe(metadata.elements, childPath)
+    }, childrenPaths)
   },
   createOrderedTemplatePathsFromElements(
     metadata: JSXMetadata,
