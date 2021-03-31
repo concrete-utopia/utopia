@@ -533,7 +533,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
         onMouseDown={stopPropagation}
       >
         <UIRow
-          padding={true}
+          padded={true}
           style={{
             borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
           }}

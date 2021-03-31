@@ -79,7 +79,7 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
   })
 
   return (
-    <UIRow rowHeight={'normal'} padding={true}>
+    <UIRow rowHeight={'normal'} padded={true}>
       <Icons.Component style={{ marginRight: 4 }} />
       {elements}
     </UIRow>

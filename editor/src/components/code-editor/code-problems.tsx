@@ -139,7 +139,7 @@ interface CodeEditorTabPaneProps {
 }
 
 const ProblemRowHeight = 29
-const ProblemTabBarHeight = UtopiaTheme.layout.rowHeight.small
+const ProblemTabBarHeight = 32
 
 type OpenCodeEditorTab = 'problems' | 'console'
 
@@ -267,10 +267,10 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
         }}
       >
         <UIRow
-          rowHeight={'small'}
           style={{
             borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
             alignItems: 'stretch',
+            height: 32,
           }}
         >
           <TabComponent

@@ -23,6 +23,7 @@ import {
   MenuIcons,
   StringInput,
   Subdued,
+  UIRow,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
@@ -517,11 +518,9 @@ const GithubPane = betterReactMemo('GithubPane', () => {
         paddingBottom: 50,
       }}
     >
-      <FlexRow
-        style={{ paddingLeft: 8, paddingRight: 8, height: UtopiaTheme.layout.rowHeight.normal }}
-      >
+      <UIRow style={{ paddingLeft: 8, paddingRight: 8 }}>
         <Title>Github</Title>
-      </FlexRow>
+      </UIRow>
       <div
         style={{
           height: 'initial',

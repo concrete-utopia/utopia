@@ -318,7 +318,7 @@ export const EditorComponentInner = betterReactMemo(
                   <SimpleFlexRow
                     id='PreviewTabRail'
                     style={{
-                      height: 29,
+                      height: UtopiaTheme.layout.rowHeight.smaller,
                       borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
                       alignItems: 'stretch',
                     }}

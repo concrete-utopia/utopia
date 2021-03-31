@@ -254,7 +254,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
         }}
       >
         <UIRow
-          rowHeight={UtopiaTheme.layout.rowHeight.normal}
+          rowHeight={'normal'}
           css={{
             flexShrink: 0,
             paddingLeft: 4,
@@ -305,7 +305,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
         </UIRow>
         <UIRow
           className='preview-menu'
-          rowHeight={UtopiaTheme.layout.rowHeight.normal}
+          rowHeight={'normal'}
           style={{
             borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
             flexShrink: 0,
@@ -313,7 +313,7 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
           }}
         >
           <UIRow
-            rowHeight={UtopiaTheme.layout.rowHeight.normal}
+            rowHeight={'normal'}
             css={{
               flexShrink: 0,
               paddingLeft: 4,

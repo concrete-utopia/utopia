@@ -5,14 +5,14 @@ import * as React from 'react'
 import { UtopiaTheme } from '../../styles/theme'
 
 export interface UIRowProp extends React.InputHTMLAttributes<HTMLDivElement> {
-  padding?: boolean
+  padded?: boolean
   rowHeight?: keyof typeof UtopiaTheme.layout.rowHeight
 }
 
 export const UIRow = styled.div<UIRowProp>((props) => ({
   ...commonSenseUtopiaLayoutShorthands,
   ...flexRowStyle,
-  padding: props.padding ? UtopiaTheme.layout.rowHorizontalPadding : undefined,
+  padding: props.padded ? UtopiaTheme.layout.rowHorizontalPadding : undefined,
   height: props.rowHeight ?? UtopiaTheme.layout.rowHeight.normal,
 }))
 UIRow.displayName = 'UIRow'
