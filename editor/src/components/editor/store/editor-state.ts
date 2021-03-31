@@ -156,6 +156,7 @@ import {
   JSXMetadataKeepDeepEquality,
 } from './store-deep-equality-instances'
 import * as TP from '../../../core/shared/template-path'
+import { importedFromWhere } from '../import-utils'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
@@ -711,34 +712,34 @@ export function getOpenUtopiaJSXComponentsFromState(model: EditorState): Array<U
   }
 }
 
+function getImportedUtopiaJSXComponents(
+  filePath: string,
+  model: EditorState,
+): Array<UtopiaJSXComponent> {
+  const file = getContentsTreeFileFromString(model.projectContents, filePath)
+  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    const resolvedFilePaths = Object.keys(file.fileContents.parsed.imports)
+      .map((toImport) => model.codeResultCache.resolve(filePath, toImport))
+      .filter(isRight)
+      .map((r) => r.value)
+
+    return [
+      ...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed),
+      ...resolvedFilePaths.flatMap((path) => getImportedUtopiaJSXComponents(path, model)),
+    ]
+  } else {
+    return []
+  }
+}
+
 export function getOpenUtopiaJSXComponentsFromStateMultifile(
   model: EditorState,
-  path: TemplatePath,
 ): Array<UtopiaJSXComponent> {
-  const openUIJSFile = getOpenUIJSFile(model)
   const openUIJSFilePath = getOpenUIJSFileKey(model)
-  if (openUIJSFile == null || openUIJSFilePath == null) {
+  if (openUIJSFilePath == null) {
     return []
   } else {
-    const normalisedResult = TP.isScenePath(path)
-      ? null
-      : normalisePathToUnderlyingTarget(
-          model.projectContents,
-          model.nodeModules.files,
-          openUIJSFilePath,
-          path,
-        )
-    if (
-      normalisedResult != null &&
-      normalisedResult.type === 'NORMALISE_PATH_SUCCESS' &&
-      isParseSuccess(normalisedResult.textFile.fileContents.parsed)
-    ) {
-      return getUtopiaJSXComponentsFromSuccess(normalisedResult.textFile.fileContents.parsed)
-    } else if (isParseSuccess(openUIJSFile.fileContents.parsed)) {
-      return getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
-    } else {
-      return []
-    }
+    return getImportedUtopiaJSXComponents(openUIJSFilePath, model)
   }
 }
 

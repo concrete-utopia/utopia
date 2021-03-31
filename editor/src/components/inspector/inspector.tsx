@@ -296,6 +296,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadataKILLME
     const imports = getOpenImportsFromState(store.editor)
+    const rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor)
     let anyComponentsInner: boolean = false
     let anyHTMLElementsInner: boolean = false
     let anyUnknownElementsInner: boolean = false
@@ -306,7 +307,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         // TODO Scene Implementation
         return
       }
-      let rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor, view)
       anyComponentsInner =
         anyComponentsInner ||
         MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
@@ -763,10 +763,7 @@ export const InspectorContextProvider = betterReactMemo<{
     return {
       dispatch: store.dispatch,
       jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      rootComponents: flatMapArray(
-        (view) => getOpenUtopiaJSXComponentsFromStateMultifile(store.editor, view),
-        store.editor.selectedViews,
-      ),
+      rootComponents: getOpenUtopiaJSXComponentsFromStateMultifile(store.editor),
     }
   }, 'InspectorContextProvider')
 

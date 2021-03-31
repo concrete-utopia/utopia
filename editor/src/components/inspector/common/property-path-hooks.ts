@@ -925,8 +925,8 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
 
   return useEditorState((store) => {
     const imports = getOpenImportsFromState(store.editor)
+    const rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor)
     const types = selectedViews.current.map((view) => {
-      const rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor, view)
       if (TP.isScenePath(view)) {
         return 'scene'
       }
