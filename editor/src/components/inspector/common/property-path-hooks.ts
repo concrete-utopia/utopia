@@ -6,6 +6,7 @@ import { PropertyControls } from 'utopia-api'
 import {
   getOpenImportsFromState,
   getOpenUtopiaJSXComponentsFromState,
+  getOpenUtopiaJSXComponentsFromStateMultifile,
 } from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
 import {
@@ -924,8 +925,8 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
 
   return useEditorState((store) => {
     const imports = getOpenImportsFromState(store.editor)
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     const types = selectedViews.current.map((view) => {
+      const rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor, view)
       if (TP.isScenePath(view)) {
         return 'scene'
       }

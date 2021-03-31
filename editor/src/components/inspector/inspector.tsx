@@ -59,6 +59,7 @@ import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
   getOpenImportsFromState,
   getOpenUtopiaJSXComponentsFromState,
+  getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -92,6 +93,7 @@ import {
 import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
+import { flatMapArray } from '../../core/shared/array-utils'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps
@@ -293,7 +295,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     aspectRatioLocked,
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadataKILLME
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     const imports = getOpenImportsFromState(store.editor)
     let anyComponentsInner: boolean = false
     let anyHTMLElementsInner: boolean = false
@@ -305,6 +306,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         // TODO Scene Implementation
         return
       }
+      let rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor, view)
       anyComponentsInner =
         anyComponentsInner ||
         MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
@@ -761,7 +763,10 @@ export const InspectorContextProvider = betterReactMemo<{
     return {
       dispatch: store.dispatch,
       jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
+      rootComponents: flatMapArray(
+        (view) => getOpenUtopiaJSXComponentsFromStateMultifile(store.editor, view),
+        store.editor.selectedViews,
+      ),
     }
   }, 'InspectorContextProvider')
 

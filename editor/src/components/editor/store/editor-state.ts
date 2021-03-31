@@ -155,6 +155,7 @@ import {
   DerivedStateKeepDeepEquality,
   JSXMetadataKeepDeepEquality,
 } from './store-deep-equality-instances'
+import * as TP from '../../../core/shared/template-path'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
@@ -703,6 +704,37 @@ export function getOpenUtopiaJSXComponentsFromState(model: EditorState): Array<U
     return []
   } else {
     if (isParseSuccess(openUIJSFile.fileContents.parsed)) {
+      return getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
+    } else {
+      return []
+    }
+  }
+}
+
+export function getOpenUtopiaJSXComponentsFromStateMultifile(
+  model: EditorState,
+  path: TemplatePath,
+): Array<UtopiaJSXComponent> {
+  const openUIJSFile = getOpenUIJSFile(model)
+  const openUIJSFilePath = getOpenUIJSFileKey(model)
+  if (openUIJSFile == null || openUIJSFilePath == null) {
+    return []
+  } else {
+    const normalisedResult = TP.isScenePath(path)
+      ? null
+      : normalisePathToUnderlyingTarget(
+          model.projectContents,
+          model.nodeModules.files,
+          openUIJSFilePath,
+          path,
+        )
+    if (
+      normalisedResult != null &&
+      normalisedResult.type === 'NORMALISE_PATH_SUCCESS' &&
+      isParseSuccess(normalisedResult.textFile.fileContents.parsed)
+    ) {
+      return getUtopiaJSXComponentsFromSuccess(normalisedResult.textFile.fileContents.parsed)
+    } else if (isParseSuccess(openUIJSFile.fileContents.parsed)) {
       return getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
     } else {
       return []
