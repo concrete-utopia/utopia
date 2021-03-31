@@ -332,8 +332,8 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
     >
       <UIRow
         tabIndex={0}
-        rowHeight={'small'}
         style={{
+          height: 32,
           flexShrink: 0,
           position: 'relative',
           marginLeft: 5,
