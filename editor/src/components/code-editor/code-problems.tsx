@@ -22,7 +22,7 @@ import { betterReactMemo } from '../../utils/react-performance'
 import { TabComponent } from '../../uuiui/tab'
 import { Icons } from '../../uuiui/icons'
 import { SimpleFlexColumn } from '../../uuiui/widgets/layout/flex-column'
-import { UIRow } from 'src/uuiui'
+import { UIRow } from '../../uuiui'
 
 interface ErrorMessageRowProps {
   errorMessage: ErrorMessage
