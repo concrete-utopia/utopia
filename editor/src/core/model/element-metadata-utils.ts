@@ -197,8 +197,14 @@ export const MetadataUtils = {
     const scenePath = TP.scenePathPartOfTemplatePath(path)
     return scenes.find((s) => TP.pathsEqual(s.scenePath, scenePath)) ?? null
   },
-  isSceneTreatedAsGroup(scene: ComponentMetadata | null): boolean {
-    return scene?.sceneResizesContent ?? false
+  isSceneTreatedAsGroup(scene: ComponentMetadata | ElementInstanceMetadata | null): boolean {
+    if (scene == null) {
+      return false
+    } else if (isComponentMetadata(scene)) {
+      return scene.sceneResizesContent
+    } else {
+      return scene.props.resizesContent ?? false
+    }
   },
   findElements(
     elementMap: ElementInstanceMetadataMap,
@@ -541,16 +547,20 @@ export const MetadataUtils = {
     })
     return jsxMetadata(metadata.components, elements)
   },
+  getImmediateChildrenPaths(
+    elements: ElementInstanceMetadataMap,
+    target: TemplatePath,
+  ): Array<InstancePath> {
+    const element = MetadataUtils.findElementByTemplatePath(elements, target)
+    const paths = TP.isScenePath(target) ? element?.rootElements : element?.children
+    return paths ?? []
+  },
   getImmediateChildren(
     metadata: JSXMetadata,
     target: TemplatePath,
   ): Array<ElementInstanceMetadata> {
-    const element = MetadataUtils.findElementByTemplatePath(metadata.elements, target)
-    if (TP.isScenePath(target)) {
-      return MetadataUtils.getElementsByInstancePath(metadata.elements, element?.rootElements ?? [])
-    } else {
-      return MetadataUtils.getElementsByInstancePath(metadata.elements, element?.children ?? [])
-    }
+    const childrenPaths = MetadataUtils.getImmediateChildrenPaths(metadata.elements, target)
+    return MetadataUtils.getElementsByInstancePath(metadata.elements, childrenPaths ?? [])
   },
   getChildrenHandlingGroups(
     metadata: JSXMetadata,
@@ -581,17 +591,47 @@ export const MetadataUtils = {
 
     return Utils.flatMapArray(getChildrenInner, immediateChildren)
   },
-  getAllScenePaths(scenes: ComponentMetadata[]): ScenePath[] {
-    return scenes
-      .map((s) => s.scenePath)
-      .filter((s) => !TP.pathsEqual(s, EmptyScenePathForStoryboard))
+  getStoryboardMetadata(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata | null {
+    return Object.values(metadata).find((e) => TP.isStoryboardPath(e.templatePath)) ?? null
   },
-  getAllScenePathsIncludingStoryboardForOrphans(scenes: ComponentMetadata[]): ScenePath[] {
-    return scenes.map((s) => s.scenePath)
+  getAllStoryboardAncestors(metadata: JSXMetadata): ElementInstanceMetadata[] {
+    const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata.elements)
+    return storyboardMetadata == null
+      ? []
+      : MetadataUtils.getImmediateChildren(metadata, storyboardMetadata.templatePath)
+  },
+  getAllStoryboardAncestorPaths(metadata: ElementInstanceMetadataMap): InstancePath[] {
+    const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
+    return storyboardMetadata == null
+      ? []
+      : MetadataUtils.getImmediateChildrenPaths(metadata, storyboardMetadata.templatePath)
   },
   getCanvasRootScenesAndElements(
     metadata: JSXMetadata,
   ): Array<ComponentMetadata | ElementInstanceMetadata> {
+    const rootChildrenPathsOfStoryboard = MetadataUtils.getAllStoryboardAncestorPaths(
+      metadata.elements,
+    )
+    return MetadataUtils.getElementsByInstancePath(metadata.elements, rootChildrenPathsOfStoryboard)
+    // return rootChildrenOfStoryboard.map(path => MetadataUtils
+    // const rootChildrenOfStoryboard = flatMapArray(
+    //   (path) => MetadataUtils.getImmediateChildren(metadata, path),
+    //   rootChildrenPathsOfStoryboard,
+    // )
+    // return rootChildrenOfStoryboard.map((child) => {
+    //   if (isLeft(child.element) && child.element.value === 'Scene') {
+    //     const foundScenePath = TP.scenePath([child.templatePath.element])
+    //     const realSceneRoot = MetadataUtils.findSceneByTemplatePath(
+    //       metadata.components,
+    //       foundScenePath,
+    //     )
+    //     if (realSceneRoot != null) {
+    //       return realSceneRoot
+    //     }
+    //   }
+    //   return child
+    // })
+
     // The spy metadata has a new special scene (its scene path is _empty array_ 🤯)
     // which represents the "Storyboard" element (nee Canvas Metadata).
     // We want to show the scene- and non-scene-children of Storyboard as the root elements
@@ -600,38 +640,34 @@ export const MetadataUtils = {
     // We want to filter out the Storyboard element itself, and hide the "Storyboard Scene".
     // We also want to show the scene and non-scene siblings in their original order, not the order determined by the spy
 
-    const storyboardRoot = this.findStoryboardRoot(metadata.components)
-    if (storyboardRoot == null) {
-      return []
-    } else {
-      const rootChildrenOfStoryboard = flatMapArray(
-        (path) => MetadataUtils.getImmediateChildren(metadata, path),
-        storyboardRoot.rootElements,
-      )
-      return rootChildrenOfStoryboard.map((child) => {
-        if (isLeft(child.element) && child.element.value === 'Scene') {
-          const foundScenePath = TP.scenePath([child.templatePath.element])
-          const realSceneRoot = MetadataUtils.findSceneByTemplatePath(
-            metadata.components,
-            foundScenePath,
-          )
-          if (realSceneRoot != null) {
-            return realSceneRoot
-          }
-        }
-        return child
-      })
-    }
+    // const storyboardRoot = this.findStoryboardRoot(metadata.components)
+    // if (storyboardRoot == null) {
+    //   return []
+    // } else {
+    //   const rootChildrenOfStoryboard = flatMapArray(
+    //     (path) => MetadataUtils.getImmediateChildren(metadata, path),
+    //     storyboardRoot.rootElements,
+    //   )
+    //   return rootChildrenOfStoryboard.map((child) => {
+    //     if (isLeft(child.element) && child.element.value === 'Scene') {
+    //       const foundScenePath = TP.scenePath([child.templatePath.element])
+    //       const realSceneRoot = MetadataUtils.findSceneByTemplatePath(
+    //         metadata.components,
+    //         foundScenePath,
+    //       )
+    //       if (realSceneRoot != null) {
+    //         return realSceneRoot
+    //       }
+    //     }
+    //     return child
+    //   })
+    // }
   },
   getAllCanvasRootPaths(metadata: JSXMetadata): TemplatePath[] {
-    const rootScenesAndElements = this.getCanvasRootScenesAndElements(metadata)
-    return flatMapArray<ElementInstanceMetadata | ComponentMetadata, TemplatePath>((root) => {
-      if (isComponentMetadata(root)) {
-        if (root.rootElements != null) {
-          return root.rootElements
-        } else {
-          return [root.scenePath]
-        }
+    const rootScenesAndElements = MetadataUtils.getAllStoryboardAncestors(metadata)
+    return flatMapArray<ElementInstanceMetadata, TemplatePath>((root) => {
+      if (root.rootElements != null) {
+        return root.rootElements
       } else {
         return [root.templatePath]
       }
@@ -646,13 +682,14 @@ export const MetadataUtils = {
       fastForEach(element?.children ?? [], recurseElement)
     }
 
-    const scenePaths = this.getAllScenePathsIncludingStoryboardForOrphans(metadata.components)
+    const rootInstances = this.getAllStoryboardAncestorPaths(metadata.elements)
 
-    fastForEach(scenePaths, (scenePath) => {
-      const scene = MetadataUtils.findElementByTemplatePath(metadata.elements, scenePath)
-      if (scene != null) {
-        result.push(scenePath)
-        scene.rootElements.forEach(recurseElement)
+    fastForEach(rootInstances, (rootInstance) => {
+      const element = MetadataUtils.findElementByTemplatePath(metadata.elements, rootInstance)
+      if (element != null) {
+        result.push(rootInstance)
+        // element.children.forEach(recurseElement)
+        element.rootElements.forEach(recurseElement)
       }
     })
 
@@ -829,12 +866,14 @@ export const MetadataUtils = {
       })
     }
 
-    const reverseCanvasRoots = this.getCanvasRootScenesAndElements(metadata).reverse()
+    const reverseCanvasRoots = MetadataUtils.getAllStoryboardAncestors(metadata).reverse()
     fastForEach(reverseCanvasRoots, (root) => {
-      if (isComponentMetadata(root)) {
-        const isCollapsed = TP.containsPath(root.scenePath, collapsedViews)
-        navigatorTargets.push(root.scenePath)
-        visibleNavigatorTargets.push(root.scenePath)
+      const rootPath = root.templatePath
+      if (TP.isStoryboardAncestor(rootPath)) {
+        const rootScenePath = TP.scenePathForElementAtInstancePath(rootPath)
+        const isCollapsed = TP.containsPath(rootScenePath, collapsedViews)
+        navigatorTargets.push(rootScenePath)
+        visibleNavigatorTargets.push(rootScenePath)
         fastForEach(root.rootElements, (rootElement) => {
           walkAndAddKeys(rootElement, isCollapsed)
         })
@@ -927,6 +966,7 @@ export const MetadataUtils = {
       // Try to get something from the metadata.
       const element = this.getElementByInstancePathMaybe(metadata.elements, path)
       if (element != null) {
+        const sceneLabelOrComponentName = element.label ?? element.componentName
         const dataLabelProp = element.props['data-label']
         if (
           dataLabelProp != null &&
@@ -934,6 +974,8 @@ export const MetadataUtils = {
           dataLabelProp.length > 0
         ) {
           return dataLabelProp
+        } else if (sceneLabelOrComponentName != null) {
+          return sceneLabelOrComponentName
         } else {
           const possibleName: string = foldEither(
             (tagName) => {
@@ -1185,6 +1227,8 @@ export const MetadataUtils = {
           rootElements: rootElements,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
+          componentName: spyElem.componentName,
+          label: spyElem.label,
         }
         workingElements[TP.toString(domElem.templatePath)] = elem
       }

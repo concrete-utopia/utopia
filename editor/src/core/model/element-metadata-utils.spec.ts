@@ -183,6 +183,23 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   label: null,
 }
 
+const testStoryboardElement: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID]),
+  props: {},
+  element: right(jsxTestElement('Storyboard', [], [])),
+  children: [testComponentSceneElement.templatePath],
+  rootElements: [],
+  componentInstance: true,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
+}
+
 const testComponentMetadata: Array<ComponentMetadata> = [testComponentScene]
 const testElementMetadataMap: ElementInstanceMetadataMap = {
   [TP.toString(testComponentMetadataChild1.templatePath)]: testComponentMetadataChild1,
@@ -191,6 +208,7 @@ const testElementMetadataMap: ElementInstanceMetadataMap = {
   [TP.toString(testComponentMetadataGrandchild.templatePath)]: testComponentMetadataGrandchild,
   [TP.toString(testComponentRoot1.templatePath)]: testComponentRoot1,
   [TP.toString(testComponentSceneElement.templatePath)]: testComponentSceneElement,
+  [TP.toString(testStoryboardElement.templatePath)]: testStoryboardElement,
 }
 
 const testJsxMetadata = jsxMetadata(testComponentMetadata, testElementMetadataMap)
@@ -466,7 +484,7 @@ describe('getAllPaths', () => {
   it('returns the paths in a depth first manner', () => {
     const actualResult = MetadataUtils.getAllPaths(testJsxMetadata)
     const expectedResult: Array<TemplatePath> = [
-      testComponentScene.scenePath,
+      testComponentSceneElement.templatePath,
       testComponentRoot1.templatePath,
       testComponentMetadataChild1.templatePath,
       testComponentMetadataChild2.templatePath,

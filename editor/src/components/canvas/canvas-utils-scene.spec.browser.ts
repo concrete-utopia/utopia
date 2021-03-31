@@ -217,7 +217,7 @@ describe('moving a scene/rootview on the canvas', () => {
     await renderResult.dispatch([selectComponents([TestScenePath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      'label-control-utopia-storyboard-uid/scene-aaa',
+      'label-control-:utopia-storyboard-uid/scene-aaa',
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -311,7 +311,7 @@ describe('moving a scene/rootview on the canvas', () => {
         return (
           <Storyboard data-uid='utopia-storyboard-uid'>
             <Scene
-              style={{ position: 'absolute', top: 20, left: 40 }}
+              style={{ position: 'absolute', left: 40, top: 20 }}
               component={App}
               data-uid='scene-aaa'
               resizeContent
@@ -471,7 +471,7 @@ describe('moving a scene/rootview on the canvas', () => {
     await renderResult.dispatch([selectComponents([TestScenePath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      'label-control-utopia-storyboard-uid/scene-aaa',
+      'label-control-:utopia-storyboard-uid/scene-aaa',
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()

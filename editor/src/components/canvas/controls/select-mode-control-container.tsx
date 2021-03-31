@@ -495,7 +495,7 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+    const roots = MetadataUtils.getAllStoryboardAncestorPaths(this.props.componentMetadata.elements)
     let labelDirectlySelectable = this.props.highlightsEnabled
 
     // TODO future span element should be included here

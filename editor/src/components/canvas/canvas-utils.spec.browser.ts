@@ -1457,7 +1457,7 @@ describe('moveTemplate', () => {
       new MouseEvent('mousedown', {
         bubbles: true,
         cancelable: true,
-        metaKey: false,
+        metaKey: true,
         clientX: areaControlBounds.left + 5,
         clientY: areaControlBounds.top + 5,
         buttons: 1,
