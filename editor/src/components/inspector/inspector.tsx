@@ -758,13 +758,19 @@ export const InspectorContextProvider = betterReactMemo<{
   children: React.ReactNode
 }>('InspectorContextProvider', (props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
+  const { dispatch, jsxMetadataKILLME } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      rootComponents: getOpenUtopiaJSXComponentsFromStateMultifile(store.editor),
     }
   }, 'InspectorContextProvider')
+
+  const rootComponents = useKeepReferenceEqualityIfPossible(
+    useEditorState(
+      (store) => getOpenUtopiaJSXComponentsFromStateMultifile(store.editor),
+      'InspectorContextProvider rootComponents',
+    ),
+  )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newSpiedProps: Array<{ [key: string]: any }> = []
