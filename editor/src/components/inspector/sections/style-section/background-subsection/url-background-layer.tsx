@@ -14,7 +14,7 @@ import {
 import { getIndexedSpliceArrayItem, stopPropagation } from '../../../common/inspector-utils'
 import { ImageThumbnailControl } from '../../../controls/image-thumbnail-control'
 import { StringControl } from '../../../controls/string-control'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 import {
   BackgroundLayerProps,
   backgroundLayerTypeSelectOptions,
@@ -78,8 +78,8 @@ export const URLBackgroundLayer = betterReactMemo<URLBackgroundLayerProps>(
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
       >
-        <GridRow tall alignItems='start' padded={true} type='<---1fr--->|------172px-------|'>
-          <GridRow tall alignItems='start' padded={false} type='<-auto-><----------1fr--------->'>
+        <UIGridRow tall alignItems='start' padded={true} type='<---1fr--->|------172px-------|'>
+          <UIGridRow tall alignItems='start' padded={false} type='<-auto-><----------1fr--------->'>
             <CheckboxInput
               onChange={toggleCheckbox}
               checked={props.value.enabled}
@@ -99,8 +99,8 @@ export const URLBackgroundLayer = betterReactMemo<URLBackgroundLayerProps>(
               useSubmitValueFactory={props.useSubmitTransformedValuesFactory}
               modalOffset={{ x: -45, y: 0 }}
             />
-          </GridRow>
-          <GridRow tall alignItems='start' padded={false} type='<-------1fr------>|----80px----|'>
+          </UIGridRow>
+          <UIGridRow tall alignItems='start' padded={false} type='<-------1fr------>|----80px----|'>
             <PopupList
               value={imageSelectOption}
               options={backgroundLayerTypeSelectOptions}
@@ -117,8 +117,8 @@ export const URLBackgroundLayer = betterReactMemo<URLBackgroundLayerProps>(
               controlStatus={props.controlStatus}
               controlStyles={props.controlStyles}
             />
-          </GridRow>
-        </GridRow>
+          </UIGridRow>
+        </UIGridRow>
       </InspectorContextMenuWrapper>
     )
   },

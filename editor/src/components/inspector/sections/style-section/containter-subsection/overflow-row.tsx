@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
 import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
 import {
@@ -46,7 +46,7 @@ export const OverflowRow = betterReactMemo('OverflowRow', () => {
       data={null}
       items={overflowContextMenuItems}
     >
-      <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
         <PropertyLabel target={overflowProp}>Overflow</PropertyLabel>
         <OptionChainControl
           id={'overflow-control'}
@@ -58,7 +58,7 @@ export const OverflowRow = betterReactMemo('OverflowRow', () => {
           controlStatus={controlStatus}
           controlStyles={controlStyles}
         />
-      </GridRow>
+      </UIGridRow>
     </InspectorContextMenuWrapper>
   )
 })

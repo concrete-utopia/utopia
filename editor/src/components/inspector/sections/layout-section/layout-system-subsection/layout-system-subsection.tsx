@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 import {
   LayoutSystemControl,
   FlexPaddingControl,
@@ -58,16 +58,16 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
         </InspectorSubsectionHeader>
         {layoutSectionOpen ? (
           <>
-            <GridRow padded={true} type='<-------------1fr------------->'>
+            <UIGridRow padded={true} type='<-------------1fr------------->'>
               <LayoutSystemControl
                 layoutSystem={props.specialSizeMeasurements.layoutSystemForChildren}
                 providesCoordinateSystemForChildren={
                   props.specialSizeMeasurements.providesBoundsForChildren
                 }
               />
-            </GridRow>
+            </UIGridRow>
             {isFlexParent ? <FlexContainerControls seeMoreVisible={true} /> : null}
-            <GridRow tall padded={true} type='<---1fr--->|------172px-------|'>
+            <UIGridRow tall padded={true} type='<---1fr--->|------172px-------|'>
               <PropertyLabel
                 target={paddingPropsToUnset}
                 propNamesToUnset={['all paddings']}
@@ -76,7 +76,7 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
                 Padding
               </PropertyLabel>
               <FlexPaddingControl />
-            </GridRow>
+            </UIGridRow>
           </>
         ) : null}
       </>

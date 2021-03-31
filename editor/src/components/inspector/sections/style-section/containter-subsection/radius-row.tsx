@@ -19,7 +19,7 @@ import {
   getCSSNumberValue,
 } from '../../../common/css-utils'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 import {
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
   useWrappedEmptyOrUnknownOnSubmitValue,
@@ -237,7 +237,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
       items={borderRadiusContextMenuItems}
       data={null}
     >
-      <GridRow
+      <UIGridRow
         padded={true}
         type='<---1fr--->|------172px-------|'
         style={{ paddingLeft: 0, maxWidth: '100%' }}
@@ -298,7 +298,7 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
             />
           </div>
         ) : (
-          <GridRow padded={false} type='<--------auto-------->|--45px--|'>
+          <UIGridRow padded={false} type='<--------auto-------->|--45px--|'>
             <SliderControl
               id='radius-all-slider'
               key='radius-all-slider'
@@ -325,9 +325,9 @@ export const RadiusRow = betterReactMemo('RadiusControls', () => {
               numberType='Length'
               defaultUnitToHide={'px'}
             />
-          </GridRow>
+          </UIGridRow>
         )}
-      </GridRow>
+      </UIGridRow>
     </InspectorContextMenuWrapper>
   )
 })

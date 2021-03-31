@@ -9,7 +9,7 @@ import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/p
 import { SelectOption } from '../../../controls/select-control'
 import { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import {
@@ -244,7 +244,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
   )
   return (
     <>
-      <GridRow padded={false} type='<--------auto-------->|--45px--|'>
+      <UIGridRow padded={false} type='<--------auto-------->|--45px--|'>
         <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
           <SliderControl
             id='flex.container.gap.main'
@@ -282,7 +282,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
             defaultUnitToHide={'px'}
           />
         </InspectorContextMenuWrapper>
-      </GridRow>
+      </UIGridRow>
     </>
   )
 })

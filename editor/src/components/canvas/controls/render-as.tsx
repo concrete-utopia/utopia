@@ -6,7 +6,7 @@ import { InstancePath, TemplatePath } from '../../../core/shared/project-file-ty
 import { betterReactMemo, getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
 import * as TP from '../../../core/shared/template-path'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { GridRow } from '../../inspector/widgets/grid-row'
+import { UIGridRow } from '../../inspector/widgets/uigrid-row'
 import { PopupList } from '../../../uuiui'
 import { JSXElementName, jsxElementNameEquals } from '../../../core/shared/element-template'
 import { useNamesAndIconsAllPaths } from '../../inspector/common/name-and-icon-hook'
@@ -92,7 +92,7 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
   }, [insertableComponents, hookResult])
 
   return (
-    <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
       <span
         style={{
           whiteSpace: 'nowrap',
@@ -111,6 +111,6 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
           containerMode='default'
         />
       ) : null}
-    </GridRow>
+    </UIGridRow>
   )
 })

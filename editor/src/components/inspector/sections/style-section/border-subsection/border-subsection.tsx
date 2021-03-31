@@ -31,7 +31,7 @@ import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { ColorControl, StringColorControl } from '../../../controls/color-control'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 
 export function toggleBorderEnabled(_: null, oldValue: CSSBorder): CSSBorder {
   const valueIsEnabled = (oldValue.style?.value.value ?? 'none') !== 'none'
@@ -140,7 +140,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
   ] = useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue(useSubmitValueFactory(updateBorderWidth))
 
   const allOrSplitControls = (
-    <GridRow tall alignItems='start' padded={false} type='<-------1fr------>|----80px----|'>
+    <UIGridRow tall alignItems='start' padded={false} type='<-------1fr------>|----80px----|'>
       <StringColorControl
         id='border-color'
         key='border-color'
@@ -165,7 +165,7 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
         numberType='Length'
         defaultUnitToHide={'px'}
       />
-    </GridRow>
+    </UIGridRow>
   )
 
   const borderSet: boolean = controlStatus !== 'unset'
@@ -207,8 +207,13 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
         isCSSUnknownFunctionParameters(value) ? (
           <FakeUnknownArrayItem controlStatus={controlStatus} />
         ) : (
-          <GridRow tall alignItems='start' padded={true} type='<---1fr--->|------172px-------|'>
-            <GridRow tall alignItems='start' padded={false} type='<-auto-><----------1fr--------->'>
+          <UIGridRow tall alignItems='start' padded={true} type='<---1fr--->|------172px-------|'>
+            <UIGridRow
+              tall
+              alignItems='start'
+              padded={false}
+              type='<-auto-><----------1fr--------->'
+            >
               <CheckboxInput
                 id={`shadow-enable-disable`}
                 key={`shadow-enable-disable`}
@@ -228,9 +233,9 @@ export const BorderSubsection: React.FunctionComponent = betterReactMemo('Border
                 controlStatus={controlStatus}
                 controlStyles={controlStyles}
               />
-            </GridRow>
+            </UIGridRow>
             {allOrSplitControls}
-          </GridRow>
+          </UIGridRow>
         )
       ) : null}
     </InspectorContextMenuWrapper>

@@ -29,7 +29,7 @@ import {
   PathForResizeContent,
   isSceneChildWidthHeightPercentage,
 } from '../../../../core/model/scene-utils'
-import { GridRow } from '../../widgets/grid-row'
+import { UIGridRow } from '../../widgets/uigrid-row'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
 import { ChildWithPercentageSize } from '../../../common/size-warnings'
 import { useWrappedEmptyOrUnknownOnSubmitValue, CheckboxInput } from '../../../../uuiui'
@@ -255,13 +255,13 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   return (
     <>
       {!isDynamicSceneChildSizePercent ? null : (
-        <GridRow padded type='<-auto-><----------1fr--------->'>
+        <UIGridRow padded type='<-auto-><----------1fr--------->'>
           <WarningIcon />
           <span style={{ whiteSpace: 'normal' }}>{ChildWithPercentageSize}</span>
-        </GridRow>
+        </UIGridRow>
       )}
 
-      <GridRow padded type='<-auto-><----------1fr--------->'>
+      <UIGridRow padded type='<-auto-><----------1fr--------->'>
         <CheckboxInput
           id='resizeContentToggle'
           controlStatus={controlStatus}
@@ -269,7 +269,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
           checked={sceneResizesContentInfo.value}
         />
         <label htmlFor='resizeContentToggle'>Resize Content</label>
-      </GridRow>
+      </UIGridRow>
       <SceneFlexContainerSection />
     </>
   )

@@ -5,7 +5,7 @@ import {
   ExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
 import { betterReactMemo, MenuProvider, MomentumContextMenu } from '../../../uuiui-deps'
-import { GridRow } from '../../inspector/widgets/grid-row'
+import { UIGridRow } from '../../inspector/widgets/uigrid-row'
 import { ResourcesListGridRowConfig } from './generic-external-resources-list'
 import { ContextMenuItem } from '../../context-menu-items'
 import { NO_OP } from '../../../core/shared/utils'
@@ -58,7 +58,7 @@ export const GenericExternalResourcesListItem = betterReactMemo<
 
   return (
     <MenuProvider id={menuId}>
-      <GridRow
+      <UIGridRow
         {...ResourcesListGridRowConfig}
         style={{ paddingLeft: 12, paddingRight: 8 }}
         onDoubleClick={onDoubleClick}
@@ -85,7 +85,7 @@ export const GenericExternalResourcesListItem = betterReactMemo<
           {value.rel}
         </div>
         <MomentumContextMenu id={menuId} items={menuItems} getData={NO_OP} />
-      </GridRow>
+      </UIGridRow>
     </MenuProvider>
   )
 })

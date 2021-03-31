@@ -72,7 +72,7 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
   alignItems?: 'start' | 'center'
 }
 
-export const GridRow: React.FunctionComponent<GridRowProps> = ({
+export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
   tall,
   type,
   alignItems,
@@ -97,4 +97,4 @@ export const GridRow: React.FunctionComponent<GridRowProps> = ({
     {children}
   </div>
 )
-GridRow.displayName = 'GridRow'
+UIGridRow.displayName = 'GridRow'

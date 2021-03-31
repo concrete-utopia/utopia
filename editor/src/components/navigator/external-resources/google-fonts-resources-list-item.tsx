@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { GoogleFontsResource } from '../../../printer-parsers/html/external-resources-parser'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { GridRow } from '../../inspector/widgets/grid-row'
+import { UIGridRow } from '../../inspector/widgets/uigrid-row'
 
 interface GoogleFontsResourcesListItemProps {
   value: GoogleFontsResource
@@ -11,7 +11,7 @@ export const GoogleFontsResourcesListItem = betterReactMemo<GoogleFontsResources
   'GoogleFontsResourcesListItem',
   ({ value }) => {
     return (
-      <GridRow padded={false} type='<-------1fr------>|----80px----|'>
+      <UIGridRow padded={false} type='<-------1fr------>|----80px----|'>
         <div
           style={{
             textOverflow: 'ellipsis',
@@ -31,7 +31,7 @@ export const GoogleFontsResourcesListItem = betterReactMemo<GoogleFontsResources
         >
           400
         </div>
-      </GridRow>
+      </UIGridRow>
     )
   },
 )

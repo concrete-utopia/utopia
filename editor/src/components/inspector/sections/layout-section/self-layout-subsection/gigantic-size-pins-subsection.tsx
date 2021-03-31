@@ -25,7 +25,7 @@ import {
   stylePropPathMappingFn,
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { ResolvedLayoutProps } from '../layout-section'
@@ -380,7 +380,7 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
   }, [togglePin])
 
   return (
-    <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
       <div
         id='width-height-row-toggles'
         style={{
@@ -404,7 +404,7 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
           </>
         ) : null}
       </div>
-      <GridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
         {widthControl}
         <SquareButton onClick={toggleAspectRatioLock} style={{ width: 16, height: 16 }}>
           {aspectRatioLocked ? <Icons.LockClosed /> : <Icons.LockOpen />}
@@ -419,8 +419,8 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
           <br />
           max
         </SquareButton>
-      </GridRow>
-    </GridRow>
+      </UIGridRow>
+    </UIGridRow>
   )
 })
 
@@ -428,15 +428,15 @@ const minimumsProps = [createLayoutPropertyPath('minWidth'), createLayoutPropert
 
 const MinimumsRow = betterReactMemo('MinimumsRow', () => {
   return (
-    <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
       <PropertyLabel target={minimumsProps}>Minimum</PropertyLabel>
-      <GridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
         {flexStyleNumberControl('W', 'minWidth')}
         {spacingButton}
         {flexStyleNumberControl('H', 'minHeight')}
         {spacingButton}
-      </GridRow>
-    </GridRow>
+      </UIGridRow>
+    </UIGridRow>
   )
 })
 
@@ -444,15 +444,15 @@ const maximumsProps = [createLayoutPropertyPath('maxWidth'), createLayoutPropert
 
 const MaximumsRow = betterReactMemo('MaximumsRow', () => {
   return (
-    <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
       <PropertyLabel target={maximumsProps}>Maximum</PropertyLabel>
-      <GridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
         {flexStyleNumberControl('W', 'maxWidth')}
         {spacingButton}
         {flexStyleNumberControl('H', 'maxHeight')}
         {spacingButton}
-      </GridRow>
-    </GridRow>
+      </UIGridRow>
+    </UIGridRow>
   )
 })
 
@@ -460,15 +460,15 @@ const flexWidthHeightProps = [createLayoutPropertyPath('Width'), createLayoutPro
 
 const FlexWidthHeightRow = betterReactMemo('FixedWidthHeightRow', () => {
   return (
-    <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexWidthHeightProps}>Size</PropertyLabel>
-      <GridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
         {flexLayoutNumberControl('W', 'Width')}
         {spacingButton}
         {flexLayoutNumberControl('H', 'Height')}
         {spacingButton}
-      </GridRow>
-    </GridRow>
+      </UIGridRow>
+    </UIGridRow>
   )
 })
 
@@ -479,15 +479,15 @@ const flexGrowShrinkProps = [
 
 const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
   return (
-    <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+    <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexGrowShrinkProps}>Flex</PropertyLabel>
-      <GridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
         <FlexShorthandNumberControl label='G' styleProp='flexGrow' />
         {spacingButton}
         <FlexShorthandNumberControl label='S' styleProp='flexShrink' />
         {spacingButton}
-      </GridRow>
-    </GridRow>
+      </UIGridRow>
+    </UIGridRow>
   )
 })
 
@@ -532,7 +532,7 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
   // }
 
   return (
-    <GridRow
+    <UIGridRow
       alignItems='start'
       padded={true}
       type='<---1fr--->|------172px-------|'
@@ -545,20 +545,20 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
         togglePin={togglePin}
       />
       <FlexColumn>
-        <GridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+        <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
           {firstXAxisControl}
           {spacingButton}
           {firstYAxisControl}
           {spacingButton}
-        </GridRow>
-        <GridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
+        </UIGridRow>
+        <UIGridRow padded={false} type='|--67px--||16px||--67px--||16px|'>
           {secondXAxisControl}
           {spacingButton}
           {secondYAxisControl}
           {spacingButton}
-        </GridRow>
+        </UIGridRow>
       </FlexColumn>
-    </GridRow>
+    </UIGridRow>
   )
 })
 

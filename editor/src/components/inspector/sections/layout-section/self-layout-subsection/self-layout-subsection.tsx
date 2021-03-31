@@ -2,7 +2,7 @@ import * as React from 'react'
 import { InspectorSubsectionHeader } from '../../../../../uuiui'
 import { usePropControlledState, betterReactMemo } from '../../../../../uuiui-deps'
 import { CSSPosition } from '../../../common/css-utils'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 import { FlexElementSubsection } from '../flex-element-subsection/flex-element-subsection'
 import { ResolvedLayoutProps } from '../layout-section'
 import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
@@ -40,9 +40,9 @@ export const SelfLayoutSubsection = betterReactMemo(
     return (
       <>
         <InspectorSubsectionHeader>Position and Dimensions</InspectorSubsectionHeader>
-        <GridRow padded type='<-------------1fr------------->'>
+        <UIGridRow padded type='<-------------1fr------------->'>
           <LayoutTypePicker value={activeTab} setActiveTab={setActiveTab} />
-        </GridRow>
+        </UIGridRow>
         <GiganticSizePinsSubsection
           input={props.input}
           layoutType={activeTab}

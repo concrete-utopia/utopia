@@ -36,7 +36,7 @@ import {
 } from '../../../common/property-path-hooks'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import { ColorControl } from '../../../controls/color-control'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 
 export function toggleShadowEnabled(oldValue: CSSBoxShadow): CSSBoxShadow {
   const newValue = { ...oldValue }
@@ -205,8 +205,8 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
       items={[removeShadow, ...props.contextMenuItems]}
       data={null}
     >
-      <GridRow tall padded={true} alignItems='start' type='<---1fr--->|------172px-------|'>
-        <GridRow tall padded={false} alignItems='start' type='<-auto-><----------1fr--------->'>
+      <UIGridRow tall padded={true} alignItems='start' type='<---1fr--->|------172px-------|'>
+        <UIGridRow tall padded={false} alignItems='start' type='<-auto-><----------1fr--------->'>
           <CheckboxInput
             id='boxShadow-enable-disable'
             checked={props.value.enabled}
@@ -224,7 +224,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
             controlStatus={props.controlStatus}
             controlStyles={props.controlStyles}
           />
-        </GridRow>
+        </UIGridRow>
         <ChainedNumberInput
           idPrefix='boxShadow'
           propsArray={[
@@ -270,7 +270,7 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
             },
           ]}
         />
-      </GridRow>
+      </UIGridRow>
     </InspectorContextMenuWrapper>
   )
 })

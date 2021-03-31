@@ -55,7 +55,7 @@ import {
 } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import { SelectOption } from '../../controls/select-control'
-import { GridRow } from '../../widgets/grid-row'
+import { UIGridRow } from '../../widgets/uigrid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { PropertyRow } from '../../widgets/property-row'
 import {
@@ -169,13 +169,13 @@ const RowForInvalidControl = betterReactMemo(
     const warning =
       props.warningTooltip == null ? null : <WarningTooltip warning={props.warningTooltip} />
     return (
-      <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
         <PropertyLabel target={propPath}>
           {warning}
           {props.title}
         </PropertyLabel>
         <ParseErrorControl parseError={props.propertyError} />
-      </GridRow>
+      </UIGridRow>
     )
   },
 )
@@ -231,14 +231,14 @@ const RowForBaseControl = betterReactMemo('RowForBaseControl', (props: RowForBas
       items={contextMenuItems}
       data={null}
     >
-      <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} type='<---1fr--->|------172px-------|'>
         {propertyLabel}
         <ControlForProp
           propName={propName}
           controlDescription={controlDescription}
           propMetadata={propMetadata}
         />
-      </GridRow>
+      </UIGridRow>
     </InspectorContextMenuWrapper>
   )
 })

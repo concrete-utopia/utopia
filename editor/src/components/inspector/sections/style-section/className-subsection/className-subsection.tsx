@@ -3,7 +3,7 @@ import { ValueType } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import { IndicatorContainerProps } from 'react-select/src/components/containers'
 import { MultiValueRemoveProps } from 'react-select/src/components/MultiValue'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/uigrid-row'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorElementInfo } from '../../../common/property-path-hooks'
 import { styleFn } from 'react-select/src/styles'
@@ -241,14 +241,14 @@ export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => 
   return (
     <React.Fragment>
       <InspectorSectionHeader>Class names</InspectorSectionHeader>
-      <GridRow padded type='<-------------1fr------------->' style={{ height: undefined }}>
+      <UIGridRow padded type='<-------------1fr------------->' style={{ height: undefined }}>
         <ClassNameControl
           values={values}
           controlStyles={controlStyles}
           onSubmitValue={onSubmitValue}
           onUnsetValues={onUnsetValues}
         />
-      </GridRow>
+      </UIGridRow>
     </React.Fragment>
   )
 })
