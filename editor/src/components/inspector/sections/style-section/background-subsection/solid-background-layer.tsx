@@ -106,12 +106,12 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
       >
-        <UIGridRow tall alignItems='start' padded={true} layout='<---1fr--->|------172px-------|'>
+        <UIGridRow tall alignItems='start' padded={true} variant='<---1fr--->|------172px-------|'>
           <UIGridRow
             tall
             alignItems='start'
             padded={false}
-            layout='<-auto-><----------1fr--------->'
+            variant='<-auto-><----------1fr--------->'
           >
             <CheckboxInput
               onChange={toggleCheckbox}
@@ -139,7 +139,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
             tall
             alignItems='start'
             padded={false}
-            layout='<--------auto-------->|--45px--|'
+            variant='<--------auto-------->|--45px--|'
           >
             <StringBackgroundColorControl
               id={`background-layer-gradient-${props.index}`}

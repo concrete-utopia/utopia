@@ -12,7 +12,7 @@ export const ContainerSubsection = betterReactMemo('ContainerSubsection', () => 
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
   return (
     <>
-      <UIGridRow padded={true} layout='<--------auto-------->||22px|'>
+      <UIGridRow padded={true} variant='<--------auto-------->||22px|'>
         <H2>Container</H2>
         <SeeMoreButton
           seeMoreVisible={seeMoreVisible}

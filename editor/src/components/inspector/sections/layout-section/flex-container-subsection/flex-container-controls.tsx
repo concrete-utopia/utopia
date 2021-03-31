@@ -244,7 +244,7 @@ export const FlexGapControl = betterReactMemo('FlexGapControl', (props: FlexGapC
   )
   return (
     <>
-      <UIGridRow padded={false} layout='<--------auto-------->|--45px--|'>
+      <UIGridRow padded={false} variant='<--------auto-------->|--45px--|'>
         <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
           <SliderControl
             id='flex.container.gap.main'

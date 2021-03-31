@@ -65,7 +65,7 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
    * the 'type' of the GridRow is the key which lets you pick from the Grid Templates.
    * Please try to find the template you need before adding a new template to the list.
    */
-  layout: keyof typeof gridTemplates
+  variant: keyof typeof gridTemplates
   /**
    * alignItems: default value is 'center'
    */
@@ -74,7 +74,7 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
 
 export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
   tall,
-  layout,
+  variant,
   alignItems,
   style,
   padded,
@@ -90,7 +90,7 @@ export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
       gridColumnGap: 10,
       overflow: 'hidden',
       alignItems: alignItems ?? 'center',
-      ...gridTemplates[layout],
+      ...gridTemplates[variant],
       ...style,
     }}
   >

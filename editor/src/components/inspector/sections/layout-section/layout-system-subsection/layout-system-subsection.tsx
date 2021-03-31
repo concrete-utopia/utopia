@@ -58,7 +58,7 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
         </InspectorSubsectionHeader>
         {layoutSectionOpen ? (
           <>
-            <UIGridRow padded={true} layout='<-------------1fr------------->'>
+            <UIGridRow padded={true} variant='<-------------1fr------------->'>
               <LayoutSystemControl
                 layoutSystem={props.specialSizeMeasurements.layoutSystemForChildren}
                 providesCoordinateSystemForChildren={
@@ -67,7 +67,7 @@ export const LayoutSystemSubsection = betterReactMemo<LayoutSystemSubsectionProp
               />
             </UIGridRow>
             {isFlexParent ? <FlexContainerControls seeMoreVisible={true} /> : null}
-            <UIGridRow tall padded={true} layout='<---1fr--->|------172px-------|'>
+            <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
               <PropertyLabel
                 target={paddingPropsToUnset}
                 propNamesToUnset={['all paddings']}

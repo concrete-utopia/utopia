@@ -225,7 +225,7 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
           <FlexColumn style={{ paddingLeft: 8, paddingRight: 8, gap: 16 }}>
             <UIGridRow
               padded
-              layout='|--32px--|<--------auto-------->'
+              variant='|--32px--|<--------auto-------->'
               style={{
                 height: 'inherit',
                 wordWrap: 'normal',
@@ -473,7 +473,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
             </a>
             &nbsp;without the editor or design tool.
           </div>
-          <UIGridRow layout='<--------auto-------->|--45px--|' padded>
+          <UIGridRow variant='<--------auto-------->|--45px--|' padded>
             <StringInput testId='externalProjectURL' value={previewURL} readOnly />
             <Button
               spotlight
@@ -539,7 +539,7 @@ const GithubPane = betterReactMemo('GithubPane', () => {
         You can import a new project from Github. It might take a few minutes, and will show up in{' '}
         <a href='/projects'>your projects</a> (not here).
       </div>
-      <UIGridRow padded layout='<--------auto-------->|--45px--|'>
+      <UIGridRow padded variant='<--------auto-------->|--45px--|'>
         <StringInput testId='importProject' value='' />
         <Button spotlight highlight>
           Start
@@ -688,7 +688,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                   <SectionBodyArea minimised={false}>
                     <UIGridRow
                       padded
-                      layout='<-------------1fr------------->'
+                      variant='<-------------1fr------------->'
                       style={{
                         height: 'inherit',
                         wordWrap: 'normal',
@@ -709,7 +709,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                         share your project on social media and chat apps.
                       </Subdued>
                     </UIGridRow>
-                    <UIGridRow padded layout='<---1fr--->|------172px-------|'>
+                    <UIGridRow padded variant='<---1fr--->|------172px-------|'>
                       <span>Name</span>
                       <StringInput
                         testId='projectName'
@@ -720,7 +720,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                         onBlur={handleBlur}
                       />
                     </UIGridRow>
-                    <UIGridRow padded layout='<---1fr--->|------172px-------|'>
+                    <UIGridRow padded variant='<---1fr--->|------172px-------|'>
                       <span> Description </span>
                       <StringInput
                         testId='projectDescription'
@@ -730,7 +730,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                     </UIGridRow>
                     <UIGridRow
                       padded
-                      layout='<---1fr--->|------172px-------|'
+                      variant='<---1fr--->|------172px-------|'
                       style={{ alignItems: 'start', height: 'initial', paddingTop: 8 }}
                     >
                       <span> Preview </span>

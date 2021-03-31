@@ -241,7 +241,7 @@ export const ClassNameSubsection = betterReactMemo('ClassNameSubSection', () => 
   return (
     <React.Fragment>
       <InspectorSectionHeader>Class names</InspectorSectionHeader>
-      <UIGridRow padded layout='<-------------1fr------------->' style={{ height: undefined }}>
+      <UIGridRow padded variant='<-------------1fr------------->' style={{ height: undefined }}>
         <ClassNameControl
           values={values}
           controlStyles={controlStyles}

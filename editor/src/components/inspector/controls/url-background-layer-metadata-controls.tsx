@@ -42,7 +42,7 @@ export const URLBackgroundLayerMetadataControls: React.FunctionComponent<URLBack
   )
 
   return (
-    <UIGridRow padded layout='<-auto-><----------1fr--------->'>
+    <UIGridRow padded variant='<-auto-><----------1fr--------->'>
       <PropertyLabel target={backgroundImagePropertyPath}>URL</PropertyLabel>
       <StringControl
         id='metadata-editor-modal-background-url-value'

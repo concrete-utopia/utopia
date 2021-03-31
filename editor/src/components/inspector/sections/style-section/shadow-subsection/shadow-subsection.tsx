@@ -205,8 +205,13 @@ const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
       items={[removeShadow, ...props.contextMenuItems]}
       data={null}
     >
-      <UIGridRow tall padded={true} alignItems='start' layout='<---1fr--->|------172px-------|'>
-        <UIGridRow tall padded={false} alignItems='start' layout='<-auto-><----------1fr--------->'>
+      <UIGridRow tall padded={true} alignItems='start' variant='<---1fr--->|------172px-------|'>
+        <UIGridRow
+          tall
+          padded={false}
+          alignItems='start'
+          variant='<-auto-><----------1fr--------->'
+        >
           <CheckboxInput
             id='boxShadow-enable-disable'
             checked={props.value.enabled}

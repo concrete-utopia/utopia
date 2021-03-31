@@ -255,13 +255,13 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   return (
     <>
       {!isDynamicSceneChildSizePercent ? null : (
-        <UIGridRow padded layout='<-auto-><----------1fr--------->'>
+        <UIGridRow padded variant='<-auto-><----------1fr--------->'>
           <WarningIcon />
           <span style={{ whiteSpace: 'normal' }}>{ChildWithPercentageSize}</span>
         </UIGridRow>
       )}
 
-      <UIGridRow padded layout='<-auto-><----------1fr--------->'>
+      <UIGridRow padded variant='<-auto-><----------1fr--------->'>
         <CheckboxInput
           id='resizeContentToggle'
           controlStatus={controlStatus}
