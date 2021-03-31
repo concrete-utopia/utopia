@@ -6,7 +6,7 @@ import { InstancePath, TemplatePath } from '../../../core/shared/project-file-ty
 import { betterReactMemo, getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
 import * as TP from '../../../core/shared/template-path'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { UIGridRow } from '../../inspector/widgets/uigrid-row'
+import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { PopupList } from '../../../uuiui'
 import { JSXElementName, jsxElementNameEquals } from '../../../core/shared/element-template'
 import { useNamesAndIconsAllPaths } from '../../inspector/common/name-and-icon-hook'

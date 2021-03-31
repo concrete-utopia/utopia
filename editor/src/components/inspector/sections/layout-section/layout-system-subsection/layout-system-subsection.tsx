@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { UIGridRow } from '../../../widgets/uigrid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   LayoutSystemControl,
   FlexPaddingControl,

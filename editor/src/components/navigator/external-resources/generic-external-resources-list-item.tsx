@@ -5,7 +5,7 @@ import {
   ExternalResources,
 } from '../../../printer-parsers/html/external-resources-parser'
 import { betterReactMemo, MenuProvider, MomentumContextMenu } from '../../../uuiui-deps'
-import { UIGridRow } from '../../inspector/widgets/uigrid-row'
+import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ResourcesListGridRowConfig } from './generic-external-resources-list'
 import { ContextMenuItem } from '../../context-menu-items'
 import { NO_OP } from '../../../core/shared/utils'

@@ -5,7 +5,7 @@ import utils from '../../../../utils/utils'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import { DOMEventHandler, DOMEventHandlerNames } from '../../common/css-utils'
 import { ParsedValues, useInspectorInfo } from '../../common/property-path-hooks'
-import { UIGridRow } from '../../widgets/uigrid-row'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 import { isJSXAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { PropertyLabel } from '../../widgets/property-label'
 import {

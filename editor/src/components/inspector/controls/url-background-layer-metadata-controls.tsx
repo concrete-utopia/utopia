@@ -6,7 +6,7 @@ import {
   CSSBackgroundLayers,
 } from '../common/css-utils'
 import { getControlStyles } from '../common/control-status'
-import { UIGridRow } from '../widgets/uigrid-row'
+import { UIGridRow } from '../widgets/ui-grid-row'
 import { PropertyLabel } from '../widgets/property-label'
 import { BackgroundLayerControlsProps } from '../sections/style-section/background-subsection/background-picker'
 import { StringControl } from './string-control'

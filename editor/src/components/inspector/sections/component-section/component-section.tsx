@@ -55,7 +55,7 @@ import {
 } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
 import { SelectOption } from '../../controls/select-control'
-import { UIGridRow } from '../../widgets/uigrid-row'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { PropertyRow } from '../../widgets/property-row'
 import {

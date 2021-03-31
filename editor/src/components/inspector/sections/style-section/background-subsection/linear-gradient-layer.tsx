@@ -14,7 +14,7 @@ import {
 } from '../../../common/css-utils'
 import { getIndexedSpliceArrayItem } from '../../../common/inspector-utils'
 import { stopPropagation } from '../../../common/inspector-utils'
-import { UIGridRow } from '../../../widgets/uigrid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   BackgroundLayerProps,
   backgroundLayerTypeSelectOptions,

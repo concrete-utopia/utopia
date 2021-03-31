@@ -38,7 +38,7 @@ import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-s
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
-import { UIGridRow } from '../inspector/widgets/uigrid-row'
+import { UIGridRow } from '../inspector/widgets/ui-grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
 import { GoogleFontsResourcesList } from './external-resources/google-fonts-resources-list'

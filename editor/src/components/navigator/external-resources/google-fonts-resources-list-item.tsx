@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { GoogleFontsResource } from '../../../printer-parsers/html/external-resources-parser'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { UIGridRow } from '../../inspector/widgets/uigrid-row'
+import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 
 interface GoogleFontsResourcesListItemProps {
   value: GoogleFontsResource

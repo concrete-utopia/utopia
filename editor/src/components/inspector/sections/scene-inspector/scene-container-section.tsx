@@ -29,7 +29,7 @@ import {
   PathForResizeContent,
   isSceneChildWidthHeightPercentage,
 } from '../../../../core/model/scene-utils'
-import { UIGridRow } from '../../widgets/uigrid-row'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
 import { ChildWithPercentageSize } from '../../../common/size-warnings'
 import { useWrappedEmptyOrUnknownOnSubmitValue, CheckboxInput } from '../../../../uuiui'

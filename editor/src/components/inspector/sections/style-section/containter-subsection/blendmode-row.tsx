@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { UIGridRow } from '../../../widgets/uigrid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PopupList } from '../../../../../uuiui'
 import {
   betterReactMemo,

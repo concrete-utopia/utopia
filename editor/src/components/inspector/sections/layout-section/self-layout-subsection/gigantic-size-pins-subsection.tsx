@@ -25,7 +25,7 @@ import {
   stylePropPathMappingFn,
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
-import { UIGridRow } from '../../../widgets/uigrid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { ResolvedLayoutProps } from '../layout-section'

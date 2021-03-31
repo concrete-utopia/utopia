@@ -19,7 +19,7 @@ import {
   getCSSNumberValue,
 } from '../../../common/css-utils'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { UIGridRow } from '../../../widgets/uigrid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   useWrappedSubmitFactoryEmptyOrUnknownOnSubmitValue,
   useWrappedEmptyOrUnknownOnSubmitValue,

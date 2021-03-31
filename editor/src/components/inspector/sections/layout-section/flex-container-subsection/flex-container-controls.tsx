@@ -9,7 +9,7 @@ import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/p
 import { SelectOption } from '../../../controls/select-control'
 import { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
-import { UIGridRow } from '../../../widgets/uigrid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { createLayoutPropertyPath } from '../../../../../core/layout/layout-helpers-new'
 import {

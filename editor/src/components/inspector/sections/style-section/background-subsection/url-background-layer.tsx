@@ -14,7 +14,7 @@ import {
 import { getIndexedSpliceArrayItem, stopPropagation } from '../../../common/inspector-utils'
 import { ImageThumbnailControl } from '../../../controls/image-thumbnail-control'
 import { StringControl } from '../../../controls/string-control'
-import { UIGridRow } from '../../../widgets/uigrid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   BackgroundLayerProps,
   backgroundLayerTypeSelectOptions,

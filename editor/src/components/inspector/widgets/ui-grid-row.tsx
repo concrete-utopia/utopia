@@ -97,4 +97,4 @@ export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
     {children}
   </div>
 )
-UIGridRow.displayName = 'GridRow'
+UIGridRow.displayName = 'UIGridRow'

@@ -36,7 +36,7 @@ import {
 } from '../../../common/property-path-hooks'
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import { ColorControl } from '../../../controls/color-control'
-import { UIGridRow } from '../../../widgets/uigrid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 
 export function toggleShadowEnabled(oldValue: CSSBoxShadow): CSSBoxShadow {
   const newValue = { ...oldValue }

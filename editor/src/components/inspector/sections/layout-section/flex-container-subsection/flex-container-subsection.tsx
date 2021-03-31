@@ -2,7 +2,7 @@ import * as React from 'react'
 import { FlexWrap } from 'utopia-api'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { UIGridRow } from '../../../widgets/uigrid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   FlexAlignContentControl,
   FlexAlignItemsControl,

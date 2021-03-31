@@ -13,7 +13,7 @@ import {
   useIsSubSectionVisible,
   useSelectedViews,
 } from '../../common/property-path-hooks'
-import { UIGridRow } from '../../widgets/uigrid-row'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
 import { colorTheme, InspectorSectionHeader } from '../../../../uuiui'
