@@ -93,7 +93,6 @@ import {
 import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
-import { flatMapArray } from '../../core/shared/array-utils'
 
 export interface InspectorModel {
   layout?: ResolvedLayoutProps

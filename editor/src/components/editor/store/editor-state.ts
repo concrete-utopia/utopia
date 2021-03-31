@@ -155,8 +155,6 @@ import {
   DerivedStateKeepDeepEquality,
   JSXMetadataKeepDeepEquality,
 } from './store-deep-equality-instances'
-import * as TP from '../../../core/shared/template-path'
-import { importedFromWhere } from '../import-utils'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
