@@ -256,7 +256,7 @@ function useStartDragState(): (
       const moveTargets = selection.filter(
         (view) =>
           TP.isScenePath(view) ||
-          TP.isStoryboardAncestor(view) ||
+          TP.isStoryboardAncestor(view) || // FIXME This must go in the bin when we separate the Scene from the component it renders
           elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
 

@@ -300,6 +300,10 @@ export function staticScenePathForElementAtInstancePath(path: StaticInstancePath
   return staticScenePath([...path.scene.sceneElementPaths, path.element])
 }
 
+export function scenePathForElementAtPath(path: TemplatePath): ScenePath {
+  return isScenePath(path) ? path : scenePathForElementAtInstancePath(path)
+}
+
 export function elementPathForPath(path: StaticInstancePath): StaticElementPath
 export function elementPathForPath(path: InstancePath): ElementPath
 export function elementPathForPath(path: InstancePath): ElementPath {

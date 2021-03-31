@@ -433,36 +433,23 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )
-    const rootViewsForScene: Array<TemplatePath> = useEditorState(
-      (store) => {
-        const possibleRootComponent = store.editor.jsxMetadataKILLME.components.find((m) =>
-          TP.pathsEqual(m.scenePath, selectedViews[0]),
-        )
-        if (possibleRootComponent != null) {
-          return possibleRootComponent.rootElements
-        } else {
-          return []
-        }
-      },
+    const rootViewsForSelectedElement: Array<TemplatePath> = useEditorState(
+      (store) =>
+        MetadataUtils.getRootViews(store.editor.jsxMetadataKILLME.elements, selectedViews[0]),
       'InspectorEntryPoint',
       (oldTemplatePaths, newTemplatePaths) => {
         return arrayEquals(oldTemplatePaths, newTemplatePaths, TP.pathsEqual)
       },
     )
 
-    const showSceneInspector =
-      selectedViews[0] != null &&
-      TP.depth(selectedViews[0]) === 1 &&
-      TP.isScenePath(selectedViews[0])
-
-    if (showSceneInspector) {
+    if (selectedViews.length === 1 && rootViewsForSelectedElement.length > 0) {
       return (
         <>
           <SingleInspectorEntryPoint selectedViews={selectedViews} />
           <InspectorSectionHeader style={{ paddingTop: UtopiaTheme.layout.rowHeight.small }}>
             Root View
           </InspectorSectionHeader>
-          <SingleInspectorEntryPoint selectedViews={rootViewsForScene} />
+          <SingleInspectorEntryPoint selectedViews={rootViewsForSelectedElement} />
         </>
       )
     } else {

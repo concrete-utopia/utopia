@@ -548,6 +548,10 @@ export const MetadataUtils = {
     })
     return jsxMetadata(metadata.components, elements)
   },
+  getRootViews(elements: ElementInstanceMetadataMap, target: TemplatePath): Array<InstancePath> {
+    const element = MetadataUtils.findElementByTemplatePath(elements, target)
+    return element?.rootElements ?? []
+  },
   getImmediateChildrenPaths(
     elements: ElementInstanceMetadataMap,
     target: TemplatePath,

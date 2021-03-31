@@ -496,6 +496,7 @@ export class SelectModeControlContainer extends React.Component<
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const roots = MetadataUtils.getAllStoryboardAncestorPaths(this.props.componentMetadata.elements)
+    const rootsAsScenes = roots.map(TP.scenePathForElementAtInstancePath) // FIXME Bin this after separating Scene from the component it renders
     let labelDirectlySelectable = this.props.highlightsEnabled
 
     // TODO future span element should be included here
@@ -523,7 +524,7 @@ export class SelectModeControlContainer extends React.Component<
         }}
         onContextMenu={this.onContextMenu}
       >
-        {roots.map((root) => {
+        {rootsAsScenes.map((root) => {
           return (
             <React.Fragment key={`${TP.toComponentId(root)}}-root-controls`}>
               {this.renderLabel(root, allElementsDirectlySelectable || labelDirectlySelectable)}
