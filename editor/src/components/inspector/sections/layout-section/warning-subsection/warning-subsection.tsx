@@ -14,7 +14,7 @@ export const WarningSubsection = betterReactMemo('WarningSubsection', (props) =>
         title='The inspector only shows values from css-in-js, styled-systems, and emotion. You can use css classes to style content, but they will not show up here.'
         placement='bottom'
       >
-        <UIRow padding={8}>
+        <UIRow padding={true}>
           <InfoBox
             level='WARNING'
             message={

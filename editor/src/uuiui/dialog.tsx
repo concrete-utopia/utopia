@@ -44,7 +44,7 @@ export const Dialog = (props: DialogProps) => (
             style={{
               padding: '16px 16px',
               whiteSpace: 'initial',
-              minHeight: UtopiaTheme.layout.rowHeight.large,
+              minHeight: 42,
             }}
           >
             <span

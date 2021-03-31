@@ -258,7 +258,7 @@ const RowForArrayControl = betterReactMemo(
       controlDescription,
     )
 
-    const rowHeight = UtopiaTheme.layout.gridRowHeight.tall
+    const rowHeight = UtopiaTheme.layout.rowHeight.tall
     const { springs, bind } = useArraySuperControl(value, onSubmitValue, rowHeight, false)
     const [insertingRow, setInsertingRow] = React.useState(false)
 

@@ -155,7 +155,7 @@ export const NavigatorComponent = betterReactMemo(
           <FixedSizeList
             width={'100%'}
             height={size.height}
-            itemSize={UtopiaTheme.layout.rowHeight.smaller}
+            itemSize={29}
             itemCount={visibleNavigatorTargets.length}
             layout={'vertical'}
           >

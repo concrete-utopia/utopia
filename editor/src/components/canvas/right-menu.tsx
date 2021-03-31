@@ -69,8 +69,8 @@ export const RightMenuTile: React.FunctionComponent<RightMenuTileProps> = (props
     <SimpleTile
       style={{
         ...props.style,
-        width: UtopiaTheme.layout.rowHeight.mediumLarge,
-        height: UtopiaTheme.layout.rowHeight.mediumLarge,
+        width: 38,
+        height: 38,
       }}
       onMouseOver={handleOnMouseOver}
       onMouseOut={handleOnMouseOut}

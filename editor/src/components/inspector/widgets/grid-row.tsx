@@ -86,9 +86,7 @@ export const GridRow: React.FunctionComponent<GridRowProps> = ({
     style={{
       padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
       display: 'grid',
-      height: tall
-        ? UtopiaTheme.layout.gridRowHeight.tall
-        : UtopiaTheme.layout.gridRowHeight.normal,
+      height: tall ? UtopiaTheme.layout.rowHeight.tall : UtopiaTheme.layout.rowHeight.normal,
       gridColumnGap: 10,
       overflow: 'hidden',
       alignItems: alignItems ?? 'center',

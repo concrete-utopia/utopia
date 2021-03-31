@@ -330,7 +330,7 @@ const SettingsPane = betterReactMemo('SettingsPane', () => {
             <div
               style={{
                 height: 'initial',
-                minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+                minHeight: UtopiaTheme.layout.rowHeight.normal,
                 alignItems: 'flex-start',
                 paddingTop: 8,
                 paddingLeft: 8,
@@ -393,7 +393,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -418,7 +418,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -449,7 +449,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -486,7 +486,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -518,7 +518,7 @@ const GithubPane = betterReactMemo('GithubPane', () => {
       }}
     >
       <FlexRow
-        style={{ paddingLeft: 8, paddingRight: 8, height: UtopiaTheme.layout.gridRowHeight.normal }}
+        style={{ paddingLeft: 8, paddingRight: 8, height: UtopiaTheme.layout.rowHeight.normal }}
       >
         <Title>Github</Title>
       </FlexRow>

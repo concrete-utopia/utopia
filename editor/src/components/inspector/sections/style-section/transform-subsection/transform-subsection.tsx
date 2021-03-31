@@ -531,7 +531,7 @@ const CSSTransformsToTransform = (transformedType: CSSTransforms) => {
   }
 }
 
-const rowHeight = UtopiaTheme.layout.gridRowHeight.tall
+const rowHeight = UtopiaTheme.layout.rowHeight.tall
 
 export const TransformSubsection = betterReactMemo('TransformSubsection', () => {
   const {

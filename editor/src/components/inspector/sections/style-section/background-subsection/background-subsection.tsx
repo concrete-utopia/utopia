@@ -159,7 +159,7 @@ export const backgroundLonghandPaths: Array<
   'backgroundColor' | 'backgroundImage' | 'backgroundSize'
 > = ['backgroundColor', 'backgroundImage', 'backgroundSize']
 
-const rowHeight = UtopiaTheme.layout.gridRowHeight.tall
+const rowHeight = UtopiaTheme.layout.rowHeight.tall
 
 export const BackgroundSubsection = betterReactMemo('BackgroundSubsection', () => {
   const [openPopup, setOpenPopup] = React.useState<number | undefined>(undefined)

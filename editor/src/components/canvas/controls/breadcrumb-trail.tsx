@@ -79,10 +79,7 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
   })
 
   return (
-    <UIRow
-      rowHeight={UtopiaTheme.layout.rowHeight.medium}
-      padding={`0px ${UtopiaTheme.layout.rowHorizontalPadding}px`}
-    >
+    <UIRow rowHeight={'normal'} padding={true}>
       <Icons.Component style={{ marginRight: 4 }} />
       {elements}
     </UIRow>

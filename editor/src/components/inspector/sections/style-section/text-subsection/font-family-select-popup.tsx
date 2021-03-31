@@ -504,7 +504,7 @@ export const FontFamilySelectPopup = betterReactMemo(
           }}
           onKeyDown={onWrapperKeyDown}
         >
-          <UIRow padding={12}>
+          <FlexRow style={{ padding: 12 }}>
             <StringInput
               testId='font-family-search'
               ref={stringInputRef}
@@ -514,7 +514,7 @@ export const FontFamilySelectPopup = betterReactMemo(
               onChange={onChange}
               style={{ flexGrow: 1 }}
             />
-          </UIRow>
+          </FlexRow>
           <VariableSizeList
             ref={variableSizeListRef}
             itemSize={getItemSize}

@@ -332,7 +332,7 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
     >
       <UIRow
         tabIndex={0}
-        rowHeight={UtopiaTheme.layout.rowHeight.medium - 2}
+        rowHeight={'small'}
         style={{
           flexShrink: 0,
           position: 'relative',
@@ -400,13 +400,13 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
   const titleStyle = selectedItem[0] === 'style' ? undefined : { color: colorTheme.primary.value }
 
   return (
-    <UIRow
-      rowHeight={UtopiaTheme.layout.rowHeight.large}
+    <FlexRow
       style={{
         paddingLeft: 8,
         paddingRight: 8,
         backgroundColor: colorTheme.slightlyEmphasizedBackground.value,
         cursor: 'pointer',
+        height: 42,
       }}
       css={{
         '&:hover': {
@@ -433,7 +433,7 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
           />
         </SquareButton>
       </SectionActionSheet>
-    </UIRow>
+    </FlexRow>
   )
 })
 
@@ -472,9 +472,9 @@ const AddingRow = betterReactMemo('AddingRow', (props: AddingRowProps) => {
 
   return (
     <UIRow
-      rowHeight={UtopiaTheme.layout.rowHeight.medium}
+      rowHeight={'normal'}
       style={{
-        minHeight: UtopiaTheme.layout.rowHeight.medium,
+        minHeight: UtopiaTheme.layout.rowHeight.normal,
         marginRight: 8,
         marginBottom: 4,
         marginLeft: 8 + 10 * (addingIndentLevel ?? 0),

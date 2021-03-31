@@ -407,7 +407,7 @@ export const InsertGroup: React.FunctionComponent<InsertGroupProps> = betterReac
   (props) => {
     return (
       <div style={{ paddingBottom: 12 }}>
-        <UIRow rowHeight={UtopiaTheme.layout.rowHeight.medium}>
+        <UIRow rowHeight={'normal'}>
           <InspectorSubsectionHeader>
             <div style={{ color: colorTheme.emphasizedForeground.value, fontWeight: 500 }}>
               {props.label}
@@ -456,7 +456,7 @@ export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => 
 
   return (
     <UIRow
-      rowHeight={UtopiaTheme.layout.rowHeight.medium}
+      rowHeight={'normal'}
       css={{
         background: props.selected ? UtopiaStyles.backgrounds.blue : 'initial',
         color: props.selected ? colorTheme.white.value : 'initial',
