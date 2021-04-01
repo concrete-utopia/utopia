@@ -532,17 +532,21 @@ export const MetadataUtils = {
     })
     return jsxMetadata(metadata.components, elements)
   },
+  getImmediateChildrenPaths(metadata: JSXMetadata, target: TemplatePath): Array<InstancePath> {
+    if (TP.isScenePath(target)) {
+      const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, target)
+      return scene?.rootElements ?? []
+    } else {
+      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
+      return element?.children ?? []
+    }
+  },
   getImmediateChildren(
     metadata: JSXMetadata,
     target: TemplatePath,
   ): Array<ElementInstanceMetadata> {
-    if (TP.isScenePath(target)) {
-      const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, target)
-      return MetadataUtils.getElementsByInstancePath(metadata.elements, scene?.rootElements ?? [])
-    } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
-      return MetadataUtils.getElementsByInstancePath(metadata.elements, element?.children ?? [])
-    }
+    const childPaths = this.getImmediateChildrenPaths(metadata, target)
+    return MetadataUtils.getElementsByInstancePath(metadata.elements, childPaths)
   },
   getChildrenHandlingGroups(
     metadata: JSXMetadata,
@@ -776,45 +780,67 @@ export const MetadataUtils = {
   findStoryboardRoot(roots: Array<ComponentMetadata>): ComponentMetadata | null {
     return roots.find((root) => TP.pathsEqual(root.scenePath, EmptyScenePathForStoryboard)) ?? null
   },
+  getAllChildrenIncludingUnfurledFocusedComponents(
+    path: TemplatePath,
+    metadata: JSXMetadata,
+    focusedElementPath: ScenePath | null,
+  ): Array<InstancePath> {
+    const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
+    const children = MetadataUtils.getImmediateChildrenPaths(metadata, path)
+
+    const matchingFocusPath =
+      focusedElementPath == null
+        ? null
+        : TP.scenePathUpToElementPath(
+            focusedElementPath,
+            TP.elementPathForPath(path),
+            'dynamic-scene-path',
+          )
+    const focusedRootElementPaths =
+      matchingFocusPath == null
+        ? []
+        : allPaths.filter(
+            (p) =>
+              TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
+              TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
+          )
+
+    return [...children, ...focusedRootElementPaths]
+  },
+  getAllChildrenElementsIncludingUnfurledFocusedComponents(
+    path: TemplatePath,
+    metadata: JSXMetadata,
+    focusedElementPath: ScenePath | null,
+  ): Array<ElementInstanceMetadata> {
+    const childrenPaths = this.getAllChildrenIncludingUnfurledFocusedComponents(
+      path,
+      metadata,
+      focusedElementPath,
+    )
+    return mapDropNulls((childPath) => {
+      return this.getElementByInstancePathMaybe(metadata.elements, childPath)
+    }, childrenPaths)
+  },
   createOrderedTemplatePathsFromElements(
     metadata: JSXMetadata,
     collapsedViews: Array<TemplatePath>,
     focusedElementPath: ScenePath | null,
   ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
-    const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
-
     let navigatorTargets: Array<TemplatePath> = []
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
     function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
-      const children = element?.children ?? []
+      const childrenIncludingFocusedElements = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+        path,
+        metadata,
+        focusedElementPath,
+      )
+      const reversedChildren = R.reverse(childrenIncludingFocusedElements)
       const isCollapsed = TP.containsPath(path, collapsedViews)
-      const reversedChildren = R.reverse(children)
       navigatorTargets.push(path)
       if (!collapsedAncestor) {
         visibleNavigatorTargets.push(path)
       }
-
-      const matchingFocusPath =
-        focusedElementPath == null
-          ? null
-          : TP.scenePathUpToElementPath(
-              focusedElementPath,
-              TP.elementPathForPath(path),
-              'dynamic-scene-path',
-            )
-      const focusedRootElementPaths =
-        matchingFocusPath == null
-          ? []
-          : allPaths.filter(
-              (p) =>
-                TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
-                TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
-            )
-      fastForEach(focusedRootElementPaths, (focusedRootElement) => {
-        walkAndAddKeys(focusedRootElement, collapsedAncestor || isCollapsed)
-      })
 
       fastForEach(reversedChildren, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)

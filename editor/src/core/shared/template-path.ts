@@ -279,10 +279,17 @@ export function staticScenePathForElementAtInstancePath(path: StaticInstancePath
   return staticScenePath([...path.scene.sceneElementPaths, path.element])
 }
 
+export function elementPathForPath(path: StaticScenePath): StaticElementPath
+export function elementPathForPath(path: ScenePath): ElementPath
 export function elementPathForPath(path: StaticInstancePath): StaticElementPath
 export function elementPathForPath(path: InstancePath): ElementPath
-export function elementPathForPath(path: InstancePath): ElementPath {
-  return path.element
+export function elementPathForPath(path: TemplatePath): ElementPath
+export function elementPathForPath(path: TemplatePath): ElementPath {
+  if (isScenePath(path)) {
+    return last(path.sceneElementPaths) ?? []
+  } else {
+    return path.element
+  }
 }
 
 export function filterScenes(paths: StaticTemplatePath[]): StaticInstancePath[]
@@ -976,5 +983,17 @@ export function dropFirstScenePathElement(
       },
       droppedScenePathElements: path.scene.sceneElementPaths[0],
     }
+  }
+}
+
+export function outermostScenePathPart(path: TemplatePath): ScenePath {
+  const asScenePath = isScenePath(path) ? path : scenePathPartOfTemplatePath(path)
+  if (asScenePath.sceneElementPaths.length > 1) {
+    return {
+      ...asScenePath,
+      sceneElementPaths: asScenePath.sceneElementPaths.slice(0, 1),
+    }
+  } else {
+    return asScenePath
   }
 }

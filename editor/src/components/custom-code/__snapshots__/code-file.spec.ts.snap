@@ -262,6 +262,7 @@ ComponentWithProps.propertyControls = {
     },
   },
   "requireFn": [Function],
+  "resolve": [Function],
   "skipDeepFreeze": true,
 }
 `;
@@ -1185,6 +1186,7 @@ exports.ComponentWithProps.propertyControls = {
     },
   },
   "requireFn": [Function],
+  "resolve": [Function],
   "skipDeepFreeze": true,
 }
 `;
@@ -1590,6 +1592,7 @@ exports.App = function (props) {
     },
   },
   "requireFn": [Function],
+  "resolve": [Function],
   "skipDeepFreeze": true,
 }
 `;

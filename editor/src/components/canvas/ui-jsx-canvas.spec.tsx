@@ -4,6 +4,8 @@ import {
   testCanvasRender,
   testCanvasError,
   testCanvasRenderInline,
+  testCanvasRenderMultifile,
+  testCanvasRenderInlineMultifile,
 } from './ui-jsx-canvas.test-utils'
 
 describe('UiJsxCanvas render', () => {
@@ -1306,7 +1308,6 @@ export var storyboard = (
             <div
               class=\\"ant-picker\\"
               style=\\"width: 123px; height: 51px; left: 113px; top: 395px;\\"
-              data-uid=\\"antd-date-picker\\"
             >
               <div class=\\"ant-picker-input\\">
                 <input
@@ -1983,5 +1984,155 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       }
       `,
     )
+  })
+})
+
+describe('UiJsxCanvas render multifile projects', () => {
+  it('renders a canvas with App imported from a file', () => {
+    const printedDom = testCanvasRenderInlineMultifile(
+      null,
+      `/** @jsx jsx */
+      import * as React from 'react'
+      import { jsx, Storyboard, Scene } from 'utopia-api'
+      import { App } from 'app.js'
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              static
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              component={App}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
+              data-uid={'scene-0'}
+            />
+          </Storyboard>
+        )
+      }
+      `,
+      {
+        'app.js': `/** @jsx jsx */
+      import * as React from 'react'
+      import { jsx } from 'utopia-api'
+      export var App = (props) => {
+        return <div data-uid='app-outer-div'>
+          <div data-uid='inner-div'>hello</div>
+        </div>
+      }`,
+      },
+    )
+    expect(printedDom).toMatchInlineSnapshot(`
+      "<div
+        id=\\"canvas-container\\"
+        style=\\"
+          all: initial;
+          position: absolute;
+          zoom: 100%;
+          transform: translate3d(0px, 0px, 0);
+        \\"
+        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
+      >
+        <div
+          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div utopia-storyboard-uid/scene-0:app-outer-div/inner-div\\"
+          style=\\"
+            position: absolute;
+            background-color: rgba(255, 255, 255, 1);
+            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+            height: 200px;
+            left: 59px;
+            width: 200px;
+            top: 79px;
+          \\"
+          data-uid=\\"utopia-storyboard-uid\\"
+        >
+          <div data-uid=\\"app-outer-div scene-0\\">
+            <div data-uid=\\"inner-div\\">hello</div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
+  })
+  it('renders a canvas with App and Card imported from files', () => {
+    const printedDom = testCanvasRenderInlineMultifile(
+      null,
+      `/** @jsx jsx */
+      import * as React from 'react'
+      import { jsx, Storyboard, Scene } from 'utopia-api'
+      import { App } from 'app.js'
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              static
+              style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
+              component={App}
+              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
+              data-uid={'scene-0'}
+            />
+          </Storyboard>
+        )
+      }
+      `,
+      {
+        'app.js': `/** @jsx jsx */
+      import * as React from 'react'
+      import { jsx } from 'utopia-api'
+      import { Card } from 'card.js'
+      export var App = (props) => {
+        return <div data-uid='app-outer-div'>
+          <Card data-uid='card-instance'>
+            <span data-uid='card-content'>hello</span>
+          </Card>
+        </div>
+      }`,
+        'card.js': `/** @jsx jsx */
+        import * as React from 'react'
+        import { jsx } from 'utopia-api'
+        export var Card = (props) => {
+          return <div data-uid='card-outer-div'>
+            <div data-uid='card-header'>Card</div>
+            {props.children}
+          </div>
+        }`,
+      },
+    )
+    expect(printedDom).toMatchInlineSnapshot(`
+      "<div
+        id=\\"canvas-container\\"
+        style=\\"
+          all: initial;
+          position: absolute;
+          zoom: 100%;
+          transform: translate3d(0px, 0px, 0);
+        \\"
+        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
+      >
+        <div
+          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
+          data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div utopia-storyboard-uid/scene-0:app-outer-div/card-instance utopia-storyboard-uid/scene-0:app-outer-div/card-instance/card-content\\"
+          style=\\"
+            position: absolute;
+            background-color: rgba(255, 255, 255, 1);
+            box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+            height: 200px;
+            left: 59px;
+            width: 200px;
+            top: 79px;
+          \\"
+          data-uid=\\"utopia-storyboard-uid\\"
+        >
+          <div data-uid=\\"app-outer-div scene-0\\">
+            <div data-uid=\\"card-outer-div card-instance\\">
+              <div data-uid=\\"card-header\\">Card</div>
+              <span data-uid=\\"card-content\\">hello</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      "
+    `)
   })
 })

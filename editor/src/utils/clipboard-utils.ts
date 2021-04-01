@@ -1,4 +1,5 @@
-import { extractFile, FileResult } from '../core/shared/file-utils'
+import { extractFile } from '../core/model/project-file-utils'
+import { FileResult } from '../core/shared/file-utils'
 import { CopyData } from './clipboard'
 
 export interface PasteResult {
