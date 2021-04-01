@@ -551,9 +551,7 @@ export const MetadataUtils = {
     target: TemplatePath,
   ): Array<InstancePath> {
     const element = MetadataUtils.findElementByTemplatePath(elements, target)
-    const rootElements = element?.rootElements ?? []
-    const children = element?.children ?? []
-    return [...rootElements, ...children]
+    return element == null ? [] : [...element.rootElements, ...element.children]
   },
   getImmediateChildren(
     metadata: ElementInstanceMetadataMap,
