@@ -600,31 +600,31 @@ export const MetadataUtils = {
   getStoryboardMetadata(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata | null {
     return Object.values(metadata).find((e) => TP.isStoryboardPath(e.templatePath)) ?? null
   },
-  getAllStoryboardAncestors(metadata: JSXMetadata): ElementInstanceMetadata[] {
+  getAllStoryboardDescendants(metadata: JSXMetadata): ElementInstanceMetadata[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata.elements)
     return storyboardMetadata == null
       ? []
       : MetadataUtils.getImmediateChildren(metadata, storyboardMetadata.templatePath)
   },
-  getAllStoryboardAncestorPaths(metadata: ElementInstanceMetadataMap): InstancePath[] {
+  getAllStoryboardDescendantPaths(metadata: ElementInstanceMetadataMap): InstancePath[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
     return storyboardMetadata == null
       ? []
       : MetadataUtils.getImmediateChildrenPaths(metadata, storyboardMetadata.templatePath)
   },
-  getAllStoryboardAncestorPathsScenesOnly(metadata: JSXMetadata): ScenePath[] {
+  getAllStoryboardDescendantPathsScenesOnly(metadata: JSXMetadata): ScenePath[] {
     // FIXME Use the instance path after we separate Scene from the component it renders
-    const ancestors = MetadataUtils.getAllStoryboardAncestors(metadata)
+    const descendants = MetadataUtils.getAllStoryboardDescendants(metadata)
     return mapDropNulls(
       (e) =>
         MetadataUtils.elementIsScene(e)
           ? TP.scenePathForElementAtInstancePath(e.templatePath)
           : null,
-      ancestors,
+      descendants,
     )
   },
   getAllCanvasRootPaths(metadata: JSXMetadata): TemplatePath[] {
-    const rootScenesAndElements = MetadataUtils.getAllStoryboardAncestors(metadata)
+    const rootScenesAndElements = MetadataUtils.getAllStoryboardDescendants(metadata)
     return flatMapArray<ElementInstanceMetadata, TemplatePath>((root) => {
       if (root.rootElements.length > 0) {
         return root.rootElements
@@ -642,7 +642,7 @@ export const MetadataUtils = {
       fastForEach(element?.children ?? [], recurseElement)
     }
 
-    const rootInstances = this.getAllStoryboardAncestorPaths(metadata.elements)
+    const rootInstances = this.getAllStoryboardDescendantPaths(metadata.elements)
 
     fastForEach(rootInstances, (rootInstance) => {
       const element = MetadataUtils.findElementByTemplatePath(metadata.elements, rootInstance)
@@ -825,7 +825,7 @@ export const MetadataUtils = {
       })
     }
 
-    const reverseCanvasRoots = MetadataUtils.getAllStoryboardAncestors(metadata).reverse()
+    const reverseCanvasRoots = MetadataUtils.getAllStoryboardDescendants(metadata).reverse()
     fastForEach(reverseCanvasRoots, (root) => {
       if (MetadataUtils.elementIsScene(root)) {
         const rootScenePath = TP.scenePathForElementAtInstancePath(root.templatePath)

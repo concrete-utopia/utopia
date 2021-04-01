@@ -120,7 +120,7 @@ export function getSelectableViews(
   if (allElementsDirectlySelectable) {
     candidateViews = MetadataUtils.getAllPaths(componentMetadata)
   } else {
-    const scenes = MetadataUtils.getAllStoryboardAncestorPathsScenesOnly(componentMetadata)
+    const scenes = MetadataUtils.getAllStoryboardDescendantPathsScenesOnly(componentMetadata)
     let rootElementsToFilter: TemplatePath[] = []
     let dynamicScenesWithFragmentRootViews: TemplatePath[] = []
     Utils.fastForEach(scenes, (path) => {
@@ -256,7 +256,7 @@ function useStartDragState(): (
       const moveTargets = selection.filter(
         (view) =>
           TP.isScenePath(view) ||
-          TP.isStoryboardAncestor(view) || // FIXME This must go in the bin when we separate the Scene from the component it renders
+          TP.isStoryboardDescendant(view) || // FIXME This must go in the bin when we separate the Scene from the component it renders
           elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
 

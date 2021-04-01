@@ -131,7 +131,7 @@ const Canvas = {
       }
     }
 
-    const storyboardEntryPoint = MetadataUtils.getAllStoryboardAncestors(metadata)
+    const storyboardEntryPoint = MetadataUtils.getAllStoryboardDescendants(metadata)
     return storyboardEntryPoint.flatMap((storyboardRoot) => {
       return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardRoot).frames
     })

@@ -267,7 +267,7 @@ export function isStoryboardPath(path: InstancePath): boolean {
   return isEmptyScenePath(path.scene) && isTopLevelInstancePath(path)
 }
 
-export function isStoryboardAncestor(path: InstancePath): boolean {
+export function isStoryboardDescendant(path: InstancePath): boolean {
   return isEmptyScenePath(path.scene) && !isStoryboardPath(path)
 }
 
