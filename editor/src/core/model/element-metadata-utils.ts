@@ -786,7 +786,7 @@ export const MetadataUtils = {
     focusedElementPath: ScenePath | null,
   ): Array<InstancePath> {
     const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
-    const children = MetadataUtils.getImmediateChildrenPaths(metadata, path)
+    const children = MetadataUtils.getImmediateChildrenPaths(metadata.elements, path)
 
     const matchingFocusPath =
       focusedElementPath == null
