@@ -52,10 +52,10 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
             })
           }
         } else {
-          const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
+          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME.elements, path)
           if (scene != null) {
             elements.push({
-              name: scene.label,
+              name: scene.label ?? undefined,
               path: path,
             })
           }

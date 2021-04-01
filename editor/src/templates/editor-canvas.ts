@@ -52,7 +52,7 @@ import {
 } from '../components/mouse-move'
 import * as TP from '../core/shared/template-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { ComponentMetadata, JSXMetadata } from '../core/shared/element-template'
+import { JSXMetadata } from '../core/shared/element-template'
 import { TemplatePath } from '../core/shared/project-file-types'
 import {
   getActionsForClipboardItems,

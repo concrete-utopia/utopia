@@ -441,14 +441,14 @@ export function parentPath(path: InstancePath): TemplatePath
 export function parentPath(path: TemplatePath): TemplatePath | null
 export function parentPath(path: TemplatePath): TemplatePath | null {
   if (isScenePath(path)) {
-    return null
+    return null // FIXME This is wrong!
   } else {
     return instancePathParent(path)
   }
 }
 
 function elementPathToUID(path: ElementPath): id {
-  return last(path)!
+  return last(path) ?? ''
 }
 
 // KILLME DEPRECATED, use toUid instead
@@ -456,8 +456,17 @@ export function toTemplateId(path: InstancePath): id {
   return elementPathToUID(path.element)
 }
 
-export function toUid(path: InstancePath): id {
-  return elementPathToUID(path.element)
+function lastElementPathPart(path: TemplatePath): ElementPath {
+  if (isInstancePath(path)) {
+    return path.element
+  } else {
+    return last(path.sceneElementPaths) ?? []
+  }
+}
+
+export function toUid(path: TemplatePath): id {
+  const elementPathToUse = lastElementPathPart(path)
+  return elementPathToUID(elementPathToUse)
 }
 
 export function toStaticUid(path: InstancePath): id {

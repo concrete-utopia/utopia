@@ -71,8 +71,8 @@ export function determineElementsToOperateOnForDragging(
     ).map((view) => {
       const parentPath = TP.parentPath(view)
       if (parentPath != null && TP.isScenePath(parentPath)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(
-          componentMetadata.components,
+        const scene = MetadataUtils.findElementByTemplatePath(
+          componentMetadata.elements,
           parentPath,
         )
         if (MetadataUtils.isSceneTreatedAsGroup(scene)) {
@@ -88,7 +88,7 @@ export function determineElementsToOperateOnForDragging(
     // Resizing.
     return flatMapArray<TemplatePath, TemplatePath>((view) => {
       if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata.components, view)
+        const scene = MetadataUtils.findElementByTemplatePath(componentMetadata.elements, view)
         if (scene != null && MetadataUtils.isSceneTreatedAsGroup(scene)) {
           return scene.rootElements
         } else {

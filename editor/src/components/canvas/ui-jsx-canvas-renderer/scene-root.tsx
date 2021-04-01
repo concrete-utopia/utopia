@@ -72,15 +72,6 @@ function useRunSpy(
 
   const resizesContent = Boolean(utils.path(PP.getElements(PathForResizeContent), props) ?? false)
 
-  metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
-    scenePath: scenePath,
-    templatePath: templatePath,
-    component: componentName,
-    sceneResizesContent: resizesContent,
-    globalFrame: null,
-    label: props['data-label'],
-    style: props.style ?? {},
-  }
   if (shouldIncludeCanvasRootInTheSpy) {
     let capturedProps: {
       resizesContent?: boolean

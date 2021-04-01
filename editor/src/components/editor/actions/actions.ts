@@ -33,10 +33,8 @@ import {
   findElementAtPath,
   MetadataUtils,
   findJSXElementAtPath,
-  convertMetadataMap,
 } from '../../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   DetectedLayoutSystem,
   ElementInstanceMetadata,
   getJSXElementNameAsString,
@@ -67,6 +65,7 @@ import {
   deleteJSXAttribute,
   setJSXAttributesAttribute,
   emptyJsxMetadata,
+  jsxMetadata,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -3627,10 +3626,7 @@ export const UPDATE_FNS = {
     cullSpyCollector(spyCollector, action.elementMetadata)
 
     // Calculate the spy metadata given what has been collected.
-    const spyResult = convertMetadataMap(
-      spyCollector.current.spyValues.metadata,
-      spyCollector.current.spyValues.scenes,
-    )
+    const spyResult = jsxMetadata([], spyCollector.current.spyValues.metadata)
 
     const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality())(
       editor.domMetadataKILLME,

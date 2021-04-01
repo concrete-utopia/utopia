@@ -231,12 +231,8 @@ export const selectElementsThatRespectLayout = createSelector(
   ) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, view)
-        if (scene != null) {
-          return [view, ...scene.rootElements]
-        } else {
-          return [view]
-        }
+        const rootElements = MetadataUtils.getRootViews(jsxMetadataKILLME.elements, view)
+        return [view, ...rootElements]
       } else {
         return [view]
       }

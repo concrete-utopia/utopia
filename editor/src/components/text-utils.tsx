@@ -4,7 +4,6 @@ import * as ReactDOM from 'react-dom'
 import { Text, TextProps } from 'utopia-api'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   jsxAttributeValue,
   JSXMetadata,

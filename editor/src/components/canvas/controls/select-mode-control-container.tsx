@@ -475,8 +475,8 @@ export class SelectModeControlContainer extends React.Component<
   canResizeElements(): boolean {
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(
-          this.props.componentMetadata.components,
+        const scene = MetadataUtils.findElementByTemplatePath(
+          this.props.componentMetadata.elements,
           target,
         )
         let rootHasStyleProp = false

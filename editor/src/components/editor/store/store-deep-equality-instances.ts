@@ -1,6 +1,5 @@
 import { Sides } from 'utopia-api'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   elementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -682,52 +681,10 @@ export function ElementInstanceMetadataMapKeepDeepEquality(): KeepDeepEqualityCa
   return objectDeepEquality(ElementInstanceMetadataKeepDeepEquality())
 }
 
-export function ComponentMetadataKeepDeepEquality(): KeepDeepEqualityCall<ComponentMetadata> {
-  return combine8EqualityCalls(
-    (metadata) => metadata.scenePath,
-    ScenePathKeepDeepEquality,
-    (metadata) => metadata.templatePath,
-    InstancePathKeepDeepEquality,
-    (metadata) => metadata.rootElements,
-    InstancePathArrayKeepDeepEquality,
-    (metadata) => metadata.component,
-    nullableDeepEquality(createCallWithTripleEquals()),
-    (metadata) => metadata.globalFrame,
-    nullableDeepEquality(CanvasRectangleKeepDeepEquality),
-    (metadata) => metadata.sceneResizesContent,
-    createCallWithTripleEquals(),
-    (metadata) => metadata.label,
-    undefinableDeepEquality(createCallWithTripleEquals()),
-    (metadata) => metadata.style,
-    createCallFromIntrospectiveKeepDeep(),
-    (
-      scenePath,
-      templatePath,
-      rootElements,
-      component,
-      globalFrame,
-      sceneResizesContent,
-      label,
-      style,
-    ) => {
-      return {
-        scenePath: scenePath,
-        templatePath: templatePath,
-        rootElements: rootElements,
-        component: component,
-        globalFrame: globalFrame,
-        sceneResizesContent: sceneResizesContent,
-        label: label,
-        style: style,
-      }
-    },
-  )
-}
-
 export function JSXMetadataKeepDeepEquality(): KeepDeepEqualityCall<JSXMetadata> {
   return combine2EqualityCalls(
     (metadata) => metadata.components,
-    arrayDeepEquality(ComponentMetadataKeepDeepEquality()),
+    arrayDeepEquality(createCallWithTripleEquals()),
     (metadata) => metadata.elements,
     ElementInstanceMetadataMapKeepDeepEquality(),
     jsxMetadata,

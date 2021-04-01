@@ -158,7 +158,7 @@ export function createElementIconProps(
       height: 18,
     }
   }
-  const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
+  const elementName = MetadataUtils.getJSXElementName(path, components, metadata.elements)
   if (elementName != null && isImg(elementName)) {
     return {
       category: 'element',
@@ -202,7 +202,7 @@ function createComponentIconProps(
   metadata: JSXMetadata,
   imports: Imports,
 ): IcnPropsBase | null {
-  const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
+  const elementName = MetadataUtils.getJSXElementName(path, components, metadata.elements)
   const elementInstancePath = TP.isInstancePath(path)
     ? path
     : TP.instancePathForElementAtScenePath(path)

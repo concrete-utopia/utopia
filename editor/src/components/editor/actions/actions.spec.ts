@@ -16,7 +16,6 @@ import {
   clearTopLevelElementUniqueIDs,
   emptyComputedStyle,
   jsxMetadata,
-  ComponentMetadata,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
@@ -846,16 +845,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     'bbb',
   ])
 
-  const componentMetadata: ComponentMetadata = {
-    scenePath: scenePath,
-    templatePath: sceneTemplatePath,
-    component: 'App',
-    globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-    sceneResizesContent: false,
-    style: { width: 100, height: 100 },
-    rootElements: [rootElementPath],
-  }
-
   const rootElementMetadata: ElementInstanceMetadata = {
     templatePath: rootElementPath,
     element: right(firstTopLevelElement.rootElement),
@@ -910,7 +899,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     projectContents: contentsToTree({
       [StoryboardFilePath]: fileForUI,
     }),
-    jsxMetadataKILLME: jsxMetadata([componentMetadata], elementMetadataMap),
+    jsxMetadataKILLME: jsxMetadata([], elementMetadataMap),
     selectedViews: [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), ['aaa'])],
   })
   it('switches from pins to flex correctly', () => {

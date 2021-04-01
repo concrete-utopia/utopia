@@ -42,13 +42,10 @@ import {
   Right,
 } from '../shared/either'
 import {
-  ComponentMetadata,
-  ComponentMetadataWithoutRootElements,
   ElementInstanceMetadata,
   ElementsByUID,
   getJSXElementNameLastPart,
   getJSXElementNameNoPathName,
-  isComponentMetadata,
   isJSXArbitraryBlock,
   isJSXElement,
   isJSXTextBlock,
@@ -190,18 +187,9 @@ export const MetadataUtils = {
       paths.map((path) => MetadataUtils.getElementByInstancePathMaybe(elementMap, path)),
     )
   },
-  findSceneByTemplatePath(
-    scenes: ComponentMetadata[],
-    path: TemplatePath,
-  ): ComponentMetadata | null {
-    const scenePath = TP.scenePathPartOfTemplatePath(path)
-    return scenes.find((s) => TP.pathsEqual(s.scenePath, scenePath)) ?? null
-  },
-  isSceneTreatedAsGroup(scene: ComponentMetadata | ElementInstanceMetadata | null): boolean {
+  isSceneTreatedAsGroup(scene: ElementInstanceMetadata | null): boolean {
     if (scene == null) {
       return false
-    } else if (isComponentMetadata(scene)) {
-      return scene.sceneResizesContent
     } else {
       return scene.props.resizesContent ?? false
     }
@@ -213,14 +201,10 @@ export const MetadataUtils = {
     return Object.values(elementMap).filter(predicate)
   },
   getViewZIndexFromMetadata(metadata: JSXMetadata, target: TemplatePath): number {
-    if (TP.isScenePath(target)) {
-      return metadata.components.findIndex((s) => TP.pathsEqual(s.scenePath, target))
-    } else {
-      const siblings = MetadataUtils.getSiblings(metadata, target)
-      return siblings.findIndex((child) => {
-        return getUtopiaID(child) === TP.toTemplateId(target)
-      })
-    }
+    const siblings = MetadataUtils.getSiblings(metadata, target)
+    return siblings.findIndex((child) => {
+      return getUtopiaID(child) === TP.toUid(target)
+    })
   },
   getParent(metadata: JSXMetadata, target: TemplatePath | null): ElementInstanceMetadata | null {
     if (target == null) {
@@ -313,7 +297,7 @@ export const MetadataUtils = {
     components: Array<UtopiaJSXComponent>,
     metadata: JSXMetadata,
   ): boolean {
-    const elementName = MetadataUtils.getJSXElementName(target, components, metadata.components)
+    const elementName = MetadataUtils.getJSXElementName(target, components, metadata.elements)
     if (
       elementName != null &&
       PP.depth(elementName.propertyPath) === 0 &&
@@ -777,9 +761,6 @@ export const MetadataUtils = {
       return null
     }
   },
-  findStoryboardRoot(roots: Array<ComponentMetadata>): ComponentMetadata | null {
-    return roots.find((root) => TP.pathsEqual(root.scenePath, EmptyScenePathForStoryboard)) ?? null
-  },
   getAllChildrenIncludingUnfurledFocusedComponents(
     path: TemplatePath,
     metadata: JSXMetadata,
@@ -887,26 +868,13 @@ export const MetadataUtils = {
       }
     }
   },
-  getSceneFrame(path: ScenePath, scenes: Array<ComponentMetadata>): CanvasRectangle | null {
-    const maybeScene = MetadataUtils.findSceneByTemplatePath(scenes, path)
-    return maybeScene?.globalFrame ?? null
-  },
   getFrameInCanvasCoords(path: TemplatePath, metadata: JSXMetadata): CanvasRectangle | null {
-    if (TP.isScenePath(path)) {
-      return this.getSceneFrame(path, metadata.components)
-    } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
-      return Utils.optionalMap((e) => e.globalFrame, element)
-    }
+    const element = MetadataUtils.findElementByTemplatePath(metadata.elements, path)
+    return Utils.optionalMap((e) => e.globalFrame, element)
   },
   getFrame(path: TemplatePath, metadata: JSXMetadata): LocalRectangle | null {
-    if (TP.isScenePath(path)) {
-      const frame = this.getSceneFrame(path, metadata.components)
-      return localRectangle(frame)
-    } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
-      return Utils.optionalMap((e) => e.localFrame, element)
-    }
+    const element = MetadataUtils.findElementByTemplatePath(metadata.elements, path)
+    return Utils.optionalMap((e) => e.localFrame, element)
   },
   getFrameRelativeTo: function (
     parent: TemplatePath | null,
@@ -937,87 +905,75 @@ export const MetadataUtils = {
     metadata: JSXMetadata,
     staticName: JSXElementName | null = null,
   ): string {
-    if (TP.isScenePath(path)) {
-      const scene = this.findSceneByTemplatePath(metadata.components, path)
-      if (scene != null) {
-        return scene.label ?? scene.component ?? 'Scene'
-      }
-    } else {
-      // Try to get something from the metadata.
-      const element = this.getElementByInstancePathMaybe(metadata.elements, path)
-      if (element != null) {
-        const sceneLabelOrComponentName = element.label ?? element.componentName
-        const dataLabelProp = element.props['data-label']
-        if (
-          dataLabelProp != null &&
-          typeof dataLabelProp === 'string' &&
-          dataLabelProp.length > 0
-        ) {
-          return dataLabelProp
-        } else if (sceneLabelOrComponentName != null) {
-          return sceneLabelOrComponentName
-        } else {
-          const possibleName: string = foldEither(
-            (tagName) => {
-              const staticNameString = optionalMap(getJSXElementNameAsString, staticName)
-              return staticNameString ?? tagName
-            },
-            (jsxElement) => {
-              switch (jsxElement.type) {
-                case 'JSX_ELEMENT':
-                  const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
-                  // Check for certain elements and check if they have text content within them.
-                  if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
-                    const firstChild = jsxElement.children[0]
-                    if (firstChild != null) {
-                      if (isJSXTextBlock(firstChild)) {
-                        return firstChild.text
-                      }
-                      if (isJSXArbitraryBlock(firstChild)) {
-                        return `{${firstChild.originalJavascript}}`
-                      }
+    const element = this.findElementByTemplatePath(metadata.elements, path)
+    if (element != null) {
+      const sceneLabelOrComponentName = element.label ?? element.componentName
+      const dataLabelProp = element.props['data-label']
+      if (dataLabelProp != null && typeof dataLabelProp === 'string' && dataLabelProp.length > 0) {
+        return dataLabelProp
+      } else if (sceneLabelOrComponentName != null) {
+        return sceneLabelOrComponentName
+      } else {
+        const possibleName: string = foldEither(
+          (tagName) => {
+            const staticNameString = optionalMap(getJSXElementNameAsString, staticName)
+            return staticNameString ?? tagName
+          },
+          (jsxElement) => {
+            switch (jsxElement.type) {
+              case 'JSX_ELEMENT':
+                const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
+                // Check for certain elements and check if they have text content within them.
+                if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+                  const firstChild = jsxElement.children[0]
+                  if (firstChild != null) {
+                    if (isJSXTextBlock(firstChild)) {
+                      return firstChild.text
+                    }
+                    if (isJSXArbitraryBlock(firstChild)) {
+                      return `{${firstChild.originalJavascript}}`
                     }
                   }
-                  // With images, take their alt and src properties as possible names first.
-                  if (lastNamePart === 'img') {
-                    const alt = element.props['alt']
-                    if (alt != null && typeof alt === 'string' && alt.length > 0) {
-                      return alt
-                    }
-                    const src = element.props['src']
-                    if (src != null && typeof src === 'string' && src.length > 0) {
-                      return src
-                    }
+                }
+                // With images, take their alt and src properties as possible names first.
+                if (lastNamePart === 'img') {
+                  const alt = element.props['alt']
+                  if (alt != null && typeof alt === 'string' && alt.length > 0) {
+                    return alt
                   }
-                  // For Text elements, use their text property if it exists.
-                  if (lastNamePart === 'Text') {
-                    const text = element.props['text']
-                    if (text != null && typeof text === 'string' && text.length > 0) {
-                      return text
-                    }
+                  const src = element.props['src']
+                  if (src != null && typeof src === 'string' && src.length > 0) {
+                    return src
                   }
+                }
+                // For Text elements, use their text property if it exists.
+                if (lastNamePart === 'Text') {
+                  const text = element.props['text']
+                  if (text != null && typeof text === 'string' && text.length > 0) {
+                    return text
+                  }
+                }
 
-                  return lastNamePart
-                case 'JSX_TEXT_BLOCK':
-                  return '(text)'
-                case 'JSX_ARBITRARY_BLOCK':
-                  return '(code)'
-                case 'JSX_FRAGMENT':
-                  return '(fragment)'
-                default:
-                  const _exhaustiveCheck: never = jsxElement
-                  throw new Error(`Unexpected element type ${jsxElement}`)
-              }
-            },
-            element.element,
-          )
-          if (possibleName != null) {
-            return possibleName
-          }
-          if (isRight(element.element)) {
-            if (isJSXElement(element.element.value)) {
-              return getJSXElementNameLastPart(element.element.value.name).toString()
+                return lastNamePart
+              case 'JSX_TEXT_BLOCK':
+                return '(text)'
+              case 'JSX_ARBITRARY_BLOCK':
+                return '(code)'
+              case 'JSX_FRAGMENT':
+                return '(fragment)'
+              default:
+                const _exhaustiveCheck: never = jsxElement
+                throw new Error(`Unexpected element type ${jsxElement}`)
             }
+          },
+          element.element,
+        )
+        if (possibleName != null) {
+          return possibleName
+        }
+        if (isRight(element.element)) {
+          if (isJSXElement(element.element.value)) {
+            return getJSXElementNameLastPart(element.element.value.name).toString()
           }
         }
       }
@@ -1029,12 +985,12 @@ export const MetadataUtils = {
   getJSXElementName(
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
-    metadata: ComponentMetadata[], // TODO maybe we could remove metadata as a dependency from here if we change findSceneByTemplatePath
+    metadata: ElementInstanceMetadataMap,
   ): JSXElementName | null {
     if (TP.isScenePath(path)) {
-      const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
-      if (scene != null && scene.component != null) {
-        return jsxElementName(scene.component, [])
+      const scene = MetadataUtils.findElementByTemplatePath(metadata, path)
+      if (scene != null && scene.componentName != null) {
+        return jsxElementName(scene.componentName, [])
       } else {
         return null
       }
@@ -1053,12 +1009,12 @@ export const MetadataUtils = {
   getJSXElementBaseName(
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
-    metadata: ComponentMetadata[], // TODO BEFORE MERGE maybe we could remove metadata as a dependency from here
+    metadata: ElementInstanceMetadataMap,
   ): string | null {
     if (TP.isScenePath(path)) {
-      const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
+      const scene = MetadataUtils.findElementByTemplatePath(metadata, path)
       if (scene != null) {
-        return scene.component
+        return scene.componentName
       } else {
         return null
       }
@@ -1077,12 +1033,12 @@ export const MetadataUtils = {
   getJSXElementTagName(
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
-    metadata: ComponentMetadata[], // TODO BEFORE MERGE maybe we could remove metadata as a dependency from here
+    metadata: ElementInstanceMetadataMap,
   ): string | null {
     if (TP.isScenePath(path)) {
-      const scene = MetadataUtils.findSceneByTemplatePath(metadata, path)
+      const scene = MetadataUtils.findElementByTemplatePath(metadata, path)
       if (scene != null) {
-        return scene.component
+        return scene.componentName
       } else {
         return null
       }
@@ -1217,24 +1173,7 @@ export const MetadataUtils = {
       }
     })
 
-    const newComponents = fromSpy.components.map((scene) => {
-      const newlyFoundChildren = newlyFoundElements.filter((path) =>
-        TP.isChildOf(path, scene.scenePath),
-      )
-      const newRootElements = TP.addPathsIfMissing(scene.rootElements, newlyFoundChildren)
-      const sceneMetadata = MetadataUtils.getElementByInstancePathMaybe(
-        workingElements,
-        scene.templatePath,
-      )
-
-      return {
-        ...scene,
-        globalFrame: sceneMetadata?.globalFrame ?? null,
-        rootElements: newRootElements,
-      }
-    })
-
-    return jsxMetadata(newComponents, workingElements)
+    return jsxMetadata([], workingElements)
   },
   staticElementsOnly(
     elements: Array<UtopiaJSXComponent>,
@@ -1367,29 +1306,14 @@ export const MetadataUtils = {
     }
 
     // Everything about this feels wrong
-    const originalMetadata = getSceneMetadataOrElementInstanceMetadata(oldPath, metadata)
+    const originalMetadata = MetadataUtils.findElementByTemplatePath(metadata.elements, oldPath)
     if (originalMetadata == null) {
       return metadata
-    } else if (isLeft(originalMetadata) && TP.isScenePath(newPath)) {
-      const componentMetadata = originalMetadata.value
-      // FIXME I think this is wrong and we need to duplicate the children
-      const updatedScenes: ComponentMetadata[] = [
-        ...metadata.components,
-        {
-          ...componentMetadata,
-          scenePath: newPath,
-        },
-      ]
-      return jsxMetadata(updatedScenes, metadata.elements)
-    } else if (
-      isRight(originalMetadata) &&
-      TP.isInstancePath(oldPath) &&
-      TP.isInstancePath(newPath)
-    ) {
+    } else {
       const duplicatedElementPath = duplicateElementMetadata(
-        originalMetadata.value,
-        oldPath,
-        newPath,
+        originalMetadata,
+        TP.instancePathForElementAtPath(oldPath),
+        TP.instancePathForElementAtPath(newPath),
         newElement,
       )
       const updatedElements = this.updateParentWithNewChildPath(
@@ -1402,8 +1326,6 @@ export const MetadataUtils = {
       )
 
       return jsxMetadata(metadata.components, updatedElements)
-    } else {
-      return metadata
     }
   },
   transformAllPathsInMetadata(
@@ -1455,22 +1377,7 @@ export const MetadataUtils = {
       },
     )
 
-    let componentsUpdated = false
-    const updatedComponents = metadata.components.map((component) => {
-      const updatedChildren = updateChildren(component.rootElements)
-      if (updatedChildren === component.rootElements) {
-        return component
-      } else {
-        componentsUpdated = true
-        return {
-          ...component,
-          rootElements: updatedChildren,
-        }
-      }
-    })
-
-    const componentsToReturn = componentsUpdated ? updatedComponents : metadata.components
-    return jsxMetadata(componentsToReturn, updatedElements)
+    return jsxMetadata(metadata.components, updatedElements)
   },
   findElementMetadata(
     target: TemplatePath,
@@ -1584,26 +1491,6 @@ export const MetadataUtils = {
   },
 }
 
-export function convertMetadataMap(
-  metadataMap: ElementInstanceMetadataMap,
-  scenes: { [templatePath: string]: ComponentMetadataWithoutRootElements },
-): JSXMetadata {
-  const metadatas = Object.values(metadataMap).map((m) => m.templatePath)
-  let components: ComponentMetadata[] = []
-  Utils.fastForEach(Object.keys(scenes), (sceneIdString) => {
-    const scene = scenes[sceneIdString]
-    const sceneId = scene.scenePath
-    const rootElements = metadatas.filter((m) => TP.isChildOf(m, sceneId))
-
-    components.push({
-      ...scene,
-      globalFrame: null,
-      rootElements: rootElements,
-    })
-  })
-  return jsxMetadata(components, metadataMap)
-}
-
 export function findElementAtPath(
   target: TemplatePath | null,
   components: Array<UtopiaJSXComponent>,
@@ -1638,42 +1525,24 @@ export function findJSXElementAtPath(
   }, elem)
 }
 
-export function getSceneMetadataOrElementInstanceMetadata(
-  target: TemplatePath,
-  metadata: JSXMetadata,
-): Either<ComponentMetadata, ElementInstanceMetadata> | null {
-  if (TP.isScenePath(target)) {
-    const sceneMetadata = MetadataUtils.findSceneByTemplatePath(metadata.components, target)
-    return optionalMap((m) => left<ComponentMetadata, ElementInstanceMetadata>(m), sceneMetadata)
-  } else {
-    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
-    return optionalMap((m) => right<ComponentMetadata, ElementInstanceMetadata>(m), elementMetadata)
-  }
-}
-
 export function getScenePropsOrElementAttributes(
   target: TemplatePath,
   metadata: JSXMetadata,
 ): PropsOrJSXAttributes | null {
-  const targetMetadata = getSceneMetadataOrElementInstanceMetadata(target, metadata)
+  const targetMetadata = MetadataUtils.findElementByTemplatePath(metadata.elements, target)
   if (targetMetadata == null) {
     return null
   } else {
     return foldEither(
-      () => left(null),
-      (elementMetadata) =>
-        foldEither(
-          () => null,
-          (element) => {
-            if (isJSXElement(element)) {
-              return right(element.props)
-            } else {
-              return null
-            }
-          },
-          elementMetadata.element,
-        ),
-      targetMetadata,
+      () => null,
+      (element) => {
+        if (isJSXElement(element)) {
+          return right(element.props)
+        } else {
+          return null
+        }
+      },
+      targetMetadata.element,
     )
   }
 }

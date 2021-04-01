@@ -21,7 +21,6 @@ import {
 } from '../shared/math-utils'
 import { findJSXElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import {
-  ComponentMetadata,
   DetectedLayoutSystem,
   isJSXElement,
   jsxAttributeValue,

@@ -1013,10 +1013,10 @@ export function useUsedPropsWithoutControls(): Array<string> {
     const pushComponent = (component: UtopiaJSXComponent) => components.push(component)
     fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
+        const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME.elements, path)
         if (scene != null) {
           const underlyingComponent = rootComponents.find(
-            (component) => component.name === scene.component,
+            (component) => component.name === scene.componentName,
           )
           forEachOptional(pushComponent, underlyingComponent)
         }
@@ -1070,10 +1070,10 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
       propsUsed.push(...component.propsUsed)
     fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
+        const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME.elements, path)
         if (scene != null) {
           const underlyingComponent = rootComponents.find(
-            (component) => component.name === scene.component,
+            (component) => component.name === scene.componentName,
           )
           forEachOptional(pushPropsForComponent, underlyingComponent)
         }

@@ -2,7 +2,6 @@ import * as json5 from 'json5'
 import * as R from 'ramda'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   getElementsByUIDFromTopLevelElements,
@@ -137,6 +136,7 @@ import {
   scenePath,
   staticScenePath,
   staticElementPath,
+  scenePathForElementAtPath,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notice'
@@ -1192,22 +1192,25 @@ export function getElementWarnings(
         dynamicSceneChildWidthHeightPercentage: false,
       }
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
+
+      if (MetadataUtils.elementIsScene(elementMetadata)) {
+        const sceneWarnings: ElementWarnings = {
+          widthOrHeightZero: widthOrHeightZero,
+          absoluteWithUnpositionedParent: false,
+          dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
+            elementMetadata,
+            rootMetadata,
+          ),
+        }
+        result = addToComplexMap(
+          toString,
+          result,
+          scenePathForElementAtPath(elementMetadata.templatePath),
+          sceneWarnings,
+        )
+      }
     },
   )
-  fastForEach(rootMetadata.components, (scene) => {
-    const elementWarnings: ElementWarnings = {
-      widthOrHeightZero:
-        scene.globalFrame != null
-          ? scene.globalFrame.width === 0 || scene.globalFrame.height === 0
-          : false,
-      absoluteWithUnpositionedParent: false,
-      dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
-        scene,
-        rootMetadata,
-      ),
-    }
-    result = addToComplexMap(toString, result, scene.scenePath, elementWarnings)
-  })
   return result
 }
 

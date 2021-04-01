@@ -18,9 +18,9 @@ import {
   JSXAttributes,
   defaultPropsParam,
   jsxAttributeOtherJavaScript,
-  ComponentMetadata,
   JSXMetadata,
   jsxAttributesFromMap,
+  ElementInstanceMetadata,
 } from '../shared/element-template'
 import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
@@ -286,7 +286,7 @@ export function isSceneElement(element: JSXElement): boolean {
 }
 
 export function isSceneChildWidthHeightPercentage(
-  scene: ComponentMetadata,
+  scene: ElementInstanceMetadata,
   metadata: JSXMetadata,
 ): boolean {
   // FIXME ASAP This is reproducing logic that should stay in MetadataUtils, but importing that
@@ -303,10 +303,10 @@ export function isSceneChildWidthHeightPercentage(
 }
 
 export function isDynamicSceneChildWidthHeightPercentage(
-  scene: ComponentMetadata,
+  scene: ElementInstanceMetadata,
   metadata: JSXMetadata,
 ): boolean {
-  const isDynamicScene = scene.sceneResizesContent
+  const isDynamicScene = scene.props.resizesContent ?? false
 
   return isDynamicScene && isSceneChildWidthHeightPercentage(scene, metadata)
 }

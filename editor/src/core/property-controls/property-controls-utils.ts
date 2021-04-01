@@ -380,17 +380,17 @@ export function getPropertyControlsForTarget(
   const tagName = MetadataUtils.getJSXElementTagName(
     target,
     rootComponents,
-    jsxMetadataKILLME.components,
+    jsxMetadataKILLME.elements,
   )
   const importedName = MetadataUtils.getJSXElementBaseName(
     target,
     rootComponents,
-    jsxMetadataKILLME.components,
+    jsxMetadataKILLME.elements,
   )
   const jsxName = MetadataUtils.getJSXElementName(
     target,
     rootComponents,
-    jsxMetadataKILLME.components,
+    jsxMetadataKILLME.elements,
   )
   if (importedName != null && tagName != null) {
     // TODO default and star imports

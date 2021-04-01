@@ -2,61 +2,7 @@
 
 exports[`DOM Walker tests Label carried through for generated elements 1`] = `
 Object {
-  "components": Array [
-    Object {
-      "component": "App",
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "label": undefined,
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "aaa",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "relative",
-        "top": 0,
-        "width": 375,
-      },
-      "templatePath": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
-  ],
+  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},
@@ -683,61 +629,7 @@ Object {
 
 exports[`DOM Walker tests Label carried through for normal elements 1`] = `
 Object {
-  "components": Array [
-    Object {
-      "component": "App",
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "label": undefined,
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "aaa",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "relative",
-        "top": 0,
-        "width": 375,
-      },
-      "templatePath": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
-  ],
+  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},
@@ -1049,61 +941,7 @@ Object {
 
 exports[`DOM Walker tests Simple Project with divs 1`] = `
 Object {
-  "components": Array [
-    Object {
-      "component": "App",
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "label": undefined,
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "05c",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "relative",
-        "top": 0,
-        "width": 375,
-      },
-      "templatePath": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
-  ],
+  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},
@@ -1677,61 +1515,7 @@ Object {
 
 exports[`DOM Walker tests Simple Project with flex parent 1`] = `
 Object {
-  "components": Array [
-    Object {
-      "component": "App",
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "label": undefined,
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "05c",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "relative",
-        "top": 0,
-        "width": 375,
-      },
-      "templatePath": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
-  ],
+  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},
@@ -2306,61 +2090,7 @@ Object {
 
 exports[`DOM Walker tests Simple Project with one child View 1`] = `
 Object {
-  "components": Array [
-    Object {
-      "component": "App",
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "label": undefined,
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "05c",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [
-              Array [
-                "utopia-storyboard-uid",
-                "scene-aaa",
-              ],
-            ],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-          ],
-        ],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {
-        "height": 812,
-        "left": 0,
-        "position": "relative",
-        "top": 0,
-        "width": 375,
-      },
-      "templatePath": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
-  ],
+  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},

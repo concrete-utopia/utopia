@@ -125,7 +125,7 @@ export function getSelectableViews(
     let rootElementsToFilter: TemplatePath[] = []
     let dynamicScenesWithFragmentRootViews: TemplatePath[] = []
     Utils.fastForEach(scenes, (path) => {
-      const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata.components, path)
+      const scene = MetadataUtils.findElementByTemplatePath(componentMetadata.elements, path)
       const rootElements = scene?.rootElements
       if (
         MetadataUtils.isSceneTreatedAsGroup(scene) &&

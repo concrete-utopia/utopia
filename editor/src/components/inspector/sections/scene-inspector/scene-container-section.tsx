@@ -190,7 +190,7 @@ function useIsSceneChildWidthHeightPercentage() {
     'missing scene from scene section',
     selectedViews.find(TP.isScenePath),
   )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScenePath)
+  const scene = MetadataUtils.findElementByTemplatePath(metadata.elements, selectedScenePath)
   if (scene != null) {
     return isSceneChildWidthHeightPercentage(scene, metadata)
   } else {
@@ -214,7 +214,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
     'Scene cannot be null in SceneContainerSection',
     React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews]),
   )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScene)
+  const scene = MetadataUtils.findElementByTemplatePath(metadata.elements, selectedScene)
 
   const sceneResizesContentInfo = useSceneType()
   let controlStatus: ControlStatus = simpleControlStatus

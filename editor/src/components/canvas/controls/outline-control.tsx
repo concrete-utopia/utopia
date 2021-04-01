@@ -186,11 +186,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       )
     })
     let multiSelectOutline: JSX.Element | undefined
-    if (
-      targetPaths.length > 1 &&
-      TP.areAllElementsInSameScene(targetPaths) &&
-      this.props.componentMetadata.components.length > 0
-    ) {
+    if (targetPaths.length > 1 && TP.areAllElementsInSameScene(targetPaths)) {
       const globalFrames = targetPaths.map((selectedView) => this.getTargetFrame(selectedView))
       const boundingBox = Utils.boundingRectangleArray(globalFrames)
       if (boundingBox != null) {

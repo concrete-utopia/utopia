@@ -443,7 +443,9 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       },
     )
 
-    if (selectedViews.length === 1 && rootViewsForSelectedElement.length > 0) {
+    const showSceneInspector = selectedViews.length === 1 && rootViewsForSelectedElement.length > 0
+
+    if (showSceneInspector) {
       return (
         <>
           <SingleInspectorEntryPoint selectedViews={selectedViews} />
@@ -620,10 +622,10 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
             })
           }
         } else {
-          const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
+          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME.elements, path)
           if (scene != null) {
             elements.push({
-              name: scene.label,
+              name: scene.label ?? undefined,
               path: path,
             })
           }

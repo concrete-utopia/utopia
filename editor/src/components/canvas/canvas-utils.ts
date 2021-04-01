@@ -35,7 +35,6 @@ import {
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   isJSXElement,
   jsxAttributeValue,
   JSXElement,
@@ -2526,21 +2525,6 @@ export function cullSpyCollector(
   fastForEach(Object.keys(spyCollector.current.spyValues.metadata), (elementPath) => {
     if (!elementPaths.has(elementPath)) {
       delete spyCollector.current.spyValues.metadata[elementPath]
-    }
-  })
-  // Eliminate the scene paths which are invalid.
-  fastForEach(Object.keys(spyCollector.current.spyValues.scenes), (scenePath) => {
-    if (
-      !scenePaths.has(scenePath) &&
-      !elementPaths.has(
-        TP.toString(
-          TP.instancePathForElementAtScenePath(
-            spyCollector.current.spyValues.scenes[scenePath].scenePath,
-          ),
-        ),
-      ) // this is needed because empty scenes are stored in metadata with an instancepath
-    ) {
-      delete spyCollector.current.spyValues.scenes[scenePath]
     }
   })
 }

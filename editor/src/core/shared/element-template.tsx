@@ -1446,18 +1446,10 @@ export interface ComponentMetadata {
   style: React.CSSProperties
 }
 
-export function isComponentMetadata(
-  maybeComponentMetadata: ComponentMetadata | ElementInstanceMetadata,
-): maybeComponentMetadata is ComponentMetadata {
-  return (maybeComponentMetadata as ComponentMetadata).scenePath != null
-}
-
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>> // TODO update typescript!!
 export type MetadataWithoutChildren = Omit<ElementInstanceMetadata, 'children'> & {
   childrenTemplatePaths: Array<InstancePath>
 }
-
-export type ComponentMetadataWithoutRootElements = Omit<ComponentMetadata, 'rootElements'>
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 

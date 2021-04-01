@@ -82,7 +82,7 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
     )
     Utils.fastForEach(targets, (target) => {
       if (TP.isScenePath(target)) {
-        const element = MetadataUtils.findSceneByTemplatePath(metadata.components, target)
+        const element = MetadataUtils.findElementByTemplatePath(metadata.elements, target)
         if (element != null) {
           names.push(element.label ?? 'Scene')
         }

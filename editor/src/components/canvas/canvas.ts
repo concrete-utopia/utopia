@@ -1,10 +1,6 @@
 import * as R from 'ramda'
 import { findElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
-import {
-  ComponentMetadata,
-  ElementInstanceMetadata,
-  JSXMetadata,
-} from '../../core/shared/element-template'
+import { ElementInstanceMetadata, JSXMetadata } from '../../core/shared/element-template'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
 import {
@@ -137,9 +133,9 @@ const Canvas = {
       }
     }
 
-    const storyboardEntryPoint = MetadataUtils.getAllStoryboardChildren(metadata)
-    return storyboardEntryPoint.flatMap((storyboardRoot) => {
-      return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardRoot).frames
+    const storyboardChildren = MetadataUtils.getAllStoryboardChildren(metadata)
+    return storyboardChildren.flatMap((storyboardChild) => {
+      return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardChild).frames
     })
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
