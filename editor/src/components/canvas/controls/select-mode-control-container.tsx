@@ -497,7 +497,7 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllStoryboardDescendantPathsScenesOnly(
+    const roots = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(
       this.props.componentMetadata,
     )
     let labelDirectlySelectable = this.props.highlightsEnabled
