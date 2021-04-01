@@ -985,3 +985,15 @@ export function dropFirstScenePathElement(
     }
   }
 }
+
+export function outermostScenePathPart(path: TemplatePath): ScenePath {
+  const asScenePath = isScenePath(path) ? path : scenePathPartOfTemplatePath(path)
+  if (asScenePath.sceneElementPaths.length > 1) {
+    return {
+      ...asScenePath,
+      sceneElementPaths: asScenePath.sceneElementPaths.slice(0, 1),
+    }
+  } else {
+    return asScenePath
+  }
+}

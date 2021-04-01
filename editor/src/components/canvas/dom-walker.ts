@@ -265,7 +265,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
     (store) => store.editor.selectedViews,
     (newSelectedViews) => {
       newSelectedViews.forEach((sv) => {
-        const scenePath = TP.scenePathPartOfTemplatePath(sv)
+        const scenePath = TP.outermostScenePathPart(sv)
         const sceneID = TP.toString(scenePath)
         invalidatedSceneIDsRef.current.add(sceneID)
         invalidatedPathsForStylesheetCacheRef.current.add(TP.toString(sv))
