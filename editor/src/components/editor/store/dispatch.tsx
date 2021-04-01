@@ -526,36 +526,6 @@ export function editorDispatch(
   }
 }
 
-/*
-function fixUpEvaluationCache(
-  oldEditorState: EditorState,
-  newEditorState: EditorState,
-  dispatch: EditorDispatch,
-): CodeResultCache {
-  const filesWithChanges = identifyFilesThatHaveChanged(
-    oldEditorState.projectContents,
-    newEditorState.projectContents,
-  )
-  let updatedModules: MultiFileBuildResult = {}
-  for (const fileWithChange of filesWithChanges) {
-    updatedModules[fileWithChange] = 
-  }
-
-  const currentCache = newEditorState.codeResultCache
-  return generateCodeResultCache(
-    newEditorState.projectContents,
-    currentCache.projectModules,
-    updatedModules,
-    currentCache.exportsInfo,
-    newEditorState.nodeModules.files,
-    dispatch,
-    currentCache.evaluationCache,
-    'incremental',
-    true,
-  )
-}
-*/
-
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -618,15 +588,6 @@ function editorDispatchInner(
         }
       }
     }
-
-    /*
-    fixUpEvaluationCache(
-      storedState.editor.projectContents,
-      result.editor.projectContents,
-      result.editor.nodeModules.files,
-      result.editor.codeResultCache.evaluationCache,
-    )
-    */
 
     const cleanedEditor = metadataChanged
       ? removeNonExistingViewReferencesFromState(storedState.editor, result.editor)
