@@ -612,6 +612,17 @@ export const MetadataUtils = {
       ? []
       : MetadataUtils.getImmediateChildrenPaths(metadata, storyboardMetadata.templatePath)
   },
+  getAllStoryboardAncestorPathsScenesOnly(metadata: JSXMetadata): ScenePath[] {
+    // FIXME Use the instance path after we separate Scene from the component it renders
+    const ancestors = MetadataUtils.getAllStoryboardAncestors(metadata)
+    return mapDropNulls(
+      (e) =>
+        MetadataUtils.elementIsScene(e)
+          ? TP.scenePathForElementAtInstancePath(e.templatePath)
+          : null,
+      ancestors,
+    )
+  },
   getAllCanvasRootPaths(metadata: JSXMetadata): TemplatePath[] {
     const rootScenesAndElements = MetadataUtils.getAllStoryboardAncestors(metadata)
     return flatMapArray<ElementInstanceMetadata, TemplatePath>((root) => {

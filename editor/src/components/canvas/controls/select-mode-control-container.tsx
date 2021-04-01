@@ -496,13 +496,8 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const rootElements = MetadataUtils.getAllStoryboardAncestors(this.props.componentMetadata)
-    const roots = mapDropNulls(
-      (e) =>
-        MetadataUtils.elementIsScene(e)
-          ? TP.scenePathForElementAtInstancePath(e.templatePath) // FIXME Use the instance path after we separate Scene from the component it renders
-          : null,
-      rootElements,
+    const roots = MetadataUtils.getAllStoryboardAncestorPathsScenesOnly(
+      this.props.componentMetadata,
     )
     let labelDirectlySelectable = this.props.highlightsEnabled
 

@@ -660,7 +660,9 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   render() {
-    const roots = MetadataUtils.getAllStoryboardAncestorPaths(this.props.componentMetadata.elements)
+    const roots = MetadataUtils.getAllStoryboardAncestorPathsScenesOnly(
+      this.props.componentMetadata,
+    )
     const dragFrame = this.state.dragFrame
 
     return (
