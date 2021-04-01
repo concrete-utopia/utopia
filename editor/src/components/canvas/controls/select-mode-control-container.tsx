@@ -152,6 +152,7 @@ export class SelectModeControlContainer extends React.Component<
       this.props.componentMetadata,
       this.props.selectedViews,
       this.props.hiddenInstances,
+      this.props.focusedElementPath,
       'no-filter',
       WindowMousePositionRaw,
       this.props.scale,

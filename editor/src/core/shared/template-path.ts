@@ -312,10 +312,17 @@ export function scenePathForElementAtPath(path: TemplatePath): ScenePath {
   return isScenePath(path) ? path : scenePathForElementAtInstancePath(path)
 }
 
+export function elementPathForPath(path: StaticScenePath): StaticElementPath
+export function elementPathForPath(path: ScenePath): ElementPath
 export function elementPathForPath(path: StaticInstancePath): StaticElementPath
 export function elementPathForPath(path: InstancePath): ElementPath
-export function elementPathForPath(path: InstancePath): ElementPath {
-  return path.element
+export function elementPathForPath(path: TemplatePath): ElementPath
+export function elementPathForPath(path: TemplatePath): ElementPath {
+  if (isScenePath(path)) {
+    return last(path.sceneElementPaths) ?? []
+  } else {
+    return path.element
+  }
 }
 
 export function filterScenes(paths: StaticTemplatePath[]): StaticInstancePath[]

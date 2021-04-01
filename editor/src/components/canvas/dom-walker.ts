@@ -803,60 +803,55 @@ function walkElements(
   }
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
-    const uids = getUIDsOnDomELement(element)
+    const uids = getUIDsOnDomELement(element) ?? []
 
-    if (uids != null) {
-      const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
+    const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
+    const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
 
-      const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
+    const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
 
-      const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+    // Check this is a path we're interested in, otherwise skip straight to the children
+    const foundValidPaths = mapDropNulls((uid) => findValidPath(uid, validPaths), uids)
 
-      // Check this is a path we're interested in, otherwise skip straight to the children
-      const foundValidPaths = mapDropNulls((uid) => findValidPath(uid, validPaths), uids)
+    // Build the metadata for the children of this DOM node.
+    let childPaths: Array<InstancePath> = []
+    let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
+    if (traverseChildren) {
+      element.childNodes.forEach((child, childIndex) => {
+        const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
+          child,
+          childIndex,
+          depth + 1,
+          globalFrame,
+          validPaths,
+          rootMetadataInStateRef,
+          invalidatedSceneIDsRef,
+          invalidatedPathsForStylesheetCacheRef,
+          selectedViews,
+          initComplete,
+          scale,
+          containerRectLazy,
+        )
+        childPaths.push(...childNodePaths)
+        rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
+      })
+    }
 
-      // Build the metadata for the children of this DOM node.
-      let childPaths: Array<InstancePath> = []
-      let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
-      if (traverseChildren) {
-        element.childNodes.forEach((child, childIndex) => {
-          const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
-            child,
-            childIndex,
-            depth + 1,
-            globalFrame,
-            validPaths,
-            rootMetadataInStateRef,
-            invalidatedSceneIDsRef,
-            invalidatedPathsForStylesheetCacheRef,
-            selectedViews,
-            initComplete,
-            scale,
-            containerRectLazy,
-          )
-          childPaths.push(...childNodePaths)
-          rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
-        })
-      }
+    const collectedMetadata = collectMetadata(
+      element,
+      foundValidPaths,
+      parentPoint,
+      childPaths,
+      scale,
+      containerRectLazy,
+      invalidatedPathsForStylesheetCacheRef,
+      selectedViews,
+    )
 
-      const collectedMetadata = collectMetadata(
-        element,
-        foundValidPaths,
-        parentPoint,
-        childPaths,
-        scale,
-        containerRectLazy,
-        invalidatedPathsForStylesheetCacheRef,
-        selectedViews,
-      )
-
-      rootMetadataAccumulator = [...rootMetadataAccumulator, ...collectedMetadata]
-      return {
-        rootMetadata: rootMetadataAccumulator,
-        childPaths: collectedMetadata.map((metadata) => metadata.templatePath), // TODO why not extract childPaths from the metadata?
-      }
-    } else {
-      return { childPaths: [], rootMetadata: [] }
+    rootMetadataAccumulator = [...rootMetadataAccumulator, ...collectedMetadata]
+    return {
+      rootMetadata: rootMetadataAccumulator,
+      childPaths: collectedMetadata.map((metadata) => metadata.templatePath), // TODO why not extract childPaths from the metadata?
     }
   } else {
     return { childPaths: [], rootMetadata: [] }

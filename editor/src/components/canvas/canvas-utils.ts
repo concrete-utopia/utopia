@@ -1749,6 +1749,7 @@ function getReparentTargetAtPosition(
   componentMeta: JSXMetadata,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
+  focusedElementPath: ScenePath | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
 ): TemplatePath | undefined {
@@ -1756,6 +1757,7 @@ function getReparentTargetAtPosition(
     componentMeta,
     selectedViews,
     hiddenInstances,
+    focusedElementPath,
     'no-filter',
     WindowMousePositionRaw,
     canvasScale,
@@ -1780,6 +1782,7 @@ export function getReparentTarget(
     editorState.jsxMetadataKILLME,
     selectedViews,
     editorState.hiddenInstances,
+    editorState.focusedElementPath,
     editorState.canvas.scale,
     editorState.canvas.realCanvasOffset,
   )

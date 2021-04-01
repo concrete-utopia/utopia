@@ -16,7 +16,7 @@ import { ProjectContentTreeRoot, contentsToTree, getContentsTreeFileFromString }
 import { DefaultPackageJson, StoryboardFilePath } from '../editor/store/editor-state'
 import * as TP from '../../core/shared/template-path'
 
-function createCodeFile(path: string, contents: string): TextFile {
+export function createCodeFile(path: string, contents: string): TextFile {
   const result = lintAndParse(path, contents)
   return textFile(textFileContents(contents, result, RevisionsState.CodeAhead), null, Date.now())
 }

@@ -15173,22 +15173,6 @@ export var storyboard = (props) => {
 }
 `;
 
-exports[`UiJsxCanvas render mutated variable refers to code component 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
->
-  <div
-    data-utopia-scene-id=\\"0\\"
-    data-utopia-valid-paths=\\"0:c56\\"
-    style=\\"background-color:rgba(255,255,255,1);box-shadow:1px 1px 4px rgba(128,128,128,1);border-width:1px;border-color:rgba(128,128,128,1);left:0;top:0;width:375px;height:812px;position:absolute\\"
-  >
-    <div data-uid=\\"c56\\">Utopia</div>
-  </div>
-</div>
-"
-`;
-
 exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block inside a text range 1`] = `
 "<div
   id=\\"canvas-container\\"
