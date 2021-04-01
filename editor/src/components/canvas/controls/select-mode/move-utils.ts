@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { JSXMetadata } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { TemplatePath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
@@ -33,7 +33,7 @@ function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
 
 export function extendSelectedViewsForInteraction(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
 ): Array<TemplatePath> {
   return Utils.flatMapArray((view) => {
     const frame = MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
@@ -55,7 +55,7 @@ export function extendSelectedViewsForInteraction(
 
 export function determineElementsToOperateOnForDragging(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   isMoving: boolean,
   isAnchor: boolean,
 ): Array<TemplatePath> {
@@ -71,10 +71,7 @@ export function determineElementsToOperateOnForDragging(
     ).map((view) => {
       const parentPath = TP.parentPath(view)
       if (parentPath != null && TP.isScenePath(parentPath)) {
-        const scene = MetadataUtils.findElementByTemplatePath(
-          componentMetadata.elements,
-          parentPath,
-        )
+        const scene = MetadataUtils.findElementByTemplatePath(componentMetadata, parentPath)
         if (MetadataUtils.isSceneTreatedAsGroup(scene)) {
           return parentPath
         } else {
@@ -88,7 +85,7 @@ export function determineElementsToOperateOnForDragging(
     // Resizing.
     return flatMapArray<TemplatePath, TemplatePath>((view) => {
       if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findElementByTemplatePath(componentMetadata.elements, view)
+        const scene = MetadataUtils.findElementByTemplatePath(componentMetadata, view)
         if (scene != null && MetadataUtils.isSceneTreatedAsGroup(scene)) {
           return scene.rootElements
         } else {
@@ -102,7 +99,7 @@ export function determineElementsToOperateOnForDragging(
 }
 
 export function dragComponent(
-  componentsMetadata: JSXMetadata,
+  componentsMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
@@ -182,7 +179,7 @@ export function dragComponent(
 }
 
 export function dragComponentForActions(
-  componentsMetadata: JSXMetadata,
+  componentsMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,

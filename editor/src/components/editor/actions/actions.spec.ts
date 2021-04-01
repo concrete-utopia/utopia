@@ -15,7 +15,6 @@ import {
   emptySpecialSizeMeasurements,
   clearTopLevelElementUniqueIDs,
   emptyComputedStyle,
-  jsxMetadata,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
@@ -899,7 +898,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     projectContents: contentsToTree({
       [StoryboardFilePath]: fileForUI,
     }),
-    jsxMetadataKILLME: jsxMetadata(elementMetadataMap),
+    jsxMetadataKILLME: elementMetadataMap,
     selectedViews: [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), ['aaa'])],
   })
   it('switches from pins to flex correctly', () => {

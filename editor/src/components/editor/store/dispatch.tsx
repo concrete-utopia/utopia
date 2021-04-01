@@ -5,7 +5,7 @@ import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { JSXMetadata } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import {
   fileTypeFromFileName,
@@ -759,12 +759,12 @@ function removeNonExistingViewReferencesFromState(
 }
 
 function findMatchingTemplatePath(
-  oldComponents: JSXMetadata,
-  newComponents: JSXMetadata,
+  oldComponents: ElementInstanceMetadataMap,
+  newComponents: ElementInstanceMetadataMap,
   pathToUpdate: TemplatePath,
 ): TemplatePath | null {
   const pathStillExists =
-    MetadataUtils.findElementByTemplatePath(newComponents.elements, pathToUpdate) != null
+    MetadataUtils.findElementByTemplatePath(newComponents, pathToUpdate) != null
   if (pathStillExists) {
     return pathToUpdate
   }

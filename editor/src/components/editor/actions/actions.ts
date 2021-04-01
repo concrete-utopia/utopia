@@ -57,7 +57,7 @@ import {
   isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
   walkElements,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   jsxTextBlock,
   isJSXTextBlock,
   getJSXAttribute,
@@ -65,7 +65,6 @@ import {
   deleteJSXAttribute,
   setJSXAttributesAttribute,
   emptyJsxMetadata,
-  jsxMetadata,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -471,7 +470,7 @@ import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-perfor
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import {
   ElementInstanceMetadataKeepDeepEquality,
-  JSXMetadataKeepDeepEquality,
+  ElementInstanceMetadataMapKeepDeepEquality,
 } from '../store/store-deep-equality-instances'
 import {
   showToast,
@@ -540,10 +539,10 @@ function setPropertyOnTargetAtElementPath(
 }
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-  scenes: JSXMetadata,
+  scenes: ElementInstanceMetadataMap,
   parentPath: InstancePath,
   value: DetectedLayoutSystem,
-): JSXMetadata {
+): ElementInstanceMetadataMap {
   const allChildren = MetadataUtils.getImmediateChildren(scenes, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
     return switchLayoutMetadata(transformedScenes, child.templatePath, value, undefined, undefined)
@@ -557,7 +556,7 @@ function switchAndUpdateFrames(
 ): EditorModel {
   const targetMetadata = Utils.forceNotNull(
     `Could not find metadata for ${JSON.stringify(target)}`,
-    MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, target),
+    MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, target),
   )
   if (targetMetadata.globalFrame == null) {
     // The target is a non-layoutable
@@ -766,10 +765,7 @@ function switchAndUpdateFrames(
   }
 
   Utils.fastForEach(targetMetadata.children, (childPath) => {
-    const child = MetadataUtils.getElementByInstancePathMaybe(
-      editor.jsxMetadataKILLME.elements,
-      childPath,
-    )
+    const child = MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, childPath)
     if (child?.globalFrame != null) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
       const isParentOfChildFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -1062,13 +1058,12 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
       }
 
       return element.children.every((childPath) => {
-        const child = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, childPath)
+        const child = MetadataUtils.getElementByInstancePathMaybe(metadata, childPath)
         return child == null || isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child)
       })
     }
-    const emptyGroups = MetadataUtils.findElements(
-      metadata.elements,
-      (element: ElementInstanceMetadata) => isEmptyOrContainsDeleted(element),
+    const emptyGroups = MetadataUtils.findElements(metadata, (element: ElementInstanceMetadata) =>
+      isEmptyOrContainsDeleted(element),
     )
     const emptyGroupTemplatePaths = emptyGroups.map((group) => group.templatePath)
 
@@ -2055,10 +2050,7 @@ export const UPDATE_FNS = {
           }
 
           const parent = TP.isInstancePath(parentPath)
-            ? MetadataUtils.getElementByInstancePathMaybe(
-                editor.jsxMetadataKILLME.elements,
-                parentPath,
-              )
+            ? MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, parentPath)
             : null
           const isParentFlex =
             parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
@@ -2119,7 +2111,7 @@ export const UPDATE_FNS = {
         }
 
         const element = MetadataUtils.getElementByInstancePathMaybe(
-          editor.jsxMetadataKILLME.elements,
+          editor.jsxMetadataKILLME,
           action.target,
         )
         const children = MetadataUtils.getChildrenHandlingGroups(
@@ -2763,7 +2755,7 @@ export const UPDATE_FNS = {
 
     if (TP.isInstancePath(action.element)) {
       const element = MetadataUtils.getElementByInstancePathMaybe(
-        editor.jsxMetadataKILLME.elements,
+        editor.jsxMetadataKILLME,
         action.element,
       )
       const imports = getOpenImportsFromState(editor)
@@ -3626,14 +3618,16 @@ export const UPDATE_FNS = {
     cullSpyCollector(spyCollector, action.elementMetadata)
 
     // Calculate the spy metadata given what has been collected.
-    const spyResult = jsxMetadata(spyCollector.current.spyValues.metadata)
+    const spyResult = spyCollector.current.spyValues.metadata
 
     const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality())(
       editor.domMetadataKILLME,
       action.elementMetadata as Array<ElementInstanceMetadata>, // we convert a ReadonlyArray to a regular array – it'd be nice to make more arrays readonly in the future
     ).value
-    const finalSpyMetadata = JSXMetadataKeepDeepEquality()(editor.spyMetadataKILLME, spyResult)
-      .value
+    const finalSpyMetadata = ElementInstanceMetadataMapKeepDeepEquality()(
+      editor.spyMetadataKILLME,
+      spyResult,
+    ).value
 
     const stayedTheSame =
       editor.domMetadataKILLME === finalDomMetadata && editor.spyMetadataKILLME === finalSpyMetadata
@@ -3760,7 +3754,7 @@ export const UPDATE_FNS = {
   UNWRAP_LAYOUTABLE: (action: UnwrapLayoutable, editor: EditorModel): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, action.target),
+      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, action.target),
     )
 
     return modifyOpenJsxElementAtPath(
@@ -3795,7 +3789,7 @@ export const UPDATE_FNS = {
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, action.target),
+      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME, action.target),
     )
 
     const updatedEditor = UPDATE_FNS.ADD_IMPORTS(addImports(action.importsToAdd), editor)
@@ -4263,7 +4257,7 @@ export function alignOrDistributeSelectedViews(
 
 function alignOrDistributeCanvasRects(
   components: Array<UtopiaJSXComponent>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   targets: CanvasFrameAndTarget[],
   source: CanvasRectangle,
   alignmentOrDistribution: Alignment | Distribution,

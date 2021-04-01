@@ -309,10 +309,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       anyComponentsInner =
         anyComponentsInner ||
         MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
-      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
-        rootMetadata.elements,
-        view,
-      )
+      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(rootMetadata, view)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
         // its own compared to the props.
@@ -435,8 +432,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       'InspectorEntryPoint selectedViews',
     )
     const rootViewsForSelectedElement: Array<TemplatePath> = useEditorState(
-      (store) =>
-        MetadataUtils.getRootViews(store.editor.jsxMetadataKILLME.elements, selectedViews[0]),
+      (store) => MetadataUtils.getRootViews(store.editor.jsxMetadataKILLME, selectedViews[0]),
       'InspectorEntryPoint',
       (oldTemplatePaths, newTemplatePaths) => {
         return arrayEquals(oldTemplatePaths, newTemplatePaths, TP.pathsEqual)
@@ -492,10 +488,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
   Utils.fastForEach(TP.filterScenes(selectedViews), (path) => {
     // TODO multiselect
-    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
-      jsxMetadataKILLME.elements,
-      path,
-    )
+    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
     if (elementMetadata != null) {
       const jsxElement = findElementAtPath(path, rootComponents)
       const parentPath = TP.parentPath(path)
@@ -611,10 +604,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
         // TODO Scene Implementation
         if (TP.isInstancePath(path)) {
-          const component = MetadataUtils.getElementByInstancePathMaybe(
-            jsxMetadataKILLME.elements,
-            path,
-          )
+          const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
           if (component != null) {
             elements.push({
               name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
@@ -622,7 +612,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
             })
           }
         } else {
-          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME.elements, path)
+          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME, path)
           if (scene != null) {
             elements.push({
               name: scene.label ?? undefined,
@@ -774,10 +764,7 @@ export const InspectorContextProvider = betterReactMemo<{
         newEditedMultiSelectedProps.push(selectedSceneElement.props)
       }
     } else {
-      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
-        jsxMetadataKILLME.elements,
-        path,
-      )
+      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
       if (elementMetadata != null) {
         if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
           /**

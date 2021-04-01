@@ -30,7 +30,7 @@ import {
   jsxAttributeValue,
   JSXElement,
   UtopiaJSXComponent,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
 } from '../shared/element-template'
 import {
   setJSXValueAtPath,
@@ -54,7 +54,7 @@ export function targetRespectsLayout(
   openImports: Imports,
   openFilePath: string | null,
   rootComponents: UtopiaJSXComponent[],
-  jsxMetadataKILLME: JSXMetadata,
+  jsxMetadataKILLME: ElementInstanceMetadataMap,
 ): boolean {
   const propControls = getPropertyControlsForTarget(
     target,

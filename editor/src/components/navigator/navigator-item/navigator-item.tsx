@@ -208,13 +208,12 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
     const isScenePath = TP.isScenePath(path)
 
     const isContainingBlockAncestor = selectedViews.some((selected) => {
-      return TP.pathsEqual(MetadataUtils.findContainingBlock(metadata.elements, selected), path)
+      return TP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
     })
 
     const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
       const selectedSizeMeasurements = TP.isInstancePath(selected)
-        ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, selected)
-            ?.specialSizeMeasurements
+        ? MetadataUtils.getElementByInstancePathMaybe(metadata, selected)?.specialSizeMeasurements
         : null
       const parentPath = TP.parentPath(selected)
       if (
@@ -224,7 +223,7 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
         parentPath != null
       ) {
         const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(
-          metadata.elements,
+          metadata,
           parentPath,
         )
         return TP.pathsEqual(flexDirectionChange, path)

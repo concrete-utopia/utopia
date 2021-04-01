@@ -484,7 +484,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
       let actions: Array<EditorAction> = []
       for (let path of selectedPaths) {
         const element = MetadataUtils.getElementByInstancePathMaybe(
-          stateRef.current.componentMetadata.elements,
+          stateRef.current.componentMetadata,
           path,
         )
 

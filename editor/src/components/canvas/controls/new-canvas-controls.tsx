@@ -27,7 +27,10 @@ import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
 import { TextEditor } from '../../editor/text-editor'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
@@ -84,7 +87,7 @@ export interface ControlProps {
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
   rootComponents: Array<UtopiaJSXComponent>
-  componentMetadata: JSXMetadata
+  componentMetadata: ElementInstanceMetadataMap
   imports: Imports
   hiddenInstances: Array<TemplatePath>
   focusedElementPath: ScenePath | null
@@ -227,11 +230,11 @@ export const selectElementsThatRespectLayout = createSelector(
     openImports: Imports,
     openFilePath: string | null,
     rootComponents: UtopiaJSXComponent[],
-    jsxMetadataKILLME: JSXMetadata,
+    jsxMetadataKILLME: ElementInstanceMetadataMap,
   ) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
-        const rootElements = MetadataUtils.getRootViews(jsxMetadataKILLME.elements, view)
+        const rootElements = MetadataUtils.getRootViews(jsxMetadataKILLME, view)
         return [view, ...rootElements]
       } else {
         return [view]
@@ -279,7 +282,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       }
 
       const possibleMetadata = MetadataUtils.getElementByInstancePathMaybe(
-        componentMetadata.elements,
+        componentMetadata,
         selectedView,
       )
       return possibleMetadata == null || MetadataUtils.dynamicPathToStaticPath(selectedView) == null
@@ -300,10 +303,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       if (TP.isScenePath(target)) {
         return false
       }
-      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
-        componentMetadata.elements,
-        target,
-      )
+      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
       if (possibleElement == null) {
         return false
       } else {
@@ -416,10 +416,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     if (dragState != null || selectedViews.length !== 1) {
       return null
     } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(
-        componentMetadata.elements,
-        target,
-      )
+      const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
       const canAnimate =
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
           target,

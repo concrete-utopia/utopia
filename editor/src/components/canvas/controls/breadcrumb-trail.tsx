@@ -41,10 +41,7 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
         // TODO Scene Implementation
         if (TP.isInstancePath(path)) {
-          const component = MetadataUtils.getElementByInstancePathMaybe(
-            jsxMetadataKILLME.elements,
-            path,
-          )
+          const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
           if (component != null) {
             elements.push({
               name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
@@ -52,7 +49,7 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
             })
           }
         } else {
-          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME.elements, path)
+          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME, path)
           if (scene != null) {
             elements.push({
               name: scene.label ?? undefined,

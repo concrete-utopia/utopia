@@ -18,7 +18,7 @@ import {
   JSXAttributes,
   defaultPropsParam,
   jsxAttributeOtherJavaScript,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   jsxAttributesFromMap,
   ElementInstanceMetadata,
 } from '../shared/element-template'
@@ -287,11 +287,11 @@ export function isSceneElement(element: JSXElement): boolean {
 
 export function isSceneChildWidthHeightPercentage(
   scene: ElementInstanceMetadata,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
 ): boolean {
   // FIXME ASAP This is reproducing logic that should stay in MetadataUtils, but importing that
   // imports the entire editor into the worker threads, including modules that require window and document
-  const rootElements = scene.rootElements.map((path) => metadata.elements[TP.toString(path)])
+  const rootElements = scene.rootElements.map((path) => metadata[TP.toString(path)])
   const rootElementSizes = rootElements.map((element) => {
     return {
       width: element.props?.style?.width,
@@ -304,7 +304,7 @@ export function isSceneChildWidthHeightPercentage(
 
 export function isDynamicSceneChildWidthHeightPercentage(
   scene: ElementInstanceMetadata,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
 ): boolean {
   const isDynamicScene = scene.props.resizesContent ?? false
 

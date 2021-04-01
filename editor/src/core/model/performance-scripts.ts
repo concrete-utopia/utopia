@@ -61,7 +61,7 @@ export function useTriggerResizePerformanceTest(): () => void {
 
     const target = selectedViews.current[0]
     const targetFrame = MetadataUtils.getElementByInstancePathMaybe(
-      metadata.current.elements,
+      metadata.current,
       target as InstancePath,
     )?.globalFrame
     const targetStartPoint =

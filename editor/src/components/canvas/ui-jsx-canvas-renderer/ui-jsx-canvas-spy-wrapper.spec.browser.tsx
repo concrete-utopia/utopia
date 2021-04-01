@@ -5,7 +5,7 @@ import {
   getJSXElementNameAsString,
   getJSXElementNameNoPathName,
   isJSXElement,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import { canvasPoint, point } from '../../../core/shared/math-utils'
 import { objectMap } from '../../../core/shared/object-utils'
@@ -80,7 +80,7 @@ function extractTemplatePathStuffFromElement(elementMetadata: ElementInstanceMet
   }
 }
 
-function extractTemplatePathStuffFromElementInstanceMetadata(metadata: JSXMetadata) {
+function extractTemplatePathStuffFromElementInstanceMetadata(metadata: ElementInstanceMetadataMap) {
   const sanitizedSpyData = objectMap((elementMetadata, key) => {
     const templatePathAsReportedBySpy = TP.toString(elementMetadata.templatePath)
     if (templatePathAsReportedBySpy !== key) {
@@ -88,7 +88,7 @@ function extractTemplatePathStuffFromElementInstanceMetadata(metadata: JSXMetada
     }
 
     return extractTemplatePathStuffFromElement(elementMetadata)
-  }, metadata.elements)
+  }, metadata)
   return sanitizedSpyData
 }
 

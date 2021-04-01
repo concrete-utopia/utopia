@@ -288,7 +288,7 @@ export function usePinToggling(): UsePinTogglingResult {
 
   const elementsRef = useRefEditorState((store) =>
     TP.filterScenes(selectedViewsRef.current).map((e) =>
-      MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadataKILLME.elements, e),
+      MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadataKILLME, e),
     ),
   )
 

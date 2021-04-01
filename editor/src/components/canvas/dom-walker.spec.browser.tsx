@@ -10,8 +10,6 @@ import { notLoggedIn } from '../../common/user'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  jsxMetadata,
-  JSXMetadata,
 } from '../../core/shared/element-template'
 import {
   FakeBundlerWorker,
@@ -41,9 +39,8 @@ function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInsta
   }
 }
 
-function sanitizeJsxMetadata(metadata: JSXMetadata) {
-  const elements: ElementInstanceMetadataMap = mapValues(sanitizeElementMetadata, metadata.elements)
-  return jsxMetadata(elements)
+function sanitizeJsxMetadata(metadata: ElementInstanceMetadataMap) {
+  return mapValues(sanitizeElementMetadata, metadata)
 }
 
 async function renderTestEditorWithCode(appUiJsFileCode: string) {

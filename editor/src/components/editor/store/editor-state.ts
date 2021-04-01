@@ -11,7 +11,6 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXElement,
-  JSXMetadata,
   emptyJsxMetadata,
 } from '../../../core/shared/element-template'
 import {
@@ -153,7 +152,7 @@ import { getControlsForExternalDependencies } from '../../../core/property-contr
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
 import {
   DerivedStateKeepDeepEquality,
-  JSXMetadataKeepDeepEquality,
+  ElementInstanceMetadataMapKeepDeepEquality,
 } from './store-deep-equality-instances'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
@@ -240,9 +239,9 @@ export interface EditorState {
   projectName: string
   projectVersion: number
   isLoaded: boolean
-  spyMetadataKILLME: JSXMetadata // this is coming from the canvas spy report.
+  spyMetadataKILLME: ElementInstanceMetadataMap // this is coming from the canvas spy report.
   domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
-  jsxMetadataKILLME: JSXMetadata // this is a merged result of the two above.
+  jsxMetadataKILLME: ElementInstanceMetadataMap // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
@@ -645,11 +644,11 @@ export function modifyOpenJSXElements(
 export function modifyOpenJSXElementsAndMetadata(
   transform: (
     utopiaComponents: Array<UtopiaJSXComponent>,
-    componentMetadata: JSXMetadata,
-  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: JSXMetadata },
+    componentMetadata: ElementInstanceMetadataMap,
+  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: ElementInstanceMetadataMap },
   model: EditorState,
 ): EditorState {
-  let workingMetadata: JSXMetadata = model.jsxMetadataKILLME
+  let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadataKILLME
   const successTransform = (success: ParseSuccess) => {
     const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
     // Apply the transformation.
@@ -906,7 +905,7 @@ export function transientCanvasState(
   }
 }
 
-export function getMetadata(editor: EditorState): JSXMetadata {
+export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
   if (editor.canvas.dragState == null) {
     return editor.jsxMetadataKILLME
   } else {
@@ -1162,7 +1161,7 @@ export interface OriginalCanvasAndLocalFrame {
 }
 
 export function getElementWarnings(
-  rootMetadata: JSXMetadata,
+  rootMetadata: ElementInstanceMetadataMap,
 ): ComplexMap<TemplatePath, ElementWarnings> {
   let result: ComplexMap<TemplatePath, ElementWarnings> = emptyComplexMap()
   MetadataUtils.walkMetadata(
@@ -1675,7 +1674,7 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(editor: EditorState): JSXMetadata {
+export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMetadataMap {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {
     return editor.jsxMetadataKILLME
@@ -1689,7 +1688,10 @@ export function reconstructJSXMetadata(editor: EditorState): JSXMetadata {
           editor.spyMetadataKILLME,
           editor.domMetadataKILLME,
         )
-        return JSXMetadataKeepDeepEquality()(editor.jsxMetadataKILLME, mergedMetadata).value
+        return ElementInstanceMetadataMapKeepDeepEquality()(
+          editor.jsxMetadataKILLME,
+          mergedMetadata,
+        ).value
       },
       (_) => editor.jsxMetadataKILLME,
       uiFile.fileContents.parsed,

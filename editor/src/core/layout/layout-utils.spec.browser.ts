@@ -13,7 +13,6 @@ import {
   specialSizeMeasurements,
   emptyComputedStyle,
   ElementInstanceMetadataMap,
-  jsxMetadata,
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
   emptySpecialSizeMeasurements,
@@ -80,7 +79,7 @@ describe('maybeSwitchLayoutProps', () => {
 
     const sceneElementPath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'scene-aaa'])
 
-    const elements: ElementInstanceMetadataMap = {
+    const metadata: ElementInstanceMetadataMap = {
       [TP.toString(sceneElementPath)]: {
         templatePath: sceneElementPath,
         element: left('Scene'),
@@ -142,7 +141,6 @@ describe('maybeSwitchLayoutProps', () => {
       },
     }
 
-    const metadata = jsxMetadata(elements)
     const pasteElements = pasteJSXElements(
       [elementToPaste],
       [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), [NewUID])],

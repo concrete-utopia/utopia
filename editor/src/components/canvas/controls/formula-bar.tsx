@@ -24,10 +24,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
       store.editor.selectedViews.length === 1 &&
       TP.isInstancePath(store.editor.selectedViews[0])
     ) {
-      return MetadataUtils.getElementByInstancePathMaybe(
-        metadata.elements,
-        store.editor.selectedViews[0],
-      )
+      return MetadataUtils.getElementByInstancePathMaybe(metadata, store.editor.selectedViews[0])
     } else {
       return null
     }

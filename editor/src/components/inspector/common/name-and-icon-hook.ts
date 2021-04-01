@@ -1,7 +1,7 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   JSXElementName,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import * as TP from '../../../core/shared/template-path'
@@ -67,10 +67,10 @@ export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
 function getNameAndIconResult(
   path: TemplatePath,
   components: UtopiaJSXComponent[],
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
   imports: Imports,
 ): NameAndIconResult {
-  const elementName = MetadataUtils.getJSXElementName(path, components, metadata.elements)
+  const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
   return {
     path: path,
     name: elementName,

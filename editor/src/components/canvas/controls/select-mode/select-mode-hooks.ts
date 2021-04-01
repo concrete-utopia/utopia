@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { last, uniqBy } from '../../../../core/shared/array-utils'
-import { JSXMetadata } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
@@ -109,7 +109,7 @@ function filterHiddenInstances(
 }
 
 export function getSelectableViews(
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
   focusedElementPath: ScenePath | null,
@@ -125,7 +125,7 @@ export function getSelectableViews(
     let rootElementsToFilter: TemplatePath[] = []
     let dynamicScenesWithFragmentRootViews: TemplatePath[] = []
     Utils.fastForEach(scenes, (path) => {
-      const scene = MetadataUtils.findElementByTemplatePath(componentMetadata.elements, path)
+      const scene = MetadataUtils.findElementByTemplatePath(componentMetadata, path)
       const rootElements = scene?.rootElements
       if (
         MetadataUtils.isSceneTreatedAsGroup(scene) &&
