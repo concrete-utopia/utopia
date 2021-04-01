@@ -899,7 +899,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     projectContents: contentsToTree({
       [StoryboardFilePath]: fileForUI,
     }),
-    jsxMetadataKILLME: jsxMetadata([], elementMetadataMap),
+    jsxMetadataKILLME: jsxMetadata(elementMetadataMap),
     selectedViews: [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), ['aaa'])],
   })
   it('switches from pins to flex correctly', () => {

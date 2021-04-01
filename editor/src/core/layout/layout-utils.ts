@@ -297,7 +297,7 @@ export function switchLayoutMetadata(
       }
     },
   )
-  return jsxMetadata(metadata.components, updatedElements)
+  return jsxMetadata(updatedElements)
 }
 
 export function switchPinnedChildToFlex(

@@ -227,7 +227,7 @@ const testElementMetadataMap: ElementInstanceMetadataMap = {
   [TP.toString(testStoryboardElement.templatePath)]: testStoryboardElement,
 }
 
-const testJsxMetadata = jsxMetadata([], testElementMetadataMap)
+const testJsxMetadata = jsxMetadata(testElementMetadataMap)
 
 describe('findElements', () => {
   it('Finds the element metadata', () => {
@@ -353,7 +353,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        jsxMetadata([], elementMapForTest),
+        jsxMetadata(elementMapForTest),
         TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
       ),
     ).toEqual(true)
@@ -371,7 +371,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        jsxMetadata([], elementMapForTest),
+        jsxMetadata(elementMapForTest),
         TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
       ),
     ).toEqual(false)
@@ -389,7 +389,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        jsxMetadata([], elementMapForTest),
+        jsxMetadata(elementMapForTest),
         TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
       ),
     ).toEqual(false)
@@ -407,7 +407,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     }
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
-        jsxMetadata([], elementMapForTest),
+        jsxMetadata(elementMapForTest),
         TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
       ),
     ).toEqual(false)
@@ -489,7 +489,7 @@ describe('getElementLabel', () => {
   //     },
   //   },
   // ]
-  const metadata = jsxMetadata([], elements)
+  const metadata = jsxMetadata(elements)
   it('the label of a spin containing text is that text', () => {
     const actualResult = MetadataUtils.getElementLabel(spanPath, metadata)
     expect(actualResult).toEqual('test text')

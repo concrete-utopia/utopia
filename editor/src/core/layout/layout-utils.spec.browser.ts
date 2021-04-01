@@ -142,7 +142,7 @@ describe('maybeSwitchLayoutProps', () => {
       },
     }
 
-    const metadata = jsxMetadata([], elements)
+    const metadata = jsxMetadata(elements)
     const pasteElements = pasteJSXElements(
       [elementToPaste],
       [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), [NewUID])],

@@ -43,7 +43,7 @@ function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInsta
 
 function sanitizeJsxMetadata(metadata: JSXMetadata) {
   const elements: ElementInstanceMetadataMap = mapValues(sanitizeElementMetadata, metadata.elements)
-  return jsxMetadata(metadata.components, elements)
+  return jsxMetadata(elements)
 }
 
 async function renderTestEditorWithCode(appUiJsFileCode: string) {

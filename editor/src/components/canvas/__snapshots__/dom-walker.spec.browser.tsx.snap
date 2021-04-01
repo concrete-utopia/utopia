@@ -2,7 +2,6 @@
 
 exports[`DOM Walker tests Label carried through for generated elements 1`] = `
 Object {
-  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},
@@ -629,7 +628,6 @@ Object {
 
 exports[`DOM Walker tests Label carried through for normal elements 1`] = `
 Object {
-  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},
@@ -941,7 +939,6 @@ Object {
 
 exports[`DOM Walker tests Simple Project with divs 1`] = `
 Object {
-  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},
@@ -1515,7 +1512,6 @@ Object {
 
 exports[`DOM Walker tests Simple Project with flex parent 1`] = `
 Object {
-  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},
@@ -2090,7 +2086,6 @@ Object {
 
 exports[`DOM Walker tests Simple Project with one child View 1`] = `
 Object {
-  "components": Array [],
   "elements": Object {
     ":utopia-storyboard-uid": Object {
       "attributeMetadatada": Object {},

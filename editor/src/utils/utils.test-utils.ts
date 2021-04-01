@@ -251,7 +251,7 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
     storyboardChildren,
   )
 
-  return jsxMetadata([], elements)
+  return jsxMetadata(elements)
 }
 
 export function createFakeMetadataForComponents(
@@ -299,7 +299,7 @@ export function createFakeMetadataForComponents(
     storyboardChildren,
   )
 
-  return jsxMetadata([], elements)
+  return jsxMetadata(elements)
 }
 
 function createFakeMetadataForJSXElement(

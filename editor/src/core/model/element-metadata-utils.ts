@@ -516,7 +516,7 @@ export const MetadataUtils = {
         props: ObjectPathImmutable.set(element.props, PP.getElements(property), value),
       }
     })
-    return jsxMetadata(metadata.components, elements)
+    return jsxMetadata(elements)
   },
   unsetPropertyDirectlyIntoMetadata(
     metadata: JSXMetadata,
@@ -529,7 +529,7 @@ export const MetadataUtils = {
         props: ObjectPathImmutable.del(element.props, PP.getElements(property)),
       }
     })
-    return jsxMetadata(metadata.components, elements)
+    return jsxMetadata(elements)
   },
   getRootViews(elements: ElementInstanceMetadataMap, target: TemplatePath): Array<InstancePath> {
     const element = MetadataUtils.findElementByTemplatePath(elements, target)
@@ -1173,7 +1173,7 @@ export const MetadataUtils = {
       }
     })
 
-    return jsxMetadata([], workingElements)
+    return jsxMetadata(workingElements)
   },
   staticElementsOnly(
     elements: Array<UtopiaJSXComponent>,
@@ -1216,7 +1216,7 @@ export const MetadataUtils = {
           }
         },
       )
-      return jsxMetadata(metadata.components, updatedElements)
+      return jsxMetadata(updatedElements)
     }
   },
   updateParentWithNewChildPath(
@@ -1271,7 +1271,7 @@ export const MetadataUtils = {
       withNewElement,
       indexPosition,
     )
-    return jsxMetadata(metadata.components, updatedElements)
+    return jsxMetadata(updatedElements)
   },
   duplicateElementMetadataAtPath(
     oldPath: TemplatePath,
@@ -1325,7 +1325,7 @@ export const MetadataUtils = {
         },
       )
 
-      return jsxMetadata(metadata.components, updatedElements)
+      return jsxMetadata(updatedElements)
     }
   },
   transformAllPathsInMetadata(
@@ -1377,7 +1377,7 @@ export const MetadataUtils = {
       },
     )
 
-    return jsxMetadata(metadata.components, updatedElements)
+    return jsxMetadata(updatedElements)
   },
   findElementMetadata(
     target: TemplatePath,

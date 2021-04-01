@@ -80,6 +80,8 @@ import {
   undefinableDeepEquality,
   combine4EqualityCalls,
   combine14EqualityCalls,
+  combine11EqualityCalls,
+  combine1EqualityCall,
 } from '../../../utils/deep-equality'
 import {
   TemplatePathArrayKeepDeepEquality,
@@ -682,9 +684,7 @@ export function ElementInstanceMetadataMapKeepDeepEquality(): KeepDeepEqualityCa
 }
 
 export function JSXMetadataKeepDeepEquality(): KeepDeepEqualityCall<JSXMetadata> {
-  return combine2EqualityCalls(
-    (metadata) => metadata.components,
-    arrayDeepEquality(createCallWithTripleEquals()),
+  return combine1EqualityCall(
     (metadata) => metadata.elements,
     ElementInstanceMetadataMapKeepDeepEquality(),
     jsxMetadata,

@@ -3626,7 +3626,7 @@ export const UPDATE_FNS = {
     cullSpyCollector(spyCollector, action.elementMetadata)
 
     // Calculate the spy metadata given what has been collected.
-    const spyResult = jsxMetadata([], spyCollector.current.spyValues.metadata)
+    const spyResult = jsxMetadata(spyCollector.current.spyValues.metadata)
 
     const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality())(
       editor.domMetadataKILLME,

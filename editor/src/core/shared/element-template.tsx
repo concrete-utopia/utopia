@@ -1266,22 +1266,16 @@ export type StyleAttributeMetadataEntry = { fromStyleSheet: boolean } // TODO re
 export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntry | undefined }
 
 export interface JSXMetadata {
-  components: Array<ComponentMetadata>
   elements: ElementInstanceMetadataMap
 }
 
-export function jsxMetadata(
-  components: Array<ComponentMetadata>,
-  elements: ElementInstanceMetadataMap,
-): JSXMetadata {
+export function jsxMetadata(elements: ElementInstanceMetadataMap): JSXMetadata {
   return {
-    components: components,
     elements: elements,
   }
 }
 
 export const emptyJsxMetadata: JSXMetadata = {
-  components: [],
   elements: {},
 }
 
@@ -1434,17 +1428,6 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
 
 export const emptyComputedStyle: ComputedStyle = {}
 export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
-
-export interface ComponentMetadata {
-  scenePath: ScenePath
-  templatePath: InstancePath
-  rootElements: Array<InstancePath>
-  component: string | null
-  globalFrame: CanvasRectangle | null
-  sceneResizesContent: boolean
-  label?: string
-  style: React.CSSProperties
-}
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>> // TODO update typescript!!
 export type MetadataWithoutChildren = Omit<ElementInstanceMetadata, 'children'> & {
