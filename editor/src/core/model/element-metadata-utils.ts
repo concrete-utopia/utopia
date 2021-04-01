@@ -96,7 +96,6 @@ import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-ut
 import { EmptyScenePathForStoryboard } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
-import { childPaths } from 'utopia-vscode-common'
 const ObjectPathImmutable: any = OPI
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
