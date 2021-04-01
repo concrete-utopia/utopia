@@ -2511,7 +2511,7 @@ export function cullSpyCollector(
   let scenePaths: Set<string> = Utils.emptySet()
   fastForEach(domMetadata, (element) => {
     let workingPath: TemplatePath | null = element.templatePath
-    while (workingPath != null) {
+    while (workingPath != null && !TP.isEmptyPath(workingPath)) {
       const pathAsString = TP.toString(workingPath)
       if (TP.isScenePath(workingPath)) {
         elementPaths.add(TP.toString(TP.instancePathForElementAtScenePath(workingPath)))

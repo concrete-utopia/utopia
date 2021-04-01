@@ -178,6 +178,22 @@ export const emptyScenePath: StaticScenePath = {
   sceneElementPaths: [],
 }
 
+function isEmptyElementPathsArray(elementPaths: ElementPath[]): boolean {
+  return elementPaths.length === 0 || (elementPaths.length === 1 && elementPaths[0].length === 0)
+}
+
+function isEmptyScenePath(scene: ScenePath): boolean {
+  return isEmptyElementPathsArray(scene.sceneElementPaths)
+}
+
+export function isEmptyPath(path: TemplatePath): boolean {
+  if (isScenePath(path)) {
+    return isEmptyScenePath(path)
+  } else {
+    return path.element.length === 0 && isEmptyScenePath(path.scene)
+  }
+}
+
 function newInstancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
   return {
     scene: scene,
@@ -191,7 +207,7 @@ export const emptyInstancePath: StaticInstancePath = {
 }
 
 export function scenePath(elementPaths: ElementPath[]): ScenePath {
-  if (elementPaths.length === 0 || (elementPaths.length === 1 && elementPaths[0].length === 0)) {
+  if (isEmptyElementPathsArray(elementPaths)) {
     return emptyScenePath
   }
 
@@ -247,6 +263,14 @@ export function isTopLevelInstancePath(path: TemplatePath): path is InstancePath
   return isInstancePath(path) && path.element.length === 1
 }
 
+export function isStoryboardPath(path: InstancePath): boolean {
+  return isEmptyScenePath(path.scene) && isTopLevelInstancePath(path)
+}
+
+export function isStoryboardDescendant(path: InstancePath): boolean {
+  return isEmptyScenePath(path.scene) && !isStoryboardPath(path)
+}
+
 export function scenePathPartOfTemplatePath(path: TemplatePath): ScenePath {
   // Returns the `scene` part of an `InstancePath`, or if given a `ScenePath` it just returns that
   if (isScenePath(path)) {
@@ -257,6 +281,7 @@ export function scenePathPartOfTemplatePath(path: TemplatePath): ScenePath {
 }
 
 export function instancePathForElementAtScenePath(path: ScenePath): StaticInstancePath {
+  // FIXME This should be returning a regular InstancePath, not a StaticInstancePath
   // Uses the last `ElementPath` in a `ScenePath` to create an `InstancePath` pointing to that element
   const staticScene = dynamicScenePathToStaticScenePath(path)
   const lastElementPath = last(staticScene.sceneElementPaths)
@@ -269,6 +294,10 @@ export function instancePathForElementAtScenePath(path: ScenePath): StaticInstan
   }
 }
 
+export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
+  return isInstancePath(path) ? path : instancePathForElementAtScenePath(path)
+}
+
 export function scenePathForElementAtInstancePath(path: InstancePath): ScenePath {
   // Appends the `ElementPath` part of an `InstancePath` to that instance's `ScenePath`, to create a
   // `ScenePath` pointing to that element
@@ -277,6 +306,10 @@ export function scenePathForElementAtInstancePath(path: InstancePath): ScenePath
 
 export function staticScenePathForElementAtInstancePath(path: StaticInstancePath): StaticScenePath {
   return staticScenePath([...path.scene.sceneElementPaths, path.element])
+}
+
+export function scenePathForElementAtPath(path: TemplatePath): ScenePath {
+  return isScenePath(path) ? path : scenePathForElementAtInstancePath(path)
 }
 
 export function elementPathForPath(path: StaticScenePath): StaticElementPath

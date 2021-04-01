@@ -137,21 +137,10 @@ const Canvas = {
       }
     }
 
-    const storyboardComponent = metadata.components.find((c) =>
-      TP.pathsEqual(c.scenePath, EmptyScenePathForStoryboard),
-    )
-
-    if (storyboardComponent != null) {
-      const storyboardEntryPoint = MetadataUtils.getImmediateChildren(
-        metadata,
-        storyboardComponent.scenePath,
-      )
-      return storyboardEntryPoint.flatMap((storyboardRoot) => {
-        return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardRoot).frames
-      })
-    } else {
-      return []
-    }
+    const storyboardEntryPoint = MetadataUtils.getAllStoryboardChildren(metadata)
+    return storyboardEntryPoint.flatMap((storyboardRoot) => {
+      return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardRoot).frames
+    })
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
     switch (selectedViews.length) {

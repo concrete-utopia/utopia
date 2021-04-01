@@ -49,6 +49,7 @@ import { useForceUpdate } from '../editor/hook-utils'
 import { extractOriginalUidFromIndexedUid, getUIDsOnDomELement } from '../../core/shared/uid-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
+import { fastForEach } from '../../core/shared/utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -383,6 +384,10 @@ function collectMetadataForElement(
   }
 }
 
+function isRootElement(path: InstancePath): boolean {
+  return TP.isScenePath(TP.parentPath(path))
+}
+
 function collectMetadata(
   element: HTMLElement,
   pathsForElement: Array<TemplatePath>,
@@ -408,9 +413,17 @@ function collectMetadata(
   )
 
   return pathsForElement.map((path) => {
-    const filteredChildPaths = unfilteredChildrenPaths.filter((childPath) =>
-      TP.pathsEqual(path, TP.parentPath(childPath)),
-    )
+    let filteredChildPaths: InstancePath[] = []
+    let filteredRootElements: InstancePath[] = []
+    fastForEach(unfilteredChildrenPaths, (childPath) => {
+      if (TP.pathsEqual(path, TP.parentPath(childPath))) {
+        if (isRootElement(childPath)) {
+          filteredRootElements.push(childPath)
+        } else {
+          filteredChildPaths.push(childPath)
+        }
+      }
+    })
 
     const instancePath = TP.isInstancePath(path) ? path : TP.instancePathForElementAtScenePath(path)
 
@@ -421,11 +434,14 @@ function collectMetadata(
       globalFrame,
       localFrame,
       filteredChildPaths,
+      filteredRootElements,
       false,
       false,
       specialSizeMeasurementsObject,
       computedStyle,
       attributeMetadata,
+      null,
+      null,
     )
   })
 }
@@ -613,11 +629,14 @@ function walkCanvasRootFragment(
       { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
       { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
       rootElements,
+      [],
       false,
       false,
       emptySpecialSizeMeasurements,
       emptyComputedStyle,
       emptyAttributeMetadatada,
+      null,
+      null,
     )
     return [...rootMetadata, metadata]
   }
