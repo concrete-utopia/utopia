@@ -46,11 +46,12 @@ interface PopupListProps {
 }
 
 const WindowEdgePadding = 4
-const OptionHeight = UtopiaTheme.layout.inputHeight.default
+const OptionHeight = UtopiaTheme.layout.inputHeight.default + 2
 const CheckboxPadding = 4
 const CheckboxWidth = 16
 const CheckboxInset = CheckboxPadding + CheckboxWidth
 const ValueContainerLeftPadding = 8
+const menuVerticalPadding = 4
 
 const getValueOfValueType = (value: ValueType<SelectOption>): SelectOption['value'] => {
   if (Array.isArray(value)) {
@@ -171,7 +172,8 @@ const getPortalPosition = (
     const croppedMenuHeight =
       (howManyElementsToShowAboveSelected + howManyElementsToShowBelowSelected + 1) * OptionHeight
     return {
-      menuTop: referenceTop - howManyElementsToShowAboveSelected * OptionHeight,
+      menuTop:
+        referenceTop - 2 * menuVerticalPadding - howManyElementsToShowAboveSelected * OptionHeight,
       menuHeight: croppedMenuHeight,
       scrollTop: numberCroppedTop * OptionHeight,
       croppedTop: numberCroppedTop > 0,
@@ -189,7 +191,7 @@ const getPortalPosition = (
         windowHeightAboveReference - numberCroppedTop * OptionHeight,
       )
       return {
-        menuTop: referenceTop - menuHeight,
+        menuTop: referenceTop - 2 * menuVerticalPadding - menuHeight,
         menuHeight: menuHeight,
         scrollTop: 0,
         croppedTop: numberCroppedTop > 0,
@@ -206,7 +208,7 @@ const getPortalPosition = (
         windowHeightBelowReference - numberCroppedBottom * OptionHeight,
       )
       return {
-        menuTop: referenceTop + OptionHeight,
+        menuTop: referenceTop - 2 * menuVerticalPadding + OptionHeight,
         menuHeight: menuHeight,
         scrollTop: 0,
         croppedTop: numberCroppedTop > 0,
@@ -596,7 +598,7 @@ export const PopupList = betterReactMemo<PopupListProps>(
             boxSizing: 'border-box',
             height: '100%',
             width: '100%',
-            padding: '4px 8px',
+            padding: `${menuVerticalPadding}px 8px`,
           }),
           menuList: (_, menuListProps) => {
             return {
@@ -611,7 +613,7 @@ export const PopupList = betterReactMemo<PopupListProps>(
             paddingBottom: 0,
             paddingRight: '24px',
             paddingLeft: '4px',
-            fontWeight: 500,
+            fontWeight: 400,
             userSelect: 'none',
             borderRadius: 2,
             fontSize: 11,
