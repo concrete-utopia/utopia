@@ -648,7 +648,6 @@ export const MetadataUtils = {
       const element = MetadataUtils.findElementByTemplatePath(metadata.elements, rootInstance)
       if (element != null) {
         result.push(rootInstance)
-        // element.children.forEach(recurseElement)
         element.rootElements.forEach(recurseElement)
       }
     })
