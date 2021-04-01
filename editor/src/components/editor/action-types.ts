@@ -24,6 +24,8 @@ import {
   TextFile,
   NodeModules,
   Imports,
+  ParsedTextFile,
+  HighlightBoundsForUids,
 } from '../../core/shared/project-file-types'
 import { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
 import { ElementContextMenuInstance } from '../element-context-menu'
@@ -50,6 +52,7 @@ import {
 import { Notice } from '../common/notice'
 import { BuildType } from '../../core/workers/ts/ts-worker'
 import { ContextMenuInnerProps } from '../../uuiui-deps'
+import { ParseResult } from '../../utils/value-parser-utils'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {
@@ -547,11 +550,24 @@ export interface UpdateFile {
   addIfNotInFiles: boolean
 }
 
+export interface WorkerCodeUpdate {
+  type: 'WORKER_CODE_UPDATE'
+  filePath: string
+  code: string
+  highlightBounds: HighlightBoundsForUids
+  lastRevisedTime: number
+}
+
+export interface WorkerParsedUpdate {
+  type: 'WORKER_PARSED_UPDATE'
+  filePath: string
+  parsed: ParsedTextFile
+  lastRevisedTime: number
+}
+
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
-  filePath: string
-  file: TextFile
-  codeOrModel: 'Code' | 'Model'
+  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate>
 }
 
 export interface UpdateFromCodeEditor {

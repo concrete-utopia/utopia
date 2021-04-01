@@ -444,7 +444,6 @@ import {
   BakedInStoryboardVariableName,
   getStoryboardTemplatePath,
 } from '../../../core/model/scene-utils'
-import { addUtopiaUtilsImportIfUsed } from '../import-utils'
 import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull } from '../../../core/shared/optional-utils'
 
@@ -3090,6 +3089,7 @@ export const UPDATE_FNS = {
         requireFn: action.codeResultCache.requireFn,
         resolve: action.codeResultCache.resolve,
         projectModules: action.codeResultCache.projectModules,
+        evaluationCache: action.codeResultCache.evaluationCache,
       },
     }
   },
@@ -3315,91 +3315,97 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
-    if (existing == null || !isTextFile(existing)) {
-      // The worker shouldn't be recreating deleted files or reformated files
-      console.error(`Worker thread is trying to update an invalid file ${action.filePath}`)
-      return editor
-    }
+    if (editor.parseOrPrintInFlight) {
+      let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
+      let anyParsedUpdates: boolean = false
 
-    if (!editor.parseOrPrintInFlight) {
-      // We've received this update after an editor undo action, so we should discard it
-      return editor
-    }
+      for (const fileUpdate of action.updates) {
+        const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
+        if (existing != null && isTextFile(existing)) {
+          let updatedFile: TextFile
+          let updatedContents: ParsedTextFile
+          let code: string
+          switch (fileUpdate.type) {
+            case 'WORKER_CODE_UPDATE': {
+              // The worker should only ever cause one side to catch up to the other
+              if (!codeNeedsPrinting(existing.fileContents.revisionsState)) {
+                continue
+              } else {
+                // we use the new highlightBounds coming from the action
+                code = fileUpdate.code
+                updatedContents = updateParsedTextFileHighlightBounds(
+                  existing.fileContents.parsed,
+                  fileUpdate.highlightBounds,
+                )
+              }
+              break
+            }
+            case 'WORKER_PARSED_UPDATE': {
+              // The worker should only ever cause one side to catch up to the other
+              if (!codeNeedsParsing(existing.fileContents.revisionsState)) {
+                continue
+              } else {
+                anyParsedUpdates = true
 
-    // The worker should only ever cause one side to catch up to the other
-    if (action.codeOrModel === 'Code' && !codeNeedsPrinting(existing.fileContents.revisionsState)) {
-      return editor
-    } else if (
-      action.codeOrModel === 'Model' &&
-      !codeNeedsParsing(existing.fileContents.revisionsState)
-    ) {
-      return editor
-    }
+                // we use the new highlightBounds coming from the action
+                code = existing.fileContents.code
+                const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
+                updatedContents = updateParsedTextFileHighlightBounds(
+                  fileUpdate.parsed,
+                  highlightBounds,
+                )
+              }
+              break
+            }
+            default:
+              const _exhaustiveCheck: never = fileUpdate
+              throw new Error(`Invalid file update: ${fileUpdate}`)
+          }
 
-    let updatedFile: TextFile
-    let updatedContents: ParsedTextFile
-    let code: string
-    switch (action.codeOrModel) {
-      case 'Code': {
-        // we use the new highlightBounds coming from the action
-        code = action.file.fileContents.code
-        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents.parsed)
-        updatedContents = updateParsedTextFileHighlightBounds(
-          existing.fileContents.parsed,
-          highlightBounds,
-        )
-        break
+          if (fileUpdate.lastRevisedTime < existing.lastRevisedTime) {
+            // if the received file is older than the existing, we still allow it to update the other side,
+            // but we don't bump the revision state or the lastRevisedTime.
+            updatedFile = textFile(
+              textFileContents(code, updatedContents, existing.fileContents.revisionsState),
+              existing.lastSavedContents,
+              existing.lastRevisedTime,
+            )
+          } else {
+            updatedFile = textFile(
+              textFileContents(code, updatedContents, RevisionsState.BothMatch),
+              existing.lastSavedContents,
+              Date.now(),
+            )
+          }
+
+          workingProjectContents = addFileToProjectContents(
+            workingProjectContents,
+            fileUpdate.filePath,
+            updatedFile,
+          )
+        } else {
+          // The worker shouldn't be recreating deleted files or reformated files
+          console.error(`Worker thread is trying to update an invalid file ${fileUpdate.filePath}`)
+          return editor
+        }
       }
-      case 'Model': {
+      if (anyParsedUpdates) {
         // Clear any cached paths since UIDs will have been regenerated and property paths may no longer exist
         PP.clearPropertyPathCache()
         TP.clearTemplatePathCache()
-
-        // we use the new highlightBounds coming from the action
-        code = existing.fileContents.code
-        const highlightBounds = getHighlightBoundsFromParseResult(action.file.fileContents.parsed)
-        updatedContents = updateParsedTextFileHighlightBounds(
-          action.file.fileContents.parsed,
-          highlightBounds,
-        )
-        break
       }
-      default:
-        const _exhaustiveCheck: never = action.codeOrModel
-        throw new Error(`Invalid flag used: ${action.codeOrModel}`)
-    }
-
-    if (isOlderThan(action.file, existing)) {
-      // if the received file is older than the existing, we still allow it to update the other side,
-      // but we don't bump the revision state or the lastRevisedTime.
-      updatedFile = textFile(
-        textFileContents(code, updatedContents, existing.fileContents.revisionsState),
-        existing.lastSavedContents,
-        existing.lastRevisedTime,
-      )
+      return {
+        ...editor,
+        projectContents: workingProjectContents,
+        canvas: {
+          ...editor.canvas,
+          mountCount: anyParsedUpdates ? editor.canvas.mountCount + 1 : editor.canvas.mountCount,
+        },
+        parseOrPrintInFlight: false, // only ever clear it here
+      }
     } else {
-      updatedFile = textFile(
-        textFileContents(code, updatedContents, RevisionsState.BothMatch),
-        existing.lastSavedContents,
-        Date.now(),
-      )
-    }
-
-    const updatedProjectContents = addFileToProjectContents(
-      editor.projectContents,
-      action.filePath,
-      updatedFile,
-    )
-    return {
-      ...editor,
-      projectContents: updatedProjectContents,
-      canvas: {
-        ...editor.canvas,
-        mountCount:
-          action.codeOrModel === 'Model' ? editor.canvas.mountCount + 1 : editor.canvas.mountCount,
-      },
-      parseOrPrintInFlight: false, // only ever clear it here
+      // We've received this update after an editor undo action, so we should discard it
+      return editor
     }
   },
   UPDATE_FROM_CODE_EDITOR: (
@@ -3653,14 +3659,12 @@ export const UPDATE_FNS = {
     }
   },
   SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
-    return addUtopiaUtilsImportIfUsed(
-      setPropertyOnTarget(editor, action.target, (props) => {
-        return mapEither(
-          roundAttributeLayoutValues,
-          setJSXValueAtPath(props, action.propertyPath, action.value),
-        )
-      }),
-    )
+    return setPropertyOnTarget(editor, action.target, (props) => {
+      return mapEither(
+        roundAttributeLayoutValues,
+        setJSXValueAtPath(props, action.propertyPath, action.value),
+      )
+    })
   },
   SET_PROP_WITH_ELEMENT_PATH: (
     action: SetPropWithElementPath,
@@ -4031,8 +4035,8 @@ export const UPDATE_FNS = {
         result.codeResultCache.exportsInfo,
         result.nodeModules.files,
         dispatch,
+        editor.codeResultCache.evaluationCache,
         action.buildType,
-        getMainUIFromModel(result),
         onlyProjectFiles,
       ),
     }
@@ -4416,8 +4420,8 @@ export async function newProject(
     SampleFileBundledExportsInfo,
     nodeModules,
     dispatch,
+    {},
     'full-build',
-    null,
     false,
   )
 
@@ -4484,8 +4488,8 @@ export async function load(
       migratedModel.exportsInfo,
       nodeModules,
       dispatch,
+      {},
       'full-build',
-      null,
       false,
     )
   } else {
@@ -4541,8 +4545,8 @@ function loadCodeResult(
             data.exportsInfo,
             nodeModules,
             dispatch,
+            {},
             'full-build',
-            null,
             false,
           )
           resolve(codeResultCache)

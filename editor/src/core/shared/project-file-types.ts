@@ -445,17 +445,25 @@ interface EvalResult {
   }
 }
 
+export type ESCodeFileOrigin = 'PROJECT_CONTENTS' | 'NODE_MODULES'
+
 export interface ESCodeFile {
   type: 'ES_CODE_FILE'
   fileContents: string
-  evalResultCache: EvalResult | null
+  origin: ESCodeFileOrigin
+  fullPath: string
 }
 
-export function esCodeFile(fileContents: string, evalResultCache: EvalResult | null): ESCodeFile {
+export function esCodeFile(
+  fileContents: string,
+  origin: ESCodeFileOrigin,
+  fullPath: string,
+): ESCodeFile {
   return {
     type: 'ES_CODE_FILE',
     fileContents: fileContents,
-    evalResultCache: evalResultCache,
+    origin: origin,
+    fullPath: fullPath,
   }
 }
 

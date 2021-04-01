@@ -6,7 +6,7 @@ import {
   processExportsInfo,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
-import { getRequireFn } from '../es-modules/package-manager/package-manager'
+import { EvaluationCache, getRequireFn } from '../es-modules/package-manager/package-manager'
 import {
   applyNodeModulesUpdate,
   getControlsForExternalDependencies,
@@ -27,6 +27,7 @@ export const initPropertyControlsProcessor = (
     npmDependencies: RequestedNpmDependency[],
     nodeModulesUpdate: NodeModulesUpdate,
     projectContents: ProjectContentTreeRoot,
+    evaluationCache: EvaluationCache,
     bundledProjectFiles: MultiFileBuildResult,
     exportsInfo: ReadonlyArray<ExportsInfo>,
   ) => {
@@ -42,6 +43,7 @@ export const initPropertyControlsProcessor = (
     processPropertyControlsWithBuildResult(
       propertyControlsInfo,
       projectContents,
+      evaluationCache,
       bundledProjectFiles,
       exportsInfo,
     )
@@ -50,6 +52,7 @@ export const initPropertyControlsProcessor = (
   const processPropertyControlsWithBuildResult = async (
     propertyControlsInfo: PropertyControlsInfo,
     projectContents: ProjectContentTreeRoot,
+    evaluationCache: EvaluationCache,
     bundledProjectFiles: MultiFileBuildResult,
     exportsInfo: ReadonlyArray<ExportsInfo>,
   ) => {
@@ -60,13 +63,19 @@ export const initPropertyControlsProcessor = (
         processPropertyControlsWithBuildResult(
           propertyControlsInfo,
           projectContents,
+          evaluationCache,
           bundledProjectFiles,
           exportsInfo,
         )
       })
     }
 
-    const requireFn = getRequireFn(onRemoteModuleDownload, projectContents, currentNodeModules)
+    const requireFn = getRequireFn(
+      onRemoteModuleDownload,
+      projectContents,
+      currentNodeModules,
+      evaluationCache,
+    )
 
     const exportValues = getExportValuesFromAllModules(bundledProjectFiles, requireFn)
     fastForEach(exportsInfo, (result) => {

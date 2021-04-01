@@ -19,6 +19,10 @@ import { applyLoaders } from '../../webpack-loaders/loaders'
 import { string } from 'prop-types'
 import { Either } from '../../shared/either'
 
+export type FileEvaluationCache = { exports: any }
+
+export type EvaluationCache = { [path: string]: FileEvaluationCache }
+
 export const DependencyNotFoundErrorName = 'DependencyNotFoundError'
 
 export function createDependencyNotFoundError(importOrigin: string, toImport: string) {
@@ -37,20 +41,22 @@ export const getEditorRequireFn = (
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
-) => {
+  evaluationCache: EvaluationCache,
+): RequireFn => {
   const onRemoteModuleDownload = (moduleDownload: Promise<NodeModules>) => {
     // FIXME Update something in the state to show that we're downloading remote files
     moduleDownload.then((modulesToAdd: NodeModules) =>
       dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
     )
   }
-  return getRequireFn(onRemoteModuleDownload, projectContents, nodeModules)
+  return getRequireFn(onRemoteModuleDownload, projectContents, nodeModules, evaluationCache)
 }
 
 export function getRequireFn(
   onRemoteModuleDownload: (moduleDownload: Promise<NodeModules>) => void,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
+  evaluationCache: EvaluationCache,
   injectedEvaluator = evaluator,
 ): RequireFn {
   return function require(importOrigin, toImport): unknown {
@@ -65,7 +71,18 @@ export function getRequireFn(
       const resolvedFile = resolveResult.success.file
 
       if (isEsCodeFile(resolvedFile)) {
-        if (resolvedFile.evalResultCache == null) {
+        const cacheEntryExists = resolvedPath in evaluationCache
+        let fileEvaluationCache: FileEvaluationCache
+        if (cacheEntryExists) {
+          fileEvaluationCache = evaluationCache[resolvedPath]
+        } else {
+          fileEvaluationCache = {
+            exports: {},
+          }
+          evaluationCache[resolvedPath] = fileEvaluationCache
+        }
+        if (!cacheEntryExists) {
+          // eslint-disable-next-line no-useless-catch
           try {
             /**
              * we create a result cache with an empty exports object here.
@@ -77,9 +94,6 @@ export function getRequireFn(
              * https://nodejs.org/api/modules.html#modules_cycles
              *
              */
-            let partialModule = {
-              exports: {},
-            }
             function partialRequire(name: string): unknown {
               return require(resolvedPath, name)
             }
@@ -91,11 +105,11 @@ export function getRequireFn(
             // we should extend the module objects so it not only contains the exports,
             // to have feature parity with the popular bundlers (Parcel / webpack)
             // MUTATION
-            resolvedFile.evalResultCache = { module: partialModule }
+            //  resolvedFile.evalResultCache = { module: partialModule }
             injectedEvaluator(
               loadedModuleResult.filename,
               loadedModuleResult.loadedContents,
-              resolvedFile.evalResultCache.module,
+              fileEvaluationCache,
               partialRequire,
             )
           } catch (e) {
@@ -108,11 +122,11 @@ export function getRequireFn(
              * This is inline with the real Node behavior
              */
             // MUTATION
-            resolvedFile.evalResultCache = null
+            //resolvedFile.evalResultCache = null
             throw e
           }
         }
-        return resolvedFile.evalResultCache.module.exports
+        return fileEvaluationCache.exports
       } else if (isEsRemoteDependencyPlaceholder(resolvedFile)) {
         if (!resolvedFile.downloadStarted) {
           // return empty exports object, fire off an async job to fetch the dependency from jsdelivr

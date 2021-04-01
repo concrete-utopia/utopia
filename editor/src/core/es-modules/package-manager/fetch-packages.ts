@@ -63,7 +63,7 @@ function packagerResponseFileToNodeModule(
     const fileUrl = getFileURLForPackageVersion(packageName, packageVersion, filePath)
     return esRemoteDependencyPlaceholder(fileUrl, false)
   } else {
-    return esCodeFile(fileContentsOrPlaceholder.content, null)
+    return esCodeFile(fileContentsOrPlaceholder.content, 'NODE_MODULES', filePath)
   }
 }
 
@@ -267,7 +267,7 @@ export async function fetchMissingFileDependency(
 ): Promise<NodeModules> {
   const jsdelivrResponse = await fetch(dependency.url)
   const responseAsString = await jsdelivrResponse.text()
-  const newFile: ESCodeFile = esCodeFile(responseAsString, null)
+  const newFile: ESCodeFile = esCodeFile(responseAsString, 'NODE_MODULES', filepath)
   const nodeModulesNewEntry: NodeModules = {
     [filepath]: newFile,
   }

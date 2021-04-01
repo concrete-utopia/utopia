@@ -21,13 +21,14 @@ import {
   textFileContents,
   RevisionsState,
   InstancePath,
+  NodeModules,
 } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
 } from '../../../core/workers/common/project-file-utils'
-import { getParseResult, printCodeAsync } from '../../../core/workers/parser-printer/parser-printer'
-import { isJsOrTsFile, isCssFile } from '../../../core/workers/ts/ts-worker'
+import { getParseResult } from '../../../core/workers/parser-printer/parser-printer'
+import { isJsOrTsFile, isCssFile, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
@@ -69,7 +70,10 @@ import {
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { arrayEquals, isBrowserEnvironment } from '../../../core/shared/utils'
-import { getDependencyTypeDefinitions } from '../../../core/es-modules/package-manager/package-manager'
+import {
+  EvaluationCache,
+  getDependencyTypeDefinitions,
+} from '../../../core/es-modules/package-manager/package-manager'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import {
   getContentsTreeFileFromString,
@@ -86,6 +90,16 @@ import {
 import { boundsInFile } from 'utopia-vscode-common'
 import { TemplatePathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { mapDropNulls } from '../../../core/shared/array-utils'
+import {
+  createParseFile,
+  createPrintCode,
+  ParseOrPrint,
+} from '../../../core/workers/parser-printer/parser-printer-worker'
+import {
+  getTransitiveReverseDependencies,
+  identifyFilesThatHaveChanged,
+} from '../../../core/shared/project-contents-dependencies'
+import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code-file'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -218,24 +232,53 @@ export function updateEmbeddedPreview(
 }
 
 function maybeRequestModelUpdate(
-  file: TextFile,
-  filePath: string,
+  projectContents: ProjectContentTreeRoot,
   workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
 ): { modelUpdateRequested: boolean; parseOrPrintFinished: Promise<boolean> } {
-  if (codeNeedsParsing(file.fileContents.revisionsState)) {
-    const code = file.fileContents.code
-    const parseFinished = getParseResult(workers, filePath, code)
-      .then((parseResult) => {
-        const updatedFile: TextFile = {
-          ...file,
-          fileContents: {
-            ...file.fileContents,
-            parsed: parseResult,
-          },
-        }
+  // Walk the project contents to see if anything needs to be sent across.
+  let filesToUpdate: Array<ParseOrPrint> = []
+  walkContentsTree(projectContents, (fullPath, file) => {
+    if (isTextFile(file)) {
+      if (codeNeedsParsing(file.fileContents.revisionsState)) {
+        filesToUpdate.push(createParseFile(fullPath, file.fileContents.code, file.lastRevisedTime))
+      } else if (
+        codeNeedsPrinting(file.fileContents.revisionsState) &&
+        isParseSuccess(file.fileContents.parsed)
+      ) {
+        filesToUpdate.push(
+          createPrintCode(fullPath, file.fileContents.parsed, false, file.lastRevisedTime),
+        )
+      }
+    }
+  })
 
-        dispatch([EditorActions.updateFromWorker(filePath, updatedFile, 'Model')])
+  // Should anything need to be sent across, do so here.
+  if (filesToUpdate.length > 0) {
+    const parseFinished = getParseResult(workers, filesToUpdate)
+      .then((parseResult) => {
+        const updates = parseResult.map((fileResult) => {
+          switch (fileResult.type) {
+            case 'parsefileresult':
+              return EditorActions.workerParsedUpdate(
+                fileResult.filename,
+                fileResult.parseResult,
+                fileResult.lastRevisedTime,
+              )
+            case 'printcoderesult':
+              return EditorActions.workerCodeUpdate(
+                fileResult.filename,
+                fileResult.printResult,
+                fileResult.highlightBounds,
+                fileResult.lastRevisedTime,
+              )
+            default:
+              const _exhaustiveCheck: never = fileResult
+              throw new Error(`Unhandled file result ${JSON.stringify(fileResult)}`)
+          }
+        })
+
+        dispatch([EditorActions.updateFromWorker(updates)])
         return true
       })
       .catch((e) => {
@@ -244,35 +287,9 @@ function maybeRequestModelUpdate(
         return true
       })
     return { modelUpdateRequested: true, parseOrPrintFinished: parseFinished }
-  } else if (
-    codeNeedsPrinting(file.fileContents.revisionsState) &&
-    isParseSuccess(file.fileContents.parsed)
-  ) {
-    const printFinished = printCodeAsync(workers, file.fileContents.parsed)
-      .then((printResult) => {
-        const updatedContents = updateParsedTextFileHighlightBounds(
-          file.fileContents.parsed,
-          printResult.highlightBounds,
-        )
-        const updatedFile: TextFile = textFile(
-          textFileContents(printResult.code, updatedContents, RevisionsState.BothMatch),
-          null,
-          Date.now(),
-        )
-
-        dispatch([EditorActions.updateFromWorker(filePath, updatedFile, 'Code')])
-
-        return true
-      })
-      .catch((e) => {
-        console.error('error during print', e)
-        dispatch([EditorActions.clearParseOrPrintInFlight()])
-        return true
-      })
-    return { modelUpdateRequested: true, parseOrPrintFinished: printFinished }
+  } else {
+    return { modelUpdateRequested: false, parseOrPrintFinished: Promise.resolve(true) }
   }
-
-  return { modelUpdateRequested: false, parseOrPrintFinished: Promise.resolve(true) }
 }
 
 function maybeRequestModelUpdateOnEditor(
@@ -283,19 +300,8 @@ function maybeRequestModelUpdateOnEditor(
   if (editor.parseOrPrintInFlight) {
     // Prevent repeated requests
     return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
-  }
-
-  const openTextFile = getOpenTextFile(editor)
-  const openTextFilePath = getOpenTextFileKey(editor)
-  if (openTextFile == null || openTextFilePath == null) {
-    return { editorState: editor, modelUpdateFinished: Promise.resolve(true) }
   } else {
-    const modelUpdateRequested = maybeRequestModelUpdate(
-      openTextFile,
-      openTextFilePath,
-      workers,
-      dispatch,
-    )
+    const modelUpdateRequested = maybeRequestModelUpdate(editor.projectContents, workers, dispatch)
     return {
       editorState: {
         ...editor,
@@ -520,6 +526,36 @@ export function editorDispatch(
   }
 }
 
+/*
+function fixUpEvaluationCache(
+  oldEditorState: EditorState,
+  newEditorState: EditorState,
+  dispatch: EditorDispatch,
+): CodeResultCache {
+  const filesWithChanges = identifyFilesThatHaveChanged(
+    oldEditorState.projectContents,
+    newEditorState.projectContents,
+  )
+  let updatedModules: MultiFileBuildResult = {}
+  for (const fileWithChange of filesWithChanges) {
+    updatedModules[fileWithChange] = 
+  }
+
+  const currentCache = newEditorState.codeResultCache
+  return generateCodeResultCache(
+    newEditorState.projectContents,
+    currentCache.projectModules,
+    updatedModules,
+    currentCache.exportsInfo,
+    newEditorState.nodeModules.files,
+    dispatch,
+    currentCache.evaluationCache,
+    'incremental',
+    true,
+  )
+}
+*/
+
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -582,6 +618,15 @@ function editorDispatchInner(
         }
       }
     }
+
+    /*
+    fixUpEvaluationCache(
+      storedState.editor.projectContents,
+      result.editor.projectContents,
+      result.editor.nodeModules.files,
+      result.editor.codeResultCache.evaluationCache,
+    )
+    */
 
     const cleanedEditor = metadataChanged
       ? removeNonExistingViewReferencesFromState(storedState.editor, result.editor)
