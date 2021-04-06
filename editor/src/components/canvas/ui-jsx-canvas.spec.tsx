@@ -1308,6 +1308,7 @@ export var storyboard = (
             <div
               class=\\"ant-picker\\"
               style=\\"width: 123px; height: 51px; left: 113px; top: 395px;\\"
+              data-uid=\\"antd-date-picker\\"
             >
               <div class=\\"ant-picker-input\\">
                 <input

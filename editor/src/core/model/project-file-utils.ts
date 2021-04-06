@@ -614,3 +614,11 @@ export function updateFileContents(
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
   }
 }
+
+export function getSavedCodeFromTextFile(file: TextFile): string {
+  return file.lastSavedContents?.code ?? file.fileContents.code
+}
+
+export function getUnsavedCodeFromTextFile(file: TextFile): string | null {
+  return file.lastSavedContents == null ? null : file.fileContents.code
+}

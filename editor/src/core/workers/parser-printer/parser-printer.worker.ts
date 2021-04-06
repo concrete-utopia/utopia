@@ -1,8 +1,8 @@
-import { ParserPrinterResultMessage, handleMessage } from './parser-printer-worker'
+import { ParsePrintResultMessage, handleMessage } from './parser-printer-worker'
 
 const ctx: Worker = self as any
 
-function sendMessageWebWorker(content: ParserPrinterResultMessage) {
+function sendMessageWebWorker(content: ParsePrintResultMessage) {
   ctx.postMessage(content)
 }
 

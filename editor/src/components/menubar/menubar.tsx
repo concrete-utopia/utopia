@@ -4,7 +4,6 @@ import styled from '@emotion/styled'
 import { IconMap } from 'antd/lib/result'
 import * as React from 'react'
 import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
-import { LoginState } from '../../common/user'
 import {
   useTriggerScrollPerformanceTest,
   useTriggerResizePerformanceTest,
@@ -15,51 +14,49 @@ import { shareURLForProject } from '../../core/shared/utils'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import {
   IcnProps,
-  SquareButton,
-  UtopiaStyles,
   FlexColumn,
   Tooltip,
   MenuIcons,
   LargerIcons,
   Avatar,
-  Icn,
-  Icons,
   UtopiaTheme,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
-import { EditorAction, EditorDispatch } from '../editor/action-types'
+import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
-import { EditorState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { LeftMenuTab } from '../navigator/left-pane'
 
-const Tile = styled.div({
+interface TileProps {
+  size: keyof typeof UtopiaTheme.layout.rowHeight
+}
+
+const Tile = styled.div<TileProps>((props) => ({
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
-})
+  width: props.size,
+}))
 
-export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface MenuTileProps extends React.HTMLAttributes<HTMLDivElement>, TileProps {
   selected: boolean
   menuExpanded: boolean
   icon: React.ReactElement<IcnProps>
+  size: keyof typeof UtopiaTheme.layout.rowHeight
 }
-
-// export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
 
 export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
   const [hovered, setHovered] = React.useState(false)
 
   const handleOnMouseOver = React.useCallback(() => setHovered(true), [])
   const handleOnMouseOut = React.useCallback(() => setHovered(false), [])
-
   var foregroundColor: IcnProps['color'] = 'darkgray'
 
   return (
     <Tile
+      size={props.size}
       css={{
-        width: 44,
         height: 44,
         transition: 'all .1s ease-in-out',
         borderLeft:
@@ -88,6 +85,9 @@ export const MenuTile: React.FunctionComponent<MenuTileProps> = (props) => {
           borderRadius: 1,
           width: 28,
           height: 28,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         {React.cloneElement(props.icon, {
@@ -180,7 +180,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>
-        <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+        <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
           <a href='/projects'>
             <Avatar loginState={userState.loginState} size={28} />
           </a>
@@ -193,6 +193,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Smiangle />}
               onClick={onClickProjectTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -204,6 +205,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Pyramid />}
               onClick={onClickStoryboardsTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -215,6 +217,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.FileSkewed />}
               onClick={onClickContentsTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -226,6 +229,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Settings />}
               onClick={onClickSettingsTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -237,6 +241,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.TwoGhosts />}
               onClick={onClickSharingTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -248,6 +253,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={leftMenuExpanded}
               icon={<MenuIcons.Octocat />}
               onClick={onClickGithubTab}
+              size='large'
             />
           </span>
         </Tooltip>
@@ -255,7 +261,12 @@ export const Menubar = betterReactMemo('Menubar', () => {
         <a style={{ marginTop: 32 }} target='_blank' rel='noopener noreferrer' href={previewURL}>
           <Tooltip title={'Launch External Preview'} placement={'right'}>
             <span>
-              <MenuTile selected={false} menuExpanded={false} icon={<MenuIcons.ExternalLink />} />
+              <MenuTile
+                selected={false}
+                menuExpanded={false}
+                icon={<MenuIcons.ExternalLink />}
+                size='large'
+              />
             </span>
           </Tooltip>
         </a>
@@ -266,25 +277,26 @@ export const Menubar = betterReactMemo('Menubar', () => {
               menuExpanded={false}
               icon={<LargerIcons.PreviewPane />}
               onClick={togglePreviewPaneVisible}
+              size='large'
             />
           </span>
         </Tooltip>
       </FlexColumn>
       {isFeatureEnabled('Performance Test Triggers') ? (
         <React.Fragment>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerScrollTest}>P S</a>
           </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerResizeTest}>P R</a>
           </Tile>
-          <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerSelectionTest}>P E</a>
           </Tile>
         </React.Fragment>
       ) : null}
       {isFeatureEnabled('Re-parse Project Button') ? (
-        <Tile style={{ marginTop: 12, marginBottom: 12 }}>
+        <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
           <a onClick={onReparseClick}>R</a>
         </Tile>
       ) : null}
