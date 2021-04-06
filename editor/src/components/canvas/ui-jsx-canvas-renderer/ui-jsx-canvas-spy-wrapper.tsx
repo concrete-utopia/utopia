@@ -46,11 +46,14 @@ export function buildSpyWrappedElement(
       globalFrame: null,
       localFrame: null,
       children: childrenTemplatePaths,
+      rootElements: [],
       componentInstance: false,
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
+      componentName: null,
+      label: null,
     }
     const isChildOfRootScene = TP.pathsEqual(
       TP.scenePathPartOfTemplatePath(templatePath),

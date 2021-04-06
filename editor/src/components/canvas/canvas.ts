@@ -12,6 +12,7 @@ import {
   TemplatePath,
   importDetails,
   importAlias,
+  ScenePath,
 } from '../../core/shared/project-file-types'
 import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
@@ -87,6 +88,7 @@ const Canvas = {
   ],
   getFramesInCanvasContext(
     metadata: JSXMetadata,
+    focusedElementPath: ScenePath | null,
     useBoundingFrames: boolean,
   ): Array<FrameWithPath> {
     function recurseChildren(
@@ -107,7 +109,11 @@ const Canvas = {
       )
       const overflows = MetadataUtils.overflows(component)
       const includeClippedNext = useBoundingFrames && overflows
-      const children = MetadataUtils.getImmediateChildren(metadata, component.templatePath)
+      const children = MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+        component.templatePath,
+        metadata,
+        focusedElementPath,
+      )
       const childFrames = children.map((child) => {
         const recurseResults = recurseChildren(offsetFrame, child)
         const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : offsetFrame
@@ -131,21 +137,10 @@ const Canvas = {
       }
     }
 
-    const storyboardComponent = metadata.components.find((c) =>
-      TP.pathsEqual(c.scenePath, EmptyScenePathForStoryboard),
-    )
-
-    if (storyboardComponent != null) {
-      const storyboardEntryPoint = MetadataUtils.getImmediateChildren(
-        metadata,
-        storyboardComponent.scenePath,
-      )
-      return storyboardEntryPoint.flatMap((storyboardRoot) => {
-        return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardRoot).frames
-      })
-    } else {
-      return []
-    }
+    const storyboardEntryPoint = MetadataUtils.getAllStoryboardChildren(metadata)
+    return storyboardEntryPoint.flatMap((storyboardRoot) => {
+      return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardRoot).frames
+    })
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
     switch (selectedViews.length) {
@@ -278,6 +273,7 @@ const Canvas = {
     componentMetadata: JSXMetadata,
     selectedViews: Array<TemplatePath>,
     hiddenInstances: Array<TemplatePath>,
+    focusedElementPath: ScenePath | null,
     canvasPosition: CanvasPoint,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
@@ -285,7 +281,11 @@ const Canvas = {
   ): Array<{ templatePath: TemplatePath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5
     const targetFilters = Canvas.targetFilter(selectedViews, searchTypes)
-    const framesWithPaths = Canvas.getFramesInCanvasContext(componentMetadata, useBoundingFrames)
+    const framesWithPaths = Canvas.getFramesInCanvasContext(
+      componentMetadata,
+      focusedElementPath,
+      useBoundingFrames,
+    )
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
       const shouldUseLooseTargeting =
         looseTargetingForZeroSizedElements &&

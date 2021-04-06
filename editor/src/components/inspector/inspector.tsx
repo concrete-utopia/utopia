@@ -59,6 +59,7 @@ import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
   getOpenImportsFromState,
   getOpenUtopiaJSXComponentsFromState,
+  getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
@@ -293,8 +294,8 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     aspectRatioLocked,
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadataKILLME
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     const imports = getOpenImportsFromState(store.editor)
+    const rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor)
     let anyComponentsInner: boolean = false
     let anyHTMLElementsInner: boolean = false
     let anyUnknownElementsInner: boolean = false
@@ -433,34 +434,21 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )
-    const rootViewsForScene: Array<TemplatePath> = useEditorState(
-      (store) => {
-        const possibleRootComponent = store.editor.jsxMetadataKILLME.components.find((m) =>
-          TP.pathsEqual(m.scenePath, selectedViews[0]),
-        )
-        if (possibleRootComponent != null) {
-          return possibleRootComponent.rootElements
-        } else {
-          return []
-        }
-      },
+    const rootViewsForSelectedElement: Array<TemplatePath> = useEditorState(
+      (store) =>
+        MetadataUtils.getRootViews(store.editor.jsxMetadataKILLME.elements, selectedViews[0]),
       'InspectorEntryPoint',
       (oldTemplatePaths, newTemplatePaths) => {
         return arrayEquals(oldTemplatePaths, newTemplatePaths, TP.pathsEqual)
       },
     )
 
-    const showSceneInspector =
-      selectedViews[0] != null &&
-      TP.depth(selectedViews[0]) === 1 &&
-      TP.isScenePath(selectedViews[0])
-
-    if (showSceneInspector) {
+    if (selectedViews.length === 1 && rootViewsForSelectedElement.length > 0) {
       return (
         <>
           <SingleInspectorEntryPoint selectedViews={selectedViews} />
           <InspectorSectionHeader style={{ paddingTop: 32 }}>Root View</InspectorSectionHeader>
-          <SingleInspectorEntryPoint selectedViews={rootViewsForScene} />
+          <SingleInspectorEntryPoint selectedViews={rootViewsForSelectedElement} />
         </>
       )
     } else {
@@ -755,13 +743,19 @@ export const InspectorContextProvider = betterReactMemo<{
   children: React.ReactNode
 }>('InspectorContextProvider', (props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadataKILLME, rootComponents } = useEditorState((store) => {
+  const { dispatch, jsxMetadataKILLME } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
     }
   }, 'InspectorContextProvider')
+
+  const rootComponents = useKeepReferenceEqualityIfPossible(
+    useEditorState(
+      (store) => getOpenUtopiaJSXComponentsFromStateMultifile(store.editor),
+      'InspectorContextProvider rootComponents',
+    ),
+  )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
   let newSpiedProps: Array<{ [key: string]: any }> = []

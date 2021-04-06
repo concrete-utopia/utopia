@@ -15,7 +15,12 @@ import {
   getOpenUIJSFileKey,
   TransientCanvasState,
 } from '../../editor/store/editor-state'
-import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
+import {
+  TemplatePath,
+  InstancePath,
+  Imports,
+  ScenePath,
+} from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
@@ -82,6 +87,7 @@ export interface ControlProps {
   componentMetadata: JSXMetadata
   imports: Imports
   hiddenInstances: Array<TemplatePath>
+  focusedElementPath: ScenePath | null
   highlightsEnabled: boolean
   canvasOffset: CanvasPoint
   scale: number
@@ -322,6 +328,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       componentMetadata: componentMetadata,
       imports: imports,
       hiddenInstances: props.editor.hiddenInstances,
+      focusedElementPath: props.editor.focusedElementPath,
       highlightsEnabled: props.editor.canvas.highlightsEnabled,
       canvasOffset: props.canvasOffset,
       scale: props.editor.canvas.scale,
