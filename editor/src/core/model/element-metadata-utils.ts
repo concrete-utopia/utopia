@@ -784,7 +784,7 @@ export const MetadataUtils = {
     path: TemplatePath,
     metadata: JSXMetadata,
     focusedElementPath: ScenePath | null,
-  ): Array<InstancePath> {
+  ): { children: Array<InstancePath>; unfurledComponents: Array<InstancePath> } {
     const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
     const children = MetadataUtils.getImmediateChildrenPaths(metadata.elements, path)
 
@@ -805,21 +805,30 @@ export const MetadataUtils = {
               TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
           )
 
-    return [...children, ...focusedRootElementPaths]
+    return { children: children, unfurledComponents: focusedRootElementPaths }
   },
   getAllChildrenElementsIncludingUnfurledFocusedComponents(
     path: TemplatePath,
     metadata: JSXMetadata,
     focusedElementPath: ScenePath | null,
-  ): Array<ElementInstanceMetadata> {
-    const childrenPaths = this.getAllChildrenIncludingUnfurledFocusedComponents(
+  ): {
+    children: Array<ElementInstanceMetadata>
+    unfurledComponents: Array<ElementInstanceMetadata>
+  } {
+    const { children, unfurledComponents } = this.getAllChildrenIncludingUnfurledFocusedComponents(
       path,
       metadata,
       focusedElementPath,
     )
-    return mapDropNulls((childPath) => {
-      return this.getElementByInstancePathMaybe(metadata.elements, childPath)
-    }, childrenPaths)
+
+    return {
+      children: mapDropNulls((childPath) => {
+        return this.getElementByInstancePathMaybe(metadata.elements, childPath)
+      }, children),
+      unfurledComponents: mapDropNulls((childPath) => {
+        return this.getElementByInstancePathMaybe(metadata.elements, childPath)
+      }, unfurledComponents),
+    }
   },
   createOrderedTemplatePathsFromElements(
     metadata: JSXMetadata,
@@ -830,11 +839,15 @@ export const MetadataUtils = {
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
     function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
-      const childrenIncludingFocusedElements = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+      const {
+        children,
+        unfurledComponents,
+      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
         path,
         metadata,
         focusedElementPath,
       )
+      const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
       const reversedChildren = R.reverse(childrenIncludingFocusedElements)
       const isCollapsed = TP.containsPath(path, collapsedViews)
       navigatorTargets.push(path)

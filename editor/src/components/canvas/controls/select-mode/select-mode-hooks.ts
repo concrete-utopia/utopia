@@ -143,11 +143,15 @@ export function getSelectableViews(
     Utils.fastForEach(selectedViews, (view) => {
       const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
-        const ancestorChildren = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+        const {
+          children,
+          unfurledComponents,
+        } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
           TP.dynamicPathToStaticPath(ancestor),
           componentMetadata,
           focusedElementPath,
         )
+        const ancestorChildren = [...children, ...unfurledComponents]
         fastForEach(ancestorChildren, (child) => siblings.push(child))
       })
     })
