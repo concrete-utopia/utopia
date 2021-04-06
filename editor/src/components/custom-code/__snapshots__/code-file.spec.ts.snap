@@ -141,6 +141,7 @@ Object {
     },
   },
   "error": null,
+  "evaluationCache": Object {},
   "exportsInfo": Array [
     Object {
       "code": "// component library
@@ -617,6 +618,7 @@ exports.ComponentWithProps.propertyControls = {
     },
   },
   "error": null,
+  "evaluationCache": Object {},
   "exportsInfo": Array [
     Object {
       "code": "/** @jsx jsx */
@@ -1353,6 +1355,7 @@ exports.App = function (props) {
     },
   },
   "error": null,
+  "evaluationCache": Object {},
   "exportsInfo": Array [
     Object {
       "code": "/** @jsx jsx */

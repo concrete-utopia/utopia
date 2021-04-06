@@ -1,5 +1,4 @@
 import {
-  clearNodeModules,
   CodeResultCache,
   PropertyControlsInfo,
   UtopiaRequireFn,
@@ -457,9 +456,9 @@ export function sendPropertyControlsInfoRequest(
         notNodeModulesFiles[key] = value
       }
     }, nodeModules)
-    nodeModulesUpdate = partialNodeModulesUpdate(clearNodeModules(notNodeModulesFiles))
+    nodeModulesUpdate = partialNodeModulesUpdate(notNodeModulesFiles)
   } else {
-    nodeModulesUpdate = fullNodeModulesUpdate(clearNodeModules(nodeModules))
+    nodeModulesUpdate = fullNodeModulesUpdate(nodeModules)
   }
 
   // Include any potentially not yet sent updates ahead of any potential scheduling so that

@@ -1,8 +1,10 @@
 import { directory } from '../../core/model/project-file-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import {
+  esCodeFile,
   InstancePath,
   isTextFile,
+  NodeModules,
   ProjectContents,
   ProjectFile,
   RevisionsState,
@@ -15,6 +17,49 @@ import { lintAndParse, parseCode } from '../../core/workers/parser-printer/parse
 import { ProjectContentTreeRoot, contentsToTree, getContentsTreeFileFromString } from '../assets'
 import { DefaultPackageJson, StoryboardFilePath } from '../editor/store/editor-state'
 import * as TP from '../../core/shared/template-path'
+
+export const SampleNodeModules: NodeModules = {
+  '/node_modules/utopia-api/index.js': esCodeFile(
+    `export {}`,
+    'NODE_MODULES',
+    '/node_modules/utopia-api/index.js',
+  ),
+  '/node_modules/utopia-api/package.json': esCodeFile(
+    JSON.stringify({ main: './index.js' }),
+    'NODE_MODULES',
+    '/node_modules/utopia-api/package.json',
+  ),
+  '/node_modules/uuiui/index.js': esCodeFile(
+    `export {}`,
+    'NODE_MODULES',
+    '/node_modules/uuiui/index.js',
+  ),
+  '/node_modules/uuiui/package.json': esCodeFile(
+    JSON.stringify({ main: './index.js' }),
+    'NODE_MODULES',
+    '/node_modules/uuiui/package.json',
+  ),
+  '/node_modules/react/index.js': esCodeFile(
+    `export {}`,
+    'NODE_MODULES',
+    '/node_modules/react/index.js',
+  ),
+  '/node_modules/react/package.json': esCodeFile(
+    JSON.stringify({ main: './index.js' }),
+    'NODE_MODULES',
+    '/node_modules/react/package.json',
+  ),
+  '/node_modules/react-dom/index.js': esCodeFile(
+    `export {}`,
+    'NODE_MODULES',
+    '/node_modules/react-dom/index.js',
+  ),
+  '/node_modules/react-dom/package.json': esCodeFile(
+    JSON.stringify({ main: './index.js' }),
+    'NODE_MODULES',
+    '/node_modules/react-dom/package.json',
+  ),
+}
 
 export function createCodeFile(path: string, contents: string): TextFile {
   const result = lintAndParse(path, contents)

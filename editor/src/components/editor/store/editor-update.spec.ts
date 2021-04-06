@@ -828,7 +828,11 @@ describe('updating node_modules', () => {
     editor.nodeModules = {
       skipDeepFreeze: true,
       files: {
-        '/node_modules/example.js': esCodeFile('nothing to see here', null),
+        '/node_modules/example.js': esCodeFile(
+          'nothing to see here',
+          'NODE_MODULES',
+          '/node_modules/example.js',
+        ),
       },
       projectFilesBuildResults: {},
       packageStatus: {},
