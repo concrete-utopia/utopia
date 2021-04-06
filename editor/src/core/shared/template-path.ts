@@ -448,7 +448,7 @@ export function parentPath(path: TemplatePath): TemplatePath | null {
 }
 
 function elementPathToUID(path: ElementPath): id {
-  return last(path) ?? ''
+  return last(path)!
 }
 
 // KILLME DEPRECATED, use toUid instead
