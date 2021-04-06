@@ -164,8 +164,8 @@ export class Editor {
               msg.exportsInfo,
               this.storedState.editor.nodeModules.files,
               this.boundDispatch,
+              this.storedState.editor.codeResultCache.evaluationCache,
               msg.buildType,
-              getMainUIFromModel(this.storedState.editor),
               true,
             )
 

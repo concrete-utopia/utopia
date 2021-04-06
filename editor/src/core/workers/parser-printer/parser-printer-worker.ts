@@ -12,63 +12,89 @@ import {
 } from './parser-printer'
 import { fastForEach } from '../../shared/utils'
 
-interface PrintCodeMessage {
+interface PrintCode {
   type: 'printcode'
+  filename: string
   parseSuccess: ParseSuccess
   stripUIDs: boolean
+  lastRevisedTime: number
 }
 
-export function createPrintCodeMessage(
+export function createPrintCode(
+  filename: string,
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,
-): PrintCodeMessage {
+  lastRevisedTime: number,
+): PrintCode {
   return {
     type: 'printcode',
+    filename: filename,
     parseSuccess: parseSuccess,
     stripUIDs: stripUIDs,
+    lastRevisedTime: lastRevisedTime,
   }
 }
 
-interface PrintCodeResultMessage {
+interface PrintCodeResult {
   type: 'printcoderesult'
+  filename: string
   printResult: string
   highlightBounds: HighlightBoundsForUids
+  lastRevisedTime: number
 }
 
-function createPrintCodeResultMessage(
+function createPrintCodeResult(
+  filename: string,
   printResult: string,
   highlightBounds: HighlightBoundsForUids,
-): PrintCodeResultMessage {
+  lastRevisedTime: number,
+): PrintCodeResult {
   return {
     type: 'printcoderesult',
+    filename: filename,
     printResult: printResult,
     highlightBounds: highlightBounds,
+    lastRevisedTime: lastRevisedTime,
   }
 }
 
-interface ParseFileMessage {
+interface ParseFile {
   type: 'parsefile'
   filename: string
   content: string
+  lastRevisedTime: number
 }
 
-export function createParseFileMessage(filename: string, content: string): ParseFileMessage {
+export function createParseFile(
+  filename: string,
+  content: string,
+  lastRevisedTime: number,
+): ParseFile {
   return {
     type: 'parsefile',
     filename: filename,
     content: content,
+    lastRevisedTime: lastRevisedTime,
   }
 }
 
-export interface ParseFileResultMessage {
+export interface ParseFileResult {
   type: 'parsefileresult'
+  filename: string
   parseResult: ParsedTextFile
+  lastRevisedTime: number
 }
 
-function createParseFileResultMessage(parseResult: ParsedTextFile): ParseFileResultMessage {
+function createParseFileResult(
+  filename: string,
+  parseResult: ParsedTextFile,
+  lastRevisedTime: number,
+): ParseFileResult {
   return {
     type: 'parsefileresult',
+    filename: filename,
     parseResult: parseResult,
+    lastRevisedTime: lastRevisedTime,
   }
 }
 
@@ -82,29 +108,62 @@ function createParsePrintFailedMessage(): ParsePrintFailedMessage {
   }
 }
 
-type ParserPrinterRequestMessage = PrintCodeMessage | ParseFileMessage
-export type ParserPrinterResultMessage =
-  | PrintCodeResultMessage
-  | ParseFileResultMessage
-  | ParsePrintFailedMessage
+export type ParseOrPrint = PrintCode | ParseFile
+
+export interface ParsePrintFilesRequest {
+  type: 'parseprintfiles'
+  files: Array<ParseOrPrint>
+}
+
+export function createParsePrintFilesRequest(files: Array<ParseOrPrint>): ParsePrintFilesRequest {
+  return {
+    type: 'parseprintfiles',
+    files: files,
+  }
+}
+
+export type ParseOrPrintResult = PrintCodeResult | ParseFileResult
+
+export interface ParsePrintFilesResult {
+  type: 'parseprintfilesresult'
+  files: Array<ParseOrPrintResult>
+}
+
+export function createParsePrintFilesResult(
+  files: Array<ParseOrPrintResult>,
+): ParsePrintFilesResult {
+  return {
+    type: 'parseprintfilesresult',
+    files: files,
+  }
+}
+
+export type ParsePrintResultMessage = ParsePrintFilesResult | ParsePrintFailedMessage
 
 export function handleMessage(
-  workerMessage: ParserPrinterRequestMessage,
-  sendMessage: (content: ParserPrinterResultMessage) => void,
+  workerMessage: ParsePrintFilesRequest,
+  sendMessage: (content: ParsePrintResultMessage) => void,
 ): void {
   switch (workerMessage.type) {
-    case 'parsefile': {
+    case 'parseprintfiles': {
       try {
-        parseFile(workerMessage.filename, workerMessage.content, sendMessage)
-      } catch (e) {
-        sendMessage(createParsePrintFailedMessage())
-        throw e
-      }
-      break
-    }
-    case 'printcode': {
-      try {
-        printCodeAsync(workerMessage.parseSuccess, workerMessage.stripUIDs, sendMessage)
+        const results = workerMessage.files.map((file) => {
+          switch (file.type) {
+            case 'parsefile':
+              return getParseFileResult(file.filename, file.content, file.lastRevisedTime)
+            case 'printcode':
+              return getPrintCodeResult(
+                file.filename,
+                file.parseSuccess,
+                file.stripUIDs,
+                file.lastRevisedTime,
+              )
+            default:
+              const _exhaustiveCheck: never = file
+              throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
+          }
+        })
+        sendMessage(createParsePrintFilesResult(results))
       } catch (e) {
         sendMessage(createParsePrintFailedMessage())
         throw e
@@ -114,20 +173,21 @@ export function handleMessage(
   }
 }
 
-function parseFile(
+function getParseFileResult(
   filename: string,
   content: string,
-  sendMessage: (c: ParserPrinterResultMessage) => void,
-) {
+  lastRevisedTime: number,
+): ParseFileResult {
   const parseResult = lintAndParse(filename, content)
-  sendMessage(createParseFileResultMessage(parseResult))
+  return createParseFileResult(filename, parseResult, lastRevisedTime)
 }
 
-function printCodeAsync(
+function getPrintCodeResult(
+  filename: string,
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,
-  sendMessage: (content: ParserPrinterResultMessage) => void,
-) {
+  lastRevisedTime: number,
+): PrintCodeResult {
   const withUIDs = printCode(
     printCodeOptions(false, true, true, false),
     parseSuccess.imports,
@@ -156,5 +216,5 @@ function printCodeAsync(
       }
     })
   }
-  sendMessage(createPrintCodeResultMessage(withoutUIDs, newHighlightBounds))
+  return createPrintCodeResult(filename, withoutUIDs, newHighlightBounds, lastRevisedTime)
 }

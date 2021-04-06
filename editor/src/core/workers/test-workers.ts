@@ -1,4 +1,3 @@
-import { NodeModules, ParseSuccess } from 'src/core/shared/project-file-types'
 import {
   createLinterRequestMessage,
   handleMessage as handleLinterMessage,
@@ -6,10 +5,10 @@ import {
 } from './linter/linter-worker'
 import { LinterWorker, ParserPrinterWorker, WatchdogWorker } from './workers'
 import {
-  createParseFileMessage,
-  createPrintCodeMessage,
+  createParsePrintFilesRequest,
   handleMessage as handleParserPrinterMessage,
-  ParserPrinterResultMessage,
+  ParseOrPrint,
+  ParsePrintResultMessage,
 } from './parser-printer/parser-printer-worker'
 import { handleMessage as handleTSWorkerMessage } from './ts/ts-worker'
 import { BundlerWorker } from './bundler-bridge'
@@ -47,18 +46,14 @@ export class FakeParserPrinterWorker implements ParserPrinterWorker {
     this.messageListeners = this.messageListeners.filter((l) => l !== listener)
   }
 
-  receiveMessage = (data: ParserPrinterResultMessage): void => {
+  receiveMessage = (data: ParsePrintResultMessage): void => {
     this.messageListeners.forEach((l) => {
       l(new MessageEvent('message', { data: data }))
     })
   }
 
-  sendParseFileMessage = (filename: string, content: string): void => {
-    handleParserPrinterMessage(createParseFileMessage(filename, content), this.receiveMessage)
-  }
-
-  sendPrintCodeMessage = (parseSuccess: ParseSuccess): void => {
-    handleParserPrinterMessage(createPrintCodeMessage(parseSuccess, false), this.receiveMessage)
+  sendParsePrintMessage = (files: Array<ParseOrPrint>): void => {
+    handleParserPrinterMessage(createParsePrintFilesRequest(files), this.receiveMessage)
   }
 }
 

@@ -20,10 +20,12 @@ import type {
   RequestedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import type {
+  HighlightBoundsForUids,
   Imports,
   InstancePath,
   LayoutWrapper,
   NodeModules,
+  ParsedTextFile,
   ProjectFile,
   PropertyPath,
   ScenePath,
@@ -180,6 +182,8 @@ import type {
   CloseDesignerFile,
   SetFocusedElement,
   AddImports,
+  WorkerCodeUpdate,
+  WorkerParsedUpdate,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -866,16 +870,40 @@ export function updateFile(
   }
 }
 
-export function updateFromWorker(
+export function workerCodeUpdate(
   filePath: string,
-  file: TextFile,
-  codeOrModel: 'Code' | 'Model',
+  code: string,
+  highlightBounds: HighlightBoundsForUids,
+  lastRevisedTime: number,
+): WorkerCodeUpdate {
+  return {
+    type: 'WORKER_CODE_UPDATE',
+    filePath: filePath,
+    code: code,
+    highlightBounds: highlightBounds,
+    lastRevisedTime: lastRevisedTime,
+  }
+}
+
+export function workerParsedUpdate(
+  filePath: string,
+  parsed: ParsedTextFile,
+  lastRevisedTime: number,
+): WorkerParsedUpdate {
+  return {
+    type: 'WORKER_PARSED_UPDATE',
+    filePath: filePath,
+    parsed: parsed,
+    lastRevisedTime: lastRevisedTime,
+  }
+}
+
+export function updateFromWorker(
+  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate>,
 ): UpdateFromWorker {
   return {
     action: 'UPDATE_FROM_WORKER',
-    filePath: filePath,
-    file: file,
-    codeOrModel: codeOrModel,
+    updates: updates,
   }
 }
 

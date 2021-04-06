@@ -14,7 +14,11 @@ import {
   updateFromCodeEditor,
   sendCodeEditorInitialisation,
 } from '../../components/editor/actions/action-creators'
-import { isDirectory } from '../model/project-file-utils'
+import {
+  getSavedCodeFromTextFile,
+  getUnsavedCodeFromTextFile,
+  isDirectory,
+} from '../model/project-file-utils'
 import {
   initializeFS,
   writeFileAsUTF8,
@@ -68,13 +72,6 @@ function fromFSPath(fsPath: string): string {
   } else {
     throw new Error(`Invalid FS path: ${fsPath}`)
   }
-}
-function getSavedCodeFromTextFile(textFile: TextFile): string {
-  return textFile.lastSavedContents?.code ?? textFile.fileContents.code
-}
-
-function getUnsavedCodeFromTextFile(textFile: TextFile): string | null {
-  return textFile.lastSavedContents == null ? null : textFile.fileContents.code
 }
 
 async function writeProjectFile(

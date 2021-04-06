@@ -248,6 +248,37 @@ export async function walkContentsTreeAsync(
   }
 }
 
+export function zipContentsTree(
+  firstTree: ProjectContentTreeRoot,
+  secondTree: ProjectContentTreeRoot,
+  onElement: (
+    fullPath: string,
+    firstContents: ProjectContentsTree | null,
+    secondContents: ProjectContentsTree | null,
+  ) => boolean,
+): void {
+  let keys: Set<string> = emptySet()
+  Object.keys(firstTree).forEach(keys.add, keys)
+  Object.keys(secondTree).forEach(keys.add, keys)
+  for (const key of keys) {
+    const firstContents = propOrNull(key, firstTree)
+    const secondContents = propOrNull(key, secondTree)
+    const fullPath = firstContents?.fullPath ?? secondContents?.fullPath
+    if (fullPath == null) {
+      throw new Error(`Invalid state of both elements being false reached.`)
+    } else {
+      const shouldContinueDeeper = onElement(fullPath, firstContents, secondContents)
+      if (
+        isProjectContentDirectory(firstContents) &&
+        isProjectContentDirectory(secondContents) &&
+        shouldContinueDeeper
+      ) {
+        zipContentsTree(firstContents.children, secondContents.children, onElement)
+      }
+    }
+  }
+}
+
 export async function zipContentsTreeAsync(
   firstTree: ProjectContentTreeRoot,
   secondTree: ProjectContentTreeRoot,

@@ -5,6 +5,7 @@ import {
   updatePropertyControlsInfo,
 } from '../components/editor/actions/action-creators'
 import { dependenciesWithEditorRequirements } from '../components/editor/npm-dependency/npm-dependency'
+import { EvaluationCache } from '../core/es-modules/package-manager/package-manager'
 import { initPropertyControlsProcessor } from '../core/property-controls/property-controls-processor'
 import {
   createGetPropertyControlsInfoMessage,
@@ -28,6 +29,7 @@ function fastPropertyControlsParse(value: unknown): ParseResult<GetPropertyContr
 const initPropertyControlsWorker = () => {
   const bundlerWorker = new NewBundlerWorker(new RealBundlerWorker())
   let lastMessage: GetPropertyControlsInfoMessage | null = null
+  let evaluationCache: EvaluationCache = {}
 
   const onControlsProcessed = (propertyControlsInfo: PropertyControlsInfo) => {
     window.parent.postMessage(updatePropertyControlsInfo(propertyControlsInfo), '*')
@@ -56,6 +58,7 @@ const initPropertyControlsWorker = () => {
         npmDependencies,
         model.nodeModulesUpdate,
         projectContents,
+        evaluationCache,
         bundledProjectFiles,
         model.exportsInfo,
       )
