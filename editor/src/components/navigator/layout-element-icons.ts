@@ -29,7 +29,7 @@ interface LayoutIconResult {
 export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
   return useEditorState(
     (store) => {
-      const metadata = store.editor.jsxMetadataKILLME
+      const metadata = store.editor.jsxMetadata
       const components = getOpenUtopiaJSXComponentsFromState(store.editor)
       return createLayoutOrElementIconResult(path, components, metadata)
     },
@@ -45,7 +45,7 @@ export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
 
 export function useComponentIcon(path: TemplatePath): IcnPropsBase | null {
   return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadataKILLME
+    const metadata = store.editor.jsxMetadata
     const components = getOpenUtopiaJSXComponentsFromState(store.editor)
     const imports = getOpenImportsFromState(store.editor)
     return createComponentIconProps(path, components, metadata, imports)

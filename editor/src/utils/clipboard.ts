@@ -181,7 +181,7 @@ export function createClipboardDataFromSelectionNewWorld(
         type: 'ELEMENT_COPY',
         elements: json5.stringify(jsxElements),
         originalTemplatePaths: editor.selectedViews,
-        targetOriginalContextMetadata: editor.jsxMetadataKILLME,
+        targetOriginalContextMetadata: editor.jsxMetadata,
       },
     ],
     imageFilenames: [],

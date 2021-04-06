@@ -279,7 +279,7 @@ export function usePinToggling(): UsePinTogglingResult {
   const dispatch = useEditorState((store) => store.dispatch, 'usePinToggling dispatch')
   const selectedViewsRef = useRefSelectedViews()
   const jsxMetadataRef = useRefEditorState((store) => {
-    return store.editor.jsxMetadataKILLME
+    return store.editor.jsxMetadata
   })
 
   const filteredSelectedViews = usePropControlledRef_DANGEROUS(
@@ -288,7 +288,7 @@ export function usePinToggling(): UsePinTogglingResult {
 
   const elementsRef = useRefEditorState((store) =>
     TP.filterScenes(selectedViewsRef.current).map((e) =>
-      MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadataKILLME, e),
+      MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadata, e),
     ),
   )
 

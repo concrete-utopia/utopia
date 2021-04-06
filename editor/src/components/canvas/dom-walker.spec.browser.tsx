@@ -96,7 +96,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       false,
     )
   })
-  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().editor.jsxMetadataKILLME)
+  const sanitizedMetadata = sanitizeJsxMetadata(storeHook.getState().editor.jsxMetadata)
   expect(sanitizedMetadata).toMatchSnapshot()
 }
 

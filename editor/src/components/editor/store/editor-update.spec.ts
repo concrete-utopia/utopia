@@ -647,7 +647,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
     const oldZIndex = MetadataUtils.getViewZIndexFromMetadata(
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
     expect(updatedZIndex).toBe(oldZIndex - 2)

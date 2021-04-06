@@ -51,7 +51,7 @@ export function useTriggerResizePerformanceTest(): () => void {
     (store) => store.dispatch as DebugDispatch,
     'useTriggerResizePerformanceTest dispatch',
   )
-  const metadata = useRefEditorState((store) => store.editor.jsxMetadataKILLME)
+  const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
   const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
   const trigger = React.useCallback(async () => {
     if (selectedViews.current.length === 0) {

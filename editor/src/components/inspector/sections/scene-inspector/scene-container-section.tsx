@@ -182,7 +182,7 @@ function useIsSceneChildWidthHeightPercentage() {
   const { selectedViews, metadata } = useEditorState((state) => {
     return {
       selectedViews: state.editor.selectedViews,
-      metadata: state.editor.jsxMetadataKILLME,
+      metadata: state.editor.jsxMetadata,
     }
   }, 'useIsSceneChildWidthHeightPercentage')
 
@@ -202,7 +202,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   const { dispatch, metadata } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
-      metadata: store.editor.jsxMetadataKILLME,
+      metadata: store.editor.jsxMetadata,
     }),
     'SceneContainerSections',
   )

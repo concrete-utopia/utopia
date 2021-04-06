@@ -18,10 +18,10 @@ interface ElementPathElement {
 }
 
 export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
-  const { dispatch, jsxMetadataKILLME, rootComponents, selectedViews } = useEditorState((store) => {
+  const { dispatch, jsxMetadata, rootComponents, selectedViews } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
+      jsxMetadata: store.editor.jsxMetadata,
       rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
       selectedViews: store.editor.selectedViews,
     }
@@ -41,15 +41,15 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
         // TODO Scene Implementation
         if (TP.isInstancePath(path)) {
-          const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadataKILLME, path)
+          const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
           if (component != null) {
             elements.push({
-              name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
+              name: MetadataUtils.getElementLabel(path, jsxMetadata),
               path: path,
             })
           }
         } else {
-          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME, path)
+          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
           if (scene != null) {
             elements.push({
               name: scene.label ?? undefined,
@@ -59,7 +59,7 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
         }
       })
       return elements
-    }, [selectedViews, jsxMetadataKILLME]),
+    }, [selectedViews, jsxMetadata]),
   )
 
   const lastElemIndex = elementPath.length - 1

@@ -182,7 +182,7 @@ function useFindValidTarget(): (
 } | null {
   const storeRef = useRefEditorState((store) => {
     return {
-      componentMetadata: store.editor.jsxMetadataKILLME,
+      componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
       canvasScale: store.editor.canvas.scale,
@@ -242,7 +242,7 @@ function useStartDragState(): (
         return
       }
 
-      const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadataKILLME
+      const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadata
       const selectedViews = entireEditorStoreRef.current.editor.selectedViews
 
       const rootComponents = getOpenUtopiaJSXComponentsFromState(
@@ -355,7 +355,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
 function useGetSelectableViewsForSelectMode() {
   const storeRef = useRefEditorState((store) => {
     return {
-      componentMetadata: store.editor.jsxMetadataKILLME,
+      componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
       focusedElementPath: store.editor.focusedElementPath,

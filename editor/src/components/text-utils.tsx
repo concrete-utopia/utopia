@@ -175,10 +175,7 @@ export function toggleTextFormatting(
   const instancePaths = editor.selectedViews.filter(isInstancePath)
   let textElements: Array<ElementInstanceMetadata> = []
   const textElementPaths = instancePaths.filter((selectedView) => {
-    const element = MetadataUtils.getElementByInstancePathMaybe(
-      editor.jsxMetadataKILLME,
-      selectedView,
-    )
+    const element = MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, selectedView)
     if (element != null && MetadataUtils.isTextAgainstImports(imports, element)) {
       textElements.push(element)
       return true
@@ -222,7 +219,7 @@ export function toggleTextFormatting(
 
     return autosizingTextResizeNew(
       imports,
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       textElementPaths,
       dispatch,
       propertyToModify,

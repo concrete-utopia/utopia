@@ -223,18 +223,18 @@ export const selectElementsThatRespectLayout = createSelector(
   (store) => getOpenImportsFromState(store.editor),
   (store) => getOpenUIJSFileKey(store.editor),
   (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
-  (store) => store.editor.jsxMetadataKILLME,
+  (store) => store.editor.jsxMetadata,
   (
     navigatorTargets: TemplatePath[],
     propertyControlsInfo: PropertyControlsInfo,
     openImports: Imports,
     openFilePath: string | null,
     rootComponents: UtopiaJSXComponent[],
-    jsxMetadataKILLME: ElementInstanceMetadataMap,
+    jsxMetadata: ElementInstanceMetadataMap,
   ) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
-        const rootElements = MetadataUtils.getRootViews(jsxMetadataKILLME, view)
+        const rootElements = MetadataUtils.getRootViews(jsxMetadata, view)
         return [view, ...rootElements]
       } else {
         return [view]
@@ -246,7 +246,7 @@ export const selectElementsThatRespectLayout = createSelector(
         openImports,
         openFilePath,
         rootComponents,
-        jsxMetadataKILLME,
+        jsxMetadata,
       ),
     )
   },

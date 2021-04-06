@@ -36,7 +36,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
     return {
       dispatch: store.dispatch,
       zerothElementInstanceMetadata: MetadataUtils.getElementByInstancePathMaybe(
-        store.editor.jsxMetadataKILLME,
+        store.editor.jsxMetadata,
         selectedNonSceneViews[0],
       ),
     }

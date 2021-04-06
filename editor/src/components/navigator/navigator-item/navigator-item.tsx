@@ -199,7 +199,7 @@ function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): bo
 
 function useStyleFullyVisible(path: TemplatePath): boolean {
   return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadataKILLME
+    const metadata = store.editor.jsxMetadata
     const selectedViews = store.editor.selectedViews
     const isSelected = selectedViews.some((selected) => TP.pathsEqual(path, selected))
     const isParentOfSelected = selectedViews.some((selected) =>

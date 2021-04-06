@@ -140,7 +140,7 @@ export function createEditorStates(
   return {
     editor: {
       ...editor,
-      jsxMetadataKILLME: componentMetadata,
+      jsxMetadata: componentMetadata,
     },
     derivedState: derivedState,
     dispatch: Utils.NO_OP,

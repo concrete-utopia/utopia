@@ -359,11 +359,7 @@ export function handleKeyDown(
 
   function cycleSiblings(forwards: boolean): Array<EditorAction> {
     if (modeType === 'select') {
-      const tabbedTo = Canvas.jumpToSibling(
-        editor.selectedViews,
-        editor.jsxMetadataKILLME,
-        forwards,
-      )
+      const tabbedTo = Canvas.jumpToSibling(editor.selectedViews, editor.jsxMetadata, forwards)
       if (tabbedTo != null) {
         return [EditorActions.selectComponents([tabbedTo], false)]
       }
@@ -418,10 +414,7 @@ export function handleKeyDown(
           if (textTarget != null) {
             return [EditorActions.openTextEditor(textTarget, null)]
           } else {
-            const childToSelect = Canvas.getFirstChild(
-              editor.selectedViews,
-              editor.jsxMetadataKILLME,
-            )
+            const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
             if (childToSelect != null) {
               return [EditorActions.selectComponents([childToSelect], false)]
             }
@@ -463,7 +456,7 @@ export function handleKeyDown(
             return [EditorActions.clearSelection()]
           }
           const targetStack = getAllTargetsAtPoint(
-            editor.jsxMetadataKILLME,
+            editor.jsxMetadata,
             editor.selectedViews,
             editor.hiddenInstances,
             editor.focusedElementPath,

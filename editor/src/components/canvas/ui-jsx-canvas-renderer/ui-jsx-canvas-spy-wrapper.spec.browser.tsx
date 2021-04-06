@@ -104,13 +104,13 @@ describe('Spy Wrapper Template Path Tests', () => {
   it('a simple component in a regular scene', async () => {
     const { getEditorState } = await renderTestEditorWithCode(exampleProject)
 
-    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const domMetadata = getEditorState().editor.domMetadata
     const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadataKILLME
+    const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = extractTemplatePathStuffFromElementInstanceMetadata(
       finalMetadata,
     )
@@ -242,13 +242,13 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const domMetadata = getEditorState().editor.domMetadata
     const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadataKILLME
+    const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = extractTemplatePathStuffFromElementInstanceMetadata(
       finalMetadata,
     )
@@ -449,13 +449,13 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const domMetadata = getEditorState().editor.domMetadata
     const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadataKILLME
+    const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = extractTemplatePathStuffFromElementInstanceMetadata(
       finalMetadata,
     )
@@ -671,13 +671,13 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const domMetadata = getEditorState().editor.domMetadata
     const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadataKILLME
+    const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = extractTemplatePathStuffFromElementInstanceMetadata(
       finalMetadata,
     )
@@ -896,13 +896,13 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
 
     await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
 
-    const spiedMetadata = getEditorState().editor.spyMetadataKILLME
+    const spiedMetadata = getEditorState().editor.spyMetadata
     const sanitizedSpyData = extractTemplatePathStuffFromElementInstanceMetadata(spiedMetadata)
 
-    const domMetadata = getEditorState().editor.domMetadataKILLME
+    const domMetadata = getEditorState().editor.domMetadata
     const sanitizedDomMetadata = extractTemplatePathStuffFromDomWalkerMetadata(domMetadata)
 
-    const finalMetadata = getEditorState().editor.jsxMetadataKILLME
+    const finalMetadata = getEditorState().editor.jsxMetadata
     const sanitizedFinalMetadata = extractTemplatePathStuffFromElementInstanceMetadata(
       finalMetadata,
     )

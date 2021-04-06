@@ -471,7 +471,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
   const stateRef = useRefEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      componentMetadata: store.editor.jsxMetadataKILLME,
+      componentMetadata: store.editor.jsxMetadata,
     }
   })
 

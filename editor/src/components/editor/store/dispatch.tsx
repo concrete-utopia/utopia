@@ -547,10 +547,8 @@ function editorDispatchInner(
       storedState.editor === result.editor &&
       storedState.userState === result.userState
 
-    const domMetadataChanged =
-      storedState.editor.domMetadataKILLME !== result.editor.domMetadataKILLME
-    const spyMetadataChanged =
-      storedState.editor.spyMetadataKILLME !== result.editor.spyMetadataKILLME
+    const domMetadataChanged = storedState.editor.domMetadata !== result.editor.domMetadata
+    const spyMetadataChanged = storedState.editor.spyMetadata !== result.editor.spyMetadata
     const dragStateLost =
       storedState.editor.canvas.dragState != null && result.editor.canvas.dragState == null
     const metadataChanged = domMetadataChanged || spyMetadataChanged || dragStateLost
@@ -563,7 +561,7 @@ function editorDispatchInner(
           ...result,
           editor: {
             ...result.editor,
-            jsxMetadataKILLME: reconstructJSXMetadata(result.editor),
+            jsxMetadata: reconstructJSXMetadata(result.editor),
           },
         }
       } else {
@@ -725,8 +723,8 @@ function removeNonExistingViewReferencesFromState(
   oldEditorState: EditorState,
   editorState: EditorState,
 ): EditorState {
-  const oldRootComponents = oldEditorState.jsxMetadataKILLME
-  const rootComponents = editorState.jsxMetadataKILLME
+  const oldRootComponents = oldEditorState.jsxMetadata
+  const rootComponents = editorState.jsxMetadata
   const updatedSelectedViews = TemplatePathArrayKeepDeepEquality(
     editorState.selectedViews,
     mapDropNulls(

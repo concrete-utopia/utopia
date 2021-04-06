@@ -219,7 +219,7 @@ export function adjustAllSelectedFrames(
     (editor.selectedViews.some((view) => {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         view,
-        editor.jsxMetadataKILLME,
+        editor.jsxMetadata,
       )
     }) &&
       !isResizing)
@@ -228,7 +228,7 @@ export function adjustAllSelectedFrames(
     return []
   }
   const selectedFrames = editor.selectedViews.map((view) =>
-    MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadataKILLME),
+    MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata),
   )
 
   const boundingBox = Utils.boundingRectangleArray(selectedFrames)
@@ -269,14 +269,14 @@ export function adjustAllSelectedFrames(
     }
     const newFrameAndTargets = Utils.stripNulls(
       editor.selectedViews.map((view) => {
-        const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadataKILLME)
+        const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata)
         if (frame == null) {
           return null
         } else {
           const newFrame = Utils.transformFrameUsingBoundingBox(newBoundingBox, boundingBox, frame)
           const hasFlexParent = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
             view,
-            editor.jsxMetadataKILLME,
+            editor.jsxMetadata,
           )
           if (hasFlexParent) {
             return flexResizeChange(view, newFrame)
@@ -290,7 +290,7 @@ export function adjustAllSelectedFrames(
   } else {
     const originalFrames: CanvasFrameAndTarget[] = Utils.stripNulls(
       editor.selectedViews.map((view) => {
-        const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadataKILLME)
+        const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata)
         if (frame == null) {
           return null
         }
@@ -309,7 +309,7 @@ export function adjustAllSelectedFrames(
     )
     EditorActions.hideAndShowSelectionControls(dispatch)
     actions = dragComponentForActions(
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       editor.selectedViews,
       originalFrames,
       [],

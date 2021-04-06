@@ -127,7 +127,7 @@ describe('SET_PROP', () => {
         0,
       ),
     }),
-    jsxMetadataKILLME: createFakeMetadataForComponents(originalModel.topLevelElements),
+    jsxMetadata: createFakeMetadataForComponents(originalModel.topLevelElements),
   })
   it('updates a simple value property', () => {
     const action = setProp_UNSAFE(
@@ -228,7 +228,7 @@ describe('SET_CANVAS_FRAMES', () => {
         0,
       ),
     }),
-    jsxMetadataKILLME: createFakeMetadataForComponents(originalModel.topLevelElements),
+    jsxMetadata: createFakeMetadataForComponents(originalModel.topLevelElements),
   })
   const derivedState = deriveState(testEditor, null)
   it('Updates the frame of the child correctly', () => {
@@ -362,7 +362,7 @@ describe('moveTemplate', () => {
         ),
       }),
     }
-    editor.jsxMetadataKILLME = createFakeMetadataForComponents(uiFile.topLevelElements)
+    editor.jsxMetadata = createFakeMetadataForComponents(uiFile.topLevelElements)
 
     return deepFreeze(editor)
   }
@@ -898,7 +898,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     projectContents: contentsToTree({
       [StoryboardFilePath]: fileForUI,
     }),
-    jsxMetadataKILLME: elementMetadataMap,
+    jsxMetadata: elementMetadataMap,
     selectedViews: [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), ['aaa'])],
   })
   it('switches from pins to flex correctly', () => {

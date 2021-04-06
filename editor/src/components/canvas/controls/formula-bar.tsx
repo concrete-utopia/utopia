@@ -19,7 +19,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
   const dispatch = useEditorState((store) => store.dispatch, 'FormulaBar dispatch')
 
   const selectedElement = useEditorState((store) => {
-    const metadata = store.editor.jsxMetadataKILLME
+    const metadata = store.editor.jsxMetadata
     if (
       store.editor.selectedViews.length === 1 &&
       TP.isInstancePath(store.editor.selectedViews[0])

@@ -313,7 +313,7 @@ export function runLocalCanvasAction(
         model.canvas.realCanvasOffset,
         previousScale,
         scale,
-        model.jsxMetadataKILLME,
+        model.jsxMetadata,
         model.selectedViews,
         focusPoint,
         false,
@@ -366,7 +366,7 @@ export function collectControlsDependencies(
     keysPressed: editor.keysPressed,
     scale: editor.canvas.scale,
     snappingThreshold: editor.canvas.snappingThreshold,
-    componentMetadata: editor.jsxMetadataKILLME,
+    componentMetadata: editor.jsxMetadata,
     highlightedviews: editor.highlightedViews,
     selectedViews: editor.selectedViews,
     topLevelHiddenInstances: editor.hiddenInstances,
@@ -802,7 +802,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         return false
       }
       const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.editor.jsxMetadataKILLME,
+        this.props.editor.jsxMetadata,
         target,
       )
       if (possibleElement == null) {
@@ -1114,7 +1114,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             result.files,
             selectedViews,
             editor.pasteTargetsToIgnore,
-            editor.jsxMetadataKILLME,
+            editor.jsxMetadata,
           )
           this.props.dispatch(actions, 'everyone')
         })

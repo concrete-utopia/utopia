@@ -239,9 +239,9 @@ export interface EditorState {
   projectName: string
   projectVersion: number
   isLoaded: boolean
-  spyMetadataKILLME: ElementInstanceMetadataMap // this is coming from the canvas spy report.
-  domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
-  jsxMetadataKILLME: ElementInstanceMetadataMap // this is a merged result of the two above.
+  spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
+  domMetadata: ElementInstanceMetadata[] // this is coming from the dom walking report.
+  jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
@@ -648,11 +648,11 @@ export function modifyOpenJSXElementsAndMetadata(
   ) => { components: Array<UtopiaJSXComponent>; componentMetadata: ElementInstanceMetadataMap },
   model: EditorState,
 ): EditorState {
-  let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadataKILLME
+  let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadata
   const successTransform = (success: ParseSuccess) => {
     const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
     // Apply the transformation.
-    const transformResult = transform(oldUtopiaJSXComponents, model.jsxMetadataKILLME)
+    const transformResult = transform(oldUtopiaJSXComponents, model.jsxMetadata)
     workingMetadata = transformResult.componentMetadata
 
     const newTopLevelElements = applyUtopiaJSXComponentsChanges(
@@ -667,7 +667,7 @@ export function modifyOpenJSXElementsAndMetadata(
   }
   return {
     ...modifyOpenParseSuccess(successTransform, model),
-    jsxMetadataKILLME: workingMetadata,
+    jsxMetadata: workingMetadata,
   }
 }
 
@@ -907,7 +907,7 @@ export function transientCanvasState(
 
 export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
   if (editor.canvas.dragState == null) {
-    return editor.jsxMetadataKILLME
+    return editor.jsxMetadata
   } else {
     return editor.canvas.dragState.metadata
   }
@@ -1027,9 +1027,9 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectName: createNewProjectName(),
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
-    spyMetadataKILLME: emptyJsxMetadata,
-    domMetadataKILLME: [],
-    jsxMetadataKILLME: emptyJsxMetadata,
+    spyMetadata: emptyJsxMetadata,
+    domMetadata: [],
+    jsxMetadata: emptyJsxMetadata,
     projectContents: {},
     codeResultCache: generateCodeResultCache(
       {},
@@ -1223,7 +1223,7 @@ export function deriveState(
     navigatorTargets,
     visibleNavigatorTargets,
   } = MetadataUtils.createOrderedTemplatePathsFromElements(
-    editor.jsxMetadataKILLME,
+    editor.jsxMetadata,
     editor.navigator.collapsedViews,
     editor.focusedElementPath,
   )
@@ -1279,9 +1279,9 @@ export function editorModelFromPersistentModel(
     projectName: createNewProjectName(),
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
-    spyMetadataKILLME: emptyJsxMetadata,
-    domMetadataKILLME: [],
-    jsxMetadataKILLME: emptyJsxMetadata,
+    spyMetadata: emptyJsxMetadata,
+    domMetadata: [],
+    jsxMetadata: emptyJsxMetadata,
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},
@@ -1677,23 +1677,21 @@ export function parseFailureAsErrorMessages(
 export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMetadataMap {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {
-    return editor.jsxMetadataKILLME
+    return editor.jsxMetadata
   } else {
     return foldParsedTextFile(
-      (_) => editor.jsxMetadataKILLME,
+      (_) => editor.jsxMetadata,
       (success) => {
         const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
         const mergedMetadata = MetadataUtils.mergeComponentMetadata(
           elementsByUID,
-          editor.spyMetadataKILLME,
-          editor.domMetadataKILLME,
+          editor.spyMetadata,
+          editor.domMetadata,
         )
-        return ElementInstanceMetadataMapKeepDeepEquality()(
-          editor.jsxMetadataKILLME,
-          mergedMetadata,
-        ).value
+        return ElementInstanceMetadataMapKeepDeepEquality()(editor.jsxMetadata, mergedMetadata)
+          .value
       },
-      (_) => editor.jsxMetadataKILLME,
+      (_) => editor.jsxMetadata,
       uiFile.fileContents.parsed,
     )
   }

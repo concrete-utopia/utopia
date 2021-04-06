@@ -26,7 +26,7 @@ export interface NameAndIconResult {
 export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
   return useEditorState(
     (store) => {
-      const metadata = store.editor.jsxMetadataKILLME
+      const metadata = store.editor.jsxMetadata
       const components = getOpenUtopiaJSXComponentsFromState(store.editor)
       const imports = getOpenImportsFromState(store.editor)
       return getNameAndIconResult(path, components, metadata, imports)
@@ -47,7 +47,7 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   const metadata = useEditorState(
-    (store) => store.editor.jsxMetadataKILLME,
+    (store) => store.editor.jsxMetadata,
     'useNamesAndIconsAllPaths metadata',
   )
   const components = useEditorState(
