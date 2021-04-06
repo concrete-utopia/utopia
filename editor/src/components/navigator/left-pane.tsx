@@ -34,7 +34,7 @@ import {
   setProjectName,
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
-import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-state'
+import { DerivedState, EditorState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
