@@ -13,6 +13,7 @@ import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
 import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
 import { extractOriginalUidFromIndexedUid } from './uid-utils'
+import { forceNotNull } from './optional-utils'
 
 // KILLME, except in 28 places
 export const toComponentId = toString
@@ -448,7 +449,7 @@ export function parentPath(path: TemplatePath): TemplatePath | null {
 }
 
 function elementPathToUID(path: ElementPath): id {
-  return last(path)!
+  return forceNotNull('Attempting to get the UID of an empty ElementPath', last(path))
 }
 
 // KILLME DEPRECATED, use toUid instead
