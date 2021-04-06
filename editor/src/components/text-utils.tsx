@@ -6,7 +6,7 @@ import { MetadataUtils } from '../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   jsxAttributeValue,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { Imports, InstancePath, PropertyPath } from '../core/shared/project-file-types'
@@ -23,7 +23,7 @@ const ObjectPathImmutable: any = OPI
 
 export function autosizingTextResizeNew(
   imports: Imports,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
   targets: Array<InstancePath>,
   dispatch: EditorDispatch,
   property: PropertyPath,
@@ -35,7 +35,7 @@ export function autosizingTextResizeNew(
 
   let changeAttachedToPromise: boolean = false
   Utils.fastForEach(targets, (target) => {
-    const element = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, target)
+    const element = MetadataUtils.getElementByInstancePathMaybe(metadata, target)
 
     if (element != null && MetadataUtils.isTextAgainstImports(imports, element)) {
       const updatedElementProps = ObjectPathImmutable.set(
@@ -175,10 +175,7 @@ export function toggleTextFormatting(
   const instancePaths = editor.selectedViews.filter(isInstancePath)
   let textElements: Array<ElementInstanceMetadata> = []
   const textElementPaths = instancePaths.filter((selectedView) => {
-    const element = MetadataUtils.getElementByInstancePathMaybe(
-      editor.jsxMetadataKILLME.elements,
-      selectedView,
-    )
+    const element = MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, selectedView)
     if (element != null && MetadataUtils.isTextAgainstImports(imports, element)) {
       textElements.push(element)
       return true
@@ -222,7 +219,7 @@ export function toggleTextFormatting(
 
     return autosizingTextResizeNew(
       imports,
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       textElementPaths,
       dispatch,
       propertyToModify,

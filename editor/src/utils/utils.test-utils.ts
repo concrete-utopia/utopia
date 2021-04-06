@@ -20,16 +20,9 @@ import {
   JSXElementChild,
   TopLevelElement,
   emptyComputedStyle,
-  walkElements,
   isJSXFragment,
-  JSXMetadata,
-  emptyJsxMetadata,
   ElementInstanceMetadataMap,
-  jsxMetadata,
-  getJSXElementNameAsString,
-  walkElement,
-  getJSXAttribute,
-  getJSXAttributeForced,
+  emptyJsxMetadata,
   emptyAttributeMetadatada,
   jsxTestElement,
 } from '../core/shared/element-template'
@@ -44,18 +37,13 @@ import {
 import {
   RevisionsState,
   TemplatePath,
-  isParseFailure,
   ParseSuccess,
   foldParsedTextFile,
   textFile,
   textFileContents,
   unparsed,
-  isTextFile,
-  isParseSuccess,
-  ProjectFile,
   InstancePath,
   EmptyExportsDetail,
-  StaticElementPath,
 } from '../core/shared/project-file-types'
 import { right, eitherToMaybe, isLeft, left } from '../core/shared/either'
 import Utils from './utils'
@@ -69,19 +57,15 @@ import {
 import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
-  BakedInStoryboardVariableName,
   PathForSceneComponent,
   PathForSceneDataLabel,
-  PathForSceneDataUid,
   PathForResizeContent,
 } from '../core/model/scene-utils'
-import { fastForEach, NO_OP } from '../core/shared/utils'
+import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
-import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
-import { forceNotNull } from '../core/shared/optional-utils'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -156,14 +140,14 @@ export function createEditorStates(
   return {
     editor: {
       ...editor,
-      jsxMetadataKILLME: componentMetadata,
+      jsxMetadata: componentMetadata,
     },
     derivedState: derivedState,
     dispatch: Utils.NO_OP,
   }
 }
 
-export function createFakeMetadataForEditor(editor: EditorState): JSXMetadata {
+export function createFakeMetadataForEditor(editor: EditorState): ElementInstanceMetadataMap {
   const openUiJsFile = getOpenUIJSFile(editor)
   if (openUiJsFile == null) {
     return emptyJsxMetadata
@@ -178,7 +162,9 @@ export function createFakeMetadataForEditor(editor: EditorState): JSXMetadata {
   }
 }
 
-export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMetadata {
+export function createFakeMetadataForParseSuccess(
+  success: ParseSuccess,
+): ElementInstanceMetadataMap {
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
   const sceneElements = getSceneElementsFromParseSuccess(success)
   let elements: ElementInstanceMetadataMap = {}
@@ -251,12 +237,12 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
     storyboardChildren,
   )
 
-  return jsxMetadata(elements)
+  return elements
 }
 
 export function createFakeMetadataForComponents(
   topLevelElements: Array<TopLevelElement>,
-): JSXMetadata {
+): ElementInstanceMetadataMap {
   let elements: ElementInstanceMetadataMap = {}
   let storyboardChildren: InstancePath[] = []
   Utils.fastForEach(topLevelElements, (component, index) => {
@@ -299,7 +285,7 @@ export function createFakeMetadataForComponents(
     storyboardChildren,
   )
 
-  return jsxMetadata(elements)
+  return elements
 }
 
 function createFakeMetadataForJSXElement(

@@ -293,7 +293,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
   } = useEditorState((store) => {
-    const rootMetadata = store.editor.jsxMetadataKILLME
+    const rootMetadata = store.editor.jsxMetadata
     const imports = getOpenImportsFromState(store.editor)
     const rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor)
     let anyComponentsInner: boolean = false
@@ -309,10 +309,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       anyComponentsInner =
         anyComponentsInner ||
         MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
-      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
-        rootMetadata.elements,
-        view,
-      )
+      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(rootMetadata, view)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
         // its own compared to the props.
@@ -435,8 +432,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       'InspectorEntryPoint selectedViews',
     )
     const rootViewsForSelectedElement: Array<TemplatePath> = useEditorState(
-      (store) =>
-        MetadataUtils.getRootViews(store.editor.jsxMetadataKILLME.elements, selectedViews[0]),
+      (store) => MetadataUtils.getRootViews(store.editor.jsxMetadata, selectedViews[0]),
       'InspectorEntryPoint',
       (oldTemplatePaths, newTemplatePaths) => {
         return arrayEquals(oldTemplatePaths, newTemplatePaths, TP.pathsEqual)
@@ -465,18 +461,15 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<TemplatePath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadataKILLME, rootComponents, isUIJSFile, imports } = useEditorState(
-    (store) => {
-      return {
-        dispatch: store.dispatch,
-        jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
-        rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
-        isUIJSFile: isOpenFileUiJs(store.editor),
-        imports: getOpenImportsFromState(store.editor),
-      }
-    },
-    'SingleInspectorEntryPoint',
-  )
+  const { dispatch, jsxMetadata, rootComponents, isUIJSFile, imports } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+      jsxMetadata: store.editor.jsxMetadata,
+      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
+      isUIJSFile: isOpenFileUiJs(store.editor),
+      imports: getOpenImportsFromState(store.editor),
+    }
+  }, 'SingleInspectorEntryPoint')
 
   let inspectorModel: InspectorModel = {
     isChildOfFlexComponent: false,
@@ -492,10 +485,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
   Utils.fastForEach(TP.filterScenes(selectedViews), (path) => {
     // TODO multiselect
-    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
-      jsxMetadataKILLME.elements,
-      path,
-    )
+    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
     if (elementMetadata != null) {
       const jsxElement = findElementAtPath(path, rootComponents)
       const parentPath = TP.parentPath(path)
@@ -504,14 +494,14 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
           ? findElementAtPath(parentPath, rootComponents)
           : null
 
-      const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadataKILLME, path)
+      const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadata, path)
       const nonGroupAncestorFrame =
         nonGroupAncestor == null
           ? null
-          : MetadataUtils.getFrameInCanvasCoords(nonGroupAncestor, jsxMetadataKILLME)
+          : MetadataUtils.getFrameInCanvasCoords(nonGroupAncestor, jsxMetadata)
 
       const elementFrame = MetadataUtils.shiftGroupFrame(
-        jsxMetadataKILLME,
+        jsxMetadata,
         path,
         canvasRectangle(elementMetadata.localFrame),
         true,
@@ -587,7 +577,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
           }
         }
       }
-      inspectorModel.label = MetadataUtils.getElementLabel(path, jsxMetadataKILLME)
+      inspectorModel.label = MetadataUtils.getElementLabel(path, jsxMetadata)
     }
   })
 
@@ -611,18 +601,15 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
         // TODO Scene Implementation
         if (TP.isInstancePath(path)) {
-          const component = MetadataUtils.getElementByInstancePathMaybe(
-            jsxMetadataKILLME.elements,
-            path,
-          )
+          const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
           if (component != null) {
             elements.push({
-              name: MetadataUtils.getElementLabel(path, jsxMetadataKILLME),
+              name: MetadataUtils.getElementLabel(path, jsxMetadata),
               path: path,
             })
           }
         } else {
-          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadataKILLME.elements, path)
+          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
           if (scene != null) {
             elements.push({
               name: scene.label ?? undefined,
@@ -632,7 +619,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
         }
       })
       return elements
-    }, [selectedViews, jsxMetadataKILLME]),
+    }, [selectedViews, jsxMetadata]),
   )
 
   // Memoized Callbacks
@@ -747,10 +734,10 @@ export const InspectorContextProvider = betterReactMemo<{
   children: React.ReactNode
 }>('InspectorContextProvider', (props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadataKILLME } = useEditorState((store) => {
+  const { dispatch, jsxMetadata } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
-      jsxMetadataKILLME: store.editor.jsxMetadataKILLME,
+      jsxMetadata: store.editor.jsxMetadata,
     }
   }, 'InspectorContextProvider')
 
@@ -774,10 +761,7 @@ export const InspectorContextProvider = betterReactMemo<{
         newEditedMultiSelectedProps.push(selectedSceneElement.props)
       }
     } else {
-      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
-        jsxMetadataKILLME.elements,
-        path,
-      )
+      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
       if (elementMetadata != null) {
         if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
           /**

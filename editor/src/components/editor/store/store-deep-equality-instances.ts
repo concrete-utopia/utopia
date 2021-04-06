@@ -40,8 +40,6 @@ import {
   JSXElement,
   JSXElementChild,
   JSXFragment,
-  jsxMetadata,
-  JSXMetadata,
   JSXProperty,
   jsxPropertyAssignment,
   JSXPropertyAssignment,
@@ -681,12 +679,4 @@ export function ElementInstanceMetadataMapKeepDeepEquality(): KeepDeepEqualityCa
   ElementInstanceMetadataMap
 > {
   return objectDeepEquality(ElementInstanceMetadataKeepDeepEquality())
-}
-
-export function JSXMetadataKeepDeepEquality(): KeepDeepEqualityCall<JSXMetadata> {
-  return combine1EqualityCall(
-    (metadata) => metadata.elements,
-    ElementInstanceMetadataMapKeepDeepEquality(),
-    jsxMetadata,
-  )
 }

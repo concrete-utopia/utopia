@@ -6,7 +6,7 @@ import type {
   JSXAttribute,
   JSXElement,
   JSXElementName,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   SettableLayoutSystem,
 } from '../../../core/shared/element-template'
 import type {
@@ -351,7 +351,7 @@ export function closePopup(): ClosePopup {
 export function pasteJSXElements(
   elements: Array<JSXElement>,
   originalTemplatePaths: Array<TemplatePath>,
-  targetOriginalContextMetadata: JSXMetadata,
+  targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',

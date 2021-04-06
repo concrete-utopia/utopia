@@ -18,7 +18,7 @@ import {
   JSXAttributes,
   defaultPropsParam,
   jsxAttributeOtherJavaScript,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   jsxAttributesFromMap,
   ElementInstanceMetadata,
 } from '../shared/element-template'
@@ -59,7 +59,8 @@ export const EmptyUtopiaCanvasComponent = convertScenesToUtopiaCanvasComponent([
 export const PathForSceneProps = PP.create(['props'])
 export const PathForSceneStyle = PP.create(['style'])
 
-export const PathForResizeContent = PP.create(['resizeContent'])
+export const ResizesContentProp = 'resizeContent'
+export const PathForResizeContent = PP.create([ResizesContentProp])
 
 export function createSceneUidFromIndex(sceneIndex: number): string {
   return `scene-${sceneIndex}`
@@ -287,11 +288,11 @@ export function isSceneElement(element: JSXElement): boolean {
 
 export function isSceneChildWidthHeightPercentage(
   scene: ElementInstanceMetadata,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
 ): boolean {
   // FIXME ASAP This is reproducing logic that should stay in MetadataUtils, but importing that
   // imports the entire editor into the worker threads, including modules that require window and document
-  const rootElements = scene.rootElements.map((path) => metadata.elements[TP.toString(path)])
+  const rootElements = scene.rootElements.map((path) => metadata[TP.toString(path)])
   const rootElementSizes = rootElements.map((element) => {
     return {
       width: element.props?.style?.width,
@@ -304,9 +305,9 @@ export function isSceneChildWidthHeightPercentage(
 
 export function isDynamicSceneChildWidthHeightPercentage(
   scene: ElementInstanceMetadata,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const isDynamicScene = scene.props.resizesContent ?? false
+  const isDynamicScene = scene.props[ResizesContentProp] ?? false
 
   return isDynamicScene && isSceneChildWidthHeightPercentage(scene, metadata)
 }

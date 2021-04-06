@@ -26,7 +26,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
     const target = this.props.targetElement
     const parentPath = TP.parentPath(this.props.target)
     const sceneMetadataOrElementMetadata = MetadataUtils.findElementByTemplatePath(
-      this.props.componentMetadata.elements,
+      this.props.componentMetadata,
       parentPath,
     )
     const defaultStretch = 'none'
@@ -123,10 +123,7 @@ export class YogaControls extends React.Component<YogaControlsProps> {
       const selectedView = targets[0]
       const instance = TP.isScenePath(selectedView)
         ? null
-        : MetadataUtils.getElementByInstancePathMaybe(
-            this.props.componentMetadata.elements,
-            selectedView,
-          )
+        : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
       color = getSelectionColor(
         selectedView,
@@ -145,10 +142,7 @@ export class YogaControls extends React.Component<YogaControlsProps> {
             {...this.props}
             target={targets[0]}
             targetElement={
-              MetadataUtils.getElementByInstancePathMaybe(
-                this.props.componentMetadata.elements,
-                targets[0],
-              )!
+              MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, targets[0])!
             }
             color={color}
           />

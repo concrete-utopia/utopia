@@ -52,7 +52,7 @@ import {
 } from '../components/mouse-move'
 import * as TP from '../core/shared/template-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { JSXMetadata } from '../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { TemplatePath } from '../core/shared/project-file-types'
 import {
   getActionsForClipboardItems,
@@ -313,7 +313,7 @@ export function runLocalCanvasAction(
         model.canvas.realCanvasOffset,
         previousScale,
         scale,
-        model.jsxMetadataKILLME,
+        model.jsxMetadata,
         model.selectedViews,
         focusPoint,
         false,
@@ -342,7 +342,7 @@ export interface ControlDependencies {
   keysPressed: KeysPressed
   scale: number
   snappingThreshold: number
-  componentMetadata: JSXMetadata
+  componentMetadata: ElementInstanceMetadataMap
   highlightedviews: Array<TemplatePath>
   selectedViews: Array<TemplatePath>
   topLevelHiddenInstances: Array<TemplatePath>
@@ -366,7 +366,7 @@ export function collectControlsDependencies(
     keysPressed: editor.keysPressed,
     scale: editor.canvas.scale,
     snappingThreshold: editor.canvas.snappingThreshold,
-    componentMetadata: editor.jsxMetadataKILLME,
+    componentMetadata: editor.jsxMetadata,
     highlightedviews: editor.highlightedViews,
     selectedViews: editor.selectedViews,
     topLevelHiddenInstances: editor.hiddenInstances,
@@ -802,7 +802,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         return false
       }
       const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.editor.jsxMetadataKILLME.elements,
+        this.props.editor.jsxMetadata,
         target,
       )
       if (possibleElement == null) {
@@ -1114,7 +1114,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
             result.files,
             selectedViews,
             editor.pasteTargetsToIgnore,
-            editor.jsxMetadataKILLME,
+            editor.jsxMetadata,
           )
           this.props.dispatch(actions, 'everyone')
         })

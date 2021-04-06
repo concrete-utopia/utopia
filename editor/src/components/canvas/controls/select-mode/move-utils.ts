@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { JSXMetadata } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { TemplatePath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
@@ -33,7 +33,7 @@ function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
 
 export function extendSelectedViewsForInteraction(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
 ): Array<TemplatePath> {
   return Utils.flatMapArray((view) => {
     const frame = MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
@@ -55,7 +55,7 @@ export function extendSelectedViewsForInteraction(
 
 export function determineElementsToOperateOnForDragging(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   isMoving: boolean,
   isAnchor: boolean,
 ): Array<TemplatePath> {
@@ -71,10 +71,7 @@ export function determineElementsToOperateOnForDragging(
     ).map((view) => {
       const parentPath = TP.parentPath(view)
       if (parentPath != null && TP.isScenePath(parentPath)) {
-        const scene = MetadataUtils.findElementByTemplatePath(
-          componentMetadata.elements,
-          parentPath,
-        )
+        const scene = MetadataUtils.findElementByTemplatePath(componentMetadata, parentPath)
         if (MetadataUtils.isSceneTreatedAsGroup(scene)) {
           return parentPath
         } else {
@@ -88,7 +85,7 @@ export function determineElementsToOperateOnForDragging(
     // Resizing.
     return flatMapArray<TemplatePath, TemplatePath>((view) => {
       if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findElementByTemplatePath(componentMetadata.elements, view)
+        const scene = MetadataUtils.findElementByTemplatePath(componentMetadata, view)
         if (scene != null && MetadataUtils.isSceneTreatedAsGroup(scene)) {
           return scene.rootElements
         } else {
@@ -102,7 +99,7 @@ export function determineElementsToOperateOnForDragging(
 }
 
 export function dragComponent(
-  componentsMetadata: JSXMetadata,
+  componentsMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
@@ -182,7 +179,7 @@ export function dragComponent(
 }
 
 export function dragComponentForActions(
-  componentsMetadata: JSXMetadata,
+  componentsMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
@@ -222,7 +219,7 @@ export function adjustAllSelectedFrames(
     (editor.selectedViews.some((view) => {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         view,
-        editor.jsxMetadataKILLME,
+        editor.jsxMetadata,
       )
     }) &&
       !isResizing)
@@ -231,7 +228,7 @@ export function adjustAllSelectedFrames(
     return []
   }
   const selectedFrames = editor.selectedViews.map((view) =>
-    MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadataKILLME),
+    MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata),
   )
 
   const boundingBox = Utils.boundingRectangleArray(selectedFrames)
@@ -272,14 +269,14 @@ export function adjustAllSelectedFrames(
     }
     const newFrameAndTargets = Utils.stripNulls(
       editor.selectedViews.map((view) => {
-        const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadataKILLME)
+        const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata)
         if (frame == null) {
           return null
         } else {
           const newFrame = Utils.transformFrameUsingBoundingBox(newBoundingBox, boundingBox, frame)
           const hasFlexParent = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
             view,
-            editor.jsxMetadataKILLME,
+            editor.jsxMetadata,
           )
           if (hasFlexParent) {
             return flexResizeChange(view, newFrame)
@@ -293,7 +290,7 @@ export function adjustAllSelectedFrames(
   } else {
     const originalFrames: CanvasFrameAndTarget[] = Utils.stripNulls(
       editor.selectedViews.map((view) => {
-        const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadataKILLME)
+        const frame = MetadataUtils.getFrameInCanvasCoords(view, editor.jsxMetadata)
         if (frame == null) {
           return null
         }
@@ -312,7 +309,7 @@ export function adjustAllSelectedFrames(
     )
     EditorActions.hideAndShowSelectionControls(dispatch)
     actions = dragComponentForActions(
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       editor.selectedViews,
       originalFrames,
       [],
