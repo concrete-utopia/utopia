@@ -1128,7 +1128,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       >
         <div
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+          data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);
@@ -1222,7 +1222,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       >
         <div
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+          data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);
@@ -1289,7 +1289,7 @@ export var storyboard = (
       >
         <div
           data-utopia-scene-id=\\"storyboard/scene\\"
-          data-utopia-valid-paths=\\"storyboard/scene:aaa storyboard/scene:aaa/antd-date-picker\\"
+          data-utopia-valid-paths=\\":storyboard :storyboard/scene storyboard/scene:aaa storyboard/scene:aaa/antd-date-picker\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);
@@ -2035,7 +2035,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       >
         <div
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div utopia-storyboard-uid/scene-0:app-outer-div/inner-div\\"
+          data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0 utopia-storyboard-uid/scene-0:app-outer-div utopia-storyboard-uid/scene-0:app-outer-div/inner-div\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);
@@ -2113,7 +2113,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       >
         <div
           data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
-          data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div utopia-storyboard-uid/scene-0:app-outer-div/card-instance utopia-storyboard-uid/scene-0:app-outer-div/card-instance/card-content\\"
+          data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0 utopia-storyboard-uid/scene-0:app-outer-div utopia-storyboard-uid/scene-0:app-outer-div/card-instance utopia-storyboard-uid/scene-0:app-outer-div/card-instance/card-content\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);

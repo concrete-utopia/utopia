@@ -125,7 +125,7 @@ export function renderCoreElement(
     throw codeError
   }
   if (isJSXElement(element) && isSceneElement(element)) {
-    return <SceneRootRenderer sceneElement={element} filePath={filePath} />
+    return <SceneRootRenderer sceneElement={element} filePath={filePath} validPaths={validPaths} />
   }
   switch (element.type) {
     case 'JSX_ELEMENT': {
