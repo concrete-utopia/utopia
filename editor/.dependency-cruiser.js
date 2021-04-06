@@ -49,6 +49,25 @@ module.exports = {
       },
     },
     {
+      name: 'not-from-core-shared-to-outside',
+      comment:
+        'The core/shared files should not accidentally import from the rest of the codebase.',
+      severity: 'error',
+      from: {
+        path: 'src/core/shared/.*',
+      },
+      to: {
+        pathNot: [
+          'node_modules',
+          '../utopia-api/',
+          'src/core/shared/',
+          'src/common/',
+          'src/third-party/',
+        ],
+        reachable: true,
+      },
+    },
+    {
       name: 'no-deprecated-core',
       comment:
         'A module depends on a node core module that has been deprecated. Find an alternative - these are ' +
