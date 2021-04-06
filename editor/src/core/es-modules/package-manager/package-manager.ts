@@ -82,7 +82,6 @@ export function getRequireFn(
           evaluationCache[resolvedPath] = fileEvaluationCache
         }
         if (!cacheEntryExists) {
-          // eslint-disable-next-line no-useless-catch
           try {
             /**
              * we create a result cache with an empty exports object here.
@@ -105,7 +104,6 @@ export function getRequireFn(
             // we should extend the module objects so it not only contains the exports,
             // to have feature parity with the popular bundlers (Parcel / webpack)
             // MUTATION
-            //  resolvedFile.evalResultCache = { module: partialModule }
             injectedEvaluator(
               loadedModuleResult.filename,
               loadedModuleResult.loadedContents,
@@ -121,8 +119,7 @@ export function getRequireFn(
              *
              * This is inline with the real Node behavior
              */
-            // MUTATION
-            //resolvedFile.evalResultCache = null
+            delete evaluationCache[resolvedPath]
             throw e
           }
         }
