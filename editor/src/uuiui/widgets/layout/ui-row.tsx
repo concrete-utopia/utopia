@@ -13,6 +13,9 @@ export const UIRow = styled.div<UIRowProp>((props) => ({
   ...commonSenseUtopiaLayoutShorthands,
   ...flexRowStyle,
   padding: props.padded ? UtopiaTheme.layout.rowHorizontalPadding : undefined,
-  height: props.rowHeight ?? UtopiaTheme.layout.rowHeight.normal,
+  height:
+    props.rowHeight == null
+      ? UtopiaTheme.layout.rowHeight.normal
+      : UtopiaTheme.layout.rowHeight[props.rowHeight],
 }))
 UIRow.displayName = 'UIRow'
