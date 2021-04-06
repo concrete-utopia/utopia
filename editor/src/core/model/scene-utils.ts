@@ -59,7 +59,8 @@ export const EmptyUtopiaCanvasComponent = convertScenesToUtopiaCanvasComponent([
 export const PathForSceneProps = PP.create(['props'])
 export const PathForSceneStyle = PP.create(['style'])
 
-export const PathForResizeContent = PP.create(['resizeContent'])
+export const ResizesContentProp = 'resizeContent'
+export const PathForResizeContent = PP.create([ResizesContentProp])
 
 export function createSceneUidFromIndex(sceneIndex: number): string {
   return `scene-${sceneIndex}`
@@ -306,7 +307,7 @@ export function isDynamicSceneChildWidthHeightPercentage(
   scene: ElementInstanceMetadata,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  const isDynamicScene = scene.props.resizesContent ?? false
+  const isDynamicScene = scene.props[ResizesContentProp] ?? false
 
   return isDynamicScene && isSceneChildWidthHeightPercentage(scene, metadata)
 }

@@ -88,7 +88,7 @@ import * as PP from '../shared/property-path'
 import * as TP from '../shared/template-path'
 import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
 import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
-import { EmptyScenePathForStoryboard } from './scene-utils'
+import { EmptyScenePathForStoryboard, ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
 const ObjectPathImmutable: any = OPI
@@ -189,7 +189,7 @@ export const MetadataUtils = {
     if (scene == null) {
       return false
     } else {
-      return scene.props.resizesContent ?? false
+      return scene.props[ResizesContentProp] ?? false
     }
   },
   findElements(
