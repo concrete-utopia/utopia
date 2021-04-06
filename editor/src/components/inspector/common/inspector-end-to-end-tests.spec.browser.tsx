@@ -58,7 +58,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -110,7 +110,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -194,7 +194,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -278,7 +278,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -423,7 +423,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -502,7 +502,7 @@ describe('inspector tests with real metadata', () => {
       [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -998,7 +998,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -1105,7 +1105,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('target-selector-css')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -1293,7 +1293,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -1406,7 +1406,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('flexPadding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -1508,7 +1508,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('flexPadding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -1581,7 +1581,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -1614,7 +1614,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -1670,7 +1670,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-aaa:aaa/bbb'
     ]
 
@@ -1761,7 +1761,7 @@ describe('inspector tests with real metadata', () => {
       false,
     )
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadataKILLME.elements[
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[
       'utopia-storyboard-uid/scene-1:app-outer-div/app-inner-div'
     ]
 

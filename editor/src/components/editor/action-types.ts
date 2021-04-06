@@ -4,7 +4,7 @@ import {
   JSXAttribute,
   JSXElement,
   JSXElementName,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import { KeysPressed, Key } from '../../utils/keyboard'
@@ -302,7 +302,7 @@ export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
   elements: JSXElement[]
   originalTemplatePaths: TemplatePath[]
-  targetOriginalContextMetadata: JSXMetadata
+  targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
 export interface CopySelectionToClipboard {

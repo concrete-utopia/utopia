@@ -79,7 +79,7 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
   })
 
   const jsxMetadata = useRefEditorState((store) => {
-    return store.editor.jsxMetadataKILLME
+    return store.editor.jsxMetadata
   })
 
   const toggleCodeEditorVisible = React.useCallback(() => {

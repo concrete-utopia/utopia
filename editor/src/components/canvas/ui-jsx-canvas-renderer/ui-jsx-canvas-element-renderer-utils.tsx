@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
-import { isSceneElement, PathForResizeContent } from '../../../core/model/scene-utils'
+import { isSceneElement } from '../../../core/model/scene-utils'
 import {
   UTOPIA_SCENE_PATH,
   UTOPIA_UIDS_KEY,

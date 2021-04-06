@@ -21,7 +21,7 @@ import { ResizeStatus } from './new-canvas-controls'
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
 import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
-import { JSXMetadata } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { SizeBoxLabel } from './size-box-label'
@@ -395,7 +395,7 @@ interface ResizeRectangleProps {
   dragState: ResizeDragState | null
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   getOriginalFrames: () => Array<OriginalCanvasAndLocalFrame>
-  metadata: JSXMetadata
+  metadata: ElementInstanceMetadataMap
   onResizeStart: (originalSize: CanvasRectangle, draggedPoint: EdgePosition) => void
   testID: string
   maybeClearHighlightsOnHoverEnd: () => void

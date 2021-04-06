@@ -34,22 +34,19 @@ interface NavigatorItemWrapperProps {
 
 const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
   createSelector(
-    (store: EditorStore) => store.editor.jsxMetadataKILLME,
+    (store: EditorStore) => store.editor.jsxMetadata,
     (store: EditorStore) => store.derived.canvas.transientState,
     (store: EditorStore) => store.derived.navigatorTargets,
     (store: EditorStore) => store.derived.elementWarnings,
     (store: EditorStore) =>
       TP.isScenePath(templatePath)
         ? null
-        : MetadataUtils.getElementByInstancePathMaybe(
-            store.editor.jsxMetadataKILLME.elements,
-            templatePath,
-          ),
+        : MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadata, templatePath),
     (store: EditorStore) =>
       store.derived.canvas.transientState.fileState == null
         ? getOpenImportsFromState(store.editor)
         : store.derived.canvas.transientState.fileState.imports,
-    (jsxMetadataKILLME, transientState, navigatorTargets, elementWarnings, element, imports) => {
+    (jsxMetadata, transientState, navigatorTargets, elementWarnings, element, imports) => {
       const fileState = transientState.fileState
 
       const componentsIncludingScenes: Array<UtopiaJSXComponent> =
@@ -61,20 +58,15 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         templatePath,
       )
       const staticName = MetadataUtils.getStaticElementName(templatePath, componentsIncludingScenes)
-      const labelInner = MetadataUtils.getElementLabel(templatePath, jsxMetadataKILLME, staticName)
+      const labelInner = MetadataUtils.getElementLabel(templatePath, jsxMetadata, staticName)
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
       const isInNavigatorTargets = TP.containsPath(templatePath, navigatorTargets)
       let noOfChildrenInner: number = 0
       let supportsChildren: boolean = false
       if (isInNavigatorTargets) {
-        noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadataKILLME, templatePath)
-          .length
-        supportsChildren = MetadataUtils.targetSupportsChildren(
-          imports,
-          jsxMetadataKILLME,
-          templatePath,
-        )
+        noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, templatePath).length
+        supportsChildren = MetadataUtils.targetSupportsChildren(imports, jsxMetadata, templatePath)
       }
 
       const elementWarningsInner = getValueFromComplexMap(

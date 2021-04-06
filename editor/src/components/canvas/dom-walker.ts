@@ -296,7 +296,7 @@ function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, ()
 export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState(
-    (store) => store.editor.domMetadataKILLME as ReadonlyArray<ElementInstanceMetadata>,
+    (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
   )
   const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())

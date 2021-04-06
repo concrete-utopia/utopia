@@ -5,7 +5,7 @@ import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ComponentMetadata, JSXMetadata } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import {
   fileTypeFromFileName,
@@ -553,10 +553,8 @@ function editorDispatchInner(
       storedState.editor === result.editor &&
       storedState.userState === result.userState
 
-    const domMetadataChanged =
-      storedState.editor.domMetadataKILLME !== result.editor.domMetadataKILLME
-    const spyMetadataChanged =
-      storedState.editor.spyMetadataKILLME !== result.editor.spyMetadataKILLME
+    const domMetadataChanged = storedState.editor.domMetadata !== result.editor.domMetadata
+    const spyMetadataChanged = storedState.editor.spyMetadata !== result.editor.spyMetadata
     const dragStateLost =
       storedState.editor.canvas.dragState != null && result.editor.canvas.dragState == null
     const metadataChanged = domMetadataChanged || spyMetadataChanged || dragStateLost
@@ -569,7 +567,7 @@ function editorDispatchInner(
           ...result,
           editor: {
             ...result.editor,
-            jsxMetadataKILLME: reconstructJSXMetadata(result.editor),
+            jsxMetadata: reconstructJSXMetadata(result.editor),
           },
         }
       } else {
@@ -731,8 +729,8 @@ function removeNonExistingViewReferencesFromState(
   oldEditorState: EditorState,
   editorState: EditorState,
 ): EditorState {
-  const oldRootComponents = oldEditorState.jsxMetadataKILLME
-  const rootComponents = editorState.jsxMetadataKILLME
+  const oldRootComponents = oldEditorState.jsxMetadata
+  const rootComponents = editorState.jsxMetadata
   const updatedSelectedViews = TemplatePathArrayKeepDeepEquality(
     editorState.selectedViews,
     mapDropNulls(
@@ -765,18 +763,13 @@ function removeNonExistingViewReferencesFromState(
 }
 
 function findMatchingTemplatePath(
-  oldComponents: JSXMetadata,
-  newComponents: JSXMetadata,
+  oldComponents: ElementInstanceMetadataMap,
+  newComponents: ElementInstanceMetadataMap,
   pathToUpdate: TemplatePath,
 ): TemplatePath | null {
-  const scenePathStillExists =
-    MetadataUtils.findSceneByTemplatePath(newComponents.components, pathToUpdate) != null
   const pathStillExists =
-    MetadataUtils.getElementByInstancePathMaybe(
-      newComponents.elements,
-      pathToUpdate as InstancePath,
-    ) != null
-  if (pathStillExists || (TP.isScenePath(pathToUpdate) && scenePathStillExists)) {
+    MetadataUtils.findElementByTemplatePath(newComponents, pathToUpdate) != null
+  if (pathStillExists) {
     return pathToUpdate
   }
 
