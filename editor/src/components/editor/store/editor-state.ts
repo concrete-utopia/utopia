@@ -710,6 +710,37 @@ export function getOpenUtopiaJSXComponentsFromState(model: EditorState): Array<U
   }
 }
 
+function getImportedUtopiaJSXComponents(
+  filePath: string,
+  model: EditorState,
+): Array<UtopiaJSXComponent> {
+  const file = getContentsTreeFileFromString(model.projectContents, filePath)
+  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    const resolvedFilePaths = Object.keys(file.fileContents.parsed.imports)
+      .map((toImport) => model.codeResultCache.resolve(filePath, toImport))
+      .filter(isRight)
+      .map((r) => r.value)
+
+    return [
+      ...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed),
+      ...resolvedFilePaths.flatMap((path) => getImportedUtopiaJSXComponents(path, model)),
+    ]
+  } else {
+    return []
+  }
+}
+
+export function getOpenUtopiaJSXComponentsFromStateMultifile(
+  model: EditorState,
+): Array<UtopiaJSXComponent> {
+  const openUIJSFilePath = getOpenUIJSFileKey(model)
+  if (openUIJSFilePath == null) {
+    return []
+  } else {
+    return getImportedUtopiaJSXComponents(openUIJSFilePath, model)
+  }
+}
+
 function modifyOpenScenes_INTERNAL(
   transform: (topLevelElementsIncludingScene: UtopiaJSXComponent[]) => UtopiaJSXComponent[],
   model: EditorState,

@@ -112,6 +112,7 @@ export function getSelectableViews(
   componentMetadata: JSXMetadata,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
+  focusedElementPath: ScenePath | null,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
 ): TemplatePath[] {
@@ -120,9 +121,9 @@ export function getSelectableViews(
   if (allElementsDirectlySelectable) {
     candidateViews = MetadataUtils.getAllPaths(componentMetadata)
   } else {
-    const scenes = MetadataUtils.getAllScenePaths(componentMetadata.components)
+    const scenes = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(componentMetadata)
     let rootElementsToFilter: TemplatePath[] = []
-    let dynamicScenesWithFragmentRootViews: ScenePath[] = []
+    let dynamicScenesWithFragmentRootViews: TemplatePath[] = []
     Utils.fastForEach(scenes, (path) => {
       const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata.components, path)
       const rootElements = scene?.rootElements
@@ -142,8 +143,12 @@ export function getSelectableViews(
     Utils.fastForEach(selectedViews, (view) => {
       const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
-        const ancestorChildren = MetadataUtils.getImmediateChildren(componentMetadata, ancestor)
-        fastForEach(ancestorChildren, (child) => siblings.push(child.templatePath))
+        const ancestorChildren = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+          TP.dynamicPathToStaticPath(ancestor),
+          componentMetadata,
+          focusedElementPath,
+        )
+        fastForEach(ancestorChildren, (child) => siblings.push(child))
       })
     })
 
@@ -182,6 +187,7 @@ function useFindValidTarget(): (
       hiddenInstances: store.editor.hiddenInstances,
       canvasScale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.realCanvasOffset,
+      focusedElementPath: store.editor.focusedElementPath,
     }
   })
 
@@ -191,6 +197,7 @@ function useFindValidTarget(): (
         selectedViews,
         componentMetadata,
         hiddenInstances,
+        focusedElementPath,
         canvasScale,
         canvasOffset,
       } = storeRef.current
@@ -198,6 +205,7 @@ function useFindValidTarget(): (
         componentMetadata,
         selectedViews,
         hiddenInstances,
+        focusedElementPath,
         selectableViews.map(TP.toString),
         mousePoint,
         canvasScale,
@@ -256,6 +264,7 @@ function useStartDragState(): (
       const moveTargets = selection.filter(
         (view) =>
           TP.isScenePath(view) ||
+          TP.isStoryboardDescendant(view) || // FIXME This must go in the bin when we separate the Scene from the component it renders
           elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
 
@@ -349,16 +358,23 @@ function useGetSelectableViewsForSelectMode() {
       componentMetadata: store.editor.jsxMetadataKILLME,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
+      focusedElementPath: store.editor.focusedElementPath,
     }
   })
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
-      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
+      const {
+        componentMetadata,
+        selectedViews,
+        hiddenInstances,
+        focusedElementPath,
+      } = storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
         selectedViews,
         hiddenInstances,
+        focusedElementPath,
         allElementsDirectlySelectable,
         childrenSelectable,
       )

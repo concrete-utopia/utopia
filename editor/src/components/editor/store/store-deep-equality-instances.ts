@@ -72,18 +72,15 @@ import {
   combine6EqualityCalls,
   nullableDeepEquality,
   createCallWithTripleEquals,
-  combine9EqualityCalls,
   objectDeepEquality,
-  mapKeepDeepEqualityResult,
   combine5EqualityCalls,
   arrayDeepEquality,
-  combine1EqualityCall,
   combine2EqualityCalls,
   combine7EqualityCalls,
   combine8EqualityCalls,
   undefinableDeepEquality,
   combine4EqualityCalls,
-  combine11EqualityCalls,
+  combine14EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   TemplatePathArrayKeepDeepEquality,
@@ -646,7 +643,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
 export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
-  return combine11EqualityCalls(
+  return combine14EqualityCalls(
     (metadata) => metadata.templatePath,
     InstancePathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -659,6 +656,8 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     nullableDeepEquality(LocalRectangleKeepDeepEquality),
     (metadata) => metadata.children,
     InstancePathArrayKeepDeepEquality,
+    (metadata) => metadata.rootElements,
+    InstancePathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),
     (metadata) => metadata.isEmotionOrStyledComponent,
@@ -669,6 +668,10 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
     (metadata) => metadata.attributeMetadatada,
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
+    (metadata) => metadata.componentName,
+    nullableDeepEquality(createCallWithTripleEquals()),
+    (metadata) => metadata.label,
+    nullableDeepEquality(createCallWithTripleEquals()),
     elementInstanceMetadata,
   )
 }

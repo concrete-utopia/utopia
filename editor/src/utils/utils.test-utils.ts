@@ -292,11 +292,14 @@ function createFakeMetadataForJSXElement(
       globalFrame: Utils.zeroRectangle as CanvasRectangle, // this could be parametrized to be able to set real rectangles
       localFrame: Utils.zeroRectangle as LocalRectangle,
       children: childPaths,
+      rootElements: [],
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
+      componentName: null,
+      label: null,
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {

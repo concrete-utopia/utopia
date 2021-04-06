@@ -6,7 +6,7 @@ import {
   LocalRectangle,
   CanvasRectangle,
 } from '../shared/math-utils'
-import { right } from '../shared/either'
+import { left, right } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 import {
   ComponentMetadata,
@@ -27,7 +27,7 @@ import {
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
-import { TemplatePath } from '../shared/project-file-types'
+import { InstancePath, ScenePath, TemplatePath } from '../shared/project-file-types'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -50,11 +50,14 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -66,11 +69,14 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -86,11 +92,14 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   },
   element: right(jsxTestElement('View', [], [])),
   children: [],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentMetadataChild3: ElementInstanceMetadata = {
@@ -103,11 +112,14 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [testComponentMetadataGrandchild.templatePath],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -121,11 +133,14 @@ const testComponentRoot1: ElementInstanceMetadata = {
     testComponentMetadataChild2.templatePath,
     testComponentMetadataChild3.templatePath,
   ],
+  rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
 }
 
 const testComponentScene: ComponentMetadata = {
@@ -146,6 +161,79 @@ const testComponentScene: ComponentMetadata = {
   },
 }
 
+const testComponentSceneElement: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestScenePath]),
+  props: {
+    style: {
+      width: 100,
+      height: 100,
+    },
+  },
+  element: left('Scene'),
+  children: [],
+  rootElements: [testComponentRoot1.templatePath],
+  componentInstance: false,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: 'MyView',
+  label: null,
+}
+
+const testStoryboardGrandChildElement: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'Child', 'GrandChild']),
+  props: {},
+  element: right(jsxTestElement('View', [], [])),
+  children: [],
+  rootElements: [],
+  componentInstance: false,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
+}
+
+const testStoryboardChildElement: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'Child']),
+  props: {},
+  element: right(jsxTestElement('View', [], [])),
+  children: [testStoryboardGrandChildElement.templatePath],
+  rootElements: [],
+  componentInstance: false,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
+}
+
+const testStoryboardElement: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID]),
+  props: {},
+  element: right(jsxTestElement('Storyboard', [], [])),
+  children: [testComponentSceneElement.templatePath, testStoryboardChildElement.templatePath],
+  rootElements: [],
+  componentInstance: true,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
+}
+
 const testComponentMetadata: Array<ComponentMetadata> = [testComponentScene]
 const testElementMetadataMap: ElementInstanceMetadataMap = {
   [TP.toString(testComponentMetadataChild1.templatePath)]: testComponentMetadataChild1,
@@ -153,6 +241,10 @@ const testElementMetadataMap: ElementInstanceMetadataMap = {
   [TP.toString(testComponentMetadataChild3.templatePath)]: testComponentMetadataChild3,
   [TP.toString(testComponentMetadataGrandchild.templatePath)]: testComponentMetadataGrandchild,
   [TP.toString(testComponentRoot1.templatePath)]: testComponentRoot1,
+  [TP.toString(testComponentSceneElement.templatePath)]: testComponentSceneElement,
+  [TP.toString(testStoryboardGrandChildElement.templatePath)]: testStoryboardGrandChildElement,
+  [TP.toString(testStoryboardChildElement.templatePath)]: testStoryboardChildElement,
+  [TP.toString(testStoryboardElement.templatePath)]: testStoryboardElement,
 }
 
 const testJsxMetadata = jsxMetadata(testComponentMetadata, testElementMetadataMap)
@@ -229,11 +321,14 @@ describe('targetElementSupportsChildren', () => {
       props: {},
       element: right(jsxTestElement(elementName, [], [])),
       children: [],
+      rootElements: [],
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
+      componentName: null,
+      label: null,
     }
   }
 
@@ -359,11 +454,14 @@ describe('getElementLabel', () => {
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
     [],
+    [],
     false,
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
     emptyAttributeMetadatada,
+    null,
+    null,
   )
   const divElement = jsxElement(
     'div',
@@ -379,11 +477,14 @@ describe('getElementLabel', () => {
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
     [spanElementMetadata.templatePath],
+    [],
     false,
     false,
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
     emptyAttributeMetadatada,
+    null,
+    null,
   )
   const elements: ElementInstanceMetadataMap = {
     [TP.toString(spanElementMetadata.templatePath)]: spanElementMetadata,
@@ -415,20 +516,60 @@ describe('getElementLabel', () => {
   })
 })
 
-describe('getAllPaths', () => {
-  it('returns the paths in a depth first manner', () => {
+describe('getStoryboardMetadata', () => {
+  it('finds the storyboard instance metadata', () => {
+    const actualResult = MetadataUtils.getStoryboardMetadata(testJsxMetadata.elements)
+    expect(actualResult).toEqual(testStoryboardElement)
+  })
+})
+
+describe('getting the root paths', () => {
+  it('getAllStoryboardChildren returns instance metadata of all children of the storyboard', () => {
+    const actualResult = MetadataUtils.getAllStoryboardChildren(testJsxMetadata)
+    const expectedResult: Array<ElementInstanceMetadata> = [
+      testComponentSceneElement,
+      testStoryboardChildElement,
+    ]
+    expect(actualResult).toEqual(expectedResult)
+  })
+
+  it('getAllStoryboardChildrenPaths returns paths of all children of the storyboard', () => {
+    const actualResult = MetadataUtils.getAllStoryboardChildrenPaths(testJsxMetadata.elements)
+    const expectedResult: Array<InstancePath> = [
+      testComponentSceneElement.templatePath,
+      testStoryboardChildElement.templatePath,
+    ]
+    expect(actualResult).toEqual(expectedResult)
+  })
+
+  it('getAllStoryboardChildrenPathsScenesOnly returns paths of only the scene children of the storyboard', () => {
+    const actualResult = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(testJsxMetadata)
+    const expectedResult: Array<ScenePath> = [
+      TP.scenePathForElementAtInstancePath(testComponentSceneElement.templatePath),
+    ]
+    expect(actualResult).toEqual(expectedResult)
+  })
+
+  it('getAllCanvasRootPaths returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
+    const actualResult = MetadataUtils.getAllCanvasRootPaths(testJsxMetadata)
+    const expectedResult: Array<InstancePath> = [
+      testComponentRoot1.templatePath,
+      testStoryboardChildElement.templatePath,
+    ]
+    expect(actualResult).toEqual(expectedResult)
+  })
+
+  it('getAllPaths returns the instance paths in a depth first manner', () => {
     const actualResult = MetadataUtils.getAllPaths(testJsxMetadata)
-    const expectedResult: Array<TemplatePath> = [
-      testComponentScene.scenePath,
+    const expectedResult: Array<InstancePath> = [
+      testComponentSceneElement.templatePath,
       testComponentRoot1.templatePath,
       testComponentMetadataChild1.templatePath,
       testComponentMetadataChild2.templatePath,
       testComponentMetadataChild3.templatePath,
-      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), [
-        'View',
-        'View2',
-        'View0',
-      ]),
+      testComponentMetadataGrandchild.templatePath,
+      testStoryboardChildElement.templatePath,
+      testStoryboardGrandChildElement.templatePath,
     ]
     expect(actualResult).toEqual(expectedResult)
   })

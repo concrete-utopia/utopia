@@ -4,35 +4,6 @@ exports[`DOM Walker tests Label carried through for generated elements 1`] = `
 Object {
   "components": Array [
     Object {
-      "component": "storyboard",
-      "globalFrame": null,
-      "label": "Storyboard",
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "utopia-storyboard-uid",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {},
-      "templatePath": Object {
-        "element": Array [],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
-    Object {
       "component": "App",
       "globalFrame": Object {
         "height": 812,
@@ -102,6 +73,7 @@ Object {
         },
       ],
       "componentInstance": true,
+      "componentName": null,
       "computedStyle": Object {},
       "element": Object {
         "type": "LEFT",
@@ -114,6 +86,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -124,6 +97,7 @@ Object {
         "data-uid": "utopia-storyboard-uid",
         "skipDeepFreeze": true,
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
         "clientWidth": 0,
@@ -170,7 +144,39 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
+      "children": Array [],
+      "componentInstance": false,
+      "componentName": "App",
+      "computedStyle": null,
+      "element": Object {
+        "type": "LEFT",
+        "value": "REMOVED_FROM_TEST",
+      },
+      "globalFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "isEmotionOrStyledComponent": false,
+      "label": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "props": Object {
+        "data-uid": "scene-aaa",
+        "style": Object {
+          "height": 812,
+          "left": 0,
+          "position": "relative",
+          "top": 0,
+          "width": 375,
+        },
+      },
+      "rootElements": Array [
         Object {
           "element": Array [
             "aaa",
@@ -186,26 +192,6 @@ Object {
           },
         },
       ],
-      "componentInstance": false,
-      "computedStyle": null,
-      "element": Object {
-        "type": "LEFT",
-        "value": "REMOVED_FROM_TEST",
-      },
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "isEmotionOrStyledComponent": false,
-      "localFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -311,6 +297,7 @@ Object {
         },
       ],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -323,6 +310,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -359,6 +347,7 @@ Object {
           "width": undefined,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -422,6 +411,7 @@ Object {
       "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -434,6 +424,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 0,
         "width": 375,
@@ -445,6 +436,7 @@ Object {
         "data-uid": "bbb~~~1",
         "skipDeepFreeze": true,
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
         "clientWidth": 375,
@@ -509,6 +501,7 @@ Object {
       "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -521,6 +514,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 0,
         "width": 375,
@@ -532,6 +526,7 @@ Object {
         "data-uid": "bbb~~~2",
         "skipDeepFreeze": true,
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
         "clientWidth": 375,
@@ -596,6 +591,7 @@ Object {
       "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -608,6 +604,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 0,
         "width": 375,
@@ -619,6 +616,7 @@ Object {
         "data-uid": "bbb~~~3",
         "skipDeepFreeze": true,
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
         "clientWidth": 375,
@@ -687,35 +685,6 @@ exports[`DOM Walker tests Label carried through for normal elements 1`] = `
 Object {
   "components": Array [
     Object {
-      "component": "storyboard",
-      "globalFrame": null,
-      "label": "Storyboard",
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "utopia-storyboard-uid",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {},
-      "templatePath": Object {
-        "element": Array [],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
-    Object {
       "component": "App",
       "globalFrame": Object {
         "height": 812,
@@ -785,6 +754,7 @@ Object {
         },
       ],
       "componentInstance": true,
+      "componentName": null,
       "computedStyle": Object {},
       "element": Object {
         "type": "LEFT",
@@ -797,6 +767,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -807,6 +778,7 @@ Object {
         "data-uid": "utopia-storyboard-uid",
         "skipDeepFreeze": true,
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
         "clientWidth": 0,
@@ -853,7 +825,39 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
+      "children": Array [],
+      "componentInstance": false,
+      "componentName": "App",
+      "computedStyle": null,
+      "element": Object {
+        "type": "LEFT",
+        "value": "REMOVED_FROM_TEST",
+      },
+      "globalFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "isEmotionOrStyledComponent": false,
+      "label": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "props": Object {
+        "data-uid": "scene-aaa",
+        "style": Object {
+          "height": 812,
+          "left": 0,
+          "position": "relative",
+          "top": 0,
+          "width": 375,
+        },
+      },
+      "rootElements": Array [
         Object {
           "element": Array [
             "aaa",
@@ -869,26 +873,6 @@ Object {
           },
         },
       ],
-      "componentInstance": false,
-      "computedStyle": null,
-      "element": Object {
-        "type": "LEFT",
-        "value": "REMOVED_FROM_TEST",
-      },
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "isEmotionOrStyledComponent": false,
-      "localFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -948,6 +932,7 @@ Object {
       "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -960,6 +945,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -997,6 +983,7 @@ Object {
           "width": undefined,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -1064,35 +1051,6 @@ exports[`DOM Walker tests Simple Project with divs 1`] = `
 Object {
   "components": Array [
     Object {
-      "component": "storyboard",
-      "globalFrame": null,
-      "label": "Storyboard",
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "utopia-storyboard-uid",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {},
-      "templatePath": Object {
-        "element": Array [],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
-    Object {
       "component": "App",
       "globalFrame": Object {
         "height": 812,
@@ -1162,6 +1120,7 @@ Object {
         },
       ],
       "componentInstance": true,
+      "componentName": null,
       "computedStyle": Object {},
       "element": Object {
         "type": "LEFT",
@@ -1174,6 +1133,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -1184,6 +1144,7 @@ Object {
         "data-uid": "utopia-storyboard-uid",
         "skipDeepFreeze": true,
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
         "clientWidth": 0,
@@ -1230,7 +1191,39 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
+      "children": Array [],
+      "componentInstance": false,
+      "componentName": "App",
+      "computedStyle": null,
+      "element": Object {
+        "type": "LEFT",
+        "value": "REMOVED_FROM_TEST",
+      },
+      "globalFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "isEmotionOrStyledComponent": false,
+      "label": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "props": Object {
+        "data-uid": "scene-aaa",
+        "style": Object {
+          "height": 812,
+          "left": 0,
+          "position": "relative",
+          "top": 0,
+          "width": 375,
+        },
+      },
+      "rootElements": Array [
         Object {
           "element": Array [
             "05c",
@@ -1246,26 +1239,6 @@ Object {
           },
         },
       ],
-      "componentInstance": false,
-      "computedStyle": null,
-      "element": Object {
-        "type": "LEFT",
-        "value": "REMOVED_FROM_TEST",
-      },
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "isEmotionOrStyledComponent": false,
-      "localFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -1341,6 +1314,7 @@ Object {
         },
       ],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -1353,6 +1327,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -1390,6 +1365,7 @@ Object {
           "width": undefined,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -1470,6 +1446,7 @@ Object {
         },
       ],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -1482,6 +1459,7 @@ Object {
         "y": 98,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 164,
         "width": 306,
@@ -1520,6 +1498,7 @@ Object {
           "width": 266,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 164,
         "clientWidth": 306,
@@ -1579,6 +1558,7 @@ Object {
       "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -1591,6 +1571,7 @@ Object {
         "y": 125,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 70,
         "width": 125,
@@ -1628,6 +1609,7 @@ Object {
           "width": 125,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 70,
         "clientWidth": 125,
@@ -1696,35 +1678,6 @@ Object {
 exports[`DOM Walker tests Simple Project with flex parent 1`] = `
 Object {
   "components": Array [
-    Object {
-      "component": "storyboard",
-      "globalFrame": null,
-      "label": "Storyboard",
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "utopia-storyboard-uid",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {},
-      "templatePath": Object {
-        "element": Array [],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
     Object {
       "component": "App",
       "globalFrame": Object {
@@ -1795,6 +1748,7 @@ Object {
         },
       ],
       "componentInstance": true,
+      "componentName": null,
       "computedStyle": Object {},
       "element": Object {
         "type": "LEFT",
@@ -1807,6 +1761,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -1817,6 +1772,7 @@ Object {
         "data-uid": "utopia-storyboard-uid",
         "skipDeepFreeze": true,
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
         "clientWidth": 0,
@@ -1863,7 +1819,39 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
+      "children": Array [],
+      "componentInstance": false,
+      "componentName": "App",
+      "computedStyle": null,
+      "element": Object {
+        "type": "LEFT",
+        "value": "REMOVED_FROM_TEST",
+      },
+      "globalFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "isEmotionOrStyledComponent": false,
+      "label": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "props": Object {
+        "data-uid": "scene-aaa",
+        "style": Object {
+          "height": 812,
+          "left": 0,
+          "position": "relative",
+          "top": 0,
+          "width": 375,
+        },
+      },
+      "rootElements": Array [
         Object {
           "element": Array [
             "05c",
@@ -1879,26 +1867,6 @@ Object {
           },
         },
       ],
-      "componentInstance": false,
-      "computedStyle": null,
-      "element": Object {
-        "type": "LEFT",
-        "value": "REMOVED_FROM_TEST",
-      },
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "isEmotionOrStyledComponent": false,
-      "localFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -1974,6 +1942,7 @@ Object {
         },
       ],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -1986,6 +1955,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -2024,6 +1994,7 @@ Object {
           "width": undefined,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -2104,6 +2075,7 @@ Object {
         },
       ],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -2116,6 +2088,7 @@ Object {
         "y": 98,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 164,
         "width": 306,
@@ -2154,6 +2127,7 @@ Object {
           "width": 266,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 164,
         "clientWidth": 306,
@@ -2213,6 +2187,7 @@ Object {
       "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": false,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -2225,6 +2200,7 @@ Object {
         "y": 125,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 70,
         "width": 125,
@@ -2262,6 +2238,7 @@ Object {
           "width": 125,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 70,
         "clientWidth": 125,
@@ -2330,35 +2307,6 @@ Object {
 exports[`DOM Walker tests Simple Project with one child View 1`] = `
 Object {
   "components": Array [
-    Object {
-      "component": "storyboard",
-      "globalFrame": null,
-      "label": "Storyboard",
-      "rootElements": Array [
-        Object {
-          "element": Array [
-            "utopia-storyboard-uid",
-          ],
-          "scene": Object {
-            "sceneElementPaths": Array [],
-            "type": "scenepath",
-          },
-        },
-      ],
-      "scenePath": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
-      "sceneResizesContent": false,
-      "style": Object {},
-      "templatePath": Object {
-        "element": Array [],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
-      },
-    },
     Object {
       "component": "App",
       "globalFrame": Object {
@@ -2429,6 +2377,7 @@ Object {
         },
       ],
       "componentInstance": true,
+      "componentName": null,
       "computedStyle": Object {},
       "element": Object {
         "type": "LEFT",
@@ -2441,6 +2390,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 0,
         "width": 0,
@@ -2451,6 +2401,7 @@ Object {
         "data-uid": "utopia-storyboard-uid",
         "skipDeepFreeze": true,
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 0,
         "clientWidth": 0,
@@ -2497,7 +2448,39 @@ Object {
     },
     ":utopia-storyboard-uid/scene-aaa": Object {
       "attributeMetadatada": null,
-      "children": Array [
+      "children": Array [],
+      "componentInstance": false,
+      "componentName": "App",
+      "computedStyle": null,
+      "element": Object {
+        "type": "LEFT",
+        "value": "REMOVED_FROM_TEST",
+      },
+      "globalFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "isEmotionOrStyledComponent": false,
+      "label": null,
+      "localFrame": Object {
+        "height": 812,
+        "width": 375,
+        "x": 0,
+        "y": 0,
+      },
+      "props": Object {
+        "data-uid": "scene-aaa",
+        "style": Object {
+          "height": 812,
+          "left": 0,
+          "position": "relative",
+          "top": 0,
+          "width": 375,
+        },
+      },
+      "rootElements": Array [
         Object {
           "element": Array [
             "05c",
@@ -2513,26 +2496,6 @@ Object {
           },
         },
       ],
-      "componentInstance": false,
-      "computedStyle": null,
-      "element": Object {
-        "type": "LEFT",
-        "value": "REMOVED_FROM_TEST",
-      },
-      "globalFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "isEmotionOrStyledComponent": false,
-      "localFrame": Object {
-        "height": 812,
-        "width": 375,
-        "x": 0,
-        "y": 0,
-      },
-      "props": Object {},
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -2608,6 +2571,7 @@ Object {
         },
       ],
       "componentInstance": true,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -2620,6 +2584,7 @@ Object {
         "y": 0,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 812,
         "width": 375,
@@ -2657,6 +2622,7 @@ Object {
           "width": undefined,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 812,
         "clientWidth": 375,
@@ -2737,6 +2703,7 @@ Object {
         },
       ],
       "componentInstance": true,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -2749,6 +2716,7 @@ Object {
         "y": 98,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 124,
         "width": 266,
@@ -2786,6 +2754,7 @@ Object {
           "width": 266,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 124,
         "clientWidth": 266,
@@ -2850,6 +2819,7 @@ Object {
       "attributeMetadatada": null,
       "children": Array [],
       "componentInstance": true,
+      "componentName": null,
       "computedStyle": null,
       "element": Object {
         "type": "LEFT",
@@ -2862,6 +2832,7 @@ Object {
         "y": 125,
       },
       "isEmotionOrStyledComponent": false,
+      "label": null,
       "localFrame": Object {
         "height": 70,
         "width": 125,
@@ -2899,6 +2870,7 @@ Object {
           "width": 125,
         },
       },
+      "rootElements": Array [],
       "specialSizeMeasurements": Object {
         "clientHeight": 70,
         "clientWidth": 125,

@@ -31,6 +31,7 @@ import { RightMenuTab } from '../right-menu'
 import { getSelectableViews } from './select-mode/select-mode-hooks'
 import { getAllTargetsAtPoint } from '../dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export const SnappingThreshold = 5
 
@@ -151,6 +152,7 @@ export class SelectModeControlContainer extends React.Component<
       this.props.componentMetadata,
       this.props.selectedViews,
       this.props.hiddenInstances,
+      this.props.focusedElementPath,
       'no-filter',
       WindowMousePositionRaw,
       this.props.scale,
@@ -495,7 +497,9 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+    const roots = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(
+      this.props.componentMetadata,
+    )
     let labelDirectlySelectable = this.props.highlightsEnabled
 
     // TODO future span element should be included here
