@@ -654,6 +654,39 @@ export const MetadataUtils = {
 
     return uniqBy<InstancePath>(result, TP.pathsEqual)
   },
+  getAllPathsIncludingUnfurledFocusedComponents(
+    metadata: JSXMetadata,
+    focusedElementPath: ScenePath | null,
+  ): InstancePath[] {
+    // This function needs to explicitly return the paths in a depth first manner
+    let result: Array<InstancePath> = []
+    function recurseElement(elementPath: InstancePath): void {
+      result.push(elementPath)
+      const {
+        children,
+        unfurledComponents,
+      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+        elementPath,
+        metadata,
+        focusedElementPath,
+      )
+      const childrenIncludingUnfurledComponents = [...children, ...unfurledComponents]
+      fastForEach(childrenIncludingUnfurledComponents, recurseElement)
+    }
+
+    const rootInstances = this.getAllStoryboardChildrenPaths(metadata.elements)
+
+    fastForEach(rootInstances, (rootInstance) => {
+      const element = MetadataUtils.findElementByTemplatePath(metadata.elements, rootInstance)
+      if (element != null) {
+        result.push(rootInstance)
+        element.rootElements.forEach(recurseElement)
+        element.children.forEach(recurseElement)
+      }
+    })
+
+    return uniqBy<InstancePath>(result, TP.pathsEqual)
+  },
   isElementOfType(instance: ElementInstanceMetadata, elementType: string): boolean {
     return foldEither(
       (name) => name === elementType,

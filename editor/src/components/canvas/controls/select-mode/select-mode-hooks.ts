@@ -119,7 +119,10 @@ export function getSelectableViews(
   let candidateViews: Array<TemplatePath>
 
   if (allElementsDirectlySelectable) {
-    candidateViews = MetadataUtils.getAllPaths(componentMetadata)
+    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
+      componentMetadata,
+      focusedElementPath,
+    )
   } else {
     const scenes = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(componentMetadata)
     let rootElementsToFilter: TemplatePath[] = []
