@@ -613,7 +613,7 @@ class FileBrowserItemInner extends React.PureComponent<
             paddingLeft: indentation * BaseIndentationPadding,
             paddingTop: 3,
             paddingBottom: 3,
-            height: UtopiaTheme.layout.rowHeight.small,
+            height: 32,
             display: 'flex',
             alignItems: 'center',
             opacity: this.props.isDragging ? 0.5 : undefined,
@@ -676,7 +676,7 @@ class FileBrowserItemInner extends React.PureComponent<
               paddingLeft: (indentation + 1) * BaseIndentationPadding + 20,
               paddingTop: 3,
               paddingBottom: 3,
-              height: UtopiaTheme.layout.rowHeight.small,
+              height: 32,
               display: 'flex',
               alignItems: 'center',
             }}

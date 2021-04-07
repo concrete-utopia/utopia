@@ -445,9 +445,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       return (
         <>
           <SingleInspectorEntryPoint selectedViews={selectedViews} />
-          <InspectorSectionHeader style={{ paddingTop: UtopiaTheme.layout.rowHeight.small }}>
-            Root View
-          </InspectorSectionHeader>
+          <InspectorSectionHeader style={{ paddingTop: 32 }}>Root View</InspectorSectionHeader>
           <SingleInspectorEntryPoint selectedViews={rootViewsForSelectedElement} />
         </>
       )

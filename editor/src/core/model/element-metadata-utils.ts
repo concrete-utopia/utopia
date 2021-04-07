@@ -812,7 +812,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     focusedElementPath: ScenePath | null,
   ): { children: Array<InstancePath>; unfurledComponents: Array<InstancePath> } {
-    const allPaths = Object.values(metadata.elements).map((element) => element.templatePath)
+    const allPaths = Object.values(metadata).map((element) => element.templatePath)
     const children = MetadataUtils.getImmediateChildrenPaths(metadata, path)
 
     const matchingFocusPath =

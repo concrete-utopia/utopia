@@ -120,7 +120,7 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
         className='dependency-item'
         css={{
           ...textStyle,
-          minHeight: UtopiaTheme.layout.rowHeight.medium,
+          minHeight: UtopiaTheme.layout.rowHeight.normal,
           display: 'flex',
           padding: '0 16px',
           ...(isNewlyLoaded
