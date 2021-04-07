@@ -191,7 +191,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
       style={{
         alignSelf: 'stretch',
         borderLeft: `1px solid #d3d3d369`,
-        width: UtopiaTheme.layout.rowHeight.mediumLarge,
+        width: 38,
       }}
     >
       <FlexColumn style={{ flexGrow: 1 }}>

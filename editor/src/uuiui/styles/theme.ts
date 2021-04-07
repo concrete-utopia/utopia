@@ -412,7 +412,8 @@ export const UtopiaTheme = {
     rowHeight: {
       smaller: 27,
       normal: 34,
-      tall: 47,
+      large: 42,
+      max: 47,
     },
     inputHeight: {
       small: 18,
