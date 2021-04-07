@@ -793,6 +793,11 @@ export interface SetFocusedElement {
   focusedElementPath: ScenePath | null
 }
 
+export interface ScrollToElement {
+  action: 'SCROLL_TO_ELEMENT'
+  target: TemplatePath
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -925,6 +930,7 @@ export type EditorAction =
   | SelectFromFileAndPosition
   | SendCodeEditorInitialisation
   | SetFocusedElement
+  | ScrollToElement
 
 export type DispatchPriority =
   | 'everyone'

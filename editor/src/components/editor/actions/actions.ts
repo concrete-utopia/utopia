@@ -358,6 +358,7 @@ import {
   SendCodeEditorInitialisation,
   SetFocusedElement,
   AddImports,
+  ScrollToElement,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -500,6 +501,7 @@ import {
   sendOpenFileMessage,
   sendSelectedElement,
 } from '../../../core/vscode/vscode-bridge'
+import Meta from 'antd/lib/card/Meta'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -4200,6 +4202,26 @@ export const UPDATE_FNS = {
       canvas: {
         ...editor.canvas,
         mountCount: editor.canvas.mountCount + 1,
+      },
+    }
+  },
+
+  SCROLL_TO_ELEMENT: (action: ScrollToElement, editor: EditorModel): EditorModel => {
+    const targetElementCoords = MetadataUtils.getFrameInCanvasCoords(
+      action.target,
+      editor.jsxMetadataKILLME,
+    )
+    const newCanvasOffset = Utils.offsetPoint(
+      editor.canvas.realCanvasOffset,
+      Utils.negate(targetElementCoords!),
+    )
+
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        realCanvasOffset: newCanvasOffset,
+        roundedCanvasOffset: Utils.roundPointTo(newCanvasOffset, 0),
       },
     }
   },

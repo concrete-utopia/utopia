@@ -292,6 +292,9 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(action, state)
     case 'SET_FOCUSED_ELEMENT':
       return UPDATE_FNS.SET_FOCUSED_ELEMENT(action, state)
+    case 'SCROLL_TO_ELEMENT':
+      return UPDATE_FNS.SCROLL_TO_ELEMENT(action, state)
+
     default:
       return state
   }

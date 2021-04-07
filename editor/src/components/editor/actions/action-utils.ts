@@ -83,6 +83,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SELECT_FROM_FILE_AND_POSITION':
     case 'SEND_CODE_EDITOR_INITIALISATION':
     case 'SET_FOCUSED_ELEMENT':
+    case 'SCROLL_TO_ELEMENT':
       return true
 
     case 'NEW':

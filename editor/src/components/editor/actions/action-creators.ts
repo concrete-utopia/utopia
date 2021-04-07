@@ -180,6 +180,7 @@ import type {
   CloseDesignerFile,
   SetFocusedElement,
   AddImports,
+  ScrollToElement,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1249,5 +1250,12 @@ export function setFocusedElement(focusedElementTemplatePath: ScenePath | null):
   return {
     action: 'SET_FOCUSED_ELEMENT',
     focusedElementPath: focusedElementTemplatePath,
+  }
+}
+
+export function scrollToElement(focusedElementTemplatePath: TemplatePath): ScrollToElement {
+  return {
+    action: 'SCROLL_TO_ELEMENT',
+    target: focusedElementTemplatePath,
   }
 }
