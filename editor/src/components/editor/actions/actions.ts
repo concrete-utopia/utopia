@@ -4209,12 +4209,17 @@ export const UPDATE_FNS = {
     )
 
     if (targetElementCoords != null) {
+      const newCanvasOffset = Utils.offsetRect(
+        targetElementCoords,
+        Utils.negate(editor.canvas.realCanvasOffset),
+      )
+
       return {
         ...editor,
         canvas: {
           ...editor.canvas,
-          realCanvasOffset: targetElementCoords,
-          roundedCanvasOffset: utils.roundPointTo(targetElementCoords, 0),
+          realCanvasOffset: newCanvasOffset,
+          roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
         },
       }
     } else {
