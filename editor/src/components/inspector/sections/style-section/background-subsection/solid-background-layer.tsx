@@ -16,7 +16,7 @@ import {
 } from '../../../common/css-utils'
 import { getIndexedSpliceArrayItem } from '../../../common/inspector-utils'
 import { stopPropagation } from '../../../common/inspector-utils'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   BackgroundLayerProps,
   getIndexedUpdateEnabled,
@@ -106,8 +106,13 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
       >
-        <GridRow tall alignItems='start' padded={true} type='<---1fr--->|------172px-------|'>
-          <GridRow tall alignItems='start' padded={false} type='<-auto-><----------1fr--------->'>
+        <UIGridRow tall alignItems='start' padded={true} variant='<---1fr--->|------172px-------|'>
+          <UIGridRow
+            tall
+            alignItems='start'
+            padded={false}
+            variant='<-auto-><----------1fr--------->'
+          >
             <CheckboxInput
               onChange={toggleCheckbox}
               checked={props.value.enabled}
@@ -129,8 +134,13 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
               popupOpen={props.popupOpen}
               setOpenPopup={props.setOpenPopup}
             />
-          </GridRow>
-          <GridRow tall alignItems='start' padded={false} type='<--------auto-------->|--45px--|'>
+          </UIGridRow>
+          <UIGridRow
+            tall
+            alignItems='start'
+            padded={false}
+            variant='<--------auto-------->|--45px--|'
+          >
             <StringBackgroundColorControl
               id={`background-layer-gradient-${props.index}`}
               key={`background-layer-gradient-${props.index}`}
@@ -161,8 +171,8 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
               inputProps={{ onMouseDown: stopPropagation }}
               defaultUnitToHide={null}
             />
-          </GridRow>
-        </GridRow>
+          </UIGridRow>
+        </UIGridRow>
       </InspectorContextMenuWrapper>
     )
   },

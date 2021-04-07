@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { useWrappedEmptyOrUnknownOnSubmitValue, NumberInput } from '../../../../../uuiui'
 import {
@@ -62,9 +62,9 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
       items={opacityContextMenuItems}
       data={null}
     >
-      <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
         <PropertyLabel target={opacityProp}>Opacity</PropertyLabel>
-        <GridRow padded={false} type='<--------auto-------->|--45px--|'>
+        <UIGridRow padded={false} variant='<--------auto-------->|--45px--|'>
           <SliderControl
             DEPRECATED_controlOptions={sliderControlOptions}
             id={`opacity-slider`}
@@ -90,8 +90,8 @@ export const OpacityRow = betterReactMemo('OpacityRow', () => {
             numberType='UnitlessPercent'
             defaultUnitToHide={null}
           />
-        </GridRow>
-      </GridRow>
+        </UIGridRow>
+      </UIGridRow>
     </InspectorContextMenuWrapper>
   )
 })

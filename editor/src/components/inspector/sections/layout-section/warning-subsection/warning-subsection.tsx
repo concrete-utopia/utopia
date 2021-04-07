@@ -3,7 +3,7 @@ import * as React from 'react'
 import { useInspectorWarningStatus } from '../../../common/property-path-hooks'
 import { WarningIcon } from '../../../../../uuiui/warning-icon'
 import { InfoBox } from '../../../../common/notices'
-import { Tooltip, FlexRow } from '../../../../../uuiui'
+import { Tooltip, FlexRow, UIRow } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 
 export const WarningSubsection = betterReactMemo('WarningSubsection', (props) => {
@@ -14,7 +14,7 @@ export const WarningSubsection = betterReactMemo('WarningSubsection', (props) =>
         title='The inspector only shows values from css-in-js, styled-systems, and emotion. You can use css classes to style content, but they will not show up here.'
         placement='bottom'
       >
-        <FlexRow style={{ padding: 8 }}>
+        <UIRow padded={true}>
           <InfoBox
             level='WARNING'
             message={
@@ -29,7 +29,7 @@ export const WarningSubsection = betterReactMemo('WarningSubsection', (props) =>
               </React.Fragment>
             }
           ></InfoBox>
-        </FlexRow>
+        </UIRow>
       </Tooltip>
     )
   } else {

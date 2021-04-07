@@ -14,6 +14,7 @@ import {
   SquareButton,
   FunctionIcons,
   OnClickOutsideHOC,
+  UIRow,
 } from '../../../../uuiui'
 import { betterReactMemo, ContextMenuWrapper } from '../../../../uuiui-deps'
 import { useEditorState } from '../../../editor/store/store-hook'
@@ -329,9 +330,10 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
       data={null}
       dispatch={dispatch}
     >
-      <FlexRow
+      <UIRow
         tabIndex={0}
         style={{
+          height: 32,
           flexShrink: 0,
           position: 'relative',
           marginLeft: 5,
@@ -341,7 +343,7 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
           paddingLeft: 8 + 10 * (target.path.length - 1),
           paddingRight: 12,
           borderRadius: UtopiaTheme.inputBorderRadius,
-          height: UtopiaTheme.layout.rowHeight.medium - 2,
+
           fontWeight: isSelected ? 600 : 400,
           fontStyle: target.selectorLength > 0 ? undefined : 'italic',
           backgroundImage: isSelected ? UtopiaStyles.backgrounds.blue : undefined,
@@ -372,7 +374,7 @@ const TargetListItem = betterReactMemo('TargetListItem', (props: TargetListItemP
             <div>{target.selectorLength === 0 ? null : target.selectorLength}</div>
           </React.Fragment>
         )}
-      </FlexRow>
+      </UIRow>
     </ContextMenuWrapper>
   )
 })
@@ -402,9 +404,9 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
       style={{
         paddingLeft: 8,
         paddingRight: 8,
-        height: UtopiaTheme.layout.rowHeight.large,
         backgroundColor: colorTheme.slightlyEmphasizedBackground.value,
         cursor: 'pointer',
+        height: 42,
       }}
       css={{
         '&:hover': {
@@ -469,10 +471,10 @@ const AddingRow = betterReactMemo('AddingRow', (props: AddingRowProps) => {
   }, [])
 
   return (
-    <FlexRow
+    <UIRow
+      rowHeight={'normal'}
       style={{
-        height: UtopiaTheme.layout.rowHeight.medium,
-        minHeight: UtopiaTheme.layout.rowHeight.medium,
+        minHeight: UtopiaTheme.layout.rowHeight.normal,
         marginRight: 8,
         marginBottom: 4,
         marginLeft: 8 + 10 * (addingIndentLevel ?? 0),
@@ -488,7 +490,7 @@ const AddingRow = betterReactMemo('AddingRow', (props: AddingRowProps) => {
           value={value}
         />
       </OnClickOutsideHOC>
-    </FlexRow>
+    </UIRow>
   )
 })
 

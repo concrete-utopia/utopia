@@ -54,14 +54,14 @@ export const Subdued = styled.span([
 export const InspectorSectionHeader = styled(H1)({
   label: 'section-header',
   backgroundColor: colorTheme.sectionHeaderBackground.value,
-  height: UtopiaTheme.layout.rowHeight.large,
+  height: 42,
   marginTop: 8,
   padding: `6px ${UtopiaTheme.layout.inspectorXPadding}px 6px ${UtopiaTheme.layout.inspectorXPadding}px`,
 })
 InspectorSectionHeader.displayName = 'InspectorSectionHeader'
 
 export const InspectorSubsectionHeader = styled(H2)({
-  height: UtopiaTheme.layout.rowHeight.medium,
+  height: UtopiaTheme.layout.rowHeight.normal,
   label: 'subsection-header',
   marginTop: 4,
   marginBottom: 4,
