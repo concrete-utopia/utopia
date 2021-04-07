@@ -169,6 +169,7 @@ import {
   Size,
   WindowPoint,
   canvasRectangle,
+  Rectangle,
 } from '../../../core/shared/math-utils'
 import {
   addFileToProjectContents,
@@ -499,6 +500,7 @@ import {
   sendSelectedElement,
 } from '../../../core/vscode/vscode-bridge'
 import Meta from 'antd/lib/card/Meta'
+import utils from '../../../utils/utils'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -4206,18 +4208,19 @@ export const UPDATE_FNS = {
       editor.jsxMetadata,
     )
 
-    const newCanvasOffset = Utils.offsetRect(
-      targetElementCoords!,
-      Utils.negate(editor.canvas.realCanvasOffset),
-    )
-
-    return {
-      ...editor,
-      canvas: {
-        ...editor.canvas,
-        realCanvasOffset: newCanvasOffset,
-        roundedCanvasOffset: Utils.roundPointTo(newCanvasOffset, 0),
-      },
+    if (targetElementCoords != null) {
+      return {
+        ...editor,
+        canvas: {
+          ...editor.canvas,
+          realCanvasOffset: targetElementCoords,
+          roundedCanvasOffset: utils.roundPointTo(targetElementCoords, 0),
+        },
+      }
+    } else {
+      return {
+        ...editor,
+      }
     }
   },
 }
