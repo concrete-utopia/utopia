@@ -647,7 +647,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
     const oldZIndex = MetadataUtils.getViewZIndexFromMetadata(
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
     expect(updatedZIndex).toBe(oldZIndex - 2)
@@ -828,7 +828,11 @@ describe('updating node_modules', () => {
     editor.nodeModules = {
       skipDeepFreeze: true,
       files: {
-        '/node_modules/example.js': esCodeFile('nothing to see here', null),
+        '/node_modules/example.js': esCodeFile(
+          'nothing to see here',
+          'NODE_MODULES',
+          '/node_modules/example.js',
+        ),
       },
       projectFilesBuildResults: {},
       packageStatus: {},

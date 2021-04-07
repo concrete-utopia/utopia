@@ -361,13 +361,14 @@ export class NewBundlerWorker {
               context.fileQueuedForProcessing.fileContent,
             )
           },
-          initializeWorkerPromise: (context, event) =>
-            sendIdGuardedinitializeWorkerPromise(
+          initializeWorkerPromise: (context, event) => {
+            return sendIdGuardedinitializeWorkerPromise(
               this.worker,
               event.payload.typeDefinitions,
               event.payload.projectContents,
               event.payload.jobID,
-            ),
+            )
+          },
         },
       }),
     )

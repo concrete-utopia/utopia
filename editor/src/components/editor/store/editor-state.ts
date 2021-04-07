@@ -2,7 +2,6 @@ import * as json5 from 'json5'
 import * as R from 'ramda'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   getElementsByUIDFromTopLevelElements,
@@ -12,7 +11,6 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
   isJSXElement,
-  JSXMetadata,
   emptyJsxMetadata,
 } from '../../../core/shared/element-template'
 import {
@@ -137,6 +135,7 @@ import {
   scenePath,
   staticScenePath,
   staticElementPath,
+  scenePathForElementAtPath,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notice'
@@ -153,7 +152,7 @@ import { getControlsForExternalDependencies } from '../../../core/property-contr
 import { parseSuccess } from '../../../core/workers/common/project-file-utils'
 import {
   DerivedStateKeepDeepEquality,
-  JSXMetadataKeepDeepEquality,
+  ElementInstanceMetadataMapKeepDeepEquality,
 } from './store-deep-equality-instances'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
@@ -240,9 +239,9 @@ export interface EditorState {
   projectName: string
   projectVersion: number
   isLoaded: boolean
-  spyMetadataKILLME: JSXMetadata // this is coming from the canvas spy report.
-  domMetadataKILLME: ElementInstanceMetadata[] // this is coming from the dom walking report.
-  jsxMetadataKILLME: JSXMetadata // this is a merged result of the two above.
+  spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
+  domMetadata: ElementInstanceMetadata[] // this is coming from the dom walking report.
+  jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
   projectContents: ProjectContentTreeRoot
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
@@ -645,15 +644,15 @@ export function modifyOpenJSXElements(
 export function modifyOpenJSXElementsAndMetadata(
   transform: (
     utopiaComponents: Array<UtopiaJSXComponent>,
-    componentMetadata: JSXMetadata,
-  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: JSXMetadata },
+    componentMetadata: ElementInstanceMetadataMap,
+  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: ElementInstanceMetadataMap },
   model: EditorState,
 ): EditorState {
-  let workingMetadata: JSXMetadata = model.jsxMetadataKILLME
+  let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadata
   const successTransform = (success: ParseSuccess) => {
     const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
     // Apply the transformation.
-    const transformResult = transform(oldUtopiaJSXComponents, model.jsxMetadataKILLME)
+    const transformResult = transform(oldUtopiaJSXComponents, model.jsxMetadata)
     workingMetadata = transformResult.componentMetadata
 
     const newTopLevelElements = applyUtopiaJSXComponentsChanges(
@@ -668,7 +667,7 @@ export function modifyOpenJSXElementsAndMetadata(
   }
   return {
     ...modifyOpenParseSuccess(successTransform, model),
-    jsxMetadataKILLME: workingMetadata,
+    jsxMetadata: workingMetadata,
   }
 }
 
@@ -906,9 +905,9 @@ export function transientCanvasState(
   }
 }
 
-export function getMetadata(editor: EditorState): JSXMetadata {
+export function getMetadata(editor: EditorState): ElementInstanceMetadataMap {
   if (editor.canvas.dragState == null) {
-    return editor.jsxMetadataKILLME
+    return editor.jsxMetadata
   } else {
     return editor.canvas.dragState.metadata
   }
@@ -1028,21 +1027,11 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectName: createNewProjectName(),
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
-    spyMetadataKILLME: emptyJsxMetadata,
-    domMetadataKILLME: [],
-    jsxMetadataKILLME: emptyJsxMetadata,
+    spyMetadata: emptyJsxMetadata,
+    domMetadata: [],
+    jsxMetadata: emptyJsxMetadata,
     projectContents: {},
-    codeResultCache: generateCodeResultCache(
-      {},
-      {},
-      {},
-      [],
-      {},
-      dispatch,
-      'full-build',
-      null,
-      true,
-    ),
+    codeResultCache: generateCodeResultCache({}, {}, {}, [], {}, dispatch, {}, 'full-build', true),
     propertyControlsInfo: {},
     nodeModules: {
       skipDeepFreeze: true,
@@ -1162,7 +1151,7 @@ export interface OriginalCanvasAndLocalFrame {
 }
 
 export function getElementWarnings(
-  rootMetadata: JSXMetadata,
+  rootMetadata: ElementInstanceMetadataMap,
 ): ComplexMap<TemplatePath, ElementWarnings> {
   let result: ComplexMap<TemplatePath, ElementWarnings> = emptyComplexMap()
   MetadataUtils.walkMetadata(
@@ -1192,22 +1181,25 @@ export function getElementWarnings(
         dynamicSceneChildWidthHeightPercentage: false,
       }
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
+
+      if (MetadataUtils.elementIsScene(elementMetadata)) {
+        const sceneWarnings: ElementWarnings = {
+          widthOrHeightZero: widthOrHeightZero,
+          absoluteWithUnpositionedParent: false,
+          dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
+            elementMetadata,
+            rootMetadata,
+          ),
+        }
+        result = addToComplexMap(
+          toString,
+          result,
+          scenePathForElementAtPath(elementMetadata.templatePath),
+          sceneWarnings,
+        )
+      }
     },
   )
-  fastForEach(rootMetadata.components, (scene) => {
-    const elementWarnings: ElementWarnings = {
-      widthOrHeightZero:
-        scene.globalFrame != null
-          ? scene.globalFrame.width === 0 || scene.globalFrame.height === 0
-          : false,
-      absoluteWithUnpositionedParent: false,
-      dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
-        scene,
-        rootMetadata,
-      ),
-    }
-    result = addToComplexMap(toString, result, scene.scenePath, elementWarnings)
-  })
   return result
 }
 
@@ -1221,7 +1213,7 @@ export function deriveState(
     navigatorTargets,
     visibleNavigatorTargets,
   } = MetadataUtils.createOrderedTemplatePathsFromElements(
-    editor.jsxMetadataKILLME,
+    editor.jsxMetadata,
     editor.navigator.collapsedViews,
     editor.focusedElementPath,
   )
@@ -1277,9 +1269,9 @@ export function editorModelFromPersistentModel(
     projectName: createNewProjectName(),
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
-    spyMetadataKILLME: emptyJsxMetadata,
-    domMetadataKILLME: [],
-    jsxMetadataKILLME: emptyJsxMetadata,
+    spyMetadata: emptyJsxMetadata,
+    domMetadata: [],
+    jsxMetadata: emptyJsxMetadata,
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},
@@ -1287,8 +1279,8 @@ export function editorModelFromPersistentModel(
       [],
       {},
       dispatch,
+      {},
       'full-build',
-      null,
       true,
     ),
     projectContents: persistentModel.projectContents,
@@ -1672,23 +1664,24 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(editor: EditorState): JSXMetadata {
+export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMetadataMap {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {
-    return editor.jsxMetadataKILLME
+    return editor.jsxMetadata
   } else {
     return foldParsedTextFile(
-      (_) => editor.jsxMetadataKILLME,
+      (_) => editor.jsxMetadata,
       (success) => {
         const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
         const mergedMetadata = MetadataUtils.mergeComponentMetadata(
           elementsByUID,
-          editor.spyMetadataKILLME,
-          editor.domMetadataKILLME,
+          editor.spyMetadata,
+          editor.domMetadata,
         )
-        return JSXMetadataKeepDeepEquality()(editor.jsxMetadataKILLME, mergedMetadata).value
+        return ElementInstanceMetadataMapKeepDeepEquality()(editor.jsxMetadata, mergedMetadata)
+          .value
       },
-      (_) => editor.jsxMetadataKILLME,
+      (_) => editor.jsxMetadata,
       uiFile.fileContents.parsed,
     )
   }

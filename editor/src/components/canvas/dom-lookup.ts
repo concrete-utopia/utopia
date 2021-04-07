@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import { last, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
-import { JSXMetadata } from '../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasVector,
@@ -59,7 +59,7 @@ export function findFirstParentWithValidUID(
 }
 
 export function getValidTargetAtPoint(
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
   focusedElementPath: ScenePath | null,
@@ -86,7 +86,7 @@ export function getValidTargetAtPoint(
 }
 
 export function getAllTargetsAtPoint(
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
   focusedElementPath: ScenePath | null,

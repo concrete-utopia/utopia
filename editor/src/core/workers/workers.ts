@@ -1,9 +1,5 @@
 import { TypeDefinitions } from '../shared/npm-dependency-types'
-import { ProjectContents, ParseSuccess, NodeModules } from '../shared/project-file-types'
-import {
-  createParseFileMessage,
-  createPrintCodeMessage,
-} from './parser-printer/parser-printer-worker'
+import { createParsePrintFilesRequest, ParseOrPrint } from './parser-printer/parser-printer-worker'
 import { createLinterRequestMessage } from './linter/linter-worker'
 import { NewBundlerWorker, BundlerWorker } from './bundler-bridge'
 import { workerForFile } from './utils'
@@ -15,7 +11,6 @@ import {
   createWatchdogTerminateMessage,
 } from './watchdog-worker'
 import { UtopiaTsWorkers, FileContent } from './common/worker-types'
-import { ExportsInfo, MultiFileBuildResult } from './ts/ts-worker'
 import { ProjectContentTreeRoot } from '../../components/assets'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
@@ -29,21 +24,12 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   ) {
     this.bundlerWorker = new NewBundlerWorker(bundlerWorker)
   }
-
   sendInitMessage(typeDefinitions: TypeDefinitions, projectContents: ProjectContentTreeRoot): void {
     this.bundlerWorker.sendInitMessage(typeDefinitions, projectContents, null)
   }
 
   sendUpdateFileMessage(filename: string, content: FileContent): void {
     this.bundlerWorker.sendUpdateFileMessage(filename, content)
-  }
-
-  sendParseFileMessage(filename: string, content: string): void {
-    this.parserPrinterWorker.sendParseFileMessage(filename, content)
-  }
-
-  sendPrintCodeMessage(parseSuccess: ParseSuccess): void {
-    this.parserPrinterWorker.sendPrintCodeMessage(parseSuccess)
   }
 
   sendLinterRequestMessage(filename: string, content: string): void {
@@ -56,6 +42,10 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
 
   removeBundleResultEventListener(handler: (e: MessageEvent) => void): void {
     this.bundlerWorker.removeBundleResultEventListener(handler)
+  }
+
+  sendParsePrintMessage(files: Array<ParseOrPrint>): void {
+    this.parserPrinterWorker.sendParsePrintMessage(files)
   }
 
   addParserPrinterEventListener(handler: (e: MessageEvent) => void): void {
@@ -88,9 +78,7 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
 }
 
 export interface ParserPrinterWorker {
-  sendParseFileMessage(filename: string, content: string): void
-
-  sendPrintCodeMessage(parseSuccess: ParseSuccess): void
+  sendParsePrintMessage: (files: Array<ParseOrPrint>) => void
 
   addParseFileResultEventListener(handler: (e: MessageEvent) => void): void
 
@@ -103,12 +91,8 @@ export class RealParserPrinterWorker implements ParserPrinterWorker {
     this.worker = workerForFile('editor/parserPrinterWorker.js')
   }
 
-  sendParseFileMessage(filename: string, content: string): void {
-    this.worker.postMessage(createParseFileMessage(filename, content))
-  }
-
-  sendPrintCodeMessage(parseSuccess: ParseSuccess): void {
-    this.worker.postMessage(createPrintCodeMessage(parseSuccess, true))
+  sendParsePrintMessage(files: Array<ParseOrPrint>): void {
+    this.worker.postMessage(createParsePrintFilesRequest(files))
   }
 
   addParseFileResultEventListener(handler: (e: MessageEvent) => void): void {
@@ -226,11 +210,7 @@ export class MockUtopiaTsWorkers implements UtopiaTsWorkers {
     // empty
   }
 
-  sendParseFileMessage(_filename: string, _content: string): void {
-    // empty
-  }
-
-  sendPrintCodeMessage(_parseSuccess: ParseSuccess): void {
+  sendParsePrintMessage(files: Array<ParseOrPrint>): void {
     // empty
   }
 
