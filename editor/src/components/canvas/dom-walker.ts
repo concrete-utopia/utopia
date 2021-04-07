@@ -828,6 +828,7 @@ function walkElements(
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
     const uids = getUIDsOnDomELement(element) ?? []
+    const filteredValidPaths = filterValidFocusedPathsForGeneratedElement(uids, validPaths)
 
     const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
     const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
@@ -835,9 +836,7 @@ function walkElements(
     const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
 
     // Check this is a path we're interested in, otherwise skip straight to the children
-    const foundValidPaths = mapDropNulls((uid) => findValidPath(uid, validPaths), uids)
-
-    const filteredValidPaths = filterValidFocusedPathsForGeneratedElement(uids, validPaths)
+    const foundValidPaths = mapDropNulls((uid) => findValidPath(uid, filteredValidPaths), uids)
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<InstancePath> = []
