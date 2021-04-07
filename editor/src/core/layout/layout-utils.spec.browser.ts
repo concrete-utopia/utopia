@@ -7,19 +7,18 @@ import {
 import { pasteJSXElements, selectComponents } from '../../components/editor/actions/action-creators'
 import * as TP from '../shared/template-path'
 import {
-  ComponentMetadata,
   jsxAttributeNestedObjectSimple,
   jsxAttributeValue,
   jsxElement,
   specialSizeMeasurements,
   emptyComputedStyle,
   ElementInstanceMetadataMap,
-  jsxMetadata,
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
+  emptySpecialSizeMeasurements,
 } from '../shared/element-template'
 import { generateUidWithExistingComponents } from '../model/element-template-utils'
-import { right } from '../shared/either'
+import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 import { BakedInStoryboardUID } from '../model/scene-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
@@ -77,11 +76,33 @@ describe('maybeSwitchLayoutProps', () => {
     const elementPath = TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), [
       NewUID,
     ])
-    const elements: ElementInstanceMetadataMap = {
+
+    const sceneElementPath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'scene-aaa'])
+
+    const metadata: ElementInstanceMetadataMap = {
+      [TP.toString(sceneElementPath)]: {
+        templatePath: sceneElementPath,
+        element: left('Scene'),
+        props: {
+          style: {
+            width: 375,
+            height: 812,
+          },
+        },
+        globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
+        localFrame: { x: 0, y: 0, width: 375, height: 812 } as LocalRectangle,
+        children: [],
+        rootElements: [elementPath],
+        componentInstance: false,
+        isEmotionOrStyledComponent: false,
+        specialSizeMeasurements: emptySpecialSizeMeasurements,
+        computedStyle: emptyComputedStyle,
+        attributeMetadatada: emptyAttributeMetadatada,
+        componentName: 'Component1',
+        label: null,
+      },
       [TP.toString(elementPath)]: {
-        templatePath: TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), [
-          NewUID,
-        ]),
+        templatePath: elementPath,
         element: right(elementToPaste),
         props: {
           'data-uid': NewUID,
@@ -120,18 +141,6 @@ describe('maybeSwitchLayoutProps', () => {
       },
     }
 
-    const components: ComponentMetadata[] = [
-      {
-        scenePath: TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]),
-        templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'scene-aaa']),
-        component: 'Component1',
-        sceneResizesContent: false,
-        globalFrame: { x: 0, y: 0, width: 375, height: 812 } as CanvasRectangle,
-        style: { width: 375, height: 812 },
-        rootElements: [elementPath],
-      },
-    ]
-    const metadata = jsxMetadata(components, elements)
     const pasteElements = pasteJSXElements(
       [elementToPaste],
       [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), [NewUID])],

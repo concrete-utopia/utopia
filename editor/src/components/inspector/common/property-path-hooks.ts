@@ -1007,16 +1007,16 @@ export function useUsedPropsWithoutControls(): Array<string> {
   const selectedViews = useRefSelectedViews()
 
   const selectedComponents = useEditorState((store) => {
-    const { jsxMetadataKILLME } = store.editor
+    const { jsxMetadata: jsxMetadata } = store.editor
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let components: Array<UtopiaJSXComponent> = []
     const pushComponent = (component: UtopiaJSXComponent) => components.push(component)
     fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
+        const scene = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
         if (scene != null) {
           const underlyingComponent = rootComponents.find(
-            (component) => component.name === scene.component,
+            (component) => component.name === scene.componentName,
           )
           forEachOptional(pushComponent, underlyingComponent)
         }
@@ -1063,17 +1063,17 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
   const selectedViews = useRefSelectedViews()
 
   const selectedComponentProps = useEditorState((store) => {
-    const { jsxMetadataKILLME } = store.editor
+    const { jsxMetadata: jsxMetadata } = store.editor
     const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let propsUsed: Array<string> = []
     const pushPropsForComponent = (component: UtopiaJSXComponent) =>
       propsUsed.push(...component.propsUsed)
     fastForEach(selectedViews.current, (path) => {
       if (TP.isScenePath(path)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, path)
+        const scene = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
         if (scene != null) {
           const underlyingComponent = rootComponents.find(
-            (component) => component.name === scene.component,
+            (component) => component.name === scene.componentName,
           )
           forEachOptional(pushPropsForComponent, underlyingComponent)
         }

@@ -23,7 +23,7 @@ import { getThirdPartyComponents } from '../third-party/third-party-components'
 import {
   getJSXElementNameAsString,
   isIntrinsicHTMLElement,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   UtopiaJSXComponent,
 } from '../shared/element-template'
 import {
@@ -364,7 +364,7 @@ export function getPropertyControlsForTargetFromEditor(
     imports,
     openFilePath,
     rootComponents,
-    editor.jsxMetadataKILLME,
+    editor.jsxMetadata,
   )
 }
 
@@ -374,23 +374,11 @@ export function getPropertyControlsForTarget(
   openImports: Imports,
   openFilePath: string | null,
   rootComponents: UtopiaJSXComponent[],
-  jsxMetadataKILLME: JSXMetadata,
+  jsxMetadata: ElementInstanceMetadataMap,
 ): PropertyControls | null {
-  const tagName = MetadataUtils.getJSXElementTagName(
-    target,
-    rootComponents,
-    jsxMetadataKILLME.components,
-  )
-  const importedName = MetadataUtils.getJSXElementBaseName(
-    target,
-    rootComponents,
-    jsxMetadataKILLME.components,
-  )
-  const jsxName = MetadataUtils.getJSXElementName(
-    target,
-    rootComponents,
-    jsxMetadataKILLME.components,
-  )
+  const tagName = MetadataUtils.getJSXElementTagName(target, rootComponents, jsxMetadata)
+  const importedName = MetadataUtils.getJSXElementBaseName(target, rootComponents, jsxMetadata)
+  const jsxName = MetadataUtils.getJSXElementName(target, rootComponents, jsxMetadata)
   if (importedName != null && tagName != null) {
     // TODO default and star imports
     let filename = Object.keys(openImports).find((key) => {

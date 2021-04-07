@@ -1,6 +1,9 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import * as TP from '../../../core/shared/template-path'
@@ -18,7 +21,7 @@ import { colorTheme } from '../../../uuiui'
 export function getSelectionColor(
   path: TemplatePath,
   rootElements: Array<UtopiaJSXComponent>,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
   imports: Imports,
   createsYogaLayout: boolean,
   anySelectedElementIsYogaLayouted: boolean,
@@ -135,10 +138,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       const keyPrefix = TP.toComponentId(selectedView)
       const instance = TP.isScenePath(selectedView)
         ? null
-        : MetadataUtils.getElementByInstancePathMaybe(
-            this.props.componentMetadata.elements,
-            selectedView,
-          )
+        : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
       const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
       const selectionColor = getSelectionColor(
         selectedView,
@@ -186,11 +186,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
       )
     })
     let multiSelectOutline: JSX.Element | undefined
-    if (
-      targetPaths.length > 1 &&
-      TP.areAllElementsInSameScene(targetPaths) &&
-      this.props.componentMetadata.components.length > 0
-    ) {
+    if (targetPaths.length > 1 && TP.areAllElementsInSameScene(targetPaths)) {
       const globalFrames = targetPaths.map((selectedView) => this.getTargetFrame(selectedView))
       const boundingBox = Utils.boundingRectangleArray(globalFrames)
       if (boundingBox != null) {

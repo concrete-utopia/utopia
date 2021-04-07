@@ -33,10 +33,8 @@ import {
   findElementAtPath,
   MetadataUtils,
   findJSXElementAtPath,
-  convertMetadataMap,
 } from '../../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   DetectedLayoutSystem,
   ElementInstanceMetadata,
   getJSXElementNameAsString,
@@ -59,7 +57,7 @@ import {
   isJSXAttributeOtherJavaScript,
   SettableLayoutSystem,
   walkElements,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   jsxTextBlock,
   isJSXTextBlock,
   getJSXAttribute,
@@ -471,7 +469,7 @@ import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-perfor
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import {
   ElementInstanceMetadataKeepDeepEquality,
-  JSXMetadataKeepDeepEquality,
+  ElementInstanceMetadataMapKeepDeepEquality,
 } from '../store/store-deep-equality-instances'
 import {
   showToast,
@@ -540,10 +538,10 @@ function setPropertyOnTargetAtElementPath(
 }
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-  scenes: JSXMetadata,
+  scenes: ElementInstanceMetadataMap,
   parentPath: InstancePath,
   value: DetectedLayoutSystem,
-): JSXMetadata {
+): ElementInstanceMetadataMap {
   const allChildren = MetadataUtils.getImmediateChildren(scenes, parentPath)
   return allChildren.reduce((transformedScenes, child) => {
     return switchLayoutMetadata(transformedScenes, child.templatePath, value, undefined, undefined)
@@ -557,7 +555,7 @@ function switchAndUpdateFrames(
 ): EditorModel {
   const targetMetadata = Utils.forceNotNull(
     `Could not find metadata for ${JSON.stringify(target)}`,
-    MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, target),
+    MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, target),
   )
   if (targetMetadata.globalFrame == null) {
     // The target is a non-layoutable
@@ -640,16 +638,16 @@ function switchAndUpdateFrames(
     case 'flex':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
+        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadata,
           target,
           layoutSystemPath,
         ),
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
+        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadata,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'flex',
@@ -657,8 +655,8 @@ function switchAndUpdateFrames(
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
+        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadata,
           target,
           createLayoutPropertyPath('position'), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'relative',
@@ -668,8 +666,8 @@ function switchAndUpdateFrames(
     case 'flow':
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
+        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadata,
           target,
           layoutSystemPath,
         ),
@@ -678,16 +676,16 @@ function switchAndUpdateFrames(
     case LayoutSystem.PinSystem:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
+        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadata,
           target,
           layoutSystemPath,
         ),
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
+        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadata,
           target,
           createLayoutPropertyPath('position'), // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           'absolute',
@@ -698,16 +696,16 @@ function switchAndUpdateFrames(
     default:
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
+        jsxMetadata: MetadataUtils.unsetPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadata,
           target,
           styleDisplayPath,
         ),
       }
       withUpdatedLayoutSystem = {
         ...withUpdatedLayoutSystem,
-        jsxMetadataKILLME: MetadataUtils.setPropertyDirectlyIntoMetadata(
-          withUpdatedLayoutSystem.jsxMetadataKILLME,
+        jsxMetadata: MetadataUtils.setPropertyDirectlyIntoMetadata(
+          withUpdatedLayoutSystem.jsxMetadata,
           target,
           styleDisplayPath, // TODO LAYOUT investigate if we should use also update the DOM walker specialSizeMeasurements
           layoutSystem,
@@ -729,16 +727,16 @@ function switchAndUpdateFrames(
 
   withUpdatedLayoutSystem = {
     ...withUpdatedLayoutSystem,
-    jsxMetadataKILLME: setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
-      withUpdatedLayoutSystem.jsxMetadataKILLME,
+    jsxMetadata: setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
+      withUpdatedLayoutSystem.jsxMetadata,
       target,
       layoutSystemToSet(),
     ),
   }
   withUpdatedLayoutSystem = {
     ...withUpdatedLayoutSystem,
-    jsxMetadataKILLME: switchLayoutMetadata(
-      withUpdatedLayoutSystem.jsxMetadataKILLME,
+    jsxMetadata: switchLayoutMetadata(
+      withUpdatedLayoutSystem.jsxMetadata,
       target,
       undefined,
       layoutSystemToSet(),
@@ -749,7 +747,7 @@ function switchAndUpdateFrames(
   let withChildrenUpdated = modifyOpenJSXElementsAndMetadata((components, metadata) => {
     return maybeSwitchChildrenLayoutProps(
       target,
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       metadata,
       originalComponents,
       components,
@@ -760,21 +758,18 @@ function switchAndUpdateFrames(
   if (layoutSystem !== 'flow') {
     const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       target,
-      withChildrenUpdated.jsxMetadataKILLME,
+      withChildrenUpdated.jsxMetadata,
     )
     framesAndTargets.push(getFrameChange(target, targetMetadata.globalFrame, isParentFlex))
   }
 
   Utils.fastForEach(targetMetadata.children, (childPath) => {
-    const child = MetadataUtils.getElementByInstancePathMaybe(
-      editor.jsxMetadataKILLME.elements,
-      childPath,
-    )
+    const child = MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, childPath)
     if (child?.globalFrame != null) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
       const isParentOfChildFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         child.templatePath,
-        withChildrenUpdated.jsxMetadataKILLME,
+        withChildrenUpdated.jsxMetadata,
       )
       framesAndTargets.push(
         getFrameChange(child.templatePath, child.globalFrame, isParentOfChildFlex),
@@ -802,7 +797,7 @@ export function editorMoveMultiSelectedTemplates(
       // TODO Scene Implementation
       return working
     }
-    const frame = MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadataKILLME)
+    const frame = MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
 
     let templateToMove = updatedTargets[i]
     const { editor: updatedTemplates, newPath } = editorMoveTemplate(
@@ -865,7 +860,7 @@ export function editorMoveTemplate(
       newParentPath,
       parentFrame,
       componentsIncludingScenes,
-      editorForChanges.jsxMetadataKILLME,
+      editorForChanges.jsxMetadata,
       editorForChanges.selectedViews,
       editorForChanges.highlightedViews,
       newParentLayoutSystem,
@@ -920,9 +915,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     projectName: currentEditor.projectName,
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
-    spyMetadataKILLME: poppedEditor.spyMetadataKILLME,
-    domMetadataKILLME: [],
-    jsxMetadataKILLME: poppedEditor.jsxMetadataKILLME,
+    spyMetadata: poppedEditor.spyMetadata,
+    domMetadata: [],
+    jsxMetadata: poppedEditor.jsxMetadata,
     projectContents: poppedEditor.projectContents,
     nodeModules: currentEditor.nodeModules,
     codeResultCache: currentEditor.codeResultCache,
@@ -1050,7 +1045,7 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
     console.error(`Attempted to delete element(s) with no UI file open.`)
     return editor
   } else {
-    const metadata = editor.jsxMetadataKILLME
+    const metadata = editor.jsxMetadata
 
     const isElementToBeDeleted = (element: ElementInstanceMetadata) => {
       return targets.some((target) => TP.pathsEqual(element.templatePath, target))
@@ -1062,13 +1057,12 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
       }
 
       return element.children.every((childPath) => {
-        const child = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, childPath)
+        const child = MetadataUtils.getElementByInstancePathMaybe(metadata, childPath)
         return child == null || isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child)
       })
     }
-    const emptyGroups = MetadataUtils.findElements(
-      metadata.elements,
-      (element: ElementInstanceMetadata) => isEmptyOrContainsDeleted(element),
+    const emptyGroups = MetadataUtils.findElements(metadata, (element: ElementInstanceMetadata) =>
+      isEmptyOrContainsDeleted(element),
     )
     const emptyGroupTemplatePaths = emptyGroups.map((group) => group.templatePath)
 
@@ -1113,7 +1107,7 @@ function duplicateMany(paths: TemplatePath[], editor: EditorModel): EditorModel 
   } else {
     return modifyOpenJSXElements((_) => duplicateResult.utopiaComponents, {
       ...editor,
-      jsxMetadataKILLME: duplicateResult.metadata,
+      jsxMetadata: duplicateResult.metadata,
       selectedViews: duplicateResult.selectedViews,
     })
   }
@@ -1537,7 +1531,7 @@ export const UPDATE_FNS = {
       return editor
     } else {
       if (isParseSuccess(uiFile.fileContents.parsed)) {
-        index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadataKILLME, targetPath)
+        index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, targetPath)
       } else {
         console.warn(
           'Attempted to find the index of a view when the code currently does not parse.',
@@ -1583,7 +1577,7 @@ export const UPDATE_FNS = {
     const newParentSize =
       newParentPath == null
         ? null
-        : MetadataUtils.getFrameInCanvasCoords(newParentPath, editor.jsxMetadataKILLME)
+        : MetadataUtils.getFrameInCanvasCoords(newParentPath, editor.jsxMetadata)
     const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
       R.reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived)),
       indexPosition,
@@ -1773,7 +1767,7 @@ export const UPDATE_FNS = {
       Utils.stripNulls(selectedElements.map(TP.parentPath)),
     )
     const additionalTargets = Utils.flatMapArray((uniqueParent) => {
-      const children = MetadataUtils.getImmediateChildren(editor.jsxMetadataKILLME, uniqueParent)
+      const children = MetadataUtils.getImmediateChildren(editor.jsxMetadata, uniqueParent)
       return children
         .map((child) => child.templatePath)
         .filter((childPath) => {
@@ -2018,7 +2012,7 @@ export const UPDATE_FNS = {
           return editor
         } else {
           const canvasFrames = action.targets.map((target) => {
-            return MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadataKILLME)
+            return MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
           })
 
           const boundingBox = Utils.boundingRectangleArray(canvasFrames)
@@ -2055,10 +2049,7 @@ export const UPDATE_FNS = {
           }
 
           const parent = TP.isInstancePath(parentPath)
-            ? MetadataUtils.getElementByInstancePathMaybe(
-                editor.jsxMetadataKILLME.elements,
-                parentPath,
-              )
+            ? MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, parentPath)
             : null
           const isParentFlex =
             parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
@@ -2119,11 +2110,11 @@ export const UPDATE_FNS = {
         }
 
         const element = MetadataUtils.getElementByInstancePathMaybe(
-          editor.jsxMetadataKILLME.elements,
+          editor.jsxMetadata,
           action.target,
         )
         const children = MetadataUtils.getChildrenHandlingGroups(
-          editor.jsxMetadataKILLME,
+          editor.jsxMetadata,
           action.target,
           true,
         )
@@ -2136,7 +2127,7 @@ export const UPDATE_FNS = {
         const parentFrame =
           parentPath == null
             ? (Utils.zeroRectangle as CanvasRectangle)
-            : MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadataKILLME)
+            : MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
         const indexPosition: IndexPosition = indexPositionForAdjustment(
           action.target,
           editor,
@@ -2145,7 +2136,7 @@ export const UPDATE_FNS = {
         const withChildrenMoved = children.reduce((working, child) => {
           const childFrame = MetadataUtils.getFrameInCanvasCoords(
             child.templatePath,
-            editor.jsxMetadataKILLME,
+            editor.jsxMetadata,
           )
           return editorMoveTemplate(
             child.templatePath,
@@ -2414,7 +2405,7 @@ export const UPDATE_FNS = {
     const targetParent = MetadataUtils.getTargetParentForPaste(
       imports,
       editor.selectedViews,
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       editor.pasteTargetsToIgnore,
     )
 
@@ -2465,7 +2456,7 @@ export const UPDATE_FNS = {
                 originalPath,
                 targetParent,
                 action.targetOriginalContextMetadata,
-                editor.jsxMetadataKILLME,
+                editor.jsxMetadata,
                 utopiaComponents,
                 components,
                 null,
@@ -2667,7 +2658,7 @@ export const UPDATE_FNS = {
   },
   RESET_PINS: (action: ResetPins, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const target = action.target
-    const frame = MetadataUtils.getFrame(target, editor.jsxMetadataKILLME)
+    const frame = MetadataUtils.getFrame(target, editor.jsxMetadata)
 
     if (frame == null) {
       return editor
@@ -2748,7 +2739,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    const initialFrame = MetadataUtils.getFrame(action.element, editor.jsxMetadataKILLME)
+    const initialFrame = MetadataUtils.getFrame(action.element, editor.jsxMetadata)
 
     if (initialFrame == null) {
       return editor
@@ -2763,7 +2754,7 @@ export const UPDATE_FNS = {
 
     if (TP.isInstancePath(action.element)) {
       const element = MetadataUtils.getElementByInstancePathMaybe(
-        editor.jsxMetadataKILLME.elements,
+        editor.jsxMetadata,
         action.element,
       )
       const imports = getOpenImportsFromState(editor)
@@ -2784,7 +2775,7 @@ export const UPDATE_FNS = {
     const parentPath = TP.parentPath(action.element)
     let offset = { x: 0, y: 0 } as CanvasPoint
     if (parentPath != null) {
-      const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadataKILLME)
+      const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
       if (parentFrame != null) {
         offset = { x: parentFrame.x, y: parentFrame.y } as CanvasPoint
       }
@@ -2794,7 +2785,7 @@ export const UPDATE_FNS = {
     const components = getOpenUtopiaJSXComponentsFromState(editor)
     const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       action.element,
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
     )
     const frameChanges: Array<PinOrFlexFrameChange> = [
       getFrameChange(action.element, canvasFrame, isParentFlex),
@@ -2972,7 +2963,7 @@ export const UPDATE_FNS = {
           const parent = action.imageDetails.afterSave.parentPath
           const relativeFrame = MetadataUtils.getFrameRelativeTo(
             parent,
-            editor.jsxMetadataKILLME,
+            editor.jsxMetadata,
             action.imageDetails.afterSave.frame,
           )
 
@@ -3590,7 +3581,7 @@ export const UPDATE_FNS = {
       return {
         ...editor,
         codeEditorErrors: updatedCodeEditorErrors,
-        jsxMetadataKILLME: emptyJsxMetadata,
+        jsxMetadata: emptyJsxMetadata,
       }
     }
   },
@@ -3633,28 +3624,27 @@ export const UPDATE_FNS = {
     cullSpyCollector(spyCollector, action.elementMetadata)
 
     // Calculate the spy metadata given what has been collected.
-    const spyResult = convertMetadataMap(
-      spyCollector.current.spyValues.metadata,
-      spyCollector.current.spyValues.scenes,
-    )
+    const spyResult = spyCollector.current.spyValues.metadata
 
     const finalDomMetadata = arrayDeepEquality(ElementInstanceMetadataKeepDeepEquality())(
-      editor.domMetadataKILLME,
+      editor.domMetadata,
       action.elementMetadata as Array<ElementInstanceMetadata>, // we convert a ReadonlyArray to a regular array – it'd be nice to make more arrays readonly in the future
     ).value
-    const finalSpyMetadata = JSXMetadataKeepDeepEquality()(editor.spyMetadataKILLME, spyResult)
-      .value
+    const finalSpyMetadata = ElementInstanceMetadataMapKeepDeepEquality()(
+      editor.spyMetadata,
+      spyResult,
+    ).value
 
     const stayedTheSame =
-      editor.domMetadataKILLME === finalDomMetadata && editor.spyMetadataKILLME === finalSpyMetadata
+      editor.domMetadata === finalDomMetadata && editor.spyMetadata === finalSpyMetadata
 
     if (stayedTheSame) {
       return editor
     } else {
       return {
         ...editor,
-        domMetadataKILLME: finalDomMetadata,
-        spyMetadataKILLME: finalSpyMetadata,
+        domMetadata: finalDomMetadata,
+        spyMetadata: finalSpyMetadata,
       }
     }
   },
@@ -3768,7 +3758,7 @@ export const UPDATE_FNS = {
   UNWRAP_LAYOUTABLE: (action: UnwrapLayoutable, editor: EditorModel): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, action.target),
+      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, action.target),
     )
 
     return modifyOpenJsxElementAtPath(
@@ -3803,7 +3793,7 @@ export const UPDATE_FNS = {
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadataKILLME.elements, action.target),
+      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, action.target),
     )
 
     const updatedEditor = UPDATE_FNS.ADD_IMPORTS(addImports(action.importsToAdd), editor)
@@ -3890,7 +3880,7 @@ export const UPDATE_FNS = {
       let parentShiftX: number = 0
       let parentShiftY: number = 0
       if (parent != null) {
-        const frameOfParent = MetadataUtils.getFrameInCanvasCoords(parent, editor.jsxMetadataKILLME)
+        const frameOfParent = MetadataUtils.getFrameInCanvasCoords(parent, editor.jsxMetadata)
         if (frameOfParent != null) {
           parentShiftX = -frameOfParent.x
           parentShiftY = -frameOfParent.y
@@ -4221,10 +4211,7 @@ export function alignOrDistributeSelectedViews(
     // this array of canvasFrames excludes the non-layoutables. it means in a multiselect, they will not be considered
     const canvasFrames: Array<{ target: TemplatePath; frame: CanvasRectangle }> = Utils.stripNulls(
       instancePaths.map((target) => {
-        const instanceGlobalFrame = MetadataUtils.getFrameInCanvasCoords(
-          target,
-          editor.jsxMetadataKILLME,
-        )
+        const instanceGlobalFrame = MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
         if (instanceGlobalFrame == null) {
           return null
         } else {
@@ -4241,10 +4228,7 @@ export function alignOrDistributeSelectedViews(
       const sourceIsParent = instancePaths.length === 1 && parentPath != null
       let source: CanvasRectangle
       if (sourceIsParent) {
-        const parentFrame = MetadataUtils.getFrameInCanvasCoords(
-          parentPath,
-          editor.jsxMetadataKILLME,
-        )
+        const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)
         // if the parent frame is null, that means we probably ran into some error state,
         // as it means the child's globalFrame should also be null, so we shouldn't be in this branch
         source = Utils.forceNotNull(
@@ -4257,7 +4241,7 @@ export function alignOrDistributeSelectedViews(
       const components = getOpenUtopiaJSXComponentsFromState(editor)
       const updatedCanvasFrames = alignOrDistributeCanvasRects(
         components,
-        editor.jsxMetadataKILLME,
+        editor.jsxMetadata,
         canvasFrames,
         source,
         alignmentOrDistribution,
@@ -4271,7 +4255,7 @@ export function alignOrDistributeSelectedViews(
 
 function alignOrDistributeCanvasRects(
   components: Array<UtopiaJSXComponent>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   targets: CanvasFrameAndTarget[],
   source: CanvasRectangle,
   alignmentOrDistribution: Alignment | Distribution,
@@ -4391,7 +4375,7 @@ function setCanvasFramesInnerNew(
   return modifyOpenScenesAndJSXElements((components) => {
     return updateFramesOfScenesAndComponents(
       components,
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       framesAndTargets,
       optionalParentFrame,
     )
