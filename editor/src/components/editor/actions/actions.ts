@@ -4203,11 +4203,12 @@ export const UPDATE_FNS = {
   SCROLL_TO_ELEMENT: (action: ScrollToElement, editor: EditorModel): EditorModel => {
     const targetElementCoords = MetadataUtils.getFrameInCanvasCoords(
       action.target,
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
     )
-    const newCanvasOffset = Utils.offsetPoint(
-      editor.canvas.realCanvasOffset,
-      Utils.negate(targetElementCoords!),
+
+    const newCanvasOffset = Utils.offsetRect(
+      targetElementCoords!,
+      Utils.negate(editor.canvas.realCanvasOffset),
     )
 
     return {
