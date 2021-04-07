@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { last, uniqBy } from '../../../../core/shared/array-utils'
-import { JSXMetadata } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
@@ -109,7 +109,7 @@ function filterHiddenInstances(
 }
 
 export function getSelectableViews(
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
   focusedElementPath: ScenePath | null,
@@ -119,13 +119,16 @@ export function getSelectableViews(
   let candidateViews: Array<TemplatePath>
 
   if (allElementsDirectlySelectable) {
-    candidateViews = MetadataUtils.getAllPaths(componentMetadata)
+    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
+      componentMetadata,
+      focusedElementPath,
+    )
   } else {
     const scenes = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(componentMetadata)
     let rootElementsToFilter: TemplatePath[] = []
     let dynamicScenesWithFragmentRootViews: TemplatePath[] = []
     Utils.fastForEach(scenes, (path) => {
-      const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata.components, path)
+      const scene = MetadataUtils.findElementByTemplatePath(componentMetadata, path)
       const rootElements = scene?.rootElements
       if (
         MetadataUtils.isSceneTreatedAsGroup(scene) &&
@@ -143,11 +146,15 @@ export function getSelectableViews(
     Utils.fastForEach(selectedViews, (view) => {
       const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
-        const ancestorChildren = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+        const {
+          children,
+          unfurledComponents,
+        } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
           TP.dynamicPathToStaticPath(ancestor),
           componentMetadata,
           focusedElementPath,
         )
+        const ancestorChildren = [...children, ...unfurledComponents]
         fastForEach(ancestorChildren, (child) => siblings.push(child))
       })
     })
@@ -182,7 +189,7 @@ function useFindValidTarget(): (
 } | null {
   const storeRef = useRefEditorState((store) => {
     return {
-      componentMetadata: store.editor.jsxMetadataKILLME,
+      componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
       canvasScale: store.editor.canvas.scale,
@@ -242,7 +249,7 @@ function useStartDragState(): (
         return
       }
 
-      const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadataKILLME
+      const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadata
       const selectedViews = entireEditorStoreRef.current.editor.selectedViews
 
       const rootComponents = getOpenUtopiaJSXComponentsFromState(
@@ -355,7 +362,7 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
 function useGetSelectableViewsForSelectMode() {
   const storeRef = useRefEditorState((store) => {
     return {
-      componentMetadata: store.editor.jsxMetadataKILLME,
+      componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
       focusedElementPath: store.editor.focusedElementPath,

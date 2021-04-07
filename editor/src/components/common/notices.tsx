@@ -105,7 +105,7 @@ export const NotificationBar: React.FunctionComponent<NotificationBarProps> = (p
   <SimpleFlexRow
     style={{
       flexGrow: 0,
-      minHeight: UtopiaTheme.layout.rowHeight.small,
+      minHeight: 32,
       fontWeight: 600,
       letterSpacing: 0.2,
       alignItems: 'center',

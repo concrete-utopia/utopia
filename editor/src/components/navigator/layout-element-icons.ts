@@ -7,7 +7,7 @@ import {
 import {
   isIntrinsicHTMLElement,
   isJSXElement,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import * as TP from '../../core/shared/template-path'
@@ -29,7 +29,7 @@ interface LayoutIconResult {
 export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
   return useEditorState(
     (store) => {
-      const metadata = store.editor.jsxMetadataKILLME
+      const metadata = store.editor.jsxMetadata
       const components = getOpenUtopiaJSXComponentsFromState(store.editor)
       return createLayoutOrElementIconResult(path, components, metadata)
     },
@@ -45,7 +45,7 @@ export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
 
 export function useComponentIcon(path: TemplatePath): IcnPropsBase | null {
   return useEditorState((store) => {
-    const metadata = store.editor.jsxMetadataKILLME
+    const metadata = store.editor.jsxMetadata
     const components = getOpenUtopiaJSXComponentsFromState(store.editor)
     const imports = getOpenImportsFromState(store.editor)
     return createComponentIconProps(path, components, metadata, imports)
@@ -55,7 +55,7 @@ export function useComponentIcon(path: TemplatePath): IcnPropsBase | null {
 export function createComponentOrElementIconProps(
   path: TemplatePath,
   components: UtopiaJSXComponent[],
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
   imports: Imports,
 ): IcnPropsBase {
   return (
@@ -67,12 +67,12 @@ export function createComponentOrElementIconProps(
 export function createLayoutOrElementIconResult(
   path: TemplatePath,
   components: UtopiaJSXComponent[],
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
 ): LayoutIconResult {
   let hasWidthOrHeight: boolean = false
 
   const element = TP.isInstancePath(path)
-    ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
+    ? MetadataUtils.getElementByInstancePathMaybe(metadata, path)
     : null
 
   if (element != null && element.props != null && element.props.style != null) {
@@ -103,9 +103,12 @@ export function createLayoutOrElementIconResult(
   }
 }
 
-function createLayoutIconProps(path: TemplatePath, metadata: JSXMetadata): IcnPropsBase | null {
+function createLayoutIconProps(
+  path: TemplatePath,
+  metadata: ElementInstanceMetadataMap,
+): IcnPropsBase | null {
   const element = TP.isInstancePath(path)
-    ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
+    ? MetadataUtils.getElementByInstancePathMaybe(metadata, path)
     : null
 
   const isFlexLayoutedContainer = MetadataUtils.isFlexLayoutedContainer(element)
@@ -144,10 +147,10 @@ function createLayoutIconProps(path: TemplatePath, metadata: JSXMetadata): IcnPr
 export function createElementIconProps(
   path: TemplatePath,
   components: UtopiaJSXComponent[],
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase {
   const element = TP.isInstancePath(path)
-    ? MetadataUtils.getElementByInstancePathMaybe(metadata.elements, path)
+    ? MetadataUtils.getElementByInstancePathMaybe(metadata, path)
     : null
   const isButton = MetadataUtils.isButton(path, components, metadata)
   if (isButton) {
@@ -158,7 +161,7 @@ export function createElementIconProps(
       height: 18,
     }
   }
-  const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
+  const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
   if (elementName != null && isImg(elementName)) {
     return {
       category: 'element',
@@ -199,17 +202,14 @@ export function createElementIconProps(
 function createComponentIconProps(
   path: TemplatePath,
   components: UtopiaJSXComponent[],
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
   imports: Imports,
 ): IcnPropsBase | null {
-  const elementName = MetadataUtils.getJSXElementName(path, components, metadata.components)
+  const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
   const elementInstancePath = TP.isInstancePath(path)
     ? path
     : TP.instancePathForElementAtScenePath(path)
-  const element = MetadataUtils.getElementByInstancePathMaybe(
-    metadata.elements,
-    elementInstancePath,
-  )
+  const element = MetadataUtils.getElementByInstancePathMaybe(metadata, elementInstancePath)
   if (element?.isEmotionOrStyledComponent) {
     return {
       category: 'component',

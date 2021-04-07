@@ -4,12 +4,12 @@ import { DerivedState, EditorState } from '../components/editor/store/editor-sta
 import { LocalNavigatorAction } from '../components/navigator/actions'
 import { DragSelection } from '../components/navigator/navigator-item/navigator-item-dnd-container'
 import * as TP from '../core/shared/template-path'
-import { JSXMetadata } from '../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import Utils from '../utils/utils'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 
 export function createDragSelections(
-  components: JSXMetadata,
+  components: ElementInstanceMetadataMap,
   templatePaths: TemplatePath[],
   selectedViews: TemplatePath[],
 ): Array<DragSelection> {
@@ -17,7 +17,7 @@ export function createDragSelections(
   Utils.fastForEach(selectedViews, (selectedView) => {
     const metadata = TP.isScenePath(selectedView)
       ? null // TODO Scene Implementation?
-      : MetadataUtils.getElementByInstancePathMaybe(components.elements, selectedView)
+      : MetadataUtils.getElementByInstancePathMaybe(components, selectedView)
     if (metadata != null) {
       // FIXME It seems nobody really knows why we have this `null` check here, so
       // we need to add some tests around this and consider removing it, or finding

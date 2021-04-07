@@ -1,6 +1,7 @@
 import { SafeFunction } from '../../shared/code-exec-utils'
 import * as Babel from '@babel/standalone'
 import * as BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
+import { FileEvaluationCache } from '../package-manager/package-manager'
 
 function getFileExtension(filepath: string) {
   const lastDot = filepath.lastIndexOf('.')
@@ -32,10 +33,10 @@ function transformToCommonJS(filePath: string, moduleCode: string): string {
 function evaluateJs(
   filePath: string,
   moduleCode: string,
-  partialModule: { exports: unknown },
+  fileEvaluationCache: FileEvaluationCache,
   requireFn: (toImport: string) => unknown,
-) {
-  let module = partialModule
+): any {
+  let module = fileEvaluationCache
 
   function firstErrorHandler(error: Error): void {
     if (isEsModuleError(error)) {
@@ -81,13 +82,13 @@ function evaluateJs(
 export function evaluator(
   filepath: string,
   moduleCode: string,
-  partialModule: { exports: unknown },
+  fileEvaluationCache: FileEvaluationCache,
   requireFn: (toImport: string) => unknown,
-) {
+): any {
   const fileExtension = getFileExtension(filepath)
   switch (fileExtension) {
     case 'js':
-      return evaluateJs(filepath, moduleCode, partialModule, requireFn)
+      return evaluateJs(filepath, moduleCode, fileEvaluationCache, requireFn)
     default:
       throw new Error(`error evaluating file ${filepath} – unsupported file type ${fileExtension}`)
   }

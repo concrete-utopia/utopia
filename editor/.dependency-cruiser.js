@@ -49,6 +49,18 @@ module.exports = {
       },
     },
     {
+      name: 'not-from-worker-to-tippy',
+      comment: '',
+      severity: 'error',
+      from: {
+        path: 'ts.worker.ts',
+      },
+      to: {
+        path: ['tippy'],
+        reachable: true,
+      },
+    },
+    {
       name: 'no-deprecated-core',
       comment:
         'A module depends on a node core module that has been deprecated. Find an alternative - these are ' +

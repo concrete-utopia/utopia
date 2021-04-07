@@ -85,7 +85,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
   paddingLeft: 12,
   paddingRight: 12,
   minWidth: '90px',
-  height: UtopiaTheme.layout.rowHeight.medium,
+  height: UtopiaTheme.layout.rowHeight.normal,
   display: props.hidden ? 'none' : 'flex',
   boxSixing: 'border-box',
   flexDirection: 'row',

@@ -29,7 +29,7 @@ import {
   PathForResizeContent,
   isSceneChildWidthHeightPercentage,
 } from '../../../../core/model/scene-utils'
-import { GridRow } from '../../widgets/grid-row'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
 import { ChildWithPercentageSize } from '../../../common/size-warnings'
 import { useWrappedEmptyOrUnknownOnSubmitValue, CheckboxInput } from '../../../../uuiui'
@@ -182,7 +182,7 @@ function useIsSceneChildWidthHeightPercentage() {
   const { selectedViews, metadata } = useEditorState((state) => {
     return {
       selectedViews: state.editor.selectedViews,
-      metadata: state.editor.jsxMetadataKILLME,
+      metadata: state.editor.jsxMetadata,
     }
   }, 'useIsSceneChildWidthHeightPercentage')
 
@@ -190,7 +190,7 @@ function useIsSceneChildWidthHeightPercentage() {
     'missing scene from scene section',
     selectedViews.find(TP.isScenePath),
   )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScenePath)
+  const scene = MetadataUtils.findElementByTemplatePath(metadata, selectedScenePath)
   if (scene != null) {
     return isSceneChildWidthHeightPercentage(scene, metadata)
   } else {
@@ -202,7 +202,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   const { dispatch, metadata } = useEditorState(
     (store) => ({
       dispatch: store.dispatch,
-      metadata: store.editor.jsxMetadataKILLME,
+      metadata: store.editor.jsxMetadata,
     }),
     'SceneContainerSections',
   )
@@ -214,7 +214,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
     'Scene cannot be null in SceneContainerSection',
     React.useMemo(() => selectedViews.find(TP.isScenePath), [selectedViews]),
   )
-  const scene = MetadataUtils.findSceneByTemplatePath(metadata.components, selectedScene)
+  const scene = MetadataUtils.findElementByTemplatePath(metadata, selectedScene)
 
   const sceneResizesContentInfo = useSceneType()
   let controlStatus: ControlStatus = simpleControlStatus
@@ -255,13 +255,13 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
   return (
     <>
       {!isDynamicSceneChildSizePercent ? null : (
-        <GridRow padded type='<-auto-><----------1fr--------->'>
+        <UIGridRow padded variant='<-auto-><----------1fr--------->'>
           <WarningIcon />
           <span style={{ whiteSpace: 'normal' }}>{ChildWithPercentageSize}</span>
-        </GridRow>
+        </UIGridRow>
       )}
 
-      <GridRow padded type='<-auto-><----------1fr--------->'>
+      <UIGridRow padded variant='<-auto-><----------1fr--------->'>
         <CheckboxInput
           id='resizeContentToggle'
           controlStatus={controlStatus}
@@ -269,7 +269,7 @@ export const SceneContainerSections = betterReactMemo('SceneContainerSections', 
           checked={sceneResizesContentInfo.value}
         />
         <label htmlFor='resizeContentToggle'>Resize Content</label>
-      </GridRow>
+      </UIGridRow>
       <SceneFlexContainerSection />
     </>
   )

@@ -176,7 +176,7 @@ export function isParsedModelUpdate(action: EditorAction): boolean {
     case 'ATOMIC':
       return R.any(isParsedModelUpdate, action.actions)
     case 'UPDATE_FROM_WORKER':
-      return action.codeOrModel === 'Model'
+      return action.updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')
     default:
       return false
   }

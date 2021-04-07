@@ -165,11 +165,11 @@ const projectContentsFileLookup: (projectContents: ProjectContentTreeRoot) => Fi
   return fallbackLookup((path: string[]) => {
     const projectFile = getContentsTreeFileFromElements(projectContents, path)
     const fileContents = projectFile == null ? null : getProjectFileContentsAsString(projectFile)
-    if (fileContents != null) {
-      const filename = makePathFromParts(path)
-      return fileLookupResult(filename, esCodeFile(fileContents, null))
-    } else {
+    if (fileContents == null) {
       return resolveNotPresent
+    } else {
+      const filename = makePathFromParts(path)
+      return fileLookupResult(filename, esCodeFile(fileContents, 'PROJECT_CONTENTS', filename))
     }
   })
 }

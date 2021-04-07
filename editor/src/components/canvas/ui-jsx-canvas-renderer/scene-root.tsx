@@ -38,7 +38,7 @@ import { betterReactMemo } from '../../../uuiui-deps'
 import { jsxAttributesToProps } from '../../../core/shared/jsx-attributes'
 import { getUtopiaIDFromJSXElement } from '../../../core/shared/uid-utils'
 import utils from '../../../utils/utils'
-import { PathForResizeContent } from '../../../core/model/scene-utils'
+import { PathForResizeContent, ResizesContentProp } from '../../../core/model/scene-utils'
 import { UTOPIA_SCENE_PATH, UTOPIA_UIDS_KEY } from '../../../core/model/utopia-constants'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { useEditorState } from '../../editor/store/store-hook'
@@ -72,23 +72,14 @@ function useRunSpy(
 
   const resizesContent = Boolean(utils.path(PP.getElements(PathForResizeContent), props) ?? false)
 
-  metadataContext.current.spyValues.scenes[TP.toString(scenePath)] = {
-    scenePath: scenePath,
-    templatePath: templatePath,
-    component: componentName,
-    sceneResizesContent: resizesContent,
-    globalFrame: null,
-    label: props['data-label'],
-    style: props.style ?? {},
-  }
   if (shouldIncludeCanvasRootInTheSpy) {
     let capturedProps: {
-      resizesContent?: boolean
+      [ResizesContentProp]?: boolean
       style?: React.CSSProperties
       'data-uid'?: string
     } = {}
     if (resizesContent) {
-      capturedProps.resizesContent = true
+      capturedProps[ResizesContentProp] = true
     }
     if (props.style != null) {
       capturedProps.style = props.style

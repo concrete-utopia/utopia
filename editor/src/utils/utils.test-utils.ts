@@ -13,7 +13,6 @@ import {
 } from '../components/editor/store/editor-state'
 import * as TP from '../core/shared/template-path'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   emptySpecialSizeMeasurements,
   isJSXElement,
@@ -21,17 +20,11 @@ import {
   JSXElementChild,
   TopLevelElement,
   emptyComputedStyle,
-  walkElements,
   isJSXFragment,
-  JSXMetadata,
-  emptyJsxMetadata,
   ElementInstanceMetadataMap,
-  jsxMetadata,
-  getJSXElementNameAsString,
-  walkElement,
-  getJSXAttribute,
-  getJSXAttributeForced,
+  emptyJsxMetadata,
   emptyAttributeMetadatada,
+  jsxTestElement,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
@@ -44,38 +37,35 @@ import {
 import {
   RevisionsState,
   TemplatePath,
-  isParseFailure,
   ParseSuccess,
   foldParsedTextFile,
   textFile,
   textFileContents,
   unparsed,
-  isTextFile,
-  isParseSuccess,
-  ProjectFile,
   InstancePath,
   EmptyExportsDetail,
-  StaticElementPath,
 } from '../core/shared/project-file-types'
-import { right, eitherToMaybe, isLeft } from '../core/shared/either'
+import { right, eitherToMaybe, isLeft, left } from '../core/shared/either'
 import Utils from './utils'
-import { CanvasRectangle, LocalRectangle } from '../core/shared/math-utils'
+import {
+  canvasRectangle,
+  CanvasRectangle,
+  localRectangle,
+  LocalRectangle,
+  RectangleInner,
+} from '../core/shared/math-utils'
 import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
-  BakedInStoryboardVariableName,
   PathForSceneComponent,
   PathForSceneDataLabel,
-  PathForSceneDataUid,
   PathForResizeContent,
 } from '../core/model/scene-utils'
-import { fastForEach, NO_OP } from '../core/shared/utils'
+import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
-import { getSimpleAttributeAtPath } from '../core/model/element-metadata-utils'
 import { mapArrayToDictionary } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
-import { forceNotNull } from '../core/shared/optional-utils'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -150,14 +140,14 @@ export function createEditorStates(
   return {
     editor: {
       ...editor,
-      jsxMetadataKILLME: componentMetadata,
+      jsxMetadata: componentMetadata,
     },
     derivedState: derivedState,
     dispatch: Utils.NO_OP,
   }
 }
 
-export function createFakeMetadataForEditor(editor: EditorState): JSXMetadata {
+export function createFakeMetadataForEditor(editor: EditorState): ElementInstanceMetadataMap {
   const openUiJsFile = getOpenUIJSFile(editor)
   if (openUiJsFile == null) {
     return emptyJsxMetadata
@@ -172,12 +162,15 @@ export function createFakeMetadataForEditor(editor: EditorState): JSXMetadata {
   }
 }
 
-export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMetadata {
+export function createFakeMetadataForParseSuccess(
+  success: ParseSuccess,
+): ElementInstanceMetadataMap {
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
   const sceneElements = getSceneElementsFromParseSuccess(success)
   let elements: ElementInstanceMetadataMap = {}
+  let storyboardChildren: InstancePath[] = []
 
-  const components: ComponentMetadata[] = sceneElements.map((scene, index) => {
+  sceneElements.forEach((scene, index) => {
     const props = mapArrayToDictionary(
       scene.props,
       (entry) => entry.key,
@@ -217,29 +210,41 @@ export function createFakeMetadataForParseSuccess(success: ParseSuccess): JSXMet
       })
     }
 
-    return {
-      component: props[PP.toString(PathForSceneComponent)],
-      label: props[PP.toString(PathForSceneDataLabel)],
-      scenePath: TP.scenePath([[BakedInStoryboardUID, props[PP.toString(PathForSceneDataUid)]]]),
-      templatePath: TP.instancePath(TP.emptyScenePath, [
-        BakedInStoryboardUID,
-        createSceneUidFromIndex(index),
-      ]),
-      globalFrame: { x: 0, y: 0, width: 400, height: 400 } as CanvasRectangle,
-      sceneResizesContent: sceneResizesContent ?? true,
-      style: {},
-      rootElements: rootElements,
-    }
+    const componentName = props[PP.toString(PathForSceneComponent)]
+    const label = props[PP.toString(PathForSceneDataLabel)]
+    const frame = { x: 0, y: 0, width: 400, height: 400 }
+
+    const templatePath = TP.instancePath(TP.emptyScenePath, [
+      BakedInStoryboardUID,
+      createSceneUidFromIndex(index),
+    ])
+
+    elements[TP.toString(templatePath)] = createFakeMetadataForScene(
+      templatePath,
+      rootElements,
+      frame,
+      sceneResizesContent,
+      componentName,
+      label,
+    )
+
+    storyboardChildren.push(templatePath)
   })
 
-  return jsxMetadata(components, elements)
+  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
+  elements[TP.toString(storyboardTemplatePath)] = createFakeMetadataForStoryboard(
+    storyboardTemplatePath,
+    storyboardChildren,
+  )
+
+  return elements
 }
 
 export function createFakeMetadataForComponents(
   topLevelElements: Array<TopLevelElement>,
-): JSXMetadata {
-  let components: ComponentMetadata[] = []
+): ElementInstanceMetadataMap {
   let elements: ElementInstanceMetadataMap = {}
+  let storyboardChildren: InstancePath[] = []
   Utils.fastForEach(topLevelElements, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
       const elementMetadata = createFakeMetadataForJSXElement(
@@ -255,18 +260,32 @@ export function createFakeMetadataForComponents(
         return path
       })
 
-      components.push({
-        scenePath: TP.scenePath([[BakedInStoryboardUID, `scene-${index}`]]),
-        templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, `scene-${index}`]),
-        component: component.name,
-        globalFrame: { x: 0, y: 0, width: 100, height: 100 } as CanvasRectangle,
-        sceneResizesContent: false,
-        style: {},
-        rootElements: rootElements,
-      })
+      const frame = { x: 0, y: 0, width: 100, height: 100 }
+      const templatePath = TP.instancePath(TP.emptyScenePath, [
+        BakedInStoryboardUID,
+        createSceneUidFromIndex(index),
+      ])
+
+      elements[TP.toString(templatePath)] = createFakeMetadataForScene(
+        templatePath,
+        rootElements,
+        frame,
+        false,
+        component.name,
+        null,
+      )
+
+      storyboardChildren.push(templatePath)
     }
   })
-  return jsxMetadata(components, elements)
+
+  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
+  elements[TP.toString(storyboardTemplatePath)] = createFakeMetadataForStoryboard(
+    storyboardTemplatePath,
+    storyboardChildren,
+  )
+
+  return elements
 }
 
 function createFakeMetadataForJSXElement(
@@ -312,6 +331,56 @@ function createFakeMetadataForJSXElement(
   }
 
   return elements
+}
+
+function createFakeMetadataForScene(
+  templatePath: InstancePath,
+  rootElements: Array<InstancePath>,
+  frame: RectangleInner,
+  resizesContent: boolean,
+  componentName: string | null,
+  label: string | null,
+): ElementInstanceMetadata {
+  return {
+    globalFrame: canvasRectangle(frame),
+    localFrame: localRectangle(frame),
+    templatePath: templatePath,
+    props: {
+      [PP.lastPartToString(PathForResizeContent)]: resizesContent,
+    },
+    element: left('Scene'),
+    children: [],
+    rootElements: rootElements,
+    componentInstance: false,
+    isEmotionOrStyledComponent: false,
+    specialSizeMeasurements: emptySpecialSizeMeasurements,
+    computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
+    componentName: componentName,
+    label: label,
+  }
+}
+
+function createFakeMetadataForStoryboard(
+  templatePath: InstancePath,
+  children: Array<InstancePath>,
+): ElementInstanceMetadata {
+  return {
+    globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+    localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+    templatePath: templatePath,
+    props: {},
+    element: right(jsxTestElement('Storyboard', [], [])),
+    children: children,
+    rootElements: [],
+    componentInstance: true,
+    isEmotionOrStyledComponent: false,
+    specialSizeMeasurements: emptySpecialSizeMeasurements,
+    computedStyle: emptyComputedStyle,
+    attributeMetadatada: emptyAttributeMetadatada,
+    componentName: null,
+    label: null,
+  }
 }
 
 export function wait(timeout: number): Promise<void> {

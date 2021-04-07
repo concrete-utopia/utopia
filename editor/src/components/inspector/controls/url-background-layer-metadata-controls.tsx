@@ -6,7 +6,7 @@ import {
   CSSBackgroundLayers,
 } from '../common/css-utils'
 import { getControlStyles } from '../common/control-status'
-import { GridRow } from '../widgets/grid-row'
+import { UIGridRow } from '../widgets/ui-grid-row'
 import { PropertyLabel } from '../widgets/property-label'
 import { BackgroundLayerControlsProps } from '../sections/style-section/background-subsection/background-picker'
 import { StringControl } from './string-control'
@@ -42,7 +42,7 @@ export const URLBackgroundLayerMetadataControls: React.FunctionComponent<URLBack
   )
 
   return (
-    <GridRow padded type='<-auto-><----------1fr--------->'>
+    <UIGridRow padded variant='<-auto-><----------1fr--------->'>
       <PropertyLabel target={backgroundImagePropertyPath}>URL</PropertyLabel>
       <StringControl
         id='metadata-editor-modal-background-url-value'
@@ -53,6 +53,6 @@ export const URLBackgroundLayerMetadataControls: React.FunctionComponent<URLBack
         controlStatus={props.controlStatus}
         controlStyles={getControlStyles(props.controlStatus)}
       />
-    </GridRow>
+    </UIGridRow>
   )
 }

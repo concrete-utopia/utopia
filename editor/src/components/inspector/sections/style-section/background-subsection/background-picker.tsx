@@ -7,6 +7,7 @@ import {
   Icn,
   NumberInput,
   PopupList,
+  UIRow,
 } from '../../../../../uuiui'
 import { ControlStatus } from '../../../common/control-status'
 import {
@@ -531,9 +532,9 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
         }}
         onMouseDown={stopPropagation}
       >
-        <FlexRow
+        <UIRow
+          padded={true}
           style={{
-            padding: 8,
             borderBottom: `1px solid ${colorTheme.neutralBorder.value}`,
           }}
         >
@@ -561,7 +562,7 @@ export const BackgroundPicker: React.FunctionComponent<BackgroundPickerProps> = 
             onClick={props.closePopup}
             style={{ marginLeft: 8 }}
           />
-        </FlexRow>
+        </UIRow>
         {isCSSImageURLBackgroundLayer(props.value) ? (
           <PickerImagePreview value={props.value} />
         ) : (
