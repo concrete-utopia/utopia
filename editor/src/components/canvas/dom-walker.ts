@@ -54,11 +54,10 @@ import { fastForEach } from '../../core/shared/utils'
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
 
-function findValidPath(uid: string | null, validPathsString: Array<string>): InstancePath | null {
+function findValidPath(uid: string | null, validPaths: Array<InstancePath>): InstancePath | null {
   if (uid == null) {
     return null
   }
-  const validPaths = validPathsString.map(TP.fromString) // Hi Rheese :)
   return (
     mapDropNulls((validPath) => {
       if (TP.isScenePath(validPath)) {
@@ -74,6 +73,27 @@ function findValidPath(uid: string | null, validPathsString: Array<string>): Ins
       return null
     }, validPaths)[0] ?? null
   )
+}
+
+function filterValidFocusedPathsForGeneratedElement(
+  foundUIDs: Array<string>,
+  validPaths: Array<InstancePath>,
+): Array<InstancePath> {
+  return validPaths.filter((validPath) => {
+    const sceneElementPaths = validPath.scene.sceneElementPaths
+    return sceneElementPaths.every((sceneElementPath) => {
+      const scenePathUID = TP.elementPathToUID(sceneElementPath)
+
+      const generatedUidMatchesButDifferentGeneratedIndex = foundUIDs.some((uid) => {
+        const staticUidMatches =
+          extractOriginalUidFromIndexedUid(uid) === extractOriginalUidFromIndexedUid(scenePathUID)
+        const uidMatches = uid === scenePathUID
+        return staticUidMatches && !uidMatches
+      })
+      // if our uid is generated-element~~~3 and the valid path is generated-element~~~1, we filter out the valid path
+      return !generatedUidMatchesButDifferentGeneratedIndex
+    })
+  })
 }
 
 function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): DetectedLayoutSystem {
@@ -338,7 +358,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         refOfContainer,
         0,
         props.canvasRootElementTemplatePath,
-        props.validRootPaths.map(TP.toString),
+        props.validRootPaths,
         rootMetadataInStateRef,
         invalidatedSceneIDsRef,
         invalidatedPathsForStylesheetCacheRef,
@@ -589,7 +609,7 @@ function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   index: number,
   canvasRootPath: TemplatePath,
-  validPaths: Array<string>,
+  validPaths: Array<InstancePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -667,7 +687,11 @@ function walkScene(
       TP.isScenePath(scenePath) &&
       validPathsAttr != null
     ) {
-      const validPaths = validPathsAttr.value.split(' ')
+      const validPaths = validPathsAttr.value
+        .split(' ')
+        .map(TP.fromString)
+        .filter(TP.isInstancePath)
+
       let cachedMetadata: ElementInstanceMetadata | null = null
       if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
         if (!invalidatedSceneIDsRef.current.has(sceneID)) {
@@ -728,7 +752,7 @@ function walkScene(
 function walkSceneInner(
   scene: HTMLElement,
   index: number,
-  validPaths: Array<string>,
+  validPaths: Array<InstancePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -771,7 +795,7 @@ function walkElements(
   index: number,
   depth: number,
   parentPoint: CanvasPoint,
-  validPaths: Array<string>,
+  validPaths: Array<InstancePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -804,6 +828,7 @@ function walkElements(
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
     const uids = getUIDsOnDomELement(element) ?? []
+    const filteredValidPaths = filterValidFocusedPathsForGeneratedElement(uids, validPaths)
 
     const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
     const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
@@ -811,7 +836,7 @@ function walkElements(
     const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
 
     // Check this is a path we're interested in, otherwise skip straight to the children
-    const foundValidPaths = mapDropNulls((uid) => findValidPath(uid, validPaths), uids)
+    const foundValidPaths = mapDropNulls((uid) => findValidPath(uid, filteredValidPaths), uids)
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<InstancePath> = []
@@ -823,7 +848,7 @@ function walkElements(
           childIndex,
           depth + 1,
           globalFrame,
-          validPaths,
+          filteredValidPaths,
           rootMetadataInStateRef,
           invalidatedSceneIDsRef,
           invalidatedPathsForStylesheetCacheRef,
