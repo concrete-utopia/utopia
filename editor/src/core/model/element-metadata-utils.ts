@@ -542,9 +542,33 @@ export const MetadataUtils = {
       }
     })
   },
-  getRootViews(elements: ElementInstanceMetadataMap, target: TemplatePath): Array<InstancePath> {
+  getRootViewPaths(
+    elements: ElementInstanceMetadataMap,
+    target: TemplatePath,
+  ): Array<InstancePath> {
     const element = MetadataUtils.findElementByTemplatePath(elements, target)
     return element?.rootElements ?? []
+  },
+  getRootViews(
+    elements: ElementInstanceMetadataMap,
+    target: TemplatePath,
+  ): Array<ElementInstanceMetadata> {
+    const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
+    return MetadataUtils.getElementsByInstancePath(elements, rootPaths ?? [])
+  },
+  getChildrenPaths(
+    elements: ElementInstanceMetadataMap,
+    target: TemplatePath,
+  ): Array<InstancePath> {
+    const element = MetadataUtils.findElementByTemplatePath(elements, target)
+    return element?.children ?? []
+  },
+  getChildren(
+    elements: ElementInstanceMetadataMap,
+    target: TemplatePath,
+  ): Array<ElementInstanceMetadata> {
+    const childrenPaths = MetadataUtils.getChildrenPaths(elements, target)
+    return MetadataUtils.getElementsByInstancePath(elements, childrenPaths ?? [])
   },
   getImmediateChildrenPaths(
     elements: ElementInstanceMetadataMap,
@@ -812,27 +836,10 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     focusedElementPath: ScenePath | null,
   ): { children: Array<InstancePath>; unfurledComponents: Array<InstancePath> } {
-    const allPaths = Object.values(metadata).map((element) => element.templatePath)
-    const children = MetadataUtils.getImmediateChildrenPaths(metadata, path)
-
-    const matchingFocusPath =
-      focusedElementPath == null
-        ? null
-        : TP.scenePathUpToElementPath(
-            focusedElementPath,
-            TP.elementPathForPath(path),
-            'dynamic-scene-path',
-          )
-    const focusedRootElementPaths =
-      matchingFocusPath == null
-        ? []
-        : allPaths.filter(
-            (p) =>
-              TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
-              TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
-          )
-
-    return { children: children, unfurledComponents: focusedRootElementPaths }
+    return {
+      children: MetadataUtils.getChildrenPaths(metadata, path),
+      unfurledComponents: MetadataUtils.getRootViewPaths(metadata, path),
+    }
   },
   getAllChildrenElementsIncludingUnfurledFocusedComponents(
     path: TemplatePath,
@@ -842,19 +849,9 @@ export const MetadataUtils = {
     children: Array<ElementInstanceMetadata>
     unfurledComponents: Array<ElementInstanceMetadata>
   } {
-    const { children, unfurledComponents } = this.getAllChildrenIncludingUnfurledFocusedComponents(
-      path,
-      metadata,
-      focusedElementPath,
-    )
-
     return {
-      children: mapDropNulls((childPath) => {
-        return this.getElementByInstancePathMaybe(metadata, childPath)
-      }, children),
-      unfurledComponents: mapDropNulls((childPath) => {
-        return this.getElementByInstancePathMaybe(metadata, childPath)
-      }, unfurledComponents),
+      children: MetadataUtils.getChildren(metadata, path),
+      unfurledComponents: MetadataUtils.getRootViews(metadata, path),
     }
   },
   createOrderedTemplatePathsFromElements(
