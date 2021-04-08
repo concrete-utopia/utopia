@@ -647,6 +647,39 @@ export const MetadataUtils = {
 
     return uniqBy<InstancePath>(result, TP.pathsEqual)
   },
+  getAllPathsIncludingUnfurledFocusedComponents(
+    metadata: ElementInstanceMetadataMap,
+    focusedElementPath: ScenePath | null,
+  ): InstancePath[] {
+    // This function needs to explicitly return the paths in a depth first manner
+    let result: Array<InstancePath> = []
+    function recurseElement(elementPath: InstancePath): void {
+      result.push(elementPath)
+      const {
+        children,
+        unfurledComponents,
+      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+        elementPath,
+        metadata,
+        focusedElementPath,
+      )
+      const childrenIncludingUnfurledComponents = [...children, ...unfurledComponents]
+      fastForEach(childrenIncludingUnfurledComponents, recurseElement)
+    }
+
+    const rootInstances = this.getAllStoryboardChildrenPaths(metadata)
+
+    fastForEach(rootInstances, (rootInstance) => {
+      const element = MetadataUtils.findElementByTemplatePath(metadata, rootInstance)
+      if (element != null) {
+        result.push(rootInstance)
+        element.rootElements.forEach(recurseElement)
+        element.children.forEach(recurseElement)
+      }
+    })
+
+    return uniqBy<InstancePath>(result, TP.pathsEqual)
+  },
   isElementOfType(instance: ElementInstanceMetadata, elementType: string): boolean {
     return foldEither(
       (name) => name === elementType,
@@ -778,7 +811,7 @@ export const MetadataUtils = {
     path: TemplatePath,
     metadata: ElementInstanceMetadataMap,
     focusedElementPath: ScenePath | null,
-  ): Array<InstancePath> {
+  ): { children: Array<InstancePath>; unfurledComponents: Array<InstancePath> } {
     const allPaths = Object.values(metadata).map((element) => element.templatePath)
     const children = MetadataUtils.getImmediateChildrenPaths(metadata, path)
 
@@ -799,21 +832,30 @@ export const MetadataUtils = {
               TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
           )
 
-    return [...children, ...focusedRootElementPaths]
+    return { children: children, unfurledComponents: focusedRootElementPaths }
   },
   getAllChildrenElementsIncludingUnfurledFocusedComponents(
     path: TemplatePath,
     metadata: ElementInstanceMetadataMap,
     focusedElementPath: ScenePath | null,
-  ): Array<ElementInstanceMetadata> {
-    const childrenPaths = this.getAllChildrenIncludingUnfurledFocusedComponents(
+  ): {
+    children: Array<ElementInstanceMetadata>
+    unfurledComponents: Array<ElementInstanceMetadata>
+  } {
+    const { children, unfurledComponents } = this.getAllChildrenIncludingUnfurledFocusedComponents(
       path,
       metadata,
       focusedElementPath,
     )
-    return mapDropNulls((childPath) => {
-      return this.getElementByInstancePathMaybe(metadata, childPath)
-    }, childrenPaths)
+
+    return {
+      children: mapDropNulls((childPath) => {
+        return this.getElementByInstancePathMaybe(metadata, childPath)
+      }, children),
+      unfurledComponents: mapDropNulls((childPath) => {
+        return this.getElementByInstancePathMaybe(metadata, childPath)
+      }, unfurledComponents),
+    }
   },
   createOrderedTemplatePathsFromElements(
     metadata: ElementInstanceMetadataMap,
@@ -824,11 +866,15 @@ export const MetadataUtils = {
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
     function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
-      const childrenIncludingFocusedElements = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+      const {
+        children,
+        unfurledComponents,
+      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
         path,
         metadata,
         focusedElementPath,
       )
+      const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
       const reversedChildren = R.reverse(childrenIncludingFocusedElements)
       const isCollapsed = TP.containsPath(path, collapsedViews)
       navigatorTargets.push(path)

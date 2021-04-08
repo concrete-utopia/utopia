@@ -129,7 +129,7 @@ watch-website
 ### Build editor vscode
 
 ```
-build-vscode
+build-vscode-with-extension
 watch-vscode-dev
 ```
 

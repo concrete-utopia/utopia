@@ -2,7 +2,7 @@ import * as React from 'react'
 import { FlexWrap } from 'utopia-api'
 import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
 import { useInspectorLayoutInfo, useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   FlexAlignContentControl,
   FlexAlignItemsControl,
@@ -57,7 +57,7 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
 
     return (
       <>
-        <GridRow tall padded={true} type='<---1fr--->|------172px-------|'>
+        <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
           <FlexDirectionControl
             value={flexDirection.value}
             controlStatus={flexDirection.controlStatus}
@@ -76,8 +76,8 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
             justifyFlexStart={justifyFlexStart}
             justifyFlexEnd={justifyFlexEnd}
           />
-        </GridRow>
-        <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+        </UIGridRow>
+        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
           <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
           <FlexGapControl
             value={flexGap.value}
@@ -87,8 +87,8 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
             controlStatus={flexGap.controlStatus}
             controlStyles={flexGap.controlStyles}
           />
-        </GridRow>
-        <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+        </UIGridRow>
+        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
           <PropertyLabel target={alignItemsProp}>Align</PropertyLabel>
           <FlexAlignItemsControl
             value={alignItems.value}
@@ -100,8 +100,8 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
             alignItemsFlexStart={alignItemsFlexStart}
             alignItemsFlexEnd={alignItemsFlexEnd}
           />
-        </GridRow>
-        <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+        </UIGridRow>
+        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
           <FlexWrapControl
             value={flexWrap.value}
             onSubmitValue={flexWrap.onSubmitValue}
@@ -119,7 +119,7 @@ export const FlexContainerControls = betterReactMemo<{ seeMoreVisible: boolean }
             alignContentFlexStart={alignContentFlexStart}
             alignContentFlexEnd={alignContentFlexEnd}
           />
-        </GridRow>
+        </UIGridRow>
       </>
     )
   },

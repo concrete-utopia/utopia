@@ -17,13 +17,13 @@ import {
 import { betterReactMemo } from '../../../uuiui-deps'
 import { clearSelection, togglePanel } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
-import { GridRowProps } from '../../inspector/widgets/grid-row'
+import { GridRowProps } from '../../inspector/widgets/ui-grid-row'
 import { GenericExternalResourcesInput } from './generic-external-resources-input'
 import { GenericExternalResourcesListItem } from './generic-external-resources-list-item'
 
 export const ResourcesListGridRowConfig: GridRowProps = {
   padded: false,
-  type: '<-------auto------->|---60px---|',
+  variant: '<-------auto------->|---60px---|',
 }
 
 function updatePushNewGenericResource(

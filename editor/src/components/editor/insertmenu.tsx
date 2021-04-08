@@ -72,6 +72,7 @@ import {
   colorTheme,
   Icn,
   UtopiaStyles,
+  UIRow,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import {
@@ -406,7 +407,7 @@ export const InsertGroup: React.FunctionComponent<InsertGroupProps> = betterReac
   (props) => {
     return (
       <div style={{ paddingBottom: 12 }}>
-        <FlexRow style={{ height: UtopiaTheme.layout.rowHeight.medium }}>
+        <UIRow rowHeight={'normal'}>
           <InspectorSubsectionHeader>
             <div style={{ color: colorTheme.emphasizedForeground.value, fontWeight: 500 }}>
               {props.label}
@@ -423,7 +424,7 @@ export const InsertGroup: React.FunctionComponent<InsertGroupProps> = betterReac
               version={props.dependencyVersion}
             />
           </div>
-        </FlexRow>
+        </UIRow>
         <div style={{ padding: 8 }}>{props.children}</div>
       </div>
     )
@@ -454,9 +455,9 @@ export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => 
     props.warningMessage == null ? regularIcon : <WarningIcon tooltipText={props.warningMessage} />
 
   return (
-    <FlexRow
+    <UIRow
+      rowHeight={'normal'}
       css={{
-        height: UtopiaTheme.layout.rowHeight.medium,
         background: props.selected ? UtopiaStyles.backgrounds.blue : 'initial',
         color: props.selected ? colorTheme.white.value : 'initial',
         opacity: props.disabled ? 0.3 : 1,
@@ -468,6 +469,6 @@ export const InsertItem: React.StatelessComponent<InsertItemProps> = (props) => 
     >
       {resultingIcon}
       <span className='pl8 '>{props.label}</span>
-    </FlexRow>
+    </UIRow>
   )
 }

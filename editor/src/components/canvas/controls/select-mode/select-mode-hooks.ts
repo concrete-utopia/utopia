@@ -119,7 +119,10 @@ export function getSelectableViews(
   let candidateViews: Array<TemplatePath>
 
   if (allElementsDirectlySelectable) {
-    candidateViews = MetadataUtils.getAllPaths(componentMetadata)
+    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
+      componentMetadata,
+      focusedElementPath,
+    )
   } else {
     const scenes = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(componentMetadata)
     let rootElementsToFilter: TemplatePath[] = []
@@ -143,11 +146,15 @@ export function getSelectableViews(
     Utils.fastForEach(selectedViews, (view) => {
       const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
-        const ancestorChildren = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+        const {
+          children,
+          unfurledComponents,
+        } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
           TP.dynamicPathToStaticPath(ancestor),
           componentMetadata,
           focusedElementPath,
         )
+        const ancestorChildren = [...children, ...unfurledComponents]
         fastForEach(ancestorChildren, (child) => siblings.push(child))
       })
     })
