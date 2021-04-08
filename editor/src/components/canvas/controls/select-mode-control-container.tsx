@@ -25,18 +25,19 @@ import { LeftMenuTab } from '../../navigator/left-pane'
 import CanvasActions from '../canvas-actions'
 import { getOriginalCanvasFrames, createDuplicationNewUIDs } from '../canvas-utils'
 import { areYogaChildren } from './select-mode/yoga-utils'
-import { JSXMetadata } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
 import { getSelectableViews } from './select-mode/select-mode-hooks'
 import { getAllTargetsAtPoint } from '../dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
+import { mapDropNulls } from '../../../core/shared/array-utils'
 
 export const SnappingThreshold = 5
 
 function getDistanceGuidelines(
   highlightedView: TemplatePath,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
 ): Array<Guideline> {
   const frame = MetadataUtils.getFrameInCanvasCoords(highlightedView, componentMetadata)
   if (frame == null) {
@@ -151,6 +152,7 @@ export class SelectModeControlContainer extends React.Component<
       this.props.componentMetadata,
       this.props.selectedViews,
       this.props.hiddenInstances,
+      this.props.focusedElementPath,
       'no-filter',
       WindowMousePositionRaw,
       this.props.scale,
@@ -211,7 +213,7 @@ export class SelectModeControlContainer extends React.Component<
         }
 
         const currentInstance = MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata.elements,
+          this.props.componentMetadata,
           current,
         )
         if (currentInstance == null) {
@@ -424,7 +426,7 @@ export class SelectModeControlContainer extends React.Component<
       const targets = TP.filterScenes(this.props.selectedViews)
       if (targets.length > 0) {
         const targetInstance = MetadataUtils.getElementByInstancePathMaybe(
-          this.props.componentMetadata.elements,
+          this.props.componentMetadata,
           targets[0],
         )
         if (targetInstance != null) {
@@ -473,10 +475,7 @@ export class SelectModeControlContainer extends React.Component<
   canResizeElements(): boolean {
     return this.props.selectedViews.every((target) => {
       if (TP.isScenePath(target)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(
-          this.props.componentMetadata.components,
-          target,
-        )
+        const scene = MetadataUtils.findElementByTemplatePath(this.props.componentMetadata, target)
         let rootHasStyleProp = false
         if (scene != null) {
           rootHasStyleProp = scene.rootElements.some((rootElement) => {
@@ -495,7 +494,9 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+    const roots = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(
+      this.props.componentMetadata,
+    )
     let labelDirectlySelectable = this.props.highlightsEnabled
 
     // TODO future span element should be included here
@@ -503,7 +504,7 @@ export class SelectModeControlContainer extends React.Component<
     if (this.props.selectedViews.length === 1 && !TP.isScenePath(this.props.selectedViews[0])) {
       const path = this.props.selectedViews[0]
       const element = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.componentMetadata.elements,
+        this.props.componentMetadata,
         path,
       )
       repositionOnly =

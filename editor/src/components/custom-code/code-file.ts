@@ -28,7 +28,11 @@ import {
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
-import { getEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import {
+  EvaluationCache,
+  getEditorRequireFn,
+  getEditorResolveFunction,
+} from '../../core/es-modules/package-manager/package-manager'
 import { updateNodeModulesContents } from '../editor/actions/action-creators'
 import { fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
@@ -45,6 +49,7 @@ import {
 import { findElementWithUID } from '../../core/shared/uid-utils'
 import { importedFromWhere } from '../editor/import-utils'
 import { resolveModule } from '../../core/es-modules/package-manager/module-resolution'
+import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
 
 export interface CodeResult {
   exports: ModuleExportTypes
@@ -75,7 +80,9 @@ export type CodeResultCache = {
   exportsInfo: ReadonlyArray<ExportsInfo>
   error: Error | null
   requireFn: UtopiaRequireFn
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>
   projectModules: MultiFileBuildResult
+  evaluationCache: EvaluationCache
 }
 
 type ModuleExportValues = { [name: string]: any }
@@ -173,19 +180,9 @@ export function incorporateBuildResult(
   fastForEach(Object.keys(buildResult), (moduleKey) => {
     const modulesFile = buildResult[moduleKey]
     if (modulesFile.transpiledCode != null) {
-      nodeModules[moduleKey] = esCodeFile(modulesFile.transpiledCode, null)
+      nodeModules[moduleKey] = esCodeFile(modulesFile.transpiledCode, 'NODE_MODULES', moduleKey)
     }
   })
-}
-
-export function clearNodeModules(nodeModules: NodeModules): NodeModules {
-  return objectMap((nodeModule) => {
-    if (isEsCodeFile(nodeModule)) {
-      return esCodeFile(nodeModule.fileContents, null)
-    } else {
-      return nodeModule
-    }
-  }, nodeModules)
 }
 
 export function generateCodeResultCache(
@@ -195,8 +192,8 @@ export function generateCodeResultCache(
   exportsInfo: ReadonlyArray<ExportsInfo>,
   nodeModules: NodeModules,
   dispatch: EditorDispatch,
+  evaluationCache: EvaluationCache,
   buildType: BuildType,
-  mainUiFileName: string | null,
   onlyProjectFiles: boolean,
 ): CodeResultCache {
   // Makes the assumption that `fullBuild` and `updatedModules` are in line
@@ -217,26 +214,26 @@ export function generateCodeResultCache(
       throw new Error(`Unhandled type ${JSON.stringify(buildType)}`)
   }
 
-  // FIXME Rip this awful hack out after we tackle the dependency graph work!
-  // Sneaky hack - if the currently edited file is a canvas file, we don't re-evaluate any other files
   const updatedFileNames = Object.keys(updatedModules)
-  const onlyCanvasFileUpdated =
-    buildType === 'incremental' &&
-    mainUiFileName != null &&
-    updatedFileNames.length === 1 &&
-    (updatedFileNames[0] === mainUiFileName || updatedFileNames[0] === `/${mainUiFileName}`)
+  const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
+    projectContents,
+    nodeModules,
+    updatedFileNames,
+  )
 
-  if (!onlyCanvasFileUpdated) {
-    // MUTATION ALERT! This function is mutating editorState.nodeModules.files by inserting the project files into it
-    // FIXME Remove this mutation with the dependency graph work and store the eval cache for project files elsewhere
-    // (maybe even in the graph itself)
-    incorporateBuildResult(nodeModules, projectModules)
+  // Mutating the evaluation cache.
+  for (const fileToDelete of updatedAndReverseDepFilenames) {
+    delete evaluationCache[fileToDelete]
   }
+
+  // MUTATION ALERT! This function is mutating editorState.nodeModules.files by inserting the project files into it.
+  incorporateBuildResult(nodeModules, projectModules)
 
   // Trigger async call to build the property controls info.
   sendPropertyControlsInfoRequest(exportsInfo, nodeModules, projectContents, onlyProjectFiles)
 
-  const requireFn = getEditorRequireFn(projectContents, nodeModules, dispatch)
+  const requireFn = getEditorRequireFn(projectContents, nodeModules, dispatch, evaluationCache)
+  const resolveFn = getEditorResolveFunction(projectContents, nodeModules)
 
   let cache: { [code: string]: CodeResult } = {}
   Utils.fastForEach(exportsInfo, (result) => {
@@ -252,7 +249,9 @@ export function generateCodeResultCache(
     cache: cache,
     error: null,
     requireFn: requireFn,
+    resolve: resolveFn,
     projectModules: projectModules,
+    evaluationCache: evaluationCache,
   }
 }
 

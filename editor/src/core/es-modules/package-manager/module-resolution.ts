@@ -11,7 +11,7 @@ import {
   parseString,
   ParseResult,
 } from '../../../utils/value-parser-utils'
-import { applicative3Either, foldEither } from '../../shared/either'
+import { applicative3Either, Either, foldEither, left, right } from '../../shared/either'
 import { setOptionalProp } from '../../shared/object-utils'
 import { getContentsTreeFileFromElements, ProjectContentTreeRoot } from '../../../components/assets'
 import { loaderExistsForFile } from '../../webpack-loaders/loaders'
@@ -165,11 +165,11 @@ const projectContentsFileLookup: (projectContents: ProjectContentTreeRoot) => Fi
   return fallbackLookup((path: string[]) => {
     const projectFile = getContentsTreeFileFromElements(projectContents, path)
     const fileContents = projectFile == null ? null : getProjectFileContentsAsString(projectFile)
-    if (fileContents != null) {
-      const filename = makePathFromParts(path)
-      return fileLookupResult(filename, esCodeFile(fileContents, null))
-    } else {
+    if (fileContents == null) {
       return resolveNotPresent
+    } else {
+      const filename = makePathFromParts(path)
+      return fileLookupResult(filename, esCodeFile(fileContents, 'PROJECT_CONTENTS', filename))
     }
   })
 }
@@ -344,5 +344,19 @@ export function resolveModule(
         getPartsFromPath(toImport),
       )
     }
+  }
+}
+
+export function resolveModulePath(
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  importOrigin: string,
+  toImport: string,
+): Either<string, string> {
+  const resolveResult = resolveModule(projectContents, nodeModules, importOrigin, toImport)
+  if (isResolveSuccess(resolveResult)) {
+    return right(resolveResult.success.path)
+  } else {
+    return left(`Cannot find module ${toImport}`)
   }
 }

@@ -89,6 +89,7 @@ import {
   isExportDefaultModifier,
   isExportDetailModifier,
   isExportDefaultNamed,
+  TextFile,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { fastForEach, NO_OP } from '../../shared/utils'
@@ -113,7 +114,7 @@ import {
   extractPrefixedCode,
 } from './parser-printer-parsing'
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
-import { ParserPrinterResultMessage } from './parser-printer-worker'
+import { ParseOrPrint, ParseOrPrintResult, ParsePrintResultMessage } from './parser-printer-worker'
 import { applyPrettier, PrettierConfig } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
@@ -126,6 +127,7 @@ import {
   ParsedComments,
 } from './parser-printer-comments'
 import { replaceAll } from '../../shared/string-utils'
+import { WorkerCodeUpdate, WorkerParsedUpdate } from '../../../components/editor/action-types'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1589,15 +1591,14 @@ function parseBindingName(
 
 export function getParseResult(
   workers: UtopiaTsWorkers,
-  filename: string,
-  fileContents: string,
-): Promise<ParsedTextFile> {
+  files: Array<ParseOrPrint>,
+): Promise<Array<ParseOrPrintResult>> {
   return new Promise((resolve, reject) => {
     const handleMessage = (e: MessageEvent) => {
-      const data = e.data as ParserPrinterResultMessage
+      const data = e.data as ParsePrintResultMessage
       switch (data.type) {
-        case 'parsefileresult': {
-          resolve(data.parseResult)
+        case 'parseprintfilesresult': {
+          resolve(data.files)
           workers.removeParserPrinterEventListener(handleMessage)
           break
         }
@@ -1610,33 +1611,7 @@ export function getParseResult(
     }
 
     workers.addParserPrinterEventListener(handleMessage)
-    workers.sendParseFileMessage(filename, fileContents)
-  })
-}
-
-export function printCodeAsync(
-  workers: UtopiaTsWorkers,
-  success: ParseSuccess,
-): Promise<{ code: string; highlightBounds: HighlightBoundsForUids }> {
-  return new Promise((resolve, reject) => {
-    const handleMessage = (e: MessageEvent) => {
-      const data = e.data as ParserPrinterResultMessage
-      switch (data.type) {
-        case 'printcoderesult': {
-          resolve({ code: data.printResult, highlightBounds: data.highlightBounds })
-          workers.removeParserPrinterEventListener(handleMessage)
-          break
-        }
-        case 'parseprintfailed': {
-          reject()
-          workers.removeParserPrinterEventListener(handleMessage)
-          break
-        }
-      }
-    }
-
-    workers.addParserPrinterEventListener(handleMessage)
-    workers.sendPrintCodeMessage(success)
+    workers.sendParsePrintMessage(files)
   })
 }
 

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { last, uniqBy } from '../../../../core/shared/array-utils'
-import { JSXMetadata } from '../../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   boundingRectangleArray,
   CanvasPoint,
@@ -109,22 +109,26 @@ function filterHiddenInstances(
 }
 
 export function getSelectableViews(
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
+  focusedElementPath: ScenePath | null,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
 ): TemplatePath[] {
   let candidateViews: Array<TemplatePath>
 
   if (allElementsDirectlySelectable) {
-    candidateViews = MetadataUtils.getAllPaths(componentMetadata)
+    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
+      componentMetadata,
+      focusedElementPath,
+    )
   } else {
-    const scenes = MetadataUtils.getAllScenePaths(componentMetadata.components)
+    const scenes = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(componentMetadata)
     let rootElementsToFilter: TemplatePath[] = []
-    let dynamicScenesWithFragmentRootViews: ScenePath[] = []
+    let dynamicScenesWithFragmentRootViews: TemplatePath[] = []
     Utils.fastForEach(scenes, (path) => {
-      const scene = MetadataUtils.findSceneByTemplatePath(componentMetadata.components, path)
+      const scene = MetadataUtils.findElementByTemplatePath(componentMetadata, path)
       const rootElements = scene?.rootElements
       if (
         MetadataUtils.isSceneTreatedAsGroup(scene) &&
@@ -142,8 +146,16 @@ export function getSelectableViews(
     Utils.fastForEach(selectedViews, (view) => {
       const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
-        const ancestorChildren = MetadataUtils.getImmediateChildren(componentMetadata, ancestor)
-        fastForEach(ancestorChildren, (child) => siblings.push(child.templatePath))
+        const {
+          children,
+          unfurledComponents,
+        } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
+          TP.dynamicPathToStaticPath(ancestor),
+          componentMetadata,
+          focusedElementPath,
+        )
+        const ancestorChildren = [...children, ...unfurledComponents]
+        fastForEach(ancestorChildren, (child) => siblings.push(child))
       })
     })
 
@@ -177,11 +189,12 @@ function useFindValidTarget(): (
 } | null {
   const storeRef = useRefEditorState((store) => {
     return {
-      componentMetadata: store.editor.jsxMetadataKILLME,
+      componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
       canvasScale: store.editor.canvas.scale,
       canvasOffset: store.editor.canvas.realCanvasOffset,
+      focusedElementPath: store.editor.focusedElementPath,
     }
   })
 
@@ -191,6 +204,7 @@ function useFindValidTarget(): (
         selectedViews,
         componentMetadata,
         hiddenInstances,
+        focusedElementPath,
         canvasScale,
         canvasOffset,
       } = storeRef.current
@@ -198,6 +212,7 @@ function useFindValidTarget(): (
         componentMetadata,
         selectedViews,
         hiddenInstances,
+        focusedElementPath,
         selectableViews.map(TP.toString),
         mousePoint,
         canvasScale,
@@ -234,7 +249,7 @@ function useStartDragState(): (
         return
       }
 
-      const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadataKILLME
+      const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadata
       const selectedViews = entireEditorStoreRef.current.editor.selectedViews
 
       const rootComponents = getOpenUtopiaJSXComponentsFromState(
@@ -256,6 +271,7 @@ function useStartDragState(): (
       const moveTargets = selection.filter(
         (view) =>
           TP.isScenePath(view) ||
+          TP.isStoryboardDescendant(view) || // FIXME This must go in the bin when we separate the Scene from the component it renders
           elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
 
@@ -346,19 +362,26 @@ export function useStartDragStateAfterDragExceedsThreshold(): (
 function useGetSelectableViewsForSelectMode() {
   const storeRef = useRefEditorState((store) => {
     return {
-      componentMetadata: store.editor.jsxMetadataKILLME,
+      componentMetadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
       hiddenInstances: store.editor.hiddenInstances,
+      focusedElementPath: store.editor.focusedElementPath,
     }
   })
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
-      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
+      const {
+        componentMetadata,
+        selectedViews,
+        hiddenInstances,
+        focusedElementPath,
+      } = storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
         selectedViews,
         hiddenInstances,
+        focusedElementPath,
         allElementsDirectlySelectable,
         childrenSelectable,
       )

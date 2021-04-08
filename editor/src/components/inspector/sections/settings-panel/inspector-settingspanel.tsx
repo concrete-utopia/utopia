@@ -21,7 +21,7 @@ import {
 import { betterReactMemo } from '../../../../uuiui-deps'
 
 const StyledFlexRow = styled(FlexRow)({
-  height: UtopiaTheme.layout.rowHeight.medium,
+  height: UtopiaTheme.layout.rowHeight.normal,
   paddingLeft: 12,
   paddingRight: 12,
 })
@@ -79,7 +79,7 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
   })
 
   const jsxMetadata = useRefEditorState((store) => {
-    return store.editor.jsxMetadataKILLME
+    return store.editor.jsxMetadata
   })
 
   const toggleCodeEditorVisible = React.useCallback(() => {
@@ -105,7 +105,7 @@ export const SettingsPanel = betterReactMemo('SettingsPanel', () => {
   return (
     <FlexColumn
       style={{
-        marginBottom: UtopiaTheme.layout.rowHeight.medium,
+        marginBottom: UtopiaTheme.layout.rowHeight.normal,
         borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
       }}
     >

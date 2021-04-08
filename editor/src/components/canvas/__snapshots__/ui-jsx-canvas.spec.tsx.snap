@@ -13,7 +13,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -44,6 +44,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -250,6 +251,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
@@ -281,6 +283,7 @@ Object {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -334,6 +337,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -382,12 +386,14 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": "Plane",
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -442,6 +448,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -490,12 +497,14 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": "Plane",
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -550,6 +559,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -598,12 +608,14 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": "Plane",
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -670,7 +682,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -698,6 +710,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -814,6 +827,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": "Hat",
@@ -846,6 +860,7 @@ Object {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -911,7 +926,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:567\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:567\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -935,6 +950,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -968,6 +984,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "567 scene-aaa",
@@ -985,6 +1002,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1050,7 +1068,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -1078,6 +1096,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -1245,11 +1264,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1303,6 +1324,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -1385,11 +1407,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa~~~1",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1444,6 +1468,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -1526,11 +1551,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa~~~2",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1585,6 +1612,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -1667,11 +1695,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa~~~3",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -1738,7 +1768,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -1778,6 +1808,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -2058,11 +2089,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2116,6 +2149,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -2296,11 +2330,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa~~~1",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2355,6 +2391,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -2443,11 +2480,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2503,6 +2542,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -2591,11 +2631,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2651,6 +2693,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -2739,11 +2782,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -2799,6 +2844,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -2979,11 +3025,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa~~~2",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3038,6 +3086,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -3126,11 +3175,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3186,6 +3237,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -3274,11 +3326,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3334,6 +3388,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -3422,11 +3477,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3482,6 +3539,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -3662,11 +3720,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa~~~3",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3721,6 +3781,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -3809,11 +3870,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -3869,6 +3932,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -3957,11 +4021,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4017,6 +4083,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -4105,11 +4172,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4177,7 +4246,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -4235,6 +4304,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -4323,11 +4393,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4381,6 +4453,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -4414,11 +4487,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4473,6 +4548,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -4506,11 +4582,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4577,7 +4655,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -4604,6 +4682,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -4707,6 +4786,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
@@ -4738,6 +4818,7 @@ Object {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -4803,7 +4884,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -4831,6 +4912,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -5007,11 +5089,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5065,6 +5149,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -5154,6 +5239,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~1",
@@ -5199,6 +5285,7 @@ Object {
       },
       "title": "n1",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5253,6 +5340,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -5342,6 +5430,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~2",
@@ -5387,6 +5476,7 @@ Object {
       },
       "title": "n2",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5441,6 +5531,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -5530,6 +5621,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~3",
@@ -5575,6 +5667,7 @@ Object {
       },
       "title": "n3",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5641,7 +5734,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -5669,6 +5762,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -5847,11 +5941,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -5905,6 +6001,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -5995,6 +6092,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~1",
@@ -6040,6 +6138,7 @@ Object {
       },
       "title": "n1",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6094,6 +6193,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -6184,6 +6284,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~2",
@@ -6229,6 +6330,7 @@ Object {
       },
       "title": "n2",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6283,6 +6385,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -6373,6 +6476,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~3",
@@ -6418,6 +6522,7 @@ Object {
       },
       "title": "n3",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6484,7 +6589,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -6542,6 +6647,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -6630,11 +6736,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6688,6 +6796,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -6721,6 +6830,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -6739,6 +6849,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6793,6 +6904,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -6826,6 +6938,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -6844,6 +6957,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -6910,7 +7024,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -6937,6 +7051,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -7056,11 +7171,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7114,6 +7231,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -7147,6 +7265,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa~~~1",
@@ -7165,6 +7284,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7219,6 +7339,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -7252,6 +7373,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa~~~2",
@@ -7270,6 +7392,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7336,7 +7459,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0 utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -7391,6 +7514,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -7624,6 +7748,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-0",
@@ -7656,6 +7781,7 @@ Object {
         "width": "100%",
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7709,6 +7835,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -7819,6 +7946,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -7865,6 +7993,7 @@ Object {
       },
       "title": "Hi there!",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -7943,7 +8072,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0 utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -7993,6 +8122,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -8226,6 +8356,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-0",
@@ -8258,6 +8389,7 @@ Object {
         "width": "100%",
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8311,6 +8443,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -8421,6 +8554,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -8467,6 +8601,7 @@ Object {
       },
       "title": "Hi there!",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8533,7 +8668,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0 utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -8588,6 +8723,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -8869,6 +9005,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-0",
@@ -8901,6 +9038,7 @@ Object {
         "width": "100%",
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -8954,6 +9092,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -9112,6 +9251,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -9164,6 +9304,7 @@ Object {
         },
       ],
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9230,7 +9371,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0 utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -9285,6 +9426,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -9566,6 +9708,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-0",
@@ -9598,6 +9741,7 @@ Object {
         "width": "100%",
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9651,6 +9795,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -9809,6 +9954,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -9861,6 +10007,7 @@ Object {
         },
       ],
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -9927,7 +10074,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -9951,6 +10098,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -9984,6 +10132,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb scene-aaa",
@@ -10001,6 +10150,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -10066,7 +10216,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/03a utopia-storyboard-uid/scene-aaa:aaa/03a/834 utopia-storyboard-uid/scene-aaa:aaa/03a/999 utopia-storyboard-uid/scene-aaa:aaa/03a/999/000\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/03a utopia-storyboard-uid/scene-aaa:aaa/03a/834 utopia-storyboard-uid/scene-aaa:aaa/03a/999 utopia-storyboard-uid/scene-aaa:aaa/03a/999/000\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -10155,6 +10305,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -11234,6 +11385,7 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
@@ -11269,6 +11421,7 @@ export var storyboard = (props) => {
         "width": 376,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -11322,6 +11475,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -12074,6 +12228,7 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "03a",
@@ -12118,6 +12273,7 @@ export var storyboard = (props) => {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12172,6 +12328,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -12447,12 +12604,14 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": "Copy",
       "data-uid": "834~~~1",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12508,6 +12667,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -12783,12 +12943,14 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": "Paste",
       "data-uid": "834~~~3",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -12844,6 +13006,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -13119,12 +13282,14 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": "Cut",
       "data-uid": "834~~~5",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13180,6 +13345,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -13487,6 +13653,7 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": Array [
@@ -13497,6 +13664,7 @@ export var storyboard = (props) => {
       "data-uid": "999~~~2",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13552,6 +13720,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -13708,6 +13877,7 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "000",
@@ -13733,6 +13903,7 @@ export var storyboard = (props) => {
       ],
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -13789,6 +13960,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -14096,12 +14268,14 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": "⌘⎇V",
       "data-uid": "999~~~4",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14157,6 +14331,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -14313,6 +14488,7 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "000",
@@ -14334,6 +14510,7 @@ export var storyboard = (props) => {
       "shortcut": "⌘⎇V",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14390,6 +14567,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -14697,12 +14875,14 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-label": "⌘⎇C",
       "data-uid": "999~~~6",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14758,6 +14938,7 @@ export var storyboard = (props) => {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -14914,6 +15095,7 @@ export var storyboard = (props) => {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "000",
@@ -14935,6 +15117,7 @@ export var storyboard = (props) => {
       "shortcut": "⌘⎇C",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -14990,22 +15173,6 @@ export var storyboard = (props) => {
 }
 `;
 
-exports[`UiJsxCanvas render mutated variable refers to code component 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"position:absolute;zoom:100%;transform:translate3d(0px, 0px, 0)\\"
->
-  <div
-    data-utopia-scene-id=\\"0\\"
-    data-utopia-valid-paths=\\"0:c56\\"
-    style=\\"background-color:rgba(255,255,255,1);box-shadow:1px 1px 4px rgba(128,128,128,1);border-width:1px;border-color:rgba(128,128,128,1);left:0;top:0;width:375px;height:812px;position:absolute\\"
-  >
-    <div data-uid=\\"c56\\">Utopia</div>
-  </div>
-</div>
-"
-`;
-
 exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block inside a text range 1`] = `
 "<div
   id=\\"canvas-container\\"
@@ -15019,7 +15186,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/aaa utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -15077,6 +15244,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -15195,11 +15363,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15253,6 +15423,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -15301,6 +15472,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa",
@@ -15320,6 +15492,7 @@ Object {
       "name": "World!",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15374,6 +15547,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -15422,6 +15596,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -15441,6 +15616,7 @@ Object {
       "name": "Dolly!",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15507,7 +15683,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -15531,6 +15707,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -15626,11 +15803,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15696,7 +15875,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -15723,6 +15902,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -15881,6 +16061,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
@@ -15912,6 +16093,7 @@ Object {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -15977,7 +16159,7 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
 >
   <div
     data-utopia-scene-id=\\"eee/fff\\"
-    data-utopia-valid-paths=\\"eee/fff:aaa eee/fff:aaa/bbb\\"
+    data-utopia-valid-paths=\\":eee :eee/fff eee/fff:aaa eee/fff:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -16028,6 +16210,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -16179,6 +16362,7 @@ export var storyboard = (
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa fff",
@@ -16189,6 +16373,7 @@ export var storyboard = (
         "width": "100%",
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -16242,6 +16427,7 @@ export var storyboard = (
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -16339,6 +16525,7 @@ export var storyboard = (
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -16358,6 +16545,7 @@ export var storyboard = (
       "skipDeepFreeze": true,
       "thing": "REACT_ELEMENT",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -16424,7 +16612,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/d59 utopia-storyboard-uid/scene-aaa:aaa/d59/dd5\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/d59 utopia-storyboard-uid/scene-aaa:aaa/d59/dd5\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -16509,6 +16697,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -16657,6 +16846,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
@@ -16666,6 +16856,7 @@ Object {
         "position": "absolute",
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -16736,6 +16927,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -16838,6 +17030,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "d59",
@@ -16882,6 +17075,7 @@ Object {
         "width": 221,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -16936,6 +17130,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -16990,6 +17185,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "dd5",
@@ -17022,6 +17218,7 @@ Object {
         "width": 193,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -17089,7 +17286,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0 utopia-storyboard-uid/scene-0:aaa utopia-storyboard-uid/scene-0:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -17139,6 +17336,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -17317,6 +17515,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-0",
@@ -17349,6 +17548,7 @@ Object {
         "width": "100%",
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -17402,6 +17602,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -17458,6 +17659,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -17489,6 +17691,7 @@ Object {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -17555,7 +17758,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -17583,6 +17786,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -17759,11 +17963,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -17817,6 +18023,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -17906,6 +18113,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~1",
@@ -17951,6 +18159,7 @@ Object {
       },
       "title": "n1",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -18005,6 +18214,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -18094,6 +18304,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~2",
@@ -18139,6 +18350,7 @@ Object {
       },
       "title": "n2",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -18193,6 +18405,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -18282,6 +18495,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~3",
@@ -18327,6 +18541,7 @@ Object {
       },
       "title": "n3",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -18393,7 +18608,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -18421,6 +18636,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -18598,11 +18814,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -18656,6 +18874,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -18746,6 +18965,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~1",
@@ -18791,6 +19011,7 @@ Object {
       },
       "title": "n1",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -18845,6 +19066,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -18935,6 +19157,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~2",
@@ -18980,6 +19203,7 @@ Object {
       },
       "title": "n2",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19034,6 +19258,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -19124,6 +19349,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~3",
@@ -19169,6 +19395,7 @@ Object {
       },
       "title": "n3",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19235,7 +19462,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -19263,6 +19490,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -19446,11 +19674,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19504,6 +19734,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -19593,6 +19824,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~1",
@@ -19638,6 +19870,7 @@ Object {
       },
       "title": "n1",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19692,6 +19925,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -19781,6 +20015,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~2",
@@ -19826,6 +20061,7 @@ Object {
       },
       "title": "n2",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -19880,6 +20116,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -19969,6 +20206,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~3",
@@ -20014,6 +20252,7 @@ Object {
       },
       "title": "n3",
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20080,7 +20319,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -20105,6 +20344,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -20144,11 +20384,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20202,6 +20444,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -20241,11 +20484,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20311,7 +20556,7 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
 >
   <div
     data-utopia-scene-id=\\"ccc/ddd\\"
-    data-utopia-valid-paths=\\"ccc/ddd:aaa ccc/ddd:aaa/bbb\\"
+    data-utopia-valid-paths=\\":ccc :ccc/ddd ccc/ddd:aaa ccc/ddd:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -20354,6 +20599,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -20495,6 +20741,7 @@ export var storyboard = (
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa ddd",
@@ -20503,6 +20750,7 @@ export var storyboard = (
         "current": Object {},
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20556,6 +20804,7 @@ export var storyboard = (
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -20608,6 +20857,7 @@ export var storyboard = (
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb ddd",
@@ -20618,6 +20868,7 @@ export var storyboard = (
         "width": "100%",
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20684,7 +20935,7 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
 >
   <div
     data-utopia-scene-id=\\"ccc/ddd\\"
-    data-utopia-valid-paths=\\"ccc/ddd:card\\"
+    data-utopia-valid-paths=\\":ccc :ccc/ddd ccc/ddd:card\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -20711,6 +20962,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -20744,6 +20996,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "card ddd",
@@ -20761,6 +21014,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -20826,7 +21080,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene:aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene utopia-storyboard-uid/scene:aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -20855,6 +21109,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -21041,6 +21296,7 @@ export var storyboard = (
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene",
@@ -21051,6 +21307,7 @@ export var storyboard = (
         "width": "100%",
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21116,7 +21373,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene:BBB\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene utopia-storyboard-uid/scene:BBB\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -21140,6 +21397,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -21188,12 +21446,14 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "BBB scene",
       "skipDeepFreeze": true,
       "x": 5,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21259,7 +21519,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
 >
   <div
     data-utopia-scene-id=\\"eee/fff\\"
-    data-utopia-valid-paths=\\"eee/fff:aaa eee/fff:aaa/bbb eee/fff:aaa/bbb/ccc eee/fff:aaa/ddd\\"
+    data-utopia-valid-paths=\\":eee :eee/fff eee/fff:aaa eee/fff:aaa/bbb eee/fff:aaa/bbb/ccc eee/fff:aaa/ddd\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -21323,6 +21583,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -21656,6 +21917,7 @@ export var storyboard = (
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa fff",
@@ -21688,6 +21950,7 @@ export var storyboard = (
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21741,6 +22004,7 @@ export var storyboard = (
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -21780,6 +22044,7 @@ export var storyboard = (
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "ddd",
@@ -21811,6 +22076,7 @@ export var storyboard = (
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -21877,7 +22143,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -21922,6 +22188,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -21998,11 +22265,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22056,6 +22325,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -22104,6 +22374,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb",
@@ -22136,6 +22407,7 @@ Object {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22202,7 +22474,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -22228,6 +22500,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -22261,6 +22534,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-factory-function-works": "true",
@@ -22279,6 +22553,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22344,7 +22619,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb utopia-storyboard-uid/scene-aaa:aaa/bbb/ccc\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa utopia-storyboard-uid/scene-aaa:aaa/bbb utopia-storyboard-uid/scene-aaa:aaa/bbb/ccc\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -22372,6 +22647,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -22577,11 +22853,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22635,6 +22913,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -22748,6 +23027,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~1",
@@ -22779,6 +23059,7 @@ Object {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22833,6 +23114,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -22918,11 +23200,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "ccc",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -22978,6 +23262,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -23091,6 +23376,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~2",
@@ -23122,6 +23408,7 @@ Object {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23176,6 +23463,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -23261,11 +23549,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "ccc",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23321,6 +23611,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -23434,6 +23725,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "bbb~~~3",
@@ -23465,6 +23757,7 @@ Object {
         "width": undefined,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23519,6 +23812,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -23604,11 +23898,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "ccc",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23676,7 +23972,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/cloner utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:zzz utopia-storyboard-uid/scene-aaa:zzz/cloner utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -23720,6 +24016,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -23815,11 +24112,13 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -23890,6 +24189,7 @@ Object {
       },
     ],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -23957,6 +24257,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "cloner",
@@ -23975,6 +24276,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24029,6 +24331,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -24068,6 +24371,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "cloned",
@@ -24077,6 +24381,7 @@ Object {
         "fontWeight": 800,
       },
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24144,7 +24449,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -24173,6 +24478,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -24206,6 +24512,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
@@ -24223,6 +24530,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24288,7 +24596,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -24318,6 +24626,7 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
+    "componentName": null,
     "computedStyle": Object {},
     "element": Object {
       "type": "RIGHT",
@@ -24351,6 +24660,7 @@ Object {
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
+    "label": null,
     "localFrame": null,
     "props": Object {
       "data-uid": "aaa scene-aaa",
@@ -24368,6 +24678,7 @@ Object {
       },
       "skipDeepFreeze": true,
     },
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 0,
       "clientWidth": 0,
@@ -24433,7 +24744,7 @@ exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1
 >
   <div
     data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-utopia-valid-paths=\\"\\"
+    data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);

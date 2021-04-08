@@ -13,7 +13,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
 >
   <div
     data-utopia-scene-id=\\"8a6/088\\"
-    data-utopia-valid-paths=\\"\\"
+    data-utopia-valid-paths=\\":8a6 :8a6/088\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);

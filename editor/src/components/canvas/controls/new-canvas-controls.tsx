@@ -15,14 +15,22 @@ import {
   getOpenUIJSFileKey,
   TransientCanvasState,
 } from '../../editor/store/editor-state'
-import { TemplatePath, InstancePath, Imports } from '../../../core/shared/project-file-types'
+import {
+  TemplatePath,
+  InstancePath,
+  Imports,
+  ScenePath,
+} from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
 import { HighlightControl } from './highlight-control'
 import { TextEditor } from '../../editor/text-editor'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { JSXMetadata, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isAspectRatioLockedNew } from '../../aspect-ratio'
 import { ElementContextMenu } from '../../element-context-menu'
@@ -79,9 +87,10 @@ export interface ControlProps {
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
   rootComponents: Array<UtopiaJSXComponent>
-  componentMetadata: JSXMetadata
+  componentMetadata: ElementInstanceMetadataMap
   imports: Imports
   hiddenInstances: Array<TemplatePath>
+  focusedElementPath: ScenePath | null
   highlightsEnabled: boolean
   canvasOffset: CanvasPoint
   scale: number
@@ -214,23 +223,19 @@ export const selectElementsThatRespectLayout = createSelector(
   (store) => getOpenImportsFromState(store.editor),
   (store) => getOpenUIJSFileKey(store.editor),
   (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
-  (store) => store.editor.jsxMetadataKILLME,
+  (store) => store.editor.jsxMetadata,
   (
     navigatorTargets: TemplatePath[],
     propertyControlsInfo: PropertyControlsInfo,
     openImports: Imports,
     openFilePath: string | null,
     rootComponents: UtopiaJSXComponent[],
-    jsxMetadataKILLME: JSXMetadata,
+    jsxMetadata: ElementInstanceMetadataMap,
   ) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findSceneByTemplatePath(jsxMetadataKILLME.components, view)
-        if (scene != null) {
-          return [view, ...scene.rootElements]
-        } else {
-          return [view]
-        }
+        const rootElements = MetadataUtils.getRootViews(jsxMetadata, view)
+        return [view, ...rootElements]
       } else {
         return [view]
       }
@@ -241,7 +246,7 @@ export const selectElementsThatRespectLayout = createSelector(
         openImports,
         openFilePath,
         rootComponents,
-        jsxMetadataKILLME,
+        jsxMetadata,
       ),
     )
   },
@@ -277,7 +282,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       }
 
       const possibleMetadata = MetadataUtils.getElementByInstancePathMaybe(
-        componentMetadata.elements,
+        componentMetadata,
         selectedView,
       )
       return possibleMetadata == null || MetadataUtils.dynamicPathToStaticPath(selectedView) == null
@@ -298,10 +303,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       if (TP.isScenePath(target)) {
         return false
       }
-      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
-        componentMetadata.elements,
-        target,
-      )
+      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
       if (possibleElement == null) {
         return false
       } else {
@@ -322,6 +324,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       componentMetadata: componentMetadata,
       imports: imports,
       hiddenInstances: props.editor.hiddenInstances,
+      focusedElementPath: props.editor.focusedElementPath,
       highlightsEnabled: props.editor.canvas.highlightsEnabled,
       canvasOffset: props.canvasOffset,
       scale: props.editor.canvas.scale,
@@ -413,10 +416,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
     if (dragState != null || selectedViews.length !== 1) {
       return null
     } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(
-        componentMetadata.elements,
-        target,
-      )
+      const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
       const canAnimate =
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
           target,

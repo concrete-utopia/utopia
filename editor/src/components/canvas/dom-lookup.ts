@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import { last, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
-import { JSXMetadata } from '../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   canvasPoint,
   CanvasVector,
@@ -12,7 +12,7 @@ import {
   windowPoint,
   WindowPoint,
 } from '../../core/shared/math-utils'
-import { TemplatePath } from '../../core/shared/project-file-types'
+import { ScenePath, TemplatePath } from '../../core/shared/project-file-types'
 import * as TP from '../../core/shared/template-path'
 import { getUIDsOnDomELement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
@@ -59,9 +59,10 @@ export function findFirstParentWithValidUID(
 }
 
 export function getValidTargetAtPoint(
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
+  focusedElementPath: ScenePath | null,
   validTemplatePathsForLookup: Array<string> | 'no-filter',
   point: WindowPoint | null,
   canvasScale: number,
@@ -75,6 +76,7 @@ export function getValidTargetAtPoint(
       componentMetadata,
       selectedViews,
       hiddenInstances,
+      focusedElementPath,
       validTemplatePathsForLookup,
       point,
       canvasScale,
@@ -84,9 +86,10 @@ export function getValidTargetAtPoint(
 }
 
 export function getAllTargetsAtPoint(
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
+  focusedElementPath: ScenePath | null,
   validTemplatePathsForLookup: Array<string> | 'no-filter',
   point: WindowPoint | null,
   canvasScale: number,
@@ -100,6 +103,7 @@ export function getAllTargetsAtPoint(
     componentMetadata,
     selectedViews,
     hiddenInstances,
+    focusedElementPath,
     pointOnCanvas.canvasPositionRaw,
     [TargetSearchType.All],
     true,

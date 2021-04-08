@@ -26,6 +26,7 @@ import {
   defaultProjectContentsForNormalising,
   getTextFileByPath,
   instancePathFromString,
+  SampleNodeModules,
 } from './code-file.test-utils'
 
 function transpileCode(
@@ -245,17 +246,6 @@ const ImportCSSTestCode = `/** @jsx jsx */
   export var App = (props) => <div data-uid={'aaa'}>{icon}</div>
   `
 
-const SampleNodeModules: NodeModules = {
-  '/node_modules/utopia-api/index.js': esCodeFile(`export {}`, null),
-  '/node_modules/utopia-api/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
-  '/node_modules/uuiui/index.js': esCodeFile(`export {}`, null),
-  '/node_modules/uuiui/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
-  '/node_modules/react/index.js': esCodeFile(`export {}`, null),
-  '/node_modules/react/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
-  '/node_modules/react-dom/index.js': esCodeFile(`export {}`, null),
-  '/node_modules/react-dom/package.json': esCodeFile(JSON.stringify({ main: './index.js' }), null),
-}
-
 describe('transpileCode', () => {
   it('transpiles imports with the file loader when doing a standard import of CSS', () => {
     const importTestFileBuildResult = transpileCode(['/app.js'], {
@@ -317,8 +307,8 @@ describe('Generating codeResultCache', () => {
       SampleSingleFileExportsInfo,
       {},
       NO_OP,
+      {},
       'incremental',
-      null,
       false,
     )
 
@@ -333,8 +323,8 @@ describe('Generating codeResultCache', () => {
       SampleMultiFileExportsInfo,
       SampleNodeModules,
       NO_OP,
+      {},
       'incremental',
-      null,
       false,
     )
 
@@ -348,8 +338,8 @@ describe('Generating codeResultCache', () => {
       SampleExportsInfoWithError,
       {},
       NO_OP,
+      {},
       'incremental',
-      null,
       false,
     )
 
@@ -366,8 +356,8 @@ describe('Creating require function', () => {
       SampleSingleFileExportsInfo,
       {},
       NO_OP,
+      {},
       'incremental',
-      null,
       false,
     )
 
@@ -381,8 +371,8 @@ describe('Creating require function', () => {
       SampleMultiFileExportsInfo,
       {},
       NO_OP,
+      {},
       'incremental',
-      null,
       false,
     )
 
@@ -397,8 +387,8 @@ describe('Creating require function', () => {
       SampleExportsInfoWithException,
       {},
       NO_OP,
+      {},
       'incremental',
-      null,
       false,
     )
 
@@ -412,8 +402,8 @@ describe('Creating require function', () => {
       SampleSingleFileExportsInfo,
       {},
       NO_OP,
+      {},
       'incremental',
-      null,
       false,
     )
 

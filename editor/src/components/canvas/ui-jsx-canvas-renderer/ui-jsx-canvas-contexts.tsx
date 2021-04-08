@@ -2,6 +2,7 @@ import * as React from 'react'
 import type { MapLike } from 'typescript'
 import { createContext } from 'use-context-selector'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
+import { Either, left } from '../../../core/shared/either'
 import type { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import type { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
@@ -49,11 +50,17 @@ interface UtopiaProjectContextProps {
   projectContents: ProjectContentTreeRoot
   openStoryboardFilePathKILLME: string | null
   transientFileState: TransientFileState | null
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>
 }
+const EmptyResolve = (importOrigin: string, toImport: string): Either<string, string> => {
+  return left(`Error while resolving ${toImport}, the resolver is missing`)
+}
+
 export const UtopiaProjectContext = createContext<UtopiaProjectContextProps>({
   projectContents: {},
   openStoryboardFilePathKILLME: null,
   transientFileState: null,
+  resolve: EmptyResolve,
 })
 
 interface SceneLevelContextProps {

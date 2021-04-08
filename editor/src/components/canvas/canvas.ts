@@ -1,9 +1,8 @@
 import * as R from 'ramda'
 import { findElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
@@ -12,6 +11,7 @@ import {
   TemplatePath,
   importDetails,
   importAlias,
+  ScenePath,
 } from '../../core/shared/project-file-types'
 import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
@@ -86,7 +86,8 @@ const Canvas = {
     TargetSearchType.ParentsOfSelected,
   ],
   getFramesInCanvasContext(
-    metadata: JSXMetadata,
+    metadata: ElementInstanceMetadataMap,
+    focusedElementPath: ScenePath | null,
     useBoundingFrames: boolean,
   ): Array<FrameWithPath> {
     function recurseChildren(
@@ -107,17 +108,28 @@ const Canvas = {
       )
       const overflows = MetadataUtils.overflows(component)
       const includeClippedNext = useBoundingFrames && overflows
-      const children = MetadataUtils.getImmediateChildren(metadata, component.templatePath)
+      const {
+        children,
+        unfurledComponents,
+      } = MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
+        component.templatePath,
+        metadata,
+        focusedElementPath,
+      )
       const childFrames = children.map((child) => {
         const recurseResults = recurseChildren(offsetFrame, child)
         const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : offsetFrame
         return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
       })
-      const allChildrenBounds = Utils.boundingRectangleArray(
-        Utils.pluck(childFrames, 'boundingRect'),
-      )
-      if (childFrames.length > 0 && allChildrenBounds != null) {
-        const allChildrenFrames = Utils.pluck(childFrames, 'frames').flat()
+      const unfurledFrames = unfurledComponents.map((unfurledElement) => {
+        const recurseResults = recurseChildren(offset, unfurledElement) // the unfurled component is not really a children, so we don't apply our own offset here
+        const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : offsetFrame
+        return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
+      })
+      const allFrames = [...childFrames, ...unfurledFrames]
+      const allChildrenBounds = Utils.boundingRectangleArray(Utils.pluck(allFrames, 'boundingRect'))
+      if (allFrames.length > 0 && allChildrenBounds != null) {
+        const allChildrenFrames = Utils.pluck(allFrames, 'frames').flat()
         const boundingRect = Utils.boundingRectangle(offsetFrame, allChildrenBounds)
         const toAppend: FrameWithPath = { path: component.templatePath, frame: boundingRect }
         return {
@@ -131,21 +143,10 @@ const Canvas = {
       }
     }
 
-    const storyboardComponent = metadata.components.find((c) =>
-      TP.pathsEqual(c.scenePath, EmptyScenePathForStoryboard),
-    )
-
-    if (storyboardComponent != null) {
-      const storyboardEntryPoint = MetadataUtils.getImmediateChildren(
-        metadata,
-        storyboardComponent.scenePath,
-      )
-      return storyboardEntryPoint.flatMap((storyboardRoot) => {
-        return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardRoot).frames
-      })
-    } else {
-      return []
-    }
+    const storyboardChildren = MetadataUtils.getAllStoryboardChildren(metadata)
+    return storyboardChildren.flatMap((storyboardChild) => {
+      return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardChild).frames
+    })
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
     switch (selectedViews.length) {
@@ -179,7 +180,7 @@ const Canvas = {
   },
   jumpToSibling(
     selectedViews: Array<TemplatePath>,
-    components: JSXMetadata,
+    components: ElementInstanceMetadataMap,
     forwards: boolean,
   ): TemplatePath | null {
     switch (selectedViews.length) {
@@ -208,7 +209,10 @@ const Canvas = {
         return Utils.forceNotNull('Internal Error.', newSelection)
     }
   },
-  getFirstChild(selectedViews: Array<TemplatePath>, components: JSXMetadata): TemplatePath | null {
+  getFirstChild(
+    selectedViews: Array<TemplatePath>,
+    components: ElementInstanceMetadataMap,
+  ): TemplatePath | null {
     if (selectedViews.length !== 1) {
       return null
     } else {
@@ -275,9 +279,10 @@ const Canvas = {
     })
   },
   getAllTargetsAtPoint(
-    componentMetadata: JSXMetadata,
+    componentMetadata: ElementInstanceMetadataMap,
     selectedViews: Array<TemplatePath>,
     hiddenInstances: Array<TemplatePath>,
+    focusedElementPath: ScenePath | null,
     canvasPosition: CanvasPoint,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
@@ -285,7 +290,11 @@ const Canvas = {
   ): Array<{ templatePath: TemplatePath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5
     const targetFilters = Canvas.targetFilter(selectedViews, searchTypes)
-    const framesWithPaths = Canvas.getFramesInCanvasContext(componentMetadata, useBoundingFrames)
+    const framesWithPaths = Canvas.getFramesInCanvasContext(
+      componentMetadata,
+      focusedElementPath,
+      useBoundingFrames,
+    )
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
       const shouldUseLooseTargeting =
         looseTargetingForZeroSizedElements &&

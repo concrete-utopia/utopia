@@ -22,6 +22,7 @@ import { betterReactMemo } from '../../utils/react-performance'
 import { TabComponent } from '../../uuiui/tab'
 import { Icons } from '../../uuiui/icons'
 import { SimpleFlexColumn } from '../../uuiui/widgets/layout/flex-column'
+import { UIRow } from '../../uuiui'
 
 interface ErrorMessageRowProps {
   errorMessage: ErrorMessage
@@ -137,8 +138,8 @@ interface CodeEditorTabPaneProps {
   canvasConsoleLogs: Array<ConsoleLog>
 }
 
-const ProblemRowHeight = UtopiaTheme.layout.rowHeight.smaller
-const ProblemTabBarHeight = UtopiaTheme.layout.rowHeight.small
+const ProblemRowHeight = 29
+const ProblemTabBarHeight = 32
 
 type OpenCodeEditorTab = 'problems' | 'console'
 
@@ -265,11 +266,11 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
           boxShadow: `0px 1px 0px 0px ${UtopiaTheme.color.subduedBorder.value}`,
         }}
       >
-        <FlexRow
+        <UIRow
           style={{
-            height: UtopiaTheme.layout.rowHeight.small,
             borderBottom: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
             alignItems: 'stretch',
+            height: 32,
           }}
         >
           <TabComponent
@@ -322,7 +323,7 @@ export const CodeEditorTabPane = betterReactMemo<CodeEditorTabPaneProps>(
               </span>
             }
           />
-        </FlexRow>
+        </UIRow>
         {isOpen ? getTabContents() : null}
       </Resizable>
     )

@@ -51,6 +51,7 @@ import {
   ProjectContentTreeRoot,
   transformContentsTree,
 } from '../../components/assets'
+import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -384,6 +385,18 @@ export function fileTypeFromFileName(
   }
 }
 
+export function extractFile(file: File): Promise<FileResult> {
+  const fileType = fileTypeFromFileName(file.name)
+  switch (fileType) {
+    case 'TEXT_FILE':
+      return extractText(file)
+    case 'IMAGE_FILE':
+      return extractImage(file)
+    case 'ASSET_FILE':
+      return extractAsset(file)
+  }
+}
+
 export function switchToFileType(from: ProjectFile, to: ProjectFileType): ProjectFile | null {
   switch (from.type) {
     case 'TEXT_FILE':
@@ -600,4 +613,12 @@ export function updateFileContents(
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)
   }
+}
+
+export function getSavedCodeFromTextFile(file: TextFile): string {
+  return file.lastSavedContents?.code ?? file.fileContents.code
+}
+
+export function getUnsavedCodeFromTextFile(file: TextFile): string | null {
+  return file.lastSavedContents == null ? null : file.fileContents.code
 }

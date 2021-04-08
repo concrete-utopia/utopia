@@ -3,7 +3,7 @@ import { VariableSizeList } from 'react-window'
 import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
-import { FlexColumn, UtopiaTheme, FlexRow, StringInput } from '../../../../../uuiui'
+import { FlexColumn, UtopiaTheme, FlexRow, StringInput, UIRow } from '../../../../../uuiui'
 import { ControlStyles, betterReactMemo, Utils } from '../../../../../uuiui-deps'
 import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
 import {

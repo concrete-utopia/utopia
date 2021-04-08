@@ -248,7 +248,7 @@ const initPreview = () => {
 
     incorporateBuildResult(nodeModules, bundledProjectFiles)
 
-    const requireFn = getRequireFn(onRemoteModuleDownload, projectContents, nodeModules)
+    const requireFn = getRequireFn(onRemoteModuleDownload, projectContents, nodeModules, {})
 
     // replacing the document body first
     const previewHTMLFileName = getMainHTMLFilename(projectContents)

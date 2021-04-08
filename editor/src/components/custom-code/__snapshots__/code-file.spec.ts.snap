@@ -141,6 +141,7 @@ Object {
     },
   },
   "error": null,
+  "evaluationCache": Object {},
   "exportsInfo": Array [
     Object {
       "code": "// component library
@@ -262,6 +263,7 @@ ComponentWithProps.propertyControls = {
     },
   },
   "requireFn": [Function],
+  "resolve": [Function],
   "skipDeepFreeze": true,
 }
 `;
@@ -616,6 +618,7 @@ exports.ComponentWithProps.propertyControls = {
     },
   },
   "error": null,
+  "evaluationCache": Object {},
   "exportsInfo": Array [
     Object {
       "code": "/** @jsx jsx */
@@ -1185,6 +1188,7 @@ exports.ComponentWithProps.propertyControls = {
     },
   },
   "requireFn": [Function],
+  "resolve": [Function],
   "skipDeepFreeze": true,
 }
 `;
@@ -1351,6 +1355,7 @@ exports.App = function (props) {
     },
   },
   "error": null,
+  "evaluationCache": Object {},
   "exportsInfo": Array [
     Object {
       "code": "/** @jsx jsx */
@@ -1590,6 +1595,7 @@ exports.App = function (props) {
     },
   },
   "requireFn": [Function],
+  "resolve": [Function],
   "skipDeepFreeze": true,
 }
 `;

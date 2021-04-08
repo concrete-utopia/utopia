@@ -14,15 +14,17 @@ import { directory } from '../core/model/project-file-utils'
 import {
   ProjectContents,
   RevisionsState,
+  TextFile,
   textFile,
   textFileContents,
   unparsed,
 } from '../core/shared/project-file-types'
+import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
 import { getSampleComponentsFile, getUiBuilderUIJSFile } from './ui-builder-ui-js-file'
 
 export const UI_BUILDER_PROJECT_ID = 'UI-BUILDER'
 
-export function defaultProject(): PersistentModel {
+export function simpleDefaultProject(): PersistentModel {
   const projectContents: ProjectContents = {
     '/package.json': textFile(
       textFileContents(
@@ -43,6 +45,98 @@ export function defaultProject(): PersistentModel {
 
   let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
   return persistentModel
+}
+
+export function complexDefaultProject(): PersistentModel {
+  function createCodeFile(path: string, contents: string): TextFile {
+    const result = lintAndParse(path, contents)
+    return textFile(textFileContents(contents, result, RevisionsState.BothMatch), null, Date.now())
+  }
+
+  const projectContents: ProjectContents = {
+    '/package.json': textFile(
+      textFileContents(
+        JSON.stringify(DefaultPackageJson, null, 2),
+        unparsed,
+        RevisionsState.BothMatch,
+      ),
+      null,
+      0,
+    ),
+    '/src': directory(),
+    '/assets': directory(),
+    '/public': directory(),
+    '/src/index.js': getSamplePreviewFile(),
+    '/public/index.html': getSamplePreviewHTMLFile(),
+    [StoryboardFilePath]: createCodeFile(
+      StoryboardFilePath,
+      `/** @jsx jsx */
+import * as React from 'react'
+import { Scene, Storyboard, jsx } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var SameFileApp = (props) => {
+  return <div data-uid='same-file-app-div' style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }} />
+}
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard-entity'>
+    <Scene
+      data-uid='scene-1-entity'
+      component={App}
+      props={{}}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    />
+    <Scene
+      data-uid='scene-2-entity'
+      component={SameFileApp}
+      props={{}}
+      style={{ position: 'absolute', left: 400, top: 0, width: 375, height: 812 }}
+    />
+  </Storyboard>
+)`,
+    ),
+    '/src/app.js': createCodeFile(
+      '/src/app.js',
+      `/** @jsx jsx */
+import * as React from 'react'
+import { jsx } from 'utopia-api'
+import { Card } from '/src/card.js'
+export var App = (props) => {
+  return (
+    <div
+      data-uid='app-outer-div'
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <Card data-uid='card-instance' style={{ position: 'absolute', left: 0, top: 0, width: 200, height: 300}} />
+    </div>
+  )
+}`,
+    ),
+    '/src/card.js': createCodeFile(
+      '/src/card.js',
+      `/** @jsx jsx */
+import * as React from 'react'
+import { jsx, Rectangle } from 'utopia-api'
+export var Card = (props) => {
+  return <div data-uid='card-outer-div' style={{...props.style}}>
+    <div data-uid='card-inner-div' style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 50, backgroundColor: 'red' }} />
+    <Rectangle data-uid='card-inner-rectangle' style={{ position: 'absolute', left: 100, top: 200, width: 50, height: 50, backgroundColor: 'blue' }} />
+  </div>
+}`,
+    ),
+  }
+
+  let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
+  return persistentModel
+}
+
+export function defaultProject(): PersistentModel {
+  if (process.env.NODE_ENV === 'production') {
+    return simpleDefaultProject()
+  } else {
+    return complexDefaultProject()
+  }
 }
 
 function uiBuilderProject(): PersistentModel {

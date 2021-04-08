@@ -15,7 +15,7 @@ import { useHighlightCallbacks } from './select-mode-hooks'
 function useGetHiglightableViewsForInsertMode() {
   const storeRef = useRefEditorState((store) => {
     return {
-      componentMetadata: store.editor.jsxMetadataKILLME,
+      componentMetadata: store.editor.jsxMetadata,
       mode: store.editor.mode,
       imports: getOpenImportsFromState(store.editor),
     }
