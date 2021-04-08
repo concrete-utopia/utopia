@@ -815,22 +815,18 @@ export const MetadataUtils = {
     const allPaths = Object.values(metadata).map((element) => element.templatePath)
     const children = MetadataUtils.getImmediateChildrenPaths(metadata, path)
 
-    const matchingFocusPath =
-      focusedElementPath == null
-        ? null
-        : TP.scenePathUpToElementPath(
-            focusedElementPath,
-            TP.elementPathForPath(path),
-            'dynamic-scene-path',
-          )
-    const focusedRootElementPaths =
-      matchingFocusPath == null
-        ? []
-        : allPaths.filter(
-            (p) =>
-              TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
-              TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
-          )
+    const isPathPrefixOfFocusedPath = TP.isPathAlongFocusedElementPath(path, focusedElementPath)
+
+    const focusedRootElementPaths = isPathPrefixOfFocusedPath
+      ? allPaths.filter(
+          (p) =>
+            TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
+            TP.scenePathsEqual(
+              TP.scenePathPartOfTemplatePath(p),
+              TP.scenePathForElementAtPath(path),
+            ),
+        )
+      : []
 
     return { children: children, unfurledComponents: focusedRootElementPaths }
   },

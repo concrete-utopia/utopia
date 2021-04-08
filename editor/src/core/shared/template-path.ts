@@ -1040,3 +1040,52 @@ export function outermostScenePathPart(path: TemplatePath): ScenePath {
     return asScenePath
   }
 }
+
+function toElementPathArray(path: TemplatePath | null): Array<ElementPath> | null {
+  if (path == null) {
+    return null
+  } else if (isScenePath(path)) {
+    return path.sceneElementPaths
+  } else {
+    return [...path.scene.sceneElementPaths, path.element]
+  }
+}
+
+function longestSharedElementPathArray(
+  l: Array<ElementPath> | null,
+  r: Array<ElementPath> | null,
+): Array<ElementPath> | null {
+  if (l === null || r === null) {
+    return null
+  } else if (l === r) {
+    return l
+  } else {
+    const matchedElements = longestCommonArray(l, r, elementPathsEqual)
+    if (matchedElements.length > 0) {
+      return matchedElements
+    } else {
+      return null
+    }
+  }
+}
+
+function isElementPathPrefixOfElementPath(
+  potentialPrefix: Array<ElementPath> | null,
+  target: Array<ElementPath> | null,
+): boolean {
+  const longestSharedArray = longestSharedElementPathArray(potentialPrefix, target)
+  return potentialPrefix != null && longestSharedArray?.length === potentialPrefix.length
+}
+
+export function isPathAlongFocusedElementPath(
+  path: TemplatePath,
+  focusedElementPath: ScenePath | null,
+): boolean {
+  const elementPathArrayForTarget = toElementPathArray(path) ?? []
+  return (
+    isElementPathPrefixOfElementPath(
+      elementPathArrayForTarget,
+      toElementPathArray(focusedElementPath),
+    ) && elementPathArrayForTarget.length > 1
+  )
+}
