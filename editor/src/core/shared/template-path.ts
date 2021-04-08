@@ -1006,14 +1006,19 @@ export function isScenePathEmpty(path: TemplatePath): boolean {
 }
 
 interface DropFirstScenePathElementResultType {
-  newPath: InstancePath
+  newPath: InstancePath | null
   droppedScenePathElements: StaticElementPath | null
 }
 
 export function dropFirstScenePathElement(
-  path: StaticInstancePath,
+  path: StaticInstancePath | null,
 ): DropFirstScenePathElementResultType {
-  if (isScenePathEmpty(path)) {
+  if (path == null) {
+    return {
+      newPath: null,
+      droppedScenePathElements: null,
+    }
+  } else if (isScenePathEmpty(path)) {
     return {
       newPath: path,
       droppedScenePathElements: null,

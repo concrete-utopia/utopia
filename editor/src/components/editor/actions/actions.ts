@@ -428,6 +428,7 @@ import {
   getHighlightBoundsForUids,
   getTemplatePathsInBounds,
   StoryboardFilePath,
+  modifyUnderlyingTarget,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -1944,41 +1945,49 @@ export const UPDATE_FNS = {
     )
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
-    const editorWithAddedImport = modifyOpenParseSuccess((success) => {
-      const updatedImports = mergeImports(success.imports, action.importsToAdd)
-      return {
-        ...success,
-        imports: updatedImports,
-      }
-    }, editor)
+    let newSelectedViews: TemplatePath[] = []
+    const withNewElement = modifyUnderlyingTarget(
+      action.parent,
+      forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
+      editor,
+      (element) => element,
+      (success) => {
+        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
+        const targetParent =
+          action.parent == null
+            ? // action.parent == null means Canvas, which means storyboard root element
+              getStoryboardTemplatePath(utopiaComponents)
+            : action.parent
 
-    const newSelectedViews: TemplatePath[] = []
+        if (targetParent == null || TP.isScenePath(targetParent)) {
+          // TODO Scene Implementation
+          return success
+        }
 
-    const withNewElement = modifyOpenJSXElements((elements) => {
-      const targetParent =
-        action.parent == null
-          ? // action.parent == null means Canvas, which means storyboard root element
-            getStoryboardTemplatePath(elements)
-          : action.parent
+        const withInsertedElement = insertElementAtPath(
+          targetParent,
+          action.jsxElement,
+          utopiaComponents,
+          null,
+        )
 
-      if (targetParent == null || TP.isScenePath(targetParent)) {
-        // TODO Scene Implementation
-        return elements
-      }
+        const uid = getUtopiaID(action.jsxElement)
+        const newPath = TP.appendToPath(targetParent, uid)
+        newSelectedViews.push(newPath)
 
-      const withInsertedElement = insertElementAtPath(
-        targetParent,
-        action.jsxElement,
-        elements,
-        null,
-      )
+        const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+          success.topLevelElements,
+          withInsertedElement,
+        )
 
-      const uid = getUtopiaID(action.jsxElement)
-      const newPath = TP.appendToPath(targetParent, uid)
-      newSelectedViews.push(newPath)
-      return withInsertedElement
-    }, editorWithAddedImport)
-
+        const updatedImports = mergeImports(success.imports, action.importsToAdd)
+        return {
+          ...success,
+          topLevelElements: updatedTopLevelElements,
+          imports: updatedImports,
+        }
+      },
+    )
     return {
       ...withNewElement,
       selectedViews: filterMultiSelectScenes(newSelectedViews),

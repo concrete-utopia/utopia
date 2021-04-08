@@ -50,6 +50,7 @@ import { findElementWithUID } from '../../core/shared/uid-utils'
 import { importedFromWhere } from '../editor/import-utils'
 import { resolveModule } from '../../core/es-modules/package-manager/module-resolution'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
+import { optionalMap } from '../../core/shared/optional-utils'
 
 export interface CodeResult {
   exports: ModuleExportTypes
@@ -274,13 +275,13 @@ export function codeCacheToBuildResult(cache: {
 
 export interface NormalisePathSuccess {
   type: 'NORMALISE_PATH_SUCCESS'
-  normalisedPath: StaticInstancePath
+  normalisedPath: StaticInstancePath | null
   filePath: string
   textFile: TextFile
 }
 
 export function normalisePathSuccess(
-  normalisedPath: StaticInstancePath,
+  normalisedPath: StaticInstancePath | null,
   filePath: string,
   textFile: TextFile,
 ): NormalisePathSuccess {
@@ -369,7 +370,7 @@ export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   currentFilePath: string,
-  elementPath: InstancePath,
+  elementPath: InstancePath | null,
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
   if (isTextFile(currentFile)) {
@@ -381,7 +382,7 @@ export function normalisePathToUnderlyingTarget(
       // which now doesn't exist.
       return normalisePathUnableToProceed(currentFilePath)
     } else {
-      const staticPath = TP.dynamicPathToStaticPath(elementPath)
+      const staticPath = elementPath == null ? null : TP.dynamicPathToStaticPath(elementPath)
       const potentiallyDroppedFirstSceneElementResult = TP.dropFirstScenePathElement(staticPath)
       if (potentiallyDroppedFirstSceneElementResult.droppedScenePathElements == null) {
         // As the scene path is empty, there's no more traversing to do, the target is in this file.
@@ -390,7 +391,7 @@ export function normalisePathToUnderlyingTarget(
         const droppedPathPart = potentiallyDroppedFirstSceneElementResult.droppedScenePathElements
         if (droppedPathPart.length === 0) {
           return normalisePathError(
-            `Unable to handle empty scene path part for ${TP.toString(elementPath)}`,
+            `Unable to handle empty scene path part for ${optionalMap(TP.toString, elementPath)}`,
           )
         } else {
           // Now need to identify the element relating to the last part of the dropped scene path.
@@ -429,7 +430,10 @@ export function normalisePathToUnderlyingTarget(
                     return lookupElementImport(componentAttr.javascript)
                   } else {
                     return normalisePathError(
-                      `Unable to handle Scene component definition for ${TP.toString(elementPath)}`,
+                      `Unable to handle Scene component definition for ${optionalMap(
+                        TP.toString,
+                        elementPath,
+                      )}`,
                     )
                   }
                 } else {
@@ -475,7 +479,9 @@ export function normalisePathToUnderlyingTarget(
             // Handle things like divs.
             if (isIntrinsicElement(targetElement.name)) {
               return normalisePathSuccess(
-                TP.dynamicPathToStaticPath(potentiallyDroppedFirstSceneElementResult.newPath),
+                potentiallyDroppedFirstSceneElementResult.newPath == null
+                  ? null
+                  : TP.dynamicPathToStaticPath(potentiallyDroppedFirstSceneElementResult.newPath),
                 currentFilePath,
                 currentFile,
               )

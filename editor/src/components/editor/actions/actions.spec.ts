@@ -19,6 +19,7 @@ import {
   ElementInstanceMetadataMap,
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
+  jsxAttributeOtherJavaScript,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -33,8 +34,13 @@ import {
   unparsed,
   addModifierExportToDetail,
   EmptyExportsDetail,
+  importAlias,
 } from '../../../core/shared/project-file-types'
-import { emptyImports, parseSuccess } from '../../../core/workers/common/project-file-utils'
+import {
+  addImport,
+  emptyImports,
+  parseSuccess,
+} from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
 import { right, forceRight, left, isRight } from '../../../core/shared/either'
 import { createFakeMetadataForComponents } from '../../../utils/utils.test-utils'
@@ -65,8 +71,12 @@ import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
   sampleDefaultImports,
+  sampleImportsForTests,
 } from '../../../core/model/test-ui-js-file.test-utils'
-import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../core/model/scene-utils'
 import { getDefaultUIJsFile, sampleCode } from '../../../core/model/new-project-files'
 import { TestScenePath } from '../../canvas/ui-jsx.test-utils'
 import { NO_OP } from '../../../core/shared/utils'
@@ -79,7 +89,13 @@ const chaiExpect = Chai.expect
 describe('SET_PROP', () => {
   const originalModel = deepFreeze(
     parseSuccess(
-      emptyImports(),
+      addImport(
+        'utopia-api',
+        null,
+        [importAlias('View'), importAlias('Scene'), importAlias('Storyboard')],
+        null,
+        emptyImports(),
+      ),
       [
         utopiaJSXComponent(
           'MyView',
@@ -102,6 +118,38 @@ describe('SET_PROP', () => {
                     emptyComments,
                   ),
                   'data-uid': jsxAttributeValue('bbb', emptyComments),
+                }),
+                [],
+              ),
+            ],
+          ),
+          null,
+          false,
+          emptyComments,
+        ),
+        utopiaJSXComponent(
+          BakedInStoryboardVariableName,
+          false,
+          'var',
+          'block',
+          null,
+          [],
+          jsxElement(
+            'Storyboard',
+            jsxAttributesFromMap({
+              'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
+            }),
+            [
+              jsxElement(
+                'Scene',
+                jsxAttributesFromMap({
+                  component: jsxAttributeOtherJavaScript(
+                    'MyView',
+                    `return MyView`,
+                    ['MyView'],
+                    null,
+                  ),
+                  'data-uid': jsxAttributeValue('scene-0', emptyComments),
                 }),
                 [],
               ),
@@ -818,12 +866,39 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     false,
     emptyComments,
   )
+  const storyboard = utopiaJSXComponent(
+    BakedInStoryboardVariableName,
+    false,
+    'var',
+    'block',
+    null,
+    [],
+    jsxElement(
+      'Storyboard',
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
+      }),
+      [
+        jsxElement(
+          'Scene',
+          jsxAttributesFromMap({
+            component: jsxAttributeOtherJavaScript('App', `return App`, ['App'], null),
+            'data-uid': jsxAttributeValue('scene-0', emptyComments),
+          }),
+          [],
+        ),
+      ],
+    ),
+    null,
+    false,
+    emptyComments,
+  )
   const fileForUI = textFile(
     textFileContents(
       '',
       parseSuccess(
-        sampleDefaultImports,
-        [firstTopLevelElement],
+        sampleImportsForTests,
+        [firstTopLevelElement, storyboard],
         {},
         null,
         null,

@@ -77,6 +77,7 @@ import {
   textFile,
   textFileContents,
   ScenePath,
+  isParseSuccess,
 } from '../../core/shared/project-file-types'
 import {
   getOrDefaultScenes,
@@ -123,6 +124,9 @@ import {
   addSceneToJSXComponents,
   getNumberOfScenes,
   StoryboardFilePath,
+  modifyUnderlyingTarget,
+  modifyParseSuccessAtPath,
+  getOpenUIJSFileKey,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -167,7 +171,7 @@ import {
   getStoryboardUID,
   PathForSceneStyle,
 } from '../../core/model/scene-utils'
-import { optionalMap } from '../../core/shared/optional-utils'
+import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
 import { addFileToProjectContents, contentsToTree } from '../assets'
@@ -276,16 +280,19 @@ export function clearDragState(
       result,
       false,
     )
-    const producedTransientFileState = producedTransientCanvasState.fileState
-    if (producedTransientFileState != null) {
-      result = modifyOpenParseSuccess((success) => {
-        let parseSuccessResult: ParseSuccess = {
-          ...success,
-          imports: producedTransientFileState.imports,
-          topLevelElements: producedTransientFileState.topLevelElementsIncludingScenes,
-        }
-        return parseSuccessResult
-      }, result)
+    const producedTransientFilesState = producedTransientCanvasState.filesState
+    if (producedTransientFilesState != null) {
+      for (const filePath of Object.keys(producedTransientFilesState)) {
+        const producedTransientFileState = producedTransientFilesState[filePath]
+        result = modifyParseSuccessAtPath(filePath, result, (success) => {
+          let parseSuccessResult: ParseSuccess = {
+            ...success,
+            imports: producedTransientFileState.imports,
+            topLevelElements: producedTransientFileState.topLevelElementsIncludingScenes,
+          }
+          return parseSuccessResult
+        })
+      }
     }
   }
 
@@ -1493,7 +1500,13 @@ export function produceResizeCanvasTransientState(
     return transientCanvasState(
       editorState.selectedViews,
       editorState.highlightedViews,
-      transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+      // FIXME: Should handle multiple file edit situations.
+      {
+        [forceNotNull(
+          'Should be an open file',
+          getOpenUIJSFileKey(editorState),
+        )]: transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+      },
     )
   }
 }
@@ -1569,7 +1582,13 @@ export function produceResizeSingleSelectCanvasTransientState(
   return transientCanvasState(
     editorState.selectedViews,
     editorState.highlightedViews,
-    transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+    // FIXME: Should handle multiple file edit situations.
+    {
+      [forceNotNull('Should be an open file', getOpenUIJSFileKey(editorState))]: transientFileState(
+        topLevelElementsIncludingScenes,
+        parseSuccess.imports,
+      ),
+    },
   )
 }
 
@@ -1578,47 +1597,38 @@ export function produceCanvasTransientState(
   editorState: EditorState,
   preventAnimations: boolean,
 ): TransientCanvasState {
-  function noFileTransientCanvasState(): TransientCanvasState {
-    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
-  }
-  function parseSuccessTransientCanvasState(parseSuccess: ParseSuccess): TransientCanvasState {
-    const topLevelElementsIncludingScenes = parseSuccess.topLevelElements
-    return {
-      selectedViews: editorState.selectedViews,
-      highlightedViews: editorState.highlightedViews,
-      fileState: transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
-    }
-  }
-  const openUIFile = getOpenUIJSFile(editorState)
-  if (openUIFile == null) {
-    return noFileTransientCanvasState()
-  } else {
-    return foldParsedTextFile(
-      (_) => {
-        return noFileTransientCanvasState()
-      },
-      (parseSuccess) => {
-        switch (editorState.mode.type) {
-          // When we're in insert mode, we need to temporarily slip the element being inserted into
-          // the model to render.
-          case 'insert':
-            const insertMode = editorState.mode
-            const openComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-            if (insertionSubjectIsJSXElement(insertMode.subject) && insertMode.insertionStarted) {
-              const insertionParent =
-                insertMode.subject.parent == null ? null : insertMode.subject.parent.staticTarget
+  const currentOpenFile = editorState.canvas.openFile?.filename
+  let transientState: TransientCanvasState | null = null
+  if (currentOpenFile != null) {
+    const editorMode = editorState.mode
+    switch (editorMode.type) {
+      case 'insert':
+        if (insertionSubjectIsJSXElement(editorMode.subject) && editorMode.insertionStarted) {
+          const insertionElement = editorMode.subject.element
+          const importsToAdd = editorMode.subject.importsToAdd
+          const insertionParent = editorMode.subject.parent?.target ?? null
+          const insertionParentAsInstancePath = TP.isScenePath(insertionParent)
+            ? TP.instancePathForElementAtScenePath(insertionParent)
+            : insertionParent
+
+          // Not actually modifying the underlying target, but we'll exploit the functionality.
+          modifyUnderlyingTarget(
+            insertionParentAsInstancePath,
+            currentOpenFile,
+            editorState,
+            (element) => element,
+            (parseSuccess, underlying, underlyingFilePath) => {
+              const openComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+
               const updatedComponents = insertJSXElementChild(
-                insertionParent,
-                insertMode.subject.element,
+                underlying,
+                insertionElement,
                 openComponents,
                 {
                   type: 'front',
                 },
               )
-              const updatedImports: Imports = mergeImports(
-                parseSuccess.imports,
-                insertMode.subject.importsToAdd,
-              )
+              const updatedImports: Imports = mergeImports(parseSuccess.imports, importsToAdd)
 
               // Sync these back up.
               const topLevelElements = applyUtopiaJSXComponentsChanges(
@@ -1626,51 +1636,57 @@ export function produceCanvasTransientState(
                 updatedComponents,
               )
 
-              const topLevelElementsIncludingScenes = topLevelElements
-
-              return transientCanvasState(
+              transientState = transientCanvasState(
                 editorState.selectedViews,
                 editorState.highlightedViews,
-                transientFileState(topLevelElementsIncludingScenes, updatedImports),
+                {
+                  [underlyingFilePath]: transientFileState(topLevelElements, updatedImports),
+                },
               )
-            } else {
-              return parseSuccessTransientCanvasState(parseSuccess)
-            }
-          case 'select':
-            if (
-              editorState.canvas.dragState == null ||
-              editorState.canvas.dragState.start == null ||
-              editorState.canvas.dragState.drag == null
-            ) {
-              return parseSuccessTransientCanvasState(parseSuccess)
-            } else {
-              const dragState = editorState.canvas.dragState
+              return parseSuccess
+            },
+          )
+        }
+        break
+      case 'select':
+        if (
+          editorState.canvas.dragState != null &&
+          editorState.canvas.dragState.start != null &&
+          editorState.canvas.dragState.drag != null
+        ) {
+          const dragState = editorState.canvas.dragState
+          const openUIFile = getOpenUIJSFile(editorState)
+          if (openUIFile != null) {
+            const parsed = openUIFile.fileContents.parsed
+            if (isParseSuccess(parsed)) {
+              const parseSuccess: ParseSuccess = parsed
               switch (dragState.type) {
                 case 'MOVE_DRAG_STATE':
-                  return produceMoveTransientCanvasState(
+                  transientState = produceMoveTransientCanvasState(
                     previousCanvasTransientSelectedViews,
                     editorState,
                     dragState,
                     parseSuccess,
                     preventAnimations,
                   )
+                  break
                 case 'RESIZE_DRAG_STATE':
                   if (dragState.isMultiSelect) {
-                    return produceResizeCanvasTransientState(
+                    transientState = produceResizeCanvasTransientState(
                       editorState,
                       parseSuccess,
                       dragState,
                       preventAnimations,
                     )
                   } else {
-                    return produceResizeSingleSelectCanvasTransientState(
+                    transientState = produceResizeSingleSelectCanvasTransientState(
                       editorState,
                       parseSuccess,
                       dragState,
                       preventAnimations,
                     )
                   }
-
+                  break
                 case 'INSERT_DRAG_STATE':
                   throw new Error(`Unable to use insert drag state in select mode.`)
                 default:
@@ -1678,18 +1694,16 @@ export function produceCanvasTransientState(
                   throw new Error(`Unhandled drag state type ${JSON.stringify(dragState)}`)
               }
             }
-          case 'live':
-            return parseSuccessTransientCanvasState(parseSuccess)
-          default:
-            const _exhaustiveCheck: never = editorState.mode
-            throw new Error(`Unhandled editor mode ${JSON.stringify(editorState.mode)}`)
+          }
         }
-      },
-      (_) => {
-        return noFileTransientCanvasState()
-      },
-      openUIFile.fileContents.parsed,
-    )
+        break
+    }
+  }
+
+  if (transientState == null) {
+    return transientCanvasState(editorState.selectedViews, editorState.highlightedViews, null)
+  } else {
+    return transientState
   }
 }
 
@@ -2187,7 +2201,13 @@ function produceMoveTransientCanvasState(
   return transientCanvasState(
     selectedViews,
     highlightedViews,
-    transientFileState(topLevelElementsIncludingScenes, parseSuccess.imports),
+    // FIXME: Should handle multiple file edit situations.
+    {
+      [forceNotNull('Should be an open file', getOpenUIJSFileKey(editorState))]: transientFileState(
+        topLevelElementsIncludingScenes,
+        parseSuccess.imports,
+      ),
+    },
   )
 }
 
