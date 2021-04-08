@@ -448,7 +448,7 @@ export function parentPath(path: TemplatePath): TemplatePath | null {
   }
 }
 
-function elementPathToUID(path: ElementPath): id {
+export function elementPathToUID(path: ElementPath): id {
   return forceNotNull('Attempting to get the UID of an empty ElementPath', last(path))
 }
 
