@@ -356,6 +356,7 @@ import {
   SendCodeEditorInitialisation,
   SetFocusedElement,
   AddImports,
+  SetScrollAnimation,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -487,6 +488,7 @@ import {
   selectComponents,
   markVSCodeBridgeReady,
   addImports,
+  setScrollAnimation,
 } from './action-creators'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
@@ -966,6 +968,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       base64Blobs: {},
       mountCount: currentEditor.canvas.mountCount + 1,
       openFile: currentEditor.canvas.openFile,
+      scrollAnimation: currentEditor.canvas.scrollAnimation,
     },
     inspector: {
       visible: currentEditor.inspector.visible,
@@ -1368,6 +1371,7 @@ function toastOnGeneratedElementsTargeted(
 }
 
 let checkpointTimeoutId: number | undefined = undefined
+let canvasScrollAnimationTimer: number | undefined = undefined
 
 // JS Editor Actions:
 export const UPDATE_FNS = {
@@ -4194,6 +4198,26 @@ export const UPDATE_FNS = {
       canvas: {
         ...editor.canvas,
         mountCount: editor.canvas.mountCount + 1,
+      },
+    }
+  },
+  SET_SCROLL_ANIMATION: (
+    action: SetScrollAnimation,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    if (action.value === true) {
+      canvasScrollAnimationTimer = window.setTimeout(() => {
+        clearTimeout(canvasScrollAnimationTimer)
+        canvasScrollAnimationTimer = undefined
+        dispatch([setScrollAnimation(false)], 'everyone')
+      }, 700)
+    }
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        scrollAnimation: action.value,
       },
     }
   },

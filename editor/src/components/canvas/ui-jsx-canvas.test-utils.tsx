@@ -222,6 +222,7 @@ export function renderCanvasReturnResultAndError(
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
       transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
+      scrollAnimation: false,
     }
   } else {
     canvasProps = {
@@ -243,6 +244,7 @@ export function renderCanvasReturnResultAndError(
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
       transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
+      scrollAnimation: false,
     }
   }
 

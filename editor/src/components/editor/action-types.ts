@@ -809,6 +809,11 @@ export interface SetFocusedElement {
   focusedElementPath: ScenePath | null
 }
 
+export interface SetScrollAnimation {
+  action: 'SET_SCROLL_ANIMATION'
+  value: boolean
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -941,6 +946,7 @@ export type EditorAction =
   | SelectFromFileAndPosition
   | SendCodeEditorInitialisation
   | SetFocusedElement
+  | SetScrollAnimation
 
 export type DispatchPriority =
   | 'everyone'

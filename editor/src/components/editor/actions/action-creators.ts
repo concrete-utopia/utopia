@@ -184,6 +184,7 @@ import type {
   AddImports,
   WorkerCodeUpdate,
   WorkerParsedUpdate,
+  SetScrollAnimation,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1277,5 +1278,12 @@ export function setFocusedElement(focusedElementTemplatePath: ScenePath | null):
   return {
     action: 'SET_FOCUSED_ELEMENT',
     focusedElementPath: focusedElementTemplatePath,
+  }
+}
+
+export function setScrollAnimation(value: boolean): SetScrollAnimation {
+  return {
+    action: 'SET_SCROLL_ANIMATION',
+    value: value,
   }
 }
