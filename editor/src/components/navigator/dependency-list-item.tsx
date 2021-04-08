@@ -7,6 +7,7 @@ import { ContextMenuItem } from '../context-menu-items'
 import { NO_OP } from '../../core/shared/utils'
 import { colorTheme, FlexRow, UtopiaTheme, Tooltip, Icons } from '../../uuiui'
 import { MenuProvider, MomentumContextMenu } from '../../uuiui-deps'
+import { handleKeyDown } from '../editor/global-shortcuts'
 
 interface DependencyListItemProps {
   packageDetails: PackageDetails
@@ -65,16 +66,6 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
     }
   }
 
-  const onNameDoubleClick = React.useCallback(
-    (e: React.MouseEvent) => {
-      if (!isDefault) {
-        e.stopPropagation()
-        openDependencyEditField(name)
-      }
-    },
-    [openDependencyEditField, name, isDefault],
-  )
-
   const onVersionDoubleClick = React.useCallback(
     (e: React.MouseEvent) => {
       if (!isDefault) {
@@ -85,10 +76,31 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
     [openDependencyEditField, name, isDefault],
   )
 
+  // list items listen to keyboard events as they have tabIndex={0}
+  const onKeyUp = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key == 'Delete') {
+        removeDependency(name)
+        e.stopPropagation()
+      } else if (e.key == 'Enter') {
+        openDependencyEditField(name)
+        e.stopPropagation()
+      }
+    },
+    [name, openDependencyEditField, removeDependency],
+  )
+
   const menuId = `dependency-list-item-contextmenu-${packageDetails.name}`
   const menuItems: Array<ContextMenuItem<any>> = isDefault
     ? []
     : [
+        {
+          name: 'Edit',
+          enabled: true,
+          action: () => {
+            openDependencyEditField(name)
+          },
+        },
         {
           name: 'Update to latest version',
           enabled: true,
@@ -97,14 +109,7 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
           },
         },
         {
-          name: 'Rename',
-          enabled: true,
-          action: () => {
-            openDependencyEditField(name)
-          },
-        },
-        {
-          name: 'Delete',
+          name: 'Remove',
           enabled: true,
           action: () => {
             removeDependency(name)
@@ -115,14 +120,28 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
   return (
     <MenuProvider id={menuId}>
       <FlexRow
+        onKeyUp={onKeyUp}
+        role='listItem'
         ref={ref}
         key={name}
+        tabIndex={0}
         className='dependency-item'
         css={{
           ...textStyle,
-          minHeight: UtopiaTheme.layout.rowHeight.medium,
-          display: 'flex',
-          padding: '0 16px',
+          alignItems: 'center',
+          height: UtopiaTheme.layout.rowHeight.smaller,
+          paddingLeft: 8,
+          paddingRight: 8,
+          borderRadius: 2,
+          color: colorTheme.secondaryForeground.value,
+          '&:focus': {
+            background: UtopiaTheme.color.subtleBackground.value,
+            color: colorTheme.emphasizedForeground.value,
+          },
+          '&:hover': {
+            background: UtopiaTheme.color.subtleBackground.value,
+            color: colorTheme.emphasizedForeground.value,
+          },
           ...(isNewlyLoaded
             ? {
                 animationName: `${FlashAnimation}`,
@@ -131,22 +150,22 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
               }
             : null),
         }}
-        onDoubleClick={onNameDoubleClick}
+        onDoubleClick={onVersionDoubleClick}
       >
         <FlexRow
-          style={{
+          css={{
             flexGrow: 1,
             flexShrink: 0,
           }}
           className='packageName-container'
         >
-          <div
+          <span
             style={{
               textDecoration: 'none',
             }}
           >
             {name}
-          </div>
+          </span>
           {isDefault ? (
             <Tooltip title='Dependency is required for Utopian projects'>
               <FlexRow
@@ -186,15 +205,14 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
             <Icons.ExternalLinkSmaller />
           </a>
         </FlexRow>
-        <div
+        <FlexRow
           style={{
             flexGrow: 0,
             flexShrink: 0,
           }}
-          onDoubleClick={onVersionDoubleClick}
         >
           {versionFieldNode}
-        </div>
+        </FlexRow>
       </FlexRow>
       <MomentumContextMenu id={menuId} items={menuItems} getData={NO_OP} />
     </MenuProvider>
