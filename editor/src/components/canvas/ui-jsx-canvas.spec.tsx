@@ -1123,6 +1123,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           position: absolute;
           zoom: 100%;
           transform: translate3d(0px, 0px, 0);
+          transition: initial;
         \\"
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
       >
@@ -1217,6 +1218,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           position: absolute;
           zoom: 100%;
           transform: translate3d(0px, 0px, 0);
+          transition: initial;
         \\"
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
       >
@@ -1284,6 +1286,7 @@ export var storyboard = (
           position: absolute;
           zoom: 100%;
           transform: translate3d(0px, 0px, 0);
+          transition: initial;
         \\"
         data-utopia-valid-paths=\\":storyboard :storyboard/scene\\"
       >
@@ -2030,6 +2033,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           position: absolute;
           zoom: 100%;
           transform: translate3d(0px, 0px, 0);
+          transition: initial;
         \\"
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
       >
@@ -2108,6 +2112,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           position: absolute;
           zoom: 100%;
           transform: translate3d(0px, 0px, 0);
+          transition: initial;
         \\"
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
       >
