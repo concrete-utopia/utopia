@@ -8,6 +8,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":8a6 :8a6/088\\"
 >
