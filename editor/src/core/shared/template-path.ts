@@ -295,8 +295,19 @@ export function instancePathForElementAtScenePath(path: ScenePath): StaticInstan
   }
 }
 
+function instancePathForElementPaths(elementPaths: ElementPath[]): InstancePath {
+  const lastElementPath = last(elementPaths)
+  if (lastElementPath == null) {
+    return emptyInstancePath
+  } else {
+    const targetSceneElementPaths = dropLast(elementPaths)
+    const targetScenePath = scenePath(targetSceneElementPaths)
+    return instancePath(targetScenePath, lastElementPath)
+  }
+}
+
 export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
-  return isInstancePath(path) ? path : instancePathForElementAtScenePath(path)
+  return isInstancePath(path) ? path : instancePathForElementPaths(path.sceneElementPaths)
 }
 
 export function scenePathForElementAtInstancePath(path: InstancePath): ScenePath {
@@ -446,6 +457,13 @@ export function parentPath(path: TemplatePath): TemplatePath | null {
   } else {
     return instancePathParent(path)
   }
+}
+
+export function isParentOf(maybeParent: TemplatePath, maybeChild: TemplatePath): boolean {
+  const maybeChildAsInstancePath = instancePathForElementAtPath(maybeChild)
+  const maybeParentAsInstancePath = instancePathForElementAtPath(maybeParent)
+  const actualParent = instancePathForElementAtPath(parentPath(maybeChildAsInstancePath))
+  return pathsEqual(actualParent, maybeParentAsInstancePath)
 }
 
 export function elementPathToUID(path: ElementPath): id {

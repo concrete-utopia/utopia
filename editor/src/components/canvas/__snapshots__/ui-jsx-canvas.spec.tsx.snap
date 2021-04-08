@@ -26,7 +26,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
+      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
       data-uid=\\"aaa scene-aaa\\"
     >
       <div data-uid=\\"bbb~~~1\\" data-label=\\"Plane\\"></div>
@@ -257,30 +257,11 @@ Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -695,7 +676,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
+      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
       data-uid=\\"aaa scene-aaa\\"
       data-label=\\"Hat\\"
     ></div>
@@ -834,30 +815,11 @@ Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -4668,7 +4630,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
+      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
       data-uid=\\"aaa scene-aaa\\"
     ></div>
   </div>
@@ -4792,30 +4754,11 @@ Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -7474,8 +7417,8 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-uid=\\"aaa scene-0\\"
@@ -7754,30 +7697,9 @@ Object {
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -8087,8 +8009,8 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-uid=\\"aaa scene-0\\"
@@ -8362,30 +8284,9 @@ Object {
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -8683,8 +8584,8 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-uid=\\"aaa scene-0\\"
@@ -9011,30 +8912,9 @@ Object {
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -9386,8 +9266,8 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-uid=\\"aaa scene-0\\"
@@ -9714,30 +9594,9 @@ Object {
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -10231,15 +10090,15 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     <div
       style=\\"
         position: absolute;
-        width: 376px;
-        height: 812px;
-        left: 0;
-        top: 0;
-        right: 0;
         bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
         font-size: 12px;
         font-family: Inter;
         color: #237aff;
+        width: 376px;
+        height: 812px;
         background-color: #171111;
       \\"
       data-uid=\\"aaa scene-aaa\\"
@@ -11391,30 +11250,13 @@ export var storyboard = (props) => {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#171111",
         "bottom": 0,
         "color": "#237AFF",
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "fontFamily": "Inter",
         "fontSize": "12px",
         "height": 812,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
@@ -15888,7 +15730,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
+      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
       data-uid=\\"aaa scene-aaa\\"
     ></div>
   </div>
@@ -16067,30 +15909,11 @@ Object {
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -17301,8 +17124,8 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-uid=\\"aaa scene-0\\"
@@ -17521,30 +17344,9 @@ Object {
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
