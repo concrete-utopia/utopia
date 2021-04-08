@@ -248,7 +248,7 @@ export const SceneRootRenderer = betterReactMemo(
             mutableUtopiaContext.jsxFactoryFunctionName,
             sceneProps.component,
             propsWithScenePath,
-            renderedChildren,
+            undefined,
           )
 
     const sceneStyle: React.CSSProperties = {
@@ -268,7 +268,10 @@ export const SceneRootRenderer = betterReactMemo(
           data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
           style={sceneStyle}
         >
-          {rootElement}
+          <>
+            {rootElement}
+            {renderedChildren}
+          </>
         </View>
       </SceneLevelUtopiaContext.Provider>
     )
