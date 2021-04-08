@@ -1,5 +1,5 @@
 import { ReactElement } from 'react'
-import { JSXMetadata } from '../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { PropertyPath, TemplatePath } from '../../core/shared/project-file-types'
 import { KeyCharacter, KeysPressed } from '../../utils/keyboard'
 import { Modifiers } from '../../utils/modifiers'
@@ -300,13 +300,13 @@ export interface InsertDragState {
   type: 'INSERT_DRAG_STATE'
   start: CanvasPoint
   drag: CanvasVector | null
-  metadata: JSXMetadata
+  metadata: ElementInstanceMetadataMap
 }
 
 export function insertDragState(
   start: CanvasPoint,
   drag: CanvasVector | null,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
 ): InsertDragState {
   return {
     type: 'INSERT_DRAG_STATE',
@@ -334,7 +334,7 @@ export interface MoveDragState {
   reparent: boolean
   duplicateNewUIDs: Array<DuplicateNewUID> | null
   canvasPosition: CanvasPoint
-  metadata: JSXMetadata
+  metadata: ElementInstanceMetadataMap
   draggedElements: TemplatePath[]
 }
 
@@ -350,7 +350,7 @@ export function moveDragState(
   reparent: boolean,
   duplicateNewUIDs: Array<DuplicateNewUID> | null,
   canvasPosition: CanvasPoint,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
   draggedElements: TemplatePath[],
 ): MoveDragState {
   if (duplicate === true && duplicateNewUIDs == null) {
@@ -425,7 +425,7 @@ export interface ResizeDragState {
   originalFrames: Array<OriginalCanvasAndLocalFrame>
   edgePosition: EdgePosition
   enabledDirection: EnabledDirection
-  metadata: JSXMetadata
+  metadata: ElementInstanceMetadataMap
   draggedElements: TemplatePath[]
   isMultiSelect: boolean
 }
@@ -440,7 +440,7 @@ export function resizeDragState(
   originalFrames: Array<OriginalCanvasAndLocalFrame>,
   edgePosition: EdgePosition,
   enabledDirection: EnabledDirection,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
   draggedElements: TemplatePath[],
   isMultiSelect: boolean,
 ): ResizeDragState {

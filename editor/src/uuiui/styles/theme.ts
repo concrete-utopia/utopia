@@ -410,16 +410,10 @@ export const UtopiaTheme = {
     rowHorizontalPadding: 8,
     rowButtonSpacing: 4,
     rowHeight: {
-      smaller: 29,
-      small: 32,
-      medium: 34,
-      mediumLarge: 38,
+      smaller: 27,
+      normal: 34,
       large: 42,
       max: 47,
-    },
-    gridRowHeight: {
-      normal: 34,
-      tall: 47,
     },
     inputHeight: {
       small: 18,

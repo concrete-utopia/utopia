@@ -1265,27 +1265,8 @@ export type ComputedStyle = { [key: string]: string }
 export type StyleAttributeMetadataEntry = { fromStyleSheet: boolean } // TODO rename me to StyleAttributeMetadata, the other one to StyleAttributeMetadataMap
 export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntry | undefined }
 
-export interface JSXMetadata {
-  components: Array<ComponentMetadata>
-  elements: ElementInstanceMetadataMap
-}
-
-export function jsxMetadata(
-  components: Array<ComponentMetadata>,
-  elements: ElementInstanceMetadataMap,
-): JSXMetadata {
-  return {
-    components: components,
-    elements: elements,
-  }
-}
-
-export const emptyJsxMetadata: JSXMetadata = {
-  components: [],
-  elements: {},
-}
-
 export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadata }
+export const emptyJsxMetadata: ElementInstanceMetadataMap = {}
 
 export interface ElementInstanceMetadata {
   templatePath: InstancePath
@@ -1294,11 +1275,14 @@ export interface ElementInstanceMetadata {
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
   children: Array<InstancePath>
+  rootElements: Array<InstancePath>
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
   attributeMetadatada: StyleAttributeMetadata | null
+  componentName: string | null
+  label: string | null
 }
 
 export function elementInstanceMetadata(
@@ -1308,11 +1292,14 @@ export function elementInstanceMetadata(
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
   children: Array<InstancePath>,
+  rootElements: Array<InstancePath>,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
   attributeMetadatada: StyleAttributeMetadata | null,
+  componentName: string | null,
+  label: string | null,
 ): ElementInstanceMetadata {
   return {
     templatePath: templatePath,
@@ -1321,11 +1308,14 @@ export function elementInstanceMetadata(
     globalFrame: globalFrame,
     localFrame: localFrame,
     children: children,
+    rootElements: rootElements,
     componentInstance: componentInstance,
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
     attributeMetadatada: attributeMetadatada,
+    componentName: componentName,
+    label: label,
   }
 }
 
@@ -1426,29 +1416,10 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
 export const emptyComputedStyle: ComputedStyle = {}
 export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
 
-export interface ComponentMetadata {
-  scenePath: ScenePath
-  templatePath: InstancePath
-  rootElements: Array<InstancePath>
-  component: string | null
-  globalFrame: CanvasRectangle | null
-  sceneResizesContent: boolean
-  label?: string
-  style: React.CSSProperties
-}
-
-export function isComponentMetadata(
-  maybeComponentMetadata: ComponentMetadata | ElementInstanceMetadata,
-): maybeComponentMetadata is ComponentMetadata {
-  return (maybeComponentMetadata as ComponentMetadata).scenePath != null
-}
-
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>> // TODO update typescript!!
 export type MetadataWithoutChildren = Omit<ElementInstanceMetadata, 'children'> & {
   childrenTemplatePaths: Array<InstancePath>
 }
-
-export type ComponentMetadataWithoutRootElements = Omit<ComponentMetadata, 'rootElements'>
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 

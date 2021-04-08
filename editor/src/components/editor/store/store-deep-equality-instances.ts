@@ -1,6 +1,5 @@
 import { Sides } from 'utopia-api'
 import {
-  ComponentMetadata,
   ElementInstanceMetadata,
   elementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -41,8 +40,6 @@ import {
   JSXElement,
   JSXElementChild,
   JSXFragment,
-  jsxMetadata,
-  JSXMetadata,
   JSXProperty,
   jsxPropertyAssignment,
   JSXPropertyAssignment,
@@ -72,18 +69,17 @@ import {
   combine6EqualityCalls,
   nullableDeepEquality,
   createCallWithTripleEquals,
-  combine9EqualityCalls,
   objectDeepEquality,
-  mapKeepDeepEqualityResult,
   combine5EqualityCalls,
   arrayDeepEquality,
-  combine1EqualityCall,
   combine2EqualityCalls,
   combine7EqualityCalls,
   combine8EqualityCalls,
   undefinableDeepEquality,
   combine4EqualityCalls,
+  combine14EqualityCalls,
   combine11EqualityCalls,
+  combine1EqualityCall,
 } from '../../../utils/deep-equality'
 import {
   TemplatePathArrayKeepDeepEquality,
@@ -646,7 +642,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
 export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
-  return combine11EqualityCalls(
+  return combine14EqualityCalls(
     (metadata) => metadata.templatePath,
     InstancePathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -659,6 +655,8 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     nullableDeepEquality(LocalRectangleKeepDeepEquality),
     (metadata) => metadata.children,
     InstancePathArrayKeepDeepEquality,
+    (metadata) => metadata.rootElements,
+    InstancePathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),
     (metadata) => metadata.isEmotionOrStyledComponent,
@@ -669,6 +667,10 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
     (metadata) => metadata.attributeMetadatada,
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
+    (metadata) => metadata.componentName,
+    nullableDeepEquality(createCallWithTripleEquals()),
+    (metadata) => metadata.label,
+    nullableDeepEquality(createCallWithTripleEquals()),
     elementInstanceMetadata,
   )
 }
@@ -677,56 +679,4 @@ export function ElementInstanceMetadataMapKeepDeepEquality(): KeepDeepEqualityCa
   ElementInstanceMetadataMap
 > {
   return objectDeepEquality(ElementInstanceMetadataKeepDeepEquality())
-}
-
-export function ComponentMetadataKeepDeepEquality(): KeepDeepEqualityCall<ComponentMetadata> {
-  return combine8EqualityCalls(
-    (metadata) => metadata.scenePath,
-    ScenePathKeepDeepEquality,
-    (metadata) => metadata.templatePath,
-    InstancePathKeepDeepEquality,
-    (metadata) => metadata.rootElements,
-    InstancePathArrayKeepDeepEquality,
-    (metadata) => metadata.component,
-    nullableDeepEquality(createCallWithTripleEquals()),
-    (metadata) => metadata.globalFrame,
-    nullableDeepEquality(CanvasRectangleKeepDeepEquality),
-    (metadata) => metadata.sceneResizesContent,
-    createCallWithTripleEquals(),
-    (metadata) => metadata.label,
-    undefinableDeepEquality(createCallWithTripleEquals()),
-    (metadata) => metadata.style,
-    createCallFromIntrospectiveKeepDeep(),
-    (
-      scenePath,
-      templatePath,
-      rootElements,
-      component,
-      globalFrame,
-      sceneResizesContent,
-      label,
-      style,
-    ) => {
-      return {
-        scenePath: scenePath,
-        templatePath: templatePath,
-        rootElements: rootElements,
-        component: component,
-        globalFrame: globalFrame,
-        sceneResizesContent: sceneResizesContent,
-        label: label,
-        style: style,
-      }
-    },
-  )
-}
-
-export function JSXMetadataKeepDeepEquality(): KeepDeepEqualityCall<JSXMetadata> {
-  return combine2EqualityCalls(
-    (metadata) => metadata.components,
-    arrayDeepEquality(ComponentMetadataKeepDeepEquality()),
-    (metadata) => metadata.elements,
-    ElementInstanceMetadataMapKeepDeepEquality(),
-    jsxMetadata,
-  )
 }

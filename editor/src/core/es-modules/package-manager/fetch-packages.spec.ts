@@ -1,7 +1,6 @@
-import { fetchMissingFileDependency, resetDepPackagerCache } from './fetch-packages'
+import { fetchMissingFileDependency } from './fetch-packages'
 import { esRemoteDependencyPlaceholder } from '../../shared/project-file-types'
 import { getJsDelivrFileUrl } from './packager-url'
-import { resolvedNpmDependency } from '../../shared/npm-dependency-types'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -27,9 +26,10 @@ describe('Fetch missing file dependency', () => {
     ).then(updateNodeModules)
     expect(updateNodeModules).toBeCalledWith({
       ['mypackage/dist/style.css']: {
-        evalResultCache: null,
         fileContents: simpleCssContent,
         type: 'ES_CODE_FILE',
+        fullPath: 'mypackage/dist/style.css',
+        origin: 'NODE_MODULES',
       },
     })
   })

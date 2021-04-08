@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { FlexRow, FunctionIcons, StringInput } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
-import { GridRow } from '../../inspector/widgets/grid-row'
+import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ResourcesListGridRowConfig } from './generic-external-resources-list'
 
 interface MultiStringControlProps {
@@ -48,7 +48,7 @@ export const GenericExternalResourcesInput = betterReactMemo(
 
     return (
       <FlexRow style={{ paddingLeft: 12, paddingRight: 8 }}>
-        <GridRow {...ResourcesListGridRowConfig} style={{ paddingRight: 8 }}>
+        <UIGridRow {...ResourcesListGridRowConfig} style={{ paddingRight: 8 }}>
           <StringInput
             ref={hrefInputRef}
             value={hrefValue}
@@ -64,7 +64,7 @@ export const GenericExternalResourcesInput = betterReactMemo(
             placeholder='rel'
             testId=''
           />
-        </GridRow>
+        </UIGridRow>
         <FunctionIcons.Confirm
           style={{
             flexGrow: 0,

@@ -135,10 +135,7 @@ export class InsertModeControlContainer extends React.Component<
   parentIsFlex = (parentPath: TemplatePath | null | undefined): boolean => {
     const parentInstance =
       parentPath != null && TP.isInstancePath(parentPath)
-        ? MetadataUtils.getElementByInstancePathMaybe(
-            this.props.componentMetadata.elements,
-            parentPath,
-          )
+        ? MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, parentPath)
         : null
     return MetadataUtils.isFlexLayoutedContainer(parentInstance)
   }
@@ -660,7 +657,9 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   render() {
-    const roots = MetadataUtils.getAllScenePaths(this.props.componentMetadata.components)
+    const roots = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(
+      this.props.componentMetadata,
+    )
     const dragFrame = this.state.dragFrame
 
     return (

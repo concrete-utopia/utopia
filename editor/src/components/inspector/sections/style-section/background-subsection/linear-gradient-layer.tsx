@@ -14,7 +14,7 @@ import {
 } from '../../../common/css-utils'
 import { getIndexedSpliceArrayItem } from '../../../common/inspector-utils'
 import { stopPropagation } from '../../../common/inspector-utils'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
   BackgroundLayerProps,
   backgroundLayerTypeSelectOptions,
@@ -88,8 +88,13 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
         items={[removeRow(onRemoveRowSubmit), ...props.unsetContextMenuItem]}
         data={null}
       >
-        <GridRow tall alignItems='start' padded={true} type='<---1fr--->|------172px-------|'>
-          <GridRow tall alignItems='start' padded={false} type='<-auto-><----------1fr--------->'>
+        <UIGridRow tall alignItems='start' padded={true} variant='<---1fr--->|------172px-------|'>
+          <UIGridRow
+            tall
+            alignItems='start'
+            padded={false}
+            variant='<-auto-><----------1fr--------->'
+          >
             <CheckboxInput
               onChange={onEnabledChange}
               checked={enabled}
@@ -109,8 +114,13 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
               popupOpen={props.popupOpen}
               setOpenPopup={props.setOpenPopup}
             />
-          </GridRow>
-          <GridRow tall alignItems='start' padded={false} type='<-------1fr------>|----80px----|'>
+          </UIGridRow>
+          <UIGridRow
+            tall
+            alignItems='start'
+            padded={false}
+            variant='<-------1fr------>|----80px----|'
+          >
             <FlexRow style={{ alignItems: 'start' }} onMouseDown={stopPropagation}>
               <PopupList
                 value={linearGradientSelectOption}
@@ -132,8 +142,8 @@ export const LinearGradientBackgroundLayer = betterReactMemo<LinearGradientBackg
               numberType='AnglePercent'
               defaultUnitToHide={null}
             />
-          </GridRow>
-        </GridRow>
+          </UIGridRow>
+        </UIGridRow>
       </InspectorContextMenuWrapper>
     )
   },

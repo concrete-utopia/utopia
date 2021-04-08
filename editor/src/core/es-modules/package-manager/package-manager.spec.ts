@@ -57,6 +57,7 @@ describe('ES Dependency Package Manager', () => {
         npmVersion('0.0.1'),
         fileNoImports as PackagerServerResponse,
       ),
+      {},
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -68,6 +69,7 @@ describe('ES Dependency Package Manager', () => {
       NO_OP,
       {},
       extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      {},
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -79,6 +81,7 @@ describe('ES Dependency Package Manager', () => {
       NO_OP,
       {},
       extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithLocalImport),
+      {},
     )
     const requireResult = reqFn('/src/index.js', 'mypackage')
     expect(requireResult).toHaveProperty('hello')
@@ -90,6 +93,7 @@ describe('ES Dependency Package Manager', () => {
       NO_OP,
       {},
       extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      {},
     )
     reqFn('/src/index.js', 'mypackage/simple.css')
 
@@ -102,6 +106,7 @@ describe('ES Dependency Package Manager', () => {
       NO_OP,
       {},
       extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      {},
     )
     reqFn('/src/index.js', 'mypackage/simple.css')
 
@@ -116,6 +121,7 @@ describe('ES Dependency Package Manager', () => {
       NO_OP,
       {},
       extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      {},
     )
 
     const requireResult = reqFn('/src/index.js', 'mypackage/simple.svg')
@@ -131,6 +137,7 @@ describe('ES Dependency Package Manager', () => {
       NO_OP,
       {},
       extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      {},
     )
     const test = () => reqFn('/src/index.js', 'mypackage2')
     expect(test).toThrowError(`Could not find dependency: 'mypackage2' relative to '/src/index.js`)
@@ -144,6 +151,7 @@ describe('ES Dependency Manager — Cycles', () => {
       NO_OP,
       {},
       extractNodeModulesFromPackageResponse('mypackage', npmVersion('0.0.1'), fileWithImports),
+      {},
       spyEvaluator,
     )
     const requireResult = reqFn('/src/index.js', 'mypackage/moduleA')
@@ -173,7 +181,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
     }
     const nodeModules = fetchNodeModulesResult.nodeModules
     const onRemoteModuleDownload = jest.fn()
-    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules)
+    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {})
     const reactSpring = req('/src/index.js', 'react-spring')
     expect(Object.keys(reactSpring)).not.toHaveLength(0)
     expect(onRemoteModuleDownload).toBeCalledTimes(0)
@@ -207,6 +215,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
         innerOnRemoteModuleDownload,
         {},
         updatedNodeModules,
+        {},
         spyEvaluator,
       )
 
@@ -222,7 +231,7 @@ describe('ES Dependency Manager — Real-life packages', () => {
       done()
     }
 
-    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, spyEvaluator)
+    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {}, spyEvaluator)
     const antd = req('/src/index.js', 'antd')
     expect(Object.keys(antd)).not.toHaveLength(0)
     expect(antd).toHaveProperty('Button')
@@ -289,7 +298,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
       const downloadedModules = await moduleDownload
       const updatedNodeModules = { ...nodeModules, ...downloadedModules }
       const innerOnRemoteModuleDownload = jest.fn()
-      const updatedReq = getRequireFn(innerOnRemoteModuleDownload, {}, updatedNodeModules)
+      const updatedReq = getRequireFn(innerOnRemoteModuleDownload, {}, updatedNodeModules, {})
 
       // this is like calling `import 'mypackage/dist/style.css';`, we only care about the side effect
       updatedReq('/src/index.js', 'mypackage/dist/style.css')
@@ -304,7 +313,7 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
       done()
     }
 
-    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules)
+    const req = getRequireFn(onRemoteModuleDownload, {}, nodeModules, {})
     const styleCss = req('/src/index.js', 'mypackage/dist/style.css')
     expect(Object.keys(styleCss)).toHaveLength(0)
   })

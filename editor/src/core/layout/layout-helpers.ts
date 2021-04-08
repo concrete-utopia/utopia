@@ -29,9 +29,8 @@ import {
   JSXAttributes,
   jsxAttributeValue,
   JSXElement,
-  ComponentMetadata,
   UtopiaJSXComponent,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
 } from '../shared/element-template'
 import {
   setJSXValueAtPath,
@@ -55,7 +54,7 @@ export function targetRespectsLayout(
   openImports: Imports,
   openFilePath: string | null,
   rootComponents: UtopiaJSXComponent[],
-  jsxMetadataKILLME: JSXMetadata,
+  jsxMetadata: ElementInstanceMetadataMap,
 ): boolean {
   const propControls = getPropertyControlsForTarget(
     target,
@@ -63,7 +62,7 @@ export function targetRespectsLayout(
     openImports,
     openFilePath,
     rootComponents,
-    jsxMetadataKILLME,
+    jsxMetadata,
   )
   return propControls?.style?.type === 'styleobject'
 }
@@ -304,25 +303,19 @@ export const LayoutHelpers = {
     )
   },
   getFlexStretchForChild(
-    parent: Either<ComponentMetadata, ElementInstanceMetadata>,
+    parent: ElementInstanceMetadata,
     child: ElementInstanceMetadata,
   ): Either<string, FlexStretch> {
     const parentScenePropsOrElementAttributes: PropsOrJSXAttributes | null = foldEither(
-      (parentScene) => left(parentScene.globalFrame),
-      (elementMetadata) => {
-        return foldEither(
-          (_) => null,
-          (success) => {
-            if (isJSXElement(success)) {
-              return right(success.props)
-            } else {
-              return null
-            }
-          },
-          elementMetadata.element,
-        )
+      (_) => null,
+      (success) => {
+        if (isJSXElement(success)) {
+          return right(success.props)
+        } else {
+          return null
+        }
       },
-      parent,
+      parent.element,
     )
     if (parentScenePropsOrElementAttributes == null) {
       return left('Unknown parent attributes.')

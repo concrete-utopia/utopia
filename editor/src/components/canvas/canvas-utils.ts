@@ -35,14 +35,13 @@ import {
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import {
-  ComponentMetadata,
   isJSXElement,
   jsxAttributeValue,
   JSXElement,
   JSXElementChild,
   UtopiaJSXComponent,
   ElementInstanceMetadata,
-  JSXMetadata,
+  ElementInstanceMetadataMap,
   setJSXAttributesAttribute,
 } from '../../core/shared/element-template'
 import {
@@ -179,7 +178,7 @@ import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
 ): Array<OriginalCanvasAndLocalFrame> {
   let originalFrames: Array<OriginalCanvasAndLocalFrame> = []
   function includeChildren(view: TemplatePath): Array<TemplatePath> {
@@ -231,7 +230,7 @@ export function getOriginalFrames(
 
 export function getOriginalCanvasFrames(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
 ): Array<CanvasFrameAndTarget> {
   const originalFrames: Array<CanvasFrameAndTarget> = []
   function includeChildren(view: TemplatePath): Array<TemplatePath> {
@@ -309,7 +308,7 @@ export function canvasFrameToNormalisedFrame(frame: CanvasRectangle): Normalised
 
 export function updateFramesOfScenesAndComponents(
   components: Array<UtopiaJSXComponent>,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
 ): Array<UtopiaJSXComponent> {
@@ -1052,7 +1051,7 @@ export const SnappingThreshold = 5
 
 export function collectGuidelines(
   imports: Imports,
-  metadata: JSXMetadata,
+  metadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   scale: number,
   draggedPoint: CanvasPoint | null,
@@ -1074,7 +1073,7 @@ export function collectGuidelines(
         return
       }
 
-      const instance = MetadataUtils.getElementByInstancePathMaybe(metadata.elements, selectedView)
+      const instance = MetadataUtils.getElementByInstancePathMaybe(metadata, selectedView)
       if (instance != null && MetadataUtils.isImg(instance) && instance.localFrame != null) {
         const frame = instance.localFrame
         const imageSize = getImageSizeFromMetadata(instance)
@@ -1197,7 +1196,7 @@ function innerSnapPoint(
   const guidelines = oneGuidelinePerDimension(
     collectGuidelines(
       imports,
-      editor.jsxMetadataKILLME,
+      editor.jsxMetadata,
       editor.selectedViews,
       editor.canvas.scale,
       point,
@@ -1230,12 +1229,12 @@ export function snapPoint(
 ): CanvasPoint {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     editor.selectedViews,
-    editor.jsxMetadataKILLME,
+    editor.jsxMetadata,
     true,
     false,
   )
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
-    return MetadataUtils.isPinnedAndNotAbsolutePositioned(editor.jsxMetadataKILLME, elementToTarget)
+    return MetadataUtils.isPinnedAndNotAbsolutePositioned(editor.jsxMetadata, elementToTarget)
   })
   const shouldSnap = enableSnapping && !anythingPinnedAndNotAbsolutePositioned
 
@@ -1426,7 +1425,7 @@ export function produceResizeCanvasTransientState(
 ): TransientCanvasState {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     dragState.draggedElements,
-    editorState.jsxMetadataKILLME,
+    editorState.jsxMetadata,
     false,
     true,
   )
@@ -1460,7 +1459,7 @@ export function produceResizeCanvasTransientState(
         } as CanvasRectangle
         const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
           target,
-          editorState.jsxMetadataKILLME,
+          editorState.jsxMetadata,
         )
         if (isFlexContainer) {
           framesAndTargets.push(flexResizeChange(target, roundedFrame, dragState.edgePosition))
@@ -1480,7 +1479,7 @@ export function produceResizeCanvasTransientState(
 
     const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
       componentsIncludingFakeUtopiaScene,
-      editorState.jsxMetadataKILLME,
+      editorState.jsxMetadata,
       framesAndTargets,
       null,
     )
@@ -1507,7 +1506,7 @@ export function produceResizeSingleSelectCanvasTransientState(
 ): TransientCanvasState {
   const elementsToTarget = determineElementsToOperateOnForDragging(
     dragState.draggedElements,
-    editorState.jsxMetadataKILLME,
+    editorState.jsxMetadata,
     false,
     true,
   )
@@ -1530,7 +1529,7 @@ export function produceResizeSingleSelectCanvasTransientState(
     } as CanvasRectangle
     const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       elementToTarget,
-      editorState.jsxMetadataKILLME,
+      editorState.jsxMetadata,
     )
     if (isFlexContainer) {
       framesAndTargets.push(flexResizeChange(elementToTarget, roundedFrame, dragState.edgePosition))
@@ -1556,7 +1555,7 @@ export function produceResizeSingleSelectCanvasTransientState(
 
   const updatedScenesAndComponents = updateFramesOfScenesAndComponents(
     componentsIncludingFakeUtopiaScene,
-    editorState.jsxMetadataKILLME,
+    editorState.jsxMetadata,
     framesAndTargets,
     null,
   )
@@ -1700,14 +1699,14 @@ export function createDuplicationNewUIDsFromEditorState(
   const rootComponents = getOpenUtopiaJSXComponentsFromState(editorState)
   return createDuplicationNewUIDs(
     editorState.selectedViews,
-    editorState.jsxMetadataKILLME,
+    editorState.jsxMetadata,
     rootComponents,
   )
 }
 
 export function createDuplicationNewUIDs(
   selectedViews: Array<TemplatePath>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   rootComponents: Array<UtopiaJSXComponent>,
 ): Array<DuplicateNewUID> {
   const targetViews = determineElementsToOperateOnForDragging(
@@ -1746,7 +1745,7 @@ export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<Tem
 }
 
 function getReparentTargetAtPosition(
-  componentMeta: JSXMetadata,
+  componentMeta: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
   focusedElementPath: ScenePath | null,
@@ -1779,7 +1778,7 @@ export function getReparentTarget(
   newParent: TemplatePath | null
 } {
   const result = getReparentTargetAtPosition(
-    editorState.jsxMetadataKILLME,
+    editorState.jsxMetadata,
     selectedViews,
     editorState.hiddenInstances,
     editorState.focusedElementPath,
@@ -1788,14 +1787,14 @@ export function getReparentTarget(
   )
   const possibleNewParent = result == undefined ? null : result
   const currentParents = Utils.stripNulls(
-    toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadataKILLME, view)),
+    toReparent.map((view) => MetadataUtils.getParent(editorState.jsxMetadata, view)),
   )
   let parentSupportsChild = true
   if (possibleNewParent != null) {
     const imports = getOpenImportsFromState(editorState)
     parentSupportsChild = MetadataUtils.targetSupportsChildren(
       imports,
-      editorState.jsxMetadataKILLME,
+      editorState.jsxMetadata,
       possibleNewParent,
     )
   } else {
@@ -1827,7 +1826,7 @@ export function getReparentTarget(
 export interface MoveTemplateResult {
   utopiaComponentsIncludingScenes: Array<UtopiaJSXComponent>
   newPath: TemplatePath | null
-  metadata: JSXMetadata
+  metadata: ElementInstanceMetadataMap
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
 }
@@ -1852,7 +1851,7 @@ export function moveTemplate(
   newParentPath: TemplatePath | null,
   parentFrame: CanvasRectangle | null,
   utopiaComponentsIncludingScenes: Array<UtopiaJSXComponent>,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   highlightedViews: Array<TemplatePath>,
   newParentLayoutSystem: LayoutSystem | null,
@@ -1927,7 +1926,7 @@ export function moveTemplate(
       } else {
         let updatedUtopiaComponents: Array<UtopiaJSXComponent> = utopiaComponentsIncludingScenes
         let newPath: TemplatePath | null = null
-        let updatedComponentMetadata: JSXMetadata = withMetadataUpdatedForNewContext
+        let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
 
         flexContextChanged = flexContextChanged || didSwitch
 
@@ -1966,7 +1965,7 @@ export function moveTemplate(
 
         // Need to make these changes ahead of updating the frame.
         const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
-          updatedComponentMetadata.elements,
+          updatedComponentMetadata,
           target,
         )
 
@@ -2084,7 +2083,7 @@ function produceMoveTransientCanvasState(
   preventAnimations: boolean,
 ): TransientCanvasState {
   let selectedViews: Array<TemplatePath> = dragState.draggedElements
-  let metadata: JSXMetadata = editorState.jsxMetadataKILLME
+  let metadata: ElementInstanceMetadataMap = editorState.jsxMetadata
   let originalFrames: Array<CanvasFrameAndTarget> = dragState.originalFrames
   let highlightedViews: Array<TemplatePath> = editorState.highlightedViews
 
@@ -2196,7 +2195,7 @@ export function getCanvasOffset(
   previousOffset: CanvasPoint,
   previousScale: number,
   scale: number,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   selectedViews: TemplatePath[],
   focusPoint: CanvasPoint | null,
   isFirstLoad: boolean,
@@ -2277,7 +2276,7 @@ export function focusPointForZoom(
   selectedViews: Array<TemplatePath>,
   scale: number,
   previousScale: number,
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
   canvasOffset: CanvasPoint,
   canvasDivSize: ClientRect,
 ): CanvasPoint {
@@ -2309,7 +2308,7 @@ export function focusPointForZoom(
 export interface DuplicateResult {
   utopiaComponents: Array<UtopiaJSXComponent>
   selectedViews: Array<TemplatePath>
-  metadata: JSXMetadata
+  metadata: ElementInstanceMetadataMap
   originalFrames: Array<CanvasFrameAndTarget> | null
 }
 
@@ -2325,7 +2324,7 @@ export function duplicate(
     return foldParsedTextFile(
       (_) => null,
       (parseSuccess) => {
-        let metadata = editor.jsxMetadataKILLME
+        let metadata = editor.jsxMetadata
         let utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
         let duplicateNewUIDs: Array<DuplicateNewUID> = []
         let newOriginalFrames: Array<CanvasFrameAndTarget> | null = null
@@ -2511,7 +2510,7 @@ export function cullSpyCollector(
   let scenePaths: Set<string> = Utils.emptySet()
   fastForEach(domMetadata, (element) => {
     let workingPath: TemplatePath | null = element.templatePath
-    while (workingPath != null) {
+    while (workingPath != null && !TP.isEmptyPath(workingPath)) {
       const pathAsString = TP.toString(workingPath)
       if (TP.isScenePath(workingPath)) {
         elementPaths.add(TP.toString(TP.instancePathForElementAtScenePath(workingPath)))
@@ -2526,21 +2525,6 @@ export function cullSpyCollector(
   fastForEach(Object.keys(spyCollector.current.spyValues.metadata), (elementPath) => {
     if (!elementPaths.has(elementPath)) {
       delete spyCollector.current.spyValues.metadata[elementPath]
-    }
-  })
-  // Eliminate the scene paths which are invalid.
-  fastForEach(Object.keys(spyCollector.current.spyValues.scenes), (scenePath) => {
-    if (
-      !scenePaths.has(scenePath) &&
-      !elementPaths.has(
-        TP.toString(
-          TP.instancePathForElementAtScenePath(
-            spyCollector.current.spyValues.scenes[scenePath].scenePath,
-          ),
-        ),
-      ) // this is needed because empty scenes are stored in metadata with an instancepath
-    ) {
-      delete spyCollector.current.spyValues.scenes[scenePath]
     }
   })
 }

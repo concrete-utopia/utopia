@@ -6,7 +6,7 @@ import { DerivedState, EditorState, getOpenUIJSFile } from '../components/editor
 import { scaleImageDimensions, getFrameAndMultiplier } from '../components/images'
 import * as TP from '../core/shared/template-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
-import { JSXMetadata } from '../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import {
   Imports,
@@ -32,7 +32,7 @@ interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
   originalTemplatePaths: TemplatePath[]
-  targetOriginalContextMetadata: JSXMetadata
+  targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
 type JSXElementsJson = string
@@ -68,7 +68,7 @@ export function getActionsForClipboardItems(
   pastedFiles: Array<FileResult>,
   selectedViews: Array<TemplatePath>,
   pasteTargetsToIgnore: TemplatePath[],
-  componentMetadata: JSXMetadata,
+  componentMetadata: ElementInstanceMetadataMap,
 ): Array<EditorAction> {
   try {
     const utopiaActions = Utils.flatMapArray((data: CopyData, i: number) => {
@@ -181,7 +181,7 @@ export function createClipboardDataFromSelectionNewWorld(
         type: 'ELEMENT_COPY',
         elements: json5.stringify(jsxElements),
         originalTemplatePaths: editor.selectedViews,
-        targetOriginalContextMetadata: editor.jsxMetadataKILLME,
+        targetOriginalContextMetadata: editor.jsxMetadata,
       },
     ],
     imageFilenames: [],

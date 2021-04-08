@@ -10,7 +10,6 @@ import {
   isUtopiaJSXComponent,
   TopLevelElement,
   UtopiaJSXComponent,
-  ComponentMetadataWithoutRootElements,
 } from '../../core/shared/element-template'
 import { getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
@@ -94,7 +93,6 @@ const emptyFileBlobs: UIFileBase64Blobs = {}
 
 export type SpyValues = {
   metadata: ElementInstanceMetadataMap
-  scenes: { [templatePath: string]: ComponentMetadataWithoutRootElements }
 }
 
 export interface UiJsxCanvasContextData {
@@ -108,7 +106,6 @@ export function emptyUiJsxCanvasContextData(): UiJsxCanvasContextData {
     current: {
       spyValues: {
         metadata: {},
-        scenes: {},
       },
     },
   }
@@ -369,7 +366,6 @@ export const UiJsxCanvas = betterReactMemo(
         StoryboardRootComponent,
         rootValidPaths,
         storyboardRootElementPath,
-        storyboardRootSceneMetadata,
         rootScenePath,
       } = useGetStoryboardRoot(
         topLevelElementsMap,
@@ -378,12 +374,6 @@ export const UiJsxCanvas = betterReactMemo(
         uiFilePath,
         resolve,
       )
-
-      if (props.shouldIncludeCanvasRootInTheSpy) {
-        metadataContext.current.spyValues.scenes[
-          TP.toString(rootScenePath)
-        ] = storyboardRootSceneMetadata
-      }
 
       return (
         <>
@@ -445,7 +435,6 @@ function useGetStoryboardRoot(
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
-  storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements
   storyboardRootElementPath: InstancePath
   rootValidPaths: Array<InstancePath>
   rootScenePath: ScenePath
@@ -468,19 +457,8 @@ function useGetStoryboardRoot(
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
 
-  const storyboardRootSceneMetadata: ComponentMetadataWithoutRootElements = {
-    component: BakedInStoryboardVariableName,
-    sceneResizesContent: false,
-    scenePath: EmptyScenePathForStoryboard,
-    templatePath: TP.emptyInstancePath, // TODO use the real storyboardRootElementPath path here instead of this baked in empty path, so we can remove the hack from https://github.com/concrete-utopia/utopia/blob/264d96276f832ac0213cf3f142ac2c246d588448/editor/src/components/canvas/canvas.ts#L135
-    globalFrame: null,
-    label: 'Storyboard',
-    style: {},
-  }
-
   return {
     StoryboardRootComponent: StoryboardRootComponent,
-    storyboardRootSceneMetadata: storyboardRootSceneMetadata,
     storyboardRootElementPath: storyboardRootElementPath,
     rootValidPaths: validPaths,
     rootScenePath: EmptyScenePathForStoryboard,

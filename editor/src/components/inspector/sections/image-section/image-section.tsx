@@ -13,7 +13,7 @@ import {
   useIsSubSectionVisible,
   useSelectedViews,
 } from '../../common/property-path-hooks'
-import { GridRow } from '../../widgets/grid-row'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { ImageDensityControl } from './image-density-control'
 import { colorTheme, InspectorSectionHeader } from '../../../../uuiui'
@@ -36,7 +36,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
     return {
       dispatch: store.dispatch,
       zerothElementInstanceMetadata: MetadataUtils.getElementByInstancePathMaybe(
-        store.editor.jsxMetadataKILLME.elements,
+        store.editor.jsxMetadata,
         selectedNonSceneViews[0],
       ),
     }
@@ -90,7 +90,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
         style={{ gridColumn: '1 / span 4' }}
         data={null}
       >
-        <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
           <PropertyLabel target={imgSrcProp}>Source</PropertyLabel>
           <StringControl
             id='image-src'
@@ -101,7 +101,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             controlStyles={srcControlStyles}
             controlStatus={srcControlStatus}
           />
-        </GridRow>
+        </UIGridRow>
       </InspectorContextMenuWrapper>
       <InspectorContextMenuWrapper
         id='image-section-alt-context-menu'
@@ -109,7 +109,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
         style={{ gridColumn: '1 / span 4' }}
         data={null}
       >
-        <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+        <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
           <PropertyLabel target={imgAltProp}>Alt Text</PropertyLabel>
           <StringControl
             id='image-alt'
@@ -120,9 +120,9 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
             controlStyles={altControlStyles}
             controlStatus={altControlStatus}
           />
-        </GridRow>
+        </UIGridRow>
       </InspectorContextMenuWrapper>
-      <GridRow padded type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded variant='<---1fr--->|------172px-------|'>
         <PropertyLabel target={imgAltProp}>Density</PropertyLabel>
         <ImageDensityControl
           dispatch={dispatch}
@@ -132,7 +132,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
           clientWidth={clientWidth}
           clientHeight={clientHeight}
         />
-      </GridRow>
+      </UIGridRow>
     </>
   )
 })

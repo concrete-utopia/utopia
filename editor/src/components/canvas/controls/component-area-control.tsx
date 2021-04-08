@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { JSXMetadata } from '../../../core/shared/element-template'
+import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import { KeysPressed } from '../../../utils/keyboard'
 import utils from '../../../utils/utils'
@@ -31,7 +31,7 @@ interface ComponentAreaControlProps {
     dragStart: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
   ) => void
-  componentMetadata: JSXMetadata
+  componentMetadata: ElementInstanceMetadataMap
   onHover: (target: TemplatePath) => void
   onHoverEnd: (target: TemplatePath) => void
   keysPressed: KeysPressed

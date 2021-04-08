@@ -48,7 +48,7 @@ describe('createDragState', () => {
         canvasPoint({ x: 0, y: 0 }),
         canvasPoint({ x: 15, y: 25 }),
         null,
-        getOriginalCanvasFrames(selectedViews, editorState.jsxMetadataKILLME),
+        getOriginalCanvasFrames(selectedViews, editorState.jsxMetadata),
         canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
         false,
         false,
@@ -56,7 +56,7 @@ describe('createDragState', () => {
         false,
         duplicateNewUIDs,
         canvasPoint({ x: 15, y: 15 }),
-        editorState.jsxMetadataKILLME,
+        editorState.jsxMetadata,
         selectedViews,
       ),
     )

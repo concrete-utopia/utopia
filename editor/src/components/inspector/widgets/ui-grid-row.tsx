@@ -65,16 +65,16 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
    * the 'type' of the GridRow is the key which lets you pick from the Grid Templates.
    * Please try to find the template you need before adding a new template to the list.
    */
-  type: keyof typeof gridTemplates
+  variant: keyof typeof gridTemplates
   /**
    * alignItems: default value is 'center'
    */
   alignItems?: 'start' | 'center'
 }
 
-export const GridRow: React.FunctionComponent<GridRowProps> = ({
+export const UIGridRow: React.FunctionComponent<GridRowProps> = ({
   tall,
-  type,
+  variant,
   alignItems,
   style,
   padded,
@@ -86,17 +86,15 @@ export const GridRow: React.FunctionComponent<GridRowProps> = ({
     style={{
       padding: padded ? `0px ${UtopiaTheme.layout.rowHorizontalPadding}px` : undefined,
       display: 'grid',
-      height: tall
-        ? UtopiaTheme.layout.gridRowHeight.tall
-        : UtopiaTheme.layout.gridRowHeight.normal,
+      height: tall ? UtopiaTheme.layout.rowHeight.max : UtopiaTheme.layout.rowHeight.normal,
       gridColumnGap: 10,
       overflow: 'hidden',
       alignItems: alignItems ?? 'center',
-      ...gridTemplates[type],
+      ...gridTemplates[variant],
       ...style,
     }}
   >
     {children}
   </div>
 )
-GridRow.displayName = 'GridRow'
+UIGridRow.displayName = 'UIGridRow'

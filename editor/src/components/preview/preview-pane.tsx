@@ -22,6 +22,7 @@ import {
   Subdued,
   PopupList,
   Icn,
+  UIRow,
 } from '../../uuiui'
 import { betterReactMemo } from '../../utils/react-performance'
 
@@ -252,9 +253,9 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
           overflow: 'scroll',
         }}
       >
-        <FlexRow
+        <UIRow
+          rowHeight={'normal'}
           css={{
-            height: UtopiaTheme.layout.rowHeight.medium,
             flexShrink: 0,
             paddingLeft: 4,
             paddingRight: 4,
@@ -301,19 +302,19 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
               <LargerIcons.ExternalLink color='black' />
             </SquareButton>
           </a>
-        </FlexRow>
-        <FlexRow
+        </UIRow>
+        <UIRow
           className='preview-menu'
+          rowHeight={'normal'}
           style={{
-            height: UtopiaTheme.layout.rowHeight.medium,
             borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
             flexShrink: 0,
             flexGrow: 0,
           }}
         >
-          <FlexRow
+          <UIRow
+            rowHeight={'normal'}
             css={{
-              height: UtopiaTheme.layout.rowHeight.medium,
               flexShrink: 0,
               paddingLeft: 4,
               paddingRight: 4,
@@ -349,8 +350,8 @@ class PreviewColumnContent extends React.Component<PreviewColumnProps, PreviewCo
             </SquareButton>
             <LargerIcons.Divider width={5} height={18} style={{ marginLeft: 4, marginRight: 8 }} />
             <ColorButtonGroup />
-          </FlexRow>
-        </FlexRow>
+          </UIRow>
+        </UIRow>
         <FlexRow
           style={{
             ...this.backgroundOptions[this.state.selectedBackgroundOptionIndex].value,

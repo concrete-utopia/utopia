@@ -55,6 +55,7 @@ describe('Property Controls Processor', () => {
       fullNodeModulesUpdate(nodeModules),
       {},
       {},
+      {},
       [],
     )
   })
@@ -98,6 +99,7 @@ describe('Property Controls Processor', () => {
     processControls(
       [requestedNpmDependency(packageName, packageVersion)],
       fullNodeModulesUpdate(nodeModules),
+      {},
       {},
       {
         '/src/index.js': {

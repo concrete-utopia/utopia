@@ -23,6 +23,7 @@ import {
   MenuIcons,
   StringInput,
   Subdued,
+  UIRow,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
@@ -34,11 +35,11 @@ import {
   setProjectName,
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
-import { DerivedState, EditorState, getOpenFile } from '../editor/store/editor-state'
+import { DerivedState, EditorState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
-import { GridRow } from '../inspector/widgets/grid-row'
+import { UIGridRow } from '../inspector/widgets/ui-grid-row'
 import { DependencyList } from './dependency-list'
 import { GenericExternalResourcesList } from './external-resources/generic-external-resources-list'
 import { GoogleFontsResourcesList } from './external-resources/google-fonts-resources-list'
@@ -222,9 +223,9 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
         </SectionTitleRow>
         <SectionBodyArea minimised={false}>
           <FlexColumn style={{ paddingLeft: 8, paddingRight: 8, gap: 16 }}>
-            <GridRow
+            <UIGridRow
               padded
-              type='|--32px--|<--------auto-------->'
+              variant='|--32px--|<--------auto-------->'
               style={{
                 height: 'inherit',
                 wordWrap: 'normal',
@@ -242,7 +243,7 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
             >
               <MenuIcons.Pyramid style={{ marginTop: 2 }} />
               <span>Storyboards let you display and visually edit components.</span>
-            </GridRow>
+            </UIGridRow>
 
             {storyboardList.map((item) => (
               <StoryboardListItem
@@ -330,7 +331,7 @@ const SettingsPane = betterReactMemo('SettingsPane', () => {
             <div
               style={{
                 height: 'initial',
-                minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+                minHeight: UtopiaTheme.layout.rowHeight.normal,
                 alignItems: 'flex-start',
                 paddingTop: 8,
                 paddingLeft: 8,
@@ -393,7 +394,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -418,7 +419,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -449,7 +450,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
           <div
             style={{
               height: 'initial',
-              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -472,7 +473,7 @@ const SharingPane = betterReactMemo('SharingPane', () => {
             </a>
             &nbsp;without the editor or design tool.
           </div>
-          <GridRow type='<--------auto-------->|--45px--|' padded>
+          <UIGridRow variant='<--------auto-------->|--45px--|' padded>
             <StringInput testId='externalProjectURL' value={previewURL} readOnly />
             <Button
               spotlight
@@ -482,11 +483,11 @@ const SharingPane = betterReactMemo('SharingPane', () => {
             >
               {temporaryCopySuccess ? '✓' : 'Copy'}
             </Button>
-          </GridRow>
+          </UIGridRow>
           <div
             style={{
               height: 'initial',
-              minHeight: UtopiaTheme.layout.gridRowHeight.normal,
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
               alignItems: 'flex-start',
               paddingTop: 8,
               paddingLeft: 8,
@@ -517,11 +518,9 @@ const GithubPane = betterReactMemo('GithubPane', () => {
         paddingBottom: 50,
       }}
     >
-      <FlexRow
-        style={{ paddingLeft: 8, paddingRight: 8, height: UtopiaTheme.layout.gridRowHeight.normal }}
-      >
+      <UIRow style={{ paddingLeft: 8, paddingRight: 8 }}>
         <Title>Github</Title>
-      </FlexRow>
+      </UIRow>
       <div
         style={{
           height: 'initial',
@@ -540,12 +539,12 @@ const GithubPane = betterReactMemo('GithubPane', () => {
         You can import a new project from Github. It might take a few minutes, and will show up in{' '}
         <a href='/projects'>your projects</a> (not here).
       </div>
-      <GridRow padded type='<--------auto-------->|--45px--|'>
+      <UIGridRow padded variant='<--------auto-------->|--45px--|'>
         <StringInput testId='importProject' value='' />
         <Button spotlight highlight>
           Start
         </Button>
-      </GridRow>
+      </UIGridRow>
     </FlexColumn>
   )
 })
@@ -687,9 +686,9 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
               ) : (
                 <FlexColumn>
                   <SectionBodyArea minimised={false}>
-                    <GridRow
+                    <UIGridRow
                       padded
-                      type='<-------------1fr------------->'
+                      variant='<-------------1fr------------->'
                       style={{
                         height: 'inherit',
                         wordWrap: 'normal',
@@ -709,8 +708,8 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                         These help you organise your projects. We also use them when you embed or
                         share your project on social media and chat apps.
                       </Subdued>
-                    </GridRow>
-                    <GridRow padded type='<---1fr--->|------172px-------|'>
+                    </UIGridRow>
+                    <UIGridRow padded variant='<---1fr--->|------172px-------|'>
                       <span>Name</span>
                       <StringInput
                         testId='projectName'
@@ -720,18 +719,18 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                         style={{ width: 150 }}
                         onBlur={handleBlur}
                       />
-                    </GridRow>
-                    <GridRow padded type='<---1fr--->|------172px-------|'>
+                    </UIGridRow>
+                    <UIGridRow padded variant='<---1fr--->|------172px-------|'>
                       <span> Description </span>
                       <StringInput
                         testId='projectDescription'
                         value={projectName}
                         style={{ width: 150 }}
                       />
-                    </GridRow>
-                    <GridRow
+                    </UIGridRow>
+                    <UIGridRow
                       padded
-                      type='<---1fr--->|------172px-------|'
+                      variant='<---1fr--->|------172px-------|'
                       style={{ alignItems: 'start', height: 'initial', paddingTop: 8 }}
                     >
                       <span> Preview </span>
@@ -775,7 +774,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                           {requestingPreviewImage ? 'Refreshing' : 'Refresh'}
                         </Button>
                       </FlexColumn>
-                    </GridRow>
+                    </UIGridRow>
                   </SectionBodyArea>
                 </FlexColumn>
               )}

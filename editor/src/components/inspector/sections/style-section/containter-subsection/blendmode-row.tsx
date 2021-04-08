@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
-import { GridRow } from '../../../widgets/grid-row'
+import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PopupList } from '../../../../../uuiui'
 import {
   betterReactMemo,
@@ -41,7 +41,7 @@ export const BlendModeRow = betterReactMemo('BlendModeRow', () => {
       items={blendModeContextMenuItems}
       data={null}
     >
-      <GridRow padded={true} type='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
         <PropertyLabel target={blendModeProp}>Blendmode</PropertyLabel>
         <PopupList
           containerMode='default'
@@ -50,7 +50,7 @@ export const BlendModeRow = betterReactMemo('BlendModeRow', () => {
           onSubmitValue={onSubmitBlendModeOption}
           controlStyles={blendModeMetadata.controlStyles}
         />
-      </GridRow>
+      </UIGridRow>
     </InspectorContextMenuWrapper>
   )
 })

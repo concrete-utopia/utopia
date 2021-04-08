@@ -35,7 +35,7 @@ export const SectionTitleRow: React.FunctionComponent<SectionTitleRowProps> = (p
         transition: 'all .2s ease-in-out',
         paddingLeft: 8,
         paddingRight: 8,
-        minHeight: UtopiaTheme.layout.rowHeight.medium,
+        minHeight: UtopiaTheme.layout.rowHeight.normal,
         cursor: 'pointer',
       }}
       css={{

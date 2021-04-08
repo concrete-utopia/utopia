@@ -5,7 +5,7 @@ import utils from '../../../../utils/utils'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import { DOMEventHandler, DOMEventHandlerNames } from '../../common/css-utils'
 import { ParsedValues, useInspectorInfo } from '../../common/property-path-hooks'
-import { GridRow } from '../../widgets/grid-row'
+import { UIGridRow } from '../../widgets/ui-grid-row'
 import { isJSXAttributeOtherJavaScript } from '../../../../core/shared/element-template'
 import { PropertyLabel } from '../../widgets/property-label'
 import {
@@ -75,13 +75,13 @@ export const EventHandlersSection = betterReactMemo('EventHandlersSection', () =
                 style={{ gridColumn: '1 / span 4' }}
                 data={null}
               >
-                <GridRow
+                <UIGridRow
                   key={`event-handler-row-${handlerName}`}
                   padded={true}
-                  type='<--1fr--><--1fr-->'
+                  variant='<--1fr--><--1fr-->'
                 >
                   <EventHandlerControl handlerName={handlerName} value={eventHandlerValue} />
-                </GridRow>
+                </UIGridRow>
               </InspectorContextMenuWrapper>
             )
           }
