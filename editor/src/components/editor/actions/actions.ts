@@ -4252,7 +4252,7 @@ export const UPDATE_FNS = {
         clearTimeout(canvasScrollAnimationTimer)
         canvasScrollAnimationTimer = undefined
         dispatch([setScrollAnimation(false)], 'everyone')
-      }, 700)
+      }, 500)
     }
     return {
       ...editor,
