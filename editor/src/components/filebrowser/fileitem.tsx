@@ -627,7 +627,14 @@ class FileBrowserItemInner extends React.PureComponent<
             onMouseDown={this.toggleCollapse}
           />
           {this.props.connectDragPreview(
-            <div style={flexRowStyle}>
+            <div
+              style={{
+                ...flexRowStyle,
+                overflowX: 'hidden',
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+              }}
+            >
               {this.renderIcon()}
               {this.renderLabel()}
               {this.renderModifiedIcon()}
