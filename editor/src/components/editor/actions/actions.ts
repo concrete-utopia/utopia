@@ -4207,6 +4207,9 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     if (action.value) {
+      if (canvasScrollAnimationTimer != null) {
+        clearTimeout(canvasScrollAnimationTimer)
+      }
       canvasScrollAnimationTimer = window.setTimeout(() => {
         clearTimeout(canvasScrollAnimationTimer)
         canvasScrollAnimationTimer = undefined
