@@ -8,6 +8,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -677,6 +678,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -921,6 +923,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -1063,6 +1066,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -1763,6 +1767,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -4241,6 +4246,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -4650,6 +4656,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -4879,6 +4886,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -5729,6 +5737,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -6584,6 +6593,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -7019,6 +7029,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -7454,6 +7465,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
 >
@@ -8067,6 +8079,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
 >
@@ -8663,6 +8676,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
 >
@@ -9366,6 +9380,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
 >
@@ -10069,6 +10084,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -10211,6 +10227,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -15181,6 +15198,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -15678,6 +15696,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -15870,6 +15889,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -16154,6 +16174,7 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":eee :eee/fff\\"
 >
@@ -16607,6 +16628,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -17281,6 +17303,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
 >
@@ -17753,6 +17776,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -18603,6 +18627,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -19457,6 +19482,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -20314,6 +20340,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -20551,6 +20578,7 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":ccc :ccc/ddd\\"
 >
@@ -20930,6 +20958,7 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":ccc :ccc/ddd\\"
 >
@@ -21075,6 +21104,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene\\"
 >
@@ -21368,6 +21398,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene\\"
 >
@@ -21514,6 +21545,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":eee :eee/fff\\"
 >
@@ -22138,6 +22170,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -22469,6 +22502,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -22614,6 +22648,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -23967,6 +24002,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -24444,6 +24480,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -24591,6 +24628,7 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >
@@ -24739,6 +24777,7 @@ exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1
     position: absolute;
     zoom: 100%;
     transform: translate3d(0px, 0px, 0);
+    transition: initial;
   \\"
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
 >

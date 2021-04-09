@@ -295,6 +295,7 @@ export interface EditorState {
     base64Blobs: CanvasBase64Blobs
     mountCount: number
     openFile: DesignerFile | null
+    scrollAnimation: boolean
   }
   inspector: {
     visible: boolean
@@ -1085,6 +1086,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       openFile: {
         filename: StoryboardFilePath,
       },
+      scrollAnimation: false,
     },
     inspector: {
       visible: true,
@@ -1337,6 +1339,7 @@ export function editorModelFromPersistentModel(
       openFile: {
         filename: StoryboardFilePath,
       },
+      scrollAnimation: false,
     },
     inspector: {
       visible: true,
