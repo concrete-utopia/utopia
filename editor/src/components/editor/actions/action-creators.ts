@@ -185,6 +185,7 @@ import type {
   ScrollToElement,
   WorkerCodeUpdate,
   WorkerParsedUpdate,
+  SetScrollAnimation,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1285,5 +1286,12 @@ export function scrollToElement(focusedElementTemplatePath: TemplatePath): Scrol
   return {
     action: 'SCROLL_TO_ELEMENT',
     target: focusedElementTemplatePath,
+  }
+}
+
+export function setScrollAnimation(value: boolean): SetScrollAnimation {
+  return {
+    action: 'SET_SCROLL_ANIMATION',
+    value: value,
   }
 }

@@ -814,6 +814,11 @@ export interface ScrollToElement {
   target: TemplatePath
 }
 
+export interface SetScrollAnimation {
+  action: 'SET_SCROLL_ANIMATION'
+  value: boolean
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -947,6 +952,7 @@ export type EditorAction =
   | SendCodeEditorInitialisation
   | SetFocusedElement
   | ScrollToElement
+  | SetScrollAnimation
 
 export type DispatchPriority =
   | 'everyone'

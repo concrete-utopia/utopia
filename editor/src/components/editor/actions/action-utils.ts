@@ -84,6 +84,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SEND_CODE_EDITOR_INITIALISATION':
     case 'SET_FOCUSED_ELEMENT':
     case 'SCROLL_TO_ELEMENT':
+    case 'SET_SCROLL_ANIMATION':
       return true
 
     case 'NEW':
