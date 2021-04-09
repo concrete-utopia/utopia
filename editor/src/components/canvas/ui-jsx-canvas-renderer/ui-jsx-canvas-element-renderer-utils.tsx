@@ -3,6 +3,7 @@ import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { isSceneElement } from '../../../core/model/scene-utils'
 import {
+  UTOPIA_PATHS_KEY,
   UTOPIA_SCENE_PATH,
   UTOPIA_UIDS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
@@ -291,6 +292,10 @@ function renderJSXElement(
     elementIsIntrinsic && !elementIsBaseHTML
       ? filterDataProps(elementPropsWithScenePath)
       : elementPropsWithScenePath
+  const finalPropsIcludingTemplatePath = {
+    ...finalProps,
+    [UTOPIA_PATHS_KEY]: optionalMap(TP.toString, templatePath),
+  }
 
   const staticTemplatePathForGeneratedElement = optionalMap(
     TP.dynamicPathToStaticPath,
@@ -317,7 +322,7 @@ function renderJSXElement(
 
     return buildSpyWrappedElement(
       jsx,
-      finalProps,
+      finalPropsIcludingTemplatePath,
       templatePath,
       metadataContext,
       childrenTemplatePaths,
@@ -333,7 +338,7 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       FinalElement,
-      finalProps,
+      finalPropsIcludingTemplatePath,
       childrenOrNull,
     )
   }
