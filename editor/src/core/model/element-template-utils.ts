@@ -1,4 +1,5 @@
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
+import { ComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import Utils, { IndexPosition } from '../../utils/utils'
 import { Either, isRight } from '../shared/either'
@@ -41,7 +42,11 @@ import {
   setUtopiaIDOnJSXElement,
 } from '../shared/uid-utils'
 import { fastForEach } from '../shared/utils'
-import { isUtopiaAPIComponent, getComponentsFromTopLevelElements } from './project-file-utils'
+import {
+  isUtopiaAPIComponent,
+  getComponentsFromTopLevelElements,
+  isGivenUtopiaAPIElement,
+} from './project-file-utils'
 import { getStoryboardTemplatePath } from './scene-utils'
 
 function getAllUniqueUidsInner(
@@ -95,6 +100,19 @@ export function guaranteeUniqueUids(
   return elements.map((element) => fixUtopiaElement(element, existingIDs))
 }
 
+function isSceneElement(
+  element: JSXElementChild,
+  filePath: string,
+  projectContents: ProjectContentTreeRoot,
+): boolean {
+  const file = getContentsTreeFileFromString(projectContents, filePath)
+  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    return isGivenUtopiaAPIElement(element, file.fileContents.parsed.imports, 'Scene')
+  } else {
+    return false
+  }
+}
+
 export function getValidTemplatePaths(
   focusedElementPath: ScenePath | null,
   topLevelElementName: string | null,
@@ -131,6 +149,7 @@ export function getValidTemplatePaths(
               scenePath,
               projectContents,
               resolvedFilePath,
+              false,
               resolve,
             )
           }
@@ -147,9 +166,11 @@ export function getValidTemplatePathsFromElement(
   parentPath: TemplatePath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
+  parentIsScene: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<InstancePath> {
   if (isJSXElement(element)) {
+    const isScene = isSceneElement(element, filePath, projectContents)
     const uid = getUtopiaID(element)
     const path = TP.appendToPath(parentPath, uid)
     let paths = [path]
@@ -161,10 +182,12 @@ export function getValidTemplatePathsFromElement(
           path,
           projectContents,
           filePath,
+          isScene,
           resolve,
         ),
       ),
     )
+
     const name = getJSXElementNameAsString(element.name)
     const matchingFocusedPathPart =
       focusedElementPath == null
@@ -174,19 +197,22 @@ export function getValidTemplatePathsFromElement(
             TP.elementPathForPath(path),
             'static-scene-path',
           )
-    if (matchingFocusedPathPart != null) {
+
+    const isFocused = parentIsScene || matchingFocusedPathPart != null
+    if (isFocused) {
       paths = [
         ...paths,
         ...getValidTemplatePaths(
           focusedElementPath,
           name,
-          matchingFocusedPathPart,
+          matchingFocusedPathPart || TP.scenePathForElementAtPath(path),
           projectContents,
           filePath,
           resolve,
         ),
       ]
     }
+
     return paths
   } else if (isJSXArbitraryBlock(element)) {
     let paths: Array<InstancePath> = []
@@ -198,6 +224,7 @@ export function getValidTemplatePathsFromElement(
           parentPath,
           projectContents,
           filePath,
+          false,
           resolve,
         ),
       ),
@@ -213,6 +240,7 @@ export function getValidTemplatePathsFromElement(
           parentPath,
           projectContents,
           filePath,
+          false,
           resolve,
         ),
       ),

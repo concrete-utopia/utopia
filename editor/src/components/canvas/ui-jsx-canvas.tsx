@@ -138,6 +138,7 @@ export interface UiJsxCanvasProps {
   focusedElementPath: ScenePath | null
   projectContents: ProjectContentTreeRoot
   transientFilesState: TransientFilesState | null
+  scrollAnimation: boolean
 }
 
 export interface CanvasReactReportErrorCallback {
@@ -214,6 +215,7 @@ export function pickUiJsxCanvasProps(
       focusedElementPath: editor.focusedElementPath,
       projectContents: editor.projectContents,
       transientFilesState: derived.canvas.transientState.filesState,
+      scrollAnimation: editor.canvas.scrollAnimation,
     }
   }
 }
@@ -402,6 +404,7 @@ export const UiJsxCanvas = betterReactMemo(
                   onDomReport={onDomReport}
                   validRootPaths={rootValidPaths}
                   canvasRootElementTemplatePath={storyboardRootElementPath}
+                  scrollAnimation={props.scrollAnimation}
                 >
                   <SceneLevelUtopiaContext.Provider value={{ validPaths: rootValidPaths }}>
                     <ParentLevelUtopiaContext.Provider
@@ -472,6 +475,7 @@ export interface CanvasContainerProps {
   canvasRootElementTemplatePath: TemplatePath
   validRootPaths: Array<InstancePath>
   mountCount: number
+  scrollAnimation: boolean
 }
 
 const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (
@@ -492,6 +496,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
         zoom: scale >= 1 ? `${scale * 100}%` : 1,
         transform:
           (scale < 1 ? `scale(${scale})` : '') + ` translate3d(${offset.x}px, ${offset.y}px, 0)`,
+        transition: props.scrollAnimation ? 'transform .2s ease-in-out' : 'initial',
       }}
       data-utopia-valid-paths={props.validRootPaths.map(TP.toString).join(' ')}
     >
