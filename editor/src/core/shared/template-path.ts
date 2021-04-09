@@ -677,7 +677,7 @@ function fullElementPathForPath(path: TemplatePath): ElementPath[] {
   }
 }
 
-export function isDescendentOf(
+export function isDescendantOf(
   target: TemplatePath,
   maybeAncestor: TemplatePath,
   includePathsEqual: boolean = true,

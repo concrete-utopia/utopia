@@ -268,10 +268,8 @@ export const SceneRootRenderer = betterReactMemo(
           data-utopia-valid-paths={validPaths.map(TP.toString).join(' ')}
           style={sceneStyle}
         >
-          <>
-            {rootElement}
-            {renderedChildren}
-          </>
+          {rootElement}
+          {renderedChildren}
         </View>
       </SceneLevelUtopiaContext.Provider>
     )
