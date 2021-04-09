@@ -10,11 +10,11 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
     transform: translate3d(0px, 0px, 0);
     transition: initial;
   \\"
-  data-utopia-valid-paths=\\":8a6 :8a6/088\\"
+  data-utopia-valid-paths=\\":sb :sb/scene\\"
 >
   <div
-    data-utopia-scene-id=\\"8a6/088\\"
-    data-utopia-valid-paths=\\":8a6 :8a6/088\\"
+    data-utopia-scene-id=\\"sb/scene\\"
+    data-utopia-valid-paths=\\":sb :sb/scene\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -24,9 +24,15 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
       left: 0;
       top: 0;
     \\"
-    data-uid=\\"8a6\\"
+    data-paths=\\":sb\\"
+    data-uid=\\"sb\\"
   >
-    <div data-uid=\\"fa7 031~~~1 088\\">hat</div>
+    <div
+      data-uid=\\"comment-root comment-instance~~~1 scene\\"
+      data-paths=\\"sb/scene:comment-instance~~~1:comment-root sb/scene:comment-instance~~~1\\"
+    >
+      hat
+    </div>
   </div>
 </div>
 "
