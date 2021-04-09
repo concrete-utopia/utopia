@@ -104,11 +104,7 @@ export function createLookupRender(
   }
 }
 
-function monkeyUidProp(
-  uid: string | undefined,
-  templatePath: InstancePath | null,
-  propsToUpdate: MapLike<any>,
-): MapLike<any> {
+function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): MapLike<any> {
   let monkeyedProps: MapLike<any> = {
     ...propsToUpdate,
   }
@@ -116,11 +112,6 @@ function monkeyUidProp(
   const uidsFromProps = monkeyedProps[UTOPIA_UIDS_KEY]
   const uidsToPass = appendToUidString(uidsFromProps, uid)
   monkeyedProps[UTOPIA_UIDS_KEY] = uidsToPass
-  if (templatePath != null) {
-    const templatePathsFromProps = monkeyedProps[UTOPIA_PATHS_KEY]
-    const templatePathsToPass = appendToUidString(templatePathsFromProps, TP.toString(templatePath))
-    monkeyedProps[UTOPIA_PATHS_KEY] = templatePathsToPass
-  }
 
   return monkeyedProps
 }
@@ -153,7 +144,7 @@ export function renderCoreElement(
     case 'JSX_ELEMENT': {
       const assembledProps = jsxAttributesToProps(inScope, element.props, requireResult)
 
-      const passthroughProps = monkeyUidProp(uid, templatePath, assembledProps)
+      const passthroughProps = monkeyUidProp(uid, assembledProps)
 
       const key = optionalMap(TP.toString, templatePath) ?? passthroughProps[UTOPIA_UIDS_KEY]
 
