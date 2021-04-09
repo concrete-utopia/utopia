@@ -24,15 +24,29 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
       data-uid=\\"aaa scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     >
-      <div data-uid=\\"bbb~~~1\\" data-label=\\"Plane\\"></div>
-      <div data-uid=\\"bbb~~~2\\" data-label=\\"Plane\\"></div>
-      <div data-uid=\\"bbb~~~3\\" data-label=\\"Plane\\"></div>
+      <div
+        data-uid=\\"bbb~~~1\\"
+        data-label=\\"Plane\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1\\"
+      ></div>
+      <div
+        data-uid=\\"bbb~~~2\\"
+        data-label=\\"Plane\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2\\"
+      ></div>
+      <div
+        data-uid=\\"bbb~~~3\\"
+        data-label=\\"Plane\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3\\"
+      ></div>
     </div>
   </div>
 </div>
@@ -255,6 +269,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -391,6 +406,7 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-label": "Plane",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
@@ -502,6 +518,7 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-label": "Plane",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
@@ -613,6 +630,7 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-label": "Plane",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
@@ -694,12 +712,14 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
       data-uid=\\"aaa scene-aaa\\"
       data-label=\\"Hat\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     ></div>
   </div>
 </div>
@@ -833,6 +853,7 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-label": "Hat",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -939,9 +960,14 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <input data-uid=\\"9e8 567 scene-aaa\\" style=\\"top: 10px;\\" />
+    <input
+      data-uid=\\"9e8 567 scene-aaa\\"
+      style=\\"top: 10px;\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:567:9e8 utopia-storyboard-uid/scene-aaa:567\\"
+    />
   </div>
 </div>
 "
@@ -990,6 +1016,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:567",
       "data-uid": "567 scene-aaa",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -1082,12 +1109,31 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"zzz scene-aaa\\">
-      <div data-uid=\\"aaa~~~1\\">1</div>
-      <div data-uid=\\"aaa~~~2\\">2</div>
-      <div data-uid=\\"aaa~~~3\\">3</div>
+    <div
+      data-uid=\\"zzz scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz\\"
+    >
+      <div
+        data-uid=\\"aaa~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1\\"
+      >
+        1
+      </div>
+      <div
+        data-uid=\\"aaa~~~2\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2\\"
+      >
+        2
+      </div>
+      <div
+        data-uid=\\"aaa~~~3\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3\\"
+      >
+        3
+      </div>
     </div>
   </div>
 </div>
@@ -1271,6 +1317,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz",
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -1414,6 +1461,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1",
       "data-uid": "aaa~~~1",
       "skipDeepFreeze": true,
     },
@@ -1558,6 +1606,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2",
       "data-uid": "aaa~~~2",
       "skipDeepFreeze": true,
     },
@@ -1702,6 +1751,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3",
       "data-uid": "aaa~~~3",
       "skipDeepFreeze": true,
     },
@@ -1783,23 +1833,81 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"zzz scene-aaa\\">
-      <div data-uid=\\"aaa~~~1\\">
-        <div data-uid=\\"bbb~~~1\\">4</div>
-        <div data-uid=\\"bbb~~~2\\">5</div>
-        <div data-uid=\\"bbb~~~3\\">6</div>
+    <div
+      data-uid=\\"zzz scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz\\"
+    >
+      <div
+        data-uid=\\"aaa~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1\\"
+      >
+        <div
+          data-uid=\\"bbb~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1/bbb~~~1\\"
+        >
+          4
+        </div>
+        <div
+          data-uid=\\"bbb~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1/bbb~~~2\\"
+        >
+          5
+        </div>
+        <div
+          data-uid=\\"bbb~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1/bbb~~~3\\"
+        >
+          6
+        </div>
       </div>
-      <div data-uid=\\"aaa~~~2\\">
-        <div data-uid=\\"bbb~~~1\\">8</div>
-        <div data-uid=\\"bbb~~~2\\">10</div>
-        <div data-uid=\\"bbb~~~3\\">12</div>
+      <div
+        data-uid=\\"aaa~~~2\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2\\"
+      >
+        <div
+          data-uid=\\"bbb~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2/bbb~~~1\\"
+        >
+          8
+        </div>
+        <div
+          data-uid=\\"bbb~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2/bbb~~~2\\"
+        >
+          10
+        </div>
+        <div
+          data-uid=\\"bbb~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2/bbb~~~3\\"
+        >
+          12
+        </div>
       </div>
-      <div data-uid=\\"aaa~~~3\\">
-        <div data-uid=\\"bbb~~~1\\">12</div>
-        <div data-uid=\\"bbb~~~2\\">15</div>
-        <div data-uid=\\"bbb~~~3\\">18</div>
+      <div
+        data-uid=\\"aaa~~~3\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3\\"
+      >
+        <div
+          data-uid=\\"bbb~~~1\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3/bbb~~~1\\"
+        >
+          12
+        </div>
+        <div
+          data-uid=\\"bbb~~~2\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3/bbb~~~2\\"
+        >
+          15
+        </div>
+        <div
+          data-uid=\\"bbb~~~3\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3/bbb~~~3\\"
+        >
+          18
+        </div>
       </div>
     </div>
   </div>
@@ -2097,6 +2205,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz",
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -2338,6 +2447,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1",
       "data-uid": "aaa~~~1",
       "skipDeepFreeze": true,
     },
@@ -2488,6 +2598,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1/bbb~~~1",
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
@@ -2639,6 +2750,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1/bbb~~~2",
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
@@ -2790,6 +2902,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1/bbb~~~3",
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
@@ -3033,6 +3146,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2",
       "data-uid": "aaa~~~2",
       "skipDeepFreeze": true,
     },
@@ -3183,6 +3297,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2/bbb~~~1",
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
@@ -3334,6 +3449,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2/bbb~~~2",
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
@@ -3485,6 +3601,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2/bbb~~~3",
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
@@ -3728,6 +3845,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3",
       "data-uid": "aaa~~~3",
       "skipDeepFreeze": true,
     },
@@ -3878,6 +3996,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3/bbb~~~1",
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
@@ -4029,6 +4148,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3/bbb~~~2",
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
@@ -4180,6 +4300,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~3/bbb~~~3",
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
@@ -4262,11 +4383,25 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"zzz scene-aaa\\">
-      <div data-uid=\\"ccc aaa\\">Thing</div>
-      <div data-uid=\\"ccc bbb\\">Thing</div>
+    <div
+      data-uid=\\"zzz scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz\\"
+    >
+      <div
+        data-uid=\\"ccc aaa\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
+      >
+        Thing
+      </div>
+      <div
+        data-uid=\\"ccc bbb\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
+      >
+        Thing
+      </div>
     </div>
   </div>
 </div>
@@ -4402,6 +4537,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz",
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -4496,6 +4632,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa",
       "data-uid": "aaa",
       "skipDeepFreeze": true,
     },
@@ -4591,6 +4728,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/bbb",
       "data-uid": "bbb",
       "skipDeepFreeze": true,
     },
@@ -4672,11 +4810,13 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
       data-uid=\\"aaa scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     ></div>
   </div>
 </div>
@@ -4796,6 +4936,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -4902,12 +5043,31 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\">
-      <div data-uid=\\"xxx bbb~~~1\\">n1</div>
-      <div data-uid=\\"xxx bbb~~~2\\">n2</div>
-      <div data-uid=\\"xxx bbb~~~3\\">n3</div>
+    <div
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+      data-uid=\\"aaa scene-aaa\\"
+    >
+      <div
+        data-uid=\\"xxx bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1\\"
+      >
+        n1
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~2\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2\\"
+      >
+        n2
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~3\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3\\"
+      >
+        n3
+      </div>
     </div>
   </div>
 </div>
@@ -5100,6 +5260,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -5250,6 +5411,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -5441,6 +5603,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -5632,6 +5795,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -5753,12 +5917,31 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\">
-      <div data-uid=\\"xxx bbb~~~1\\">n1</div>
-      <div data-uid=\\"xxx bbb~~~2\\">n2</div>
-      <div data-uid=\\"xxx bbb~~~3\\">n3</div>
+    <div
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+      data-uid=\\"aaa scene-aaa\\"
+    >
+      <div
+        data-uid=\\"xxx bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1\\"
+      >
+        n1
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~2\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2\\"
+      >
+        n2
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~3\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3\\"
+      >
+        n3
+      </div>
     </div>
   </div>
 </div>
@@ -5953,6 +6136,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -6104,6 +6288,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -6296,6 +6481,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -6488,6 +6674,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -6609,11 +6796,25 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"zzz scene-aaa\\">
-      <div data-uid=\\"ccc aaa\\">Thing</div>
-      <div data-uid=\\"ccc bbb\\">Thing</div>
+    <div
+      data-uid=\\"zzz scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz\\"
+    >
+      <div
+        data-uid=\\"ccc aaa\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa:ccc utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
+      >
+        Thing
+      </div>
+      <div
+        data-uid=\\"ccc bbb\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/bbb:ccc utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
+      >
+        Thing
+      </div>
     </div>
   </div>
 </div>
@@ -6749,6 +6950,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz",
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -6843,6 +7045,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa",
       "data-uid": "aaa",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -6951,6 +7154,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/bbb",
       "data-uid": "bbb",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -7045,11 +7249,25 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"zzz scene-aaa\\">
-      <div data-uid=\\"ccc aaa~~~1\\">Thing</div>
-      <div data-uid=\\"ccc aaa~~~2\\">Thing</div>
+    <div
+      data-uid=\\"zzz scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz\\"
+    >
+      <div
+        data-uid=\\"ccc aaa~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1:ccc utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1\\"
+      >
+        Thing
+      </div>
+      <div
+        data-uid=\\"ccc aaa~~~2\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2:ccc utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2\\"
+      >
+        Thing
+      </div>
     </div>
   </div>
 </div>
@@ -7185,6 +7403,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz",
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -7279,6 +7498,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~1",
       "data-uid": "aaa~~~1",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -7387,6 +7607,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa~~~2",
       "data-uid": "aaa~~~2",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -7481,6 +7702,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
       width: 200px;
       top: 79px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -7490,11 +7712,13 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
         height: 100%;
         background-color: #ffffff;
       \\"
+      data-paths=\\"utopia-storyboard-uid/scene-0:aaa\\"
       data-uid=\\"aaa scene-0\\"
     >
       <div
         style=\\"position: absolute; background-color: #000000;\\"
         data-uid=\\"xxx bbb\\"
+        data-paths=\\"utopia-storyboard-uid/scene-0:aaa/bbb:xxx utopia-storyboard-uid/scene-0:aaa/bbb\\"
       >
         Hi there!
       </div>
@@ -7763,6 +7987,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa",
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
@@ -7961,6 +8186,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa/bbb",
       "data-uid": "bbb",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -8095,6 +8321,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
       width: 200px;
       top: 79px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -8104,9 +8331,15 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
         height: 100%;
         background-color: #ffffff;
       \\"
+      data-paths=\\"utopia-storyboard-uid/scene-0:aaa\\"
       data-uid=\\"aaa scene-0\\"
     >
-      <div data-uid=\\"xxx bbb\\">Hi there!</div>
+      <div
+        data-uid=\\"xxx bbb\\"
+        data-paths=\\"utopia-storyboard-uid/scene-0:aaa/bbb:xxx utopia-storyboard-uid/scene-0:aaa/bbb\\"
+      >
+        Hi there!
+      </div>
     </div>
   </div>
 </div>
@@ -8372,6 +8605,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa",
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
@@ -8570,6 +8804,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa/bbb",
       "data-uid": "bbb",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -8692,6 +8927,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       width: 200px;
       top: 79px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -8701,11 +8937,13 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
         height: 100%;
         background-color: #ffffff;
       \\"
+      data-paths=\\"utopia-storyboard-uid/scene-0:aaa\\"
       data-uid=\\"aaa scene-0\\"
     >
       <div
         style=\\"position: absolute; background-color: #000000;\\"
         data-uid=\\"xxx bbb\\"
+        data-paths=\\"utopia-storyboard-uid/scene-0:aaa/bbb:xxx utopia-storyboard-uid/scene-0:aaa/bbb\\"
       >
         Hi there! - and hello!
       </div>
@@ -9022,6 +9260,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa",
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
@@ -9268,6 +9507,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa/bbb",
       "data-uid": "bbb",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -9396,6 +9636,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
       width: 200px;
       top: 79px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -9405,11 +9646,13 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
         height: 100%;
         background-color: #ffffff;
       \\"
+      data-paths=\\"utopia-storyboard-uid/scene-0:aaa\\"
       data-uid=\\"aaa scene-0\\"
     >
       <div
         style=\\"position: absolute; background-color: #000000;\\"
         data-uid=\\"xxx bbb\\"
+        data-paths=\\"utopia-storyboard-uid/scene-0:aaa/bbb:xxx utopia-storyboard-uid/scene-0:aaa/bbb\\"
       >
         Hi there! - and hello! - Now begone!
       </div>
@@ -9726,6 +9969,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa",
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
@@ -9972,6 +10216,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa/bbb",
       "data-uid": "bbb",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -10100,9 +10345,13 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa bbb scene-aaa\\"></div>
+    <div
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:bbb:aaa utopia-storyboard-uid/scene-aaa:bbb\\"
+      data-uid=\\"aaa bbb scene-aaa\\"
+    ></div>
   </div>
 </div>
 "
@@ -10151,6 +10400,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:bbb",
       "data-uid": "bbb scene-aaa",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -10243,6 +10493,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
       width: 375px;
       height: 812px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -10259,6 +10510,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
         color: #237aff;
         background-color: #171111;
       \\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
       data-uid=\\"aaa scene-aaa\\"
     >
       <div
@@ -10268,29 +10520,105 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           grid-auto-rows: 31px;
         \\"
         data-uid=\\"eb1 03a\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a:eb1 utopia-storyboard-uid/scene-aaa:aaa/03a\\"
       >
-        <div data-uid=\\"834~~~1\\" data-label=\\"Copy\\">Copy</div>
-        <div data-uid=\\"999~~~2\\" data-label=\\"⌘,⎇,C\\">
-          <span data-uid=\\"6a8 000\\"
-            ><span style=\\"padding: 6px;\\" data-uid=\\"726~~~1\\">⌘</span
-            ><span style=\\"padding: 6px;\\" data-uid=\\"726~~~2\\">⎇</span
-            ><span style=\\"padding: 6px;\\" data-uid=\\"726~~~3\\">C</span></span
+        <div
+          data-uid=\\"834~~~1\\"
+          data-label=\\"Copy\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/834~~~1\\"
+        >
+          Copy
+        </div>
+        <div
+          data-uid=\\"999~~~2\\"
+          data-label=\\"⌘,⎇,C\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~2\\"
+        >
+          <span
+            data-uid=\\"6a8 000\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~2/000:6a8 utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~2/000\\"
+            ><span
+              style=\\"padding: 6px;\\"
+              data-uid=\\"726~~~1\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~2/000:6a8/726~~~1\\"
+              >⌘</span
+            ><span
+              style=\\"padding: 6px;\\"
+              data-uid=\\"726~~~2\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~2/000:6a8/726~~~2\\"
+              >⎇</span
+            ><span
+              style=\\"padding: 6px;\\"
+              data-uid=\\"726~~~3\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~2/000:6a8/726~~~3\\"
+              >C</span
+            ></span
           >
         </div>
-        <div data-uid=\\"834~~~3\\" data-label=\\"Paste\\">Paste</div>
-        <div data-uid=\\"999~~~4\\" data-label=\\"⌘⎇V\\">
-          <span data-uid=\\"6a8 000\\"
-            ><span style=\\"padding: 6px;\\" data-uid=\\"726~~~1\\">⌘</span
-            ><span style=\\"padding: 6px;\\" data-uid=\\"726~~~2\\">⎇</span
-            ><span style=\\"padding: 6px;\\" data-uid=\\"726~~~3\\">V</span></span
+        <div
+          data-uid=\\"834~~~3\\"
+          data-label=\\"Paste\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/834~~~3\\"
+        >
+          Paste
+        </div>
+        <div
+          data-uid=\\"999~~~4\\"
+          data-label=\\"⌘⎇V\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~4\\"
+        >
+          <span
+            data-uid=\\"6a8 000\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~4/000:6a8 utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~4/000\\"
+            ><span
+              style=\\"padding: 6px;\\"
+              data-uid=\\"726~~~1\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~4/000:6a8/726~~~1\\"
+              >⌘</span
+            ><span
+              style=\\"padding: 6px;\\"
+              data-uid=\\"726~~~2\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~4/000:6a8/726~~~2\\"
+              >⎇</span
+            ><span
+              style=\\"padding: 6px;\\"
+              data-uid=\\"726~~~3\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~4/000:6a8/726~~~3\\"
+              >V</span
+            ></span
           >
         </div>
-        <div data-uid=\\"834~~~5\\" data-label=\\"Cut\\">Cut</div>
-        <div data-uid=\\"999~~~6\\" data-label=\\"⌘⎇C\\">
-          <span data-uid=\\"6a8 000\\"
-            ><span style=\\"padding: 6px;\\" data-uid=\\"726~~~1\\">⌘</span
-            ><span style=\\"padding: 6px;\\" data-uid=\\"726~~~2\\">⎇</span
-            ><span style=\\"padding: 6px;\\" data-uid=\\"726~~~3\\">C</span></span
+        <div
+          data-uid=\\"834~~~5\\"
+          data-label=\\"Cut\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/834~~~5\\"
+        >
+          Cut
+        </div>
+        <div
+          data-uid=\\"999~~~6\\"
+          data-label=\\"⌘⎇C\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~6\\"
+        >
+          <span
+            data-uid=\\"6a8 000\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~6/000:6a8 utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~6/000\\"
+            ><span
+              style=\\"padding: 6px;\\"
+              data-uid=\\"726~~~1\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~6/000:6a8/726~~~1\\"
+              >⌘</span
+            ><span
+              style=\\"padding: 6px;\\"
+              data-uid=\\"726~~~2\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~6/000:6a8/726~~~2\\"
+              >⎇</span
+            ><span
+              style=\\"padding: 6px;\\"
+              data-uid=\\"726~~~3\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~6/000:6a8/726~~~3\\"
+              >C</span
+            ></span
           >
         </div>
       </div>
@@ -11405,6 +11733,7 @@ export var storyboard = (props) => {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -12248,6 +12577,7 @@ export var storyboard = (props) => {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a",
       "data-uid": "03a",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -12625,6 +12955,7 @@ export var storyboard = (props) => {
     "localFrame": null,
     "props": Object {
       "data-label": "Copy",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a/834~~~1",
       "data-uid": "834~~~1",
       "skipDeepFreeze": true,
     },
@@ -12964,6 +13295,7 @@ export var storyboard = (props) => {
     "localFrame": null,
     "props": Object {
       "data-label": "Paste",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a/834~~~3",
       "data-uid": "834~~~3",
       "skipDeepFreeze": true,
     },
@@ -13303,6 +13635,7 @@ export var storyboard = (props) => {
     "localFrame": null,
     "props": Object {
       "data-label": "Cut",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a/834~~~5",
       "data-uid": "834~~~5",
       "skipDeepFreeze": true,
     },
@@ -13678,6 +14011,7 @@ export var storyboard = (props) => {
         "⎇",
         "C",
       ],
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~2",
       "data-uid": "999~~~2",
       "skipDeepFreeze": true,
     },
@@ -13897,6 +14231,7 @@ export var storyboard = (props) => {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~2/000",
       "data-uid": "000",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -14289,6 +14624,7 @@ export var storyboard = (props) => {
     "localFrame": null,
     "props": Object {
       "data-label": "⌘⎇V",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~4",
       "data-uid": "999~~~4",
       "skipDeepFreeze": true,
     },
@@ -14508,6 +14844,7 @@ export var storyboard = (props) => {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~4/000",
       "data-uid": "000",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -14896,6 +15233,7 @@ export var storyboard = (props) => {
     "localFrame": null,
     "props": Object {
       "data-label": "⌘⎇C",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~6",
       "data-uid": "999~~~6",
       "skipDeepFreeze": true,
     },
@@ -15115,6 +15453,7 @@ export var storyboard = (props) => {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/03a/999~~~6/000",
       "data-uid": "000",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -15214,11 +15553,25 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"zzz scene-aaa\\">
-      <div data-uid=\\"ccc aaa\\">Hello World!!</div>
-      <div data-uid=\\"ddd bbb\\">Hello Dolly!!</div>
+    <div
+      data-uid=\\"zzz scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz\\"
+    >
+      <div
+        data-uid=\\"ccc aaa\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa:ccc utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
+      >
+        Hello World!!
+      </div>
+      <div
+        data-uid=\\"ddd bbb\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/bbb:ddd utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
+      >
+        Hello Dolly!!
+      </div>
     </div>
   </div>
 </div>
@@ -15384,6 +15737,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz",
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -15493,6 +15847,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/aaa",
       "data-uid": "aaa",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -15617,6 +15972,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/bbb",
       "data-uid": "bbb",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -15712,9 +16068,15 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"ccc aaa scene-aaa\\">Thing</div>
+    <div
+      data-uid=\\"ccc aaa scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+    >
+      Thing
+    </div>
   </div>
 </div>
 "
@@ -15825,6 +16187,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -15905,11 +16268,13 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
       data-uid=\\"aaa scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
     ></div>
   </div>
 </div>
@@ -16084,6 +16449,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -16190,16 +16556,19 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
       width: 375px;
       height: 812px;
     \\"
+    data-paths=\\":eee\\"
     data-uid=\\"eee\\"
   >
     <div
       data-uid=\\"aaa fff\\"
       style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
+      data-paths=\\"eee/fff:aaa\\"
     >
       Test
       <div
         data-uid=\\"ddd bbb\\"
         style=\\"background-color: pink; width: 100%; height: 20px;\\"
+        data-paths=\\"eee/fff:aaa/bbb:ddd eee/fff:aaa/bbb\\"
       >
         <div data-uid=\\"ccc\\">test</div>
       </div>
@@ -16386,6 +16755,7 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "eee/fff:aaa",
       "data-uid": "aaa fff",
       "skipDeepFreeze": true,
       "style": Object {
@@ -16549,6 +16919,7 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "eee/fff:aaa/bbb",
       "data-uid": "bbb",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -16644,10 +17015,12 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       style=\\"position: absolute; background-color: lightgrey;\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
       data-uid=\\"aaa scene-aaa\\"
     >
       <div
@@ -16658,6 +17031,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
           top: 27px;
           background-color: #dddddd;
         \\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/d59:6be utopia-storyboard-uid/scene-aaa:aaa/d59\\"
         data-uid=\\"6be d59\\"
       >
         <div
@@ -16668,6 +17042,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
             right: 10px;
             background-color: #000000;
           \\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/d59:6be/d03\\"
           data-uid=\\"d03\\"
         ></div>
         <div
@@ -16678,6 +17053,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
             top: 21px;
             background-color: #fff;
           \\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/d59/dd5\\"
           data-uid=\\"dd5\\"
         ></div>
         <div
@@ -16688,6 +17064,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
             right: 10px;
             background-color: #000000;
           \\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/d59:6be/41e\\"
           data-uid=\\"41e\\"
         ></div>
       </div>
@@ -16871,6 +17248,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -17055,6 +17433,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/d59",
       "data-uid": "d59",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -17210,6 +17589,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/d59/dd5",
       "data-uid": "dd5",
       "skipDeepFreeze": true,
       "style": Object {
@@ -17319,6 +17699,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
       width: 200px;
       top: 79px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -17328,9 +17709,16 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
         height: 100%;
         background-color: #ffffff;
       \\"
+      data-paths=\\"utopia-storyboard-uid/scene-0:aaa\\"
       data-uid=\\"aaa scene-0\\"
     >
-      <div style=\\"position: absolute;\\" data-uid=\\"bbb\\">hi</div>
+      <div
+        style=\\"position: absolute;\\"
+        data-paths=\\"utopia-storyboard-uid/scene-0:aaa/bbb\\"
+        data-uid=\\"bbb\\"
+      >
+        hi
+      </div>
     </div>
   </div>
 </div>
@@ -17541,6 +17929,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa",
       "data-uid": "aaa scene-0",
       "skipDeepFreeze": true,
       "style": Object {
@@ -17685,6 +18074,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-0:aaa/bbb",
       "data-uid": "bbb",
       "skipDeepFreeze": true,
       "style": Object {
@@ -17792,12 +18182,31 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\">
-      <div data-uid=\\"xxx bbb~~~1\\">n1</div>
-      <div data-uid=\\"xxx bbb~~~2\\">n2</div>
-      <div data-uid=\\"xxx bbb~~~3\\">n3</div>
+    <div
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+      data-uid=\\"aaa scene-aaa\\"
+    >
+      <div
+        data-uid=\\"xxx bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1\\"
+      >
+        n1
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~2\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2\\"
+      >
+        n2
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~3\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3\\"
+      >
+        n3
+      </div>
     </div>
   </div>
 </div>
@@ -17990,6 +18399,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -18140,6 +18550,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -18331,6 +18742,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -18522,6 +18934,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -18643,12 +19056,31 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\">
-      <div data-uid=\\"xxx bbb~~~1\\">n1</div>
-      <div data-uid=\\"xxx bbb~~~2\\">n2</div>
-      <div data-uid=\\"xxx bbb~~~3\\">n3</div>
+    <div
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+      data-uid=\\"aaa scene-aaa\\"
+    >
+      <div
+        data-uid=\\"xxx bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1\\"
+      >
+        n1
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~2\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2\\"
+      >
+        n2
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~3\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3\\"
+      >
+        n3
+      </div>
     </div>
   </div>
 </div>
@@ -18842,6 +19274,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -18993,6 +19426,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -19185,6 +19619,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -19377,6 +19812,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -19498,12 +19934,31 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\">
-      <div data-uid=\\"xxx bbb~~~1\\">n1</div>
-      <div data-uid=\\"xxx bbb~~~2\\">n2</div>
-      <div data-uid=\\"xxx bbb~~~3\\">n3</div>
+    <div
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+      data-uid=\\"aaa scene-aaa\\"
+    >
+      <div
+        data-uid=\\"xxx bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1\\"
+      >
+        n1
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~2\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2\\"
+      >
+        n2
+      </div>
+      <div
+        data-uid=\\"xxx bbb~~~3\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3:xxx utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3\\"
+      >
+        n3
+      </div>
     </div>
   </div>
 </div>
@@ -19703,6 +20158,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -19853,6 +20309,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -20044,6 +20501,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -20235,6 +20693,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -20356,10 +20815,21 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
       width: 212px;
       height: 188px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\">hello</div>
-    <div data-uid=\\"bbb scene-aaa\\">bello</div>
+    <div
+      data-uid=\\"aaa scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+    >
+      hello
+    </div>
+    <div
+      data-uid=\\"bbb scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:bbb\\"
+    >
+      bello
+    </div>
   </div>
 </div>
 "
@@ -20414,6 +20884,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -20514,6 +20985,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:bbb",
       "data-uid": "bbb scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -20594,11 +21066,13 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
       width: 375px;
       height: 812px;
     \\"
+    data-paths=\\":ccc\\"
     data-uid=\\"ccc\\"
   >
     <div
       data-uid=\\"bbb ddd\\"
       style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
+      data-paths=\\"ccc/ddd:aaa/bbb ccc/ddd:aaa\\"
     ></div>
   </div>
 </div>
@@ -20772,6 +21246,7 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "ccc/ddd:aaa",
       "data-uid": "aaa ddd",
       "skipDeepFreeze": true,
       "value": Object {
@@ -20888,6 +21363,7 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "ccc/ddd:aaa/bbb ccc/ddd:aaa",
       "data-uid": "bbb ddd",
       "skipDeepFreeze": true,
       "style": Object {
@@ -20974,11 +21450,13 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
       width: 375px;
       height: 812px;
     \\"
+    data-paths=\\":ccc\\"
     data-uid=\\"ccc\\"
   >
     <div
       data-uid=\\"bbb card ddd\\"
       style=\\"width: 100%; height: 100%; background-color: #eb1010;\\"
+      data-paths=\\"ccc/ddd:card:aaa/inner/bbb ccc/ddd:card\\"
     ></div>
   </div>
 </div>
@@ -21028,6 +21506,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "ccc/ddd:card",
       "data-uid": "card ddd",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -21120,11 +21599,13 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
       width: 375px;
       height: 812px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       data-uid=\\"aaa scene\\"
       style=\\"width: 100%; height: 100%; background-color: #ffffff;\\"
+      data-paths=\\"utopia-storyboard-uid/scene:aaa\\"
     >
       0 - 0
     </div>
@@ -21329,6 +21810,7 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene:aaa",
       "data-uid": "aaa scene",
       "skipDeepFreeze": true,
       "style": Object {
@@ -21414,9 +21896,15 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
       width: 375px;
       height: 812px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"2a2~~~1 aaa bbb BBB scene\\">great</div>
+    <div
+      data-uid=\\"2a2~~~1 aaa bbb BBB scene\\"
+      data-paths=\\":2a2~~~1 utopia-storyboard-uid/scene:BBB\\"
+    >
+      great
+    </div>
   </div>
 </div>
 "
@@ -21480,6 +21968,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene:BBB",
       "data-uid": "BBB scene",
       "skipDeepFreeze": true,
       "x": 5,
@@ -21561,6 +22050,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
       width: 375px;
       top: 0;
     \\"
+    data-paths=\\":eee\\"
     data-uid=\\"eee\\"
   >
     <div
@@ -21572,21 +22062,30 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
         bottom: 0;
         background-color: #ffffff;
       \\"
+      data-paths=\\"eee/fff:aaa\\"
       data-uid=\\"aaa fff\\"
     >
       <div
         data-label=\\"random-div\\"
         style=\\"width: 100px; height: 100px;\\"
         data-uid=\\"bbb\\"
+        data-paths=\\"eee/fff:aaa/7cbd93f5-f5fa-425e-b5ce-244b6a2d79da\\"
       >
         Hello
         <div
           data-label=\\"some-other-div\\"
           style=\\"width: 100px; height: 100px;\\"
           data-uid=\\"ccc\\"
+          data-paths=\\"eee/fff:aaa/7cbd93f5-f5fa-425e-b5ce-244b6a2d79da/5cc0a858-33b7-4660-886b-28f57554a3c5\\"
         ></div>
       </div>
-      <div data-uid=\\"ddd\\" style=\\"position: absolute;\\">World</div>
+      <div
+        data-uid=\\"ddd\\"
+        data-paths=\\"eee/fff:aaa/ddd\\"
+        style=\\"position: absolute;\\"
+      >
+        World
+      </div>
     </div>
   </div>
 </div>
@@ -21952,6 +22451,7 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "eee/fff:aaa",
       "data-uid": "aaa fff",
       "skipDeepFreeze": true,
       "style": Object {
@@ -22079,6 +22579,7 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "eee/fff:aaa/ddd",
       "data-uid": "ddd",
       "skipDeepFreeze": true,
       "style": Object {
@@ -22186,12 +22687,17 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\">
+    <div
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+      data-uid=\\"aaa scene-aaa\\"
+    >
       <img
         data-uid=\\"bbb\\"
         src=\\"data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb\\"
       />
     </div>
   </div>
@@ -22301,6 +22807,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -22410,6 +22917,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb",
       "data-uid": "bbb",
       "skipDeepFreeze": true,
       "src": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
@@ -22518,9 +23026,14 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"fa7 aaa scene-aaa\\" data-factory-function-works=\\"true\\">
+    <div
+      data-uid=\\"fa7 aaa scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa:fa7 utopia-storyboard-uid/scene-aaa:aaa\\"
+      data-factory-function-works=\\"true\\"
+    >
       Utopia
     </div>
   </div>
@@ -22572,6 +23085,7 @@ Object {
     "localFrame": null,
     "props": Object {
       "data-factory-function-works": "true",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -22664,12 +23178,46 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"aaa scene-aaa\\">
-      <div data-uid=\\"bbb~~~1\\"><div data-uid=\\"ccc\\">1</div></div>
-      <div data-uid=\\"bbb~~~2\\"><div data-uid=\\"ccc\\">2</div></div>
-      <div data-uid=\\"bbb~~~3\\"><div data-uid=\\"ccc\\">3</div></div>
+    <div
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+      data-uid=\\"aaa scene-aaa\\"
+    >
+      <div
+        data-uid=\\"bbb~~~1\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1\\"
+      >
+        <div
+          data-uid=\\"ccc\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1/ccc\\"
+        >
+          1
+        </div>
+      </div>
+      <div
+        data-uid=\\"bbb~~~2\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2\\"
+      >
+        <div
+          data-uid=\\"ccc\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2/ccc\\"
+        >
+          2
+        </div>
+      </div>
+      <div
+        data-uid=\\"bbb~~~3\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3\\"
+      >
+        <div
+          data-uid=\\"ccc\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3/ccc\\"
+        >
+          3
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -22891,6 +23439,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -23065,6 +23614,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
       "style": Object {
@@ -23238,6 +23788,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1/ccc",
       "data-uid": "ccc",
       "skipDeepFreeze": true,
     },
@@ -23414,6 +23965,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
       "style": Object {
@@ -23587,6 +24139,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2/ccc",
       "data-uid": "ccc",
       "skipDeepFreeze": true,
     },
@@ -23763,6 +24316,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
       "style": Object {
@@ -23936,6 +24490,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3/ccc",
       "data-uid": "ccc",
       "skipDeepFreeze": true,
     },
@@ -24018,11 +24573,24 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
-    <div data-uid=\\"zzz scene-aaa\\">
-      <div data-uid=\\"cloner-root cloner\\">
-        <div data-uid=\\"cloned\\" style=\\"color: red; font-weight: 800;\\">ha</div>
+    <div
+      data-uid=\\"zzz scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz\\"
+    >
+      <div
+        data-uid=\\"cloner-root cloner\\"
+        data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/cloner:cloner-root utopia-storyboard-uid/scene-aaa:zzz/cloner\\"
+      >
+        <div
+          data-uid=\\"cloned\\"
+          data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned\\"
+          style=\\"color: red; font-weight: 800;\\"
+        >
+          ha
+        </div>
       </div>
     </div>
   </div>
@@ -24151,6 +24719,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz",
       "data-uid": "zzz scene-aaa",
       "skipDeepFreeze": true,
     },
@@ -24296,6 +24865,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/cloner",
       "data-uid": "cloner",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -24410,6 +24980,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:zzz/cloner/cloned",
       "data-uid": "cloned",
       "skipDeepFreeze": true,
       "style": Object {
@@ -24496,10 +25067,12 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       data-uid=\\"56b aaa scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa:56b utopia-storyboard-uid/scene-aaa:aaa\\"
       style=\\"width: 50px; height: 50px; left: 15px; top: 15px;\\"
     >
       Utopia
@@ -24552,6 +25125,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -24644,10 +25218,12 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
       data-uid=\\"6b9 aaa scene-aaa\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa:6b9 utopia-storyboard-uid/scene-aaa:aaa\\"
       class=\\"css-f9xk9e\\"
       style=\\"width: 50px; height: 50px; left: 15px; top: 15px;\\"
     >
@@ -24701,6 +25277,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa",
       "data-uid": "aaa scene-aaa",
       "data-utopia-scene-path": Object {
         "sceneElementPaths": Array [
@@ -24793,6 +25370,7 @@ exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1
       width: 400px;
       height: 400px;
     \\"
+    data-paths=\\":utopia-storyboard-uid\\"
     data-uid=\\"utopia-storyboard-uid\\"
   >
     hello!
