@@ -259,6 +259,93 @@ Array [
     "type": "UTOPIA_JSX_COMPONENT",
     "usedInReactDOMRender": false,
   },
+  Object {
+    "arbitraryJSBlock": null,
+    "blockOrExpression": "block",
+    "declarationSyntax": "var",
+    "isFunction": false,
+    "name": "storyboard",
+    "param": null,
+    "propsUsed": Array [],
+    "returnStatementComments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
+    "rootElement": Object {
+      "children": Array [
+        Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Scene",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "component",
+              "value": Object {
+                "definedElsewhere": Array [
+                  "App",
+                ],
+                "javascript": "App",
+                "sourceMap": null,
+                "transpiledJavascript": "return App",
+                "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                "uniqueID": "",
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "data-uid",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "scene-0",
+              },
+            },
+          ],
+          "type": "JSX_ELEMENT",
+        },
+      ],
+      "name": Object {
+        "baseVariable": "Storyboard",
+        "propertyPath": Object {
+          "propertyElements": Array [],
+        },
+      },
+      "props": Array [
+        Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "key": "data-uid",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": "utopia-storyboard-uid",
+          },
+        },
+      ],
+      "type": "JSX_ELEMENT",
+    },
+    "type": "UTOPIA_JSX_COMPONENT",
+    "usedInReactDOMRender": false,
+  },
 ]
 `;
 
@@ -473,6 +560,93 @@ Array [
             },
             "type": "ATTRIBUTE_VALUE",
             "value": Object {},
+          },
+        },
+      ],
+      "type": "JSX_ELEMENT",
+    },
+    "type": "UTOPIA_JSX_COMPONENT",
+    "usedInReactDOMRender": false,
+  },
+  Object {
+    "arbitraryJSBlock": null,
+    "blockOrExpression": "block",
+    "declarationSyntax": "var",
+    "isFunction": false,
+    "name": "storyboard",
+    "param": null,
+    "propsUsed": Array [],
+    "returnStatementComments": Object {
+      "leadingComments": Array [],
+      "trailingComments": Array [],
+    },
+    "rootElement": Object {
+      "children": Array [
+        Object {
+          "children": Array [],
+          "name": Object {
+            "baseVariable": "Scene",
+            "propertyPath": Object {
+              "propertyElements": Array [],
+            },
+          },
+          "props": Array [
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "component",
+              "value": Object {
+                "definedElsewhere": Array [
+                  "App",
+                ],
+                "javascript": "App",
+                "sourceMap": null,
+                "transpiledJavascript": "return App",
+                "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                "uniqueID": "",
+              },
+            },
+            Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "key": "data-uid",
+              "value": Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
+                "type": "ATTRIBUTE_VALUE",
+                "value": "scene-0",
+              },
+            },
+          ],
+          "type": "JSX_ELEMENT",
+        },
+      ],
+      "name": Object {
+        "baseVariable": "Storyboard",
+        "propertyPath": Object {
+          "propertyElements": Array [],
+        },
+      },
+      "props": Array [
+        Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
+          "key": "data-uid",
+          "value": Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "type": "ATTRIBUTE_VALUE",
+            "value": "utopia-storyboard-uid",
           },
         },
       ],

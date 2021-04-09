@@ -43,8 +43,8 @@ import {
   UIFileBase64Blobs,
   ConsoleLog,
   getIndexHtmlFileFromEditorState,
-  TransientFileState,
   CanvasBase64Blobs,
+  TransientFilesState,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import { useDomWalker } from './dom-walker'
@@ -137,7 +137,7 @@ export interface UiJsxCanvasProps {
   linkTags: string
   focusedElementPath: ScenePath | null
   projectContents: ProjectContentTreeRoot
-  transientFileState: TransientFileState | null
+  transientFilesState: TransientFilesState | null
   scrollAnimation: boolean
 }
 
@@ -170,8 +170,7 @@ export function pickUiJsxCanvasProps(
     const { imports: imports_KILLME } = getParseSuccessOrTransientForFilePath(
       uiFilePath,
       editor.projectContents,
-      uiFilePath,
-      derived.canvas.transientState.fileState,
+      derived.canvas.transientState.filesState,
     )
 
     const requireFn = editor.codeResultCache.requireFn
@@ -215,7 +214,7 @@ export function pickUiJsxCanvasProps(
       linkTags: linkTags,
       focusedElementPath: editor.focusedElementPath,
       projectContents: editor.projectContents,
-      transientFileState: derived.canvas.transientState.fileState,
+      transientFilesState: derived.canvas.transientState.filesState,
       scrollAnimation: editor.canvas.scrollAnimation,
     }
   }
@@ -252,7 +251,7 @@ export const UiJsxCanvas = betterReactMemo(
       linkTags,
       base64FileBlobs,
       projectContents,
-      transientFileState,
+      transientFilesState,
       shouldIncludeCanvasRootInTheSpy,
     } = props
 
@@ -298,7 +297,7 @@ export const UiJsxCanvas = betterReactMemo(
                   topLevelComponentRendererComponents,
                   projectContents,
                   uiFilePath,
-                  transientFileState,
+                  transientFilesState,
                   base64FileBlobs,
                   hiddenInstances,
                   metadataContext,
@@ -337,7 +336,7 @@ export const UiJsxCanvas = betterReactMemo(
           requireFn,
           resolve,
           projectContents,
-          transientFileState,
+          transientFilesState,
           uiFilePath,
           base64FileBlobs,
           hiddenInstances,
@@ -353,7 +352,7 @@ export const UiJsxCanvas = betterReactMemo(
         topLevelComponentRendererComponents,
         props.projectContents,
         uiFilePath, // this is the storyboard filepath
-        props.transientFileState,
+        props.transientFilesState,
         base64FileBlobs,
         hiddenInstances,
         metadataContext,
@@ -392,7 +391,7 @@ export const UiJsxCanvas = betterReactMemo(
               <UtopiaProjectContext.Provider
                 value={{
                   projectContents: props.projectContents,
-                  transientFileState: props.transientFileState,
+                  transientFilesState: props.transientFilesState,
                   openStoryboardFilePathKILLME: props.uiFilePath,
                   resolve: props.resolve,
                 }}
