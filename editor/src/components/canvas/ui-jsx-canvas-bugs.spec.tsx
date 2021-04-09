@@ -19,7 +19,7 @@ const DefaultComments = [
 const Comment = () => <div data-uid='comment-root'>hat</div>
 
 export var App = () =>
-  true ? DefaultComments.map((comment) => <Comment data-uid='comment-instance' comment={comment} />) : null
+  true ? DefaultComments.map((comment) => <Comment comment={comment} />) : null
 
 export var storyboard = (
   <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid='sb'>
