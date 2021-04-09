@@ -142,6 +142,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
       const sv = data.selectedViews[0]
       requireDispatch(dispatch)([
         EditorActions.setFocusedElement(TP.scenePathForElementAtInstancePath(sv)),
+        EditorActions.scrollToElement(TP.scenePathForElementAtInstancePath(sv)),
       ])
     }
   },
