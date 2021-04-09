@@ -263,7 +263,7 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   renderModifiedIcon() {
-    return this.props.modified ? <Icons.CircleSmall /> : null
+    return this.props.modified ? <Icons.CircleSmall color='blue' /> : null
   }
 
   onChangeFilename = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -353,16 +353,6 @@ class FileBrowserItemInner extends React.PureComponent<
 
   renderDeleteButton() {
     return <Icons.CrossSmall />
-  }
-
-  setMainUIContextMenuItem(): ContextMenuItem<unknown> {
-    return {
-      name: 'Set As Main UI File',
-      enabled: this.props.fileType != null && this.props.fileType === 'TEXT_FILE',
-      action: (data: unknown, dispatch?: EditorDispatch) => {
-        requireDispatch(dispatch)([EditorActions.setMainUIFile(this.props.path)], 'noone')
-      },
-    }
   }
 
   deleteContextMenuItem(): ContextMenuItem<unknown> {
@@ -489,11 +479,13 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
-  onItemMouseDown = () => {
-    if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
-      this.props.setSelected(this.props)
-      if (this.props.fileType != null && this.props.fileType !== 'DIRECTORY') {
-        this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path)], 'everyone')
+  onItemMouseDown = (e: React.MouseEvent) => {
+    if (e.button < 2) {
+      if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
+        this.props.setSelected(this.props)
+        if (this.props.fileType != null && this.props.fileType !== 'DIRECTORY') {
+          this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path)], 'everyone')
+        }
       }
     }
   }
@@ -572,20 +564,17 @@ class FileBrowserItemInner extends React.PureComponent<
     const extraIndentationForExport = 0
     const indentation = this.state.pathParts.length + extraIndentationForExport - 1
 
-    const regularBackground = this.state.isHovered
-      ? colorTheme.neutralBackground.value
-      : 'transparent'
-    const dropTargetBackground = colorTheme.listDropTargetBackground
-
-    const dropTargetOutline = isCurrentDropTargetForAnyFiles
-      ? {
-          boxShadow: `inset 0px 0px 0px 1px ${colorTheme.listDropTargetOutline.value}`,
-        }
-      : {}
-
-    const resultingBackground = isCurrentDropTargetForAnyFiles
-      ? dropTargetBackground
-      : regularBackground
+    const getBackground = () => {
+      let resultingBackground = 'transparent'
+      if (this.props.isSelected) {
+        resultingBackground = colorTheme.subtleBackground.value
+      } else if (this.state.isHovered) {
+        resultingBackground = colorTheme.secondaryBackground.value
+      } else if (isCurrentDropTargetForAnyFiles) {
+        resultingBackground = colorTheme.brandNeonYellow.value
+      }
+      return resultingBackground
+    }
 
     const fileIconStyle = {
       marginRight: 4,
@@ -601,6 +590,7 @@ class FileBrowserItemInner extends React.PureComponent<
     let fileBrowserItem = (
       <div>
         <div
+          tabIndex={0}
           onDrop={this.onItemDrop}
           onMouseEnter={this.setItemIsHovered}
           onMouseLeave={this.setItemIsNotHovered}
@@ -610,18 +600,18 @@ class FileBrowserItemInner extends React.PureComponent<
           key={this.props.key}
           className='FileItem'
           style={{
+            marginLeft: 8,
+            marginRight: 8,
             paddingLeft: indentation * BaseIndentationPadding,
             paddingTop: 3,
             paddingBottom: 3,
-            height: 32,
+            height: UtopiaTheme.layout.rowHeight.smaller,
             display: 'flex',
             alignItems: 'center',
             opacity: this.props.isDragging ? 0.5 : undefined,
-            backgroundColor: resultingBackground,
+            backgroundColor: getBackground(),
+            borderRadius: 2,
             position: 'relative',
-            fontWeight: this.props.isSelected ? 500 : undefined,
-            color: this.props.hasErrorMessages ? colorTheme.errorForeground.value : 'transparent',
-            ...dropTargetOutline,
           }}
           onMouseDown={this.onItemMouseDown}
         >
@@ -702,11 +692,7 @@ class FileBrowserItemInner extends React.PureComponent<
           <ContextMenuWrapper
             id={contextMenuID}
             dispatch={this.props.dispatch}
-            items={[
-              this.setMainUIContextMenuItem(),
-              this.deleteContextMenuItem(),
-              this.renameContextMenuItem(),
-            ]}
+            items={[this.deleteContextMenuItem(), this.renameContextMenuItem()]}
             data={{}}
           >
             {fileBrowserItem}
