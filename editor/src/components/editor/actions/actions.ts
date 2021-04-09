@@ -431,6 +431,8 @@ import {
   getHighlightBoundsForUids,
   getTemplatePathsInBounds,
   StoryboardFilePath,
+  BaseCanvasOffsetLeftPane,
+  BaseCanvasOffset,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4205,26 +4207,32 @@ export const UPDATE_FNS = {
       },
     }
   },
-  SCROLL_TO_ELEMENT: (action: ScrollToElement, editor: EditorModel): EditorModel => {
+  SCROLL_TO_ELEMENT: (
+    action: ScrollToElement,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
     const targetElementCoords = MetadataUtils.getFrameInCanvasCoords(
       action.target,
       editor.jsxMetadata,
     )
-
     if (targetElementCoords != null) {
-      const newCanvasOffset = Utils.offsetRect(
-        targetElementCoords,
-        Utils.negate(editor.canvas.realCanvasOffset),
-      )
+      const baseCanvasOffset =
+        editor.navigator.position === 'right' ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+      const newCanvasOffset = Utils.pointDifference(targetElementCoords, baseCanvasOffset)
 
-      return {
-        ...editor,
-        canvas: {
-          ...editor.canvas,
-          realCanvasOffset: newCanvasOffset,
-          roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+      return UPDATE_FNS.SET_SCROLL_ANIMATION(
+        setScrollAnimation(true),
+        {
+          ...editor,
+          canvas: {
+            ...editor.canvas,
+            realCanvasOffset: newCanvasOffset,
+            roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+          },
         },
-      }
+        dispatch,
+      )
     } else {
       return {
         ...editor,

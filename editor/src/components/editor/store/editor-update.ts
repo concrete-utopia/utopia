@@ -293,7 +293,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_FOCUSED_ELEMENT':
       return UPDATE_FNS.SET_FOCUSED_ELEMENT(action, state)
     case 'SCROLL_TO_ELEMENT':
-      return UPDATE_FNS.SCROLL_TO_ELEMENT(action, state)
+      return UPDATE_FNS.SCROLL_TO_ELEMENT(action, state, dispatch)
     case 'SET_SCROLL_ANIMATION':
       return UPDATE_FNS.SET_SCROLL_ANIMATION(action, state, dispatch)
     default:
