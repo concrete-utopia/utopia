@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as R from 'ramda'
 import { sides } from 'utopia-api'
 import * as TP from '../../core/shared/template-path'
 import {
@@ -39,7 +40,7 @@ import {
   useRefEditorState,
   useSelectorWithCallback,
 } from '../editor/store/store-hook'
-import { UTOPIA_DO_NOT_TRAVERSE_KEY } from '../../core/model/utopia-constants'
+import { UTOPIA_DO_NOT_TRAVERSE_KEY, UTOPIA_PATHS_KEY } from '../../core/model/utopia-constants'
 import ResizeObserver from 'resize-observer-polyfill'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
@@ -50,50 +51,18 @@ import { extractOriginalUidFromIndexedUid, getUIDsOnDomELement } from '../../cor
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
+import { valid } from 'chroma-js'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
 
-function findValidPath(uid: string | null, validPaths: Array<InstancePath>): InstancePath | null {
-  if (uid == null) {
-    return null
-  }
+export function getPathsOnDomElement(element: Element): Array<InstancePath> {
+  const pathsAttribute = getDOMAttribute(element, UTOPIA_PATHS_KEY)
   return (
-    mapDropNulls((validPath) => {
-      if (TP.isScenePath(validPath)) {
-        return null
-      }
-      const lastPathElement = TP.toUid(validPath)
-      if (
-        extractOriginalUidFromIndexedUid(uid) === extractOriginalUidFromIndexedUid(lastPathElement)
-      ) {
-        const parentPath = TP.parentPath(validPath)
-        return TP.appendToPath(parentPath, uid)
-      }
-      return null
-    }, validPaths)[0] ?? null
+    optionalMap((pathsString: string) => {
+      return pathsString.split(' ').map(TP.fromString) as Array<InstancePath>
+    }, pathsAttribute) ?? []
   )
-}
-
-function filterValidFocusedPathsForGeneratedElement(
-  foundUIDs: Array<string>,
-  validPaths: Array<InstancePath>,
-): Array<InstancePath> {
-  return validPaths.filter((validPath) => {
-    const sceneElementPaths = validPath.scene.sceneElementPaths
-    return sceneElementPaths.every((sceneElementPath) => {
-      const scenePathUID = TP.elementPathToUID(sceneElementPath)
-
-      const generatedUidMatchesButDifferentGeneratedIndex = foundUIDs.some((uid) => {
-        const staticUidMatches =
-          extractOriginalUidFromIndexedUid(uid) === extractOriginalUidFromIndexedUid(scenePathUID)
-        const uidMatches = uid === scenePathUID
-        return staticUidMatches && !uidMatches
-      })
-      // if our uid is generated-element~~~3 and the valid path is generated-element~~~1, we filter out the valid path
-      return !generatedUidMatchesButDifferentGeneratedIndex
-    })
-  })
 }
 
 function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): DetectedLayoutSystem {
@@ -827,8 +796,8 @@ function walkElements(
   }
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
-    const uids = getUIDsOnDomELement(element) ?? []
-    const filteredValidPaths = filterValidFocusedPathsForGeneratedElement(uids, validPaths)
+    const paths = getPathsOnDomElement(element)
+    // const filteredValidPaths = filterValidFocusedPathsForGeneratedElement(uids, validPaths)
 
     const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
     const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
@@ -836,7 +805,12 @@ function walkElements(
     const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
 
     // Check this is a path we're interested in, otherwise skip straight to the children
-    const foundValidPaths = mapDropNulls((uid) => findValidPath(uid, filteredValidPaths), uids)
+    const foundValidPaths = paths.filter((path) => {
+      const staticPath = TP.dynamicPathToStaticPathKeepSceneDynamic(path)
+      return validPaths.some((validPath) => {
+        return TP.pathsEqual(staticPath, validPath)
+      })
+    })
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<InstancePath> = []
@@ -848,7 +822,7 @@ function walkElements(
           childIndex,
           depth + 1,
           globalFrame,
-          filteredValidPaths,
+          validPaths,
           rootMetadataInStateRef,
           invalidatedSceneIDsRef,
           invalidatedPathsForStylesheetCacheRef,
