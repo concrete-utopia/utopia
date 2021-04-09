@@ -809,6 +809,11 @@ export interface SetFocusedElement {
   focusedElementPath: ScenePath | null
 }
 
+export interface ScrollToElement {
+  action: 'SCROLL_TO_ELEMENT'
+  target: TemplatePath
+}
+
 export interface SetScrollAnimation {
   action: 'SET_SCROLL_ANIMATION'
   value: boolean
@@ -946,6 +951,7 @@ export type EditorAction =
   | SelectFromFileAndPosition
   | SendCodeEditorInitialisation
   | SetFocusedElement
+  | ScrollToElement
   | SetScrollAnimation
 
 export type DispatchPriority =

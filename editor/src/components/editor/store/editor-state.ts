@@ -1026,6 +1026,12 @@ export function createNewProjectName(): string {
   return `${friendlyWordsPredicate}-${friendlyWordsObject}`
 }
 
+export const BaseCanvasOffset = { x: 20, y: 60 } as CanvasPoint
+export const BaseCanvasOffsetLeftPane = {
+  x: BaseCanvasOffset.x + LeftPaneDefaultWidth,
+  y: BaseCanvasOffset.y,
+} as CanvasPoint
+
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
@@ -1078,8 +1084,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
-      realCanvasOffset: { x: 20 + LeftPaneDefaultWidth, y: 60 } as CanvasPoint,
-      roundedCanvasOffset: { x: 20 + LeftPaneDefaultWidth, y: 60 } as CanvasPoint,
+      realCanvasOffset: BaseCanvasOffsetLeftPane,
+      roundedCanvasOffset: BaseCanvasOffsetLeftPane,
       textEditor: null,
       selectionControlsVisible: true,
       animationsEnabled: true,
@@ -1331,8 +1337,8 @@ export function editorModelFromPersistentModel(
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
-      realCanvasOffset: { x: 20 + LeftPaneDefaultWidth, y: 60 } as CanvasPoint,
-      roundedCanvasOffset: { x: 20 + LeftPaneDefaultWidth, y: 60 } as CanvasPoint,
+      realCanvasOffset: BaseCanvasOffsetLeftPane,
+      roundedCanvasOffset: BaseCanvasOffsetLeftPane,
       textEditor: null,
       selectionControlsVisible: true,
       animationsEnabled: true,

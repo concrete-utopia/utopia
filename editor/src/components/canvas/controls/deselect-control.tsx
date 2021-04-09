@@ -16,7 +16,7 @@ export const DeselectControl = betterReactMemo('DeselectControl', () => {
       editorStateRef.current.keysPressed,
     )
     if (selectionEnabled && editorStateRef.current.mode.type !== 'insert') {
-      dispatch([EditorActions.clearSelection()], 'canvas')
+      dispatch([EditorActions.clearSelection(), EditorActions.setFocusedElement(null)], 'canvas')
     }
   }, [dispatch, editorStateRef])
 

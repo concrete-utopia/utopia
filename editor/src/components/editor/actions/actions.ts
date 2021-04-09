@@ -169,6 +169,7 @@ import {
   Size,
   WindowPoint,
   canvasRectangle,
+  Rectangle,
 } from '../../../core/shared/math-utils'
 import {
   addFileToProjectContents,
@@ -356,6 +357,7 @@ import {
   SendCodeEditorInitialisation,
   SetFocusedElement,
   AddImports,
+  ScrollToElement,
   SetScrollAnimation,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
@@ -430,6 +432,8 @@ import {
   getTemplatePathsInBounds,
   StoryboardFilePath,
   modifyUnderlyingTarget,
+  BaseCanvasOffsetLeftPane,
+  BaseCanvasOffset,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -500,6 +504,8 @@ import {
   sendOpenFileMessage,
   sendSelectedElement,
 } from '../../../core/vscode/vscode-bridge'
+import Meta from 'antd/lib/card/Meta'
+import utils from '../../../utils/utils'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -4208,6 +4214,38 @@ export const UPDATE_FNS = {
         ...editor.canvas,
         mountCount: editor.canvas.mountCount + 1,
       },
+    }
+  },
+  SCROLL_TO_ELEMENT: (
+    action: ScrollToElement,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const targetElementCoords = MetadataUtils.getFrameInCanvasCoords(
+      action.target,
+      editor.jsxMetadata,
+    )
+    if (targetElementCoords != null) {
+      const baseCanvasOffset =
+        editor.navigator.position === 'right' ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+      const newCanvasOffset = Utils.pointDifference(targetElementCoords, baseCanvasOffset)
+
+      return UPDATE_FNS.SET_SCROLL_ANIMATION(
+        setScrollAnimation(true),
+        {
+          ...editor,
+          canvas: {
+            ...editor.canvas,
+            realCanvasOffset: newCanvasOffset,
+            roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+          },
+        },
+        dispatch,
+      )
+    } else {
+      return {
+        ...editor,
+      }
     }
   },
   SET_SCROLL_ANIMATION: (
