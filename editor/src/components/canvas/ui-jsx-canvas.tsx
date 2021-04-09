@@ -497,7 +497,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
         zoom: scale >= 1 ? `${scale * 100}%` : 1,
         transform:
           (scale < 1 ? `scale(${scale})` : '') + ` translate3d(${offset.x}px, ${offset.y}px, 0)`,
-        transition: props.scrollAnimation ? 'transform .2s ease-in-out' : 'initial',
+        transition: 'all 900ms ease-in-out',
       }}
       data-utopia-valid-paths={props.validRootPaths.map(TP.toString).join(' ')}
     >
