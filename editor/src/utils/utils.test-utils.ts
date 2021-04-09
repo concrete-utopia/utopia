@@ -25,6 +25,7 @@ import {
   emptyJsxMetadata,
   emptyAttributeMetadatada,
   jsxTestElement,
+  getDefinedElsewhereFromAttributes,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
@@ -200,7 +201,6 @@ export function createFakeMetadataForParseSuccess(
             ...props.props,
           },
         },
-        {},
       )
 
       rootElements = elementMetadata.map((individualElementMetadata) => {
@@ -251,7 +251,6 @@ export function createFakeMetadataForComponents(
         component.rootElement,
         TP.scenePath([[BakedInStoryboardUID, createSceneUidFromIndex(index)]]),
         {},
-        {},
       )
 
       const rootElements: Array<InstancePath> = elementMetadata.map((individualElementMetadata) => {
@@ -291,16 +290,24 @@ export function createFakeMetadataForComponents(
 function createFakeMetadataForJSXElement(
   element: JSXElementChild,
   rootPath: TemplatePath,
-  inScope: MapLike<any>,
-  parentProps: MapLike<any>,
+  parentScope: MapLike<any>,
 ): Array<ElementInstanceMetadata> {
   let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {
     const elementID = getUtopiaID(element)
     const templatePath = TP.appendToPath(rootPath, elementID)
+    const definedElsewhere = getDefinedElsewhereFromAttributes(element.props)
+    const inScope = {
+      ...mapArrayToDictionary(
+        definedElsewhere,
+        (elsewhere) => elsewhere,
+        () => 'fake',
+      ),
+      ...parentScope,
+    }
     const props = jsxAttributesToProps(inScope, element.props, Utils.NO_OP)
     const children = element.children.flatMap((child) =>
-      createFakeMetadataForJSXElement(child, templatePath, inScope, props),
+      createFakeMetadataForJSXElement(child, templatePath, props),
     )
     const childPaths = children.map((child) => child.templatePath)
 
@@ -323,7 +330,7 @@ function createFakeMetadataForJSXElement(
     elements.push(...children)
   } else if (isJSXFragment(element)) {
     const children = element.children.flatMap((child) =>
-      createFakeMetadataForJSXElement(child, rootPath, inScope, parentProps),
+      createFakeMetadataForJSXElement(child, rootPath, parentScope),
     )
     elements.push(...children)
   } else {

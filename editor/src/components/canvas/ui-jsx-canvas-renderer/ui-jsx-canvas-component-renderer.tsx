@@ -83,7 +83,7 @@ export function createComponentRendererComponent(params: {
 
     if (utopiaJsxComponent == null) {
       // If this element cannot be found, we want to purposefully cause a 'ReferenceError' to notify the user.
-      throw new ReferenceError(`${params.topLevelElementName} is not defined`)
+      throw new ReferenceError(`${params.topLevelElementName} is not defined in ${params.filePath}`)
     }
 
     const appliedProps = optionalMap(

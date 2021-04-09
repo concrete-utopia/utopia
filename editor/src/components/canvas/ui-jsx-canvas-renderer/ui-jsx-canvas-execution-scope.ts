@@ -10,6 +10,7 @@ import { ProjectContentTreeRoot } from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
 import {
   CanvasBase64Blobs,
+  TransientFilesState,
   TransientFileState,
   UIFileBase64Blobs,
 } from '../../editor/store/editor-state'
@@ -41,7 +42,7 @@ export function createExecutionScope(
   >,
   projectContents: ProjectContentTreeRoot,
   openStoryboardFileNameKILLME: string | null,
-  transientFileStateKILLME: TransientFileState | null,
+  transientFilesStateKILLME: TransientFilesState | null,
   fileBlobs: CanvasBase64Blobs,
   hiddenInstances: TemplatePath[],
   metadataContext: UiJsxCanvasContextData,
@@ -65,12 +66,7 @@ export function createExecutionScope(
     imports,
     jsxFactoryFunction,
     combinedTopLevelArbitraryBlock,
-  } = getParseSuccessOrTransientForFilePath(
-    filePath,
-    projectContents,
-    openStoryboardFileNameKILLME,
-    transientFileStateKILLME,
-  )
+  } = getParseSuccessOrTransientForFilePath(filePath, projectContents, transientFilesStateKILLME)
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
   const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback

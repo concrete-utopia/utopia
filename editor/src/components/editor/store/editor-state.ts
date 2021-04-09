@@ -154,6 +154,8 @@ import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
 } from './store-deep-equality-instances'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import * as TP from '../../../core/shared/template-path'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
@@ -295,6 +297,7 @@ export interface EditorState {
     base64Blobs: CanvasBase64Blobs
     mountCount: number
     openFile: DesignerFile | null
+    scrollAnimation: boolean
   }
   inspector: {
     visible: boolean
@@ -676,14 +679,12 @@ export function modifyOpenJsxElementAtPath(
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
-  const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
-  if (staticPath == null) {
-    return model
-  } else {
-    return modifyOpenJSXElements((utopiaComponents) => {
-      return transformJSXComponentAtPath(utopiaComponents, staticPath, transform)
-    }, model)
-  }
+  return modifyUnderlyingTarget(
+    path,
+    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
+    model,
+    transform,
+  )
 }
 
 export function modifyOpenJsxElementAtStaticPath(
@@ -691,9 +692,12 @@ export function modifyOpenJsxElementAtStaticPath(
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
-  return modifyOpenJSXElements((utopiaComponents) => {
-    return transformJSXComponentAtPath(utopiaComponents, path, transform)
-  }, model)
+  return modifyUnderlyingTarget(
+    path,
+    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
+    model,
+    transform,
+  )
 }
 
 export function getOpenUtopiaJSXComponentsFromState(model: EditorState): Array<UtopiaJSXComponent> {
@@ -887,21 +891,23 @@ export function transientFileState(
   }
 }
 
+export type TransientFilesState = { [filepath: string]: TransientFileState }
+
 export interface TransientCanvasState {
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
-  fileState: TransientFileState | null
+  filesState: TransientFilesState | null
 }
 
 export function transientCanvasState(
   selectedViews: Array<TemplatePath>,
   highlightedViews: Array<TemplatePath>,
-  fileState: TransientFileState | null,
+  fileState: TransientFilesState | null,
 ): TransientCanvasState {
   return {
     selectedViews: selectedViews,
     highlightedViews: highlightedViews,
-    fileState: fileState,
+    filesState: fileState,
   }
 }
 
@@ -1020,6 +1026,12 @@ export function createNewProjectName(): string {
   return `${friendlyWordsPredicate}-${friendlyWordsObject}`
 }
 
+export const BaseCanvasOffset = { x: 20, y: 60 } as CanvasPoint
+export const BaseCanvasOffsetLeftPane = {
+  x: BaseCanvasOffset.x + LeftPaneDefaultWidth,
+  y: BaseCanvasOffset.y,
+} as CanvasPoint
+
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
@@ -1072,8 +1084,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
-      realCanvasOffset: { x: 20 + LeftPaneDefaultWidth, y: 60 } as CanvasPoint,
-      roundedCanvasOffset: { x: 20 + LeftPaneDefaultWidth, y: 60 } as CanvasPoint,
+      realCanvasOffset: BaseCanvasOffsetLeftPane,
+      roundedCanvasOffset: BaseCanvasOffsetLeftPane,
       textEditor: null,
       selectionControlsVisible: true,
       animationsEnabled: true,
@@ -1085,6 +1097,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       openFile: {
         filename: StoryboardFilePath,
       },
+      scrollAnimation: false,
     },
     inspector: {
       visible: true,
@@ -1324,8 +1337,8 @@ export function editorModelFromPersistentModel(
       visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
-      realCanvasOffset: { x: 20 + LeftPaneDefaultWidth, y: 60 } as CanvasPoint,
-      roundedCanvasOffset: { x: 20 + LeftPaneDefaultWidth, y: 60 } as CanvasPoint,
+      realCanvasOffset: BaseCanvasOffsetLeftPane,
+      roundedCanvasOffset: BaseCanvasOffsetLeftPane,
       textEditor: null,
       selectionControlsVisible: true,
       animationsEnabled: true,
@@ -1337,6 +1350,7 @@ export function editorModelFromPersistentModel(
       openFile: {
         filename: StoryboardFilePath,
       },
+      scrollAnimation: false,
     },
     inspector: {
       visible: true,
@@ -1791,37 +1805,64 @@ export function modifyParseSuccessAtPath(
 }
 
 export function modifyUnderlyingTarget(
-  target: InstancePath,
+  target: TemplatePath | null,
   currentFilePath: string,
   editorState: EditorState,
-  modifyElement: (element: JSXElement) => JSXElement = (element) => element,
-  modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess = (success) => success,
+  modifyElement: (
+    element: JSXElement,
+    underlying: InstancePath,
+    underlyingFilePath: string,
+  ) => JSXElement = (element) => element,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlying: StaticInstancePath | null,
+    underlyingFilePath: string,
+  ) => ParseSuccess = (success) => success,
 ): EditorState {
+  // Support just about anything as the path.
+  let instanceTarget: InstancePath | null
+  if (target == null) {
+    instanceTarget = null
+  } else if (TP.isInstancePath(target)) {
+    instanceTarget = target
+  } else {
+    instanceTarget = TP.instancePathForElementAtPath(target)
+  }
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editorState.projectContents,
     editorState.nodeModules.files,
     currentFilePath,
-    target,
+    instanceTarget,
   )
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
   function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
     // Apply the ParseSuccess level changes.
-    let updatedParseSuccess: ParseSuccess = modifyParseSuccess(oldParseSuccess)
+    let updatedParseSuccess: ParseSuccess = modifyParseSuccess(
+      oldParseSuccess,
+      targetSuccess.normalisedPath,
+      targetSuccess.filePath,
+    )
 
     // Apply the JSXElement level changes.
     const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(updatedParseSuccess)
     let elementModified: boolean = false
-    function innerModifyElement(element: JSXElement): JSXElement {
-      const updatedElement = modifyElement(element)
-      elementModified = updatedElement !== element
-      return updatedElement
+    let updatedUtopiaJSXComponents: Array<UtopiaJSXComponent>
+    if (targetSuccess.normalisedPath == null) {
+      updatedUtopiaJSXComponents = oldUtopiaJSXComponents
+    } else {
+      const nonNullNormalisedPath = targetSuccess.normalisedPath
+      function innerModifyElement(element: JSXElement): JSXElement {
+        const updatedElement = modifyElement(element, nonNullNormalisedPath, targetSuccess.filePath)
+        elementModified = updatedElement !== element
+        return updatedElement
+      }
+      updatedUtopiaJSXComponents = transformElementAtPath(
+        oldUtopiaJSXComponents,
+        targetSuccess.normalisedPath,
+        innerModifyElement,
+      )
     }
-    const updatedUtopiaJSXComponents = transformElementAtPath(
-      oldUtopiaJSXComponents,
-      targetSuccess.normalisedPath,
-      innerModifyElement,
-    )
     // Try to keep the old structures where possible.
     if (elementModified) {
       const newTopLevelElements = applyUtopiaJSXComponentsChanges(
