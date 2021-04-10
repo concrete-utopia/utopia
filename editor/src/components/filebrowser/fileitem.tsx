@@ -321,7 +321,6 @@ class FileBrowserItemInner extends React.PureComponent<
               value={this.state.filename}
               onChange={this.onChangeFilename}
               onKeyDown={this.onKeyDownFilename}
-              onBlur={this.onBlurFilename}
               onFocus={this.onFocusFilename}
               focusOnMount
             />
