@@ -41,7 +41,7 @@ import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer
 import { optionalMap } from '../../../core/shared/optional-utils'
 
 export function createLookupRender(
-  templatePath: InstancePath | null,
+  templatePath: InstancePath,
   rootScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
@@ -67,13 +67,13 @@ export function createLookupRender(
     )
 
     // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-    const templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
-      TP.parentPath,
+    const templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = TP.parentPath(
       templatePath,
     )
-    const innerPath = optionalMap(
-      (p) => TP.appendToPath(p, generatedUID),
+
+    const innerPath = TP.appendToPath(
       templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
+      generatedUID,
     )
 
     let augmentedInnerElement = element
@@ -118,7 +118,7 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
 
 export function renderCoreElement(
   element: JSXElementChild,
-  templatePath: InstancePath | null,
+  templatePath: InstancePath,
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
@@ -237,7 +237,7 @@ export function renderCoreElement(
 function renderJSXElement(
   key: string,
   jsx: JSXElement,
-  templatePath: InstancePath | null,
+  templatePath: InstancePath,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   rootScope: MapLike<any>,
@@ -252,6 +252,11 @@ function renderJSXElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
 ): React.ReactElement {
+  if (templatePath == null) {
+    throw new Error(
+      `Utopia Error: the element renderer did not receive a TemplatePath, key: ${key}`,
+    )
+  }
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, templatePath)) {
     elementProps = hideElement(elementProps)
@@ -261,7 +266,7 @@ function renderJSXElement(
   const createChildrenElement = (
     child: JSXElementChild,
   ): React.ReactElement | Array<React.ReactElement> => {
-    const childPath = optionalMap((p) => TP.appendToPath(p, getUtopiaID(child)), templatePath)
+    const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
     return renderCoreElement(
       child,
       childPath,
