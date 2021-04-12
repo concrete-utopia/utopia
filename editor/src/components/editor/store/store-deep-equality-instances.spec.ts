@@ -20,23 +20,25 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
     const state: TransientCanvasState = transientCanvasState(
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-      transientFileState(
-        [
-          utopiaJSXComponent(
-            'App',
-            false,
-            'var',
-            'block',
-            null,
-            [],
-            jsxElement('div', [], []),
-            null,
-            false,
-            emptyComments,
-          ),
-        ],
-        emptyImports(),
-      ),
+      {
+        ['/utopia/app.js']: transientFileState(
+          [
+            utopiaJSXComponent(
+              'App',
+              false,
+              'var',
+              'block',
+              null,
+              [],
+              jsxElement('div', [], []),
+              null,
+              false,
+              emptyComments,
+            ),
+          ],
+          emptyImports(),
+        ),
+      },
     )
 
     const result = TransientCanvasStateKeepDeepEquality()(state, state)
@@ -47,44 +49,48 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
     const oldState: TransientCanvasState = transientCanvasState(
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-      transientFileState(
-        [
-          utopiaJSXComponent(
-            'App',
-            false,
-            'var',
-            'block',
-            null,
-            [],
-            jsxElement('div', [], []),
-            null,
-            false,
-            emptyComments,
-          ),
-        ],
-        emptyImports(),
-      ),
+      {
+        ['/utopia/app.js']: transientFileState(
+          [
+            utopiaJSXComponent(
+              'App',
+              false,
+              'var',
+              'block',
+              null,
+              [],
+              jsxElement('div', [], []),
+              null,
+              false,
+              emptyComments,
+            ),
+          ],
+          emptyImports(),
+        ),
+      },
     )
     const newState: TransientCanvasState = transientCanvasState(
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-      transientFileState(
-        [
-          utopiaJSXComponent(
-            'App',
-            false,
-            'var',
-            'block',
-            null,
-            [],
-            jsxElement('div', [], []),
-            null,
-            false,
-            emptyComments,
-          ),
-        ],
-        emptyImports(),
-      ),
+      {
+        ['/utopia/app.js']: transientFileState(
+          [
+            utopiaJSXComponent(
+              'App',
+              false,
+              'var',
+              'block',
+              null,
+              [],
+              jsxElement('div', [], []),
+              null,
+              false,
+              emptyComments,
+            ),
+          ],
+          emptyImports(),
+        ),
+      },
     )
 
     const result = TransientCanvasStateKeepDeepEquality()(oldState, newState)
@@ -95,51 +101,55 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
     const oldState: TransientCanvasState = transientCanvasState(
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-      transientFileState(
-        [
-          utopiaJSXComponent(
-            'App',
-            false,
-            'var',
-            'block',
-            null,
-            [],
-            jsxElement('span', [], []),
-            null,
-            false,
-            emptyComments,
-          ),
-        ],
-        emptyImports(),
-      ),
+      {
+        ['/utopia/app.js']: transientFileState(
+          [
+            utopiaJSXComponent(
+              'App',
+              false,
+              'var',
+              'block',
+              null,
+              [],
+              jsxElement('span', [], []),
+              null,
+              false,
+              emptyComments,
+            ),
+          ],
+          emptyImports(),
+        ),
+      },
     )
     const newState: TransientCanvasState = transientCanvasState(
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ddd'])],
       [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-      transientFileState(
-        [
-          utopiaJSXComponent(
-            'App',
-            false,
-            'var',
-            'block',
-            null,
-            [],
-            jsxElement('div', [], []),
-            null,
-            false,
-            emptyComments,
-          ),
-        ],
-        emptyImports(),
-      ),
+      {
+        ['/utopia/app.js']: transientFileState(
+          [
+            utopiaJSXComponent(
+              'App',
+              false,
+              'var',
+              'block',
+              null,
+              [],
+              jsxElement('div', [], []),
+              null,
+              false,
+              emptyComments,
+            ),
+          ],
+          emptyImports(),
+        ),
+      },
     )
 
     const result = TransientCanvasStateKeepDeepEquality()(oldState, newState)
     expect(result.value).toEqual(newState)
     expect(result.value.selectedViews).toEqual(newState.selectedViews)
     expect(result.value.highlightedViews).toBe(oldState.highlightedViews)
-    expect(result.value.fileState).toEqual(newState.fileState)
+    expect(result.value.filesState).toEqual(newState.filesState)
     expect(result.areEqual).toEqual(false)
   })
 })
@@ -155,23 +165,25 @@ describe('DerivedStateKeepDeepEquality', () => {
         transientState: transientCanvasState(
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-          transientFileState(
-            [
-              utopiaJSXComponent(
-                'App',
-                false,
-                'var',
-                'block',
-                null,
-                [],
-                jsxElement('div', [], []),
-                null,
-                false,
-                emptyComments,
-              ),
-            ],
-            emptyImports(),
-          ),
+          {
+            ['/utopia/app.js']: transientFileState(
+              [
+                utopiaJSXComponent(
+                  'App',
+                  false,
+                  'var',
+                  'block',
+                  null,
+                  [],
+                  jsxElement('div', [], []),
+                  null,
+                  false,
+                  emptyComments,
+                ),
+              ],
+              emptyImports(),
+            ),
+          },
         ),
       },
       elementWarnings: addToComplexMap(
@@ -195,23 +207,25 @@ describe('DerivedStateKeepDeepEquality', () => {
         transientState: transientCanvasState(
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-          transientFileState(
-            [
-              utopiaJSXComponent(
-                'App',
-                false,
-                'var',
-                'block',
-                null,
-                [],
-                jsxElement('div', [], []),
-                null,
-                false,
-                emptyComments,
-              ),
-            ],
-            emptyImports(),
-          ),
+          {
+            ['/utopia/app.js']: transientFileState(
+              [
+                utopiaJSXComponent(
+                  'App',
+                  false,
+                  'var',
+                  'block',
+                  null,
+                  [],
+                  jsxElement('div', [], []),
+                  null,
+                  false,
+                  emptyComments,
+                ),
+              ],
+              emptyImports(),
+            ),
+          },
         ),
       },
       elementWarnings: addToComplexMap(
@@ -230,23 +244,25 @@ describe('DerivedStateKeepDeepEquality', () => {
         transientState: transientCanvasState(
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-          transientFileState(
-            [
-              utopiaJSXComponent(
-                'App',
-                false,
-                'var',
-                'block',
-                null,
-                [],
-                jsxElement('div', [], []),
-                null,
-                false,
-                emptyComments,
-              ),
-            ],
-            emptyImports(),
-          ),
+          {
+            ['/utopia/app.js']: transientFileState(
+              [
+                utopiaJSXComponent(
+                  'App',
+                  false,
+                  'var',
+                  'block',
+                  null,
+                  [],
+                  jsxElement('div', [], []),
+                  null,
+                  false,
+                  emptyComments,
+                ),
+              ],
+              emptyImports(),
+            ),
+          },
         ),
       },
       elementWarnings: addToComplexMap(
@@ -270,23 +286,25 @@ describe('DerivedStateKeepDeepEquality', () => {
         transientState: transientCanvasState(
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-          transientFileState(
-            [
-              utopiaJSXComponent(
-                'App',
-                false,
-                'var',
-                'block',
-                null,
-                [],
-                jsxElement('div', [], []),
-                null,
-                false,
-                emptyComments,
-              ),
-            ],
-            emptyImports(),
-          ),
+          {
+            ['/utopia/app.js']: transientFileState(
+              [
+                utopiaJSXComponent(
+                  'App',
+                  false,
+                  'var',
+                  'block',
+                  null,
+                  [],
+                  jsxElement('div', [], []),
+                  null,
+                  false,
+                  emptyComments,
+                ),
+              ],
+              emptyImports(),
+            ),
+          },
         ),
       },
       elementWarnings: addToComplexMap(
@@ -305,23 +323,25 @@ describe('DerivedStateKeepDeepEquality', () => {
         transientState: transientCanvasState(
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ddd'])],
           [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
-          transientFileState(
-            [
-              utopiaJSXComponent(
-                'App',
-                false,
-                'var',
-                'block',
-                null,
-                [],
-                jsxElement('div', [], []),
-                null,
-                false,
-                emptyComments,
-              ),
-            ],
-            emptyImports(),
-          ),
+          {
+            ['/utopia/app.js']: transientFileState(
+              [
+                utopiaJSXComponent(
+                  'App',
+                  false,
+                  'var',
+                  'block',
+                  null,
+                  [],
+                  jsxElement('div', [], []),
+                  null,
+                  false,
+                  emptyComments,
+                ),
+              ],
+              emptyImports(),
+            ),
+          },
         ),
       },
       elementWarnings: addToComplexMap(

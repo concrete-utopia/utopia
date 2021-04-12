@@ -6,7 +6,11 @@ import { Either, left } from '../../../core/shared/either'
 import type { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import type { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
-import type { TransientFileState, UIFileBase64Blobs } from '../../editor/store/editor-state'
+import type {
+  TransientFilesState,
+  TransientFileState,
+  UIFileBase64Blobs,
+} from '../../editor/store/editor-state'
 
 export interface MutableUtopiaContextProps {
   [filePath: string]: {
@@ -49,7 +53,7 @@ RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 interface UtopiaProjectContextProps {
   projectContents: ProjectContentTreeRoot
   openStoryboardFilePathKILLME: string | null
-  transientFileState: TransientFileState | null
+  transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
 }
 const EmptyResolve = (importOrigin: string, toImport: string): Either<string, string> => {
@@ -59,7 +63,7 @@ const EmptyResolve = (importOrigin: string, toImport: string): Either<string, st
 export const UtopiaProjectContext = createContext<UtopiaProjectContextProps>({
   projectContents: {},
   openStoryboardFilePathKILLME: null,
-  transientFileState: null,
+  transientFilesState: null,
   resolve: EmptyResolve,
 })
 

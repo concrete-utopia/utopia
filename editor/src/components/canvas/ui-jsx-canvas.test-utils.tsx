@@ -221,7 +221,7 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
-      transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
+      transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
       scrollAnimation: false,
     }
   } else {
@@ -243,7 +243,7 @@ export function renderCanvasReturnResultAndError(
       linkTags: '',
       focusedElementPath: null,
       projectContents: storeHookForTest.api.getState().editor.projectContents,
-      transientFileState: storeHookForTest.api.getState().derived.canvas.transientState.fileState,
+      transientFilesState: storeHookForTest.api.getState().derived.canvas.transientState.filesState,
       scrollAnimation: false,
     }
   }
