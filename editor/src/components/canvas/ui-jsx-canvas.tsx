@@ -491,6 +491,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
       ref={containerRef}
       style={{
         all: 'initial',
+        position: 'absolute',
       }}
       data-utopia-valid-paths={props.validRootPaths.map(TP.toString).join(' ')}
     >
