@@ -1144,7 +1144,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         >
           <div
             data-uid=\\"ccc aaa scene-aaa\\"
-            data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa\\"
           >
             hello
           </div>
@@ -1246,7 +1246,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           <div
             id=\\"nasty-div\\"
             data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa scene-aaa\\"
-            data-paths=\\":150~~~2/2a7~~~1 :150~~~2 :2f5~~~1 utopia-storyboard-uid/scene-aaa:aaa\\"
+            data-paths=\\":150~~~2/2a7~~~1 :150~~~2 :2f5~~~1 utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa\\"
           >
             huhahuha
           </div>
@@ -1318,7 +1318,7 @@ export var storyboard = (
         >
           <div
             style=\\"left: 0; top: 0; right: 0; bottom: 0; background-color: #ffffff;\\"
-            data-paths=\\"storyboard/scene:aaa\\"
+            data-paths=\\"storyboard/scene:aaa :storyboard/scene\\"
             data-uid=\\"aaa scene\\"
           >
             <div
@@ -2069,7 +2069,7 @@ describe('UiJsxCanvas render multifile projects', () => {
         >
           <div
             data-uid=\\"app-outer-div scene-0\\"
-            data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div\\"
+            data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div :utopia-storyboard-uid/scene-0\\"
           >
             <div
               data-uid=\\"inner-div\\"
@@ -2157,7 +2157,7 @@ describe('UiJsxCanvas render multifile projects', () => {
         >
           <div
             data-uid=\\"app-outer-div scene-0\\"
-            data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div\\"
+            data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div :utopia-storyboard-uid/scene-0\\"
           >
             <div
               data-uid=\\"card-outer-div card-instance\\"
