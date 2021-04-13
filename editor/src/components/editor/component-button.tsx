@@ -10,6 +10,7 @@ import {
   IcnColor,
   OnClickOutsideHOC,
   SmallerIcons,
+  UtopiaStyles,
   UtopiaTheme,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
@@ -191,12 +192,10 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
               position: 'absolute',
               left: 0,
               top: 30,
-              borderRadius: 2,
               zIndex: 1,
               width: UtopiaTheme.layout.inspectorWidth,
               height: 100,
-              background: UtopiaTheme.color.neutralBackground.value,
-              boxShadow: 'inset 0px 0px 0px .5px hsl(0,0%,80%), 0px 2px 5px 0px hsl(0,0%,80%)',
+              ...UtopiaStyles.popup,
               display: 'flex',
               flexDirection: 'column',
               alignContent: 'flex-start',

@@ -812,6 +812,7 @@ export interface SetFocusedElement {
 export interface ScrollToElement {
   action: 'SCROLL_TO_ELEMENT'
   target: TemplatePath
+  keepScrollPositionIfVisible: boolean
 }
 
 export interface SetScrollAnimation {
