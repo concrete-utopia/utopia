@@ -606,14 +606,10 @@ describe('getting the root paths', () => {
 })
 
 describe('createOrderedTemplatePathsFromElements returns all of the ordered navigator targets, visible and not', () => {
-  const scenePathForSceneElement = TP.scenePathForElementAtPath(
-    testComponentSceneElement.templatePath,
-  )
-
   const expectedNavigatorTargets: Array<TemplatePath> = [
     testStoryboardChildElement.templatePath,
     testStoryboardGrandChildElement.templatePath,
-    scenePathForSceneElement,
+    testComponentSceneElement.templatePath,
     testComponentRoot1.templatePath,
     testComponentMetadataChild3.templatePath,
     testComponentMetadataGrandchild.templatePath,
@@ -638,7 +634,7 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
   it('with the scene collapsed', () => {
     const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
       testJsxMetadata,
-      [scenePathForSceneElement],
+      [testComponentSceneElement.templatePath],
       null,
     )
 
@@ -646,7 +642,7 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
     expect(actualResult.visibleNavigatorTargets).toEqual([
       testStoryboardChildElement.templatePath,
       testStoryboardGrandChildElement.templatePath,
-      scenePathForSceneElement,
+      testComponentSceneElement.templatePath,
     ])
   })
 
@@ -661,7 +657,7 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
     expect(actualResult.visibleNavigatorTargets).toEqual([
       testStoryboardChildElement.templatePath,
       testStoryboardGrandChildElement.templatePath,
-      scenePathForSceneElement,
+      testComponentSceneElement.templatePath,
       testComponentRoot1.templatePath,
       testComponentSceneChildElement.templatePath,
     ])

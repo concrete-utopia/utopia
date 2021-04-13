@@ -283,3 +283,23 @@ export const SceneRootRenderer = betterReactMemo(
   },
   true,
 )
+
+interface SceneComponentProps {
+  style?: React.CSSProperties
+  'data-uid'?: string
+}
+
+export const SceneComponent = betterReactMemo(
+  'Scene',
+  (props: React.PropsWithChildren<SceneComponentProps>) => {
+    return (
+      <View
+        // data-utopia-scene-id={TP.toString(scenePath)}
+        // data-utopia-valid-paths={props.validPaths.map(TP.toString).join(' ')}
+        {...props}
+      >
+        {props.children}
+      </View>
+    )
+  },
+)

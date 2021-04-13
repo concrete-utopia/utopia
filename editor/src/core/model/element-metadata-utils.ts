@@ -857,11 +857,9 @@ export const MetadataUtils = {
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
     function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
-      const isScene = MetadataUtils.elementAtPathIsScene(metadata, path)
-      const pathToAdd = isScene ? TP.scenePathForElementAtPath(path) : path
-      navigatorTargets.push(pathToAdd)
+      navigatorTargets.push(path)
       if (!collapsedAncestor) {
-        visibleNavigatorTargets.push(pathToAdd)
+        visibleNavigatorTargets.push(path)
       }
 
       const {
@@ -875,7 +873,7 @@ export const MetadataUtils = {
       const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
       const reversedChildren = R.reverse(childrenIncludingFocusedElements)
 
-      const isCollapsed = TP.containsPath(pathToAdd, collapsedViews)
+      const isCollapsed = TP.containsPath(path, collapsedViews)
       fastForEach(reversedChildren, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
       })
