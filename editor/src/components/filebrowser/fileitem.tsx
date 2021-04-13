@@ -479,7 +479,7 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   onItemMouseDown = (e: React.MouseEvent) => {
-    if (e.button < 2) {
+    if (e.button === 0) {
       if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
         this.props.setSelected(this.props)
         if (this.props.fileType != null && this.props.fileType !== 'DIRECTORY') {
