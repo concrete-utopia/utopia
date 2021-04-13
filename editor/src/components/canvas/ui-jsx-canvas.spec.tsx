@@ -427,7 +427,7 @@ describe('UiJsxCanvas render', () => {
       import * as React from "react"
        class Thing extends React.Component {
          render() {
-           return <div data-uid="ccc">Thing</div>
+           return <div data-uid="ccc-unparsed-no-template-path">Thing</div>
          }
        }
        export var App = (props) => {

@@ -4355,13 +4355,13 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
       data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz :utopia-storyboard-uid/scene-aaa\\"
     >
       <div
-        data-uid=\\"ccc aaa\\"
+        data-uid=\\"ccc-unparsed-no-template-path aaa\\"
         data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/aaa\\"
       >
         Thing
       </div>
       <div
-        data-uid=\\"ccc bbb\\"
+        data-uid=\\"ccc-unparsed-no-template-path bbb\\"
         data-paths=\\"utopia-storyboard-uid/scene-aaa:zzz/bbb\\"
       >
         Thing
