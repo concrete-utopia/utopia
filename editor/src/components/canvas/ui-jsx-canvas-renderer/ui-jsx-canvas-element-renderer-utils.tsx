@@ -3,6 +3,7 @@ import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { isSceneElement } from '../../../core/model/scene-utils'
 import {
+  UTOPIA_PATHS_KEY,
   UTOPIA_SCENE_PATH,
   UTOPIA_UIDS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
@@ -40,7 +41,7 @@ import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer
 import { optionalMap } from '../../../core/shared/optional-utils'
 
 export function createLookupRender(
-  templatePath: InstancePath | null,
+  templatePath: InstancePath,
   rootScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
@@ -66,13 +67,13 @@ export function createLookupRender(
     )
 
     // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-    const templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
-      TP.parentPath,
+    const templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = TP.parentPath(
       templatePath,
     )
-    const innerPath = optionalMap(
-      (p) => TP.appendToPath(p, generatedUID),
+
+    const innerPath = TP.appendToPath(
       templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
+      generatedUID,
     )
 
     let augmentedInnerElement = element
@@ -103,9 +104,21 @@ export function createLookupRender(
   }
 }
 
+function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): MapLike<any> {
+  let monkeyedProps: MapLike<any> = {
+    ...propsToUpdate,
+  }
+
+  const uidsFromProps = monkeyedProps[UTOPIA_UIDS_KEY]
+  const uidsToPass = appendToUidString(uidsFromProps, uid)
+  monkeyedProps[UTOPIA_UIDS_KEY] = uidsToPass
+
+  return monkeyedProps
+}
+
 export function renderCoreElement(
   element: JSXElementChild,
-  templatePath: InstancePath | null,
+  templatePath: InstancePath,
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
@@ -131,15 +144,9 @@ export function renderCoreElement(
     case 'JSX_ELEMENT': {
       const assembledProps = jsxAttributesToProps(inScope, element.props, requireResult)
 
-      let passthroughProps: MapLike<any> = {
-        ...assembledProps,
-      }
+      const passthroughProps = monkeyUidProp(uid, assembledProps)
 
-      const uidsFromProps = assembledProps[UTOPIA_UIDS_KEY]
-      const uidsToPass = appendToUidString(uidsFromProps, uid)
-      passthroughProps[UTOPIA_UIDS_KEY] = uidsToPass
-
-      const key = optionalMap(TP.toString, templatePath) ?? uidsFromProps
+      const key = optionalMap(TP.toString, templatePath) ?? passthroughProps[UTOPIA_UIDS_KEY]
 
       return renderJSXElement(
         key,
@@ -189,9 +196,10 @@ export function renderCoreElement(
     case 'JSX_FRAGMENT': {
       let renderedChildren: Array<React.ReactElement> = []
       fastForEach(element.children, (child) => {
+        const childPath = TP.appendToPath(TP.parentPath(templatePath), getUtopiaID(child))
         const renderResult = renderCoreElement(
           child,
-          templatePath,
+          childPath,
           rootScope,
           inScope,
           parentComponentInputProps,
@@ -230,7 +238,7 @@ export function renderCoreElement(
 function renderJSXElement(
   key: string,
   jsx: JSXElement,
-  templatePath: InstancePath | null,
+  templatePath: InstancePath,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   rootScope: MapLike<any>,
@@ -245,6 +253,11 @@ function renderJSXElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
 ): React.ReactElement {
+  if (templatePath == null) {
+    throw new Error(
+      `Utopia Error: the element renderer did not receive a TemplatePath, key: ${key}`,
+    )
+  }
   let elementProps = { key: key, ...passthroughProps }
   if (isHidden(hiddenInstances, templatePath)) {
     elementProps = hideElement(elementProps)
@@ -254,7 +267,7 @@ function renderJSXElement(
   const createChildrenElement = (
     child: JSXElementChild,
   ): React.ReactElement | Array<React.ReactElement> => {
-    const childPath = optionalMap((p) => TP.appendToPath(p, getUtopiaID(child)), templatePath)
+    const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
     return renderCoreElement(
       child,
       childPath,
@@ -291,6 +304,10 @@ function renderJSXElement(
     elementIsIntrinsic && !elementIsBaseHTML
       ? filterDataProps(elementPropsWithScenePath)
       : elementPropsWithScenePath
+  const finalPropsIcludingTemplatePath = {
+    ...finalProps,
+    [UTOPIA_PATHS_KEY]: optionalMap(TP.toString, templatePath),
+  }
 
   const staticTemplatePathForGeneratedElement = optionalMap(
     TP.dynamicPathToStaticPath,
@@ -317,7 +334,7 @@ function renderJSXElement(
 
     return buildSpyWrappedElement(
       jsx,
-      finalProps,
+      finalPropsIcludingTemplatePath,
       templatePath,
       metadataContext,
       childrenTemplatePaths,
@@ -333,7 +350,7 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       FinalElement,
-      finalProps,
+      finalPropsIcludingTemplatePath,
       childrenOrNull,
     )
   }
