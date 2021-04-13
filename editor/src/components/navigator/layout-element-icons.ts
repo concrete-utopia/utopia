@@ -241,7 +241,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isComponent = elementName != null && !isIntrinsicHTMLElement(elementName)
+  const isComponent = MetadataUtils.isFocusableComponent(path, components, metadata, imports)
   if (isComponent) {
     return {
       category: 'component',
