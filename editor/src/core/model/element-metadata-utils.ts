@@ -542,9 +542,33 @@ export const MetadataUtils = {
       }
     })
   },
-  getRootViews(elements: ElementInstanceMetadataMap, target: TemplatePath): Array<InstancePath> {
+  getRootViewPaths(
+    elements: ElementInstanceMetadataMap,
+    target: TemplatePath,
+  ): Array<InstancePath> {
     const element = MetadataUtils.findElementByTemplatePath(elements, target)
     return element?.rootElements ?? []
+  },
+  getRootViews(
+    elements: ElementInstanceMetadataMap,
+    target: TemplatePath,
+  ): Array<ElementInstanceMetadata> {
+    const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
+    return MetadataUtils.getElementsByInstancePath(elements, rootPaths ?? [])
+  },
+  getChildrenPaths(
+    elements: ElementInstanceMetadataMap,
+    target: TemplatePath,
+  ): Array<InstancePath> {
+    const element = MetadataUtils.findElementByTemplatePath(elements, target)
+    return element?.children ?? []
+  },
+  getChildren(
+    elements: ElementInstanceMetadataMap,
+    target: TemplatePath,
+  ): Array<ElementInstanceMetadata> {
+    const childrenPaths = MetadataUtils.getChildrenPaths(elements, target)
+    return MetadataUtils.getElementsByInstancePath(elements, childrenPaths ?? [])
   },
   getImmediateChildrenPaths(
     elements: ElementInstanceMetadataMap,
@@ -630,20 +654,12 @@ export const MetadataUtils = {
     let result: Array<InstancePath> = []
     function recurseElement(elementPath: InstancePath): void {
       result.push(elementPath)
-      const element = MetadataUtils.getElementByInstancePathMaybe(metadata, elementPath)
-      fastForEach(element?.children ?? [], recurseElement)
+      const descendants = MetadataUtils.getImmediateChildrenPaths(metadata, elementPath)
+      fastForEach(descendants, recurseElement)
     }
 
-    const rootInstances = this.getAllStoryboardChildrenPaths(metadata)
-
-    fastForEach(rootInstances, (rootInstance) => {
-      const element = MetadataUtils.findElementByTemplatePath(metadata, rootInstance)
-      if (element != null) {
-        result.push(rootInstance)
-        element.rootElements.forEach(recurseElement)
-        element.children.forEach(recurseElement)
-      }
-    })
+    const storyboardChildren = this.getAllStoryboardChildrenPaths(metadata)
+    fastForEach(storyboardChildren, recurseElement)
 
     return uniqBy<InstancePath>(result, TP.pathsEqual)
   },
@@ -812,27 +828,10 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     focusedElementPath: ScenePath | null,
   ): { children: Array<InstancePath>; unfurledComponents: Array<InstancePath> } {
-    const allPaths = Object.values(metadata).map((element) => element.templatePath)
-    const children = MetadataUtils.getImmediateChildrenPaths(metadata, path)
-
-    const matchingFocusPath =
-      focusedElementPath == null
-        ? null
-        : TP.scenePathUpToElementPath(
-            focusedElementPath,
-            TP.elementPathForPath(path),
-            'dynamic-scene-path',
-          )
-    const focusedRootElementPaths =
-      matchingFocusPath == null
-        ? []
-        : allPaths.filter(
-            (p) =>
-              TP.depth(p) === 2 && // TODO this is actually pretty silly, TP.depth returns depth + 1 for legacy reasons
-              TP.scenePathsEqual(TP.scenePathPartOfTemplatePath(p), matchingFocusPath),
-          )
-
-    return { children: children, unfurledComponents: focusedRootElementPaths }
+    return {
+      children: MetadataUtils.getChildrenPaths(metadata, path),
+      unfurledComponents: MetadataUtils.getRootViewPaths(metadata, path),
+    }
   },
   getAllChildrenElementsIncludingUnfurledFocusedComponents(
     path: TemplatePath,
@@ -842,19 +841,9 @@ export const MetadataUtils = {
     children: Array<ElementInstanceMetadata>
     unfurledComponents: Array<ElementInstanceMetadata>
   } {
-    const { children, unfurledComponents } = this.getAllChildrenIncludingUnfurledFocusedComponents(
-      path,
-      metadata,
-      focusedElementPath,
-    )
-
     return {
-      children: mapDropNulls((childPath) => {
-        return this.getElementByInstancePathMaybe(metadata, childPath)
-      }, children),
-      unfurledComponents: mapDropNulls((childPath) => {
-        return this.getElementByInstancePathMaybe(metadata, childPath)
-      }, unfurledComponents),
+      children: MetadataUtils.getChildren(metadata, path),
+      unfurledComponents: MetadataUtils.getRootViews(metadata, path),
     }
   },
   createOrderedTemplatePathsFromElements(
@@ -862,10 +851,19 @@ export const MetadataUtils = {
     collapsedViews: Array<TemplatePath>,
     focusedElementPath: ScenePath | null,
   ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
+    // This function exists separately from getAllPaths because the Navigator has a specific
+    // ordering for the paths, which arguably should go in the bin
     let navigatorTargets: Array<TemplatePath> = []
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
     function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
+      const isScene = MetadataUtils.elementAtPathIsScene(metadata, path)
+      const pathToAdd = isScene ? TP.scenePathForElementAtPath(path) : path
+      navigatorTargets.push(pathToAdd)
+      if (!collapsedAncestor) {
+        visibleNavigatorTargets.push(pathToAdd)
+      }
+
       const {
         children,
         unfurledComponents,
@@ -876,30 +874,16 @@ export const MetadataUtils = {
       )
       const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
       const reversedChildren = R.reverse(childrenIncludingFocusedElements)
-      const isCollapsed = TP.containsPath(path, collapsedViews)
-      navigatorTargets.push(path)
-      if (!collapsedAncestor) {
-        visibleNavigatorTargets.push(path)
-      }
 
+      const isCollapsed = TP.containsPath(pathToAdd, collapsedViews)
       fastForEach(reversedChildren, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
       })
     }
 
-    const reverseCanvasRoots = MetadataUtils.getAllStoryboardChildren(metadata).reverse()
-    fastForEach(reverseCanvasRoots, (root) => {
-      if (MetadataUtils.elementIsScene(root)) {
-        const rootScenePath = TP.scenePathForElementAtInstancePath(root.templatePath)
-        const isCollapsed = TP.containsPath(rootScenePath, collapsedViews)
-        navigatorTargets.push(rootScenePath)
-        visibleNavigatorTargets.push(rootScenePath)
-        fastForEach(root.rootElements, (rootElement) => {
-          walkAndAddKeys(rootElement, isCollapsed)
-        })
-      } else {
-        return walkAndAddKeys(root.templatePath, false)
-      }
+    const reverseCanvasRoots = MetadataUtils.getAllStoryboardChildrenPaths(metadata).reverse()
+    fastForEach(reverseCanvasRoots, (childElement) => {
+      walkAndAddKeys(childElement, false)
     })
 
     return {
@@ -1159,6 +1143,10 @@ export const MetadataUtils = {
   },
   elementIsScene(element: ElementInstanceMetadata): boolean {
     return isLeft(element.element) && element.element.value === 'Scene'
+  },
+  elementAtPathIsScene(elements: ElementInstanceMetadataMap, path: TemplatePath): boolean {
+    const element = MetadataUtils.findElementByTemplatePath(elements, path)
+    return element == null ? false : MetadataUtils.elementIsScene(element)
   },
   mergeComponentMetadata(
     elementsByUID: ElementsByUID,

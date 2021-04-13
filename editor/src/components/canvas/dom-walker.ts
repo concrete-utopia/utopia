@@ -412,7 +412,7 @@ function collectMetadata(
   element: HTMLElement,
   pathsForElement: Array<TemplatePath>,
   parentPoint: CanvasPoint,
-  unfilteredChildrenPaths: InstancePath[],
+  allUnfilteredChildrenPaths: InstancePath[],
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -433,10 +433,15 @@ function collectMetadata(
   )
 
   return pathsForElement.map((path) => {
+    const rootsOrChildrenToAdd = pathsForElement
+      .filter((otherPath) => TP.isParentOf(path, otherPath))
+      .map(TP.instancePathForElementAtPath)
+    const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
+
     let filteredChildPaths: InstancePath[] = []
     let filteredRootElements: InstancePath[] = []
     fastForEach(unfilteredChildrenPaths, (childPath) => {
-      if (TP.pathsEqual(path, TP.parentPath(childPath))) {
+      if (TP.isParentOf(path, childPath)) {
         if (isRootElement(childPath)) {
           filteredRootElements.push(childPath)
         } else {
@@ -738,7 +743,7 @@ function walkScene(
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
         Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
-          if (TP.isAncestorOf(elem.templatePath, scenePath)) {
+          if (TP.isDescendantOf(elem.templatePath, scenePath)) {
             rootMetadataAccumulator.push(elem)
           }
         })

@@ -32,6 +32,7 @@ import {
   FunctionIcons,
   SectionBodyArea,
   Section,
+  FlexColumn,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 
@@ -66,9 +67,7 @@ function packageDetails(
 export type DependencyLoadingStatus = 'not-loading' | 'adding' | 'removing'
 
 type DependencyListState = {
-  showInsertField: boolean
   dependencyBeingEdited: string | null
-  openVersionInput: boolean
   newlyLoadedItems: Array<PackageDetails['name']>
   dependencyLoadingStatus: DependencyLoadingStatus
 }
@@ -152,10 +151,8 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
   constructor(props: DependencyListProps) {
     super(props)
     this.state = {
-      showInsertField: false,
       dependencyLoadingStatus: 'not-loading',
       dependencyBeingEdited: null,
-      openVersionInput: false,
       newlyLoadedItems: [],
     }
   }
@@ -170,27 +167,22 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     } else {
       this.setState((state) => {
         return {
-          showInsertField: false,
           dependencyLoadingStatus: 'not-loading',
           dependencyBeingEdited: null,
-          openVersionInput: false,
           newlyLoadedItems: state.newlyLoadedItems,
         }
       })
     }
   }
 
-  closeField = () =>
+  handleAbandonEdit = () =>
     this.setState({
       dependencyBeingEdited: null,
-      showInsertField: false,
     })
 
-  openDependencyEditField = (dependencyName: string, openVersionInput: boolean = false) => {
+  openDependencyEditField = (dependencyName: string) => {
     this.setState({
       dependencyBeingEdited: dependencyName,
-      showInsertField: false,
-      openVersionInput: openVersionInput,
     })
   }
 
@@ -290,10 +282,16 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
   }
 
   addDependency = (packageName: string | null, packageVersion: string | null) => {
-    this.props.editorDispatch(
-      [addToast(notice(`Adding ${packageName} to your project.`, 'INFO'))],
-      'leftpane',
-    )
+    this.setState({
+      dependencyBeingEdited: null,
+    })
+
+    if (packageName !== null) {
+      this.props.editorDispatch(
+        [addToast(notice(`Adding ${packageName} to your project.`, 'INFO'))],
+        'leftpane',
+      )
+    }
 
     if (DefaultPackagesList.find((pkg) => pkg.name === packageName)) {
       this.props.editorDispatch(
@@ -391,7 +389,6 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
         })
     }
     this.setState({
-      showInsertField: false,
       dependencyBeingEdited: null,
     })
   }
@@ -403,14 +400,6 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
     if ((e.target as any).id === this.DependencyListContainerId) {
       this.props.editorDispatch([clearSelection()], 'everyone')
     }
-  }
-
-  toggleOpenAddInsertField = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    this.setState((prevState) => ({
-      showInsertField: !prevState.showInsertField,
-      dependencyBeingEdited: null,
-    }))
   }
 
   updateDependencyToLatestVersion = (dependencyName: string) => {
@@ -453,36 +442,25 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
               {statusNode}
             </Title>
           </FlexRow>
-          {this.props.minimised ? null : (
-            <SquareButton
-              highlight
-              onClick={this.toggleOpenAddInsertField}
-              disabled={this.state.dependencyLoadingStatus != 'not-loading'}
-            >
-              <FunctionIcons.Add
-                style={{
-                  flexGrow: 0,
-                  flexShrink: 0,
-                }}
-              />
-            </SquareButton>
-          )}
         </SectionTitleRow>
         <SectionBodyArea minimised={this.props.minimised}>
           {!this.props.minimised ? (
-            <DependencyListItems
-              packages={packagesWithStatus}
-              editingLocked={this.state.dependencyLoadingStatus != 'not-loading'}
-              openDependencyEditField={this.openDependencyEditField}
-              updateDependencyToLatestVersion={this.updateDependencyToLatestVersion}
-              removeDependency={this.removeDependency}
-              openVersionInput={this.state.openVersionInput}
-              newlyLoadedItems={this.state.newlyLoadedItems}
-              dependencyBeingEdited={this.state.dependencyBeingEdited}
-              addDependency={this.addDependency}
-              closeField={this.closeField}
-              showInsertField={this.state.showInsertField}
-            />
+            <FlexColumn
+              role='listContainer'
+              style={{ paddingLeft: 8, paddingRight: 8, paddingTop: 4, paddingBottom: 4 }}
+            >
+              <DependencyListItems
+                packages={packagesWithStatus}
+                editingLocked={this.state.dependencyLoadingStatus != 'not-loading'}
+                openDependencyEditField={this.openDependencyEditField}
+                updateDependencyToLatestVersion={this.updateDependencyToLatestVersion}
+                removeDependency={this.removeDependency}
+                newlyLoadedItems={this.state.newlyLoadedItems}
+                dependencyBeingEdited={this.state.dependencyBeingEdited}
+                addDependency={this.addDependency}
+                handleAbandonEdit={this.handleAbandonEdit}
+              />
+            </FlexColumn>
           ) : null}
         </SectionBodyArea>
       </Section>

@@ -3,38 +3,95 @@ import { jsx } from '@emotion/react'
 import * as React from 'react'
 import CreatableSelect from 'react-select/creatable'
 import Utils from '../../utils/utils'
-import {
-  BasicSelectControl,
-  SelectOption,
-  SelectControl,
-} from '../inspector/controls/select-control'
+import { SelectOption, SelectControl } from '../inspector/controls/select-control'
 import { top1000NPMPackagesOptions } from './top1000NPMPackagesOptions'
 import { getControlStyles } from '../inspector/common/control-status'
-import { Tooltip, StringInput, FunctionIcons } from '../../uuiui'
+import { Tooltip, StringInput, OnClickOutsideHOC, UtopiaTheme } from '../../uuiui'
 
-interface DependencyListInputFieldProps {
-  showVersionField: boolean
+interface DependencySearchSelectProps {
   addDependency: (packageName: string | null, packageVersion: string | null) => void
-  closeField: () => void
-  editedPackageName: string | null
-  editedPackageVersion: string | null
-  openVersionInput: boolean
 }
 
-export const DependencyListInputField = React.forwardRef(
+export const DependencySearchSelect = React.forwardRef(
   (
-    {
-      showVersionField,
-      addDependency,
-      closeField,
-      editedPackageName,
-      editedPackageVersion,
-      openVersionInput,
-    }: DependencyListInputFieldProps,
+    { addDependency }: DependencySearchSelectProps,
     dependencyVersionInputRef: React.Ref<HTMLInputElement>,
   ) => {
     const dependencyNameSelectRef = React.useRef<CreatableSelect<SelectOption>>(null)
+    const [stateEditedPackageName, setStateEditedPackageName] = React.useState<string>('')
 
+    const onSubmitValue = React.useCallback(
+      (newValue) => {
+        setStateEditedPackageName(newValue)
+        addDependency(newValue, null)
+        setStateEditedPackageName('')
+      },
+      [setStateEditedPackageName, addDependency],
+    )
+
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          height: UtopiaTheme.layout.rowHeight.smaller,
+          gap: 8,
+          flexGrow: 1,
+        }}
+        key='addeditedPackage'
+      >
+        <SelectControl
+          value={Utils.defaultIfNull<string>('', stateEditedPackageName)}
+          options={top1000NPMPackagesOptions}
+          id='edit-package-name'
+          key='edit-package-name'
+          testId='edit-package-name'
+          onSubmitValue={onSubmitValue}
+          controlStatus='simple'
+          controlStyles={getControlStyles('simple')}
+          style={{
+            flexGrow: 1,
+          }}
+          DEPRECATED_controlOptions={{
+            placeholder: 'Search for npm modules',
+            focusOnMount: true,
+            creatable: true,
+            selectCreatableRef: dependencyNameSelectRef,
+            onKeyDown: (e) => {
+              const select = dependencyNameSelectRef.current
+              if (e.key === 'Enter' && select != null) {
+                if ((select.state as any).menuIsOpen) {
+                  e.stopPropagation()
+                } else {
+                  addDependency(stateEditedPackageName, null)
+                }
+              }
+            },
+          }}
+        />
+      </div>
+    )
+  },
+)
+
+interface DependencyListItemEditingProps {
+  addDependency: (packageName: string | null, packageVersion: string | null) => void
+  handleAbandonEdit: () => void
+  editedPackageName: string | null
+  editedPackageVersion: string | null
+}
+
+export const DependencyListItemEditing = React.forwardRef(
+  (
+    {
+      addDependency,
+      handleAbandonEdit,
+      editedPackageName,
+      editedPackageVersion,
+    }: DependencyListItemEditingProps,
+    dependencyVersionInputRef: React.Ref<HTMLInputElement>,
+  ) => {
     const [stateEditedPackageName, setStateEditedPackageName] = React.useState<string>(
       editedPackageName ?? '',
     )
@@ -54,67 +111,35 @@ export const DependencyListInputField = React.forwardRef(
         if (e.key === 'Enter') {
           e.preventDefault()
           addDependency(stateEditedPackageName, stateEditedPackageVersion)
+          setStateEditedPackageName('')
         } else if (e.key === 'Escape') {
           e.preventDefault()
-          closeField()
+          handleAbandonEdit()
         }
       },
-      [addDependency, closeField, stateEditedPackageName, stateEditedPackageVersion],
-    )
-
-    const onConfirmClick = React.useCallback(
-      () => addDependency(stateEditedPackageName, stateEditedPackageVersion),
-      [addDependency, stateEditedPackageName, stateEditedPackageVersion],
-    )
-
-    const onSubmitValue = React.useCallback(
-      (newValue) => {
-        setStateEditedPackageName(newValue)
-        addDependency(newValue, null)
-      },
-      [setStateEditedPackageName, addDependency],
+      [addDependency, handleAbandonEdit, stateEditedPackageName, stateEditedPackageVersion],
     )
 
     return (
-      <div
-        style={{
-          padding: '0 8px',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-        }}
-        key='addeditedPackage'
-      >
-        <SelectControl
-          value={Utils.defaultIfNull<string>('', stateEditedPackageName)}
-          options={top1000NPMPackagesOptions}
-          id='edit-package-name'
-          key='edit-package-name'
-          testId='edit-package-name'
-          onSubmitValue={onSubmitValue}
-          controlStatus='simple'
-          controlStyles={getControlStyles('simple')}
+      <OnClickOutsideHOC onClickOutside={handleAbandonEdit}>
+        <div
           style={{
-            flexGrow: 1,
-            marginRight: 8,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            height: UtopiaTheme.layout.rowHeight.smaller,
+            backgroundColor: UtopiaTheme.color.secondaryBackground.value,
+            borderRadius: 2,
+            paddingLeft: 8,
+            paddingRight: 8,
+            gap: 8,
           }}
-          DEPRECATED_controlOptions={{
-            focusOnMount: !openVersionInput,
-            creatable: true,
-            selectCreatableRef: dependencyNameSelectRef,
-            onKeyDown: (e) => {
-              const select = dependencyNameSelectRef.current
-              if (e.key === 'Enter' && select != null) {
-                if ((select.state as any).menuIsOpen) {
-                  e.stopPropagation()
-                } else {
-                  addDependency(stateEditedPackageName, stateEditedPackageVersion)
-                }
-              }
-            },
-          }}
-        />
-        {showVersionField ? (
+          key='editedPackageRow'
+        >
+          <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
+            {Utils.defaultIfNull<string>('', stateEditedPackageName)}
+          </div>
+
           <Tooltip
             title={
               <span>
@@ -123,7 +148,7 @@ export const DependencyListInputField = React.forwardRef(
             }
           >
             <StringInput
-              focusOnMount={openVersionInput}
+              focusOnMount={true}
               value={Utils.defaultIfNull<string>('', stateEditedPackageVersion)}
               id='add-package-version'
               testId=''
@@ -134,32 +159,13 @@ export const DependencyListInputField = React.forwardRef(
               style={{
                 flexGrow: 0,
                 flexShrink: 0,
-                flexBasis: 64,
-                marginRight: 8,
-                fontFamily: 'Monaco, monospace',
-                fontStyle: 'normal',
-                fontSize: 9,
+                flexBasis: 48,
               }}
               onKeyDown={onKeyDown}
             />
           </Tooltip>
-        ) : null}
-        <FunctionIcons.Confirm
-          style={{
-            flexGrow: 0,
-            flexShrink: 0,
-            marginRight: 8,
-          }}
-          onClick={onConfirmClick}
-        />
-        <FunctionIcons.Close
-          style={{
-            flexGrow: 0,
-            flexShrink: 0,
-          }}
-          onClick={closeField}
-        />
-      </div>
+        </div>
+      </OnClickOutsideHOC>
     )
   },
 )
