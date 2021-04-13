@@ -183,7 +183,7 @@ const computeResultingStyle = (
   return result
 }
 
-function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
+export function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
   if (focusedElementPath == null || TP.isScenePath(path)) {
     return false
   } else {

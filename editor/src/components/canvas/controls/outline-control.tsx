@@ -4,7 +4,7 @@ import {
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
+import { Imports, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import * as TP from '../../../core/shared/template-path'
 import { ControlProps } from './new-canvas-controls'
@@ -16,32 +16,34 @@ import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { colorTheme } from '../../../uuiui'
+import { color, colorTheme } from '../../../uuiui'
+import { focusTextEditorIfPresent } from '../../editor/text-editor'
+import { MetadataControlsStyle } from '../../inspector/sections/style-section/background-subsection/background-picker'
+import { isFocused } from '../../navigator/navigator-item/navigator-item'
 
 export function getSelectionColor(
   path: TemplatePath,
   rootElements: Array<UtopiaJSXComponent>,
   metadata: ElementInstanceMetadataMap,
   imports: Imports,
-  createsYogaLayout: boolean,
-  anySelectedElementIsYogaLayouted: boolean,
+  focusedElementPath: ScenePath | null,
 ): string {
-  if (TP.isScenePath(path)) {
-    return colorTheme.canvasSelectionSceneOutline.value
-  } else {
-    if (MetadataUtils.isComponentInstance(path, rootElements, metadata, imports)) {
-      return colorTheme.canvasSelectionInstanceOutline.value
-    }
-    const originType = MetadataUtils.getElementOriginType(rootElements, path)
-    if (originType === 'generated-static-definition-present' || originType === 'unknown-element') {
-      return colorTheme.canvasSelectionRandomDOMElementInstanceOutline.value
-    } else if (createsYogaLayout) {
-      return colorTheme.canvasSelectionAlternateOutlineYogaParent.value
-    } else if (anySelectedElementIsYogaLayouted) {
-      return colorTheme.canvasSelectionAlternateOutlineYogaChild.value
+  //place holders
+  const isfocusableChild = true
+  const isFocusable = true
+
+  if (TP.isInsideFocusedComponent(path)) {
+    if (isfocusableChild) {
+      return colorTheme.canvasSelectionFocusableChild.value
     } else {
-      return colorTheme.canvasSelectionPrimaryOutline.value
+      return colorTheme.canvasSelectionNotFocusableChild.value
     }
+  } else if (isFocused(focusedElementPath, path)) {
+    return colorTheme.canvasSelectionIsolatedComponent.value
+  } else if (isFocusable) {
+    return colorTheme.canvasSelectionFocusable.value
+  } else {
+    return colorTheme.CanvasSelectionNotFocusable.value
   }
 }
 
@@ -145,8 +147,7 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
         this.props.rootComponents,
         this.props.componentMetadata,
         this.props.imports,
-        createsYogaLayout,
-        anySelectedElementIsYogaLayouted,
+        this.props.focusedElementPath,
       )
 
       if (this.props.dragState == null) {
