@@ -15958,7 +15958,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"ccc aaa scene-aaa\\"
+      data-uid=\\"ccc-unparsed-no-template-path aaa scene-aaa\\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa\\"
     >
       Thing
@@ -16018,7 +16018,7 @@ Object {
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       class Thing extends React.Component {
         render() {
-          return <div data-uid=\\"ccc\\">Thing</div>
+          return <div data-uid=\\"ccc-unparsed-no-template-path\\">Thing</div>
         }
       }
       export var App = (props) => {
@@ -21714,7 +21714,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
     data-uid=\\"utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"2a2~~~1 aaa bbb BBB scene\\"
+      data-uid=\\"2a2~~~1 aaa-unparsed-no-template-path bbb-unparsed-no-template-path BBB scene\\"
       data-paths=\\":2a2~~~1 utopia-storyboard-uid/scene:BBB :utopia-storyboard-uid/scene\\"
     >
       great

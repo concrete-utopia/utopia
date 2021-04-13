@@ -1056,7 +1056,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       class Thing extends React.Component {
         render() {
-          return <div data-uid="ccc">Thing</div>
+          return <div data-uid="ccc-unparsed-no-template-path">Thing</div>
         }
       }
       export var App = (props) => {
@@ -1490,7 +1490,7 @@ export var A = (props) => {
   if (props.x === 0) {
     return <div>great</div>
   } else {
-    return <B data-uid={'bbb'} x={props.x - 1} />
+    return <B data-uid={'bbb-unparsed-no-template-path'} x={props.x - 1} />
   }
 }
 
@@ -1498,7 +1498,7 @@ export var B = (props) => {
   if (props.x === 0) {
     return <div>great</div>
   } else {
-    return <A data-uid={'aaa'} x={props.x - 1} />
+    return <A data-uid={'aaa-unparsed-no-template-path'} x={props.x - 1} />
   }
 }
 
