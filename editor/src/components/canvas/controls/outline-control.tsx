@@ -16,10 +16,10 @@ import { MoveDragState, ResizeDragState, DragState } from '../canvas-types'
 import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { color, colorTheme } from '../../../uuiui'
-import { focusTextEditorIfPresent } from '../../editor/text-editor'
-import { MetadataControlsStyle } from '../../inspector/sections/style-section/background-subsection/background-picker'
+import { colorTheme } from '../../../uuiui'
 import { isFocused } from '../../navigator/navigator-item/navigator-item'
+import { useEditorState } from '../../editor/store/store-hook'
+import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../../editor/store/editor-state'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -56,9 +56,9 @@ function isDraggingToMove(
   return dragState != null && dragState?.type === 'MOVE_DRAG_STATE' && targetIsDragged
 }
 
-export class OutlineControls extends React.Component<OutlineControlsProps> {
-  getDragStateFrame = (target: TemplatePath): CanvasRectangle | null => {
-    const { dragState } = this.props
+export const OutlineControls = (props: OutlineControlsProps) => {
+  const getDragStateFrame = (target: TemplatePath): CanvasRectangle | null => {
+    const { dragState } = props
     if (isDraggingToMove(dragState, target)) {
       const startingFrameAndTarget = dragState.originalFrames.find((frameAndTarget) =>
         TP.pathsEqual(frameAndTarget.target, target),
@@ -77,21 +77,21 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
     }
   }
 
-  getTargetFrame = (target: TemplatePath): CanvasRectangle | null => {
-    const dragRect = this.getDragStateFrame(target)
-    return dragRect ?? MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
+  const getTargetFrame = (target: TemplatePath): CanvasRectangle | null => {
+    const dragRect = getDragStateFrame(target)
+    return dragRect ?? MetadataUtils.getFrameInCanvasCoords(target, props.componentMetadata)
   }
 
-  getOverlayControls = (targets: TemplatePath[]): Array<JSX.Element> => {
+  const getOverlayControls = (targets: TemplatePath[]): Array<JSX.Element> => {
     if (
       isFeatureEnabled('Dragging Shows Overlay') &&
-      this.props.dragState != null &&
-      this.props.dragState?.type === 'MOVE_DRAG_STATE' &&
-      this.props.dragState.drag != null
+      props.dragState != null &&
+      props.dragState?.type === 'MOVE_DRAG_STATE' &&
+      props.dragState.drag != null
     ) {
       let result: Array<JSX.Element> = []
       fastForEach(targets, (target) => {
-        const rect = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
+        const rect = MetadataUtils.getFrameInCanvasCoords(target, props.componentMetadata)
         if (rect != null) {
           result.push(
             <div
@@ -99,8 +99,8 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
               style={{
                 position: 'absolute',
                 boxSizing: 'border-box',
-                left: this.props.canvasOffset.x + rect.x,
-                top: this.props.canvasOffset.y + rect.y,
+                left: props.canvasOffset.x + rect.x,
+                top: props.canvasOffset.y + rect.y,
                 width: rect.width,
                 height: rect.height,
                 pointerEvents: 'none',
@@ -117,92 +117,102 @@ export class OutlineControls extends React.Component<OutlineControlsProps> {
     }
   }
 
-  render() {
-    const anySelectedElementIsYogaLayouted = anyInstanceYogaLayouted(
-      this.props.componentMetadata,
-      this.props.selectedViews,
-    )
+  const anySelectedElementIsYogaLayouted = anyInstanceYogaLayouted(
+    props.componentMetadata,
+    props.selectedViews,
+  )
 
-    let selectionOutlines: Array<JSX.Element> = this.getOverlayControls(this.props.selectedViews)
-    const targetPaths =
-      this.props.dragState != null ? this.props.dragState.draggedElements : this.props.selectedViews
-    fastForEach(targetPaths, (selectedView) => {
-      const rect = this.getTargetFrame(selectedView)
-      if (rect == null) {
-        // early return as we can't draw a selection outline
-        return
-      }
+  let selectionOutlines: Array<JSX.Element> = getOverlayControls(props.selectedViews)
+  const targetPaths =
+    props.dragState != null ? props.dragState.draggedElements : props.selectedViews
 
-      const keyPrefix = TP.toComponentId(selectedView)
-      const instance = TP.isScenePath(selectedView)
-        ? null
-        : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
-      const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
-      const selectionColor = getSelectionColor(
-        selectedView,
-        this.props.rootComponents,
-        this.props.componentMetadata,
-        this.props.imports,
-        this.props.focusedElementPath,
+  const selectionColors = useEditorState((store) => {
+    return targetPaths.map((path) => {
+      const result = getJSXComponentsAndImportsForPathInnerComponentFromState(
+        path,
+        store.editor,
+        store.derived,
       )
-
-      if (this.props.dragState == null) {
-        const margin = MetadataUtils.getElementMargin(selectedView, this.props.componentMetadata)
-        selectionOutlines.push(
-          <MarginControls
-            key={`${keyPrefix}-margin-controls`}
-            canvasOffset={this.props.canvasOffset}
-            scale={this.props.scale}
-            margin={margin}
-            frame={rect}
-          />,
-        )
-        const padding = MetadataUtils.getElementPadding(selectedView, this.props.componentMetadata)
-        selectionOutlines.push(
-          <PaddingControls
-            key={`${keyPrefix}-padding-controls`}
-            canvasOffset={this.props.canvasOffset}
-            scale={this.props.scale}
-            padding={padding}
-            frame={rect}
-          />,
-        )
-      }
-
-      // FIXME the striped overlay needs to be separated from this
-      selectionOutlines.push(
-        <Outline
-          key={`${keyPrefix}-outline-control`}
-          rect={rect}
-          offset={this.props.canvasOffset}
-          scale={this.props.scale}
-          color={selectionColor}
-          striped={createsYogaLayout}
-          stripedColor={colorTheme.canvasSelectionAlternateOutlineYogaParent.shade(50).value}
-        />,
+      return getSelectionColor(
+        path,
+        result.components,
+        store.editor.jsxMetadata,
+        result.imports,
+        store.editor.focusedElementPath,
       )
     })
-    let multiSelectOutline: JSX.Element | undefined
-    if (targetPaths.length > 1 && TP.areAllElementsInSameScene(targetPaths)) {
-      const globalFrames = targetPaths.map((selectedView) => this.getTargetFrame(selectedView))
-      const boundingBox = Utils.boundingRectangleArray(globalFrames)
-      if (boundingBox != null) {
-        const outlineColor = colorTheme.canvasSelectionSecondaryOutline.value
-        multiSelectOutline = (
-          <Outline
-            rect={boundingBox}
-            offset={this.props.canvasOffset}
-            scale={this.props.scale}
-            color={outlineColor}
-          />
-        )
-      }
+  }, 'OutlineControls')
+
+  fastForEach(targetPaths, (selectedView, index) => {
+    const rect = getTargetFrame(selectedView)
+    if (rect == null) {
+      // early return as we can't draw a selection outline
+      return
     }
-    return (
-      <>
-        {...selectionOutlines}
-        {multiSelectOutline}
-      </>
+
+    const keyPrefix = TP.toComponentId(selectedView)
+    const instance = TP.isScenePath(selectedView)
+      ? null
+      : MetadataUtils.getElementByInstancePathMaybe(props.componentMetadata, selectedView)
+    const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
+    const selectionColor = selectionColors[index]
+
+    if (props.dragState == null) {
+      const margin = MetadataUtils.getElementMargin(selectedView, props.componentMetadata)
+      selectionOutlines.push(
+        <MarginControls
+          key={`${keyPrefix}-margin-controls`}
+          canvasOffset={props.canvasOffset}
+          scale={props.scale}
+          margin={margin}
+          frame={rect}
+        />,
+      )
+      const padding = MetadataUtils.getElementPadding(selectedView, props.componentMetadata)
+      selectionOutlines.push(
+        <PaddingControls
+          key={`${keyPrefix}-padding-controls`}
+          canvasOffset={props.canvasOffset}
+          scale={props.scale}
+          padding={padding}
+          frame={rect}
+        />,
+      )
+    }
+
+    // FIXME the striped overlay needs to be separated from this
+    selectionOutlines.push(
+      <Outline
+        key={`${keyPrefix}-outline-control`}
+        rect={rect}
+        offset={props.canvasOffset}
+        scale={props.scale}
+        color={selectionColor}
+        striped={createsYogaLayout}
+        stripedColor={colorTheme.canvasSelectionAlternateOutlineYogaParent.shade(50).value}
+      />,
     )
+  })
+  let multiSelectOutline: JSX.Element | undefined
+  if (targetPaths.length > 1 && TP.areAllElementsInSameScene(targetPaths)) {
+    const globalFrames = targetPaths.map((selectedView) => getTargetFrame(selectedView))
+    const boundingBox = Utils.boundingRectangleArray(globalFrames)
+    if (boundingBox != null) {
+      const outlineColor = colorTheme.canvasSelectionSecondaryOutline.value
+      multiSelectOutline = (
+        <Outline
+          rect={boundingBox}
+          offset={props.canvasOffset}
+          scale={props.scale}
+          color={outlineColor}
+        />
+      )
+    }
   }
+  return (
+    <>
+      {...selectionOutlines}
+      {multiSelectOutline}
+    </>
+  )
 }
