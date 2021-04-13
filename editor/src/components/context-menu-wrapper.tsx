@@ -89,11 +89,19 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
 
   isHidden = (): boolean => false
 
+  isEnabled = (item: ContextMenuItem<T>): boolean => {
+    if (typeof item.enabled === 'function') {
+      return !item.enabled(this.props.getData())
+    } else {
+      return !item.enabled
+    }
+  }
+
   renderItem(item: ContextMenuItem<T>, index: number) {
     return (
       <Item
         key={`context-menu-${index}-item`}
-        disabled={!item.enabled}
+        disabled={this.isEnabled(item)}
         // eslint-disable-next-line react/jsx-no-bind
         onClick={({ event }: { event: React.MouseEvent<HTMLElement> }) => {
           event.stopPropagation()

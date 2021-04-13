@@ -24,7 +24,7 @@ import {
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
-  enabled: boolean
+  enabled: boolean | ((data: T) => boolean)
   submenuName?: string | null
   shortcut?: string
   isSeparator?: boolean
@@ -136,7 +136,10 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
 
 export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   name: 'Set As Focused Element',
-  enabled: true,
+  enabled: (data) => {
+    console.log('Data', data)
+    return true
+  },
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]

@@ -156,6 +156,8 @@ import {
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as TP from '../../../core/shared/template-path'
+import { getParseSuccessOrTransientForFilePath } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
+import { importedFromWhere } from '../import-utils'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
@@ -741,6 +743,137 @@ export function getOpenUtopiaJSXComponentsFromStateMultifile(
     return []
   } else {
     return getImportedUtopiaJSXComponents(openUIJSFilePath, model)
+  }
+}
+
+export function getJSXComponentsAndImportsForPathFromState(
+  path: TemplatePath,
+  model: EditorState,
+  derived: DerivedState,
+): {
+  components: UtopiaJSXComponent[]
+  imports: Imports
+} {
+  const storyboardFilePath = getOpenUIJSFileKey(model)
+  if (storyboardFilePath == null) {
+    return {
+      components: [],
+      imports: {},
+    }
+  }
+  return getJSXComponentsAndImportsForPath(
+    path,
+    storyboardFilePath,
+    model.projectContents,
+    model.nodeModules.files,
+    derived.canvas.transientState.filesState,
+  )
+}
+
+export function getJSXComponentsAndImportsForPath(
+  path: TemplatePath,
+  currentFilePath: string,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  transientFilesState: TransientFilesState | null,
+): {
+  underlyingFilePath: string
+  components: UtopiaJSXComponent[]
+  imports: Imports
+} {
+  const underlying = normalisePathToUnderlyingTarget(
+    projectContents,
+    nodeModules,
+    currentFilePath,
+    TP.instancePathForElementAtPath(path),
+  )
+  const elementFilePath =
+    underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
+  const result = getParseSuccessOrTransientForFilePath(
+    elementFilePath,
+    projectContents,
+    transientFilesState,
+  )
+  return {
+    underlyingFilePath: elementFilePath,
+    components: result.topLevelElements.filter(isUtopiaJSXComponent),
+    imports: result.imports,
+  }
+}
+
+export function getJSXComponentsAndImportsForPathInnerComponentFromState(
+  path: TemplatePath,
+  model: EditorState,
+  derived: DerivedState,
+): {
+  components: UtopiaJSXComponent[]
+  imports: Imports
+} {
+  const storyboardFilePath = getOpenUIJSFileKey(model)
+  if (storyboardFilePath == null) {
+    return {
+      components: [],
+      imports: {},
+    }
+  }
+  return getJSXComponentsAndImportsForPathInnerComponent(
+    path,
+    storyboardFilePath,
+    model.projectContents,
+    model.nodeModules.files,
+    derived.canvas.transientState.filesState,
+    model.jsxMetadata,
+    model.codeResultCache.resolve,
+  )
+}
+
+export function getJSXComponentsAndImportsForPathInnerComponent(
+  path: TemplatePath,
+  currentFilePath: string,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  transientFilesState: TransientFilesState | null,
+  metadata: ElementInstanceMetadataMap,
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+): {
+  components: UtopiaJSXComponent[]
+  imports: Imports
+} {
+  const resultForPath = getJSXComponentsAndImportsForPath(
+    path,
+    currentFilePath,
+    projectContents,
+    nodeModules,
+    transientFilesState,
+  )
+
+  const elementName = MetadataUtils.getJSXElementTagName(path, resultForPath.components, metadata)
+  if (elementName != null) {
+    const importSource = importedFromWhere(
+      resultForPath.underlyingFilePath,
+      elementName,
+      resultForPath.components,
+      resultForPath.imports,
+    )
+    if (importSource != null) {
+      const resolvedImportSource = resolve(resultForPath.underlyingFilePath, importSource)
+      if (isRight(resolvedImportSource)) {
+        const resolvedFilePath = resolvedImportSource.value
+        const importSourceFile = getParseSuccessOrTransientForFilePath(
+          resolvedFilePath,
+          projectContents,
+          transientFilesState,
+        )
+        return {
+          components: importSourceFile.topLevelElements.filter(isUtopiaJSXComponent),
+          imports: importSourceFile.imports,
+        }
+      }
+    }
+  }
+  return {
+    components: resultForPath.components,
+    imports: resultForPath.imports,
   }
 }
 

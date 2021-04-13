@@ -58,6 +58,7 @@ import {
   isIntrinsicElement,
   jsxElementName,
   ElementInstanceMetadataMap,
+  isIntrinsicHTMLElement,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -87,7 +88,12 @@ import {
 import * as PP from '../shared/property-path'
 import * as TP from '../shared/template-path'
 import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
-import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
+import {
+  isAnimatedElementAgainstImports,
+  isGivenUtopiaAPIElement,
+  isImportedComponent,
+  isUtopiaAPIComponent,
+} from './project-file-utils'
 import { EmptyScenePathForStoryboard, ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
@@ -1549,6 +1555,36 @@ export const MetadataUtils = {
       return parentPath
     } else {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
+    }
+  },
+  isFocusableComponent(
+    path: TemplatePath,
+    components: UtopiaJSXComponent[],
+    metadata: ElementInstanceMetadataMap,
+    imports: Imports,
+  ): boolean {
+    const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
+    const elementInstancePath = TP.isInstancePath(path)
+      ? path
+      : TP.instancePathForElementAtScenePath(path)
+    const element = MetadataUtils.getElementByInstancePathMaybe(metadata, elementInstancePath)
+    if (element?.isEmotionOrStyledComponent) {
+      return false
+    }
+    const isAnimatedComponent =
+      elementName != null && isAnimatedElementAgainstImports(elementName, imports)
+    if (isAnimatedComponent) {
+      return false
+    }
+    const isImported = elementName != null && isImportedComponent(elementName, imports)
+    if (isImported) {
+      return false
+    }
+    const isComponent = elementName != null && !isIntrinsicHTMLElement(elementName)
+    if (isComponent) {
+      return true
+    } else {
+      return false
     }
   },
 }
