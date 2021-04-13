@@ -1093,7 +1093,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       class Thing extends React.Component {
         render() {
           const { textToShow } = this.context;
-          return <div data-uid="ccc">{textToShow}</div>
+          return <div data-uid="ccc-unparsed-no-template-path">{textToShow}</div>
         }
       }
       Thing.contextType = MyContext;
@@ -1137,7 +1137,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           data-uid=\\"utopia-storyboard-uid\\"
         >
           <div
-            data-uid=\\"ccc aaa scene-aaa\\"
+            data-uid=\\"ccc-unparsed-no-template-path aaa scene-aaa\\"
             data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa\\"
           >
             hello
