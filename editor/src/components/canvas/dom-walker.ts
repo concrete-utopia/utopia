@@ -51,7 +51,6 @@ import { extractOriginalUidFromIndexedUid, getUIDsOnDomELement } from '../../cor
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
-import { valid } from 'chroma-js'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
