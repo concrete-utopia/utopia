@@ -633,7 +633,7 @@ export const MetadataUtils = {
     const children = MetadataUtils.getAllStoryboardChildren(metadata)
     return mapDropNulls(
       (e) =>
-        MetadataUtils.elementIsScene(e)
+        MetadataUtils.elementIsOldStyleScene(e)
           ? TP.scenePathForElementAtInstancePath(e.templatePath)
           : null,
       children,
@@ -1139,12 +1139,12 @@ export const MetadataUtils = {
   getDuplicationParentTargets(targets: TemplatePath[]): TemplatePath | null {
     return TP.getCommonParent(targets)
   },
-  elementIsScene(element: ElementInstanceMetadata): boolean {
+  elementIsOldStyleScene(element: ElementInstanceMetadata): boolean {
     return isLeft(element.element) && element.element.value === 'Scene'
   },
-  elementAtPathIsScene(elements: ElementInstanceMetadataMap, path: TemplatePath): boolean {
+  elementAtPathIsOldStyleScene(elements: ElementInstanceMetadataMap, path: TemplatePath): boolean {
     const element = MetadataUtils.findElementByTemplatePath(elements, path)
-    return element == null ? false : MetadataUtils.elementIsScene(element)
+    return element == null ? false : MetadataUtils.elementIsOldStyleScene(element)
   },
   mergeComponentMetadata(
     elementsByUID: ElementsByUID,
@@ -1189,7 +1189,7 @@ export const MetadataUtils = {
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
-        if (MetadataUtils.elementIsScene(spyElem)) {
+        if (MetadataUtils.elementIsOldStyleScene(spyElem)) {
           // We have some weird special casing for Scenes (see https://github.com/concrete-utopia/utopia/pull/671)
           jsxElement = spyElem.element
         } else {

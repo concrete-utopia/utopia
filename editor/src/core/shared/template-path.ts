@@ -413,15 +413,8 @@ export function depth(path: TemplatePath): number {
 }
 
 export function navigatorDepth(path: TemplatePath): number {
-  if (isScenePath(path)) {
-    return 1
-  } else {
-    let scenePathLength = -1 // starts from -1 for the storyboard element
-    fastForEach(path.scene.sceneElementPaths, (elementPath) => {
-      scenePathLength += elementPath.length
-    })
-    return scenePathLength + path.element.length
-  }
+  const elementPathParts = fullElementPathForPath(path)
+  return elementPathParts.reduce((working, next) => working + next.length, -1)
 }
 
 export function isInsideFocusedComponent(path: TemplatePath): boolean {

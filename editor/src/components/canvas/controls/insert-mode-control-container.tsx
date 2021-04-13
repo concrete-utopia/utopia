@@ -15,7 +15,7 @@ import {
 } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { PropertyPath, TemplatePath, Imports } from '../../../core/shared/project-file-types'
-import { Either, eitherToMaybe, isLeft, right } from '../../../core/shared/either'
+import { Either, eitherToMaybe, isLeft, isRight, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
@@ -49,10 +49,11 @@ import { InsertionControls } from './insertion-control'
 import { CanvasControlsContainerID, ControlProps } from './new-canvas-controls'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { RightMenuTab } from '../right-menu'
-import { safeIndex } from '../../../core/shared/array-utils'
+import { mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import { getStoryboardTemplatePath } from '../../../core/model/scene-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { isSceneAgainstImports } from '../../../core/model/project-file-utils'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -657,8 +658,13 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   render() {
-    const roots = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(
-      this.props.componentMetadata,
+    const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
+    const roots = mapDropNulls(
+      (child) =>
+        isRight(child.element) && isSceneAgainstImports(child.element.value, this.props.imports)
+          ? child.templatePath
+          : null,
+      storyboardChildren,
     )
     const dragFrame = this.state.dragFrame
 

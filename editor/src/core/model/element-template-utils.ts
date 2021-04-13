@@ -46,6 +46,7 @@ import {
   isUtopiaAPIComponent,
   getComponentsFromTopLevelElements,
   isGivenUtopiaAPIElement,
+  isSceneAgainstImports,
 } from './project-file-utils'
 import { getStoryboardTemplatePath } from './scene-utils'
 
@@ -107,7 +108,7 @@ function isSceneElement(
 ): boolean {
   const file = getContentsTreeFileFromString(projectContents, filePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    return isGivenUtopiaAPIElement(element, file.fileContents.parsed.imports, 'Scene')
+    return isSceneAgainstImports(element, file.fileContents.parsed.imports)
   } else {
     return false
   }

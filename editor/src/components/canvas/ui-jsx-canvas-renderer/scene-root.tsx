@@ -286,18 +286,28 @@ export const SceneRootRenderer = betterReactMemo(
 
 interface SceneComponentProps {
   style?: React.CSSProperties
+  'data-label'?: string
   'data-uid'?: string
 }
 
 export const SceneComponent = betterReactMemo(
   'Scene',
   (props: React.PropsWithChildren<SceneComponentProps>) => {
+    const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
+
+    const { style, ...remainingProps } = props
+
+    const sceneStyle: React.CSSProperties = {
+      position: 'relative',
+      backgroundColor: colorTheme.emphasizedBackground.value,
+      boxShadow: canvasIsLive
+        ? UtopiaStyles.scene.live.boxShadow
+        : UtopiaStyles.scene.editing.boxShadow,
+      ...style,
+    }
+
     return (
-      <View
-        // data-utopia-scene-id={TP.toString(scenePath)}
-        // data-utopia-valid-paths={props.validPaths.map(TP.toString).join(' ')}
-        {...props}
-      >
+      <View {...remainingProps} style={sceneStyle}>
         {props.children}
       </View>
     )
