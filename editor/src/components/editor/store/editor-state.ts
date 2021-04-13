@@ -865,7 +865,10 @@ export function getJSXComponentsAndImportsForPathInnerComponent(
           transientFilesState,
         )
         return {
-          components: importSourceFile.topLevelElements.filter(isUtopiaJSXComponent),
+          components: [
+            ...importSourceFile.topLevelElements.filter(isUtopiaJSXComponent),
+            ...resultForPath.components,
+          ],
           imports: importSourceFile.imports,
         }
       }
