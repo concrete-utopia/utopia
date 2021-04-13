@@ -28,19 +28,15 @@ export function getSelectionColor(
   imports: Imports,
   focusedElementPath: ScenePath | null,
 ): string {
-  //place holders
-  const isfocusableChild = true
-  const isFocusable = true
-
   if (TP.isInsideFocusedComponent(path)) {
-    if (isfocusableChild) {
+    if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {
       return colorTheme.canvasSelectionFocusableChild.value
     } else {
       return colorTheme.canvasSelectionNotFocusableChild.value
     }
   } else if (isFocused(focusedElementPath, path)) {
     return colorTheme.canvasSelectionIsolatedComponent.value
-  } else if (isFocusable) {
+  } else if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {
     return colorTheme.canvasSelectionFocusable.value
   } else {
     return colorTheme.CanvasSelectionNotFocusable.value
