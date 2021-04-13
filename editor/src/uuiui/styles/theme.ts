@@ -201,7 +201,7 @@ const light = {
   navigatorComponentIconBorder: base.orange,
 
   // inverted: toasts, context menu, notifications
-  contextMenuBackground: lightPrimitives.neutralBackground,
+  contextMenuBackground: lightPrimitives.secondaryBackground,
   contextMenuForeground: lightPrimitives.neutralForeground,
   contextMenuHighlightForeground: base.white,
   contextMenuHighlightBackground: lightBase.primary,
@@ -514,6 +514,16 @@ const noticeStyles = {
   disconnected: { background: backgroundURLs.noise, color: 'white' },
 }
 
+const textNoticeStyles = {
+  info: {},
+  success: { color: base.neongreen.value },
+  primary: { color: base.blue.value },
+  notice: { color: base.darkgray.value },
+  warning: { color: base.red.value },
+  error: { color: base.red.value },
+  disconnected: { background: backgroundURLs.noise, color: 'white' },
+}
+
 const shadowStyles = {
   small: {
     boxShadow: `0px 1p 3px 0px rgba(0,0,0,.2)`,
@@ -521,6 +531,14 @@ const shadowStyles = {
   medium: {
     boxShadow: '0px 2px 4px 1px rgba(0,0,0,0.2)',
   },
+}
+
+const popup: React.CSSProperties = {
+  background: lightPrimitives.neutralBackground.value,
+  boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 2px 7px',
+  paddingTop: 4,
+  paddingBottom: 4,
+  borderRadius: 4,
 }
 
 const textBackgroundStyles = {
@@ -537,9 +555,11 @@ export const UtopiaStyles = {
     ...backgroundURLs,
   },
   noticeStyles,
+  textNoticeStyles,
   textBackgroundStyles,
   shadowStyles,
   input,
+  popup,
   flexRow,
   flexColumn,
   flexCenter,

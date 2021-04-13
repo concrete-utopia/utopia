@@ -135,7 +135,8 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
 }
 
 export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
-  name: 'Set As Focused Element',
+  name: 'Edit Component',
+  // todo only enable if thing is component
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {

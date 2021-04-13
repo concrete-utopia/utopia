@@ -45,6 +45,7 @@ interface ElementContextMenuProps {
 
 const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   setAsFocusedElement,
+  lineSeparator,
   scrollToElement,
   cutElements,
   copyElements,
@@ -54,7 +55,6 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   ungroup,
   wrapInView,
   rename,
-  lineSeparator,
   lineSeparator,
   bringForward,
   bringToFront,
