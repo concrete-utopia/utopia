@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 import * as React from 'react'
-import Select, { components, createFilter, InputProps } from 'react-select'
+import Select, { components, createFilter, FormatOptionLabelMeta, InputProps } from 'react-select'
 import CreatableSelect, { Props as SelectProps } from 'react-select/creatable'
 import { IndicatorProps } from 'react-select/src/components/indicators'
 import Utils from '../../../utils/utils'
@@ -58,13 +58,17 @@ export const CustomReactSelectInput = (props: InputProps) => {
   const inputStyle = React.useMemo(() => {
     return {
       label: 'input',
-      background: 0,
       border: 0,
       fontSize: 'inherit',
       opacity: props.isHidden ? 0 : 1,
       outline: 0,
-      padding: 0,
+      paddingLeft: '4px',
+      paddingRight: '4px',
+      width: '100%',
       color: 'inherit',
+      // default input height minus 1px padding and the border
+      // on the outer container
+      height: UtopiaTheme.layout.inputHeight.default - 2,
     }
   }, [props.isHidden])
 
@@ -77,14 +81,12 @@ export const CustomReactSelectInput = (props: InputProps) => {
   delete strippedProps['selectProps']
 
   return (
-    <div>
-      <input
-        className={props.className}
-        style={inputStyle}
-        disabled={props.isDisabled}
-        {...strippedProps}
-      />
-    </div>
+    <input
+      className={props.className}
+      style={inputStyle}
+      disabled={props.isDisabled}
+      {...strippedProps}
+    />
   )
 }
 
@@ -120,7 +122,7 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
     }
   }
 
-  const formatCreateLabel = (inputValue: string) => inputValue
+  const formatCreateLabel = (inputValue: string) => `Add ${inputValue}`
 
   const controlledStatus =
     props.controlStatus == null ? false : isControlledStatus(props.controlStatus)
@@ -130,6 +132,7 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
     className: `${R.pathOr('', ['controlClassName'], props)} flex-auto`,
     classNamePrefix: 'inspector-select',
     isMulti: false,
+    openMenuOnFocus: true,
     menuShouldScrollIntoView: true,
     menuPlacement: 'auto',
     menuPortalTarget: document.getElementById(PortalTargetID),
@@ -168,12 +171,11 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
           borderRadius: UtopiaTheme.inputBorderRadius,
           borderWidth: 0,
           minHeight: 0,
-          padding: '2px 0',
+          padding: '1px',
         }
       },
       container: (base: React.CSSProperties) => ({
         ...base,
-        height: '100%',
       }),
       option: (base: React.CSSProperties, state: any) => {
         const optionStyle = Utils.path(
@@ -182,7 +184,7 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
         )
         return {
           ...base,
-          minHeight: 22,
+          minHeight: UtopiaTheme.layout.inputHeight.default,
           padding: 8,
           display: 'grid',
           gridTemplateColumns: 'auto 14px',
@@ -198,10 +200,6 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
           ...value.style,
         }
       },
-      input: (base) => ({
-        ...base,
-        padding: '0 4px',
-      }),
       placeholder: (base) => ({
         ...base,
         padding: '0 4px',
@@ -221,6 +219,7 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
       menuList: (base) => ({
         ...base,
         padding: 0,
+        maxHeight: 120,
       }),
       indicatorSeparator: () => ({
         display: 'none',

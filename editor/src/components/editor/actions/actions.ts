@@ -170,6 +170,7 @@ import {
   WindowPoint,
   canvasRectangle,
   Rectangle,
+  rectangleIntersection,
 } from '../../../core/shared/math-utils'
 import {
   addFileToProjectContents,
@@ -4226,8 +4227,24 @@ export const UPDATE_FNS = {
       editor.jsxMetadata,
     )
     if (targetElementCoords != null) {
-      const baseCanvasOffset =
-        editor.navigator.position === 'right' ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+      const isNavigatorOnTop = editor.navigator.position === 'right'
+      const containerRootDiv = document.getElementById('canvas-root')
+      if (action.keepScrollPositionIfVisible && containerRootDiv != null) {
+        const containerDivBoundingRect = containerRootDiv.getBoundingClientRect()
+        const navigatorOffset = isNavigatorOnTop ? LeftPaneDefaultWidth : 0
+        const containerRectangle = {
+          x: navigatorOffset - editor.canvas.realCanvasOffset.x,
+          y: -editor.canvas.realCanvasOffset.y,
+          width: containerDivBoundingRect.width,
+          height: containerDivBoundingRect.height,
+        } as CanvasRectangle
+        const isVisible = rectangleIntersection(containerRectangle, targetElementCoords)
+        // when the element is on screen no scrolling is needed
+        if (isVisible) {
+          return editor
+        }
+      }
+      const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
       const newCanvasOffset = Utils.pointDifference(targetElementCoords, baseCanvasOffset)
 
       return UPDATE_FNS.SET_SCROLL_ANIMATION(
@@ -4261,7 +4278,7 @@ export const UPDATE_FNS = {
         clearTimeout(canvasScrollAnimationTimer)
         canvasScrollAnimationTimer = undefined
         dispatch([setScrollAnimation(false)], 'everyone')
-      }, 700)
+      }, 500)
     }
     return {
       ...editor,

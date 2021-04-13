@@ -240,7 +240,7 @@ export const selectElementsThatRespectLayout = createSelector(
   ) => {
     return flatMapArray((view) => {
       if (TP.isScenePath(view)) {
-        const rootElements = MetadataUtils.getRootViews(jsxMetadata, view)
+        const rootElements = MetadataUtils.getRootViewPaths(jsxMetadata, view)
         return [view, ...rootElements]
       } else {
         return [view]

@@ -91,21 +91,16 @@ const Canvas = {
     useBoundingFrames: boolean,
   ): Array<FrameWithPath> {
     function recurseChildren(
-      offset: CanvasPoint,
       component: ElementInstanceMetadata,
     ): { boundingRect: CanvasRectangle | null; frames: Array<FrameWithPath> } {
-      const componentFrame = component.localFrame
-      if (componentFrame == null) {
+      const globalFrame = component.globalFrame
+      if (globalFrame == null) {
         return {
           boundingRect: null,
           frames: [],
         }
       }
 
-      const offsetFrame: CanvasRectangle = Utils.getCanvasRectangleWithCanvasOffset(
-        offset,
-        componentFrame,
-      )
       const overflows = MetadataUtils.overflows(component)
       const includeClippedNext = useBoundingFrames && overflows
       const {
@@ -117,27 +112,27 @@ const Canvas = {
         focusedElementPath,
       )
       const childFrames = children.map((child) => {
-        const recurseResults = recurseChildren(offsetFrame, child)
-        const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : offsetFrame
+        const recurseResults = recurseChildren(child)
+        const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
         return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
       })
       const unfurledFrames = unfurledComponents.map((unfurledElement) => {
-        const recurseResults = recurseChildren(offset, unfurledElement) // the unfurled component is not really a children, so we don't apply our own offset here
-        const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : offsetFrame
+        const recurseResults = recurseChildren(unfurledElement)
+        const rectToBoundWith = includeClippedNext ? recurseResults.boundingRect : globalFrame
         return { boundingRect: rectToBoundWith, frames: recurseResults.frames }
       })
       const allFrames = [...childFrames, ...unfurledFrames]
       const allChildrenBounds = Utils.boundingRectangleArray(Utils.pluck(allFrames, 'boundingRect'))
       if (allFrames.length > 0 && allChildrenBounds != null) {
         const allChildrenFrames = Utils.pluck(allFrames, 'frames').flat()
-        const boundingRect = Utils.boundingRectangle(offsetFrame, allChildrenBounds)
+        const boundingRect = Utils.boundingRectangle(globalFrame, allChildrenBounds)
         const toAppend: FrameWithPath = { path: component.templatePath, frame: boundingRect }
         return {
           boundingRect: boundingRect,
           frames: [toAppend].concat(allChildrenFrames),
         }
       } else {
-        const boundingRect = offsetFrame
+        const boundingRect = globalFrame
         const toAppend = { path: component.templatePath, frame: boundingRect }
         return { boundingRect: boundingRect, frames: [toAppend] }
       }
@@ -145,7 +140,7 @@ const Canvas = {
 
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(metadata)
     return storyboardChildren.flatMap((storyboardChild) => {
-      return recurseChildren({ x: 0, y: 0 } as CanvasVector, storyboardChild).frames
+      return recurseChildren(storyboardChild).frames
     })
   },
   jumpToParent(selectedViews: Array<TemplatePath>): TemplatePath | 'CLEAR' | null {
