@@ -1282,10 +1282,14 @@ export function setFocusedElement(focusedElementTemplatePath: ScenePath | null):
   }
 }
 
-export function scrollToElement(focusedElementTemplatePath: TemplatePath): ScrollToElement {
+export function scrollToElement(
+  focusedElementTemplatePath: TemplatePath,
+  keepScrollPositionIfVisible: boolean,
+): ScrollToElement {
   return {
     action: 'SCROLL_TO_ELEMENT',
     target: focusedElementTemplatePath,
+    keepScrollPositionIfVisible: keepScrollPositionIfVisible,
   }
 }
 
