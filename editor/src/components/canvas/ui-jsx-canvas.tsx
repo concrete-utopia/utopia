@@ -88,6 +88,9 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-print
 import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
+
+applyUIDMonkeyPatch()
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
