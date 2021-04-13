@@ -32,7 +32,7 @@ import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
 import { createDuplicationNewUIDs, getOriginalCanvasFrames } from '../../canvas-utils'
 import {
-  findFirstParentWithValidUID,
+  findFirstParentWithValidTemplatePath,
   getAllTargetsAtPoint,
   getValidTargetAtPoint,
 } from '../../dom-lookup'
@@ -213,7 +213,7 @@ function useFindValidTarget(): (
         selectedViews,
         hiddenInstances,
         focusedElementPath,
-        selectableViews.map(TP.toString),
+        selectableViews,
         mousePoint,
         canvasScale,
         canvasOffset,

@@ -47,22 +47,17 @@ import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import { useForceUpdate } from '../editor/hook-utils'
-import { extractOriginalUidFromIndexedUid, getUIDsOnDomELement } from '../../core/shared/uid-utils'
+import {
+  extractOriginalUidFromIndexedUid,
+  getPathsOnDomElement,
+  getUIDsOnDomELement,
+} from '../../core/shared/uid-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
-
-export function getPathsOnDomElement(element: Element): Array<InstancePath> {
-  const pathsAttribute = getDOMAttribute(element, UTOPIA_PATHS_KEY)
-  return (
-    optionalMap((pathsString: string) => {
-      return pathsString.split(' ').map(TP.fromString) as Array<InstancePath>
-    }, pathsAttribute) ?? []
-  )
-}
 
 function elementLayoutSystem(computedStyle: CSSStyleDeclaration | null): DetectedLayoutSystem {
   if (computedStyle == null) {
