@@ -570,8 +570,9 @@ class FileBrowserItemInner extends React.PureComponent<
         return colorTheme.secondaryBackground.value
       } else if (isCurrentDropTargetForAnyFiles) {
         return colorTheme.brandNeonYellow.value
-      } 
-      return 'transparent'
+      } else {
+        return 'transparent'
+      }
     }
 
     const fileIconStyle = {
