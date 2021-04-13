@@ -196,9 +196,10 @@ export function renderCoreElement(
     case 'JSX_FRAGMENT': {
       let renderedChildren: Array<React.ReactElement> = []
       fastForEach(element.children, (child) => {
+        const childPath = TP.appendToPath(TP.parentPath(templatePath), getUtopiaID(child))
         const renderResult = renderCoreElement(
           child,
-          templatePath,
+          childPath,
           rootScope,
           inScope,
           parentComponentInputProps,
