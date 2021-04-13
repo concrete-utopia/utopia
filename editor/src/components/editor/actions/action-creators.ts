@@ -182,8 +182,10 @@ import type {
   CloseDesignerFile,
   SetFocusedElement,
   AddImports,
+  ScrollToElement,
   WorkerCodeUpdate,
   WorkerParsedUpdate,
+  SetScrollAnimation,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1277,5 +1279,23 @@ export function setFocusedElement(focusedElementTemplatePath: ScenePath | null):
   return {
     action: 'SET_FOCUSED_ELEMENT',
     focusedElementPath: focusedElementTemplatePath,
+  }
+}
+
+export function scrollToElement(
+  focusedElementTemplatePath: TemplatePath,
+  keepScrollPositionIfVisible: boolean,
+): ScrollToElement {
+  return {
+    action: 'SCROLL_TO_ELEMENT',
+    target: focusedElementTemplatePath,
+    keepScrollPositionIfVisible: keepScrollPositionIfVisible,
+  }
+}
+
+export function setScrollAnimation(value: boolean): SetScrollAnimation {
+  return {
+    action: 'SET_SCROLL_ANIMATION',
+    value: value,
   }
 }

@@ -137,6 +137,11 @@ export const NewCanvasControls = betterReactMemo(
       setSelectedViewsLocally,
     } = useLocalSelectedHighlightedViews(canvasControlProps.transientCanvasState)
 
+    const canvasScrollAnimation = useEditorState(
+      (store) => store.editor.canvas.scrollAnimation,
+      'NewCanvasControls scrollAnimation',
+    )
+
     // Somehow this being setup and hooked into the div makes the `onDrop` call
     // work properly in `editor-canvas.ts`. I blame React DnD for this.
     const dropSpec: DropTargetHookSpec<FileBrowserItemProps, 'CANVAS', unknown> = {
@@ -176,6 +181,7 @@ export const NewCanvasControls = betterReactMemo(
             height: `100%`,
             zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
             cursor: props.cursor,
+            visibility: canvasScrollAnimation ? 'hidden' : 'initial',
           }}
         >
           <div
