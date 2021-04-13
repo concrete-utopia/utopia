@@ -1,7 +1,12 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import {
+  isParseSuccess,
+  isTextFile,
+  ParseSuccess,
+  TemplatePath,
+} from '../../../core/shared/project-file-types'
 import { useEditorState } from '../../editor/store/store-hook'
 import * as TP from '../../../core/shared/template-path'
 import {
@@ -14,6 +19,7 @@ import {
   getOpenImportsFromState,
   defaultElementWarnings,
   EditorStore,
+  TransientFileState,
 } from '../../editor/store/editor-state'
 import { UtopiaJSXComponent, isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import { getValueFromComplexMap } from '../../../utils/map'
@@ -21,6 +27,13 @@ import { createSelector } from 'reselect'
 import { nullableDeepEquality } from '../../../utils/deep-equality'
 import { JSXElementNameKeepDeepEqualityCall } from '../../../utils/deep-equality-instances'
 import { betterReactMemo, useKeepDeepEqualityCall } from '../../../utils/react-performance'
+import {
+  normalisePathSuccessOrThrowError,
+  normalisePathToUnderlyingTarget,
+} from '../../custom-code/code-file'
+import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
+import { getContentsTreeFileFromString } from '../../assets'
+import { emptyImports } from '../../../core/workers/common/project-file-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -38,21 +51,42 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
     (store: EditorStore) => store.derived.canvas.transientState,
     (store: EditorStore) => store.derived.navigatorTargets,
     (store: EditorStore) => store.derived.elementWarnings,
-    (store: EditorStore) =>
-      TP.isScenePath(templatePath)
-        ? null
-        : MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadata, templatePath),
-    (store: EditorStore) =>
-      store.derived.canvas.transientState.fileState == null
-        ? getOpenImportsFromState(store.editor)
-        : store.derived.canvas.transientState.fileState.imports,
-    (jsxMetadata, transientState, navigatorTargets, elementWarnings, element, imports) => {
-      const fileState = transientState.fileState
+    (store: EditorStore) => store.editor.projectContents,
+    (store: EditorStore) => store.editor.nodeModules.files,
+    (store: EditorStore) => store.editor.canvas.openFile?.filename ?? null,
+    (
+      jsxMetadata,
+      transientState,
+      navigatorTargets,
+      elementWarnings,
+      projectContents,
+      nodeModules,
+      currentFilePath,
+    ) => {
+      const underlying = normalisePathToUnderlyingTarget(
+        projectContents,
+        nodeModules,
+        forceNotNull('Should be a file path.', currentFilePath),
+        TP.instancePathForElementAtPath(templatePath),
+      )
+      const elementFilePath =
+        underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
+      const elementProjectFile =
+        elementFilePath == null
+          ? null
+          : getContentsTreeFileFromString(projectContents, elementFilePath)
+      const elementTextFile = isTextFile(elementProjectFile) ? elementProjectFile : null
+      let parsedElementFile: ParseSuccess | null = null
+      if (elementTextFile != null && isParseSuccess(elementTextFile.fileContents.parsed)) {
+        parsedElementFile = elementTextFile.fileContents.parsed
+      }
+      const fileState =
+        elementFilePath == null ? null : transientState.filesState?.[elementFilePath] ?? null
+      const imports = fileState?.imports ?? parsedElementFile?.imports ?? emptyImports()
+      const topLevelElements =
+        fileState?.topLevelElementsIncludingScenes ?? parsedElementFile?.topLevelElements ?? []
+      const componentsIncludingScenes = topLevelElements.filter(isUtopiaJSXComponent)
 
-      const componentsIncludingScenes: Array<UtopiaJSXComponent> =
-        fileState == null
-          ? []
-          : fileState.topLevelElementsIncludingScenes.filter(isUtopiaJSXComponent)
       const elementOriginType = MetadataUtils.getElementOriginType(
         componentsIncludingScenes,
         templatePath,

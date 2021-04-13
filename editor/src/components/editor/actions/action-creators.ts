@@ -182,6 +182,7 @@ import type {
   CloseDesignerFile,
   SetFocusedElement,
   AddImports,
+  ScrollToElement,
   WorkerCodeUpdate,
   WorkerParsedUpdate,
   SetScrollAnimation,
@@ -1278,6 +1279,17 @@ export function setFocusedElement(focusedElementTemplatePath: ScenePath | null):
   return {
     action: 'SET_FOCUSED_ELEMENT',
     focusedElementPath: focusedElementTemplatePath,
+  }
+}
+
+export function scrollToElement(
+  focusedElementTemplatePath: TemplatePath,
+  keepScrollPositionIfVisible: boolean,
+): ScrollToElement {
+  return {
+    action: 'SCROLL_TO_ELEMENT',
+    target: focusedElementTemplatePath,
+    keepScrollPositionIfVisible: keepScrollPositionIfVisible,
   }
 }
 

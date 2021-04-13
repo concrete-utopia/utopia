@@ -169,6 +169,8 @@ import {
   Size,
   WindowPoint,
   canvasRectangle,
+  Rectangle,
+  rectangleIntersection,
 } from '../../../core/shared/math-utils'
 import {
   addFileToProjectContents,
@@ -356,6 +358,7 @@ import {
   SendCodeEditorInitialisation,
   SetFocusedElement,
   AddImports,
+  ScrollToElement,
   SetScrollAnimation,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
@@ -429,6 +432,9 @@ import {
   getHighlightBoundsForUids,
   getTemplatePathsInBounds,
   StoryboardFilePath,
+  modifyUnderlyingTarget,
+  BaseCanvasOffsetLeftPane,
+  BaseCanvasOffset,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -499,6 +505,8 @@ import {
   sendOpenFileMessage,
   sendSelectedElement,
 } from '../../../core/vscode/vscode-bridge'
+import Meta from 'antd/lib/card/Meta'
+import utils from '../../../utils/utils'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1948,41 +1956,49 @@ export const UPDATE_FNS = {
     )
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
-    const editorWithAddedImport = modifyOpenParseSuccess((success) => {
-      const updatedImports = mergeImports(success.imports, action.importsToAdd)
-      return {
-        ...success,
-        imports: updatedImports,
-      }
-    }, editor)
+    let newSelectedViews: TemplatePath[] = []
+    const withNewElement = modifyUnderlyingTarget(
+      action.parent,
+      forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
+      editor,
+      (element) => element,
+      (success) => {
+        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
+        const targetParent =
+          action.parent == null
+            ? // action.parent == null means Canvas, which means storyboard root element
+              getStoryboardTemplatePath(utopiaComponents)
+            : action.parent
 
-    const newSelectedViews: TemplatePath[] = []
+        if (targetParent == null || TP.isScenePath(targetParent)) {
+          // TODO Scene Implementation
+          return success
+        }
 
-    const withNewElement = modifyOpenJSXElements((elements) => {
-      const targetParent =
-        action.parent == null
-          ? // action.parent == null means Canvas, which means storyboard root element
-            getStoryboardTemplatePath(elements)
-          : action.parent
+        const withInsertedElement = insertElementAtPath(
+          targetParent,
+          action.jsxElement,
+          utopiaComponents,
+          null,
+        )
 
-      if (targetParent == null || TP.isScenePath(targetParent)) {
-        // TODO Scene Implementation
-        return elements
-      }
+        const uid = getUtopiaID(action.jsxElement)
+        const newPath = TP.appendToPath(targetParent, uid)
+        newSelectedViews.push(newPath)
 
-      const withInsertedElement = insertElementAtPath(
-        targetParent,
-        action.jsxElement,
-        elements,
-        null,
-      )
+        const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
+          success.topLevelElements,
+          withInsertedElement,
+        )
 
-      const uid = getUtopiaID(action.jsxElement)
-      const newPath = TP.appendToPath(targetParent, uid)
-      newSelectedViews.push(newPath)
-      return withInsertedElement
-    }, editorWithAddedImport)
-
+        const updatedImports = mergeImports(success.imports, action.importsToAdd)
+        return {
+          ...success,
+          topLevelElements: updatedTopLevelElements,
+          imports: updatedImports,
+        }
+      },
+    )
     return {
       ...withNewElement,
       selectedViews: filterMultiSelectScenes(newSelectedViews),
@@ -4201,6 +4217,54 @@ export const UPDATE_FNS = {
       },
     }
   },
+  SCROLL_TO_ELEMENT: (
+    action: ScrollToElement,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const targetElementCoords = MetadataUtils.getFrameInCanvasCoords(
+      action.target,
+      editor.jsxMetadata,
+    )
+    if (targetElementCoords != null) {
+      const isNavigatorOnTop = editor.navigator.position === 'right'
+      const containerRootDiv = document.getElementById('canvas-root')
+      if (action.keepScrollPositionIfVisible && containerRootDiv != null) {
+        const containerDivBoundingRect = containerRootDiv.getBoundingClientRect()
+        const navigatorOffset = isNavigatorOnTop ? LeftPaneDefaultWidth : 0
+        const containerRectangle = {
+          x: navigatorOffset - editor.canvas.realCanvasOffset.x,
+          y: -editor.canvas.realCanvasOffset.y,
+          width: containerDivBoundingRect.width,
+          height: containerDivBoundingRect.height,
+        } as CanvasRectangle
+        const isVisible = rectangleIntersection(containerRectangle, targetElementCoords)
+        // when the element is on screen no scrolling is needed
+        if (isVisible) {
+          return editor
+        }
+      }
+      const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+      const newCanvasOffset = Utils.pointDifference(targetElementCoords, baseCanvasOffset)
+
+      return UPDATE_FNS.SET_SCROLL_ANIMATION(
+        setScrollAnimation(true),
+        {
+          ...editor,
+          canvas: {
+            ...editor.canvas,
+            realCanvasOffset: newCanvasOffset,
+            roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+          },
+        },
+        dispatch,
+      )
+    } else {
+      return {
+        ...editor,
+      }
+    }
+  },
   SET_SCROLL_ANIMATION: (
     action: SetScrollAnimation,
     editor: EditorModel,
@@ -4214,7 +4278,7 @@ export const UPDATE_FNS = {
         clearTimeout(canvasScrollAnimationTimer)
         canvasScrollAnimationTimer = undefined
         dispatch([setScrollAnimation(false)], 'everyone')
-      }, 700)
+      }, 500)
     }
     return {
       ...editor,

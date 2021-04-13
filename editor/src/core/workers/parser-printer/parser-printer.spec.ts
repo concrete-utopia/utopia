@@ -78,7 +78,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export var whatever = (props) => <View data-uid='aaa'>
@@ -136,7 +137,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export var whatever = () => <View data-uid='aaa'>
@@ -189,7 +191,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export function whatever(props) {
@@ -251,7 +254,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export function whatever() {
@@ -308,7 +312,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export default function whatever(props) {
@@ -370,7 +375,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export default function whatever() {
@@ -427,7 +433,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import cake from 'cake'
 import './style.css'
@@ -487,7 +494,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import cake, { cake2 } from 'cake'
 export var whatever = (props) => <View data-uid='aaa'>
@@ -559,7 +567,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake as cake2 } from 'cake'
 export var whatever = (props) => <View data-uid='aaa'>
@@ -623,7 +632,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export var whatever = (props) => <View data-uid='aaa'>
@@ -697,7 +707,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export var whatever = (props) => <View data-uid='aaa'>
@@ -764,7 +775,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 function getSizing(n) {
@@ -901,7 +913,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export default function getSizing(n) {
@@ -984,7 +997,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export function getSizing(n) {
@@ -1083,7 +1097,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export default (n) => {
@@ -1166,7 +1181,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 var spacing = 20
@@ -1751,7 +1767,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 var count = 10
@@ -1829,7 +1846,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 var use20 = true
@@ -1908,7 +1926,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 var mySet = new Set()
 export var whatever = (props) => <View data-uid='aaa'>
@@ -1967,7 +1986,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 var spacing = 20
@@ -2046,7 +2066,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 var MyComp = props => {
   return React.createElement(
@@ -2145,7 +2166,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 var MyComp = (props) => {
   return (
@@ -2283,7 +2305,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var Whatever = (props) => <View>
   <MyComp layout={{left: 100}} />
@@ -2340,7 +2363,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export var whatever = (props) => <View data-uid='aaa'>
@@ -2407,7 +2431,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 import { cake } from 'cake'
 export var whatever = <View data-uid='aaa'>
@@ -2460,7 +2485,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var App = (props) => <View data-uid='bbb'>
   {}
@@ -2507,7 +2533,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 const a = "cake"
 export var App = (props) => <View data-uid='bbb'>
@@ -2739,7 +2766,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 function cakeFn(n) {
   return n
@@ -2771,6 +2799,7 @@ import {
   Storyboard,
   Text,
   View,
+  Scene
 } from 'utopia-api'
 
 export var whatever = props => {
@@ -3011,7 +3040,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var whatever = props => {
   function test(n) {
@@ -3206,7 +3236,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var App = props => {
   return (
@@ -3277,7 +3308,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var App = props => {
   return (
@@ -3322,7 +3354,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var App = props => {
   return (
@@ -3467,7 +3500,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var App = props => {
   const a = 20;
@@ -3640,7 +3674,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var App = props => {
   return (
@@ -3687,7 +3722,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var whatever = props => {
   return <View data-uid="aaa" booleanProperty />;
@@ -3734,7 +3770,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 export var whatever = props => {
   return <View data-uid="aaa" booleanProperty={false} />;
@@ -4261,7 +4298,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from "utopia-api";
 
 console.log('hello!') // line 12 char 9
@@ -4306,7 +4344,7 @@ export var App = props => {
 
     const position = consumer.getOriginalPosition(transpiledLine, transpiledCharacter)
 
-    expect(position).toEqual(expect.objectContaining({ line: 12, column: 9 }))
+    expect(position).toEqual(expect.objectContaining({ line: 13, column: 9 }))
   })
 
   it('maps an arbitraryJSBlock inside a utopiaJSXComponent', () => {
@@ -4332,7 +4370,7 @@ export var App = props => {
 
     const position = consumer.getOriginalPosition(transpiledLine, transpiledCharacter)
 
-    expect(position).toEqual(expect.objectContaining({ line: 16, column: 10 }))
+    expect(position).toEqual(expect.objectContaining({ line: 17, column: 10 }))
   })
 
   it('maps a jsxAttributeOtherJavaScript correctly', () => {
@@ -4365,7 +4403,7 @@ export var App = props => {
 
     const position = consumer.getOriginalPosition(transpiledLine, transpiledCharacter)
 
-    expect(position).toEqual(expect.objectContaining({ line: 28, column: 26 }))
+    expect(position).toEqual(expect.objectContaining({ line: 29, column: 26 }))
   })
 })
 
@@ -4380,7 +4418,8 @@ describe('getHighlightBounds', () => {
       Image,
       Rectangle,
       Text,
-      View
+      View,
+      Scene
     } from "utopia-api";
     
     console.log('hello!') // line 18 char 9
@@ -4420,7 +4459,8 @@ describe('lintAndParse', () => {
       Image,
       Rectangle,
       Text,
-      View
+      View,
+      Scene
     } from "utopia-api";
     
     export var App = props => {

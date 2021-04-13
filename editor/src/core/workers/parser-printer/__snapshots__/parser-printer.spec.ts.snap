@@ -102,7 +102,7 @@ function otherFn(n) {
       "sourcesContent": Array [
         "import { cake } from 'cake'
 import * as React from 'react'
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -202,6 +202,10 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
           "alias": "View",
           "name": "View",
         },
+        Object {
+          "alias": "Scene",
+          "name": "Scene",
+        },
       ],
       "importedWithName": null,
     },
@@ -247,9 +251,10 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "Storyboard",
         "Text",
         "View",
+        "Scene",
       ],
       "module": "utopia-api",
-      "rawCode": "import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'",
+      "rawCode": "import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'",
       "type": "IMPORT_STATEMENT",
     },
     Object {
@@ -285,7 +290,7 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
         "sourcesContent": Array [
           "import { cake } from 'cake'
 import * as React from 'react'
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -343,7 +348,7 @@ return { cakeFn: cakeFn };",
         "sourcesContent": Array [
           "import { cake } from 'cake'
 import * as React from 'react'
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -447,7 +452,7 @@ return { otherFn: otherFn };",
                     "sourcesContent": Array [
                       "import { cake } from 'cake'
 import * as React from 'react'
-import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View } from 'utopia-api'
+import { UtopiaUtils, Ellipse, Image, Rectangle, Storyboard, Text, View, Scene } from 'utopia-api'
 function cakeFn(n) {
   return n
 }
@@ -803,7 +808,7 @@ Object {
     "javascript": "const a = \\"cake\\"",
     "sourceMap": Object {
       "file": "code.tsx",
-      "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
+      "mappings": "AAWCA,IAAMC,CAACC,GAAGC,MAAVH",
       "names": Array [
         "const",
         "a",
@@ -822,7 +827,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from \\"utopia-api\\";
 const a = \\"cake\\"
 export var App = (props) => <View data-uid='bbb'>
@@ -848,9 +854,9 @@ return { a: a };",
   "highlightBounds": Object {
     "bbb": Object {
       "endCol": 7,
-      "endLine": 13,
+      "endLine": 14,
       "startCol": 28,
-      "startLine": 11,
+      "startLine": 12,
       "uid": "bbb",
     },
   },
@@ -891,6 +897,10 @@ return { a: a };",
           "alias": "View",
           "name": "View",
         },
+        Object {
+          "alias": "Scene",
+          "name": "Scene",
+        },
       ],
       "importedWithName": null,
     },
@@ -921,6 +931,7 @@ return { a: a };",
         "Storyboard",
         "Text",
         "View",
+        "Scene",
       ],
       "module": "utopia-api",
       "rawCode": "import {
@@ -930,7 +941,8 @@ return { a: a };",
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from \\"utopia-api\\";",
       "type": "IMPORT_STATEMENT",
     },
@@ -950,7 +962,7 @@ return { a: a };",
       "javascript": "const a = \\"cake\\"",
       "sourceMap": Object {
         "file": "code.tsx",
-        "mappings": "AAUCA,IAAMC,CAACC,GAAGC,MAAVH",
+        "mappings": "AAWCA,IAAMC,CAACC,GAAGC,MAAVH",
         "names": Array [
           "const",
           "a",
@@ -969,7 +981,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from \\"utopia-api\\";
 const a = \\"cake\\"
 export var App = (props) => <View data-uid='bbb'>
@@ -1032,7 +1045,8 @@ import {
   Rectangle,
   Storyboard,
   Text,
-  View
+  View,
+  Scene
 } from \\"utopia-api\\";
 const a = \\"cake\\"
 export var App = (props) => <View data-uid='bbb'>
@@ -1091,9 +1105,9 @@ exports[`getHighlightBounds gets some bounds 1`] = `
 Array [
   Object {
     "endCol": 15,
-    "endLine": 28,
+    "endLine": 29,
     "startCol": 8,
-    "startLine": 17,
+    "startLine": 18,
   },
 ]
 `;
@@ -1104,13 +1118,13 @@ Object {
   "errorMessage": null,
   "errorMessages": Array [
     Object {
-      "codeSnippet": "  15 |       return (
-  16 |         <View
-> 17 |           style={{ backgroundColor: \\"darkgrey\\", position: \\"absolute\\" }, ...hello}
+      "codeSnippet": "  16 |       return (
+  17 |         <View
+> 18 |           style={{ backgroundColor: \\"darkgrey\\", position: \\"absolute\\" }, ...hello}
      |                                                                         ^
-  18 |         >
-  19 |         </View>
-  20 |       )",
+  19 |         >
+  20 |         </View>
+  21 |       )",
       "endColumn": undefined,
       "endLine": undefined,
       "errorCode": null,
@@ -1120,7 +1134,7 @@ Object {
       "severity": "fatal",
       "source": "eslint",
       "startColumn": 73,
-      "startLine": 17,
+      "startLine": 18,
       "type": "fatal",
     },
   ],

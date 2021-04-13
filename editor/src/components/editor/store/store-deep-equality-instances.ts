@@ -94,7 +94,7 @@ import {
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
 import {
   TransientCanvasState,
-  TransientFileState,
+  TransientFilesState,
   transientCanvasState,
   DerivedState,
 } from './editor-state'
@@ -105,8 +105,8 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
     TemplatePathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
     TemplatePathArrayKeepDeepEquality,
-    (state) => state.fileState,
-    createCallFromIntrospectiveKeepDeep<TransientFileState | null>(),
+    (state) => state.filesState,
+    createCallFromIntrospectiveKeepDeep<TransientFilesState | null>(),
     transientCanvasState,
   )
 }

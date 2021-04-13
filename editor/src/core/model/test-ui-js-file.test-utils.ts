@@ -30,6 +30,7 @@ const sampleIncludedElementTypes: Array<string> = [
   'Storyboard',
   'Text',
   'View',
+  'Scene',
 ]
 
 export const onlyImportReact: Imports = {

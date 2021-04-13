@@ -142,6 +142,20 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
       const sv = data.selectedViews[0]
       requireDispatch(dispatch)([
         EditorActions.setFocusedElement(TP.scenePathForElementAtInstancePath(sv)),
+        EditorActions.scrollToElement(TP.scenePathForElementAtInstancePath(sv), true),
+      ])
+    }
+  },
+}
+
+export const scrollToElement: ContextMenuItem<CanvasData> = {
+  name: 'Scroll to',
+  enabled: true,
+  action: (data, dispatch?: EditorDispatch) => {
+    if (data.selectedViews.length > 0) {
+      const sv = data.selectedViews[0]
+      requireDispatch(dispatch)([
+        EditorActions.scrollToElement(TP.scenePathForElementAtInstancePath(sv), false),
       ])
     }
   },
