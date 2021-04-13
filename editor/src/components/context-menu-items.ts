@@ -137,7 +137,6 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
 export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   name: 'Set As Focused Element',
   enabled: (data) => {
-    console.log('Data', data)
     return true
   },
   action: (data, dispatch?: EditorDispatch) => {
