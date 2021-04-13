@@ -802,7 +802,6 @@ function walkElements(
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
     const paths = getPathsOnDomElement(element)
-    // const filteredValidPaths = filterValidFocusedPathsForGeneratedElement(uids, validPaths)
 
     const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
     const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
