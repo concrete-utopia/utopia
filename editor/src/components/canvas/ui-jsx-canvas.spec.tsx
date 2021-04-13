@@ -1118,13 +1118,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     expect(printedDom).toMatchInlineSnapshot(`
       "<div
         id=\\"canvas-container\\"
-        style=\\"
-          all: initial;
-          position: absolute;
-          zoom: 100%;
-          transform: translate3d(0px, 0px, 0);
-          transition: initial;
-        \\"
+        style=\\"all: initial; position: absolute;\\"
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
       >
         <div
@@ -1213,13 +1207,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     expect(printedDom).toMatchInlineSnapshot(`
       "<div
         id=\\"canvas-container\\"
-        style=\\"
-          all: initial;
-          position: absolute;
-          zoom: 100%;
-          transform: translate3d(0px, 0px, 0);
-          transition: initial;
-        \\"
+        style=\\"all: initial; position: absolute;\\"
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
       >
         <div
@@ -1281,13 +1269,7 @@ export var storyboard = (
     expect(printedDom).toMatchInlineSnapshot(`
       "<div
         id=\\"canvas-container\\"
-        style=\\"
-          all: initial;
-          position: absolute;
-          zoom: 100%;
-          transform: translate3d(0px, 0px, 0);
-          transition: initial;
-        \\"
+        style=\\"all: initial; position: absolute;\\"
         data-utopia-valid-paths=\\":storyboard :storyboard/scene\\"
       >
         <div
@@ -2028,13 +2010,7 @@ describe('UiJsxCanvas render multifile projects', () => {
     expect(printedDom).toMatchInlineSnapshot(`
       "<div
         id=\\"canvas-container\\"
-        style=\\"
-          all: initial;
-          position: absolute;
-          zoom: 100%;
-          transform: translate3d(0px, 0px, 0);
-          transition: initial;
-        \\"
+        style=\\"all: initial; position: absolute;\\"
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
       >
         <div
@@ -2107,13 +2083,7 @@ describe('UiJsxCanvas render multifile projects', () => {
     expect(printedDom).toMatchInlineSnapshot(`
       "<div
         id=\\"canvas-container\\"
-        style=\\"
-          all: initial;
-          position: absolute;
-          zoom: 100%;
-          transform: translate3d(0px, 0px, 0);
-          transition: initial;
-        \\"
+        style=\\"all: initial; position: absolute;\\"
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
       >
         <div

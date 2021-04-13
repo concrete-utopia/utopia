@@ -16,7 +16,7 @@ import { inspectorEdgePadding } from '../sections/style-section/background-subse
 import { InspectorModal } from '../widgets/inspector-modal'
 import { StringControl } from './string-control'
 import React = require('react')
-import { colorTheme, SimpleNumberInput, SimplePercentInput } from '../../../uuiui'
+import { colorTheme, SimpleNumberInput, SimplePercentInput, UtopiaStyles } from '../../../uuiui'
 
 export interface ColorPickerProps extends ColorPickerInnerProps {
   closePopup: () => void
@@ -47,13 +47,11 @@ export const ColorPicker: React.FunctionComponent<ColorPickerProps> = ({
         className='colorPicker-wrapper'
         style={{
           width: colorPickerWidth,
-          borderRadius: 4,
           position: 'absolute',
           overflow: 'hidden',
-          backgroundColor: colorTheme.inspectorBackground.value,
-          boxShadow: `0 3px 6px ${colorTheme.canvasBackground.shade(140).o(40).value}`,
           zIndex: 2,
           marginBottom: 32,
+          ...UtopiaStyles.popup,
         }}
       >
         <ColorPickerInner {...props} />

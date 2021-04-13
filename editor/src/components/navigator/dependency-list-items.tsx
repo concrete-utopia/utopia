@@ -1,13 +1,13 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
+import { FlexRow, UtopiaTheme } from '../../uuiui'
 import { PackageDetails } from './dependency-list'
-import { DependencyListInputField } from './dependency-list-input-field'
+import { DependencyListItemEditing, DependencySearchSelect } from './dependency-list-input-field'
 import { DependencyListItem } from './dependency-list-item'
 
 interface DependencyListItemsProps {
   packages: Array<PackageDetails>
-  openVersionInput: boolean
   editingLocked: boolean
   newlyLoadedItems: Array<string>
   dependencyBeingEdited: string | null
@@ -15,13 +15,11 @@ interface DependencyListItemsProps {
   updateDependencyToLatestVersion: (dependencyName: string) => void
   removeDependency: (key: string) => void
   addDependency: (packageName: string | null, packageVersion: string | null) => void
-  closeField: () => void
-  showInsertField: boolean
+  handleAbandonEdit: () => void
 }
 
 export const DependencyListItems: React.FunctionComponent<DependencyListItemsProps> = ({
   packages,
-  openVersionInput,
   editingLocked,
   newlyLoadedItems,
   dependencyBeingEdited,
@@ -29,23 +27,25 @@ export const DependencyListItems: React.FunctionComponent<DependencyListItemsPro
   updateDependencyToLatestVersion,
   removeDependency,
   addDependency,
-  closeField,
-  showInsertField,
+  handleAbandonEdit,
 }) => {
   return (
     <React.Fragment>
+      <FlexRow
+        style={{ height: UtopiaTheme.layout.rowHeight.smaller, paddingLeft: 8, paddingRight: 8 }}
+      >
+        <DependencySearchSelect addDependency={addDependency} />
+      </FlexRow>
       {[
         ...packages.map((packageDetails) => {
           const isNewlyLoaded = newlyLoadedItems.indexOf(packageDetails.name) >= 0
           return dependencyBeingEdited === packageDetails.name ? (
-            <DependencyListInputField
+            <DependencyListItemEditing
               key={packageDetails.name}
-              showVersionField={true}
               addDependency={addDependency}
-              closeField={closeField}
+              handleAbandonEdit={handleAbandonEdit}
               editedPackageName={packageDetails.name}
               editedPackageVersion={packageDetails.version}
-              openVersionInput={openVersionInput}
             />
           ) : (
             <DependencyListItem
@@ -59,16 +59,6 @@ export const DependencyListItems: React.FunctionComponent<DependencyListItemsPro
             />
           )
         }),
-        !showInsertField ? null : (
-          <DependencyListInputField
-            showVersionField={false}
-            addDependency={addDependency}
-            closeField={closeField}
-            editedPackageName={null}
-            editedPackageVersion={null}
-            openVersionInput={false}
-          />
-        ),
       ]}
     </React.Fragment>
   )
