@@ -564,15 +564,14 @@ class FileBrowserItemInner extends React.PureComponent<
     const indentation = this.state.pathParts.length + extraIndentationForExport - 1
 
     const getBackground = () => {
-      let resultingBackground = 'transparent'
       if (this.props.isSelected) {
-        resultingBackground = colorTheme.subtleBackground.value
+        return colorTheme.subtleBackground.value
       } else if (this.state.isHovered) {
-        resultingBackground = colorTheme.secondaryBackground.value
+        return colorTheme.secondaryBackground.value
       } else if (isCurrentDropTargetForAnyFiles) {
-        resultingBackground = colorTheme.brandNeonYellow.value
-      }
-      return resultingBackground
+        return colorTheme.brandNeonYellow.value
+      } 
+      return 'transparent'
     }
 
     const fileIconStyle = {
