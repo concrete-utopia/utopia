@@ -3,13 +3,7 @@
 exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a function 1`] = `
 "<div
   id=\\"canvas-container\\"
-  style=\\"
-    all: initial;
-    position: absolute;
-    zoom: 100%;
-    transform: translate3d(0px, 0px, 0);
-    transition: initial;
-  \\"
+  style=\\"all: initial; position: absolute;\\"
   data-utopia-valid-paths=\\":sb :sb/scene\\"
 >
   <div
