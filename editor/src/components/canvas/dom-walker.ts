@@ -47,11 +47,7 @@ import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
 import { useForceUpdate } from '../editor/hook-utils'
-import {
-  extractOriginalUidFromIndexedUid,
-  getPathsOnDomElement,
-  getUIDsOnDomELement,
-} from '../../core/shared/uid-utils'
+import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'

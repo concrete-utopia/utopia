@@ -14,7 +14,7 @@ import {
 } from '../../core/shared/math-utils'
 import { InstancePath, ScenePath, TemplatePath } from '../../core/shared/project-file-types'
 import * as TP from '../../core/shared/template-path'
-import { getPathsOnDomElement, getUIDsOnDomELement } from '../../core/shared/uid-utils'
+import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
 

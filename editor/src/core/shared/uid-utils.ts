@@ -255,11 +255,6 @@ export function appendToUidString(
   }
 }
 
-export function getUIDsOnDomELement(element: Element): Array<string> | null {
-  const uidsAttribute = getDOMAttribute(element, UTOPIA_UIDS_KEY)
-  return optionalMap(uidsFromString, uidsAttribute)
-}
-
 export function getPathsOnDomElement(element: Element): Array<InstancePath> {
   const pathsAttribute = getDOMAttribute(element, UTOPIA_PATHS_KEY)
   return (
