@@ -19,12 +19,14 @@ import {
   setJSXValueAtPath,
 } from './jsx-attributes'
 import * as PP from './property-path'
+import * as TP from './template-path'
 import { objectMap, objectValues } from './object-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { getDOMAttribute } from './dom-utils'
-import { UTOPIA_UIDS_KEY } from '../model/utopia-constants'
+import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../model/utopia-constants'
 import { optionalMap } from './optional-utils'
 import { addAllUniquely } from './array-utils'
+import { InstancePath } from './project-file-types'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
@@ -253,9 +255,13 @@ export function appendToUidString(
   }
 }
 
-export function getUIDsOnDomELement(element: Element): Array<string> | null {
-  const uidsAttribute = getDOMAttribute(element, UTOPIA_UIDS_KEY)
-  return optionalMap(uidsFromString, uidsAttribute)
+export function getPathsOnDomElement(element: Element): Array<InstancePath> {
+  const pathsAttribute = getDOMAttribute(element, UTOPIA_PATHS_KEY)
+  return (
+    optionalMap((pathsString: string) => {
+      return pathsString.split(' ').map(TP.fromString).filter(TP.isInstancePath)
+    }, pathsAttribute) ?? []
+  )
 }
 
 export function findElementWithUID(
