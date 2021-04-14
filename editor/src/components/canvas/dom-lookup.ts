@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { last, stripNulls } from '../../core/shared/array-utils'
+import { last, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
@@ -37,11 +37,13 @@ export function findFirstParentWithValidTemplatePath(
 ): TemplatePath | null {
   const dynamicTemplatePaths = getPathsOnDomElement(target)
   const validStaticTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
-  const validTemplatePaths =
+  const validStaticTemplatePaths =
     validDynamicTemplatePathsForLookup === 'no-filter'
       ? validStaticTemplatePathsForScene
       : R.intersection(
-          validDynamicTemplatePathsForLookup.map(TP.dynamicPathToStaticPath),
+          validDynamicTemplatePathsForLookup
+            .filter(TP.isInstancePath)
+            .map(TP.dynamicPathToStaticPathKeepSceneDynamic),
           validStaticTemplatePathsForScene,
         )
 
@@ -50,13 +52,13 @@ export function findFirstParentWithValidTemplatePath(
       const templatePathWithStaticElementPart = TP.dynamicPathToStaticPathKeepSceneDynamic(tp)
       return TP.pathsEqual(validPath, templatePathWithStaticElementPart)
     })
-  }, validTemplatePaths)
+  }, validStaticTemplatePaths)
 
   if (filteredValidPathsMappedToDynamic.length > 0) {
     return last(filteredValidPathsMappedToDynamic) ?? null
   } else {
     if (target.parentElement != null) {
-      return findFirstParentWithValidTemplatePath(validTemplatePaths, target.parentElement, debug)
+      return findFirstParentWithValidTemplatePath(validStaticTemplatePaths, target.parentElement)
     } else {
       return null
     }

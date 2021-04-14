@@ -151,7 +151,7 @@ export function getSelectableViews(
           children,
           unfurledComponents,
         } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-          TP.dynamicPathToStaticPath(ancestor),
+          ancestor,
           componentMetadata,
           focusedElementPath,
         )
