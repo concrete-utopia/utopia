@@ -58,6 +58,7 @@ import {
   isIntrinsicElement,
   jsxElementName,
   ElementInstanceMetadataMap,
+  isIntrinsicHTMLElement,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
@@ -88,6 +89,8 @@ import * as PP from '../shared/property-path'
 import * as TP from '../shared/template-path'
 import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
 import {
+  isImportedComponent,
+  isAnimatedElementAgainstImports,
   isGivenUtopiaAPIElement,
   isSceneAgainstImports,
   isUtopiaAPIComponent,
@@ -1549,6 +1552,33 @@ export const MetadataUtils = {
       return parentPath
     } else {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
+    }
+  },
+  isFocusableComponent(
+    path: TemplatePath,
+    components: UtopiaJSXComponent[],
+    metadata: ElementInstanceMetadataMap,
+    imports: Imports,
+  ): boolean {
+    const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
+    const element = MetadataUtils.findElementByTemplatePath(metadata, path)
+    if (element?.isEmotionOrStyledComponent) {
+      return false
+    }
+    const isAnimatedComponent =
+      elementName != null && isAnimatedElementAgainstImports(elementName, imports)
+    if (isAnimatedComponent) {
+      return false
+    }
+    const isImported = elementName != null && isImportedComponent(elementName, imports)
+    if (isImported) {
+      return false
+    }
+    const isComponent = elementName != null && !isIntrinsicHTMLElement(elementName)
+    if (isComponent) {
+      return true
+    } else {
+      return false
     }
   },
 }

@@ -77,7 +77,6 @@ import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
 import { UtopiaStyles } from '../uuiui'
-import { DeselectControl } from '../components/canvas/controls/deselect-control'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -768,7 +767,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
         },
       },
-      React.createElement(DeselectControl, {}),
       nodeConnectorsDiv,
       React.createElement(CanvasComponentEntry, {
         getPositionFromCoordinates: this.getPositionFromCoordinates,

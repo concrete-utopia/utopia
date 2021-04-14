@@ -1,11 +1,15 @@
 import * as R from 'ramda'
 import { TriggerEvent } from 'react-contexify'
+import { MetadataUtils } from '../core/model/element-metadata-utils'
+import { Either } from '../core/shared/either'
+import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
-import { InstancePath } from '../core/shared/project-file-types'
+import { InstancePath, NodeModules } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
 import * as TP from '../core/shared/template-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
+import { ProjectContentTreeRoot } from './assets'
 import { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
@@ -14,6 +18,10 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
+import {
+  getJSXComponentsAndImportsForPathInnerComponent,
+  TransientFilesState,
+} from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
   toggleBorder,
@@ -24,7 +32,7 @@ import {
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
-  enabled: boolean
+  enabled: boolean | ((data: T) => boolean)
   submenuName?: string | null
   shortcut?: string
   isSeparator?: boolean
@@ -43,6 +51,12 @@ export interface ContextMenuItem<T> {
 export interface CanvasData {
   canvasOffset: CanvasPoint
   selectedViews: Array<InstancePath>
+  jsxMetadata: ElementInstanceMetadataMap
+  currentFilePath: string | null
+  projectContents: ProjectContentTreeRoot
+  nodeModules: NodeModules
+  transientFilesState: TransientFilesState | null
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -135,9 +149,25 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
 }
 
 export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
-  name: 'Edit Component',
-  // todo only enable if thing is component
-  enabled: true,
+  name: 'Set As Focused Element',
+  enabled: (data) => {
+    if (data.currentFilePath == null) {
+      return false
+    } else {
+      return data.selectedViews.every((view) => {
+        const { components, imports } = getJSXComponentsAndImportsForPathInnerComponent(
+          view,
+          data.currentFilePath!,
+          data.projectContents,
+          data.nodeModules,
+          data.transientFilesState,
+          data.jsxMetadata,
+          data.resolve,
+        )
+        return MetadataUtils.isFocusableComponent(view, components, data.jsxMetadata, imports)
+      })
+    }
+  },
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]
