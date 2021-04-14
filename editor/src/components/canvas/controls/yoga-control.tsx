@@ -130,8 +130,7 @@ export class YogaControls extends React.Component<YogaControlsProps> {
         this.props.rootComponents,
         this.props.componentMetadata,
         this.props.imports,
-        createsYogaLayout,
-        true,
+        this.props.focusedElementPath,
       )
     }
 

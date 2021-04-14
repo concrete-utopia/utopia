@@ -32,8 +32,7 @@ export class RepositionableControl extends React.Component<ControlProps> {
         this.props.rootComponents,
         this.props.componentMetadata,
         this.props.imports,
-        createsYogaLayout,
-        anySelectedElementIsYogaLayouted,
+        this.props.focusedElementPath,
       )
 
       indicators.push(
