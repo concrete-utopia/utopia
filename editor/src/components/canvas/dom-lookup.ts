@@ -34,7 +34,7 @@ export function findParentSceneValidPaths(target: Element): Array<TemplatePath> 
 export function findFirstParentWithValidTemplatePath(
   validTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
   target: Element,
-): InstancePath | null {
+): TemplatePath | null {
   const templatePaths = getPathsOnDomElement(target)
   const validTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
   const validTemplatePaths =
@@ -42,8 +42,8 @@ export function findFirstParentWithValidTemplatePath(
       ? validTemplatePathsForScene
       : R.intersection(validTemplatePathsForLookup, validTemplatePathsForScene)
 
-  const filteredValidPaths = templatePaths.filter((tp) =>
-    validTemplatePaths.some((validPath) => TP.pathsEqual(validPath, tp)),
+  const filteredValidPaths = validTemplatePaths.filter((validPath) =>
+    templatePaths.some((tp) => TP.pathsEqual(validPath, tp)),
   )
 
   if (filteredValidPaths.length > 0) {
