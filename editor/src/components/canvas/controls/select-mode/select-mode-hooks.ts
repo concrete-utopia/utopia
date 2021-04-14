@@ -21,6 +21,7 @@ import {
   clearHighlightedViews,
   clearSelection,
   selectComponents,
+  setFocusedElement,
   setHighlightedView,
 } from '../../../editor/actions/action-creators'
 import {
@@ -503,7 +504,11 @@ export function useSelectModeSelectAndHover(
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               // then we set the selected views for the editor state, 1 frame later
-              dispatch([selectComponents(updatedSelection, event.shiftKey)])
+              if (updatedSelection.length === 0) {
+                dispatch([clearSelection(), setFocusedElement(null)])
+              } else {
+                dispatch([selectComponents(updatedSelection, event.shiftKey)])
+              }
             })
           })
         }
