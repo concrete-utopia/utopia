@@ -43,7 +43,10 @@ export function findFirstParentWithValidTemplatePath(
       : R.intersection(validTemplatePathsForLookup, validTemplatePathsForScene)
 
   const filteredValidPaths = validTemplatePaths.filter((validPath) =>
-    templatePaths.some((tp) => TP.pathsEqual(validPath, tp)),
+    templatePaths.some((tp) => {
+      const templatePathWithStaticElementPart = TP.dynamicPathToStaticPathKeepSceneDynamic(tp)
+      return TP.pathsEqual(validPath, templatePathWithStaticElementPart)
+    }),
   )
 
   if (filteredValidPaths.length > 0) {
