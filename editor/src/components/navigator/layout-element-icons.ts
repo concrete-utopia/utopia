@@ -12,10 +12,7 @@ import {
 } from '../../core/shared/element-template'
 import * as TP from '../../core/shared/template-path'
 import { Imports, TemplatePath } from '../../core/shared/project-file-types'
-import {
-  getOpenImportsFromState,
-  getOpenUtopiaJSXComponentsFromState,
-} from '../editor/store/editor-state'
+import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { isRight } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
@@ -30,7 +27,11 @@ export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
   return useEditorState(
     (store) => {
       const metadata = store.editor.jsxMetadata
-      const components = getOpenUtopiaJSXComponentsFromState(store.editor)
+      const { components } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+        path,
+        store.editor,
+        store.derived,
+      )
       return createLayoutOrElementIconResult(path, components, metadata)
     },
     'useLayoutOrElementIcon',
@@ -46,8 +47,11 @@ export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
 export function useComponentIcon(path: TemplatePath): IcnPropsBase | null {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
-    const components = getOpenUtopiaJSXComponentsFromState(store.editor)
-    const imports = getOpenImportsFromState(store.editor)
+    const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+      path,
+      store.editor,
+      store.derived,
+    )
     return createComponentIconProps(path, components, metadata, imports)
   }, 'useComponentIcon')
 }
@@ -237,7 +241,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isComponent = elementName != null && !isIntrinsicHTMLElement(elementName)
+  const isComponent = MetadataUtils.isFocusableComponent(path, components, metadata, imports)
   if (isComponent) {
     return {
       category: 'component',
