@@ -233,8 +233,9 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
   }
 }
 
-const TestSceneUID = 'scene-aaa'
-const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID]]
+export const TestSceneUID = 'scene-aaa'
+export const TestAppUID = 'app-entity'
+const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
 export const TestScenePath = scenePath(TestSceneElementPaths)
 export const TestStaticScenePath = testStaticScenePath(TestSceneElementPaths)
 
@@ -254,11 +255,13 @@ ${snippet}
       <Storyboard data-uid='${BakedInStoryboardUID}'>
         <Scene
           style={{ left: 0, top: 0, width: 400, height: 400 }}
-          component={App}
-          static
-          props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
           data-uid='${TestSceneUID}'
-        />
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
       </Storyboard>
     )
   }
