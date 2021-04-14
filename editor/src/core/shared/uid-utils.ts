@@ -168,7 +168,8 @@ export function fixUtopiaElement(
 
       const uidProp = getJSXAttribute(element.props, 'data-uid')
       if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDs.includes(uidProp.value)) {
-        const newUID = generateUID(uniqueIDs)
+        const seedUID = uidProp != null && isJSXAttributeValue(uidProp) ? uidProp.value : 'aaa'
+        const newUID = generateConsistentUID(new Set(uniqueIDs), seedUID)
         const fixedProps = setJSXValueAtPath(
           element.props,
           UtopiaIDPropertyPath,
