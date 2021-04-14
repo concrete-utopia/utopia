@@ -14,6 +14,7 @@ const base = {
   transparent: createUtopiColor('hsla(0,0%,0%,0)', 'transparent', 'transparent'),
   black: createUtopiColor('black', 'black', 'black'),
   darkgray: createUtopiColor('hsl(0, 0%, 50%)', 'darkgray', 'darkgray'),
+  darkorange: createUtopiColor('#D05300', 'Dark Orange (Non focusable)', 'darkorange'),
 }
 
 const lightBase = {
@@ -167,7 +168,14 @@ const light = {
   canvasSelectionAlternateOutlineYogaParent: base.neonpink,
   canvasSelectionAlternateOutlineYogaChild: base.neonpink.shade(80),
   canvasSelectionSecondaryOutline: base.almostBlack.o(50),
+  CanvasSelectionNotFocusable: base.darkgray,
   canvasDraggingPlaceholderYoga: base.neonpink.o(30),
+
+  canvasSelectionFocusable: lightBase.primary,
+  canvasSelectionIsolatedComponent: base.purple,
+  //Children of isolated component
+  canvasSelectionNotFocusableChild: base.darkorange,
+  canvasSelectionFocusableChild: base.orange,
 
   canvasLayoutForeground: base.neonpink,
   canvasLayoutFillSolid: base.neonpink,

@@ -1106,3 +1106,17 @@ export function outermostScenePathPart(path: TemplatePath): ScenePath {
     return asScenePath
   }
 }
+
+export function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
+  if (focusedElementPath == null || isScenePath(path)) {
+    return false
+  } else {
+    return (
+      scenePathUpToElementPath(
+        focusedElementPath,
+        elementPathForPath(path),
+        'dynamic-scene-path',
+      ) != null
+    )
+  }
+}
