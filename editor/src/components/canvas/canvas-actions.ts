@@ -39,6 +39,13 @@ const CanvasActions = {
       applyChanges: applyChanges,
     }
   },
+  updateControlColor: function (controlName: string, value: string): CanvasAction {
+    return {
+      action: 'UPDATE_CONTROL_COLOR',
+      controlName: controlName,
+      value: value,
+    }
+  },
 }
 
 export default CanvasActions

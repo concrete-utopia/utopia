@@ -977,6 +977,13 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       mountCount: currentEditor.canvas.mountCount + 1,
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
+      controlColors: {
+        default: currentEditor.canvas.controlColors.default,
+        focusable: currentEditor.canvas.controlColors.focusable,
+        isolated: currentEditor.canvas.controlColors.isolated,
+        childOfIsolated: currentEditor.canvas.controlColors.childOfIsolated,
+        childFocusable: currentEditor.canvas.controlColors.childFocusable,
+      },
     },
     inspector: {
       visible: currentEditor.inspector.visible,

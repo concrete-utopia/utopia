@@ -54,6 +54,7 @@ import {
 } from './select-mode/select-mode-hooks'
 import { NO_OP } from '../../../core/shared/utils'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { SelectionColorPicker } from './selection-color-picker'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -503,6 +504,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       {renderModeControlContainer()}
       {renderHighlightControls()}
       {textEditor}
+      <SelectionColorPicker />
     </div>
   )
 }

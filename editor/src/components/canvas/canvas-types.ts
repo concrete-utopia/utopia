@@ -570,6 +570,11 @@ type SetSelectionControlsVisibility = {
   action: 'SET_SELECTION_CONTROLS_VISIBILITY'
   selectionControlsVisible: boolean
 }
+type UpdateControlColor = {
+  action: 'UPDATE_CONTROL_COLOR'
+  controlName: string
+  value: string
+}
 
 type Zoom = {
   action: 'ZOOM'
@@ -589,6 +594,7 @@ export type CanvasAction =
   | Zoom
   | ZoomUI
   | SetSelectionControlsVisibility
+  | UpdateControlColor
 
 export type CanvasModel = {
   controls: Array<HigherOrderControl>

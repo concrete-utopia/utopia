@@ -144,6 +144,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ADD_MISSING_DIMENSIONS':
     case 'ADD_STORYBOARD_FILE':
     case 'UPDATE_CHILD_TEXT':
+    case 'UPDATE_CONTROL_COLOR':
       return false
     case 'SAVE_ASSET':
       return (

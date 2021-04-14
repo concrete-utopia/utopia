@@ -158,6 +158,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as TP from '../../../core/shared/template-path'
 import { getParseSuccessOrTransientForFilePath } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { importedFromWhere } from '../import-utils'
+import { colorTheme } from '../../../uuiui'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
@@ -300,6 +301,13 @@ export interface EditorState {
     mountCount: number
     openFile: DesignerFile | null
     scrollAnimation: boolean
+    controlColors: {
+      default: string
+      focusable: string
+      isolated: string
+      childOfIsolated: string
+      childFocusable: string
+    }
   }
   inspector: {
     visible: boolean
@@ -1234,6 +1242,13 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
         filename: StoryboardFilePath,
       },
       scrollAnimation: false,
+      controlColors: {
+        default: colorTheme.CanvasSelectionNotFocusable.value,
+        focusable: colorTheme.canvasSelectionIsolatedComponent.value,
+        isolated: colorTheme.canvasSelectionFocusable.value,
+        childOfIsolated: colorTheme.canvasSelectionNotFocusableChild.value,
+        childFocusable: colorTheme.canvasSelectionFocusableChild.value,
+      },
     },
     inspector: {
       visible: true,
@@ -1487,6 +1502,13 @@ export function editorModelFromPersistentModel(
         filename: StoryboardFilePath,
       },
       scrollAnimation: false,
+      controlColors: {
+        default: colorTheme.CanvasSelectionNotFocusable.value,
+        focusable: colorTheme.canvasSelectionIsolatedComponent.value,
+        isolated: colorTheme.canvasSelectionFocusable.value,
+        childOfIsolated: colorTheme.canvasSelectionNotFocusableChild.value,
+        childFocusable: colorTheme.canvasSelectionFocusableChild.value,
+      },
     },
     inspector: {
       visible: true,

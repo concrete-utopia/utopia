@@ -329,6 +329,18 @@ export function runLocalCanvasAction(
         },
       }
     }
+    case 'UPDATE_CONTROL_COLOR': {
+      return {
+        ...model,
+        canvas: {
+          ...model.canvas,
+          controlColors: {
+            ...model.canvas.controlColors,
+            [action.controlName]: action.value,
+          },
+        },
+      }
+    }
     default:
       const _exhaustiveCheck: never = action
       return model
