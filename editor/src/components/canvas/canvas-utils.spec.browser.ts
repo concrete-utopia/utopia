@@ -2,7 +2,9 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestAppUID,
   TestScenePath,
+  TestSceneUID,
 } from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
@@ -1413,10 +1415,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
             <div
               style={{
                 backgroundColor: '#0091FFAA',
@@ -1547,10 +1549,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1590,11 +1592,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              static
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1603,12 +1604,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [
-        selectComponents(
-          [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['aaa', 'bbb'])],
-          false,
-        ),
-      ],
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -1700,11 +1696,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              static
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
             <div
               style={{
                 backgroundColor: '#0091FFAA',
@@ -1851,11 +1846,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='storyboard'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 100, height: 100 }}
-              component={App}
-              static
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1948,11 +1942,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='storyboard'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 100, height: 100 }}
-              component={App}
-              static
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
             <View
               style={{
                 backgroundColor: '#0091FFAA',

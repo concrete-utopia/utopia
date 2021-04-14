@@ -25,9 +25,10 @@ export var storyboard = (
   <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid='sb'>
     <Scene
       data-uid='scene'
-      component={App}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    />
+    >
+      <App data-uid='app' />
+    </Scene>
   </Storyboard>
 )
     `,
