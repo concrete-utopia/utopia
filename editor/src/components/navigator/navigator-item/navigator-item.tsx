@@ -183,19 +183,6 @@ const computeResultingStyle = (
   return result
 }
 
-// export function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
-//   if (focusedElementPath == null || TP.isScenePath(path)) {
-//     return false
-//   } else {
-//     return (
-//       TP.scenePathUpToElementPath(
-//         focusedElementPath,
-//         TP.elementPathForPath(path),
-//         'dynamic-scene-path',
-//       ) != null
-//     )
-//   }
-// }
 
 function useStyleFullyVisible(path: TemplatePath): boolean {
   return useEditorState((store) => {
