@@ -1552,10 +1552,7 @@ export const MetadataUtils = {
     imports: Imports,
   ): boolean {
     const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
-    const elementInstancePath = TP.isInstancePath(path)
-      ? path
-      : TP.instancePathForElementAtScenePath(path)
-    const element = MetadataUtils.getElementByInstancePathMaybe(metadata, elementInstancePath)
+    const element = MetadataUtils.findElementByTemplatePath(metadata, path)
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
