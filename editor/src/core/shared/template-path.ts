@@ -1038,6 +1038,13 @@ export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath 
   }
 }
 
+export function dynamicPathToStaticPathKeepSceneDynamic(path: InstancePath): StaticInstancePath {
+  return staticInstancePath(
+    path.scene as StaticScenePath, // TODO I'm cheating with the types, but this is how valid paths works now
+    dynamicElementPathToStaticElementPath(path.element),
+  )
+}
+
 export function scenePathUpToElementPath(
   scene: ScenePath,
   elementPath: ElementPath,

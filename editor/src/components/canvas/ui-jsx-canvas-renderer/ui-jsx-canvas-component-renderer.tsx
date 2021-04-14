@@ -61,7 +61,10 @@ export function createComponentRendererComponent(params: {
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
 
-    const scenePath: ScenePath | null = TP.isScenePath(scenePathAny) ? scenePathAny : null
+    if (!TP.isScenePath(scenePathAny)) {
+      throw new Error(`Utopia Error: ScenePath is not provided for ${params.topLevelElementName}`)
+    }
+    const scenePath: ScenePath = scenePathAny
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
@@ -104,10 +107,9 @@ export function createComponentRendererComponent(params: {
 
     let codeError: Error | null = null
 
-    const rootTemplatePath = optionalMap(
-      (p) => TP.instancePath(p, [getUtopiaID(utopiaJsxComponent.rootElement)]),
-      scenePath,
-    )
+    const rootTemplatePath = TP.instancePath(scenePath, [
+      getUtopiaID(utopiaJsxComponent.rootElement),
+    ])
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
@@ -142,10 +144,7 @@ export function createComponentRendererComponent(params: {
       if (isJSXFragment(element)) {
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
-        const ownTemplatePath = optionalMap(
-          (p) => TP.instancePath(p, [getUtopiaID(element)]),
-          scenePath,
-        )
+        const ownTemplatePath = TP.instancePath(scenePath, [getUtopiaID(element)])
 
         return renderCoreElement(
           element,

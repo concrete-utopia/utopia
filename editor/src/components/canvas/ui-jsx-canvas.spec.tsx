@@ -427,7 +427,7 @@ describe('UiJsxCanvas render', () => {
       import * as React from "react"
        class Thing extends React.Component {
          render() {
-           return <div data-uid="ccc">Thing</div>
+           return <div data-uid="ccc-unparsed-no-template-path">Thing</div>
          }
        }
        export var App = (props) => {
@@ -1056,7 +1056,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       import { View, jsx, Storyboard, Scene } from 'utopia-api'
       class Thing extends React.Component {
         render() {
-          return <div data-uid="ccc">Thing</div>
+          return <div data-uid="ccc-unparsed-no-template-path">Thing</div>
         }
       }
       export var App = (props) => {
@@ -1093,7 +1093,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       class Thing extends React.Component {
         render() {
           const { textToShow } = this.context;
-          return <div data-uid="ccc">{textToShow}</div>
+          return <div data-uid="ccc-unparsed-no-template-path">{textToShow}</div>
         }
       }
       Thing.contextType = MyContext;
@@ -1133,9 +1133,15 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             width: 400px;
             height: 400px;
           \\"
+          data-paths=\\":utopia-storyboard-uid\\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div data-uid=\\"ccc aaa scene-aaa\\">hello</div>
+          <div
+            data-uid=\\"ccc-unparsed-no-template-path aaa scene-aaa\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa\\"
+          >
+            hello
+          </div>
         </div>
       </div>
       "
@@ -1222,9 +1228,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             width: 400px;
             height: 400px;
           \\"
+          data-paths=\\":utopia-storyboard-uid\\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div id=\\"nasty-div\\" data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa scene-aaa\\">
+          <div
+            id=\\"nasty-div\\"
+            data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa scene-aaa\\"
+            data-paths=\\":150~~~2/2a7~~~1 :150~~~2 :2f5~~~1 utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa\\"
+          >
             huhahuha
           </div>
         </div>
@@ -1284,16 +1295,19 @@ export var storyboard = (
             width: 375px;
             top: 0;
           \\"
+          data-paths=\\":storyboard\\"
           data-uid=\\"storyboard\\"
         >
           <div
             style=\\"left: 0; top: 0; right: 0; bottom: 0; background-color: #ffffff;\\"
+            data-paths=\\"storyboard/scene:aaa :storyboard/scene\\"
             data-uid=\\"aaa scene\\"
           >
             <div
               class=\\"ant-picker\\"
               style=\\"width: 123px; height: 51px; left: 113px; top: 395px;\\"
               data-uid=\\"antd-date-picker\\"
+              data-paths=\\"storyboard/scene:aaa/antd-date-picker\\"
             >
               <div class=\\"ant-picker-input\\">
                 <input
@@ -1303,6 +1317,7 @@ export var storyboard = (
                   title=\\"\\"
                   size=\\"12\\"
                   data-uid=\\"antd-date-picker\\"
+                  data-paths=\\"storyboard/scene:aaa/antd-date-picker\\"
                   autocomplete=\\"off\\"
                 /><span class=\\"ant-picker-suffix\\"
                   ><span
@@ -1475,7 +1490,7 @@ export var A = (props) => {
   if (props.x === 0) {
     return <div>great</div>
   } else {
-    return <B data-uid={'bbb'} x={props.x - 1} />
+    return <B data-uid={'bbb-unparsed-no-template-path'} x={props.x - 1} />
   }
 }
 
@@ -1483,7 +1498,7 @@ export var B = (props) => {
   if (props.x === 0) {
     return <div>great</div>
   } else {
-    return <A data-uid={'aaa'} x={props.x - 1} />
+    return <A data-uid={'aaa-unparsed-no-template-path'} x={props.x - 1} />
   }
 }
 
@@ -2025,10 +2040,19 @@ describe('UiJsxCanvas render multifile projects', () => {
             width: 200px;
             top: 79px;
           \\"
+          data-paths=\\":utopia-storyboard-uid\\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div data-uid=\\"app-outer-div scene-0\\">
-            <div data-uid=\\"inner-div\\">hello</div>
+          <div
+            data-uid=\\"app-outer-div scene-0\\"
+            data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div :utopia-storyboard-uid/scene-0\\"
+          >
+            <div
+              data-uid=\\"inner-div\\"
+              data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div/inner-div\\"
+            >
+              hello
+            </div>
           </div>
         </div>
       </div>
@@ -2098,12 +2122,28 @@ describe('UiJsxCanvas render multifile projects', () => {
             width: 200px;
             top: 79px;
           \\"
+          data-paths=\\":utopia-storyboard-uid\\"
           data-uid=\\"utopia-storyboard-uid\\"
         >
-          <div data-uid=\\"app-outer-div scene-0\\">
-            <div data-uid=\\"card-outer-div card-instance\\">
-              <div data-uid=\\"card-header\\">Card</div>
-              <span data-uid=\\"card-content\\">hello</span>
+          <div
+            data-uid=\\"app-outer-div scene-0\\"
+            data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div :utopia-storyboard-uid/scene-0\\"
+          >
+            <div
+              data-uid=\\"card-outer-div card-instance\\"
+              data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div/card-instance:card-outer-div utopia-storyboard-uid/scene-0:app-outer-div/card-instance\\"
+            >
+              <div
+                data-uid=\\"card-header\\"
+                data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div/card-instance:card-outer-div/card-header\\"
+              >
+                Card
+              </div>
+              <span
+                data-uid=\\"card-content\\"
+                data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div/card-instance/card-content\\"
+                >hello</span
+              >
             </div>
           </div>
         </div>
