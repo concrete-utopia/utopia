@@ -1,7 +1,10 @@
 import { act, fireEvent } from '@testing-library/react'
+import { canvasPoint } from '../../../../core/shared/math-utils'
 import * as TP from '../../../../core/shared/template-path'
 import { setElectronWindow } from '../../../../core/shared/test-setup.test-utils'
 import { wait } from '../../../../utils/utils.test-utils'
+import { setFocusedElement } from '../../../editor/actions/action-creators'
+import CanvasActions from '../../canvas-actions'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 
@@ -355,6 +358,274 @@ describe('Select Mode Advanced Cases', () => {
       TP.fromString('sb/scene-2:Card-Root/d63/Card-Button-3'),
     ])
   })
+
+  it('Three double clicks to select Button on a Card Scene Root', async () => {
+    const renderResult = await renderTestEditorWithCode(TestProjectAlpineClimb)
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      TP.fromString('sb/scene-2:Card-Root/d63/Card-Button-3'),
+    ])
+  })
+
+  it('Keep double clicking to select Button inside a focused generated Card', async () => {
+    const renderResult = await renderTestEditorWithCode(TestProjectAlpineClimb)
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await act(async () => {
+      await renderResult.dispatch(
+        [
+          setFocusedElement(
+            TP.scenePath([
+              ['sb', 'scene-CardList'],
+              ['CardList-Root', 'CardList-Col', 'CardList-Card~~~1'],
+            ]),
+          ),
+          CanvasActions.scrollCanvas(canvasPoint({ x: 430, y: 390 })),
+        ],
+        true,
+      )
+    })
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      TP.fromString(
+        'sb/scene-CardList:CardList-Root/CardList-Col/CardList-Card~~~1:Card-Root/d63/Card-Button-3',
+      ),
+    ])
+  })
 })
 
 function waitForAnimationFrame(): Promise<void> {
@@ -432,7 +703,7 @@ export const CardList = (props) => {
       <h2 data-uid="CardList-h2">List of available street art</h2>
       <Col data-uid="CardList-Col">
         {cards.map((card) => (
-          <Card data-uid="CardList-Card" />
+          <Card data-uid="CardList-Card" testid={'generated-card-'+ card} />
         ))}
       </Col>
     </div>
