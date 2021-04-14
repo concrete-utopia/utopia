@@ -183,19 +183,19 @@ const computeResultingStyle = (
   return result
 }
 
-export function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
-  if (focusedElementPath == null || TP.isScenePath(path)) {
-    return false
-  } else {
-    return (
-      TP.scenePathUpToElementPath(
-        focusedElementPath,
-        TP.elementPathForPath(path),
-        'dynamic-scene-path',
-      ) != null
-    )
-  }
-}
+// export function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
+//   if (focusedElementPath == null || TP.isScenePath(path)) {
+//     return false
+//   } else {
+//     return (
+//       TP.scenePathUpToElementPath(
+//         focusedElementPath,
+//         TP.elementPathForPath(path),
+//         'dynamic-scene-path',
+//       ) != null
+//     )
+//   }
+// }
 
 function useStyleFullyVisible(path: TemplatePath): boolean {
   return useEditorState((store) => {
@@ -233,7 +233,7 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
     })
 
     let isInsideFocusedComponent =
-      isFocused(store.editor.focusedElementPath, path) || TP.isInsideFocusedComponent(path)
+      TP.isFocused(store.editor.focusedElementPath, path) || TP.isInsideFocusedComponent(path)
 
     return (
       isScenePath ||
@@ -266,7 +266,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
 
     const domElementRef = useScrollToThisIfSelected(selected)
     const isFocusedComponent = useEditorState(
-      (store) => isFocused(store.editor.focusedElementPath, templatePath),
+      (store) => TP.isFocused(store.editor.focusedElementPath, templatePath),
       'NavigatorItem isFocusedComponent',
     )
 

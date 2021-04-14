@@ -17,7 +17,6 @@ import { CanvasRectangle, offsetRect } from '../../../core/shared/math-utils'
 import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { colorTheme } from '../../../uuiui'
-import { isFocused } from '../../navigator/navigator-item/navigator-item'
 import { useEditorState } from '../../editor/store/store-hook'
 import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../../editor/store/editor-state'
 
@@ -34,7 +33,7 @@ export function getSelectionColor(
     } else {
       return colorTheme.canvasSelectionNotFocusableChild.value
     }
-  } else if (isFocused(focusedElementPath, path)) {
+  } else if (TP.isFocused(focusedElementPath, path)) {
     return colorTheme.canvasSelectionIsolatedComponent.value
   } else if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {
     return colorTheme.canvasSelectionFocusable.value
