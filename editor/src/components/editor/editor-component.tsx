@@ -210,19 +210,15 @@ export const EditorComponentInner = betterReactMemo(
         const draggedTypes = event.nativeEvent?.dataTransfer?.types
         const isDraggedFile =
           draggedTypes != null && draggedTypes.length === 1 && draggedTypes[0] === 'Files'
-        const currentMode = editorStoreRef.current.editor.mode
-        if (isDraggedFile && (isSelectMode(currentMode) || isLiveMode(currentMode))) {
+        if (isDraggedFile) {
           const actions = [
-            EditorActions.switchEditorMode(
-              EditorModes.insertMode(false, dragAndDropInsertionSubject(null)),
-            ),
             EditorActions.setPanelVisibility('leftmenu', true),
             EditorActions.setLeftMenuTab(LeftMenuTab.Contents),
           ]
           dispatch(actions, 'everyone')
         }
       },
-      [dispatch, editorStoreRef],
+      [dispatch],
     )
 
     React.useEffect(() => {
