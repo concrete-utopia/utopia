@@ -33,6 +33,7 @@ import * as TP from '../core/shared/template-path'
 import { TemplatePath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 import { FlexRow, Icn, IcnProps } from '../uuiui'
+import { getOpenUIJSFileKey } from './editor/store/editor-state'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -165,15 +166,27 @@ export const ElementContextMenu = betterReactMemo(
       return {
         canvasOffset: store.editor.canvas.roundedCanvasOffset,
         selectedViews: store.editor.selectedViews,
+        jsxMetadata: store.editor.jsxMetadata,
         editorDispatch: store.dispatch,
+        currentFilePath: getOpenUIJSFileKey(store.editor),
+        projectContents: store.editor.projectContents,
+        nodeModules: store.editor.nodeModules.files,
+        transientFilesState: store.derived.canvas.transientState.filesState,
+        resolve: store.editor.codeResultCache.resolve,
       }
     })
 
-    const getData = React.useCallback(() => {
+    const getData: () => CanvasData = React.useCallback(() => {
       const currentEditor = editorSliceRef.current
       return {
         canvasOffset: currentEditor.canvasOffset,
         selectedViews: filterScenes(currentEditor.selectedViews),
+        jsxMetadata: currentEditor.jsxMetadata,
+        currentFilePath: currentEditor.currentFilePath,
+        projectContents: currentEditor.projectContents,
+        nodeModules: currentEditor.nodeModules,
+        transientFilesState: currentEditor.transientFilesState,
+        resolve: currentEditor.resolve,
       }
     }, [editorSliceRef])
 
