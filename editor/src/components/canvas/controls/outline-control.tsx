@@ -57,65 +57,74 @@ function isDraggingToMove(
 }
 
 export const OutlineControls = (props: OutlineControlsProps) => {
-  const getDragStateFrame = (target: TemplatePath): CanvasRectangle | null => {
-    const { dragState } = props
-    if (isDraggingToMove(dragState, target)) {
-      const startingFrameAndTarget = dragState.originalFrames.find((frameAndTarget) =>
-        TP.pathsEqual(frameAndTarget.target, target),
-      )
-      if (
-        startingFrameAndTarget == null ||
-        startingFrameAndTarget.frame == null ||
-        dragState.drag == null
-      ) {
-        return null
-      } else {
-        return offsetRect(startingFrameAndTarget.frame, dragState.drag)
-      }
-    } else {
-      return null
-    }
-  }
-
-  const getTargetFrame = (target: TemplatePath): CanvasRectangle | null => {
-    const dragRect = getDragStateFrame(target)
-    return dragRect ?? MetadataUtils.getFrameInCanvasCoords(target, props.componentMetadata)
-  }
-
-  const getOverlayControls = (targets: TemplatePath[]): Array<JSX.Element> => {
-    if (
-      isFeatureEnabled('Dragging Shows Overlay') &&
-      props.dragState != null &&
-      props.dragState?.type === 'MOVE_DRAG_STATE' &&
-      props.dragState.drag != null
-    ) {
-      let result: Array<JSX.Element> = []
-      fastForEach(targets, (target) => {
-        const rect = MetadataUtils.getFrameInCanvasCoords(target, props.componentMetadata)
-        if (rect != null) {
-          result.push(
-            <div
-              key={`${TP.toComponentId(target)}-overlay`}
-              style={{
-                position: 'absolute',
-                boxSizing: 'border-box',
-                left: props.canvasOffset.x + rect.x,
-                top: props.canvasOffset.y + rect.y,
-                width: rect.width,
-                height: rect.height,
-                pointerEvents: 'none',
-                backgroundColor: '#FFADAD80',
-              }}
-            />,
-          )
+  const getDragStateFrame = React.useCallback(
+    (target: TemplatePath): CanvasRectangle | null => {
+      const { dragState } = props
+      if (isDraggingToMove(dragState, target)) {
+        const startingFrameAndTarget = dragState.originalFrames.find((frameAndTarget) =>
+          TP.pathsEqual(frameAndTarget.target, target),
+        )
+        if (
+          startingFrameAndTarget == null ||
+          startingFrameAndTarget.frame == null ||
+          dragState.drag == null
+        ) {
+          return null
+        } else {
+          return offsetRect(startingFrameAndTarget.frame, dragState.drag)
         }
-      })
+      } else {
+        return null
+      }
+    },
+    [props],
+  )
 
-      return result
-    } else {
-      return []
-    }
-  }
+  const getTargetFrame = React.useCallback(
+    (target: TemplatePath): CanvasRectangle | null => {
+      const dragRect = getDragStateFrame(target)
+      return dragRect ?? MetadataUtils.getFrameInCanvasCoords(target, props.componentMetadata)
+    },
+    [getDragStateFrame, props.componentMetadata],
+  )
+
+  const getOverlayControls = React.useCallback(
+    (targets: TemplatePath[]): Array<JSX.Element> => {
+      if (
+        isFeatureEnabled('Dragging Shows Overlay') &&
+        props.dragState != null &&
+        props.dragState?.type === 'MOVE_DRAG_STATE' &&
+        props.dragState.drag != null
+      ) {
+        let result: Array<JSX.Element> = []
+        fastForEach(targets, (target) => {
+          const rect = MetadataUtils.getFrameInCanvasCoords(target, props.componentMetadata)
+          if (rect != null) {
+            result.push(
+              <div
+                key={`${TP.toComponentId(target)}-overlay`}
+                style={{
+                  position: 'absolute',
+                  boxSizing: 'border-box',
+                  left: props.canvasOffset.x + rect.x,
+                  top: props.canvasOffset.y + rect.y,
+                  width: rect.width,
+                  height: rect.height,
+                  pointerEvents: 'none',
+                  backgroundColor: '#FFADAD80',
+                }}
+              />,
+            )
+          }
+        })
+
+        return result
+      } else {
+        return []
+      }
+    },
+    [props.canvasOffset.x, props.canvasOffset.y, props.componentMetadata, props.dragState],
+  )
 
   const anySelectedElementIsYogaLayouted = anyInstanceYogaLayouted(
     props.componentMetadata,
