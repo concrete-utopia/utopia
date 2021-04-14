@@ -387,7 +387,6 @@ import {
   saveUserConfiguration,
 } from '../server'
 import {
-  applyParseAndEditorChanges,
   applyUtopiaJSXComponentsChanges,
   areGeneratedElementsTargeted,
   CanvasBase64Blobs,
@@ -754,15 +753,13 @@ function switchAndUpdateFrames(
     ),
   }
 
-  let withChildrenUpdated = modifyOpenJSXElementsAndMetadata((components, metadata) => {
-    return maybeSwitchChildrenLayoutProps(
-      target,
-      editor.jsxMetadata,
-      metadata,
-      originalComponents,
-      components,
-    )
-  }, withUpdatedLayoutSystem)
+  let withChildrenUpdated = modifyOpenJSXElementsAndMetadata(
+    (components, metadata) => {
+      return maybeSwitchChildrenLayoutProps(target, editor.jsxMetadata, metadata, components)
+    },
+    target,
+    withUpdatedLayoutSystem,
+  )
 
   let framesAndTargets: Array<PinOrFlexFrameChange> = []
   if (layoutSystem !== 'flow') {
@@ -850,69 +847,22 @@ export function editorMoveTemplate(
   editor: EditorModel
   newPath: TemplatePath | null
 } {
-  function noChanges(): { editor: EditorModel; newPath: TemplatePath | null } {
-    return {
-      editor: editor,
-      newPath: null,
-    }
-  }
-
-  function getChanges(
-    editorForChanges: EditorState,
-    successForChanges: ParseSuccess,
-  ): ParseSuccessAndEditorChanges<TemplatePath | null> {
-    const componentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(successForChanges)
-    const moveResult = moveTemplate(
-      target,
-      originalPath,
-      newFrame,
-      indexPosition,
-      newParentPath,
-      parentFrame,
-      componentsIncludingScenes,
-      editorForChanges.jsxMetadata,
-      editorForChanges.selectedViews,
-      editorForChanges.highlightedViews,
-      newParentLayoutSystem,
-    )
-    return {
-      parseSuccessTransform: (success: ParseSuccess) => {
-        // Sync these back up.
-        const topLevelElements = applyUtopiaJSXComponentsChanges(
-          success.topLevelElements,
-          moveResult.utopiaComponentsIncludingScenes,
-        )
-
-        return {
-          ...success,
-          topLevelElements: topLevelElements,
-        }
-      },
-      editorStateTransform: (editorState: EditorState) => {
-        return {
-          ...editorState,
-          selectedViews: moveResult.selectedViews,
-          highlightedViews: moveResult.highlightedViews,
-        }
-      },
-      additionalData: moveResult.newPath,
-    }
-  }
-
-  const openUIFile = getOpenUIJSFile(editor)
-  if (openUIFile == null) {
-    return noChanges()
-  } else {
-    const editorAndAdditionalData = applyParseAndEditorChanges(getChanges, editor)
-
-    if (editorAndAdditionalData.additionalData == null) {
-      return noChanges()
-    } else {
-      return {
-        newPath: editorAndAdditionalData.additionalData,
-        editor: editorAndAdditionalData.editor,
-      }
-    }
+  const moveResult = moveTemplate(
+    target,
+    originalPath,
+    newFrame,
+    indexPosition,
+    newParentPath,
+    parentFrame,
+    editor,
+    editor.jsxMetadata,
+    editor.selectedViews,
+    editor.highlightedViews,
+    newParentLayoutSystem,
+  )
+  return {
+    newPath: moveResult.newPath,
+    editor: moveResult.updatedEditorState,
   }
 }
 
@@ -1116,11 +1066,7 @@ function duplicateMany(paths: TemplatePath[], editor: EditorModel): EditorModel 
   if (duplicateResult == null) {
     return editor
   } else {
-    return modifyOpenJSXElements((_) => duplicateResult.utopiaComponents, {
-      ...editor,
-      jsxMetadata: duplicateResult.metadata,
-      selectedViews: duplicateResult.selectedViews,
-    })
+    return duplicateResult.updatedEditorState
   }
 }
 
@@ -2477,7 +2423,6 @@ export const UPDATE_FNS = {
                 targetParent,
                 action.targetOriginalContextMetadata,
                 editor.jsxMetadata,
-                utopiaComponents,
                 components,
                 null,
                 null,
@@ -4463,14 +4408,7 @@ function setCanvasFramesInnerNew(
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
 ): EditorModel {
-  return modifyOpenScenesAndJSXElements((components) => {
-    return updateFramesOfScenesAndComponents(
-      components,
-      editor.jsxMetadata,
-      framesAndTargets,
-      optionalParentFrame,
-    )
-  }, editor)
+  return updateFramesOfScenesAndComponents(editor, framesAndTargets, optionalParentFrame)
 }
 
 export async function newProject(
