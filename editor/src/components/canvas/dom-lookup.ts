@@ -32,28 +32,31 @@ export function findParentSceneValidPaths(target: Element): Array<TemplatePath> 
 }
 
 export function findFirstParentWithValidTemplatePath(
-  validTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
+  validDynamicTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
   target: Element,
 ): TemplatePath | null {
-  const templatePaths = getPathsOnDomElement(target)
-  const validTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
+  const dynamicTemplatePaths = getPathsOnDomElement(target)
+  const validStaticTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
   const validTemplatePaths =
-    validTemplatePathsForLookup === 'no-filter'
-      ? validTemplatePathsForScene
-      : R.intersection(validTemplatePathsForLookup, validTemplatePathsForScene)
+    validDynamicTemplatePathsForLookup === 'no-filter'
+      ? validStaticTemplatePathsForScene
+      : R.intersection(
+          validDynamicTemplatePathsForLookup.map(TP.dynamicPathToStaticPath),
+          validStaticTemplatePathsForScene,
+        )
 
-  const filteredValidPaths = validTemplatePaths.filter((validPath) =>
-    templatePaths.some((tp) => {
+  const filteredValidPathsMappedToDynamic = mapDropNulls((validPath: TemplatePath) => {
+    return dynamicTemplatePaths.find((tp) => {
       const templatePathWithStaticElementPart = TP.dynamicPathToStaticPathKeepSceneDynamic(tp)
       return TP.pathsEqual(validPath, templatePathWithStaticElementPart)
-    }),
-  )
+    })
+  }, validTemplatePaths)
 
-  if (filteredValidPaths.length > 0) {
-    return last(filteredValidPaths) ?? null
+  if (filteredValidPathsMappedToDynamic.length > 0) {
+    return last(filteredValidPathsMappedToDynamic) ?? null
   } else {
     if (target.parentElement != null) {
-      return findFirstParentWithValidTemplatePath(validTemplatePaths, target.parentElement)
+      return findFirstParentWithValidTemplatePath(validTemplatePaths, target.parentElement, debug)
     } else {
       return null
     }
