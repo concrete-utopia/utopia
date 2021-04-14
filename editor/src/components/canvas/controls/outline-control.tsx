@@ -57,9 +57,9 @@ function isDraggingToMove(
 }
 
 export const OutlineControls = (props: OutlineControlsProps) => {
+  const { dragState } = props
   const getDragStateFrame = React.useCallback(
     (target: TemplatePath): CanvasRectangle | null => {
-      const { dragState } = props
       if (isDraggingToMove(dragState, target)) {
         const startingFrameAndTarget = dragState.originalFrames.find((frameAndTarget) =>
           TP.pathsEqual(frameAndTarget.target, target),
@@ -77,7 +77,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
         return null
       }
     },
-    [props],
+    [dragState],
   )
 
   const getTargetFrame = React.useCallback(
