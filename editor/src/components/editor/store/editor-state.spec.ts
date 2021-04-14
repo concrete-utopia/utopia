@@ -69,8 +69,13 @@ describe('modifyUnderlyingTarget', () => {
       import { Card } from '/src/card.js'
       export var App = (props) => {
         return (
-          <div>
-            <Card data-thing='a thing' />
+          <div
+            style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+          >
+            <Card
+              style={{ position: 'absolute', left: 0, top: 0, width: 200, height: 300 }}
+              data-thing='a thing'
+            />
           </div>
         )
       }
@@ -105,7 +110,7 @@ describe('modifyUnderlyingTarget', () => {
   })
   it('changes something in an underlying file', () => {
     const pathToElement = instancePathFromString(
-      'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
+      'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
     )
     const actualResult = modifyUnderlyingTarget(
       pathToElement,
@@ -127,9 +132,28 @@ describe('modifyUnderlyingTarget', () => {
       import { jsx, Rectangle } from 'utopia-api'
       export var Card = (props) => {
         return (
-          <div>
-            <div data-thing='a thing' />
-            <Rectangle />
+          <div style={{ ...props.style }}>
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 50,
+                height: 50,
+                backgroundColor: 'red',
+              }}
+              data-thing='a thing'
+            />
+            <Rectangle
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 200,
+                width: 50,
+                height: 50,
+                backgroundColor: 'blue',
+              }}
+            />
           </div>
         )
       }

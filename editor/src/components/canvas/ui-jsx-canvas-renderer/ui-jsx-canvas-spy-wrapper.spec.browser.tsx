@@ -998,7 +998,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
       [
         setFocusedElement(
           TP.scenePath([
-            ['storyboard-entity', 'scene-1-entity'],
+            ['storyboard-entity', 'scene-1-entity', 'app-entity'],
             ['app-outer-div', 'card-instance'],
           ]),
         ),
@@ -1030,46 +1030,60 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "rootElements": Array [],
         },
         ":storyboard-entity/scene-1-entity": Object {
-          "children": Array [],
+          "children": Array [
+            ":storyboard-entity/scene-1-entity/app-entity",
+          ],
           "name": "Scene",
+          "rootElements": Array [],
+        },
+        ":storyboard-entity/scene-1-entity/app-entity": Object {
+          "children": Array [],
+          "name": "App",
           "rootElements": Array [],
         },
         ":storyboard-entity/scene-2-entity": Object {
-          "children": Array [],
+          "children": Array [
+            ":storyboard-entity/scene-2-entity/same-file-app-entity",
+          ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div": Object {
+        ":storyboard-entity/scene-2-entity/same-file-app-entity": Object {
+          "children": Array [],
+          "name": "SameFileApp",
+          "rootElements": Array [],
+        },
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div": Object {
           "children": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div": Object {
           "children": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div",
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
           "children": Array [],
           "name": "Rectangle",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-2-entity:same-file-app-div": Object {
+        "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
@@ -1080,57 +1094,74 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
         ":storyboard-entity": Object {
-          "children": Array [],
+          "children": Array [
+            ":storyboard-entity/scene-1-entity",
+            ":storyboard-entity/scene-2-entity",
+          ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
         ":storyboard-entity/scene-1-entity": Object {
+          "children": Array [
+            ":storyboard-entity/scene-1-entity/app-entity",
+          ],
+          "name": "div",
+          "rootElements": Array [],
+        },
+        ":storyboard-entity/scene-1-entity/app-entity": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div",
           ],
         },
         ":storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            ":storyboard-entity/scene-2-entity/same-file-app-entity",
+          ],
+          "name": "div",
+          "rootElements": Array [],
+        },
+        ":storyboard-entity/scene-2-entity/same-file-app-entity": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [
-            "storyboard-entity/scene-2-entity:same-file-app-div",
+            "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div",
           ],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div": Object {
           "children": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div",
           ],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div": Object {
           "children": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div",
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-2-entity:same-file-app-div": Object {
+        "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
@@ -1149,52 +1180,66 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "rootElements": Array [],
         },
         ":storyboard-entity/scene-1-entity": Object {
-          "children": Array [],
+          "children": Array [
+            ":storyboard-entity/scene-1-entity/app-entity",
+          ],
           "name": "Scene",
+          "rootElements": Array [],
+        },
+        ":storyboard-entity/scene-1-entity/app-entity": Object {
+          "children": Array [],
+          "name": "App",
           "rootElements": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div",
           ],
         },
         ":storyboard-entity/scene-2-entity": Object {
-          "children": Array [],
+          "children": Array [
+            ":storyboard-entity/scene-2-entity/same-file-app-entity",
+          ],
           "name": "Scene",
+          "rootElements": Array [],
+        },
+        ":storyboard-entity/scene-2-entity/same-file-app-entity": Object {
+          "children": Array [],
+          "name": "SameFileApp",
           "rootElements": Array [
-            "storyboard-entity/scene-2-entity:same-file-app-div",
+            "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div",
           ],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div": Object {
           "children": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance": Object {
           "children": Array [],
           "name": "Card",
           "rootElements": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div",
           ],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div": Object {
           "children": Array [
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div",
-            "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div",
+            "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
+        "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
           "children": Array [],
           "name": "Rectangle",
           "rootElements": Array [],
         },
-        "storyboard-entity/scene-2-entity:same-file-app-div": Object {
+        "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [],
