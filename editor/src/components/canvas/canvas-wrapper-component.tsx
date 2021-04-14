@@ -113,7 +113,7 @@ const ErrorOverlayComponent = betterReactMemo(
 
     const onOpenFile = React.useCallback(
       (path: string) => {
-        dispatch([openCodeEditorFile(path), setFocus('uicodeeditor')])
+        dispatch([openCodeEditorFile(path, true), setFocus('codeEditor')])
       },
       [dispatch],
     )

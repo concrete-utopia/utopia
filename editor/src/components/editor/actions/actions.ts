@@ -2266,7 +2266,14 @@ export const UPDATE_FNS = {
             visible: action.visible,
           },
         }
-      case 'uicodeeditor':
+      case 'codeEditor':
+        return {
+          ...editor,
+          interfaceDesigner: {
+            ...editor.interfaceDesigner,
+            codePaneVisible: action.visible,
+          },
+        }
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
@@ -2379,7 +2386,14 @@ export const UPDATE_FNS = {
           },
         }
 
-      case 'uicodeeditor':
+      case 'codeEditor':
+        return {
+          ...editor,
+          interfaceDesigner: {
+            ...editor.interfaceDesigner,
+            codePaneVisible: !editor.interfaceDesigner.codePaneVisible,
+          },
+        }
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
@@ -3251,7 +3265,18 @@ export const UPDATE_FNS = {
   OPEN_CODE_EDITOR_FILE: (action: OpenCodeEditorFile, editor: EditorModel): EditorModel => {
     // Side effect.
     sendOpenFileMessage(action.filename)
-    return editor
+    if (action.forceShowCodeEditor) {
+      return {
+        ...editor,
+        interfaceDesigner: {
+          ...editor.interfaceDesigner,
+          codePaneVisible: true,
+          codePaneWidth: 500,
+        },
+      }
+    } else {
+      return editor
+    }
   },
   UPDATE_FILE: (action: UpdateFile, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     if (
@@ -3506,7 +3531,7 @@ export const UPDATE_FNS = {
         renamingTarget: newFileKey,
       },
     }
-    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey), updatedEditor)
+    return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openCodeEditorFile(newFileKey, false), updatedEditor)
   },
   DELETE_FILE: (
     action: DeleteFile,
@@ -4145,7 +4170,7 @@ export const UPDATE_FNS = {
     if (updatedEditor == null) {
       return editor
     } else {
-      const openTab = openCodeEditorFile(StoryboardFilePath)
+      const openTab = openCodeEditorFile(StoryboardFilePath, true)
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },

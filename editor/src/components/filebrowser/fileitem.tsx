@@ -483,7 +483,7 @@ class FileBrowserItemInner extends React.PureComponent<
       if (this.props.fileType !== 'ASSET_FILE' && this.props.fileType !== 'IMAGE_FILE') {
         this.props.setSelected(this.props)
         if (this.props.fileType != null && this.props.fileType !== 'DIRECTORY') {
-          this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path)], 'everyone')
+          this.props.dispatch([EditorActions.openCodeEditorFile(this.props.path, true)], 'everyone')
         }
       }
     }
@@ -596,6 +596,7 @@ class FileBrowserItemInner extends React.PureComponent<
           onDragEnter={this.onDragEnter}
           onDragOver={this.onItemDragOver}
           onDragLeave={this.onDragLeave}
+          onMouseDown={this.onItemMouseDown}
           key={this.props.key}
           className='FileItem'
           style={{
@@ -612,7 +613,6 @@ class FileBrowserItemInner extends React.PureComponent<
             borderRadius: 2,
             position: 'relative',
           }}
-          onMouseDown={this.onItemMouseDown}
         >
           <ExpandableIndicator
             key='expandable-indicator'

@@ -12,7 +12,7 @@ export type CenterPanel = 'canvas' | 'misccodeeditor'
 
 export type InspectorPanel = 'inspector'
 
-export type CodeEditorPanel = 'uicodeeditor'
+export type CodeEditorPanel = 'codeEditor'
 
 export type NavigatorPanel = 'navigatorPane' | 'navigator'
 
@@ -52,7 +52,7 @@ export function paneForPanel(panel: EditorPanel | null): EditorPane | null {
       return 'center'
     case 'inspector':
       return 'rightmenu'
-    case 'uicodeeditor':
+    case 'codeEditor':
       return 'center'
     case 'preview':
       return 'preview'
