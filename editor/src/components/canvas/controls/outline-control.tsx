@@ -18,7 +18,10 @@ import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { colorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
-import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../../editor/store/editor-state'
+import {
+  EditorState,
+  getJSXComponentsAndImportsForPathInnerComponentFromState,
+} from '../../editor/store/editor-state'
 
 export function getSelectionColor(
   path: TemplatePath,
@@ -26,19 +29,20 @@ export function getSelectionColor(
   metadata: ElementInstanceMetadataMap,
   imports: Imports,
   focusedElementPath: ScenePath | null,
+  controlColors?: EditorState['canvas']['controlColors'],
 ): string {
   if (TP.isInsideFocusedComponent(path)) {
     if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {
-      return colorTheme.canvasSelectionFocusableChild.value
+      return controlColors?.childFocusable ?? colorTheme.canvasSelectionFocusableChild.value
     } else {
-      return colorTheme.canvasSelectionNotFocusableChild.value
+      return controlColors?.childOfIsolated ?? colorTheme.canvasSelectionNotFocusableChild.value
     }
   } else if (TP.isFocused(focusedElementPath, path)) {
-    return colorTheme.canvasSelectionIsolatedComponent.value
+    return controlColors?.isolated ?? colorTheme.canvasSelectionIsolatedComponent.value
   } else if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {
-    return colorTheme.canvasSelectionFocusable.value
+    return controlColors?.focusable ?? colorTheme.canvasSelectionFocusable.value
   } else {
-    return colorTheme.CanvasSelectionNotFocusable.value
+    return controlColors?.default ?? colorTheme.CanvasSelectionNotFocusable.value
   }
 }
 
@@ -57,6 +61,15 @@ function isDraggingToMove(
 
 export const OutlineControls = (props: OutlineControlsProps) => {
   const { dragState } = props
+  const controlColors = useEditorState((store) => {
+    return {
+      default: store.editor.canvas.controlColors.default,
+      focusable: store.editor.canvas.controlColors.focusable,
+      isolated: store.editor.canvas.controlColors.isolated,
+      childOfIsolated: store.editor.canvas.controlColors.childOfIsolated,
+      childFocusable: store.editor.canvas.controlColors.childFocusable,
+    }
+  }, 'SelectionColorPicker colors')
   const getDragStateFrame = React.useCallback(
     (target: TemplatePath): CanvasRectangle | null => {
       if (isDraggingToMove(dragState, target)) {
@@ -147,6 +160,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
         store.editor.jsxMetadata,
         result.imports,
         store.editor.focusedElementPath,
+        controlColors,
       )
     })
   }, 'OutlineControls')
