@@ -183,7 +183,6 @@ const computeResultingStyle = (
   return result
 }
 
-
 function useStyleFullyVisible(path: TemplatePath): boolean {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
