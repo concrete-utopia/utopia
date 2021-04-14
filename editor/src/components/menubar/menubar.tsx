@@ -107,6 +107,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
     projectId,
     projectName,
     isPreviewPaneVisible,
+    isCanvasVisible,
+    isCodeEditorVisible,
   } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -116,6 +118,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
       projectId: store.editor.id,
       projectName: store.editor.projectName,
       isPreviewPaneVisible: store.editor.preview.visible,
+      isCanvasVisible: store.editor.canvas.visible,
+      isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
     }
   }, 'Menubar')
 
@@ -160,6 +164,16 @@ export const Menubar = betterReactMemo('Menubar', () => {
   const togglePreviewPaneVisible = React.useCallback(
     () => dispatch([setPanelVisibility('preview', !isPreviewPaneVisible)]),
     [dispatch, isPreviewPaneVisible],
+  )
+
+  const toggleCanvasVisible = React.useCallback(
+    () => dispatch([setPanelVisibility('canvas', !isCanvasVisible)]),
+    [dispatch, isCanvasVisible],
+  )
+
+  const toggleCodeEditorVisible = React.useCallback(
+    () => dispatch([setPanelVisibility('codeEditor', !isCodeEditorVisible)]),
+    [dispatch, isCodeEditorVisible],
   )
 
   const onReparseClick = useReParseOpenProjectFile()
@@ -270,6 +284,29 @@ export const Menubar = betterReactMemo('Menubar', () => {
             </span>
           </Tooltip>
         </a>
+
+        <Tooltip title={'Show or hide the code editor'} placement={'left'}>
+          <span>
+            <MenuTile
+              selected={isCodeEditorVisible}
+              menuExpanded={false}
+              icon={<LargerIcons.Code />}
+              onClick={toggleCodeEditorVisible}
+              size='large'
+            />
+          </span>
+        </Tooltip>
+        <Tooltip title={'Show or hide the canvas'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={isCanvasVisible}
+              menuExpanded={false}
+              icon={<LargerIcons.DesignTool />}
+              onClick={toggleCanvasVisible}
+              size='large'
+            />
+          </span>
+        </Tooltip>
         <Tooltip title={'Embedded Preview'} placement={'right'}>
           <span>
             <MenuTile
