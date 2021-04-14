@@ -141,6 +141,67 @@ const testComponentRoot1: ElementInstanceMetadata = {
   label: null,
 }
 
+const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  templatePath: TP.instancePath(
+    TP.scenePath([[BakedInStoryboardUID, TestScenePath, 'Scene-Child']]),
+    ['Scene-Child-Root', 'Child'],
+  ),
+  props: {},
+  element: right(jsxTestElement('View', [], [])),
+  children: [],
+  rootElements: [],
+  componentInstance: false,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
+}
+
+const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  templatePath: TP.instancePath(
+    TP.scenePath([[BakedInStoryboardUID, TestScenePath, 'Scene-Child']]),
+    ['Scene-Child-Root'],
+  ),
+  props: {},
+  element: right(jsxTestElement('View', [], [])),
+  children: [testComponentSceneChildElementRootChild.templatePath],
+  rootElements: [],
+  componentInstance: false,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
+}
+
+const testComponentSceneChildElement: ElementInstanceMetadata = {
+  globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
+  templatePath: TP.instancePath(TP.emptyScenePath, [
+    BakedInStoryboardUID,
+    TestScenePath,
+    'Scene-Child',
+  ]),
+  props: {},
+  element: right(jsxTestElement('View', [], [])),
+  children: [],
+  rootElements: [testComponentSceneChildElementRoot.templatePath],
+  componentInstance: false,
+  isEmotionOrStyledComponent: false,
+  specialSizeMeasurements: emptySpecialSizeMeasurements,
+  computedStyle: emptyComputedStyle,
+  attributeMetadatada: emptyAttributeMetadatada,
+  componentName: null,
+  label: null,
+}
+
 const testComponentSceneElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -152,7 +213,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
     },
   },
   element: left('Scene'),
-  children: [],
+  children: [testComponentSceneChildElement.templatePath],
   rootElements: [testComponentRoot1.templatePath],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -220,6 +281,13 @@ const testElementMetadataMap: ElementInstanceMetadataMap = {
   [TP.toString(testComponentMetadataChild3.templatePath)]: testComponentMetadataChild3,
   [TP.toString(testComponentMetadataGrandchild.templatePath)]: testComponentMetadataGrandchild,
   [TP.toString(testComponentRoot1.templatePath)]: testComponentRoot1,
+  [TP.toString(
+    testComponentSceneChildElementRootChild.templatePath,
+  )]: testComponentSceneChildElementRootChild,
+  [TP.toString(
+    testComponentSceneChildElementRoot.templatePath,
+  )]: testComponentSceneChildElementRoot,
+  [TP.toString(testComponentSceneChildElement.templatePath)]: testComponentSceneChildElement,
   [TP.toString(testComponentSceneElement.templatePath)]: testComponentSceneElement,
   [TP.toString(testStoryboardGrandChildElement.templatePath)]: testStoryboardGrandChildElement,
   [TP.toString(testStoryboardChildElement.templatePath)]: testStoryboardChildElement,
@@ -527,10 +595,76 @@ describe('getting the root paths', () => {
       testComponentMetadataChild2.templatePath,
       testComponentMetadataChild3.templatePath,
       testComponentMetadataGrandchild.templatePath,
+      testComponentSceneChildElement.templatePath,
+      testComponentSceneChildElementRoot.templatePath,
+      testComponentSceneChildElementRootChild.templatePath,
       testStoryboardChildElement.templatePath,
       testStoryboardGrandChildElement.templatePath,
     ]
     expect(actualResult).toEqual(expectedResult)
+  })
+})
+
+describe('createOrderedTemplatePathsFromElements returns all of the ordered navigator targets, visible and not', () => {
+  const scenePathForSceneElement = TP.scenePathForElementAtPath(
+    testComponentSceneElement.templatePath,
+  )
+
+  const expectedNavigatorTargets: Array<TemplatePath> = [
+    testStoryboardChildElement.templatePath,
+    testStoryboardGrandChildElement.templatePath,
+    scenePathForSceneElement,
+    testComponentRoot1.templatePath,
+    testComponentMetadataChild3.templatePath,
+    testComponentMetadataGrandchild.templatePath,
+    testComponentMetadataChild2.templatePath,
+    testComponentMetadataChild1.templatePath,
+    testComponentSceneChildElement.templatePath,
+    testComponentSceneChildElementRoot.templatePath,
+    testComponentSceneChildElementRootChild.templatePath,
+  ]
+
+  it('with no collapsed paths', () => {
+    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
+      testJsxMetadata,
+      [],
+      null,
+    )
+
+    expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
+    expect(actualResult.visibleNavigatorTargets).toEqual(expectedNavigatorTargets)
+  })
+
+  it('with the scene collapsed', () => {
+    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
+      testJsxMetadata,
+      [scenePathForSceneElement],
+      null,
+    )
+
+    expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
+    expect(actualResult.visibleNavigatorTargets).toEqual([
+      testStoryboardChildElement.templatePath,
+      testStoryboardGrandChildElement.templatePath,
+      scenePathForSceneElement,
+    ])
+  })
+
+  it('with collapsed roots', () => {
+    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
+      testJsxMetadata,
+      [testComponentRoot1.templatePath, testComponentSceneChildElement.templatePath],
+      null,
+    )
+
+    expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
+    expect(actualResult.visibleNavigatorTargets).toEqual([
+      testStoryboardChildElement.templatePath,
+      testStoryboardGrandChildElement.templatePath,
+      scenePathForSceneElement,
+      testComponentRoot1.templatePath,
+      testComponentSceneChildElement.templatePath,
+    ])
   })
 })
 

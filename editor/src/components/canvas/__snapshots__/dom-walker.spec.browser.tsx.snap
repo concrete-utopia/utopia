@@ -38,6 +38,7 @@ Object {
       "y": 0,
     },
     "props": Object {
+      "data-paths": ":utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -262,6 +263,7 @@ Object {
       "y": 0,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -377,6 +379,7 @@ Object {
     },
     "props": Object {
       "data-label": "Plane",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
     },
@@ -467,6 +470,7 @@ Object {
     },
     "props": Object {
       "data-label": "Plane",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
     },
@@ -557,6 +561,7 @@ Object {
     },
     "props": Object {
       "data-label": "Plane",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
     },
@@ -662,6 +667,7 @@ Object {
       "y": 0,
     },
     "props": Object {
+      "data-paths": ":utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -841,6 +847,7 @@ Object {
     },
     "props": Object {
       "data-label": "Hat",
+      "data-paths": "utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa",
       "data-uid": "aaa scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -971,6 +978,7 @@ Object {
       "y": 0,
     },
     "props": Object {
+      "data-paths": ":utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -1165,6 +1173,7 @@ Object {
       "y": 0,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:05c :utopia-storyboard-uid/scene-aaa",
       "data-uid": "05c scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -1297,6 +1306,7 @@ Object {
       "y": 98,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:05c/ef0",
       "data-uid": "ef0",
       "skipDeepFreeze": true,
       "style": Object {
@@ -1409,6 +1419,7 @@ Object {
       "y": 27,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:05c/ef0/488",
       "data-uid": "488",
       "skipDeepFreeze": true,
       "style": Object {
@@ -1542,6 +1553,7 @@ Object {
       "y": 0,
     },
     "props": Object {
+      "data-paths": ":utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -1736,6 +1748,7 @@ Object {
       "y": 0,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:05c :utopia-storyboard-uid/scene-aaa",
       "data-uid": "05c scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -1869,6 +1882,7 @@ Object {
       "y": 98,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:05c/ef0",
       "data-uid": "ef0",
       "skipDeepFreeze": true,
       "style": Object {
@@ -1981,6 +1995,7 @@ Object {
       "y": 27,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:05c/ef0/488",
       "data-uid": "488",
       "skipDeepFreeze": true,
       "style": Object {
@@ -2114,6 +2129,7 @@ Object {
       "y": 0,
     },
     "props": Object {
+      "data-paths": ":utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -2308,6 +2324,7 @@ Object {
       "y": 0,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:05c :utopia-storyboard-uid/scene-aaa",
       "data-uid": "05c scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
@@ -2440,6 +2457,7 @@ Object {
       "y": 98,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:05c/ef0",
       "data-uid": "ef0",
       "skipDeepFreeze": true,
       "style": Object {
@@ -2556,6 +2574,7 @@ Object {
       "y": 27,
     },
     "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa:05c/ef0/488",
       "data-uid": "488",
       "skipDeepFreeze": true,
       "style": Object {

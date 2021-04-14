@@ -432,7 +432,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       'InspectorEntryPoint selectedViews',
     )
     const rootViewsForSelectedElement: Array<TemplatePath> = useEditorState(
-      (store) => MetadataUtils.getRootViews(store.editor.jsxMetadata, selectedViews[0]),
+      (store) => MetadataUtils.getRootViewPaths(store.editor.jsxMetadata, selectedViews[0]),
       'InspectorEntryPoint',
       (oldTemplatePaths, newTemplatePaths) => {
         return arrayEquals(oldTemplatePaths, newTemplatePaths, TP.pathsEqual)

@@ -295,8 +295,19 @@ export function instancePathForElementAtScenePath(path: ScenePath): StaticInstan
   }
 }
 
+function instancePathForElementPaths(elementPaths: ElementPath[]): InstancePath {
+  const lastElementPath = last(elementPaths)
+  if (lastElementPath == null) {
+    return emptyInstancePath
+  } else {
+    const targetSceneElementPaths = dropLast(elementPaths)
+    const targetScenePath = scenePath(targetSceneElementPaths)
+    return instancePath(targetScenePath, lastElementPath)
+  }
+}
+
 export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
-  return isInstancePath(path) ? path : instancePathForElementAtScenePath(path)
+  return isInstancePath(path) ? path : instancePathForElementPaths(path.sceneElementPaths)
 }
 
 export function scenePathForElementAtInstancePath(path: InstancePath): ScenePath {
@@ -448,6 +459,13 @@ export function parentPath(path: TemplatePath): TemplatePath | null {
   }
 }
 
+export function isParentOf(maybeParent: TemplatePath, maybeChild: TemplatePath): boolean {
+  const maybeChildAsInstancePath = instancePathForElementAtPath(maybeChild)
+  const maybeParentAsInstancePath = instancePathForElementAtPath(maybeParent)
+  const actualParent = instancePathForElementAtPath(parentPath(maybeChildAsInstancePath))
+  return pathsEqual(actualParent, maybeParentAsInstancePath)
+}
+
 export function elementPathToUID(path: ElementPath): id {
   return forceNotNull('Attempting to get the UID of an empty ElementPath', last(path))
 }
@@ -517,7 +535,7 @@ export function elementsEqual(l: id | null, r: id | null): boolean {
 }
 
 export function scenePathsEqual(l: ScenePath, r: ScenePath): boolean {
-  return l === r || arrayEquals(l.sceneElementPaths, r.sceneElementPaths, elementPathsEqual)
+  return l === r || fullElementPathsEqual(l.sceneElementPaths, r.sceneElementPaths)
 }
 
 function elementPathsEqual(l: ElementPath, r: ElementPath): boolean {
@@ -526,6 +544,10 @@ function elementPathsEqual(l: ElementPath, r: ElementPath): boolean {
   } else {
     return arrayEquals(l, r, elementsEqual)
   }
+}
+
+function fullElementPathsEqual(l: ElementPath[], r: ElementPath[]): boolean {
+  return l === r || arrayEquals(l, r, elementPathsEqual)
 }
 
 function instancePathsEqual(l: InstancePath, r: InstancePath): boolean {
@@ -644,6 +666,38 @@ export function isAncestorOf(
       scenePathIsDescendent(path.scene, targetAncestor.scene) &&
       elementIsDescendent(path.element, targetAncestor.element)
     )
+  }
+}
+
+function fullElementPathForPath(path: TemplatePath): ElementPath[] {
+  if (isScenePath(path)) {
+    return path.sceneElementPaths
+  } else {
+    return [...path.scene.sceneElementPaths, path.element]
+  }
+}
+
+export function isDescendantOf(
+  target: TemplatePath,
+  maybeAncestor: TemplatePath,
+  includePathsEqual: boolean = true,
+): boolean {
+  const targetElementPath = fullElementPathForPath(target)
+  const maybeAncestorElementPath = fullElementPathForPath(maybeAncestor)
+  if (fullElementPathsEqual(targetElementPath, maybeAncestorElementPath)) {
+    return includePathsEqual
+  } else if (targetElementPath.length >= maybeAncestorElementPath.length) {
+    const partsToCheck = targetElementPath.slice(0, maybeAncestorElementPath.length)
+    return partsToCheck.every((elementPath, i) => {
+      // all parts up to the last must match, and the last must be a descendent
+      if (i < maybeAncestorElementPath.length - 1) {
+        return elementPathsEqual(elementPath, maybeAncestorElementPath[i])
+      } else {
+        return elementIsDescendent(elementPath, maybeAncestorElementPath[i])
+      }
+    })
+  } else {
+    return false
   }
 }
 
@@ -982,6 +1036,13 @@ export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath 
       dynamicElementPathToStaticElementPath(path.element),
     )
   }
+}
+
+export function dynamicPathToStaticPathKeepSceneDynamic(path: InstancePath): StaticInstancePath {
+  return staticInstancePath(
+    path.scene as StaticScenePath, // TODO I'm cheating with the types, but this is how valid paths works now
+    dynamicElementPathToStaticElementPath(path.element),
+  )
 }
 
 export function scenePathUpToElementPath(

@@ -88,6 +88,9 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-print
 import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
+
+applyUIDMonkeyPatch()
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -484,7 +487,6 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
   // eslint-disable-next-line react-hooks/rules-of-hooks
   let containerRef = props.walkDOM ? useDomWalker(props) : React.useRef<HTMLDivElement>(null)
 
-  const { scale, offset } = props
   return (
     <div
       id={CanvasContainerID}
@@ -493,10 +495,6 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
       style={{
         all: 'initial',
         position: 'absolute',
-        zoom: scale >= 1 ? `${scale * 100}%` : 1,
-        transform:
-          (scale < 1 ? `scale(${scale})` : '') + ` translate3d(${offset.x}px, ${offset.y}px, 0)`,
-        transition: props.scrollAnimation ? 'transform .2s ease-in-out' : 'initial',
       }}
       data-utopia-valid-paths={props.validRootPaths.map(TP.toString).join(' ')}
     >

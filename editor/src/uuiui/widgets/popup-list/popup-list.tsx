@@ -18,7 +18,7 @@ import { IndicatorProps } from 'react-select/src/components/indicators'
 import { MenuPortalProps } from 'react-select/src/components/Menu'
 import { styleFn } from 'react-select/src/styles'
 import { Icn, IcnProps, IcnSpacer } from '../../icn'
-import { colorTheme, UtopiaTheme } from '../../styles/theme'
+import { colorTheme, UtopiaStyles, UtopiaTheme } from '../../styles/theme'
 import { FlexRow } from '../layout/flex-row'
 import { isOptionType } from '../../../utils/utils'
 import {
@@ -46,11 +46,12 @@ interface PopupListProps {
 }
 
 const WindowEdgePadding = 4
-const OptionHeight = UtopiaTheme.layout.inputHeight.default
+const OptionHeight = UtopiaTheme.layout.inputHeight.default + 2
 const CheckboxPadding = 4
 const CheckboxWidth = 16
 const CheckboxInset = CheckboxPadding + CheckboxWidth
 const ValueContainerLeftPadding = 8
+const menuVerticalPadding = 4
 
 const getValueOfValueType = (value: ValueType<SelectOption>): SelectOption['value'] => {
   if (Array.isArray(value)) {
@@ -95,7 +96,7 @@ const Option = (props: OptionProps<SelectOption>) => {
       <FlexRow style={{ width: CheckboxWidth, padding: CheckboxPadding, flexShrink: 0 }}>
         {props.isSelected ? '✓' : ''}
       </FlexRow>
-      {props.data.icon == null ? <IcnSpacer /> : <Icn {...props.data.icon} />}
+      {props.data.icon == null ? null : <Icn {...props.data.icon} />}
       <span style={{ paddingLeft: 8 }}>{props.children}</span>
     </FlexRow>
   )
@@ -171,7 +172,8 @@ const getPortalPosition = (
     const croppedMenuHeight =
       (howManyElementsToShowAboveSelected + howManyElementsToShowBelowSelected + 1) * OptionHeight
     return {
-      menuTop: referenceTop - howManyElementsToShowAboveSelected * OptionHeight,
+      menuTop:
+        referenceTop - 2 * menuVerticalPadding - howManyElementsToShowAboveSelected * OptionHeight,
       menuHeight: croppedMenuHeight,
       scrollTop: numberCroppedTop * OptionHeight,
       croppedTop: numberCroppedTop > 0,
@@ -189,7 +191,7 @@ const getPortalPosition = (
         windowHeightAboveReference - numberCroppedTop * OptionHeight,
       )
       return {
-        menuTop: referenceTop - menuHeight,
+        menuTop: referenceTop - 2 * menuVerticalPadding - menuHeight,
         menuHeight: menuHeight,
         scrollTop: 0,
         croppedTop: numberCroppedTop > 0,
@@ -206,7 +208,7 @@ const getPortalPosition = (
         windowHeightBelowReference - numberCroppedBottom * OptionHeight,
       )
       return {
-        menuTop: referenceTop + OptionHeight,
+        menuTop: referenceTop - 2 * menuVerticalPadding + OptionHeight,
         menuHeight: menuHeight,
         scrollTop: 0,
         croppedTop: numberCroppedTop > 0,
@@ -320,18 +322,16 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
         onMouseUpCapture={onMouseUp}
         id='menuPortal'
         style={{
-          backgroundColor: colorTheme.neutralBackground.value,
           minWidth: 150,
           maxWidth: 250,
-          boxShadow: 'rgba(0, 0, 0, 0.1) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 4px 11px',
           zIndex: 999999,
           boxSizing: 'border-box',
-          borderRadius: UtopiaTheme.inputBorderRadius,
           position: 'absolute',
           height: popupHeight,
           top: popupTop,
           left: popupLeft - CheckboxInset + ValueContainerLeftPadding,
           overflow: 'hidden',
+          ...UtopiaStyles.popup,
         }}
       >
         <div
@@ -598,10 +598,10 @@ export const PopupList = betterReactMemo<PopupListProps>(
             boxSizing: 'border-box',
             height: '100%',
             width: '100%',
+            padding: `${menuVerticalPadding}px 8px`,
           }),
           menuList: (_, menuListProps) => {
             return {
-              backgroundColor: controlStyles.backgroundColor,
               padding: 0,
               boxSizing: 'border-box',
               label: 'menuList',
@@ -612,8 +612,9 @@ export const PopupList = betterReactMemo<PopupListProps>(
             paddingBottom: 0,
             paddingRight: '24px',
             paddingLeft: '4px',
-            fontWeight: 500,
+            fontWeight: 400,
             userSelect: 'none',
+            borderRadius: 2,
             fontSize: 11,
             backgroundColor: optionProps.isFocused
               ? colorTheme.contextMenuHighlightBackground.value

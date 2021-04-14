@@ -48,15 +48,27 @@ export const CanvasComponentEntry = betterReactMemo(
       return null
     } else {
       return (
-        <CanvasErrorBoundary
-          fileCode={canvasProps.uiFileCode}
-          filePath={canvasProps.uiFilePath}
-          reportError={onRuntimeError}
-          requireFn={canvasProps.requireFn}
-          key={`canvas-error-boundary-${canvasProps.mountCount}`}
+        <div
+          id='canvas-container-outer'
+          style={{
+            position: 'absolute',
+            zoom: canvasProps.scale >= 1 ? `${canvasProps.scale * 100}%` : 1,
+            transform:
+              (canvasProps.scale < 1 ? `scale(${canvasProps.scale})` : '') +
+              ` translate3d(${canvasProps.offset.x}px, ${canvasProps.offset.y}px, 0)`,
+            transition: canvasProps.scrollAnimation ? 'transform 0.3s ease-in-out' : 'initial',
+          }}
         >
-          <UiJsxCanvas {...canvasProps} clearErrors={clearRuntimeErrors} />
-        </CanvasErrorBoundary>
+          <CanvasErrorBoundary
+            fileCode={canvasProps.uiFileCode}
+            filePath={canvasProps.uiFilePath}
+            reportError={onRuntimeError}
+            requireFn={canvasProps.requireFn}
+            key={`canvas-error-boundary-${canvasProps.mountCount}`}
+          >
+            <UiJsxCanvas {...canvasProps} clearErrors={clearRuntimeErrors} />
+          </CanvasErrorBoundary>
+        </div>
       )
     }
   },

@@ -11,6 +11,7 @@ import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import * as fastDeepEquals from 'fast-deep-equal'
 import { TemplatePath } from '../core/shared/project-file-types'
+import { Icons } from '../uuiui'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -101,9 +102,14 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
           contextMenu.hideAll()
         }}
         hidden={item.isHidden ?? this.isHidden}
+        style={{ height: item.isSeparator ? 9 : 24, display: 'flex', alignItems: 'center' }}
       >
-        <span className='react-contexify-span'>{item.name}</span>
-        <span className='shortcut'>{item.shortcut}</span>
+        <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>
+          {item.name}
+        </span>
+        <span style={{ flexGrow: 0, flexShrink: 0, opacity: 0.6 }} className='shortcut'>
+          {item.shortcut}
+        </span>
       </Item>
     )
   }
@@ -116,7 +122,15 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
         {items.map((item: Submenu<T> | SimpleItem<T>, index: number) => {
           if (item.type === 'submenu') {
             return (
-              <SubmenuComponent key={`context-menu-${index}`} label={item.label}>
+              <SubmenuComponent
+                key={`context-menu-${index}`}
+                label={
+                  <span style={{ height: 24, display: 'flex', alignItems: 'center' }}>
+                    {item.label}
+                  </span>
+                }
+                arrow={<Icons.ExpansionArrowRight style={{ marginLeft: 8 }} />}
+              >
                 {item.items.map((submenuItem, submenuIndex) =>
                   this.renderItem(submenuItem, submenuIndex),
                 )}
