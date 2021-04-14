@@ -27,8 +27,6 @@ import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { InstancePath, ScenePath, TemplatePath } from '../shared/project-file-types'
 import {
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
   TestScenePath as TestScenePathForTestProject,
   TestStaticScenePath as TestStaticScenePathForTestProject,
 } from '../../components/canvas/ui-jsx.test-utils'

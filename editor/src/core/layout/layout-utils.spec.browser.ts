@@ -3,6 +3,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { pasteJSXElements, selectComponents } from '../../components/editor/actions/action-creators'
 import * as TP from '../shared/template-path'
@@ -48,12 +49,7 @@ describe('maybeSwitchLayoutProps', () => {
     )
 
     await renderResult.dispatch(
-      [
-        selectComponents(
-          [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['aaa', 'bbb'])],
-          false,
-        ),
-      ],
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
@@ -73,11 +69,9 @@ describe('maybeSwitchLayoutProps', () => {
       }),
       [],
     )
-    const elementPath = TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), [
-      NewUID,
-    ])
+    const elementPath = TP.instancePath(TestScenePath, [NewUID])
 
-    const sceneElementPath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'scene-aaa'])
+    const sceneElementPath = TP.instancePathForElementAtPath(TestScenePath)
 
     const metadata: ElementInstanceMetadataMap = {
       [TP.toString(sceneElementPath)]: {
@@ -143,7 +137,7 @@ describe('maybeSwitchLayoutProps', () => {
 
     const pasteElements = pasteJSXElements(
       [elementToPaste],
-      [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), [NewUID])],
+      [TP.instancePath(TestScenePath, [NewUID])],
       metadata,
     )
     await renderResult.dispatch([pasteElements], true)
