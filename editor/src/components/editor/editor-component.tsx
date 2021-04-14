@@ -383,7 +383,7 @@ const OpenFileEditor = betterReactMemo('OpenFileEditor', () => {
   if (isUiJsFileOpen) {
     return <DesignPanelRoot isUiJsFileOpen={isUiJsFileOpen} />
   } else {
-    return <Subdued>No file open</Subdued>
+    return null
   }
 })
 OpenFileEditor.displayName = 'OpenFileEditor'
