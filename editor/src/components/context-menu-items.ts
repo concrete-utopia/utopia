@@ -149,7 +149,7 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
 }
 
 export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
-  name: 'Set As Focused Element',
+  name: 'Edit Component',
   enabled: (data) => {
     if (data.currentFilePath == null) {
       return false
