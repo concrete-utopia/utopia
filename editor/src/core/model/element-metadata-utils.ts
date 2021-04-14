@@ -87,7 +87,12 @@ import {
 import * as PP from '../shared/property-path'
 import * as TP from '../shared/template-path'
 import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
-import { isGivenUtopiaAPIElement, isUtopiaAPIComponent } from './project-file-utils'
+import {
+  isGivenUtopiaAPIElement,
+  isSceneAgainstImports,
+  isUtopiaAPIComponent,
+  isViewAgainstImports,
+} from './project-file-utils'
 import { EmptyScenePathForStoryboard, ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
@@ -763,13 +768,22 @@ export const MetadataUtils = {
     }
   },
   targetElementSupportsChildren(imports: Imports, instance: ElementInstanceMetadata): boolean {
-    // Explicitly prevent components / elements that we *know* don't support children
-    if (this.isUtopiaAPIElementFromImports(imports, instance)) {
-      return this.isViewAgainstImports(imports, instance)
-    } else if (isLeft(instance.element)) {
-      return intrinsicHTMLElementNamesThatSupportChildren.includes(instance.element.value)
+    // FIXME Replace with a property controls check
+    const elementEither = instance.element
+
+    if (isLeft(elementEither)) {
+      return intrinsicHTMLElementNamesThatSupportChildren.includes(elementEither.value)
     } else {
-      return true
+      const element = elementEither.value
+      if (isJSXElement(element) && isUtopiaAPIComponent(element.name, imports)) {
+        // Explicitly prevent components / elements that we *know* don't support children
+        return (
+          isViewAgainstImports(element.name, imports) || isSceneAgainstImports(element, imports)
+        )
+      } else {
+        // We don't know at this stage
+        return true
+      }
     }
   },
   targetSupportsChildren(

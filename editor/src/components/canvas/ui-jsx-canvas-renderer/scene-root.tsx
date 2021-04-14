@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { View } from 'utopia-api'
+import { Scene, SceneProps, View } from 'utopia-api'
 import { useContextSelector } from 'use-context-selector'
 import * as fastDeepEquals from 'fast-deep-equal'
 import { getUtopiaID, getValidTemplatePaths } from '../../../core/model/element-template-utils'
@@ -55,7 +55,7 @@ import {
 } from './ui-jsx-canvas-top-level-elements'
 import { ProjectContentTreeRoot } from '../../assets'
 
-interface SceneProps {
+interface OldStyleSceneProps {
   component?: React.ComponentType | null
   props?: any
   style?: React.CSSProperties
@@ -66,7 +66,7 @@ interface SceneProps {
 function useRunSpy(
   templatePath: InstancePath,
   componentName: string | null,
-  props: SceneProps,
+  props: OldStyleSceneProps,
   children: Array<InstancePath>,
 ): void {
   const shouldIncludeCanvasRootInTheSpy = useContextSelector(
@@ -168,7 +168,7 @@ export const SceneRootRenderer = betterReactMemo(
       throw new Error(`Utopia Error: no parent template path provided for Scene (uid: ${sceneUID})`)
     }
 
-    const sceneProps: SceneProps = React.useMemo(
+    const sceneProps: OldStyleSceneProps = React.useMemo(
       () => jsxAttributesToProps(inScope, props.sceneElement.props, requireResult),
       [inScope, props.sceneElement.props, requireResult],
     )
@@ -284,15 +284,9 @@ export const SceneRootRenderer = betterReactMemo(
   true,
 )
 
-interface SceneComponentProps {
-  style?: React.CSSProperties
-  'data-label'?: string
-  'data-uid'?: string
-}
-
 export const SceneComponent = betterReactMemo(
   'Scene',
-  (props: React.PropsWithChildren<SceneComponentProps>) => {
+  (props: React.PropsWithChildren<SceneProps>) => {
     const canvasIsLive = useContextSelector(RerenderUtopiaContext, (c) => c.canvasIsLive)
 
     const { style, ...remainingProps } = props
@@ -307,9 +301,9 @@ export const SceneComponent = betterReactMemo(
     }
 
     return (
-      <View {...remainingProps} style={sceneStyle}>
+      <Scene {...remainingProps} style={sceneStyle}>
         {props.children}
-      </View>
+      </Scene>
     )
   },
 )

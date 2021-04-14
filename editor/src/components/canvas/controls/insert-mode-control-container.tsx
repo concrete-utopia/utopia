@@ -661,7 +661,8 @@ export class InsertModeControlContainer extends React.Component<
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
     const roots = mapDropNulls(
       (child) =>
-        isRight(child.element) && isSceneAgainstImports(child.element.value, this.props.imports)
+        MetadataUtils.elementIsOldStyleScene(child) ||
+        (isRight(child.element) && isSceneAgainstImports(child.element.value, this.props.imports))
           ? child.templatePath
           : null,
       storyboardChildren,
