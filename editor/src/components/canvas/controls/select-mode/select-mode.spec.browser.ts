@@ -619,6 +619,99 @@ describe('Select Mode Advanced Cases', () => {
       await dispatchDone
     })
     await waitForAnimationFrame()
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
+    await act(async () => {
+      const domFinished = renderResult.getDomReportDispatched()
+      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 1,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      fireEvent(
+        canvasControlsLayer,
+        new MouseEvent('mousedown', {
+          detail: 2,
+          bubbles: true,
+          cancelable: true,
+          metaKey: false,
+          clientX: cardSceneRootBounds.left + 130,
+          clientY: cardSceneRootBounds.top + 220,
+          buttons: 1,
+        }),
+      )
+      await domFinished
+      await dispatchDone
+    })
+    await waitForAnimationFrame()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       TP.fromString(
