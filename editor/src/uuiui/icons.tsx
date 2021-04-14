@@ -36,6 +36,7 @@ export const LargerIcons = {
   }),
   Code: makeIcon({ type: 'codymccodeface-larger', color: 'black', width: 18, height: 18 }),
   Node: makeIcon({ type: 'nodymcnodeface-larger', color: 'black', width: 18, height: 18 }),
+  DesignTool: makeIcon({ type: 'designtool-larger', color: 'black', width: 18, height: 18 }),
   PlayButton: makeIcon({ type: 'playbutton-larger', color: 'black', width: 18, height: 18 }),
   PlusButton: makeIcon({ type: 'plusbutton-larger', color: 'black', width: 18, height: 18 }),
   Hamburgermenu: makeIcon({ type: 'hamburgermenu-larger', color: 'black', width: 18, height: 18 }),
