@@ -20,6 +20,8 @@ import {
   SimpleFlexColumn,
   background,
   colorTheme,
+  Icons,
+  LargerIcons,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { TopMenu } from '../editor/top-menu'
@@ -66,7 +68,10 @@ const NothingOpenCard = betterReactMemo('NothingOpen', () => {
         border: '1px solid lightgrey',
       }}
     >
-      <img src={'/editor/icons/light/special/palm4.png'} alt='aesthetic palmtree' />
+      <LargerIcons.PixelatedPalm
+        color='blue'
+        style={{ width: 42, height: 42, imageRendering: 'pixelated' }}
+      />
       <div style={{ textAlign: 'center' }}>
         <h3 style={{ fontWeight: 600, fontSize: 11 }}>Get Started</h3>
         <p style={{ lineHeight: '1.7em', whiteSpace: 'normal' }}>

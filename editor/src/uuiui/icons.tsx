@@ -54,6 +54,13 @@ export const LargerIcons = {
   ExternalLink: makeIcon({ type: 'externallink', color: 'black', width: 18, height: 18 }),
   Divider: makeIcon({ type: 'divider', color: 'lightgray', width: 5, height: 18 }),
   PreviewPane: makeIcon({ type: 'previewpane', color: 'black', width: 22, height: 18 }),
+  PixelatedPalm: makeIcon({
+    category: 'special',
+    type: 'palm',
+    color: 'black',
+    width: 21,
+    height: 21,
+  }),
 }
 
 export const SmallerIcons = {
