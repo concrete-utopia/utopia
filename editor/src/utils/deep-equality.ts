@@ -494,7 +494,7 @@ export function combine11EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, X>(
   }
 }
 
-export function combine14EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, M, N, X>(
+export function combine13EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, M, X>(
   getAValue: (x: X) => A,
   callA: KeepDeepEqualityCall<A>,
   getBValue: (x: X) => B,
@@ -521,24 +521,7 @@ export function combine14EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, M, N,
   callL: KeepDeepEqualityCall<L>,
   getMValue: (x: X) => M,
   callM: KeepDeepEqualityCall<M>,
-  getNValue: (x: X) => N,
-  callN: KeepDeepEqualityCall<N>,
-  combine: (
-    a: A,
-    b: B,
-    c: C,
-    d: D,
-    e: E,
-    f: F,
-    g: G,
-    h: H,
-    i: I,
-    j: J,
-    k: K,
-    l: L,
-    m: M,
-    n: N,
-  ) => X,
+  combine: (a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M) => X,
 ): KeepDeepEqualityCall<X> {
   return (oldValue, newValue) => {
     const resultA = callA(getAValue(oldValue), getAValue(newValue))
@@ -554,7 +537,6 @@ export function combine14EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, M, N,
     const resultK = callK(getKValue(oldValue), getKValue(newValue))
     const resultL = callL(getLValue(oldValue), getLValue(newValue))
     const resultM = callM(getMValue(oldValue), getMValue(newValue))
-    const resultN = callN(getNValue(oldValue), getNValue(newValue))
     const areEqual =
       resultA.areEqual &&
       resultB.areEqual &&
@@ -568,8 +550,7 @@ export function combine14EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, M, N,
       resultJ.areEqual &&
       resultK.areEqual &&
       resultL.areEqual &&
-      resultM.areEqual &&
-      resultN.areEqual
+      resultM.areEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldValue, true)
     } else {
@@ -587,7 +568,6 @@ export function combine14EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, M, N,
         resultK.value,
         resultL.value,
         resultM.value,
-        resultN.value,
       )
       return keepDeepEqualityResult(value, false)
     }

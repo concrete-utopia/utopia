@@ -72,6 +72,8 @@ import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
   sampleImportsForTests,
+  TestScene0UID,
+  TestMainComponentUID,
 } from '../../../core/model/test-ui-js-file.test-utils'
 import {
   BakedInStoryboardUID,
@@ -94,15 +96,27 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
       jsxElement(
         'Scene',
         jsxAttributesFromMap({
-          component: jsxAttributeOtherJavaScript(
-            `MyView${sceneIndex + 1}`,
-            `return MyView${sceneIndex + 1}`,
-            [`MyView${sceneIndex + 1}`],
-            null,
-          ),
           'data-uid': jsxAttributeValue(`scene-${sceneIndex}`, emptyComments),
         }),
-        [],
+        [
+          jsxElement(
+            `MyView${sceneIndex + 1}`,
+            jsxAttributesFromMap({
+              'data-uid': jsxAttributeValue(`main-component-${sceneIndex}`, emptyComments),
+              style: jsxAttributeValue(
+                {
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 375,
+                  height: 812,
+                },
+                emptyComments,
+              ),
+            }),
+            [],
+          ),
+        ],
       ),
     )
   }
@@ -885,7 +899,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
-    componentName: null,
     label: null,
   }
 
@@ -910,7 +923,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
-    componentName: null,
     label: null,
   }
 

@@ -16,7 +16,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
   it('a simple TLWH pin change works', async () => {
     const testProject = editorModelFromPersistentModel(complexDefaultProject(), NO_OP)
     const targetScenePath = TP.scenePath([
-      ['storyboard-entity', 'scene-1-entity'],
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
     ])
     const targetPath = TP.instancePath(targetScenePath, ['card-outer-div', 'card-inner-rectangle'])
@@ -68,7 +68,7 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
   it('an element move works', async () => {
     const testProject = editorModelFromPersistentModel(complexDefaultProject(), NO_OP)
     const targetScenePath = TP.scenePath([
-      ['storyboard-entity', 'scene-1-entity'],
+      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
     ])
     const targetPath = TP.instancePath(targetScenePath, ['card-outer-div', 'card-inner-rectangle'])

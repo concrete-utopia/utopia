@@ -18,6 +18,7 @@ import {
   isIntrinsicElement,
   isIntrinsicHTMLElement,
   JSXArbitraryBlock,
+  getJSXAttribute,
 } from '../../../core/shared/element-template'
 import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
@@ -26,7 +27,7 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-pr
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import { SceneRootRenderer } from './scene-root'
+import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { Storyboard } from 'utopia-api'
@@ -136,9 +137,6 @@ export function renderCoreElement(
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
-  }
-  if (isJSXElement(element) && isSceneElement(element)) {
-    return <SceneRootRenderer sceneElement={element} filePath={filePath} validPaths={validPaths} />
   }
   switch (element.type) {
     case 'JSX_ELEMENT': {
@@ -289,12 +287,15 @@ function renderJSXElement(
   }
 
   const childrenElements = jsx.children.map(createChildrenElement)
-  const ElementInScope = getElementFromScope(jsx, inScope)
-  const ElementFromImport = getElementFromScope(jsx, requireResult)
-  const ElementFromScopeOrImport = Utils.defaultIfNull(ElementFromImport, ElementInScope)
-  const elementIsIntrinsic = ElementFromScopeOrImport == null && isIntrinsicElement(jsx.name)
+  const elementInScope = getElementFromScope(jsx, inScope)
+  const elementFromImport = getElementFromScope(jsx, requireResult)
+  const elementFromScopeOrImport = Utils.defaultIfNull(elementFromImport, elementInScope)
+  const elementIsScene = isSceneElement(jsx)
+  const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
+  const elementIsIntrinsic =
+    !elementIsScene && elementFromScopeOrImport == null && isIntrinsicElement(jsx.name)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
-  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : ElementFromScopeOrImport
+  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
   const scenePathForElement = optionalMap(TP.scenePathForElementAtInstancePath, templatePath)
   const elementPropsWithScenePath =
     isComponentRendererComponent(FinalElement) && scenePathForElement != null

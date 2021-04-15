@@ -32,13 +32,7 @@ interface ComputedLook {
 export const BasePaddingUnit = 20
 
 export function getElementPadding(templatePath: TemplatePath): number {
-  // if an element is the child of the Storyboard component, let's show it at the root level
-  const extraDepthRemoval = TP.pathsEqual(
-    TP.scenePathPartOfTemplatePath(templatePath),
-    EmptyScenePathForStoryboard,
-  )
-  const depthOffset = extraDepthRemoval ? 2 : 0
-  return (TP.navigatorDepth(templatePath) - 1 - depthOffset) * BasePaddingUnit
+  return TP.navigatorDepth(templatePath) * BasePaddingUnit
 }
 
 export interface NavigatorItemInnerProps {

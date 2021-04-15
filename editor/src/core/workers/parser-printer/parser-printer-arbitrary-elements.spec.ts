@@ -38,6 +38,7 @@ import {
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { emptyComments } from './parser-printer-comments'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
+import { TestAppUID, TestSceneUID } from '../../../components/canvas/ui-jsx.test-utils'
 
 describe('JSX parser', () => {
   it('should add in uid attributes for elements', () => {
@@ -56,11 +57,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ height: 200, left: 59, width: 200, top: 79 }}
-        component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid='scene-0'
-      />
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ height: '100%', width: '100%' }}
+          title='Hi there!'
+        />
+      </Scene>
     </Storyboard>
   )
 }`,
@@ -112,11 +116,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ height: 200, left: 59, width: 200, top: 79 }}
-        component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid='scene-0'
-      />
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ height: '100%', width: '100%' }}
+          title='Hi there!'
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -141,11 +148,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ height: 200, left: 59, width: 200, top: 79 }}
-        component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid='scene-0'
-      />
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ height: '100%', width: '100%' }}
+          title='Hi there!'
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -968,10 +978,10 @@ export var storyboard = (
   <Storyboard data-uid='bbb' layout={{ layoutSystem: 'pinSystem' }}>
     <Scene
       data-uid='ccc'
-      component={App}
-      props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    />
+    >
+      <App data-uid='app' />
+    </Scene>
   </Storyboard>
 )`
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
@@ -1026,11 +1036,9 @@ export var App = (props) => {
 }
 export var storyboard = (
   <Storyboard>
-    <Scene
-      component={App}
-      props={{}}
-      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    />
+    <Scene style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}>
+      <App />
+    </Scene>
   </Storyboard>
 )
 `

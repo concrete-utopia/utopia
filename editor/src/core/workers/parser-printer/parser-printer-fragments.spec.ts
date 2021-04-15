@@ -35,6 +35,7 @@ describe('JSX parser', () => {
         UTOPIA_JSX_COMPONENT - storyboard
           JSX_ELEMENT - Storyboard - eee
             JSX_ELEMENT - Scene - fff
+              JSX_ELEMENT - App - app
         UNPARSED_CODE"
       `)
 
@@ -73,10 +74,10 @@ describe('JSX parser', () => {
           <Storyboard data-uid='eee'>
             <Scene
               style={{ position: 'absolute', height: 812, left: 0, width: 375, top: 0 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
               data-uid='fff'
-            />
+            >
+              <App data-uid='app' style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }} />
+            </Scene>
           </Storyboard>
         )
         "

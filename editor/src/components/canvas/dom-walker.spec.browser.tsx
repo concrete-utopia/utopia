@@ -31,6 +31,7 @@ import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { NO_OP } from '../../core/shared/utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
+import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 
 function sanitizeElementMetadata(element: ElementInstanceMetadata): ElementInstanceMetadata {
   return {
@@ -133,12 +134,14 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}' 
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -178,12 +181,14 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}' 
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -223,12 +228,14 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}' 
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -254,12 +261,14 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}' 
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -289,12 +298,14 @@ describe('DOM Walker tests', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'relative', left: 0, top: 0, width: 375, height: 812 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}' 
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }

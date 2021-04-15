@@ -27,8 +27,6 @@ import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { InstancePath, ScenePath, TemplatePath } from '../shared/project-file-types'
 import {
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
   TestScenePath as TestScenePathForTestProject,
   TestStaticScenePath as TestStaticScenePathForTestProject,
 } from '../../components/canvas/ui-jsx.test-utils'
@@ -54,7 +52,6 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
@@ -73,7 +70,6 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -96,7 +92,6 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -116,7 +111,6 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -137,7 +131,6 @@ const testComponentRoot1: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -157,7 +150,6 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -177,7 +169,6 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -198,7 +189,6 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -220,7 +210,6 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: 'MyView',
   label: null,
 }
 
@@ -237,7 +226,6 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -254,7 +242,6 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -271,7 +258,6 @@ const testStoryboardElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -374,7 +360,6 @@ describe('targetElementSupportsChildren', () => {
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
-      componentName: null,
       label: null,
     }
   }
@@ -508,7 +493,6 @@ describe('getElementLabel', () => {
     emptyComputedStyle,
     emptyAttributeMetadatada,
     null,
-    null,
   )
   const divElement = jsxElement(
     'div',
@@ -530,7 +514,6 @@ describe('getElementLabel', () => {
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
     emptyAttributeMetadatada,
-    null,
     null,
   )
   const metadata: ElementInstanceMetadataMap = {
@@ -606,14 +589,10 @@ describe('getting the root paths', () => {
 })
 
 describe('createOrderedTemplatePathsFromElements returns all of the ordered navigator targets, visible and not', () => {
-  const scenePathForSceneElement = TP.scenePathForElementAtPath(
-    testComponentSceneElement.templatePath,
-  )
-
   const expectedNavigatorTargets: Array<TemplatePath> = [
     testStoryboardChildElement.templatePath,
     testStoryboardGrandChildElement.templatePath,
-    scenePathForSceneElement,
+    testComponentSceneElement.templatePath,
     testComponentRoot1.templatePath,
     testComponentMetadataChild3.templatePath,
     testComponentMetadataGrandchild.templatePath,
@@ -638,7 +617,7 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
   it('with the scene collapsed', () => {
     const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
       testJsxMetadata,
-      [scenePathForSceneElement],
+      [testComponentSceneElement.templatePath],
       null,
     )
 
@@ -646,7 +625,7 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
     expect(actualResult.visibleNavigatorTargets).toEqual([
       testStoryboardChildElement.templatePath,
       testStoryboardGrandChildElement.templatePath,
-      scenePathForSceneElement,
+      testComponentSceneElement.templatePath,
     ])
   })
 
@@ -661,7 +640,7 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
     expect(actualResult.visibleNavigatorTargets).toEqual([
       testStoryboardChildElement.templatePath,
       testStoryboardGrandChildElement.templatePath,
-      scenePathForSceneElement,
+      testComponentSceneElement.templatePath,
       testComponentRoot1.templatePath,
       testComponentSceneChildElement.templatePath,
     ])

@@ -23,16 +23,16 @@ export const SampleFileBuildResult = JSON.parse(`{
   },
   "/utopia/storyboard.js": {
     "errors": [],
-    "transpiledCode": "\\"use strict\\";\\n\\nObject.defineProperty(exports, \\"__esModule\\", {\\n  value: true\\n});\\nexports.storyboard = exports.App = void 0;\\n\\nvar utopia_api_1 = require(\\"utopia-api\\");\\n\\nexports.App = function (props) {\\n  return utopia_api_1.jsx(\\"div\\", {\\n    style: {\\n      width: '100%',\\n      height: '100%',\\n      backgroundColor: '#FFFFFF',\\n      position: 'relative'\\n    }\\n  });\\n};\\n\\nexports.storyboard = utopia_api_1.jsx(utopia_api_1.Storyboard, null, utopia_api_1.jsx(utopia_api_1.Scene, {\\n  component: exports.App,\\n  props: {},\\n  style: {\\n    position: 'absolute',\\n    left: 0,\\n    top: 0,\\n    width: 375,\\n    height: 812\\n  }\\n})); //# sourceMappingURL=storyboard.js.map",
+    "transpiledCode": "\\"use strict\\";\\n\\nObject.defineProperty(exports, \\"__esModule\\", {\\n  value: true\\n});\\nexports.storyboard = exports.App = void 0;\\n\\nvar utopia_api_1 = require(\\"utopia-api\\");\\n\\nexports.App = function (props) {\\n  return utopia_api_1.jsx(\\"div\\", {\\n    style: {\\n      width: '100%',\\n      height: '100%',\\n      backgroundColor: '#FFFFFF',\\n      position: 'relative'\\n    }\\n  });\\n};\\n\\nexports.storyboard = utopia_api_1.jsx(utopia_api_1.Storyboard, null, utopia_api_1.jsx(utopia_api_1.Scene, {\\n  style: {\\n    position: 'absolute',\\n    left: 0,\\n    top: 0,\\n    width: 375,\\n    height: 812\\n  }\\n}, utopia_api_1.jsx(exports.App, null))); //# sourceMappingURL=storyboard.js.map",
     "sourceMap": {
       "version": 3,
       "sources": [
         "../../utopia/storyboard.js"
       ],
       "names": [],
-      "mappings": ";;;;;;;AAEA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AACW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,YAAA,CAAA,GAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAE;AAAE,MAAA,KAAK,EAAE,MAAT;AAAiB,MAAA,MAAM,EAAE,MAAzB;AAAiC,MAAA,eAAe,EAAE,SAAlD;AAA6D,MAAA,QAAQ,EAAE;AAAvE;AADT,GAAA,CADF;AAKD,CANU;;AAOA,OAAA,CAAA,UAAA,GACT,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,UAAD,EAAW,IAAX,EACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,KAAD,EAAM;AACJ,EAAA,SAAS,EAAE,OAAA,CAAA,GADP;AAEJ,EAAA,KAAK,EAAE,EAFH;AAGJ,EAAA,KAAK,EAAE;AAAE,IAAA,QAAQ,EAAE,UAAZ;AAAwB,IAAA,IAAI,EAAE,CAA9B;AAAiC,IAAA,GAAG,EAAE,CAAtC;AAAyC,IAAA,KAAK,EAAE,GAAhD;AAAqD,IAAA,MAAM,EAAE;AAA7D;AAHH,CAAN,CADF,CADS,C",
+      "mappings": ";;;;;;;AAEA,IAAA,YAAA,GAAA,OAAA,CAAA,YAAA,CAAA;;AACW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,YAAA,CAAA,GAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAE;AAAE,MAAA,KAAK,EAAE,MAAT;AAAiB,MAAA,MAAM,EAAE,MAAzB;AAAiC,MAAA,eAAe,EAAE,SAAlD;AAA6D,MAAA,QAAQ,EAAE;AAAvE;AADT,GAAA,CADF;AAKD,CANU;;AAOA,OAAA,CAAA,UAAA,GACT,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,UAAD,EAAW,IAAX,EACE,YAAA,CAAA,GAAA,CAAC,YAAA,CAAA,KAAD,EAAM;AACJ,EAAA,KAAK,EAAE;AAAE,IAAA,QAAQ,EAAE,UAAZ;AAAwB,IAAA,IAAI,EAAE,CAA9B;AAAiC,IAAA,GAAG,EAAE,CAAtC;AAAyC,IAAA,KAAK,EAAE,GAAhD;AAAqD,IAAA,MAAM,EAAE;AAA7D;AADH,CAAN,EAGE,YAAA,CAAA,GAAA,CAAC,OAAA,CAAA,GAAD,EAAI,IAAJ,CAHF,CADF,CADS,C",
       "sourcesContent": [
-        "/** @jsx jsx */\\nimport * as React from 'react'\\nimport { Scene, Storyboard, jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <div\\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\\n    />\\n  )\\n}\\nexport var storyboard = (\\n  <Storyboard>\\n    <Scene\\n      component={App}\\n      props={{}}\\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\\n    />\\n  </Storyboard>\\n)\\n\\n"
+        "/** @jsx jsx */\\nimport * as React from 'react'\\nimport { Scene, Storyboard, jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <div\\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\\n    />\\n  )\\n}\\nexport var storyboard = (\\n  <Storyboard>\\n    <Scene\\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\\n    >\\n      <App />\\n    </Scene>\\n  </Storyboard>\\n)\\n\\n"
       ],
       "sourceRoot": "",
       "file": "storyboard.js"
@@ -48,7 +48,7 @@ export const SampleFileBundledExportsInfo: Array<ExportsInfo> = JSON.parse(`[
   },
   {
     "filename": "/utopia/storyboard.js",
-    "code": "/** @jsx jsx */\\nimport * as React from 'react'\\nimport { Scene, Storyboard, jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <div\\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\\n    />\\n  )\\n}\\nexport var storyboard = (\\n  <Storyboard>\\n    <Scene\\n      component={App}\\n      props={{}}\\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\\n    />\\n  </Storyboard>\\n)\\n\\n",
+    "code": "/** @jsx jsx */\\nimport * as React from 'react'\\nimport { Scene, Storyboard, jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <div\\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\\n    />\\n  )\\n}\\nexport var storyboard = (\\n  <Storyboard>\\n    <Scene\\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\\n    >\\n      <App />\\n    </Scene>\\n  </Storyboard>\\n)\\n\\n",
     "exportTypes": {
       "App": {
         "type": "(props: any) => Element",

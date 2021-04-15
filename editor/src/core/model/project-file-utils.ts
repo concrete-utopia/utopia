@@ -101,6 +101,10 @@ function isGivenUtopiaAPIElementFromName(
   }
 }
 
+export function isSceneAgainstImports(element: JSXElementChild, imports: Imports): boolean {
+  return isGivenUtopiaAPIElement(element, imports, 'Scene')
+}
+
 export function isUtopiaAPITextElement(element: JSXElementChild, imports: Imports): boolean {
   return isJSXElement(element) && isTextAgainstImports(element.name, imports)
 }

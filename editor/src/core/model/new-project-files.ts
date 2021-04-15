@@ -25,10 +25,10 @@ export var App = (props) => {
 export var storyboard = (
   <Storyboard>
     <Scene
-      component={App}
-      props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    />
+    >
+      <App />
+    </Scene>
   </Storyboard>
 )
 

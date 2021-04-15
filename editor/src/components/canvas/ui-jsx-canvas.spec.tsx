@@ -7,6 +7,7 @@ import {
   testCanvasRenderMultifile,
   testCanvasRenderInlineMultifile,
 } from './ui-jsx-canvas.test-utils'
+import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
 
 describe('UiJsxCanvas render', () => {
   it('renders a canvas defined by a utopia storyboard component', () => {
@@ -30,12 +31,15 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
-              component={App}
-              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
-              data-uid={'scene-0'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -65,12 +69,15 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
-              component={App}
-              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
-              data-uid={'scene-0'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -100,12 +107,15 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
-              component={App}
-              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
-              data-uid={'scene-0'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -135,12 +145,15 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
-              component={App}
-              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
-              data-uid={'scene-0'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -170,12 +183,15 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
-              component={App}
-              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
-              data-uid={'scene-0'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -195,12 +211,14 @@ describe('UiJsxCanvas render', () => {
       return (
         <Storyboard data-uid={'${BakedInStoryboardUID}'}>
           <Scene
-            static
             style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-            component={App}
-            props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-            data-uid={'scene-aaa'}
-          />
+            data-uid={'${TestSceneUID}'}
+          >
+            <App
+              data-uid='${TestAppUID}'
+              style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+            />
+          </Scene>
         </Storyboard>
       )
     }
@@ -226,12 +244,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -257,12 +277,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -289,12 +311,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -321,12 +345,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -353,12 +379,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -406,12 +434,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -440,12 +470,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -469,12 +501,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -499,12 +533,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -530,12 +566,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -559,12 +597,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -593,12 +633,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -621,12 +663,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -668,12 +712,14 @@ describe('UiJsxCanvas render', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -698,12 +744,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
-        static
         style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
-      />
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -734,12 +782,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -765,12 +815,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -796,12 +848,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -824,12 +878,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -855,12 +911,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -886,13 +944,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -915,13 +974,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -943,13 +1003,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -975,13 +1036,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -1005,13 +1067,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -1033,13 +1096,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -1066,13 +1130,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -1104,12 +1169,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -1119,11 +1186,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       "<div
         id=\\"canvas-container\\"
         style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
+        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       >
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-          data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
+          data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);
@@ -1133,12 +1199,11 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             width: 400px;
             height: 400px;
           \\"
-          data-paths=\\":utopia-storyboard-uid\\"
-          data-uid=\\"utopia-storyboard-uid\\"
+          data-uid=\\"scene-aaa utopia-storyboard-uid\\"
         >
           <div
-            data-uid=\\"ccc-unparsed-no-template-path aaa scene-aaa\\"
-            data-paths=\\"utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa\\"
+            data-uid=\\"ccc-unparsed-no-template-path aaa app-entity\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
           >
             hello
           </div>
@@ -1199,12 +1264,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -1214,11 +1281,10 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       "<div
         id=\\"canvas-container\\"
         style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa\\"
+        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       >
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-          data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa:aaa\\"
+          data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);
@@ -1228,13 +1294,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             width: 400px;
             height: 400px;
           \\"
-          data-paths=\\":utopia-storyboard-uid\\"
-          data-uid=\\"utopia-storyboard-uid\\"
+          data-uid=\\"scene-aaa utopia-storyboard-uid\\"
         >
           <div
             id=\\"nasty-div\\"
-            data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa scene-aaa\\"
-            data-paths=\\":150~~~2/2a7~~~1 :150~~~2 :2f5~~~1 utopia-storyboard-uid/scene-aaa:aaa :utopia-storyboard-uid/scene-aaa\\"
+            data-uid=\\"2a7~~~1 150~~~2 2f5~~~1 aaa app-entity\\"
+            data-paths=\\":150~~~2/2a7~~~1 :150~~~2 :2f5~~~1 utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
           >
             huhahuha
           </div>
@@ -1266,12 +1331,14 @@ export var App = (props) => {
 export var storyboard = (
   <Storyboard  data-uid="storyboard">
     <Scene
-      static
       data-uid="scene"
       style={{ position: 'absolute', height: 812, left: 0, width: 375, top: 0 }}
-      component={App}
-      props={{ style: { bottom: 0, left: 0, right: 0, top: 0 } }}
-    />
+    >
+      <App
+        data-uid='${TestAppUID}'
+        style={{ bottom: 0, left: 0, right: 0, top: 0 }}
+      />
+    </Scene>
   </Storyboard>
 )
 `,
@@ -1281,11 +1348,10 @@ export var storyboard = (
       "<div
         id=\\"canvas-container\\"
         style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\":storyboard :storyboard/scene\\"
+        data-utopia-valid-paths=\\":storyboard :storyboard/scene :storyboard/scene/app-entity storyboard/scene/app-entity:aaa storyboard/scene/app-entity:aaa/antd-date-picker\\"
       >
         <div
-          data-utopia-scene-id=\\"storyboard/scene\\"
-          data-utopia-valid-paths=\\":storyboard :storyboard/scene storyboard/scene:aaa storyboard/scene:aaa/antd-date-picker\\"
+          data-paths=\\":storyboard/scene :storyboard\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);
@@ -1295,19 +1361,18 @@ export var storyboard = (
             width: 375px;
             top: 0;
           \\"
-          data-paths=\\":storyboard\\"
-          data-uid=\\"storyboard\\"
+          data-uid=\\"scene storyboard\\"
         >
           <div
             style=\\"left: 0; top: 0; right: 0; bottom: 0; background-color: #ffffff;\\"
-            data-paths=\\"storyboard/scene:aaa :storyboard/scene\\"
-            data-uid=\\"aaa scene\\"
+            data-paths=\\"storyboard/scene/app-entity:aaa :storyboard/scene/app-entity\\"
+            data-uid=\\"aaa app-entity\\"
           >
             <div
               class=\\"ant-picker\\"
               style=\\"width: 123px; height: 51px; left: 113px; top: 395px;\\"
               data-uid=\\"antd-date-picker\\"
-              data-paths=\\"storyboard/scene:aaa/antd-date-picker\\"
+              data-paths=\\"storyboard/scene/app-entity:aaa/antd-date-picker\\"
             >
               <div class=\\"ant-picker-input\\">
                 <input
@@ -1317,7 +1382,7 @@ export var storyboard = (
                   title=\\"\\"
                   size=\\"12\\"
                   data-uid=\\"antd-date-picker\\"
-                  data-paths=\\"storyboard/scene:aaa/antd-date-picker\\"
+                  data-paths=\\"storyboard/scene/app-entity:aaa/antd-date-picker\\"
                   autocomplete=\\"off\\"
                 /><span class=\\"ant-picker-suffix\\"
                   ><span
@@ -1433,12 +1498,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
-        static
         style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-        component={App}
-        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
-      />
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -1469,11 +1536,11 @@ export var storyboard = (
   <Storyboard data-uid={'${BakedInStoryboardUID}'} >
     <Scene
       data-label={'Scene 2'}
-      component={Cat}
-      static
       style={{ position: 'absolute', left: 406, top: 62, width: 212, height: 188 }}
-      data-uid={'scene-aaa'}
-    />
+      data-uid={'${TestSceneUID}'}
+    >
+      <Cat data-uid='${TestAppUID}' />
+    </Scene>
   </Storyboard>
 )`,
     )
@@ -1510,11 +1577,11 @@ export var App = (props) => {
 export var storyboard = (
   <Storyboard data-uid={'${BakedInStoryboardUID}'} >
     <Scene
-      component={App}
-      props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
       data-uid={'scene'}
-    />
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
   </Storyboard>
 )`,
     )
@@ -1557,10 +1624,10 @@ export var storyboard = (
   <Storyboard data-uid={'${BakedInStoryboardUID}'} >
     <Scene
       data-uid={'scene'}
-      component={App}
-      props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    />
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
   </Storyboard>
 )`,
     )
@@ -1592,10 +1659,10 @@ export var storyboard = (
   <Storyboard  data-uid={'ccc'}>
     <Scene
       data-uid={'ddd'}
-      component={App}
-      props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    />
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
   </Storyboard>
 )`,
     )
@@ -1634,10 +1701,10 @@ export var storyboard = (
   <Storyboard  data-uid={'ccc'}>
     <Scene
       data-uid={'ddd'}
-      component={App}
-      props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    />
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
   </Storyboard>
 )`,
     )
@@ -1670,10 +1737,10 @@ export var storyboard = (
   <Storyboard data-uid={'eee'} >
     <Scene
       data-uid={'fff'}
-      component={App}
-      props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    />
+    >
+      <App data-uid='${TestAppUID}' />
+    </Scene>
   </Storyboard>
 )`,
     )
@@ -1695,13 +1762,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
-        static
         style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        
-        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
-      />
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -1726,13 +1794,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
-        static
         style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        
-        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
-      />
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -1759,13 +1828,14 @@ export var App = (props) => {
     return (
       <Storyboard data-uid={'${BakedInStoryboardUID}'}>
         <Scene
-          static
           style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-          component={App}
-          
-          props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-          data-uid={'scene-aaa'}
-        />
+          data-uid={'${TestSceneUID}'}
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
       </Storyboard>
     )
   }
@@ -1792,13 +1862,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
-        static
         style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        
-        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
-      />
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -1825,13 +1896,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
-        static
         style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        
-        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
-      />
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -1859,13 +1931,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
-        static
         style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        
-        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
-      />
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -1893,13 +1966,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
-        static
         style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        
-        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
-      />
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -1921,12 +1995,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Storyboard data-uid={'${BakedInStoryboardUID}'}>
       <Scene
-        static
         style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid={'scene-aaa'}
-      />
+        data-uid={'${TestSceneUID}'}
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -1947,13 +2023,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -1973,13 +2050,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid={'scene-aaa'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -2001,12 +2079,15 @@ describe('UiJsxCanvas render multifile projects', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
-              component={App}
-              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
-              data-uid={'scene-0'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -2026,11 +2107,10 @@ describe('UiJsxCanvas render multifile projects', () => {
       "<div
         id=\\"canvas-container\\"
         style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
+        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
       >
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
-          data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0 utopia-storyboard-uid/scene-0:app-outer-div utopia-storyboard-uid/scene-0:app-outer-div/inner-div\\"
+          data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);
@@ -2040,16 +2120,15 @@ describe('UiJsxCanvas render multifile projects', () => {
             width: 200px;
             top: 79px;
           \\"
-          data-paths=\\":utopia-storyboard-uid\\"
-          data-uid=\\"utopia-storyboard-uid\\"
+          data-uid=\\"scene-aaa utopia-storyboard-uid\\"
         >
           <div
-            data-uid=\\"app-outer-div scene-0\\"
-            data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div :utopia-storyboard-uid/scene-0\\"
+            data-uid=\\"app-outer-div app-entity\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div :utopia-storyboard-uid/scene-aaa/app-entity\\"
           >
             <div
               data-uid=\\"inner-div\\"
-              data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div/inner-div\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
             >
               hello
             </div>
@@ -2071,12 +2150,15 @@ describe('UiJsxCanvas render multifile projects', () => {
         return (
           <Storyboard data-uid={'${BakedInStoryboardUID}'}>
             <Scene
-              static
               style={{ position: 'absolute', height: 200, left: 59, width: 200, top: 79 }}
-              component={App}
-              props={{ style: { position: 'absolute', height: '100%', width: '100%' }, title: 'Hi there!' }}
-              data-uid={'scene-0'}
-            />
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', height: '100%', width: '100%' }}
+                title={'Hi there!'}
+              />
+            </Scene>
           </Storyboard>
         )
       }
@@ -2108,11 +2190,10 @@ describe('UiJsxCanvas render multifile projects', () => {
       "<div
         id=\\"canvas-container\\"
         style=\\"all: initial; position: absolute;\\"
-        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0\\"
+        data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
       >
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-0\\"
-          data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-0 utopia-storyboard-uid/scene-0:app-outer-div utopia-storyboard-uid/scene-0:app-outer-div/card-instance utopia-storyboard-uid/scene-0:app-outer-div/card-instance/card-content\\"
+          data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
           style=\\"
             position: absolute;
             background-color: rgba(255, 255, 255, 1);
@@ -2122,26 +2203,25 @@ describe('UiJsxCanvas render multifile projects', () => {
             width: 200px;
             top: 79px;
           \\"
-          data-paths=\\":utopia-storyboard-uid\\"
-          data-uid=\\"utopia-storyboard-uid\\"
+          data-uid=\\"scene-aaa utopia-storyboard-uid\\"
         >
           <div
-            data-uid=\\"app-outer-div scene-0\\"
-            data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div :utopia-storyboard-uid/scene-0\\"
+            data-uid=\\"app-outer-div app-entity\\"
+            data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div :utopia-storyboard-uid/scene-aaa/app-entity\\"
           >
             <div
               data-uid=\\"card-outer-div card-instance\\"
-              data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div/card-instance:card-outer-div utopia-storyboard-uid/scene-0:app-outer-div/card-instance\\"
+              data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance\\"
             >
               <div
                 data-uid=\\"card-header\\"
-                data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div/card-instance:card-outer-div/card-header\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance:card-outer-div/card-header\\"
               >
                 Card
               </div>
               <span
                 data-uid=\\"card-content\\"
-                data-paths=\\"utopia-storyboard-uid/scene-0:app-outer-div/card-instance/card-content\\"
+                data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
                 >hello</span
               >
             </div>

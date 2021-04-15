@@ -1282,7 +1282,7 @@ export function getElementWarnings(
       }
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
 
-      if (MetadataUtils.elementIsScene(elementMetadata)) {
+      if (MetadataUtils.elementIsOldStyleScene(elementMetadata)) {
         const sceneWarnings: ElementWarnings = {
           widthOrHeightZero: widthOrHeightZero,
           absoluteWithUnpositionedParent: false,

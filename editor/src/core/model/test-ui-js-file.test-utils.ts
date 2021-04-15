@@ -325,22 +325,46 @@ const scene = utopiaJSXComponent(
   emptyComments,
 )
 
-const Scene0UID = 'scene-0'
-export const ScenePathForTestUiJsFile = testStaticScenePath([[BakedInStoryboardUID, Scene0UID]])
+export const TestScene0UID = 'scene-0'
+export const TestMainComponentUID = 'main-component-0'
+export const ScenePathForTestUiJsFile = testStaticScenePath([
+  [BakedInStoryboardUID, TestScene0UID, TestMainComponentUID],
+])
 const Scene1UID = 'scene-1'
-export const ScenePath1ForTestUiJsFile = testStaticScenePath([[BakedInStoryboardUID, Scene1UID]])
+const TestMainComponent1UID = 'main-component-1'
+export const ScenePath1ForTestUiJsFile = testStaticScenePath([
+  [BakedInStoryboardUID, Scene1UID, TestMainComponent1UID],
+])
 
 const Scene1 = defaultSceneElement(
-  Scene0UID,
-  MainComponentForTestsName,
+  TestScene0UID,
   { left: 0, top: 0, width: 375, height: 812 },
   'Test Scene',
+  [
+    jsxElement(
+      MainComponentForTestsName,
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue(TestMainComponentUID, emptyComments),
+        style: jsxAttributeValue(
+          {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 375,
+            height: 812,
+          },
+          emptyComments,
+        ),
+      }),
+      [],
+    ),
+  ],
 )
 const Scene2 = defaultSceneElement(
   Scene1UID,
-  null,
   { left: 500, top: 0, width: 375, height: 812 },
   'Test Scene 2',
+  [],
 )
 
 const TestStoryboard = utopiaJSXComponent(

@@ -1281,7 +1281,6 @@ export interface ElementInstanceMetadata {
   specialSizeMeasurements: SpecialSizeMeasurements
   computedStyle: ComputedStyle | null
   attributeMetadatada: StyleAttributeMetadata | null
-  componentName: string | null
   label: string | null
 }
 
@@ -1298,7 +1297,6 @@ export function elementInstanceMetadata(
   sizeMeasurements: SpecialSizeMeasurements,
   computedStyle: ComputedStyle | null,
   attributeMetadatada: StyleAttributeMetadata | null,
-  componentName: string | null,
   label: string | null,
 ): ElementInstanceMetadata {
   return {
@@ -1314,7 +1312,6 @@ export function elementInstanceMetadata(
     specialSizeMeasurements: sizeMeasurements,
     computedStyle: computedStyle,
     attributeMetadatada: attributeMetadatada,
-    componentName: componentName,
     label: label,
   }
 }
