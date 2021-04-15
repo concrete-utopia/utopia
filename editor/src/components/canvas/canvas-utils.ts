@@ -1966,185 +1966,171 @@ export function moveTemplate(
         noChanges(),
         (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
           return withUnderlyingTarget(
-            originalPath,
+            newParentPath,
             editorState,
             noChanges(),
             (
-              originalPathSuccess,
-              underlyingOriginalElement,
-              underlyingOriginalPath,
-              underlyingOriginalFilePath,
+              newParentSuccess,
+              underlyingNewParentElement,
+              underlyingNewParentPath,
+              underlyingNewParentFilePath,
             ) => {
-              return withUnderlyingTarget(
+              const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
+                newParentSuccess,
+              )
+              const {
+                components: withLayoutUpdatedForNewContext,
+                componentMetadata: withMetadataUpdatedForNewContext,
+                didSwitch,
+              } = maybeSwitchLayoutProps(
+                target,
+                originalPath,
                 newParentPath,
-                editorState,
-                noChanges(),
-                (
-                  newParentSuccess,
-                  underlyingNewParentElement,
-                  underlyingNewParentPath,
+                componentMetadata,
+                componentMetadata,
+                utopiaComponentsIncludingScenes,
+                parentFrame,
+                newParentLayoutSystem,
+              )
+              const updatedUnderlyingElement = findElementAtPath(
+                underlyingTarget,
+                withLayoutUpdatedForNewContext,
+              )
+              if (updatedUnderlyingElement == null) {
+                return noChanges()
+              } else {
+                let workingEditorState: EditorState = editorState
+
+                let updatedUtopiaComponents: Array<UtopiaJSXComponent> = withLayoutUpdatedForNewContext
+                let newPath: TemplatePath | null = null
+
+                flexContextChanged = flexContextChanged || didSwitch
+
+                // Remove and then insert again at the new location.
+                workingEditorState = modifyParseSuccessAtPath(
                   underlyingNewParentFilePath,
-                ) => {
-                  const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
-                    newParentSuccess,
-                  )
-                  const {
-                    components: withLayoutUpdatedForNewContext,
-                    componentMetadata: withMetadataUpdatedForNewContext,
-                    didSwitch,
-                  } = maybeSwitchLayoutProps(
-                    target,
-                    originalPath,
-                    newParentPath,
-                    componentMetadata,
-                    componentMetadata,
-                    utopiaComponentsIncludingScenes,
-                    parentFrame,
-                    newParentLayoutSystem,
-                  )
-                  const updatedUnderlyingElement = findElementAtPath(
-                    underlyingTarget,
-                    withLayoutUpdatedForNewContext,
-                  )
-                  if (updatedUnderlyingElement == null) {
-                    return noChanges()
-                  } else {
-                    let workingEditorState: EditorState = editorState
-
-                    let updatedUtopiaComponents: Array<UtopiaJSXComponent> = withLayoutUpdatedForNewContext
-                    let newPath: TemplatePath | null = null
-
-                    flexContextChanged = flexContextChanged || didSwitch
-
-                    // Remove and then insert again at the new location.
-                    workingEditorState = modifyParseSuccessAtPath(
-                      underlyingNewParentFilePath,
-                      workingEditorState,
-                      (workingSuccess) => {
-                        updatedUtopiaComponents = removeElementAtPath(
-                          underlyingTarget,
-                          updatedUtopiaComponents,
-                        )
-
-                        updatedUtopiaComponents = insertElementAtPath(
-                          underlyingNewParentPath,
-                          updatedUnderlyingElement,
-                          updatedUtopiaComponents,
-                          indexPosition,
-                        )
-
-                        return {
-                          ...workingSuccess,
-                          topLevelElements: applyUtopiaJSXComponentsChanges(
-                            workingSuccess.topLevelElements,
-                            updatedUtopiaComponents,
-                          ),
-                        }
-                      },
+                  workingEditorState,
+                  (workingSuccess) => {
+                    updatedUtopiaComponents = removeElementAtPath(
+                      underlyingTarget,
+                      updatedUtopiaComponents,
                     )
 
-                    // Validate the result of the re-insertion.
-                    if (newParentPath == null) {
-                      newIndex = updatedUtopiaComponents.findIndex(
-                        (exported) => exported.rootElement === updatedUnderlyingElement,
-                      )
-                      if (newIndex === -1) {
-                        throw new Error('Invalid root element index.')
-                      }
-                    } else {
-                      // Can't rely on underlyingNewParentElement as that will now be out of date.
-                      const updatedUnderlyingNewParentElement = forceNotNull(
-                        'Element should exist',
-                        findJSXElementAtPath(underlyingNewParentPath, updatedUtopiaComponents),
-                      )
-                      newIndex = updatedUnderlyingNewParentElement.children.indexOf(
-                        updatedUnderlyingElement,
-                      )
-                      if (newIndex === -1) {
-                        throw new Error('Invalid child element index.')
-                      }
-                    }
-
-                    newPath = TP.appendToPath(newParentPath, targetID)
-                    newInstancePath = newPath
-
-                    let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
-                    // Need to make these changes ahead of updating the frame.
-                    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
-                      updatedComponentMetadata,
-                      target,
+                    updatedUtopiaComponents = insertElementAtPath(
+                      underlyingNewParentPath,
+                      updatedUnderlyingElement,
+                      updatedUtopiaComponents,
+                      indexPosition,
                     )
-
-                    if (elementMetadata != null) {
-                      updatedComponentMetadata = MetadataUtils.removeElementMetadataChild(
-                        target,
-                        updatedComponentMetadata,
-                      )
-
-                      updatedComponentMetadata = MetadataUtils.insertElementMetadataChild(
-                        newParentPath,
-                        elementMetadata,
-                        updatedComponentMetadata,
-                        indexPosition,
-                      )
-
-                      updatedComponentMetadata = MetadataUtils.transformAllPathsInMetadata(
-                        updatedComponentMetadata,
-                        target,
-                        newInstancePath,
-                      )
-                    }
-                    workingEditorState.jsxMetadata = updatedComponentMetadata
-
-                    if (
-                      newFrame !== SkipFrameChange &&
-                      newFrame != null &&
-                      newInstancePath != null &&
-                      !flexContextChanged
-                    ) {
-                      const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-                        originalPath,
-                        componentMetadata,
-                      )
-                      const frameChanges: Array<PinOrFlexFrameChange> = [
-                        getFrameChange(newInstancePath, newFrame, isParentFlex),
-                      ]
-
-                      workingEditorState = updateFramesOfScenesAndComponents(
-                        workingEditorState,
-                        frameChanges,
-                        parentFrame,
-                      )
-                    }
-
-                    const newSelectedViews = selectedViews.map((v) => {
-                      if (TP.pathsEqual(v, target)) {
-                        return newInstancePath
-                      } else {
-                        return v
-                      }
-                    })
-
-                    const newHighlightedViews =
-                      newParentPath == null
-                        ? highlightedViews.map((t) =>
-                            TP.pathsEqual(t, target) ? newInstancePath : t,
-                          )
-                        : [newParentPath]
-
-                    const updatedEditorState: EditorState = {
-                      ...workingEditorState,
-                      selectedViews: filterMultiSelectScenes(Utils.stripNulls(newSelectedViews)),
-                      highlightedViews: Utils.stripNulls(newHighlightedViews),
-                    }
 
                     return {
-                      updatedEditorState: updatedEditorState,
-                      newPath: newInstancePath,
+                      ...workingSuccess,
+                      topLevelElements: applyUtopiaJSXComponentsChanges(
+                        workingSuccess.topLevelElements,
+                        updatedUtopiaComponents,
+                      ),
                     }
+                  },
+                )
+
+                // Validate the result of the re-insertion.
+                if (newParentPath == null) {
+                  newIndex = updatedUtopiaComponents.findIndex(
+                    (exported) => exported.rootElement === updatedUnderlyingElement,
+                  )
+                  if (newIndex === -1) {
+                    throw new Error('Invalid root element index.')
                   }
-                },
-              )
+                } else {
+                  // Can't rely on underlyingNewParentElement as that will now be out of date.
+                  const updatedUnderlyingNewParentElement = forceNotNull(
+                    'Element should exist',
+                    findJSXElementAtPath(underlyingNewParentPath, updatedUtopiaComponents),
+                  )
+                  newIndex = updatedUnderlyingNewParentElement.children.indexOf(
+                    updatedUnderlyingElement,
+                  )
+                  if (newIndex === -1) {
+                    throw new Error('Invalid child element index.')
+                  }
+                }
+
+                newPath = TP.appendToPath(newParentPath, targetID)
+                newInstancePath = newPath
+
+                let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
+                // Need to make these changes ahead of updating the frame.
+                const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
+                  updatedComponentMetadata,
+                  target,
+                )
+
+                if (elementMetadata != null) {
+                  updatedComponentMetadata = MetadataUtils.removeElementMetadataChild(
+                    target,
+                    updatedComponentMetadata,
+                  )
+
+                  updatedComponentMetadata = MetadataUtils.insertElementMetadataChild(
+                    newParentPath,
+                    elementMetadata,
+                    updatedComponentMetadata,
+                    indexPosition,
+                  )
+
+                  updatedComponentMetadata = MetadataUtils.transformAllPathsInMetadata(
+                    updatedComponentMetadata,
+                    target,
+                    newInstancePath,
+                  )
+                }
+                workingEditorState.jsxMetadata = updatedComponentMetadata
+
+                if (
+                  newFrame !== SkipFrameChange &&
+                  newFrame != null &&
+                  newInstancePath != null &&
+                  !flexContextChanged
+                ) {
+                  const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+                    originalPath,
+                    componentMetadata,
+                  )
+                  const frameChanges: Array<PinOrFlexFrameChange> = [
+                    getFrameChange(newInstancePath, newFrame, isParentFlex),
+                  ]
+
+                  workingEditorState = updateFramesOfScenesAndComponents(
+                    workingEditorState,
+                    frameChanges,
+                    parentFrame,
+                  )
+                }
+
+                const newSelectedViews = selectedViews.map((v) => {
+                  if (TP.pathsEqual(v, target)) {
+                    return newInstancePath
+                  } else {
+                    return v
+                  }
+                })
+
+                const newHighlightedViews =
+                  newParentPath == null
+                    ? highlightedViews.map((t) => (TP.pathsEqual(t, target) ? newInstancePath : t))
+                    : [newParentPath]
+
+                const updatedEditorState: EditorState = {
+                  ...workingEditorState,
+                  selectedViews: filterMultiSelectScenes(Utils.stripNulls(newSelectedViews)),
+                  highlightedViews: Utils.stripNulls(newHighlightedViews),
+                }
+
+                return {
+                  updatedEditorState: updatedEditorState,
+                  newPath: newInstancePath,
+                }
+              }
             },
           )
         },
