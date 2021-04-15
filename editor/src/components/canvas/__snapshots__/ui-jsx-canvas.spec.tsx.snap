@@ -22116,11 +22116,10 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
 "<div
   id=\\"canvas-container\\"
   style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\":eee :eee/fff\\"
+  data-utopia-valid-paths=\\":eee :eee/fff :eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/bbb eee/fff/app:aaa/bbb/ccc eee/fff/app:aaa/ddd\\"
 >
   <div
-    data-utopia-scene-id=\\"eee/fff\\"
-    data-utopia-valid-paths=\\":eee :eee/fff eee/fff:aaa eee/fff:aaa/bbb eee/fff:aaa/bbb/ccc eee/fff:aaa/ddd\\"
+    data-paths=\\":eee/fff :eee\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -22130,8 +22129,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
       width: 375px;
       top: 0;
     \\"
-    data-paths=\\":eee\\"
-    data-uid=\\"eee\\"
+    data-uid=\\"fff eee\\"
   >
     <div
       style=\\"
@@ -22142,26 +22140,26 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
         bottom: 0;
         background-color: #ffffff;
       \\"
-      data-paths=\\"eee/fff:aaa :eee/fff\\"
-      data-uid=\\"aaa fff\\"
+      data-paths=\\"eee/fff/app:aaa :eee/fff/app\\"
+      data-uid=\\"aaa app\\"
     >
       <div
         data-label=\\"random-div\\"
         style=\\"width: 100px; height: 100px;\\"
         data-uid=\\"bbb\\"
-        data-paths=\\"eee/fff:aaa/bbb\\"
+        data-paths=\\"eee/fff/app:aaa/bbb\\"
       >
         Hello
         <div
           data-label=\\"some-other-div\\"
           style=\\"width: 100px; height: 100px;\\"
           data-uid=\\"ccc\\"
-          data-paths=\\"eee/fff:aaa/bbb/ccc\\"
+          data-paths=\\"eee/fff/app:aaa/bbb/ccc\\"
         ></div>
       </div>
       <div
         data-uid=\\"ddd\\"
-        data-paths=\\"eee/fff:aaa/ddd\\"
+        data-paths=\\"eee/fff/app:aaa/ddd\\"
         style=\\"position: absolute;\\"
       >
         World
@@ -22174,7 +22172,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
 
 exports[`UiJsxCanvas render renders fragments correctly 2`] = `
 Object {
-  "eee/fff:aaa": Object {
+  "eee/fff/app:aaa": Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
@@ -22187,6 +22185,7 @@ Object {
             Array [
               "eee",
               "fff",
+              "app",
             ],
           ],
           "type": "scenepath",
@@ -22451,10 +22450,10 @@ export var storyboard = (
   <Storyboard data-uid={'eee'}>
     <Scene
       style={{ position: 'absolute', height: 812, left: 0, width: 375, top: 0 }}
-      component={App}
-      props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
       data-uid={'fff'}
-    />
+    >
+      <App data-uid={'app'} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }} />
+    </Scene>
   </Storyboard>
 )
 ",
@@ -22531,8 +22530,8 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
-      "data-paths": "eee/fff:aaa :eee/fff",
-      "data-uid": "aaa fff",
+      "data-paths": "eee/fff/app:aaa :eee/fff/app",
+      "data-uid": "aaa app",
       "skipDeepFreeze": true,
       "style": Object {
         "alignContent": undefined,
@@ -22606,13 +22605,14 @@ export var storyboard = (
           Array [
             "eee",
             "fff",
+            "app",
           ],
         ],
         "type": "scenepath",
       },
     },
   },
-  "eee/fff:aaa/bbb": Object {
+  "eee/fff/app:aaa/bbb": Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
@@ -22760,7 +22760,7 @@ export var storyboard = (
     "localFrame": null,
     "props": Object {
       "data-label": "random-div",
-      "data-paths": "eee/fff:aaa/bbb",
+      "data-paths": "eee/fff/app:aaa/bbb",
       "data-uid": "bbb",
       "skipDeepFreeze": true,
       "style": Object {
@@ -22813,13 +22813,14 @@ export var storyboard = (
           Array [
             "eee",
             "fff",
+            "app",
           ],
         ],
         "type": "scenepath",
       },
     },
   },
-  "eee/fff:aaa/bbb/ccc": Object {
+  "eee/fff/app:aaa/bbb/ccc": Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
@@ -22894,7 +22895,7 @@ export var storyboard = (
     "localFrame": null,
     "props": Object {
       "data-label": "some-other-div",
-      "data-paths": "eee/fff:aaa/bbb/ccc",
+      "data-paths": "eee/fff/app:aaa/bbb/ccc",
       "data-uid": "ccc",
       "skipDeepFreeze": true,
       "style": Object {
@@ -22948,13 +22949,14 @@ export var storyboard = (
           Array [
             "eee",
             "fff",
+            "app",
           ],
         ],
         "type": "scenepath",
       },
     },
   },
-  "eee/fff:aaa/ddd": Object {
+  "eee/fff/app:aaa/ddd": Object {
     "attributeMetadatada": Object {},
     "children": Array [],
     "componentInstance": false,
@@ -23001,7 +23003,7 @@ export var storyboard = (
     "label": null,
     "localFrame": null,
     "props": Object {
-      "data-paths": "eee/fff:aaa/ddd",
+      "data-paths": "eee/fff/app:aaa/ddd",
       "data-uid": "ddd",
       "skipDeepFreeze": true,
       "style": Object {
@@ -23076,6 +23078,7 @@ export var storyboard = (
           Array [
             "eee",
             "fff",
+            "app",
           ],
         ],
         "type": "scenepath",
