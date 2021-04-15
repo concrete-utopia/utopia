@@ -1578,11 +1578,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     imports: Imports,
   ): boolean {
-    if (MetadataUtils.getChildrenPaths(metadata, path).length > 0) {
-      return false
-    } else {
-      return MetadataUtils.isFocusableComponent(path, components, metadata, imports)
-    }
+    return MetadataUtils.getChildrenPaths(metadata, path).length === 0 && MetadataUtils.isFocusableComponent(path, components, metadata, imports)
   },
 }
 
