@@ -88,7 +88,7 @@ export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): Editor
       return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Contents)
     case 'inspector':
     case 'canvas':
-    case 'uicodeeditor':
+    case 'codeEditor':
     default:
       return editorState
   }
@@ -188,16 +188,21 @@ const StoryboardListItem = styled.div<StoryboardListItemProps>((props) => ({
 }))
 
 const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
-  const { dispatch, openFile, projectContents } = useEditorState((store) => {
+  const { dispatch, openFile, projectContents, isCanvasVisible } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       openFile: store.editor.canvas.openFile?.filename,
       projectContents: store.editor.projectContents,
+      isCanvasVisible: store.editor.canvas.visible,
     }
-  }, 'FileBrowser')
+  }, 'StoryboardsPane')
 
   const handleStoryboardAdd = React.useCallback(() => {
     dispatch([EditorActions.addStoryboardFile()])
+  }, [dispatch])
+
+  const handleStoryboardListItemClick = React.useCallback(() => {
+    dispatch([EditorActions.setPanelVisibility('canvas', true)])
   }, [dispatch])
 
   const storyboardList = [StoryboardFilePath]
@@ -247,9 +252,10 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
 
             {storyboardList.map((item) => (
               <StoryboardListItem
-                selected={openFile === item}
+                selected={isCanvasVisible && openFile === item}
                 style={{ background: UtopiaTheme.color.secondaryBackground.value }}
                 key='mainStoryboard'
+                onClick={handleStoryboardListItemClick}
               >
                 <div>
                   Storyboard Label

@@ -843,10 +843,14 @@ export function addFolder(parentPath: string): AddFolder {
   }
 }
 
-export function openCodeEditorFile(filename: string): OpenCodeEditorFile {
+export function openCodeEditorFile(
+  filename: string,
+  forceShowCodeEditor: boolean,
+): OpenCodeEditorFile {
   return {
     action: 'OPEN_CODE_EDITOR_FILE',
     filename: filename,
+    forceShowCodeEditor: forceShowCodeEditor,
   }
 }
 

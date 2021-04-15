@@ -534,6 +534,7 @@ export interface UpdateFilePath {
 export interface OpenCodeEditorFile {
   action: 'OPEN_CODE_EDITOR_FILE'
   filename: string
+  forceShowCodeEditor: boolean
 }
 
 export interface CloseDesignerFile {

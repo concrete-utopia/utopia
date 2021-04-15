@@ -1,6 +1,5 @@
 import { Resizable, ResizeDirection } from 're-resizable'
 import * as React from 'react'
-
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
@@ -14,7 +13,16 @@ import { InsertMenuPane, LeftPaneDefaultWidth } from '../navigator/left-pane'
 import { RightMenu, RightMenuTab } from './right-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 import { NavigatorComponent } from '../navigator/navigator'
-import { SimpleFlexRow, UtopiaTheme, UtopiaStyles, SimpleFlexColumn } from '../../uuiui'
+import {
+  SimpleFlexRow,
+  UtopiaTheme,
+  UtopiaStyles,
+  SimpleFlexColumn,
+  background,
+  colorTheme,
+  Icons,
+  LargerIcons,
+} from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { TopMenu } from '../editor/top-menu'
 
@@ -28,6 +36,75 @@ interface NumberSize {
 }
 
 const TopMenuHeight = 40
+
+const NothingOpenCard = betterReactMemo('NothingOpen', () => {
+  const dispatch = useEditorState((store) => store.dispatch, 'NothingOpenCard dispatch')
+  const handleOpenCanvasClick = React.useCallback(() => {
+    dispatch([EditorActions.setPanelVisibility('canvas', true)])
+  }, [dispatch])
+  const handleOpenCodeEditorClick = React.useCallback(() => {
+    dispatch([EditorActions.setPanelVisibility('codeEditor', true)])
+  }, [dispatch])
+  const handleOpenBothCodeEditorAndDesignToolClick = React.useCallback(() => {
+    dispatch([
+      EditorActions.setPanelVisibility('codeEditor', true),
+      EditorActions.setPanelVisibility('canvas', true),
+    ])
+  }, [dispatch])
+
+  return (
+    <div
+      role='card'
+      style={{
+        width: 180,
+        height: 240,
+        padding: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        borderRadius: 4,
+        backgroundColor: 'white',
+        border: '1px solid lightgrey',
+      }}
+    >
+      <LargerIcons.PixelatedPalm
+        color='blue'
+        style={{ width: 42, height: 42, imageRendering: 'pixelated' }}
+      />
+      <div style={{ textAlign: 'center' }}>
+        <h3 style={{ fontWeight: 600, fontSize: 11 }}>Get Started</h3>
+        <p style={{ lineHeight: '1.7em', whiteSpace: 'normal' }}>
+          Start building with the &nbsp;
+          <span
+            role='button'
+            style={{ cursor: 'pointer', color: colorTheme.primary.value }}
+            onClick={handleOpenCanvasClick}
+          >
+            canvas
+          </span>
+          ,&nbsp;
+          <span
+            role='button'
+            style={{ cursor: 'pointer', color: colorTheme.primary.value }}
+            onClick={handleOpenCodeEditorClick}
+          >
+            code editor
+          </span>
+          ,&nbsp; or{' '}
+          <span
+            role='button'
+            style={{ cursor: 'pointer', color: colorTheme.primary.value }}
+            onClick={handleOpenBothCodeEditorAndDesignToolClick}
+          >
+            both
+          </span>
+          .
+        </p>
+      </div>
+    </div>
+  )
+})
 
 export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: DesignPanelRootProps) => {
   const dispatch = useEditorState((store) => store.dispatch, 'DesignPanelRoot dispatch')
@@ -56,6 +133,11 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
   const leftMenuExpanded = useEditorState(
     (store) => store.editor.leftMenu.expanded,
     'EditorComponentInner leftMenuExpanded',
+  )
+
+  const isCanvasVisible = useEditorState(
+    (store) => store.editor.canvas.visible,
+    'design panel root',
   )
 
   const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
@@ -146,18 +228,39 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           borderRight: `1px solid ${UtopiaTheme.color.subduedBorder.value}`,
         }}
       >
-        <SimpleFlexColumn style={{ flexGrow: props.isUiJsFileOpen ? undefined : 1 }}>
+        {!isCanvasVisible && !interfaceDesigner.codePaneVisible ? (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              top: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <NothingOpenCard />
+          </div>
+        ) : null}
+        <SimpleFlexColumn style={{ flexGrow: isCanvasVisible ? undefined : 1 }}>
           <Resizable
-            defaultSize={{ width: interfaceDesigner.codePaneWidth, height: '100%' }}
+            defaultSize={{
+              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
+              height: '100%',
+            }}
             size={{
-              width: props.isUiJsFileOpen ? interfaceDesigner.codePaneWidth : '100%',
+              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
               height: '100%',
             }}
             onResizeStop={onResizeStop}
             onResize={onResize}
             enable={{
               top: false,
-              right: props.isUiJsFileOpen,
+              right: isCanvasVisible,
               bottom: false,
               topRight: false,
               bottomRight: false,
@@ -168,7 +271,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
             style={{
               ...UtopiaStyles.flexColumn,
               display: !props.isUiJsFileOpen || interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-              width: interfaceDesigner.codePaneWidth,
+              width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
               height: '100%',
               position: 'relative',
               overflow: 'hidden',
@@ -180,7 +283,8 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
             <CodeEditorWrapper />
           </Resizable>
         </SimpleFlexColumn>
-        {props.isUiJsFileOpen ? (
+
+        {props.isUiJsFileOpen && isCanvasVisible ? (
           <SimpleFlexColumn style={{ flexGrow: 1 }}>
             <SimpleFlexRow
               className='topMenu'
@@ -199,7 +303,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           </SimpleFlexColumn>
         ) : null}
       </SimpleFlexRow>
-      {props.isUiJsFileOpen && navigatorPosition !== 'hidden' ? (
+      {isCanvasVisible && props.isUiJsFileOpen && navigatorPosition !== 'hidden' ? (
         <NavigatorComponent
           style={{
             position: 'absolute',
@@ -210,7 +314,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           }}
         />
       ) : null}
-      {props.isUiJsFileOpen ? (
+      {isCanvasVisible && props.isUiJsFileOpen ? (
         <>
           <RightMenu visible={true} />
           {isRightMenuExpanded ? (
