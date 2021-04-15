@@ -36,7 +36,7 @@ import type {
 import type { BuildType } from '../../../core/workers/ts/ts-worker'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
 import type { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
-import type { ContextMenuInnerProps, CSSCursor } from '../../../uuiui-deps'
+import type { CSSCursor } from '../../../uuiui-deps'
 import type {
   addFileToProjectContents,
   getContentsTreeFileFromString,
@@ -807,13 +807,11 @@ export function distributeSelectedViews(distribution: Distribution): DistributeS
 export function showContextMenu(
   menuName: ElementContextMenuInstance,
   event: MouseEvent,
-  props: ContextMenuInnerProps | null,
 ): ShowContextMenu {
   return {
     action: 'SHOW_CONTEXT_MENU',
     menuName: menuName,
     event: event,
-    props: props,
   }
 }
 
@@ -845,10 +843,14 @@ export function addFolder(parentPath: string): AddFolder {
   }
 }
 
-export function openCodeEditorFile(filename: string): OpenCodeEditorFile {
+export function openCodeEditorFile(
+  filename: string,
+  forceShowCodeEditor: boolean,
+): OpenCodeEditorFile {
   return {
     action: 'OPEN_CODE_EDITOR_FILE',
     filename: filename,
+    forceShowCodeEditor: forceShowCodeEditor,
   }
 }
 

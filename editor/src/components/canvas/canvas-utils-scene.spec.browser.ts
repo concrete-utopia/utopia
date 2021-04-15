@@ -279,6 +279,8 @@ describe('moving a scene/rootview on the canvas', () => {
 })
 
 describe('resizing a scene/rootview on the canvas', () => {
+  beforeAll(setElectronWindow)
+
   it('resizing a scene child’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */

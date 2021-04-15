@@ -61,7 +61,6 @@ export function maybeSwitchChildrenLayoutProps(
   target: InstancePath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
-  originalComponents: UtopiaJSXComponent[],
   components: UtopiaJSXComponent[],
 ): LayoutPropChangeResult {
   const children = MetadataUtils.getChildrenHandlingGroups(
@@ -82,7 +81,6 @@ export function maybeSwitchChildrenLayoutProps(
         target,
         targetOriginalContextMetadata,
         currentContextMetadata,
-        originalComponents,
         workingComponents,
         null,
         null,
@@ -104,7 +102,6 @@ export function maybeSwitchLayoutProps(
   newParentPath: InstancePath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
-  originalComponents: UtopiaJSXComponent[],
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle | null,
   parentLayoutSystem: SettableLayoutSystem | null,

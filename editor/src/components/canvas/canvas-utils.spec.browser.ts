@@ -297,6 +297,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
+  beforeAll(setElectronWindow)
   it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
@@ -781,6 +782,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
+  beforeAll(setElectronWindow)
   it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
@@ -887,6 +889,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
+  beforeAll(setElectronWindow)
   it('TLWH, but W and H are percentage works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -955,6 +958,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 })
 
 describe('moveTemplate', () => {
+  beforeAll(setElectronWindow)
   it('wraps in 1 element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1292,6 +1296,14 @@ describe('moveTemplate', () => {
   })
 
   it('reparents a pinned element to flex using magic?', async () => {
+    //const currentWindow = require('electron').remote.getCurrentWindow()
+    //currentWindow.show()
+    //currentWindow.setPosition(500, 200)
+    //currentWindow.setSize(2200, 1000)
+    //currentWindow.openDevTools()
+    // This is necessary because the test code races against the Electron process
+    // opening the window it would appear.
+    //await wait(10000)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -2057,6 +2069,7 @@ describe('moveTemplate', () => {
       await dispatchDone
     })
 
+    //await wait(600000)
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>

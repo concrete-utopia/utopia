@@ -1,7 +1,6 @@
 import { selectComponents } from '../editor/actions/action-creators'
 import CanvasActions from './canvas-actions'
 import {
-  getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,

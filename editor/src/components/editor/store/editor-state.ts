@@ -1,6 +1,6 @@
 import * as json5 from 'json5'
 import * as R from 'ramda'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -18,6 +18,7 @@ import {
   removeJSXElementChild,
   transformJSXComponentAtPath,
   getUtopiaID,
+  findJSXElementAtStaticPath,
 } from '../../../core/model/element-template-utils'
 import {
   correctProjectContentsPath,
@@ -498,77 +499,17 @@ export interface ParseSuccessAndEditorChanges<T> {
   additionalData: T
 }
 
-export function applyParseAndEditorChanges<T>(
-  getChanges: (e: EditorState, success: ParseSuccess) => ParseSuccessAndEditorChanges<T>,
-  editor: EditorState,
-): { editor: EditorState; additionalData: T | null } {
-  const openUIJSFileKey = getOpenUIJSFileKey(editor)
-  if (openUIJSFileKey == null) {
-    return { editor: editor, additionalData: null }
-  } else {
-    const openUIJSFile = getOpenUIJSFile(editor)
-    if (openUIJSFile == null) {
-      return { editor: editor, additionalData: null }
-    } else {
-      const possibleChanges: ParseSuccessAndEditorChanges<T> | null = foldParsedTextFile(
-        (_) => null,
-        (success) => {
-          return getChanges(editor, success)
-        },
-        (_) => null,
-        openUIJSFile.fileContents.parsed,
-      )
-      if (possibleChanges == null) {
-        return { editor: editor, additionalData: null }
-      } else {
-        const updatedContents: ParsedTextFile = mapParsedTextFile(
-          possibleChanges.parseSuccessTransform,
-          openUIJSFile.fileContents.parsed,
-        )
-
-        const updatedFile = saveTextFileContents(
-          openUIJSFile,
-          textFileContents(
-            openUIJSFile.fileContents.code,
-            updatedContents,
-            RevisionsState.ParsedAhead,
-          ),
-          false,
-        )
-
-        const editorWithSuccessChanges = {
-          ...editor,
-          projectContents: addFileToProjectContents(
-            editor.projectContents,
-            openUIJSFileKey,
-            updatedFile,
-          ),
-        }
-
-        return {
-          editor: possibleChanges.editorStateTransform(editorWithSuccessChanges),
-          additionalData: possibleChanges.additionalData,
-        }
-      }
-    }
-  }
-}
-
 export function modifyOpenParseSuccess(
   transform: (success: ParseSuccess) => ParseSuccess,
   model: EditorState,
 ): EditorState {
-  function getChanges(
-    editor: EditorState,
-    success: ParseSuccess,
-  ): ParseSuccessAndEditorChanges<Record<string, never>> {
-    return {
-      parseSuccessTransform: transform,
-      editorStateTransform: (e: EditorState) => e,
-      additionalData: {},
-    }
-  }
-  return applyParseAndEditorChanges<Record<string, never>>(getChanges, model).editor
+  return modifyUnderlyingTarget(
+    null,
+    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
+    model,
+    (elem) => elem,
+    transform,
+  )
 }
 
 export function applyUtopiaJSXComponentsChanges(
@@ -651,6 +592,7 @@ export function modifyOpenJSXElementsAndMetadata(
     utopiaComponents: Array<UtopiaJSXComponent>,
     componentMetadata: ElementInstanceMetadataMap,
   ) => { components: Array<UtopiaJSXComponent>; componentMetadata: ElementInstanceMetadataMap },
+  target: InstancePath,
   model: EditorState,
 ): EditorState {
   let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadata
@@ -670,8 +612,14 @@ export function modifyOpenJSXElementsAndMetadata(
       topLevelElements: newTopLevelElements,
     }
   }
+  const beforeUpdatingMetadata = modifyUnderlyingForOpenFile(
+    target,
+    model,
+    (elem) => elem,
+    successTransform,
+  )
   return {
-    ...modifyOpenParseSuccess(successTransform, model),
+    ...beforeUpdatingMetadata,
     jsxMetadata: workingMetadata,
   }
 }
@@ -894,9 +842,12 @@ export function modifyOpenSceneAtPath(
   transform: (scene: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
-  return modifyOpenScenes_INTERNAL((components) => {
-    return transformJSXComponentAtPath(components, createSceneTemplatePath(path), transform)
-  }, model)
+  return modifyUnderlyingTarget(
+    path,
+    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
+    model,
+    transform,
+  )
 }
 
 export function getNumberOfScenes(model: EditorState): number {
@@ -932,7 +883,7 @@ export function addNewScene(model: EditorState, newSceneElement: JSXElement): Ed
 export function addSceneToJSXComponents(
   components: UtopiaJSXComponent[],
   newSceneElement: JSXElement,
-) {
+): UtopiaJSXComponent[] {
   const storyoardComponentRootElement = components.find(
     (c) => c.name === BakedInStoryboardVariableName,
   )?.rootElement
@@ -2016,4 +1967,91 @@ export function modifyUnderlyingTarget(
   }
 
   return modifyParseSuccessAtPath(targetSuccess.filePath, editorState, innerModifyParseSuccess)
+}
+
+export function modifyUnderlyingForOpenFile(
+  target: TemplatePath | null,
+  editorState: EditorState,
+  modifyElement: (
+    element: JSXElement,
+    underlying: InstancePath,
+    underlyingFilePath: string,
+  ) => JSXElement = (element) => element,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlying: StaticInstancePath | null,
+    underlyingFilePath: string,
+  ) => ParseSuccess = (success) => success,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    forceNotNull('Designer file should be open.', editorState.canvas.openFile?.filename),
+    editorState,
+    modifyElement,
+    modifyParseSuccess,
+  )
+}
+
+export function withUnderlyingTarget<T>(
+  target: TemplatePath | null,
+  editorState: EditorState,
+  defaultValue: T,
+  withTarget: (
+    success: ParseSuccess,
+    element: JSXElement,
+    underlyingTarget: StaticInstancePath,
+    underlyingFilePath: string,
+  ) => T,
+): T {
+  // Support just about anything as the path.
+  let instanceTarget: InstancePath | null
+  if (target == null) {
+    instanceTarget = null
+  } else if (TP.isInstancePath(target)) {
+    instanceTarget = target
+  } else {
+    instanceTarget = TP.instancePathForElementAtPath(target)
+  }
+  const underlyingTarget = normalisePathToUnderlyingTarget(
+    editorState.projectContents,
+    editorState.nodeModules.files,
+    forceNotNull('Designer file should be open.', editorState.canvas.openFile?.filename),
+    instanceTarget,
+  )
+
+  if (
+    underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
+    underlyingTarget.normalisedPath != null
+  ) {
+    const parsed = underlyingTarget.textFile.fileContents.parsed
+    if (isParseSuccess(parsed)) {
+      const element = findJSXElementAtStaticPath(
+        getUtopiaJSXComponentsFromSuccess(parsed),
+        underlyingTarget.normalisedPath,
+      )
+      if (element != null) {
+        return withTarget(
+          parsed,
+          element,
+          underlyingTarget.normalisedPath,
+          underlyingTarget.filePath,
+        )
+      }
+    }
+  }
+
+  return defaultValue
+}
+
+export function forUnderlyingTarget(
+  target: TemplatePath | null,
+  editorState: EditorState,
+  withTarget: (
+    success: ParseSuccess,
+    element: JSXElement,
+    underlyingTarget: StaticInstancePath,
+    underlyingFilePath: string,
+  ) => void,
+): void {
+  withUnderlyingTarget<any>(target, editorState, {}, withTarget)
 }

@@ -666,7 +666,7 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.computedStyle,
     nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
     (metadata) => metadata.attributeMetadatada,
-    nullableDeepEquality(createCallWithTripleEquals()),
+    nullableDeepEquality(objectDeepEquality(createCallWithTripleEquals())),
     (metadata) => metadata.label,
     nullableDeepEquality(createCallWithTripleEquals()),
     elementInstanceMetadata,

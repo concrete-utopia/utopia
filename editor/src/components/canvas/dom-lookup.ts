@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { last, stripNulls } from '../../core/shared/array-utils'
+import { last, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
@@ -12,16 +12,16 @@ import {
   windowPoint,
   WindowPoint,
 } from '../../core/shared/math-utils'
-import { ScenePath, TemplatePath } from '../../core/shared/project-file-types'
+import { InstancePath, ScenePath, TemplatePath } from '../../core/shared/project-file-types'
 import * as TP from '../../core/shared/template-path'
-import { getUIDsOnDomELement } from '../../core/shared/uid-utils'
+import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import { CanvasPositions } from './canvas-types'
 
-export function findParentSceneValidPaths(target: Element): Array<string> | null {
+export function findParentSceneValidPaths(target: Element): Array<TemplatePath> | null {
   const validPaths = getDOMAttribute(target, 'data-utopia-valid-paths')
   if (validPaths != null) {
-    return validPaths.split(' ')
+    return validPaths.split(' ').map(TP.fromString)
   } else {
     if (target.parentElement != null) {
       return findParentSceneValidPaths(target.parentElement)
@@ -31,27 +31,34 @@ export function findParentSceneValidPaths(target: Element): Array<string> | null
   }
 }
 
-export function findFirstParentWithValidUID(
-  validTemplatePathsForLookup: Array<string> | 'no-filter',
+export function findFirstParentWithValidTemplatePath(
+  validDynamicTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
   target: Element,
-): string | null {
-  const uids = getUIDsOnDomELement(target)
-  const originalUid = getDOMAttribute(target, 'data-utopia-original-uid') // TODO BALAZS What's up with original-uid?
-  const validTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
-  const validTemplatePaths =
-    validTemplatePathsForLookup === 'no-filter'
-      ? validTemplatePathsForScene
-      : R.intersection(validTemplatePathsForLookup, validTemplatePathsForScene)
-  if (originalUid != null && validTemplatePaths.find((tp) => tp.endsWith(originalUid))) {
-    return last(validTemplatePaths.filter((tp) => tp.endsWith(originalUid))) ?? null
-  } else if (
-    uids != null &&
-    validTemplatePaths.find((tp) => uids.some((uid) => tp.endsWith(uid)))
-  ) {
-    return last(validTemplatePaths.filter((tp) => uids.some((uid) => tp.endsWith(uid)))) ?? null
+): TemplatePath | null {
+  const dynamicTemplatePaths = getPathsOnDomElement(target)
+  const validStaticTemplatePathsForScene = findParentSceneValidPaths(target) ?? []
+  const validStaticTemplatePaths =
+    validDynamicTemplatePathsForLookup === 'no-filter'
+      ? validStaticTemplatePathsForScene
+      : R.intersection(
+          validDynamicTemplatePathsForLookup
+            .filter(TP.isInstancePath)
+            .map(TP.dynamicPathToStaticPathKeepSceneDynamic),
+          validStaticTemplatePathsForScene,
+        )
+
+  const filteredValidPathsMappedToDynamic = mapDropNulls((validPath: TemplatePath) => {
+    return dynamicTemplatePaths.find((tp) => {
+      const templatePathWithStaticElementPart = TP.dynamicPathToStaticPathKeepSceneDynamic(tp)
+      return TP.pathsEqual(validPath, templatePathWithStaticElementPart)
+    })
+  }, validStaticTemplatePaths)
+
+  if (filteredValidPathsMappedToDynamic.length > 0) {
+    return last(filteredValidPathsMappedToDynamic) ?? null
   } else {
     if (target.parentElement != null) {
-      return findFirstParentWithValidUID(validTemplatePaths, target.parentElement)
+      return findFirstParentWithValidTemplatePath(validStaticTemplatePaths, target.parentElement)
     } else {
       return null
     }
@@ -63,7 +70,7 @@ export function getValidTargetAtPoint(
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
   focusedElementPath: ScenePath | null,
-  validTemplatePathsForLookup: Array<string> | 'no-filter',
+  validTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
@@ -90,7 +97,7 @@ export function getAllTargetsAtPoint(
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
   focusedElementPath: ScenePath | null,
-  validTemplatePathsForLookup: Array<string> | 'no-filter',
+  validTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
   point: WindowPoint | null,
   canvasScale: number,
   canvasOffset: CanvasVector,
@@ -112,12 +119,12 @@ export function getAllTargetsAtPoint(
   const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
   const elementsFromDOM = stripNulls(
     elementsUnderPoint.map((element) => {
-      const foundValidtemplatePath = findFirstParentWithValidUID(
+      const foundValidtemplatePath = findFirstParentWithValidTemplatePath(
         validTemplatePathsForLookup,
         element,
       )
       if (foundValidtemplatePath != null) {
-        return TP.fromString(foundValidtemplatePath)
+        return foundValidtemplatePath
       } else {
         return null
       }
