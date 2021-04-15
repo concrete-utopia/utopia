@@ -24,7 +24,7 @@ import {
 import { betterReactMemo } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { LeftMenuTab } from '../navigator/left-pane'
 
 interface TileProps {
@@ -171,6 +171,17 @@ export const Menubar = betterReactMemo('Menubar', () => {
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
 
+  const entireStateRef = useRefEditorState((store) => store)
+
+  const jsxMetadata = useRefEditorState((store) => {
+    return store.editor.jsxMetadata
+  })
+
+  const printEditorState = React.useCallback(() => {
+    console.info('Current Editor State:', entireStateRef.current)
+    console.info('Latest metadata:', jsxMetadata.current)
+  }, [entireStateRef, jsxMetadata])
+
   return (
     <FlexColumn
       id='leftMenuBar'
@@ -284,6 +295,9 @@ export const Menubar = betterReactMemo('Menubar', () => {
       </FlexColumn>
       {isFeatureEnabled('Performance Test Triggers') ? (
         <React.Fragment>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
+            <a onClick={printEditorState}>PPP</a>
+          </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerScrollTest}>P S</a>
           </Tile>

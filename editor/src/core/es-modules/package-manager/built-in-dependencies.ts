@@ -4,6 +4,7 @@ import * as UUIUIDeps from '../../../uuiui-deps'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import * as EmotionReact from '@emotion/react'
+import * as EmotionStyled from '@emotion/styled'
 
 import * as editorPackageJSON from '../../../../package.json'
 import * as utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
@@ -20,13 +21,22 @@ function builtInDependency(
   baseModule: any,
   version: string,
 ): BuiltInDependency {
-  return {
-    moduleName: moduleName,
-    nodeModule: {
-      ...baseModule,
-      default: baseModule,
-    },
-    version: version,
+  if (baseModule.default != null) {
+    return {
+      moduleName: moduleName,
+      nodeModule: baseModule,
+      version: version,
+    }
+  } else {
+    // if the module does not have a default, spread one in there to simulate Synthetic Defaults
+    return {
+      moduleName: moduleName,
+      nodeModule: {
+        ...baseModule,
+        default: baseModule,
+      },
+      version: version,
+    }
   }
 }
 
@@ -52,6 +62,11 @@ const BuiltInDependencies: Array<BuiltInDependency> = [
     '@emotion/core',
     EmotionReact,
     editorPackageJSON.dependencies['@emotion/react'],
+  ),
+  builtInDependency(
+    '@emotion/styled',
+    EmotionStyled,
+    editorPackageJSON.dependencies['@emotion/styled'],
   ),
 ]
 
