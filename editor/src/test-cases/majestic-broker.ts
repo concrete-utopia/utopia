@@ -437,27 +437,18 @@ export var App = () => {
 }
 export var storyboard = (
   <Storyboard>
-    <Scene
-      component={App}
-      props={{}}
-      style={{ position: 'absolute', left: 0, top: 0, width: 522, height: 652 }}
-    />
-    <Scene
-      data-label={'ScrollablePhotoGrid'}
-      component={ScrollablePhotoGrid}
-      resizeContent
-      style={{ position: 'absolute', left: 561, top: 1, width: 437, height: 96 }}
-    />
+    <Scene style={{ position: 'absolute', left: 0, top: 0, width: 522, height: 652 }}>
+      <App />
+    </Scene>
+    <Scene style={{ position: 'absolute', left: 561, top: 1, width: 437, height: 96 }}>
+      <ScrollablePhotoGrid />
+    </Scene>
     <Scene
       data-label={'Card'}
-      component={Card}
-      resizeContent
-      props={{
-        url:
-          'https://upload.wikimedia.org/wikipedia/commons/8/88/Bonifacio_bembo%2C_regina_di_spade.jpg',
-      }}
       style={{ position: 'absolute', left: 561, top: 123, width: 376, height: 1110 }}
-    />
+    >
+      <Card url='https://upload.wikimedia.org/wikipedia/commons/8/88/Bonifacio_bembo%2C_regina_di_spade.jpg' />
+    </Scene>
   </Storyboard>
 )
 `

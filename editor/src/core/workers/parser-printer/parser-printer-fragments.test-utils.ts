@@ -24,10 +24,10 @@ export var ${BakedInStoryboardVariableName} = (
   <Storyboard data-uid={'eee'}>
     <Scene
       style={{ position: 'absolute', height: 812, left: 0, width: 375, top: 0 }}
-      component={App}
-      props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
       data-uid={'fff'}
-    />
+    >
+      <App data-uid={'app'} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }} />
+    </Scene>
   </Storyboard>
 )
 `

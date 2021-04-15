@@ -6,6 +6,7 @@ import {
 } from './parser-printer.test-utils'
 import { BakedInStoryboardUID } from '../../model/scene-utils'
 import { foldParsedTextFile } from '../../shared/project-file-types'
+import { TestAppUID, TestSceneUID } from '../../../components/canvas/ui-jsx.test-utils'
 
 describe('JSX parser', () => {
   it('should parse out dot-notation element names', () => {
@@ -27,11 +28,13 @@ export var storyboard = (props) => {
     <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
         style={{ left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid='scene-aaa'
-      />
+        data-uid='${TestSceneUID}'
+      >
+        <App
+          data-uid='${TestAppUID}'
+          style={{ bottom: 0, left: 0, right: 0, top: 0 }}
+        />
+      </Scene>
     </Storyboard>
   )
 }
@@ -70,13 +73,9 @@ export var App = props => {
 export var storyboard = (props) => {
   return (
     <Storyboard data-uid='${BakedInStoryboardUID}'>
-      <Scene
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid='scene-aaa'
-      />
+      <Scene style={{ left: 0, top: 0, width: 400, height: 400 }} data-uid='${TestSceneUID}'>
+        <App data-uid='${TestAppUID}' style={{ bottom: 0, left: 0, right: 0, top: 0 }} />
+      </Scene>
     </Storyboard>
   )
 }`
@@ -95,13 +94,9 @@ export var App = (props) => {
 export var storyboard = (props) => {
   return (
     <Storyboard data-uid='${BakedInStoryboardUID}'>
-      <Scene
-        style={{ left: 0, top: 0, width: 400, height: 400 }}
-        component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-        data-uid='scene-aaa'
-      />
+      <Scene style={{ left: 0, top: 0, width: 400, height: 400 }} data-uid='${TestSceneUID}'>
+        <App data-uid='${TestAppUID}' style={{ bottom: 0, left: 0, right: 0, top: 0 }} />
+      </Scene>
     </Storyboard>
   )
 }
