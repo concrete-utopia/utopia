@@ -239,12 +239,8 @@ export const selectElementsThatRespectLayout = createSelector(
     jsxMetadata: ElementInstanceMetadataMap,
   ) => {
     return flatMapArray((view) => {
-      if (TP.isScenePath(view)) {
-        const rootElements = MetadataUtils.getRootViewPaths(jsxMetadata, view)
-        return [view, ...rootElements]
-      } else {
-        return [view]
-      }
+      const rootElements = MetadataUtils.getRootViewPaths(jsxMetadata, view)
+      return [view, ...rootElements]
     }, navigatorTargets).filter((view) =>
       targetRespectsLayout(
         view,
