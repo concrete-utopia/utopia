@@ -440,7 +440,7 @@ export var storyboard = (
     <Scene style={{ position: 'absolute', left: 0, top: 0, width: 522, height: 652 }}>
       <App />
     </Scene>
-    <Scene style={{ position: 'absolute', left: 561, top: 1, width: 437, height: 96 }}>
+    <Scene data-label={'ScrollablePhotoGrid'} style={{ position: 'absolute', left: 561, top: 1, width: 437, height: 96 }}>
       <ScrollablePhotoGrid />
     </Scene>
     <Scene
