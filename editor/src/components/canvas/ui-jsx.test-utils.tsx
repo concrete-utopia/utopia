@@ -298,8 +298,11 @@ export function getEditorState(fileContents: string): EditorState {
   }
 }
 
-export function editorStateToParseSuccess(editorState: EditorState): ParseSuccess {
-  const file = getContentsTreeFileFromString(editorState.projectContents, StoryboardFilePath)
+export function editorStateToParseSuccess(
+  editorState: EditorState,
+  filePath: string = StoryboardFilePath,
+): ParseSuccess {
+  const file = getContentsTreeFileFromString(editorState.projectContents, filePath)
   if (file == null) {
     throw new Error(`Cannot find storyboard file.`)
   } else if (isTextFile(file)) {
@@ -323,8 +326,11 @@ export function testPrintCodeFromParseSuccess(parseSuccess: ParseSuccess): strin
   )
 }
 
-export function testPrintCodeFromEditorState(editorState: EditorState): string {
-  const parseSuccess = editorStateToParseSuccess(editorState)
+export function testPrintCodeFromEditorState(
+  editorState: EditorState,
+  filePath: string = StoryboardFilePath,
+): string {
+  const parseSuccess = editorStateToParseSuccess(editorState, filePath)
   return testPrintCodeFromParseSuccess(parseSuccess)
 }
 

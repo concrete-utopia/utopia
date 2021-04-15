@@ -1,17 +1,118 @@
 import * as TP from '../../core/shared/template-path'
 import {
-  getTestParseSuccess,
   makeTestProjectCodeWithSnippet,
   TestScenePath,
   testPrintCodeFromEditorState,
   getEditorState,
 } from './ui-jsx.test-utils'
-import { singleResizeChange, EdgePosition } from './canvas-types'
+import { singleResizeChange, EdgePosition, pinMoveChange } from './canvas-types'
 import { CanvasVector, canvasRectangle } from '../../core/shared/math-utils'
 import { updateFramesOfScenesAndComponents } from './canvas-utils'
-import { ParseSuccess } from '../../core/shared/project-file-types'
-import { getComponentsFromTopLevelElements } from '../../core/model/project-file-utils'
-import { applyUtopiaJSXComponentsChanges } from '../editor/store/editor-state'
+import { complexDefaultProject } from '../../sample-projects/sample-project-utils'
+import { NO_OP } from '../../core/shared/utils'
+import { editorModelFromPersistentModel } from '../editor/store/editor-state'
+
+describe('updateFramesOfScenesAndComponents - multi-file', () => {
+  it('a simple TLWH pin change works', async () => {
+    const testProject = editorModelFromPersistentModel(complexDefaultProject(), NO_OP)
+    const targetScenePath = TP.scenePath([
+      ['storyboard-entity', 'scene-1-entity'],
+      ['app-outer-div', 'card-instance'],
+    ])
+    const targetPath = TP.instancePath(targetScenePath, ['card-outer-div', 'card-inner-rectangle'])
+
+    const pinChange = singleResizeChange(
+      targetPath,
+      { x: 1, y: 1 } as EdgePosition,
+      { x: 60, y: 40 } as CanvasVector,
+    )
+
+    const updatedProject = updateFramesOfScenesAndComponents(testProject, [pinChange], null)
+
+    expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
+      "/** @jsx jsx */
+      import * as React from 'react'
+      import { jsx, Rectangle } from 'utopia-api'
+      export var Card = (props) => {
+        return (
+          <div data-uid='card-outer-div' style={{ ...props.style }}>
+            <div
+              data-uid='card-inner-div'
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 50,
+                height: 50,
+                backgroundColor: 'red',
+              }}
+            />
+            <Rectangle
+              data-uid='card-inner-rectangle'
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 200,
+                width: 110,
+                height: 90,
+                backgroundColor: 'blue',
+              }}
+            />
+          </div>
+        )
+      }
+      "
+    `)
+  })
+
+  it('an element move works', async () => {
+    const testProject = editorModelFromPersistentModel(complexDefaultProject(), NO_OP)
+    const targetScenePath = TP.scenePath([
+      ['storyboard-entity', 'scene-1-entity'],
+      ['app-outer-div', 'card-instance'],
+    ])
+    const targetPath = TP.instancePath(targetScenePath, ['card-outer-div', 'card-inner-rectangle'])
+
+    const pinChange = pinMoveChange(targetPath, { x: 60, y: 40 } as CanvasVector)
+
+    const updatedProject = updateFramesOfScenesAndComponents(testProject, [pinChange], null)
+
+    expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
+      "/** @jsx jsx */
+      import * as React from 'react'
+      import { jsx, Rectangle } from 'utopia-api'
+      export var Card = (props) => {
+        return (
+          <div data-uid='card-outer-div' style={{ ...props.style }}>
+            <div
+              data-uid='card-inner-div'
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 50,
+                height: 50,
+                backgroundColor: 'red',
+              }}
+            />
+            <Rectangle
+              data-uid='card-inner-rectangle'
+              style={{
+                position: 'absolute',
+                left: 160,
+                top: 240,
+                width: 50,
+                height: 50,
+                backgroundColor: 'blue',
+              }}
+            />
+          </div>
+        )
+      }
+      "
+    `)
+  })
+})
 
 describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('a simple TLWH pin change works', async () => {
