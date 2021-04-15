@@ -72,6 +72,8 @@ import {
   ScenePath1ForTestUiJsFile,
   sampleDefaultImports,
   sampleImportsForTests,
+  TestScene0UID,
+  TestMainComponentUID,
 } from '../../../core/model/test-ui-js-file.test-utils'
 import {
   BakedInStoryboardUID,
@@ -143,15 +145,27 @@ describe('SET_PROP', () => {
               jsxElement(
                 'Scene',
                 jsxAttributesFromMap({
-                  component: jsxAttributeOtherJavaScript(
-                    'MyView',
-                    `return MyView`,
-                    ['MyView'],
-                    null,
-                  ),
-                  'data-uid': jsxAttributeValue('scene-0', emptyComments),
+                  'data-uid': jsxAttributeValue(TestScene0UID, emptyComments),
                 }),
-                [],
+                [
+                  jsxElement(
+                    'MyView',
+                    jsxAttributesFromMap({
+                      'data-uid': jsxAttributeValue(TestMainComponentUID, emptyComments),
+                      style: jsxAttributeValue(
+                        {
+                          position: 'absolute',
+                          left: 0,
+                          top: 0,
+                          width: 375,
+                          height: 812,
+                        },
+                        emptyComments,
+                      ),
+                    }),
+                    [],
+                  ),
+                ],
               ),
             ],
           ),
@@ -934,7 +948,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
-    componentName: null,
     label: null,
   }
 
@@ -959,7 +972,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
-    componentName: null,
     label: null,
   }
 

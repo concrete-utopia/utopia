@@ -434,7 +434,6 @@ function collectMetadata(
       computedStyle,
       attributeMetadata,
       null,
-      null,
     )
   })
 }
@@ -628,7 +627,6 @@ function walkCanvasRootFragment(
       emptySpecialSizeMeasurements,
       emptyComputedStyle,
       emptyAttributeMetadatada,
-      null,
       null,
     )
     return [...rootMetadata, metadata]

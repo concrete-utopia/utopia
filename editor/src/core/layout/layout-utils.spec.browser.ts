@@ -92,7 +92,6 @@ describe('maybeSwitchLayoutProps', () => {
         specialSizeMeasurements: emptySpecialSizeMeasurements,
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
-        componentName: 'Component1',
         label: null,
       },
       [TP.toString(elementPath)]: {
@@ -130,7 +129,6 @@ describe('maybeSwitchLayoutProps', () => {
         ),
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
-        componentName: null,
         label: null,
       },
     }

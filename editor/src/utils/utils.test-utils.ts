@@ -26,9 +26,12 @@ import {
   emptyAttributeMetadatada,
   jsxTestElement,
   getDefinedElsewhereFromAttributes,
+  jsxElement,
+  jsxAttributesFromMap,
+  jsxAttributeValue,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
-import { jsxAttributesToProps, jsxSimpleAttributeToValue } from '../core/shared/jsx-attributes'
+import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
 import { parseSuccess } from '../core/workers/common/project-file-utils'
 import {
@@ -46,27 +49,22 @@ import {
   InstancePath,
   EmptyExportsDetail,
 } from '../core/shared/project-file-types'
-import { right, eitherToMaybe, isLeft, left } from '../core/shared/either'
+import { right } from '../core/shared/either'
 import Utils from './utils'
-import {
-  canvasRectangle,
-  CanvasRectangle,
-  localRectangle,
-  LocalRectangle,
-  RectangleInner,
-} from '../core/shared/math-utils'
+import { canvasRectangle, localRectangle, RectangleInner } from '../core/shared/math-utils'
 import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
-  PathForSceneComponent,
   PathForSceneDataLabel,
-  PathForResizeContent,
+  isSceneElement,
 } from '../core/model/scene-utils'
 import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
-import { mapArrayToDictionary } from '../core/shared/array-utils'
+import { mapArrayToDictionary, mapDropNulls } from '../core/shared/array-utils'
 import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
+import { defaultSceneElement } from '../components/editor/defaults'
+import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -170,68 +168,27 @@ export function createFakeMetadataForParseSuccess(
   const sceneElements = getSceneElementsFromParseSuccess(success)
   let elements: ElementInstanceMetadataMap = {}
   let storyboardChildren: InstancePath[] = []
+  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
 
   sceneElements.forEach((scene, index) => {
-    const props = mapArrayToDictionary(
-      scene.props,
-      (entry) => entry.key,
-      (entry) => {
-        const attr = entry.value
-        const simpleValue = jsxSimpleAttributeToValue(attr)
-        if (isLeft(simpleValue) && attr.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-          return attr.javascript
-        } else {
-          return eitherToMaybe(simpleValue)
-        }
-      },
-    )
-    const component = utopiaComponents.find(
-      (c) => c.name === props.component && isUtopiaJSXComponent(c),
-    )
-    const sceneResizesContent =
-      Utils.path<boolean>(PP.getElements(PathForResizeContent), props) ?? true
-    let rootElements: Array<InstancePath> = []
-    if (component != null) {
-      const elementMetadata = createFakeMetadataForJSXElement(
-        component.rootElement,
-        TP.scenePath([[BakedInStoryboardUID, createSceneUidFromIndex(index)]]),
-        {
-          props: {
-            style: sceneResizesContent ? props.style : undefined,
-            ...props.props,
-          },
-        },
-      )
-
-      rootElements = elementMetadata.map((individualElementMetadata) => {
-        const path = individualElementMetadata.templatePath
-        elements[TP.toString(path)] = individualElementMetadata
-        return path
-      })
-    }
-
-    const componentName = props[PP.toString(PathForSceneComponent)]
-    const label = props[PP.toString(PathForSceneDataLabel)]
-    const frame = { x: 0, y: 0, width: 400, height: 400 }
-
-    const templatePath = TP.instancePath(TP.emptyScenePath, [
-      BakedInStoryboardUID,
-      createSceneUidFromIndex(index),
-    ])
-
-    elements[TP.toString(templatePath)] = createFakeMetadataForScene(
-      templatePath,
-      rootElements,
-      frame,
-      sceneResizesContent,
-      componentName,
-      label,
+    const descendantsMetadata = createFakeMetadataForJSXElement(
+      scene,
+      storyboardTemplatePath,
+      {},
+      utopiaComponents,
+      false,
+      { x: 0, y: 0, width: 400, height: 400 },
     )
 
-    storyboardChildren.push(templatePath)
+    descendantsMetadata.forEach((individualMetadata) => {
+      const descendantPath = individualMetadata.templatePath
+      elements[TP.toString(descendantPath)] = individualMetadata
+      if (TP.isParentOf(storyboardTemplatePath, descendantPath)) {
+        storyboardChildren.push(descendantPath)
+      }
+    })
   })
 
-  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
   elements[TP.toString(storyboardTemplatePath)] = createFakeMetadataForStoryboard(
     storyboardTemplatePath,
     storyboardChildren,
@@ -245,40 +202,47 @@ export function createFakeMetadataForComponents(
 ): ElementInstanceMetadataMap {
   let elements: ElementInstanceMetadataMap = {}
   let storyboardChildren: InstancePath[] = []
+  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
+
   Utils.fastForEach(topLevelElements, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
-      const elementMetadata = createFakeMetadataForJSXElement(
-        component.rootElement,
-        TP.scenePath([[BakedInStoryboardUID, createSceneUidFromIndex(index)]]),
-        {},
-      )
-
-      const rootElements: Array<InstancePath> = elementMetadata.map((individualElementMetadata) => {
-        const path = individualElementMetadata.templatePath
-        elements[TP.toString(path)] = individualElementMetadata
-        return path
-      })
-
+      const sceneUID = createSceneUidFromIndex(index)
+      const componentUID = `${component.name}-${index}`
       const frame = { x: 0, y: 0, width: 100, height: 100 }
-      const templatePath = TP.instancePath(TP.emptyScenePath, [
-        BakedInStoryboardUID,
-        createSceneUidFromIndex(index),
-      ])
-
-      elements[TP.toString(templatePath)] = createFakeMetadataForScene(
-        templatePath,
-        rootElements,
-        frame,
-        false,
-        component.name,
-        null,
+      const fakeScene = defaultSceneElement(
+        sceneUID,
+        { left: 0, top: 0, width: 100, height: 100 },
+        `Scene ${index}`,
+        [
+          jsxElement(
+            component.name,
+            jsxAttributesFromMap({
+              'data-uid': jsxAttributeValue(componentUID, emptyComments),
+            }),
+            [],
+          ),
+        ],
       )
 
-      storyboardChildren.push(templatePath)
+      const descendantsMetadata = createFakeMetadataForJSXElement(
+        fakeScene,
+        storyboardTemplatePath,
+        {},
+        topLevelElements,
+        false,
+        frame,
+      )
+
+      descendantsMetadata.forEach((individualMetadata) => {
+        const descendantPath = individualMetadata.templatePath
+        elements[TP.toString(descendantPath)] = individualMetadata
+        if (TP.isParentOf(storyboardTemplatePath, descendantPath)) {
+          storyboardChildren.push(descendantPath)
+        }
+      })
     }
   })
 
-  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
   elements[TP.toString(storyboardTemplatePath)] = createFakeMetadataForStoryboard(
     storyboardTemplatePath,
     storyboardChildren,
@@ -291,6 +255,9 @@ function createFakeMetadataForJSXElement(
   element: JSXElementChild,
   rootPath: TemplatePath,
   parentScope: MapLike<any>,
+  topLevelElements: Array<TopLevelElement>,
+  focused: boolean,
+  frame: RectangleInner = Utils.zeroRectangle,
 ): Array<ElementInstanceMetadata> {
   let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {
@@ -307,30 +274,68 @@ function createFakeMetadataForJSXElement(
     }
     const props = jsxAttributesToProps(inScope, element.props, Utils.NO_OP)
     const children = element.children.flatMap((child) =>
-      createFakeMetadataForJSXElement(child, templatePath, props),
+      createFakeMetadataForJSXElement(
+        child,
+        templatePath,
+        {
+          ...inScope,
+          ...props,
+        },
+        topLevelElements,
+        isSceneElement(element),
+      ),
     )
     const childPaths = children.map((child) => child.templatePath)
+
+    let rootElements: Array<InstancePath> = []
+    if (focused) {
+      const targetComponent = topLevelElements.find(
+        (c) => isUtopiaJSXComponent(c) && c.name === element.name.baseVariable,
+      )
+
+      if (targetComponent != null && isUtopiaJSXComponent(targetComponent)) {
+        const elementScenePath = TP.scenePathForElementAtPath(templatePath)
+
+        const rootElementsMetadata = createFakeMetadataForJSXElement(
+          targetComponent.rootElement,
+          elementScenePath,
+          {
+            ...inScope,
+            props: props,
+          },
+          topLevelElements,
+          false,
+        )
+
+        elements.push(...rootElementsMetadata)
+        rootElements = mapDropNulls((individualElementMetadata) => {
+          const path = individualElementMetadata.templatePath
+          return TP.isTopLevelInstancePath(path) && TP.isParentOf(elementScenePath, path)
+            ? path
+            : null
+        }, rootElementsMetadata)
+      }
+    }
 
     elements.push({
       templatePath: templatePath,
       element: right(element),
       props: props,
-      globalFrame: Utils.zeroRectangle as CanvasRectangle, // this could be parametrized to be able to set real rectangles
-      localFrame: Utils.zeroRectangle as LocalRectangle,
+      globalFrame: canvasRectangle(frame),
+      localFrame: localRectangle(frame),
       children: childPaths,
-      rootElements: [],
+      rootElements: rootElements,
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
-      componentName: null,
-      label: null,
+      label: props[PP.toString(PathForSceneDataLabel)],
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
     const children = element.children.flatMap((child) =>
-      createFakeMetadataForJSXElement(child, rootPath, parentScope),
+      createFakeMetadataForJSXElement(child, rootPath, parentScope, topLevelElements, focused),
     )
     elements.push(...children)
   } else {
@@ -338,34 +343,6 @@ function createFakeMetadataForJSXElement(
   }
 
   return elements
-}
-
-function createFakeMetadataForScene(
-  templatePath: InstancePath,
-  rootElements: Array<InstancePath>,
-  frame: RectangleInner,
-  resizesContent: boolean,
-  componentName: string | null,
-  label: string | null,
-): ElementInstanceMetadata {
-  return {
-    globalFrame: canvasRectangle(frame),
-    localFrame: localRectangle(frame),
-    templatePath: templatePath,
-    props: {
-      [PP.lastPartToString(PathForResizeContent)]: resizesContent,
-    },
-    element: left('Scene'),
-    children: [],
-    rootElements: rootElements,
-    componentInstance: false,
-    isEmotionOrStyledComponent: false,
-    specialSizeMeasurements: emptySpecialSizeMeasurements,
-    computedStyle: emptyComputedStyle,
-    attributeMetadatada: emptyAttributeMetadatada,
-    componentName: componentName,
-    label: label,
-  }
 }
 
 function createFakeMetadataForStoryboard(
@@ -385,7 +362,6 @@ function createFakeMetadataForStoryboard(
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
-    componentName: null,
     label: null,
   }
 }

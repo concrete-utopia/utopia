@@ -52,7 +52,6 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
@@ -71,7 +70,6 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -94,7 +92,6 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -114,7 +111,6 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -135,7 +131,6 @@ const testComponentRoot1: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -155,7 +150,6 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -175,7 +169,6 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -196,7 +189,6 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -218,7 +210,6 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: 'MyView',
   label: null,
 }
 
@@ -235,7 +226,6 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -252,7 +242,6 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -269,7 +258,6 @@ const testStoryboardElement: ElementInstanceMetadata = {
   specialSizeMeasurements: emptySpecialSizeMeasurements,
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
-  componentName: null,
   label: null,
 }
 
@@ -372,7 +360,6 @@ describe('targetElementSupportsChildren', () => {
       specialSizeMeasurements: emptySpecialSizeMeasurements,
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
-      componentName: null,
       label: null,
     }
   }
@@ -506,7 +493,6 @@ describe('getElementLabel', () => {
     emptyComputedStyle,
     emptyAttributeMetadatada,
     null,
-    null,
   )
   const divElement = jsxElement(
     'div',
@@ -528,7 +514,6 @@ describe('getElementLabel', () => {
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
     emptyAttributeMetadatada,
-    null,
     null,
   )
   const metadata: ElementInstanceMetadataMap = {

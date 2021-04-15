@@ -1909,9 +1909,9 @@ export const UPDATE_FNS = {
     const newSceneLabel = `Scene ${numberOfScenes}`
     const newScene: JSXElement = defaultSceneElement(
       sceneUID,
-      null,
       canvasFrameToNormalisedFrame(action.frame),
       newSceneLabel,
+      [],
     )
     const storyBoardPath = getStoryboardTemplatePath(components)
     const newSelection =

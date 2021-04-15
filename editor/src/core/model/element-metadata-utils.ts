@@ -968,12 +968,12 @@ export const MetadataUtils = {
   ): string {
     const element = this.findElementByTemplatePath(metadata, path)
     if (element != null) {
-      const sceneLabelOrComponentName = element.label ?? element.componentName
+      const sceneLabel = element.label
       const dataLabelProp = element.props['data-label']
       if (dataLabelProp != null && typeof dataLabelProp === 'string' && dataLabelProp.length > 0) {
         return dataLabelProp
-      } else if (sceneLabelOrComponentName != null) {
-        return sceneLabelOrComponentName
+      } else if (sceneLabel != null) {
+        return sceneLabel
       } else {
         const possibleName: string = foldEither(
           (tagName) => {
@@ -1048,22 +1048,14 @@ export const MetadataUtils = {
     components: Array<UtopiaJSXComponent>,
     metadata: ElementInstanceMetadataMap,
   ): JSXElementName | null {
-    if (TP.isScenePath(path)) {
-      const scene = MetadataUtils.findElementByTemplatePath(metadata, path)
-      if (scene != null && scene.componentName != null) {
-        return jsxElementName(scene.componentName, [])
+    const jsxElement = findElementAtPath(path, components)
+    if (jsxElement != null) {
+      if (isJSXElement(jsxElement)) {
+        return jsxElement.name
       } else {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components)
-      if (jsxElement != null) {
-        if (isJSXElement(jsxElement)) {
-          return jsxElement.name
-        } else {
-          return null
-        }
-      }
       return null
     }
   },
@@ -1072,22 +1064,14 @@ export const MetadataUtils = {
     components: Array<UtopiaJSXComponent>,
     metadata: ElementInstanceMetadataMap,
   ): string | null {
-    if (TP.isScenePath(path)) {
-      const scene = MetadataUtils.findElementByTemplatePath(metadata, path)
-      if (scene != null) {
-        return scene.componentName
+    const jsxElement = findElementAtPath(path, components)
+    if (jsxElement != null) {
+      if (isJSXElement(jsxElement)) {
+        return jsxElement.name.baseVariable
       } else {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components)
-      if (jsxElement != null) {
-        if (isJSXElement(jsxElement)) {
-          return jsxElement.name.baseVariable
-        } else {
-          return null
-        }
-      }
       return null
     }
   },
@@ -1096,22 +1080,14 @@ export const MetadataUtils = {
     components: Array<UtopiaJSXComponent>,
     metadata: ElementInstanceMetadataMap,
   ): string | null {
-    if (TP.isScenePath(path)) {
-      const scene = MetadataUtils.findElementByTemplatePath(metadata, path)
-      if (scene != null) {
-        return scene.componentName
+    const jsxElement = findElementAtPath(path, components)
+    if (jsxElement != null) {
+      if (isJSXElement(jsxElement)) {
+        return getJSXElementNameAsString(jsxElement.name)
       } else {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components)
-      if (jsxElement != null) {
-        if (isJSXElement(jsxElement)) {
-          return getJSXElementNameAsString(jsxElement.name)
-        } else {
-          return null
-        }
-      }
       return null
     }
   },
@@ -1228,7 +1204,6 @@ export const MetadataUtils = {
           rootElements: rootElements,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
-          componentName: spyElem.componentName,
           label: spyElem.label,
         }
         workingElements[TP.toString(domElem.templatePath)] = elem
