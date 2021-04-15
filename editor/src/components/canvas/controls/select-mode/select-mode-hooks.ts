@@ -263,6 +263,9 @@ function useStartDragState(): (
         : null
 
       const isTargetSelected = selectedViews.some((sv) => TP.pathsEqual(sv, target))
+
+      // FIXME: Re-establish filtering based on `selectElementsThatRespectLayout`.
+      // https://github.com/concrete-utopia/utopia/pull/1088/files/460e68fb6b4156833744a5441c9e56d662c8b51d#r614029462
       const selection =
         isTargetSelected && TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
 
