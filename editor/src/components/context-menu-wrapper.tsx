@@ -25,15 +25,10 @@ export interface ContextMenuWrapperProps<T> {
   providerStyle?: React.CSSProperties
 }
 
-export interface ContextMenuInnerProps {
-  elementsUnderCursor: Array<TemplatePath>
-}
-
-export function openMenu(id: string, nativeEvent: MouseEvent, props: ContextMenuInnerProps | null) {
+export function openMenu(id: string, nativeEvent: MouseEvent) {
   contextMenu.show({
     id: id,
     event: nativeEvent,
-    props: props,
   })
 }
 
@@ -88,7 +83,17 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
     return splitItems
   }
 
-  isHidden = (): boolean => false
+  isHidden = (item: ContextMenuItem<T>): (() => boolean) => {
+    return () => {
+      if (item.isHidden == null) {
+        return false
+      } else if (typeof item.isHidden === 'function') {
+        return item.isHidden(this.props.getData())
+      } else {
+        return item.isHidden
+      }
+    }
+  }
 
   isDisabled = (item: ContextMenuItem<T>): (() => boolean) => {
     return () => {
@@ -111,7 +116,7 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
           item.action(this.props.getData(), this.props.dispatch, event.nativeEvent)
           contextMenu.hideAll()
         }}
-        hidden={item.isHidden ?? this.isHidden}
+        hidden={this.isHidden(item)}
         style={{ height: item.isSeparator ? 9 : 24, display: 'flex', alignItems: 'center' }}
       >
         <span style={{ flexGrow: 1, flexShrink: 0 }} className='react-contexify-span'>

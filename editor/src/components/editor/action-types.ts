@@ -51,7 +51,6 @@ import {
 } from './store/editor-state'
 import { Notice } from '../common/notice'
 import { BuildType } from '../../core/workers/ts/ts-worker'
-import { ContextMenuInnerProps } from '../../uuiui-deps'
 import { ParseResult } from '../../utils/value-parser-utils'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
@@ -515,7 +514,6 @@ export interface ShowContextMenu {
   action: 'SHOW_CONTEXT_MENU'
   menuName: ElementContextMenuInstance
   event: MouseEvent
-  props: ContextMenuInnerProps | null
 }
 
 export interface SetCursorOverlay {
