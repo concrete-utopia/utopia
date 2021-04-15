@@ -9,7 +9,9 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   renderTestEditorWithProjectContent,
+  TestAppUID,
   TestScenePath,
+  TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
 import { PrettierConfig } from '../../../core/workers/parser-printer/prettier-utils'
@@ -53,14 +55,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const flexPaddingTopControl = (await renderResult.renderedDOM.findByTestId(
       'flexPadding-T',
@@ -105,14 +104,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -189,14 +185,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -273,14 +266,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -418,14 +408,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -498,13 +485,10 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -974,18 +958,18 @@ describe('inspector tests with real metadata', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              static
-              props={{ 
-                style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 },
-                padding: 5,
-                paddingRight: 10,
-                opacity: 0.5,
-                left: 30,
-                border: '50%',
-              }}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+                padding={5}
+                paddingRight={10}
+                opacity={0.5}
+                left={30}
+                border={'50%'}
+              />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -993,14 +977,11 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -1092,10 +1073,9 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     await act(async () => {
       await screen.findByTestId('target-selector-style')
@@ -1105,9 +1085,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('target-selector-css')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -1276,11 +1254,13 @@ describe('inspector tests with real metadata', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              static
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1288,14 +1268,11 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -1380,11 +1357,13 @@ describe('inspector tests with real metadata', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              static
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1392,10 +1371,9 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     await act(async () => {
       await screen.findByTestId('toggle-min-max-button')
@@ -1406,9 +1384,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('flexPadding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -1482,11 +1458,13 @@ describe('inspector tests with real metadata', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              static
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1494,10 +1472,9 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     await act(async () => {
       await screen.findByTestId('toggle-min-max-button')
@@ -1508,9 +1485,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('flexPadding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -1576,14 +1551,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const fontSizeControl = (await renderResult.renderedDOM.findByTestId(
       'fontSize',
@@ -1609,14 +1581,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const flexBasis = (await renderResult.renderedDOM.findByTestId(
       'position-flexBasis-number-input',
@@ -1665,14 +1634,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-aaa:aaa/bbb'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const flexBasis = (await renderResult.renderedDOM.findByTestId(
       'position-flexBasis-number-input',
@@ -1723,11 +1689,11 @@ describe('inspector tests with real metadata', () => {
   export var storyboard = (
     <Storyboard data-uid='${BakedInStoryboardUID}'>
       <Scene
-        data-uid='scene-1'
-        component={App}
-        props={{}}
+        data-uid='${TestSceneUID}'
         style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-      />
+      >
+        <App data-uid='${TestAppUID}' />
+      </Scene>
     </Storyboard>
   )`,
       ),
@@ -1746,24 +1712,11 @@ describe('inspector tests with real metadata', () => {
 
     const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
 
-    await renderResult.dispatch(
-      [
-        selectComponents(
-          [
-            TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-1']]), [
-              'app-outer-div',
-              'app-inner-div',
-            ]),
-          ],
-          false,
-        ),
-      ],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['app-outer-div', 'app-inner-div'])
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[
-      'utopia-storyboard-uid/scene-1:app-outer-div/app-inner-div'
-    ]
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
 
     const flexPaddingTopControl = (await renderResult.renderedDOM.findByTestId(
       'flexPadding-T',

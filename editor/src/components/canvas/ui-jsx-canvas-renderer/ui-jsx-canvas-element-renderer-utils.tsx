@@ -27,7 +27,7 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-pr
 import { Utils } from '../../../uuiui-deps'
 import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import { SceneComponent, SceneRootRenderer } from './scene-root'
+import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import { Storyboard } from 'utopia-api'
@@ -137,13 +137,6 @@ export function renderCoreElement(
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
-  }
-  if (
-    isJSXElement(element) &&
-    isSceneElement(element) &&
-    getJSXAttribute(element.props, 'component') != null
-  ) {
-    return <SceneRootRenderer sceneElement={element} filePath={filePath} validPaths={validPaths} />
   }
   switch (element.type) {
     case 'JSX_ELEMENT': {

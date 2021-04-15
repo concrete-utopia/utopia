@@ -418,7 +418,9 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       StoryboardFilePath,
-      instancePathFromString('storyboard-entity/scene-2-entity:same-file-app-div'),
+      instancePathFromString(
+        'storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div',
+      ),
     )
     const expectedResult = normalisePathSuccess(
       TP.dynamicPathToStaticPath(instancePathFromString(':same-file-app-div')),
@@ -433,7 +435,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       SampleNodeModules,
       StoryboardFilePath,
       instancePathFromString(
-        'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
+        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
     )
     const expectedResult = normalisePathSuccess(
@@ -473,7 +475,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       SampleNodeModules,
       '/utopia/unparsedstoryboard.js',
       instancePathFromString(
-        'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
+        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
     )
     const expectedResult = normalisePathUnableToProceed('/utopia/unparsedstoryboard.js')
@@ -485,7 +487,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       SampleNodeModules,
       StoryboardFilePath,
       instancePathFromString(
-        'storyboard-entity/scene-1-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',
+        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',
       ),
     )
     const expectedResult = normalisePathEndsAtDependency('utopia-api')

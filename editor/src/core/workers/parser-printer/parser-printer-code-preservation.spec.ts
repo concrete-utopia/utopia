@@ -264,11 +264,11 @@ function Picker() {
       export var storyboard = (
         <Storyboard data-uid='bbb'>
           <Scene
-            component={App}
-            props={{}}
             style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
             data-uid='ccc'
-          />
+          >
+            <App data-uid='app' />
+          </Scene>
         </Storyboard>
       )
       

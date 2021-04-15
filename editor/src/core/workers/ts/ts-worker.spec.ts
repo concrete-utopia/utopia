@@ -368,7 +368,7 @@ const InitWorkerMessageNeedingLoaders: IncomingWorkerMessage = {
     ),
     '/app.js': textFile(
       textFileContents(
-        "/** @jsx jsx */\nimport * as React from 'react'\nimport { Scene, Storyboard, jsx } from 'utopia-api'\nimport icon from './icon.png'\nexport var App = (props) => {\n  return (\n    <div\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}\n      layout={{ layoutSystem: 'pinSystem' }}\n    >\n      <img src={icon} />\n    </div>\n  )\n}\nexport var storyboard = (\n  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>\n    <Scene\n      component={App}\n      props={{}}\n      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}\n    />\n  </Storyboard>\n)\n",
+        "/** @jsx jsx */\nimport * as React from 'react'\nimport { Scene, Storyboard, jsx } from 'utopia-api'\nimport icon from './icon.png'\nexport var App = (props) => {\n  return (\n    <div\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}\n      layout={{ layoutSystem: 'pinSystem' }}\n    >\n      <img src={icon} />\n    </div>\n  )\n}\nexport var storyboard = (\n  <Storyboard layout={{ layoutSystem: 'pinSystem' }}>\n    <Scene style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}>\n      <App />\n    </Scene>\n  </Storyboard>\n)\n",
         unparsed,
         RevisionsState.CodeAhead,
       ),

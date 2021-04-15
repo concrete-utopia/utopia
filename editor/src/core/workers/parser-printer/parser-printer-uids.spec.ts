@@ -29,7 +29,7 @@ describe('parseCode', () => {
           getComponentsFromTopLevelElements(success.topLevelElements),
           'Unique IDs failure.',
         )
-        expect(uniq(uniqueIDs).length).toMatchInlineSnapshot(`74`)
+        expect(uniq(uniqueIDs).length).toMatchInlineSnapshot(`77`)
       },
       (_) => fail('Is unparsed.'),
       parseResult,

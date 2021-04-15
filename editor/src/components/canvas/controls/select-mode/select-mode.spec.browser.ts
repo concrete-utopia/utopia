@@ -1,8 +1,15 @@
 import { act, fireEvent } from '@testing-library/react'
+import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import * as TP from '../../../../core/shared/template-path'
 import { setElectronWindow } from '../../../../core/shared/test-setup.test-utils'
 import { wait } from '../../../../utils/utils.test-utils'
-import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import {
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+  TestAppUID,
+  TestScenePath,
+  TestSceneUID,
+} from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
 
 describe('Select Mode Selection', () => {
@@ -82,240 +89,85 @@ describe('Select Mode Selection', () => {
 
     const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
 
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 2,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-    await waitForAnimationFrame()
+    const doubleClick = async () => {
+      await act(async () => {
+        const domFinished = renderResult.getDomReportDispatched()
+        const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
+        fireEvent(
+          canvasControlsLayer,
+          new MouseEvent('mousedown', {
+            detail: 1,
+            bubbles: true,
+            cancelable: true,
+            metaKey: false,
+            clientX: areaControlBounds.left + 20,
+            clientY: areaControlBounds.top + 20,
+            buttons: 1,
+          }),
+        )
+        fireEvent(
+          canvasControlsLayer,
+          new MouseEvent('mousedown', {
+            detail: 2,
+            bubbles: true,
+            cancelable: true,
+            metaKey: false,
+            clientX: areaControlBounds.left + 20,
+            clientY: areaControlBounds.top + 20,
+            buttons: 1,
+          }),
+        )
+        await domFinished
+        await dispatchDone
+      })
+      await waitForAnimationFrame()
+    }
+
+    await doubleClick()
 
     const selectedViews1 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews1).toEqual([
-      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), ['a']),
+      TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID]),
     ])
 
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 2,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-    await waitForAnimationFrame()
+    await doubleClick()
 
     const selectedViews2 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews2).toEqual([
-      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), ['a', 'b']),
+      TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID, TestAppUID]),
     ])
 
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 2,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-    await waitForAnimationFrame()
+    await doubleClick()
 
     const selectedViews3 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews3).toEqual([
-      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), ['a', 'b', 'c']),
-    ])
+    expect(selectedViews3).toEqual([TP.instancePath(TestScenePath, ['a'])])
 
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 2,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-    await waitForAnimationFrame()
+    await doubleClick()
 
     const selectedViews4 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews4).toEqual([
-      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), ['a', 'b', 'c', 'd']),
-    ])
+    expect(selectedViews4).toEqual([TP.instancePath(TestScenePath, ['a', 'b'])])
 
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 2,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-    await waitForAnimationFrame()
+    await doubleClick()
 
     const selectedViews5 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews5).toEqual([
-      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), [
-        'a',
-        'b',
-        'c',
-        'd',
-        'e',
-      ]),
-    ])
+    expect(selectedViews5).toEqual([TP.instancePath(TestScenePath, ['a', 'b', 'c'])])
 
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 1,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousedown', {
-          detail: 2,
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 20,
-          clientY: areaControlBounds.top + 20,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-    await waitForAnimationFrame()
+    await doubleClick()
 
-    // after 6 "double clicks", the `targetdiv` div should be selected
     const selectedViews6 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews6).toEqual([
-      TP.instancePath(TP.scenePath([['utopia-storyboard-uid', 'scene-aaa']]), [
-        'a',
-        'b',
-        'c',
-        'd',
-        'e',
-        'targetdiv',
-      ]),
+    expect(selectedViews6).toEqual([TP.instancePath(TestScenePath, ['a', 'b', 'c', 'd'])])
+
+    await doubleClick()
+
+    const selectedViews7 = renderResult.getEditorState().editor.selectedViews
+    expect(selectedViews7).toEqual([TP.instancePath(TestScenePath, ['a', 'b', 'c', 'd', 'e'])])
+
+    await doubleClick()
+
+    // after 8 "double clicks", the `targetdiv` div should be selected
+    const selectedViews8 = renderResult.getEditorState().editor.selectedViews
+    expect(selectedViews8).toEqual([
+      TP.instancePath(TestScenePath, ['a', 'b', 'c', 'd', 'e', 'targetdiv']),
     ])
   })
 })

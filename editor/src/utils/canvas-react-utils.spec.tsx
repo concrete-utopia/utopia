@@ -17,11 +17,13 @@ const Storyboard = (props: React.PropsWithChildren<any>) => {
   return <React.Fragment key='monkey-oh-monkey-please-leave-me-be'>{props.children}</React.Fragment>
 }
 
-const Scene = (props: { component: any; 'data-uid': string; style?: any; props?: any }) => {
-  const { component, 'data-uid': uid, style, ...restProps } = props
-  const child = React.createElement(component, { ...restProps, ...props.props })
-  const result = <div style={props.style}>{child}</div>
-  return { ...result }
+const Scene = (props: { 'data-uid': string; style?: any; children?: any }) => {
+  const { 'data-uid': uid, style, children } = props
+  return (
+    <div data-uid={uid} style={style}>
+      {children}
+    </div>
+  )
 }
 
 const SceneComponent = () => {
@@ -372,11 +374,15 @@ describe('Monkey Function', () => {
     expect(
       renderToFormattedString(
         <Storyboard data-uid='ignore'>
-          <Scene data-uid='scene' component={SceneComponent} />
+          <Scene data-uid='scene'>
+            <SceneComponent data-uid='scene-component' />
+          </Scene>
         </Storyboard>,
       ),
     ).toMatchInlineSnapshot(`
-      "<div data-uid=\\"scene ignore\\"><div data-uid=\\"cica\\">Hello!</div></div>
+      "<div data-uid=\\"scene ignore\\">
+        <div data-uid=\\"cica scene-component\\">Hello!</div>
+      </div>
       "
     `)
   })
@@ -567,20 +573,17 @@ describe('Monkey Function', () => {
     }
     var storyboard = (
       <Storyboard data-uid={BakedInStoryboardUID}>
-        <Scene
-          style={{ left: 0, top: 0, width: 400, height: 400 }}
-          component={App}
-          props={{ layout: { bottom: 0, left: 0, right: 0, top: 0 } }}
-          data-uid={'scene-aaa'}
-        />
+        <Scene style={{ left: 0, top: 0, width: 400, height: 400 }} data-uid={'scene-aaa'}>
+          <App data-uid='app' style={{ bottom: 0, left: 0, right: 0, top: 0 }} />
+        </Scene>
       </Storyboard>
     )
     expect(renderToFormattedString(storyboard)).toMatchInlineSnapshot(`
       "<div
-        style=\\"left: 0; top: 0; width: 400px; height: 400px;\\"
         data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+        style=\\"left: 0; top: 0; width: 400px; height: 400px;\\"
       >
-        <div data-uid=\\"zzz\\">
+        <div data-uid=\\"zzz app\\">
           <div data-uid=\\"ccc aaa\\">Hello World!!</div>
           <div data-uid=\\"ddd bbb\\">Hello Dolly!!</div>
         </div>

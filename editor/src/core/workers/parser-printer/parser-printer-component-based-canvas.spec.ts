@@ -22,20 +22,12 @@ export var App = (props) => {
 export var ${BakedInStoryboardVariableName} = (props) => {
   return (
     <Canvas data-uid='${BakedInStoryboardUID}'>
-      <Scene
-        style={{ height: 200, left: 59, width: 200, top: 79 }}
-        component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ style: { height: '100%', width: '100%' }, title: 'Hi there!' }}
-        data-uid='scene-0'
-      />
-      <Scene
-        style={{ height: 400, left: 459, width: 400, top: 79 }}
-        component={App}
-        layout={{ layoutSystem: 'pinSystem' }}
-        props={{ style: { height: '100%', width: '100%' }, title: 'woo there!' }}
-        data-uid='scene-1'
-      />
+      <Scene style={{ height: 200, left: 59, width: 200, top: 79 }} data-uid='scene-0'>
+        <App data-uid='app-0' style={{ height: '100%', width: '100%' }} title='Hi there!' />
+      </Scene>
+      <Scene style={{ height: 400, left: 459, width: 400, top: 79 }} data-uid='scene-1'>
+        <App data-uid='app-1' style={{ height: '100%', width: '100%' }} title='woo there!' />
+      </Scene>
     </Canvas>
   )
 }

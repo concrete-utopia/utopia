@@ -52,7 +52,6 @@ export function buildSpyWrappedElement(
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
-      componentName: null,
       label: null,
     }
     const isChildOfRootScene = TP.pathsEqual(
