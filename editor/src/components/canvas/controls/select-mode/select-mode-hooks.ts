@@ -257,10 +257,6 @@ function useStartDragState(): (
         entireEditorStoreRef.current.editor,
       )
 
-      const elementsThatRespectLayout = selectElementsThatRespectLayout(
-        entireEditorStoreRef.current,
-      )
-
       const duplicate = event.altKey
       const duplicateNewUIDs = duplicate
         ? createDuplicationNewUIDs(selectedViews, componentMetadata, rootComponents)
@@ -269,14 +265,8 @@ function useStartDragState(): (
       const isTargetSelected = selectedViews.some((sv) => TP.pathsEqual(sv, target))
       const selection =
         isTargetSelected && TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
-      const moveTargets = selection.filter(
-        (view) =>
-          TP.isScenePath(view) ||
-          TP.isStoryboardDescendant(view) || // FIXME This must go in the bin when we separate the Scene from the component it renders
-          elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
-      )
 
-      let originalFrames = getOriginalCanvasFrames(moveTargets, componentMetadata)
+      let originalFrames = getOriginalCanvasFrames(selection, componentMetadata)
       originalFrames = originalFrames.filter((f) => f.frame != null)
 
       const selectionArea = boundingRectangleArray(
@@ -300,7 +290,7 @@ function useStartDragState(): (
             duplicateNewUIDs,
             start,
             componentMetadata,
-            moveTargets,
+            selection,
           ),
         ),
       ])
