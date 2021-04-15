@@ -3176,7 +3176,7 @@ export const UPDATE_FNS = {
   },
   SHOW_CONTEXT_MENU: (action: ShowContextMenu, editor: EditorModel): EditorModel => {
     // side effect!
-    openMenu(action.menuName, action.event, action.props)
+    openMenu(action.menuName, action.event)
     return editor
   },
   SEND_PREVIEW_MODEL: (action: SendPreviewModel, editor: EditorModel): EditorModel => {
