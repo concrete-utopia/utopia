@@ -1556,6 +1556,17 @@ export const MetadataUtils = {
       return false
     }
   },
+  isFocusableLeafComponent(
+    path: TemplatePath,
+    components: UtopiaJSXComponent[],
+    metadata: ElementInstanceMetadataMap,
+    imports: Imports,
+  ): boolean {
+    return (
+      MetadataUtils.getChildrenPaths(metadata, path).length === 0 &&
+      MetadataUtils.isFocusableComponent(path, components, metadata, imports)
+    )
+  },
 }
 
 export function findElementAtPath(
