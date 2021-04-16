@@ -20,6 +20,7 @@ import {
   InstancePath,
   Imports,
   ScenePath,
+  NodeModules,
 } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
@@ -54,6 +55,7 @@ import {
 } from './select-mode/select-mode-hooks'
 import { NO_OP } from '../../../core/shared/utils'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { ProjectContentTreeRoot } from '../../assets'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -225,32 +227,32 @@ interface NewCanvasControlsInnerProps {
 
 export const selectElementsThatRespectLayout = createSelector(
   (store: EditorStore) => store.derived.navigatorTargets,
-  (store) => store.editor.propertyControlsInfo,
-  (store) => getOpenImportsFromState(store.editor),
-  (store) => getOpenUIJSFileKey(store.editor),
-  (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
-  (store) => store.editor.jsxMetadata,
+  (store: EditorStore) => store.editor.propertyControlsInfo,
+  (store: EditorStore) => getOpenUIJSFileKey(store.editor),
+  (store: EditorStore) => store.editor.projectContents,
+  (store: EditorStore) => store.editor.nodeModules.files,
+  (store: EditorStore) => store.editor.jsxMetadata,
   (
     navigatorTargets: TemplatePath[],
     propertyControlsInfo: PropertyControlsInfo,
-    openImports: Imports,
     openFilePath: string | null,
-    rootComponents: UtopiaJSXComponent[],
-    jsxMetadata: ElementInstanceMetadataMap,
+    projectContents: ProjectContentTreeRoot,
+    nodeModules: NodeModules,
+    metadata: ElementInstanceMetadataMap,
   ) => {
-    return flatMapArray((view) => {
-      const rootElements = MetadataUtils.getRootViewPaths(jsxMetadata, view)
+    const targetsWithRootViewPaths = flatMapArray((view) => {
+      const rootElements = MetadataUtils.getRootViewPaths(metadata, view)
       return [view, ...rootElements]
-    }, navigatorTargets).filter((view) =>
-      targetRespectsLayout(
+    }, navigatorTargets)
+    return targetsWithRootViewPaths.filter((view) => {
+      return targetRespectsLayout(
         view,
         propertyControlsInfo,
-        openImports,
         openFilePath,
-        rootComponents,
-        jsxMetadata,
-      ),
-    )
+        projectContents,
+        nodeModules,
+      )
+    })
   },
 )
 

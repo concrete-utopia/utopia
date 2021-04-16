@@ -25,13 +25,17 @@ import {
   isIntrinsicHTMLElement,
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
+  JSXElement,
+  getJSXElementNameLastPart,
 } from '../shared/element-template'
 import {
   esCodeFile,
   Imports,
   isEsCodeFile,
   NodeModules,
+  ParseSuccess,
   ProjectContents,
+  StaticInstancePath,
   TemplatePath,
 } from '../shared/project-file-types'
 import {
@@ -39,11 +43,14 @@ import {
   getOpenUtopiaJSXComponentsFromState,
   getOpenUIJSFileKey,
   EditorState,
+  withUnderlyingTarget,
 } from '../../components/editor/store/editor-state'
 import { MetadataUtils } from '../model/element-metadata-utils'
 import { HtmlElementStyleObjectProps } from '../third-party/html-intrinsic-elements'
 import { ExportsInfo } from '../workers/ts/ts-worker'
 import { ProjectContentTreeRoot } from '../../components/assets'
+import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
+import { importedFromWhere } from '../../components/editor/import-utils'
 
 export interface FullNodeModulesUpdate {
   type: 'FULL_NODE_MODULES_UPDATE'
@@ -354,65 +361,77 @@ export function getPropertyControlsForTargetFromEditor(
   target: TemplatePath,
   editor: EditorState,
 ): PropertyControls | null {
-  const propertyControlsInfo = editor.propertyControlsInfo
-  const imports = getOpenImportsFromState(editor)
   const openFilePath = getOpenUIJSFileKey(editor)
-  const rootComponents = getOpenUtopiaJSXComponentsFromState(editor)
   return getPropertyControlsForTarget(
     target,
-    propertyControlsInfo,
-    imports,
+    editor.propertyControlsInfo,
     openFilePath,
-    rootComponents,
-    editor.jsxMetadata,
+    editor.projectContents,
+    editor.nodeModules.files,
   )
 }
 
 export function getPropertyControlsForTarget(
   target: TemplatePath,
   propertyControlsInfo: PropertyControlsInfo,
-  openImports: Imports,
   openFilePath: string | null,
-  rootComponents: UtopiaJSXComponent[],
-  jsxMetadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
 ): PropertyControls | null {
-  const tagName = MetadataUtils.getJSXElementTagName(target, rootComponents, jsxMetadata)
-  const importedName = MetadataUtils.getJSXElementBaseName(target, rootComponents, jsxMetadata)
-  const jsxName = MetadataUtils.getJSXElementName(target, rootComponents, jsxMetadata)
-  if (importedName != null && tagName != null) {
-    // TODO default and star imports
-    let filename = Object.keys(openImports).find((key) => {
-      return pluck(openImports[key].importedFromWithin, 'name').includes(importedName)
-    })
-    if (filename == null && jsxName != null && isIntrinsicHTMLElement(jsxName)) {
-      /**
-       * We detected an intrinsic HTML Element (such as div, a, span, etc...)
-       * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
-       * information for them, feel free to turn this into a real data structure that contains specific props for specific elements,
-       * but for now, I just return a one-size-fits-all PropertyControls result here
-       */
-      return HtmlElementStyleObjectProps
-    }
-    if (filename == null && openFilePath != null) {
-      filename = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
-    }
-    if (filename != null) {
-      // TODO figure out absolute filepath
-      const absoluteFilePath = filename.startsWith('.') ? `${filename.slice(1)}` : `${filename}`
-      if (
-        propertyControlsInfo[absoluteFilePath] != null &&
-        propertyControlsInfo[absoluteFilePath][tagName] != null
-      ) {
-        return propertyControlsInfo[absoluteFilePath][tagName] as PropertyControls
+  return withUnderlyingTarget(
+    target,
+    projectContents,
+    nodeModules,
+    openFilePath,
+    null,
+    (
+      success: ParseSuccess,
+      element: JSXElement,
+      underlyingTarget: StaticInstancePath,
+      underlyingFilePath: string,
+    ) => {
+      const importedFrom = importedFromWhere(
+        underlyingFilePath,
+        element.name.baseVariable,
+        success.topLevelElements,
+        success.imports,
+      )
+
+      let filenameForLookup: string | null = null
+      if (importedFrom == null) {
+        if (isIntrinsicHTMLElement(element.name)) {
+          /**
+           * We detected an intrinsic HTML Element (such as div, a, span, etc...)
+           * for the sake of simplicity, we assume here that they all support the style prop. if we need more detailed
+           * information for them, feel free to turn this into a real data structure that contains specific props for specific elements,
+           * but for now, I just return a one-size-fits-all PropertyControls result here
+           */
+          return HtmlElementStyleObjectProps
+        } else if (openFilePath != null) {
+          filenameForLookup = openFilePath.replace(/\.(js|jsx|ts|tsx)$/, '')
+        }
       } else {
-        return null
+        filenameForLookup = importedFrom
       }
-    } else {
-      return null
-    }
-  } else {
-    return null
-  }
+      if (filenameForLookup == null) {
+        return null
+      } else {
+        // TODO figure out absolute filepath
+        const absoluteFilePath = filenameForLookup.startsWith('.')
+          ? `${filenameForLookup.slice(1)}`
+          : `${filenameForLookup}`
+        const nameLastPart = getJSXElementNameLastPart(element.name)
+        if (
+          propertyControlsInfo[absoluteFilePath] != null &&
+          propertyControlsInfo[absoluteFilePath][nameLastPart] != null
+        ) {
+          return propertyControlsInfo[absoluteFilePath][nameLastPart] as PropertyControls
+        } else {
+          return null
+        }
+      }
+    },
+  )
 }
 
 export const PropertyControlsInfoIFrameID = 'property-controls-info-frame'

@@ -256,6 +256,9 @@ function useStartDragState(): (
       const rootComponents = getOpenUtopiaJSXComponentsFromState(
         entireEditorStoreRef.current.editor,
       )
+      const elementsThatRespectLayout = selectElementsThatRespectLayout(
+        entireEditorStoreRef.current,
+      )
 
       const duplicate = event.altKey
       const duplicateNewUIDs = duplicate
@@ -264,12 +267,17 @@ function useStartDragState(): (
 
       const isTargetSelected = selectedViews.some((sv) => TP.pathsEqual(sv, target))
 
-      // FIXME: Re-establish filtering based on `selectElementsThatRespectLayout`.
-      // https://github.com/concrete-utopia/utopia/pull/1088/files/460e68fb6b4156833744a5441c9e56d662c8b51d#r614029462
       const selection =
         isTargetSelected && TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
 
-      let originalFrames = getOriginalCanvasFrames(selection, componentMetadata)
+      const moveTargets = selection.filter(
+        (view) =>
+          TP.isScenePath(view) ||
+          TP.isStoryboardDescendant(view) || // FIXME This must go in the bin when we separate the Scene from the component it renders
+          elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
+      )
+
+      let originalFrames = getOriginalCanvasFrames(moveTargets, componentMetadata)
       originalFrames = originalFrames.filter((f) => f.frame != null)
 
       const selectionArea = boundingRectangleArray(
@@ -293,7 +301,7 @@ function useStartDragState(): (
             duplicateNewUIDs,
             start,
             componentMetadata,
-            selection,
+            moveTargets,
           ),
         ),
       ])
