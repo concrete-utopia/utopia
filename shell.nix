@@ -23,9 +23,7 @@ let
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run build
+      update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true install
     '')
@@ -100,6 +98,13 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
       ${node}/bin/npm --scripts-prepend-node-path=true install
       ${node}/bin/npm --scripts-prepend-node-path=true run build
+    '')
+    (pkgs.writeScriptBin "update-vscode-build-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      build-utopia-vscode-extension
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      ${pkgs.yarn}/bin/yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "build-vscode" ''
       #!/usr/bin/env bash
@@ -256,12 +261,6 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
       ${node}/bin/npm --scripts-prepend-node-path=true install
       ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
-    '')
-    (pkgs.writeScriptBin "update-vscode-build-extension" ''
-      #!/usr/bin/env bash
-      set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${pkgs.yarn}/bin/yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
       #!/usr/bin/env bash
