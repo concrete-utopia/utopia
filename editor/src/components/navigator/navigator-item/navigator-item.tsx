@@ -13,7 +13,10 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
 import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { WarningIcon } from '../../../uuiui/warning-icon'
-import { ElementWarnings } from '../../editor/store/editor-state'
+import {
+  ElementWarnings,
+  getJSXComponentsAndImportsForPathInnerComponentFromState,
+} from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import {
   betterReactMemo,
@@ -138,10 +141,16 @@ const computeResultingStyle = (
   isScene: boolean,
   fullyVisible: boolean,
   isFocusedComponent: boolean,
+  isFocusableComponent: boolean,
 ) => {
   let result = defaultUnselected
   if (selected) {
-    if (isInsideComponent) {
+    if (isFocusableComponent && !isFocusedComponent) {
+      result = {
+        style: { backgroundColor: colorTheme.brandPurple.value, color: colorTheme.white.value },
+        iconColor: 'white',
+      }
+    } else if (isInsideComponent) {
       result = componentSelected
     } else if (isDynamic) {
       result = dynamicSelected
@@ -250,6 +259,20 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       'NavigatorItem isFocusedComponent',
     )
 
+    const isFocusableComponent = useEditorState((store) => {
+      const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+        templatePath,
+        store.editor,
+        store.derived,
+      )
+      return MetadataUtils.isFocusableComponent(
+        templatePath,
+        components,
+        store.editor.jsxMetadata,
+        imports,
+      )
+    }, 'NavigatorItem isFocusable')
+
     const childComponentCount = props.noOfChildren
 
     const isDynamic =
@@ -266,6 +289,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
       TP.isScenePath(templatePath),
       fullyVisible,
       isFocusedComponent,
+      isFocusableComponent,
     )
 
     let warningText: string | null = null
