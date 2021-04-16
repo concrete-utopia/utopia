@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { MapLike } from 'typescript'
 import { getUtopiaID } from '../../../core/model/element-template-utils'
-import { isSceneElement } from '../../../core/model/scene-utils'
+import { isSceneElementIgnoringImports } from '../../../core/model/scene-utils'
 import {
   UTOPIA_PATHS_KEY,
   UTOPIA_SCENE_PATH,
@@ -290,7 +290,7 @@ function renderJSXElement(
   const elementInScope = getElementFromScope(jsx, inScope)
   const elementFromImport = getElementFromScope(jsx, requireResult)
   const elementFromScopeOrImport = Utils.defaultIfNull(elementFromImport, elementInScope)
-  const elementIsScene = isSceneElement(jsx)
+  const elementIsScene = isSceneElementIgnoringImports(jsx)
   const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
   const elementIsIntrinsic =
     !elementIsScene && elementFromScopeOrImport == null && isIntrinsicElement(jsx.name)

@@ -281,7 +281,7 @@ export function sceneMetadata(
   return scene
 }
 
-export function isSceneElement(element: JSXElement): boolean {
+export function isSceneElementIgnoringImports(element: JSXElement): boolean {
   // TODO SCENES, how to decide if something is a scene?
   return element.name.baseVariable === 'Scene'
 }

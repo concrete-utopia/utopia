@@ -117,7 +117,7 @@ import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
 import {
   createSceneTemplatePath,
-  isSceneElement,
+  isSceneElementIgnoringImports,
   BakedInStoryboardVariableName,
   EmptyScenePathForStoryboard,
   isDynamicSceneChildWidthHeightPercentage,
@@ -869,7 +869,7 @@ export function getSceneElementsFromParseSuccess(success: ParseSuccess): JSXElem
     throw new Error('the root element must be a Storyboard component')
   }
   return rootElement.children.filter(
-    (child): child is JSXElement => isJSXElement(child) && isSceneElement(child),
+    (child): child is JSXElement => isJSXElement(child) && isSceneElementIgnoringImports(child),
   )
 }
 

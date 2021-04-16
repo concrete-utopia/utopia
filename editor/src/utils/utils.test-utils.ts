@@ -56,7 +56,7 @@ import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
   PathForSceneDataLabel,
-  isSceneElement,
+  isSceneElementIgnoringImports,
 } from '../core/model/scene-utils'
 import { NO_OP } from '../core/shared/utils'
 import * as PP from '../core/shared/property-path'
@@ -282,7 +282,7 @@ function createFakeMetadataForJSXElement(
           ...props,
         },
         topLevelElements,
-        isSceneElement(element),
+        isSceneElementIgnoringImports(element),
       ),
     )
     const childPaths = children.map((child) => child.templatePath)

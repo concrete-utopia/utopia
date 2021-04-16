@@ -17,6 +17,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { isRight } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
+import { isProbablySceneFromMetadata } from './navigator-item/navigator-item'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -75,16 +76,14 @@ export function createLayoutOrElementIconResult(
 ): LayoutIconResult {
   let hasWidthOrHeight: boolean = false
 
-  const element = TP.isInstancePath(path)
-    ? MetadataUtils.getElementByInstancePathMaybe(metadata, path)
-    : null
+  const element = MetadataUtils.findElementByTemplatePath(metadata, path)
 
   if (element != null && element.props != null && element.props.style != null) {
     hasWidthOrHeight = element.props.style['width'] != null || element.props.style['height'] != null
   }
 
   const layoutIcon = createLayoutIconProps(path, metadata)
-  if (TP.isScenePath(path)) {
+  if (isProbablySceneFromMetadata(metadata, path)) {
     return {
       iconProps: {
         category: 'component',
@@ -92,7 +91,7 @@ export function createLayoutOrElementIconResult(
         width: 18,
         height: 18,
       },
-      hasWidthOrHeight: hasWidthOrHeight,
+      hasWidthOrHeight: false,
     }
   } else if (layoutIcon != null) {
     return {
@@ -210,10 +209,10 @@ function createComponentIconProps(
   imports: Imports,
 ): IcnPropsBase | null {
   const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
-  const elementInstancePath = TP.isInstancePath(path)
-    ? path
-    : TP.instancePathForElementAtScenePath(path)
-  const element = MetadataUtils.getElementByInstancePathMaybe(metadata, elementInstancePath)
+  const element = MetadataUtils.findElementByTemplatePath(metadata, path)
+  if (isProbablySceneFromMetadata(metadata, path)) {
+    return null
+  }
   if (element?.isEmotionOrStyledComponent) {
     return {
       category: 'component',
