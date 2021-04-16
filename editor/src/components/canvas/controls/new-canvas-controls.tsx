@@ -14,6 +14,7 @@ import {
   EditorStore,
   getOpenUIJSFileKey,
   TransientCanvasState,
+  getJSXComponentsAndImportsForPathInnerComponentFromState,
 } from '../../editor/store/editor-state'
 import {
   TemplatePath,
@@ -396,8 +397,20 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           if (frame == null) {
             return null
           }
-          const color = TP.isScenePath(path)
-            ? colorTheme.canvasSelectionSceneOutline.value
+          const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+            path,
+            props.editor,
+            props.derived,
+          )
+          const isFocusableComponent = MetadataUtils.isFocusableComponent(
+            path,
+            components,
+            componentMetadata,
+            imports,
+          )
+          const isFocusedComponent = TP.isFocused(props.editor.focusedElementPath, path)
+          const color = (isFocusableComponent || isFocusedComponent)
+            ? colorTheme.canvasSelectionIsolatedComponent.value
             : colorTheme.canvasSelectionPrimaryOutline.value
           return (
             <HighlightControl
