@@ -27,6 +27,13 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true install
     '')
+    (pkgs.writeScriptBin "install-editor-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      build-utopia-vscode-common
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      ${node}/bin/npm --scripts-prepend-node-path=true install
+    '')
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash
       set -e
@@ -72,15 +79,15 @@ let
     (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
       set -e
-      install-editor
+      install-editor-ci
       install-website
       check-editor-ci
       test-website
     '')
-    (pkgs.writeScriptBin "build-editor-staging" ''
+    (pkgs.writeScriptBin "build-editor-staging-ci" ''
       #!/usr/bin/env bash
       set -e
-      install-editor
+      install-editor-ci
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true run staging
     '')
@@ -262,11 +269,17 @@ let
       ${node}/bin/npm --scripts-prepend-node-path=true install
       ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
     '')
+    (pkgs.writeScriptBin "pull-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      ${pkgs.yarn}/bin/yarn run pull-utopia-extension
+    '')
     (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${pkgs.nodePackages.nodemon}/bin/nodemon --watch ../utopia-vscode-extension/dist/browser/extension.js --exec update-vscode-build-extension
+      ${pkgs.nodePackages.nodemon}/bin/nodemon --watch ../utopia-vscode-extension/dist/browser/extension.js --exec pull-extension
     '')
     (pkgs.writeScriptBin "watch-vscode-dev" ''
       #!/usr/bin/env bash
