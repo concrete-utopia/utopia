@@ -21,6 +21,7 @@ import {
   writeFileUnsavedContentAsUTF8,
   clearFileUnsavedContent,
   sendInitialData,
+  applyPrettier,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
@@ -100,6 +101,11 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
       if (isUtopiaDocument(event.document)) {
         const path = fromUtopiaURI(event.document.uri)
         dirtyFiles.delete(path)
+
+        if (event.reason === vscode.TextDocumentSaveReason.Manual) {
+          const formattedCode = applyPrettier(event.document.getText(), false).formatted
+          event.waitUntil(Promise.resolve([new vscode.TextEdit(entireDocRange(), formattedCode)]))
+        }
       }
     }),
     vscode.workspace.onDidCloseTextDocument((document) => {
