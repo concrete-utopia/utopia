@@ -1,7 +1,11 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { JSXElementName } from '../../../core/shared/element-template'
+import {
+  ElementInstanceMetadataMap,
+  isJSXElement,
+  JSXElementName,
+} from '../../../core/shared/element-template'
 import { ElementOriginType, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
@@ -11,8 +15,6 @@ import { ItemLabel } from './item-label'
 import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
-import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
-import { WarningIcon } from '../../../uuiui/warning-icon'
 import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import {
@@ -23,6 +25,8 @@ import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { isSceneElementIgnoringImports } from '../../../core/model/scene-utils'
+import { isRight } from '../../../core/shared/either'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -135,7 +139,7 @@ const computeResultingStyle = (
   selected: boolean,
   isInsideComponent: boolean,
   isDynamic: boolean,
-  isScene: boolean,
+  isProbablyScene: boolean,
   fullyVisible: boolean,
   isFocusedComponent: boolean,
 ) => {
@@ -160,7 +164,7 @@ const computeResultingStyle = (
   }
 
   let boxShadow: string | undefined = undefined
-  if (isScene) {
+  if (isProbablyScene) {
     boxShadow = `inset 0 -1px ${colorTheme.inputBorder.value}`
   } else if (isFocusedComponent) {
     boxShadow = `inset 0 1px ${colorTheme.inputBorder.value}`
@@ -169,7 +173,7 @@ const computeResultingStyle = (
   // additional style
   result.style = {
     ...result.style,
-    fontWeight: isScene ? 500 : 'inherit',
+    fontWeight: isProbablyScene ? 500 : 'inherit',
     opacity: fullyVisible ? 1 : 0.5,
     boxShadow: boxShadow,
   }
@@ -182,10 +186,9 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
     const metadata = store.editor.jsxMetadata
     const selectedViews = store.editor.selectedViews
     const isSelected = selectedViews.some((selected) => TP.pathsEqual(path, selected))
-    const isParentOfSelected = selectedViews.some((selected) =>
-      TP.pathsEqual(path, TP.parentPath(selected)),
-    )
-    const isScenePath = TP.isScenePath(path)
+    const isParentOfSelected = selectedViews.some((selected) => TP.isParentOf(path, selected))
+
+    const isStoryboardChild = TP.isStoryboardChild(path)
 
     const isContainingBlockAncestor = selectedViews.some((selected) => {
       return TP.pathsEqual(MetadataUtils.findContainingBlock(metadata, selected), path)
@@ -216,7 +219,7 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
       TP.isFocused(store.editor.focusedElementPath, path) || TP.isInsideFocusedComponent(path)
 
     return (
-      isScenePath ||
+      isStoryboardChild ||
       isSelected ||
       isParentOfSelected ||
       isContainingBlockAncestor ||
@@ -224,6 +227,26 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
       isInsideFocusedComponent
     )
   }, 'NavigatorItem useStyleFullyVisible')
+}
+
+export function isProbablySceneFromMetadata(
+  jsxMetadata: ElementInstanceMetadataMap,
+  path: TemplatePath,
+): boolean {
+  const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+  return (
+    elementMetadata != null &&
+    isRight(elementMetadata.element) &&
+    isJSXElement(elementMetadata.element.value) &&
+    isSceneElementIgnoringImports(elementMetadata.element.value)
+  )
+}
+
+function useIsProbablyScene(path: TemplatePath): boolean {
+  return useEditorState(
+    (store) => isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
+    'NavigatorItem useIsProbablyScene',
+  )
 }
 
 export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = betterReactMemo(
@@ -258,12 +281,13 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
 
     const isInsideComponent = TP.isInsideFocusedComponent(templatePath) || isFocusedComponent
     const fullyVisible = useStyleFullyVisible(templatePath)
+    const isProbablyScene = useIsProbablyScene(templatePath)
 
     const resultingStyle = computeResultingStyle(
       selected,
       isInsideComponent,
       isDynamic,
-      TP.isScenePath(templatePath),
+      isProbablyScene,
       fullyVisible,
       isFocusedComponent,
     )
@@ -315,23 +339,13 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
             selected={selected && !isInsideComponent}
             onMouseDown={collapse}
           />
-          {TP.isScenePath(templatePath) ? (
-            <SceneNavigatorRowLabel
-              {...props}
-              collapse={collapse}
-              isDynamic={isDynamic}
-              iconColor={resultingStyle.iconColor}
-              warningText={warningText}
-            />
-          ) : (
-            <NavigatorRowLabel
-              {...props}
-              collapse={collapse}
-              isDynamic={isDynamic}
-              iconColor={resultingStyle.iconColor}
-              warningText={warningText}
-            />
-          )}
+          <NavigatorRowLabel
+            {...props}
+            collapse={collapse}
+            isDynamic={isDynamic}
+            iconColor={resultingStyle.iconColor}
+            warningText={warningText}
+          />
         </FlexRow>
         <NavigatorItemActionSheet
           templatePath={templatePath}
@@ -379,61 +393,6 @@ const NavigatorRowLabel = (props: NavigatorRowProps) => {
         path={props.templatePath}
         color={props.iconColor}
       />
-    </React.Fragment>
-  )
-}
-
-const SceneNavigatorRowLabel = (props: NavigatorRowProps) => {
-  return (
-    <React.Fragment>
-      <LayoutIcon
-        key={`layout-type-${props.label}`}
-        path={props.templatePath}
-        color={props.iconColor}
-        warningText={props.warningText}
-      />
-      <span
-        style={{
-          marginLeft: 4,
-          marginRight: 4,
-          fontWeight: 600,
-        }}
-      >
-        Scene
-      </span>
-      <span
-        style={{
-          color: props.selected ? undefined : colorTheme.h3Foreground.value,
-          paddingRight: 4,
-        }}
-      >
-        editing
-      </span>
-      <div
-        style={{
-          display: 'flex',
-          backgroundColor: props.selected ? undefined : colorTheme.subduedBorder.value,
-          borderRadius: 1,
-          paddingRight: 4,
-        }}
-      >
-        <ItemLabel
-          key={`label-${props.label}`}
-          testId={`navigator-item-label-${props.label}`}
-          name={props.label}
-          isDynamic={props.isDynamic}
-          target={props.templatePath}
-          canRename={props.selected}
-          dispatch={props.dispatch}
-          inputVisible={TP.pathsEqual(props.renamingTarget, props.templatePath)}
-          elementOriginType={props.elementOriginType}
-        />
-        <ComponentPreview
-          key={`preview-${props.label}`}
-          path={props.templatePath}
-          color={props.iconColor}
-        />
-      </div>
     </React.Fragment>
   )
 }

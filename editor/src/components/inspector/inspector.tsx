@@ -75,7 +75,6 @@ import {
 import { ImgSection } from './sections/image-section/image-section'
 import { LayoutSection, ResolvedLayoutProps } from './sections/layout-section/layout-section'
 import { WarningSubsection } from './sections/layout-section/warning-subsection/warning-subsection'
-import { SceneSection } from './sections/scene-inspector/scene-section'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { ClassNameSubsection } from './sections/style-section/className-subsection/className-subsection'
 import { StyleSection } from './sections/style-section/style-section'
@@ -370,8 +369,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
   function renderInspectorContents() {
     if (props.elementPath.length == 0 || anyUnknownElements) {
       return <SettingsPanel />
-    } else if (props.elementPath.length === 1 && TP.isScenePath(props.elementPath[0].path)) {
-      return <SceneSection scenePath={props.elementPath[0].path} />
     } else {
       return (
         <React.Fragment>
