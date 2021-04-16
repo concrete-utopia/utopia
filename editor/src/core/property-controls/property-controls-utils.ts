@@ -416,16 +416,16 @@ export function getPropertyControlsForTarget(
       if (filenameForLookup == null) {
         return null
       } else {
-        // TODO figure out absolute filepath
-        const absoluteFilePath = filenameForLookup.startsWith('.')
-          ? `${filenameForLookup.slice(1)}`
-          : `${filenameForLookup}`
+        // If it's pointing at a path (as opposed to a package), strip off the filename extension.
+        const trimmedPath = filenameForLookup.startsWith('/')
+          ? filenameForLookup.replace(/\.(js|jsx|ts|tsx)$/, '')
+          : filenameForLookup
         const nameLastPart = getJSXElementNameLastPart(element.name)
         if (
-          propertyControlsInfo[absoluteFilePath] != null &&
-          propertyControlsInfo[absoluteFilePath][nameLastPart] != null
+          propertyControlsInfo[trimmedPath] != null &&
+          propertyControlsInfo[trimmedPath][nameLastPart] != null
         ) {
-          return propertyControlsInfo[absoluteFilePath][nameLastPart] as PropertyControls
+          return propertyControlsInfo[trimmedPath][nameLastPart] as PropertyControls
         } else {
           return null
         }

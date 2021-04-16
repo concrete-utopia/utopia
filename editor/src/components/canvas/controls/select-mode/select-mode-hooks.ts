@@ -270,11 +270,8 @@ function useStartDragState(): (
       const selection =
         isTargetSelected && TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
 
-      const moveTargets = selection.filter(
-        (view) =>
-          TP.isScenePath(view) ||
-          TP.isStoryboardDescendant(view) || // FIXME This must go in the bin when we separate the Scene from the component it renders
-          elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
+      const moveTargets = selection.filter((view) =>
+        elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
       )
 
       let originalFrames = getOriginalCanvasFrames(moveTargets, componentMetadata)

@@ -91,14 +91,13 @@ export class SelectModeControlContainer extends React.Component<
   static getDerivedStateFromProps(
     props: SelectModeControlContainerProps,
     previousState: SelectModeControlContainerState,
-  ): SelectModeControlContainerState {
+  ): Partial<SelectModeControlContainerState> {
     const guidelines = collectParentAndSiblingGuidelines(
       props.componentMetadata,
       props.selectedViews,
     )
     return {
       moveGuidelines: keepDeepReferenceEqualityIfPossible(previousState.moveGuidelines, guidelines),
-      lastHovered: null,
     }
   }
 
