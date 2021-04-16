@@ -26,6 +26,7 @@ import {
 } from '../../../editor/actions/action-creators'
 import {
   EditorState,
+  getJSXComponentsAndImportsForPathInnerComponentFromState,
   getOpenUtopiaJSXComponentsFromState,
 } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -463,6 +464,11 @@ export function useSelectModeSelectAndHover(
     getSelectableViewsForSelectMode,
   )
 
+  const editorStoreRef = useRefEditorState((store) => ({
+    editor: store.editor,
+    derived: store.derived,
+  }))
+
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
@@ -490,6 +496,26 @@ export function useSelectModeSelectAndHover(
           updatedSelection = foundTarget != null ? [foundTarget.templatePath] : []
         }
 
+        if (foundTarget != null && TP.isInstancePath(foundTarget.templatePath)) {
+          // for components without passed children doubleclicking enters focus mode
+          const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+            foundTarget.templatePath,
+            editorStoreRef.current.editor,
+            editorStoreRef.current.derived,
+          )
+          const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
+            foundTarget.templatePath,
+            components,
+            editorStoreRef.current.editor.jsxMetadata,
+            imports,
+          )
+          if (isFocusableLeaf) {
+            dispatch([
+              setFocusedElement(TP.scenePathForElementAtInstancePath(foundTarget.templatePath)),
+            ])
+          }
+        }
+
         if (!(foundTarget?.isSelected ?? false)) {
           // first we only set the selected views for the canvas controls
           setSelectedViewsForCanvasControlsOnly(updatedSelection)
@@ -514,6 +540,7 @@ export function useSelectModeSelectAndHover(
       startDragStateAfterDragExceedsThreshold,
       setSelectedViewsForCanvasControlsOnly,
       getSelectableViewsForSelectMode,
+      editorStoreRef,
     ],
   )
 
