@@ -224,7 +224,11 @@ function revealRangeIfPossible(boundsInFile: BoundsInFile): void {
   for (const visibleEditor of visibleEditors) {
     const filename = visibleEditor.document.uri.path
     if (boundsInFile.filePath === filename) {
-      visibleEditor.revealRange(getVSCodeRange(boundsInFile))
+      const rangeToReveal = getVSCodeRange(boundsInFile)
+      const alreadySelected = rangeToReveal.contains(visibleEditor.selection)
+      if (!alreadySelected) {
+        visibleEditor.revealRange(rangeToReveal)
+      }
     }
   }
 }
@@ -275,9 +279,10 @@ function getDecorationsByFilenameAndType(
 }
 
 function getVSCodeRange(bounds: Bounds): vscode.Range {
+  const { startLine, endLine } = bounds
   return new vscode.Range(
-    new vscode.Position(bounds.startLine, bounds.startCol),
-    new vscode.Position(bounds.endLine, bounds.endCol),
+    new vscode.Position(startLine, 0),
+    new vscode.Position(endLine, bounds.endCol),
   )
 }
 
