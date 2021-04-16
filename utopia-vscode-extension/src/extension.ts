@@ -226,7 +226,11 @@ function revealRangeIfPossible(boundsInFile: BoundsInFile): void {
     if (boundsInFile.filePath === filename) {
       const rangeToReveal = getVSCodeRange(boundsInFile)
       const alreadySelected = rangeToReveal.contains(visibleEditor.selection)
-      if (!alreadySelected) {
+      const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
+        r.contains(visibleEditor.selection),
+      )
+      const shouldReveal = !(alreadySelected && alreadyVisible)
+      if (shouldReveal) {
         visibleEditor.revealRange(rangeToReveal)
       }
     }
