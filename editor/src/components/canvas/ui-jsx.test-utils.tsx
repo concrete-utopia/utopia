@@ -32,7 +32,7 @@ import {
   TextFile,
   textFileContents,
 } from '../../core/shared/project-file-types'
-import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
+import { PrettierConfig } from 'utopia-vscode-common'
 import {
   FakeBundlerWorker,
   FakeLinterWorker,

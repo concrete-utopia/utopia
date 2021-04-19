@@ -23,9 +23,14 @@ let
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
-      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
+      update-vscode-build-extension
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true install
-      ${node}/bin/npm --scripts-prepend-node-path=true run build
+    '')
+    (pkgs.writeScriptBin "install-editor-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true install
     '')
@@ -74,15 +79,15 @@ let
     (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
       set -e
-      install-editor
+      install-editor-ci
       install-website
       check-editor-ci
       test-website
     '')
-    (pkgs.writeScriptBin "build-editor-staging" ''
+    (pkgs.writeScriptBin "build-editor-staging-ci" ''
       #!/usr/bin/env bash
       set -e
-      install-editor
+      install-editor-ci
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       ${node}/bin/npm --scripts-prepend-node-path=true run staging
     '')
@@ -100,6 +105,13 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
       ${node}/bin/npm --scripts-prepend-node-path=true install
       ${node}/bin/npm --scripts-prepend-node-path=true run build
+    '')
+    (pkgs.writeScriptBin "update-vscode-build-extension" ''
+      #!/usr/bin/env bash
+      set -e
+      build-utopia-vscode-extension
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
+      ${pkgs.yarn}/bin/yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "build-vscode" ''
       #!/usr/bin/env bash
@@ -257,7 +269,7 @@ let
       ${node}/bin/npm --scripts-prepend-node-path=true install
       ${node}/bin/npm --scripts-prepend-node-path=true run watch-dev
     '')
-    (pkgs.writeScriptBin "update-vscode-build-extension" ''
+    (pkgs.writeScriptBin "pull-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
@@ -267,7 +279,7 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${pkgs.nodePackages.nodemon}/bin/nodemon --watch ../utopia-vscode-extension/dist/browser/extension.js --exec update-vscode-build-extension
+      ${pkgs.nodePackages.nodemon}/bin/nodemon --watch ../utopia-vscode-extension/dist/browser/extension.js --exec pull-extension
     '')
     (pkgs.writeScriptBin "watch-vscode-dev" ''
       #!/usr/bin/env bash

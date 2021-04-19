@@ -12,7 +12,7 @@ import { selectComponents } from '../editor/actions/action-creators'
 import * as Prettier from 'prettier'
 import * as TP from '../../core/shared/template-path'
 
-import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
+import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { setElectronWindow } from '../../core/shared/test-setup.test-utils'

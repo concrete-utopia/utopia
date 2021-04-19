@@ -22,7 +22,7 @@ import {
 } from './canvas-types'
 import { wait } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
-import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
+import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as Prettier from 'prettier'
 import { setElectronWindow } from '../../core/shared/test-setup.test-utils'

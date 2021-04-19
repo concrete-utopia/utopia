@@ -27,6 +27,7 @@ import {
   saveTextFileContents,
   getHighlightBoundsFromParseResult,
   updateFileContents,
+  getHighlightBoundsForProject,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
@@ -58,6 +59,8 @@ import {
   HighlightBoundsForUids,
   StaticElementPath,
   textFile,
+  HighlightBoundsWithFileForUids,
+  HighlightBoundsWithFile,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -117,7 +120,7 @@ import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
 import {
   createSceneTemplatePath,
-  isSceneElement,
+  isSceneElementIgnoringImports,
   BakedInStoryboardVariableName,
   EmptyScenePathForStoryboard,
   isDynamicSceneChildWidthHeightPercentage,
@@ -869,7 +872,7 @@ export function getSceneElementsFromParseSuccess(success: ParseSuccess): JSXElem
     throw new Error('the root element must be a Storyboard component')
   }
   return rootElement.children.filter(
-    (child): child is JSXElement => isJSXElement(child) && isSceneElement(child),
+    (child): child is JSXElement => isJSXElement(child) && isSceneElementIgnoringImports(child),
   )
 }
 
@@ -1807,11 +1810,11 @@ export function getHighlightBoundsForUids(editorState: EditorState): HighlightBo
 export function getHighlightBoundsForTemplatePath(
   path: TemplatePath,
   editorState: EditorState,
-): HighlightBounds | null {
+): HighlightBoundsWithFile | null {
   if (isInstancePath(path)) {
     const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
     if (staticPath != null) {
-      const highlightBounds = getHighlightBoundsForUids(editorState)
+      const highlightBounds = getHighlightBoundsForProject(editorState.projectContents)
       if (highlightBounds != null) {
         const highlightedUID = toUid(staticPath)
         return highlightBounds[highlightedUID]

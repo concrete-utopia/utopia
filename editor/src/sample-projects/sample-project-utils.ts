@@ -82,12 +82,14 @@ export var SameFileApp = (props) => {
 export var storyboard = (
   <Storyboard data-uid='storyboard-entity'>
     <Scene
+      data-label='Imported App'
       data-uid='scene-1-entity'
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
     >
       <App data-uid='app-entity' />
     </Scene>
     <Scene
+      data-label='Same File App'
       data-uid='scene-2-entity'
       style={{ position: 'absolute', left: 400, top: 0, width: 375, height: 812 }}
     >

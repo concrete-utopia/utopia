@@ -1,6 +1,6 @@
 import { forEachValue } from '../../shared/object-utils'
 import { parseThenPrint } from './parser-printer.test-utils'
-import { applyPrettier } from './prettier-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 
 describe('Parsing and printing code with comments', () => {
   const comments = {

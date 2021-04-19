@@ -1,4 +1,4 @@
-import { applyPrettier } from './prettier-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 import {
   clearParseResultUniqueIDsAndEmptyBlocks,
   testParseCode,
