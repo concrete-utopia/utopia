@@ -1997,7 +1997,9 @@ export function modifyUnderlyingForOpenFile(
 
 export function withUnderlyingTarget<T>(
   target: TemplatePath | null,
-  editorState: EditorState,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null,
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
@@ -2016,9 +2018,9 @@ export function withUnderlyingTarget<T>(
     instanceTarget = TP.instancePathForElementAtPath(target)
   }
   const underlyingTarget = normalisePathToUnderlyingTarget(
-    editorState.projectContents,
-    editorState.nodeModules.files,
-    forceNotNull('Designer file should be open.', editorState.canvas.openFile?.filename),
+    projectContents,
+    nodeModules,
+    forceNotNull('Designer file should be open.', openFile),
     instanceTarget,
   )
 
@@ -2046,6 +2048,27 @@ export function withUnderlyingTarget<T>(
   return defaultValue
 }
 
+export function withUnderlyingTargetFromEditorState<T>(
+  target: TemplatePath | null,
+  editorState: EditorState,
+  defaultValue: T,
+  withTarget: (
+    success: ParseSuccess,
+    element: JSXElement,
+    underlyingTarget: StaticInstancePath,
+    underlyingFilePath: string,
+  ) => T,
+): T {
+  return withUnderlyingTarget(
+    target,
+    editorState.projectContents,
+    editorState.nodeModules.files,
+    editorState.canvas.openFile?.filename ?? null,
+    defaultValue,
+    withTarget,
+  )
+}
+
 export function forUnderlyingTarget(
   target: TemplatePath | null,
   editorState: EditorState,
@@ -2056,5 +2079,5 @@ export function forUnderlyingTarget(
     underlyingFilePath: string,
   ) => void,
 ): void {
-  withUnderlyingTarget<any>(target, editorState, {}, withTarget)
+  withUnderlyingTargetFromEditorState<any>(target, editorState, {}, withTarget)
 }
