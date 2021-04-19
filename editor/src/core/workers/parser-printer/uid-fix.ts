@@ -44,12 +44,13 @@ export function fixParseSuccessUIDs(
   zipTopLevelElements(
     oldParsed.topLevelElements,
     newParsed.topLevelElements,
-    (oldElement, newElement, newPath) => {
-      const oldUID = optionalMap(getUtopiaID, oldElement)
-      const newUID = optionalMap(getUtopiaID, newElement)
-
-      if (oldUID != null && newUID != null && oldUID !== newUID) {
-        const oldPathToRestore = TP.appendToElementPath(TP.elementPathParent(newPath), oldUID)
+    (
+      oldUID: string,
+      newUID: string,
+      oldPathToRestore: StaticElementPath,
+      newPath: StaticElementPath,
+    ) => {
+      if (oldUID !== newUID) {
         // we have a UID mismatch
         newToOldUidMapping[newUID] = {
           oldUID: oldUID,
@@ -130,8 +131,9 @@ function zipTopLevelElements(
   firstTopLevelElements: Array<TopLevelElement>,
   secondTopLevelElements: Array<TopLevelElement>,
   onElement: (
-    firstContents: JSXElementChild | null,
-    secondContents: JSXElementChild,
+    oldUID: string,
+    newUID: string,
+    oldPathToRestore: StaticElementPath,
     newTemplatePath: StaticElementPath,
   ) => void,
 ): void {
@@ -160,8 +162,9 @@ function walkElementChildren(
   oldElements: Array<JSXElementChild>,
   newElements: Array<JSXElementChild>,
   onElement: (
-    firstContents: JSXElementChild | null,
-    secondContents: JSXElementChild,
+    oldUID: string,
+    newUID: string,
+    oldPathToRestore: StaticElementPath,
     newTemplatePath: StaticElementPath,
   ) => void,
 ): void {
@@ -174,10 +177,6 @@ function walkElementChildren(
 
   newElements.forEach((newElement, index) => {
     const oldElement: JSXElementChild | null = oldElements[index]
-    const newUid = getUtopiaID(newElement)
-    const path = TP.appendToElementPath(pathSoFar, newUid)
-
-    onElement(oldElement, newElement, path)
 
     if (
       oldElement != null &&
@@ -185,6 +184,11 @@ function walkElementChildren(
       isJSXElement(oldElement) &&
       isJSXElement(newElement)
     ) {
+      const oldUID = getUtopiaID(oldElement)
+      const newUid = getUtopiaID(newElement)
+      const path = TP.appendToElementPath(pathSoFar, newUid)
+      const oldPathToRestore = TP.appendToElementPath(pathSoFar, oldUID)
+      onElement(oldUID, newUid, oldPathToRestore, path)
       walkElementChildren(path, oldElement.children, newElement.children, onElement)
     }
   })

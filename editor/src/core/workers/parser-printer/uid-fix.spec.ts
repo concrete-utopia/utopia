@@ -9,11 +9,13 @@ describe('fixParseSuccessUIDs', () => {
     const newFile = lintAndParse('test.js', baseFileContents, baseFile)
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "93b
+      "c94
+        random-uuid
+      93b
         c8a
-      storyboard-entity
-        scene-2-entity
-          same-file-app-entity"
+      storyboard
+        scene
+          component"
     `)
   })
 
@@ -22,13 +24,15 @@ describe('fixParseSuccessUIDs', () => {
     const newFileFixed = lintAndParse('test.js', baseFileWithTwoTopLevelComponents, baseFile)
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
-      "7f2
+      "c94
+        random-uuid
+      7f2
         8de
       93b
         c8a
-      storyboard-entity
-        scene-2-entity
-          same-file-app-entity"
+      storyboard
+        scene
+          component"
     `)
   })
 
@@ -36,36 +40,42 @@ describe('fixParseSuccessUIDs', () => {
     const newFile = lintAndParse('test.js', fileWithSingleUpdateContents, baseFile)
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "93b
+      "c94
+        random-uuid
+      93b
         c8a
-      storyboard-entity
-        scene-2-entity
-          same-file-app-entity"
+      storyboard
+        scene
+          component"
     `)
   })
 
   it('avoids uid shifting caused by single prepending insertion', () => {
     const newFile = lintAndParse('test.js', fileWithOneInsertedView, baseFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "93b
+      "c94
+        random-uuid
+      93b
         8de
         c8a
-      storyboard-entity
-        scene-2-entity
-          same-file-app-entity"
+      storyboard
+        scene
+          component"
     `)
   })
 
   it('double duplication', () => {
     const newFile = lintAndParse('test.js', fileWithTwoDuplicatedViews, baseFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "93b
+      "c94
+        random-uuid
+      93b
         c8a
         af7
         a72
-      storyboard-entity
-        scene-2-entity
-          same-file-app-entity"
+      storyboard
+        scene
+          component"
     `)
   })
 
@@ -73,14 +83,16 @@ describe('fixParseSuccessUIDs', () => {
     const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null)
     const fourViews = lintAndParse('test.js', fileWithTwoDuplicatesAndInsertion, threeViews)
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
-      "93b
+      "c94
+        random-uuid
+      93b
         578
         c8a
         af7
         a72
-      storyboard-entity
-        scene-2-entity
-          same-file-app-entity"
+      storyboard
+        scene
+          component"
     `)
   })
 })
@@ -231,17 +243,26 @@ function createFileText(codeSnippet: string): string {
   import * as React from 'react'
   import { Scene, Storyboard, jsx } from 'utopia-api'
   import { View } from 'utopia-api'
-  
+
+  // arbitrary block
+  export var Arbitrary = props => {
+    return (
+      <View>
+        {<div />}
+      </View>
+    )
+  }
+
   ${codeSnippet}
   
   export var storyboard = (
-    <Storyboard data-uid='storyboard-entity'>
+    <Storyboard data-uid='storyboard'>
       <Scene
         data-label='Same File App'
-        data-uid='scene-2-entity'
+        data-uid='scene'
         style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
       >
-        <SameFileApp data-uid='same-file-app-entity' />
+        <SameFileApp data-uid='component' />
       </Scene>
     </Storyboard>
   )
@@ -260,7 +281,8 @@ function getUidTree(parsedFile: ParsedTextFile): string {
     function walkElementChildren(depthSoFar: number, elements: Array<JSXElementChild>): void {
       elements.forEach((element) => {
         const uid = getUtopiaID(element)
-        printedUidLines.push(`${'  '.repeat(depthSoFar)}${uid}`)
+        const uidWithoutRandomUUID = uid.includes('-') ? 'random-uuid' : uid
+        printedUidLines.push(`${'  '.repeat(depthSoFar)}${uidWithoutRandomUUID}`)
 
         if (element != null && isJSXElement(element)) {
           walkElementChildren(depthSoFar + 1, element.children)
