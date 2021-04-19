@@ -16,6 +16,7 @@ export const IconToggleButton: React.FunctionComponent<IconToggleButtonProps> = 
   return (
     <div
       role='button'
+      tabIndex={0}
       className={className}
       css={{
         width: 22,
