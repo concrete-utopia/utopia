@@ -7,7 +7,7 @@ interface IconToggleButtonProps {
   value: boolean
   srcOn: string
   srcOff: string
-  onToggle: (event: React.MouseEvent<HTMLButtonElement>) => void
+  onToggle: (event: React.MouseEvent<HTMLDivElement>) => void
   className?: string
 }
 
