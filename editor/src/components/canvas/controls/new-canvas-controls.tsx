@@ -409,9 +409,10 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             imports,
           )
           const isFocusedComponent = TP.isFocused(props.editor.focusedElementPath, path)
-          const color = (isFocusableComponent || isFocusedComponent)
-            ? colorTheme.canvasSelectionIsolatedComponent.value
-            : colorTheme.canvasSelectionPrimaryOutline.value
+          const color =
+            isFocusableComponent || isFocusedComponent
+              ? colorTheme.canvasSelectionIsolatedComponent.value
+              : colorTheme.canvasSelectionPrimaryOutline.value
           return (
             <HighlightControl
               key={`highlight-control-${TP.toComponentId(path)}`}
