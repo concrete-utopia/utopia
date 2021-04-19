@@ -13,6 +13,7 @@ import {
   markVSCodeBridgeReady,
   updateFromCodeEditor,
   sendCodeEditorInitialisation,
+  updateConfigFromVSCode,
 } from '../../components/editor/actions/action-creators'
 import {
   getSavedCodeFromTextFile,
@@ -45,6 +46,8 @@ import {
   decorationRange,
   DecorationRangeType,
   boundsInFile,
+  getUtopiaVSCodeConfig,
+  setFollowSelectionConfig,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, TemplatePath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
@@ -86,7 +89,8 @@ async function writeProjectFile(
     case 'TEXT_FILE': {
       const savedContent = getSavedCodeFromTextFile(file)
       const unsavedContent = getUnsavedCodeFromTextFile(file)
-      return writeFileAsUTF8(toFSPath(projectPath), savedContent, unsavedContent)
+      const filePath = toFSPath(projectPath)
+      return writeFileAsUTF8(filePath, savedContent, unsavedContent)
     }
     case 'ASSET_FILE':
       return Promise.resolve()
@@ -95,12 +99,25 @@ async function writeProjectFile(
   }
 }
 
+async function textFileDiffers(projectPath: string, file: TextFile): Promise<boolean> {
+  const savedContent = getSavedCodeFromTextFile(file)
+  const unsavedContent = getUnsavedCodeFromTextFile(file)
+  const filePath = toFSPath(projectPath)
+  const alreadyExistingFile = await readFileAsUTF8(filePath).catch((_) => null)
+  return (
+    alreadyExistingFile == null ||
+    alreadyExistingFile.content !== savedContent ||
+    alreadyExistingFile.unsavedContent !== unsavedContent
+  )
+}
+
 async function writeProjectContents(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
 ): Promise<void> {
-  await walkContentsTreeAsync(projectContents, (fullPath, file) => {
-    if (isTextFile(file) || isDirectory(file)) {
+  await walkContentsTreeAsync(projectContents, async (fullPath, file) => {
+    // Avoid pushing a file to the file system if the content hasn't changed.
+    if ((isTextFile(file) && (await textFileDiffers(fullPath, file))) || isDirectory(file)) {
       return writeProjectFile(projectID, fullPath, file)
     } else {
       return Promise.resolve()
@@ -162,11 +179,15 @@ export async function initVSCodeBridge(
               'everyone',
             )
             break
+          case 'UTOPIA_VSCODE_CONFIG_VALUES':
+            dispatch([updateConfigFromVSCode(message.config)], 'everyone')
+            break
           default:
             const _exhaustiveCheck: never = message
             throw new Error(`Unhandled message type${JSON.stringify(message)}`)
         }
       })
+      sendGetUtopiaVSCodeConfigMessage()
       watchForChanges(dispatch)
     }
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
@@ -190,6 +211,14 @@ export async function sendSelectedElementChangedMessage(
   boundsForFile: BoundsInFile,
 ): Promise<void> {
   return sendMessage(selectedElementChanged(boundsForFile))
+}
+
+export async function sendSetFollowSelectionEnabledMessage(enabled: boolean): Promise<void> {
+  return sendMessage(setFollowSelectionConfig(enabled))
+}
+
+export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
+  return sendMessage(getUtopiaVSCodeConfig())
 }
 
 export async function applyProjectContentChanges(

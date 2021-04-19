@@ -14,12 +14,14 @@ import {
   EditorStore,
   getOpenUIJSFileKey,
   TransientCanvasState,
+  getJSXComponentsAndImportsForPathInnerComponentFromState,
 } from '../../editor/store/editor-state'
 import {
   TemplatePath,
   InstancePath,
   Imports,
   ScenePath,
+  NodeModules,
 } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
@@ -54,6 +56,7 @@ import {
 } from './select-mode/select-mode-hooks'
 import { NO_OP } from '../../../core/shared/utils'
 import { usePropControlledStateV2 } from '../../inspector/common/inspector-utils'
+import { ProjectContentTreeRoot } from '../../assets'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -225,32 +228,32 @@ interface NewCanvasControlsInnerProps {
 
 export const selectElementsThatRespectLayout = createSelector(
   (store: EditorStore) => store.derived.navigatorTargets,
-  (store) => store.editor.propertyControlsInfo,
-  (store) => getOpenImportsFromState(store.editor),
-  (store) => getOpenUIJSFileKey(store.editor),
-  (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
-  (store) => store.editor.jsxMetadata,
+  (store: EditorStore) => store.editor.propertyControlsInfo,
+  (store: EditorStore) => getOpenUIJSFileKey(store.editor),
+  (store: EditorStore) => store.editor.projectContents,
+  (store: EditorStore) => store.editor.nodeModules.files,
+  (store: EditorStore) => store.editor.jsxMetadata,
   (
     navigatorTargets: TemplatePath[],
     propertyControlsInfo: PropertyControlsInfo,
-    openImports: Imports,
     openFilePath: string | null,
-    rootComponents: UtopiaJSXComponent[],
-    jsxMetadata: ElementInstanceMetadataMap,
+    projectContents: ProjectContentTreeRoot,
+    nodeModules: NodeModules,
+    metadata: ElementInstanceMetadataMap,
   ) => {
-    return flatMapArray((view) => {
-      const rootElements = MetadataUtils.getRootViewPaths(jsxMetadata, view)
+    const targetsWithRootViewPaths = flatMapArray((view) => {
+      const rootElements = MetadataUtils.getRootViewPaths(metadata, view)
       return [view, ...rootElements]
-    }, navigatorTargets).filter((view) =>
-      targetRespectsLayout(
+    }, navigatorTargets)
+    return targetsWithRootViewPaths.filter((view) => {
+      return targetRespectsLayout(
         view,
         propertyControlsInfo,
-        openImports,
         openFilePath,
-        rootComponents,
-        jsxMetadata,
-      ),
-    )
+        projectContents,
+        nodeModules,
+      )
+    })
   },
 )
 
@@ -396,9 +399,22 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           if (frame == null) {
             return null
           }
-          const color = TP.isScenePath(path)
-            ? colorTheme.canvasSelectionSceneOutline.value
-            : colorTheme.canvasSelectionPrimaryOutline.value
+          const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+            path,
+            props.editor,
+            props.derived,
+          )
+          const isFocusableComponent = MetadataUtils.isFocusableComponent(
+            path,
+            components,
+            componentMetadata,
+            imports,
+          )
+          const isFocusedComponent = TP.isFocused(props.editor.focusedElementPath, path)
+          const color =
+            isFocusableComponent || isFocusedComponent
+              ? colorTheme.canvasSelectionIsolatedComponent.value
+              : colorTheme.canvasSelectionPrimaryOutline.value
           return (
             <HighlightControl
               key={`highlight-control-${TP.toComponentId(path)}`}

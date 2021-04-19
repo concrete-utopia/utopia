@@ -128,7 +128,7 @@ import {
   modifyUnderlyingTarget,
   modifyParseSuccessAtPath,
   getOpenUIJSFileKey,
-  withUnderlyingTarget,
+  withUnderlyingTargetFromEditorState,
   modifyUnderlyingForOpenFile,
   TransientFilesState,
   forUnderlyingTarget,
@@ -482,7 +482,7 @@ export function updateFramesOfScenesAndComponents(
         return
       }
 
-      const element = withUnderlyingTarget(
+      const element = withUnderlyingTargetFromEditorState(
         staticTarget,
         workingEditorState,
         null,
@@ -493,7 +493,7 @@ export function updateFramesOfScenesAndComponents(
       }
 
       const staticParentPath = TP.parentPath(staticTarget)
-      const parentElement = withUnderlyingTarget(
+      const parentElement = withUnderlyingTargetFromEditorState(
         staticParentPath,
         workingEditorState,
         null,
@@ -1960,12 +1960,12 @@ export function moveTemplate(
       // TODO Scene Implementation
       return noChanges()
     } else {
-      return withUnderlyingTarget(
+      return withUnderlyingTargetFromEditorState(
         target,
         editorState,
         noChanges(),
         (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
-          return withUnderlyingTarget(
+          return withUnderlyingTargetFromEditorState(
             newParentPath,
             editorState,
             noChanges(),

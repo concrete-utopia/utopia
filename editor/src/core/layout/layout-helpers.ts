@@ -38,31 +38,29 @@ import {
   unsetJSXValuesAtPaths,
   ValueAtPath,
 } from '../shared/jsx-attributes'
-import { Imports, PropertyPath, TemplatePath } from '../shared/project-file-types'
+import { Imports, NodeModules, PropertyPath, TemplatePath } from '../shared/project-file-types'
 import { createLayoutPropertyPath, pinnedPropForFramePoint } from './layout-helpers-new'
 import { getLayoutProperty, getLayoutPropertyOr } from './getLayoutProperty'
 import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
 import { EdgePosition } from '../../components/canvas/canvas-types'
-import { EditorState } from '../../components/editor/store/editor-state'
 import { getPropertyControlsForTarget } from '../property-controls/property-controls-utils'
 import { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { ProjectContentTreeRoot } from '../../components/assets'
 
 export function targetRespectsLayout(
   target: TemplatePath,
   propertyControlsInfo: PropertyControlsInfo,
-  openImports: Imports,
   openFilePath: string | null,
-  rootComponents: UtopiaJSXComponent[],
-  jsxMetadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
 ): boolean {
   const propControls = getPropertyControlsForTarget(
     target,
     propertyControlsInfo,
-    openImports,
     openFilePath,
-    rootComponents,
-    jsxMetadata,
+    projectContents,
+    nodeModules,
   )
   return propControls?.style?.type === 'styleobject'
 }

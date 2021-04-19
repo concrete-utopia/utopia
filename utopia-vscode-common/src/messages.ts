@@ -1,3 +1,5 @@
+import { UtopiaVSCodeConfig } from './utopia-vscode-config'
+
 export interface OpenFileMessage {
   type: 'OPEN_FILE'
   filePath: string
@@ -83,11 +85,38 @@ export interface SelectedElementChanged {
 export function selectedElementChanged(boundsInFile: BoundsInFile): SelectedElementChanged {
   return {
     type: 'SELECTED_ELEMENT_CHANGED',
-    boundsInFile: boundsInFile
+    boundsInFile: boundsInFile,
   }
 }
 
-export type ToVSCodeMessage = OpenFileMessage | UpdateDecorationsMessage | SelectedElementChanged
+export interface GetUtopiaVSCodeConfig {
+  type: 'GET_UTOPIA_VSCODE_CONFIG'
+}
+
+export function getUtopiaVSCodeConfig(): GetUtopiaVSCodeConfig {
+  return {
+    type: 'GET_UTOPIA_VSCODE_CONFIG',
+  }
+}
+
+export interface SetFollowSelectionConfig {
+  type: 'SET_FOLLOW_SELECTION_CONFIG'
+  enabled: boolean
+}
+
+export function setFollowSelectionConfig(enabled: boolean): SetFollowSelectionConfig {
+  return {
+    type: 'SET_FOLLOW_SELECTION_CONFIG',
+    enabled: enabled,
+  }
+}
+
+export type ToVSCodeMessage =
+  | OpenFileMessage
+  | UpdateDecorationsMessage
+  | SelectedElementChanged
+  | GetUtopiaVSCodeConfig
+  | SetFollowSelectionConfig
 
 export function isOpenFileMessage(message: unknown): message is OpenFileMessage {
   return (
@@ -111,9 +140,31 @@ export function isSelectedElementChanged(message: unknown): message is SelectedE
   )
 }
 
+export function isGetUtopiaVSCodeConfig(message: unknown): message is GetUtopiaVSCodeConfig {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'GET_UTOPIA_VSCODE_CONFIG'
+  )
+}
+
+export function isSetFollowSelectionConfig(message: unknown): message is SetFollowSelectionConfig {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'SET_FOLLOW_SELECTION_CONFIG'
+  )
+}
+
 export function parseToVSCodeMessage(unparsed: string): ToVSCodeMessage {
   const message = JSON.parse(unparsed)
-  if (isOpenFileMessage(message) || isUpdateDecorationsMessage(message) || isSelectedElementChanged(message)) {
+  if (
+    isOpenFileMessage(message) ||
+    isUpdateDecorationsMessage(message) ||
+    isSelectedElementChanged(message) ||
+    isGetUtopiaVSCodeConfig(message) ||
+    isSetFollowSelectionConfig(message)
+  ) {
     return message
   } else {
     // FIXME This should return an Either
@@ -128,12 +179,16 @@ export interface EditorCursorPositionChanged {
   column: number
 }
 
-export function editorCursorPositionChanged(filePath: string, line: number, column: number): EditorCursorPositionChanged {
+export function editorCursorPositionChanged(
+  filePath: string,
+  line: number,
+  column: number,
+): EditorCursorPositionChanged {
   return {
     type: 'EDITOR_CURSOR_POSITION_CHANGED',
     filePath: filePath,
     line: line,
-    column: column
+    column: column,
   }
 }
 
@@ -143,13 +198,30 @@ export interface SendInitialData {
 
 export function sendInitialData(): SendInitialData {
   return {
-    type: 'SEND_INITIAL_DATA'
+    type: 'SEND_INITIAL_DATA',
   }
 }
 
-export type FromVSCodeMessage = EditorCursorPositionChanged | SendInitialData
+export interface UtopiaVSCodeConfigValues {
+  type: 'UTOPIA_VSCODE_CONFIG_VALUES'
+  config: UtopiaVSCodeConfig
+}
 
-export function isEditorCursorPositionChanged(message: unknown): message is EditorCursorPositionChanged {
+export function utopiaVSCodeConfigValues(config: UtopiaVSCodeConfig): UtopiaVSCodeConfigValues {
+  return {
+    type: 'UTOPIA_VSCODE_CONFIG_VALUES',
+    config: config,
+  }
+}
+
+export type FromVSCodeMessage =
+  | EditorCursorPositionChanged
+  | SendInitialData
+  | UtopiaVSCodeConfigValues
+
+export function isEditorCursorPositionChanged(
+  message: unknown,
+): message is EditorCursorPositionChanged {
   return (
     typeof message === 'object' &&
     !Array.isArray(message) &&
@@ -165,11 +237,21 @@ export function isSendInitialData(message: unknown): message is SendInitialData 
   )
 }
 
+export function isUtopiaVSCodeConfigValues(message: unknown): message is UtopiaVSCodeConfigValues {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'UTOPIA_VSCODE_CONFIG_VALUES'
+  )
+}
+
 export function parseFromVSCodeMessage(unparsed: string): FromVSCodeMessage {
   const message = JSON.parse(unparsed)
-  if (isEditorCursorPositionChanged(message)) {
-    return message
-  } else if (isSendInitialData(message)) {
+  if (
+    isEditorCursorPositionChanged(message) ||
+    isSendInitialData(message) ||
+    isUtopiaVSCodeConfigValues(message)
+  ) {
     return message
   } else {
     // FIXME This should return an Either
