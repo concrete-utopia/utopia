@@ -79,14 +79,16 @@ export function fixParseSuccessUIDs(
     },
   )
 
-  if (Object.keys(newToOldUidMapping).length !== 1) {
+  const newToOldUidMappingArray = Object.values(newToOldUidMapping)
+
+  if (newToOldUidMappingArray.length !== 1) {
     // we found no uid mismatch or we found too many mismatched UIDs and so we bail out
     return newParsed
   } else {
     // we found a single UID mismatch, which means there's a very good chance that it was an update element, let's fix that up
     let workingComponents = getComponentsFromTopLevelElements(newParsed.topLevelElements)
 
-    Object.values(newToOldUidMapping).forEach((mapping) => {
+    newToOldUidMappingArray.forEach((mapping) => {
       workingComponents = transformJSXComponentAtElementPath(
         workingComponents,
         mapping.pathToModify,
