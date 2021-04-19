@@ -115,7 +115,6 @@ import {
 } from './parser-printer-parsing'
 import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { ParseOrPrint, ParseOrPrintResult, ParsePrintResultMessage } from './parser-printer-worker'
-import { applyPrettier, PrettierConfig } from './prettier-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
 import { emptySet } from '../../shared/set-utils'
@@ -128,6 +127,7 @@ import {
 } from './parser-printer-comments'
 import { replaceAll } from '../../shared/string-utils'
 import { WorkerCodeUpdate, WorkerParsedUpdate } from '../../../components/editor/action-types'
+import { applyPrettier } from 'utopia-vscode-common'
 
 function buildPropertyCallingFunction(
   functionName: string,

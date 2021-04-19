@@ -272,6 +272,12 @@ export interface HighlightBounds {
 
 export type HighlightBoundsForUids = { [uid: string]: HighlightBounds }
 
+export interface HighlightBoundsWithFile extends HighlightBounds {
+  filePath: string
+}
+
+export type HighlightBoundsWithFileForUids = { [uid: string]: HighlightBoundsWithFile }
+
 export interface ParseSuccess {
   type: 'PARSE_SUCCESS'
   imports: Imports
