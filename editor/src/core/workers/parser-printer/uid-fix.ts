@@ -178,13 +178,18 @@ function walkElementChildren(
    */
 
   newElements.forEach((newElement, index) => {
-    const oldElement = oldElements[index]
+    const oldElement: JSXElementChild | null = oldElements[index]
     const newUid = getUtopiaID(newElement)
     const path = TP.appendToElementPath(pathSoFar, newUid)
 
     onElement(oldElement, newElement, path)
 
-    if (isJSXElement(oldElement) && isJSXElement(newElement)) {
+    if (
+      oldElement != null &&
+      newElement != null &&
+      isJSXElement(oldElement) &&
+      isJSXElement(newElement)
+    ) {
       walkElementChildren(path, oldElement.children, newElement.children, onElement)
     }
   })
