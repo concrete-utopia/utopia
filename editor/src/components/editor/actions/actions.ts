@@ -3329,16 +3329,13 @@ export const UPDATE_FNS = {
               } else {
                 anyParsedUpdates = true
 
-                // const fixedParsed = fixParseSuccessUIDs(
-                //   existing.fileContents.parsed,
-                //   fileUpdate.parsed,
-                // )
-                const fixedParsed = fileUpdate.parsed
-
                 // we use the new highlightBounds coming from the action
                 code = existing.fileContents.code
-                const highlightBounds = getHighlightBoundsFromParseResult(fixedParsed)
-                updatedContents = updateParsedTextFileHighlightBounds(fixedParsed, highlightBounds)
+                const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
+                updatedContents = updateParsedTextFileHighlightBounds(
+                  fileUpdate.parsed,
+                  highlightBounds,
+                )
               }
               break
             }
