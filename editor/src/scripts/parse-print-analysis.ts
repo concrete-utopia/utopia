@@ -1,7 +1,7 @@
 /* eslint no-console: "off" */
 import * as Path from 'path'
 import * as FS from 'fs'
-import { applyPrettier } from '../core/workers/parser-printer/prettier-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 import {
   parseCode,
   printCode,

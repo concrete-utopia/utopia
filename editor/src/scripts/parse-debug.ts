@@ -3,7 +3,7 @@
 import * as Path from 'path'
 import * as FS from 'fs'
 import { downloadAndExtractRepo, githubProjects } from './github-projects'
-import { applyPrettier } from '../core/workers/parser-printer/prettier-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 import { parseCode } from '../core/workers/parser-printer/parser-printer'
 import { foldParsedTextFile } from '../core/shared/project-file-types'
 import { elementsStructure } from '../core/workers/parser-printer/parser-printer.test-utils'

@@ -13,11 +13,10 @@ import {
   utopiaJSXComponent,
 } from '../../shared/element-template'
 import { foldParsedTextFile } from '../../shared/project-file-types'
-import { parseSuccess } from '../common/project-file-utils'
 import { parseCode, printCode, printCodeOptions } from './parser-printer'
 import { emptyComments } from './parser-printer-comments'
 import { testParseCode } from './parser-printer.test-utils'
-import { applyPrettier } from './prettier-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 
 describe('parseCode', () => {
   it('produces unique IDs for every element', () => {

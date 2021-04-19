@@ -15,7 +15,7 @@ import {
 import { moveDragState } from './canvas-types'
 import { canvasPoint, canvasRectangle } from '../../core/shared/math-utils'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
+import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier'
 
 describe('createDragState', () => {
