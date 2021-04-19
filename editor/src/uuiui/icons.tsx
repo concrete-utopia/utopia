@@ -67,6 +67,7 @@ export const SmallerIcons = {
 
 export const Icons = {
   Bin: makeIcon({ type: 'bin', color: 'gray' }),
+  BracketedPointer: makeIcon({ type: 'bracketed-pointer', color: 'gray' }),
   Cross: makeIcon({ type: 'cross-medium', color: 'gray' }),
   Cube: makeIcon({ type: 'd', color: 'gray' }),
   Checkmark: makeIcon({ type: 'checkmark', color: 'gray' }),
