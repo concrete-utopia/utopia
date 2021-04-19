@@ -506,7 +506,6 @@ import {
 } from '../../../core/vscode/vscode-bridge'
 import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
-import { fixParseSuccessUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
