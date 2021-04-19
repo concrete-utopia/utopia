@@ -168,7 +168,7 @@ function newScenePath(elementPaths: ElementPath[]): ScenePath {
   }
 }
 
-const emptyElementPath: StaticElementPath = ([] as any) as StaticElementPath
+export const emptyElementPath: StaticElementPath = ([] as any) as StaticElementPath
 
 export function staticElementPath(elements: string[]): StaticElementPath {
   return elements as StaticElementPath

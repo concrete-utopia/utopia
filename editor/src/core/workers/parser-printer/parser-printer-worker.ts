@@ -62,18 +62,21 @@ interface ParseFile {
   type: 'parsefile'
   filename: string
   content: string
+  previousParsed: ParsedTextFile | null
   lastRevisedTime: number
 }
 
 export function createParseFile(
   filename: string,
   content: string,
+  previousParsed: ParsedTextFile | null,
   lastRevisedTime: number,
 ): ParseFile {
   return {
     type: 'parsefile',
     filename: filename,
     content: content,
+    previousParsed: previousParsed,
     lastRevisedTime: lastRevisedTime,
   }
 }
@@ -150,7 +153,12 @@ export function handleMessage(
         const results = workerMessage.files.map((file) => {
           switch (file.type) {
             case 'parsefile':
-              return getParseFileResult(file.filename, file.content, file.lastRevisedTime)
+              return getParseFileResult(
+                file.filename,
+                file.content,
+                file.previousParsed,
+                file.lastRevisedTime,
+              )
             case 'printcode':
               return getPrintCodeResult(
                 file.filename,
@@ -176,9 +184,10 @@ export function handleMessage(
 function getParseFileResult(
   filename: string,
   content: string,
+  oldParseResultForUIDComparison: ParsedTextFile | null,
   lastRevisedTime: number,
 ): ParseFileResult {
-  const parseResult = lintAndParse(filename, content)
+  const parseResult = lintAndParse(filename, content, oldParseResultForUIDComparison)
   return createParseFileResult(filename, parseResult, lastRevisedTime)
 }
 

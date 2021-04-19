@@ -128,6 +128,7 @@ import {
 } from './parser-printer-comments'
 import { replaceAll } from '../../shared/string-utils'
 import { WorkerCodeUpdate, WorkerParsedUpdate } from '../../../components/editor/action-types'
+import { fixParseSuccessUIDs } from './uid-fix'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -1047,7 +1048,11 @@ export function getComponentsRenderedWithReactDOM(
   return []
 }
 
-export function parseCode(filename: string, sourceText: string): ParsedTextFile {
+export function parseCode(
+  filename: string,
+  sourceText: string,
+  oldParseResultForUIDComparison: ParsedTextFile | null,
+): ParsedTextFile {
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
 
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
@@ -1381,7 +1386,7 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
       })
     }
 
-    return parseSuccess(
+    const unfixedParseSuccess = parseSuccess(
       imports,
       topLevelElementsWithFixedUIDs,
       highlightBounds,
@@ -1389,6 +1394,11 @@ export function parseCode(filename: string, sourceText: string): ParsedTextFile 
       combinedTopLevelArbitraryBlock,
       detailOfExports,
     )
+    const fixedParseSuccess = fixParseSuccessUIDs(
+      oldParseResultForUIDComparison,
+      unfixedParseSuccess,
+    )
+    return fixedParseSuccess
   }
 }
 
@@ -1713,11 +1723,15 @@ export function getHighlightBoundsWithoutUID(
   return result
 }
 
-export function lintAndParse(filename: string, content: string): ParsedTextFile {
+export function lintAndParse(
+  filename: string,
+  content: string,
+  oldParseResultForUIDComparison: ParsedTextFile | null,
+): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
   if (lintResult.filter(messageisFatal).length === 0) {
-    return parseCode(filename, content)
+    return parseCode(filename, content, oldParseResultForUIDComparison)
   } else {
     return parseFailure(null, null, null, lintResult)
   }

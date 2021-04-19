@@ -2594,7 +2594,7 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile) as ParsedTextFile
+  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')

@@ -241,7 +241,14 @@ function maybeRequestModelUpdate(
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (codeNeedsParsing(file.fileContents.revisionsState)) {
-        filesToUpdate.push(createParseFile(fullPath, file.fileContents.code, file.lastRevisedTime))
+        filesToUpdate.push(
+          createParseFile(
+            fullPath,
+            file.fileContents.code,
+            file.fileContents.parsed,
+            file.lastRevisedTime,
+          ),
+        )
       } else if (
         codeNeedsPrinting(file.fileContents.revisionsState) &&
         isParseSuccess(file.fileContents.parsed)
@@ -587,9 +594,10 @@ function editorDispatchInner(
       }
     }
 
-    const cleanedEditor = metadataChanged
-      ? removeNonExistingViewReferencesFromState(storedState.editor, result.editor)
-      : result.editor
+    // const cleanedEditor = metadataChanged
+    //   ? removeNonExistingViewReferencesFromState(storedState.editor, result.editor)
+    //   : result.editor
+    const cleanedEditor = result.editor
 
     let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
 

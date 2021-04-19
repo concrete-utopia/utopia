@@ -506,6 +506,7 @@ import {
 } from '../../../core/vscode/vscode-bridge'
 import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
+import { fixParseSuccessUIDs } from '../../../core/workers/parser-printer/uid-fix'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1357,7 +1358,7 @@ export const UPDATE_FNS = {
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
-        const parseResult = lintAndParse(filename, file.fileContents.code)
+        const parseResult = lintAndParse(filename, file.fileContents.code, null)
         return textFile(
           textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
           null,
@@ -3328,13 +3329,16 @@ export const UPDATE_FNS = {
               } else {
                 anyParsedUpdates = true
 
+                // const fixedParsed = fixParseSuccessUIDs(
+                //   existing.fileContents.parsed,
+                //   fileUpdate.parsed,
+                // )
+                const fixedParsed = fileUpdate.parsed
+
                 // we use the new highlightBounds coming from the action
                 code = existing.fileContents.code
-                const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
-                updatedContents = updateParsedTextFileHighlightBounds(
-                  fileUpdate.parsed,
-                  highlightBounds,
-                )
+                const highlightBounds = getHighlightBoundsFromParseResult(fixedParsed)
+                updatedContents = updateParsedTextFileHighlightBounds(fixedParsed, highlightBounds)
               }
               break
             }

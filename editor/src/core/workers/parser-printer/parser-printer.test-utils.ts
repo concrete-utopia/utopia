@@ -190,7 +190,7 @@ const JavaScriptReservedKeywords: Array<string> = [
 
 export function testParseCode(contents: string): ParsedTextFile {
   const filename = 'code.tsx'
-  const result = lintAndParse(filename, contents)
+  const result = lintAndParse(filename, contents, null)
   // Ensure that elements have valid unique IDs if the parse is successful.
   forEachParseSuccess((success) => {
     let uids: Array<string> = []

@@ -22,7 +22,7 @@ async function printOutParseResult(
     if (FS.existsSync(fullFilePath)) {
       const fileContents = FS.readFileSync(fullFilePath, 'utf8')
       const initialPrettifiedContents = applyPrettier(fileContents, false).formatted
-      const parsedContents = parseCode(javascriptFilePath, initialPrettifiedContents)
+      const parsedContents = parseCode(javascriptFilePath, initialPrettifiedContents, null)
       switch (command) {
         case 'print':
           console.log(JSON.stringify(parsedContents, null, 2))

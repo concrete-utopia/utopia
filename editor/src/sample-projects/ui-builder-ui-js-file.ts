@@ -26,7 +26,7 @@ import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
 // }
 
 export function getUiBuilderUIJSFile(): TextFile {
-  const result = lintAndParse('code.tsx', sampleCode)
+  const result = lintAndParse('code.tsx', sampleCode, null)
   return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, 0)
 }
 
