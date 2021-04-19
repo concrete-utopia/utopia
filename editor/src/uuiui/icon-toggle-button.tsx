@@ -3,18 +3,19 @@ import { jsx } from '@emotion/react'
 import * as React from 'react'
 import { colorTheme } from './styles/theme'
 
-interface ToggleButtonProps {
+interface IconToggleButtonProps {
   value: boolean
   srcOn: string
   srcOff: string
-  onToggleValue: () => void
+  onToggle: (event: React.MouseEvent<HTMLButtonElement>) => void
   className?: string
 }
 
-export const ToggleButton: React.FunctionComponent<ToggleButtonProps> = (props) => {
-  const { value, onToggleValue, srcOn, srcOff, className } = props
+export const IconToggleButton: React.FunctionComponent<IconToggleButtonProps> = (props) => {
+  const { value, onToggle, srcOn, srcOff, className } = props
   return (
-    <button
+    <div
+      role='button'
       className={className}
       css={{
         width: 22,
@@ -39,7 +40,7 @@ export const ToggleButton: React.FunctionComponent<ToggleButtonProps> = (props) 
           backgroundImage: value ? `url(${srcOff})` : `url(${srcOn})`,
         },
       }}
-      onClick={onToggleValue}
+      onClick={onToggle}
     />
   )
 }
