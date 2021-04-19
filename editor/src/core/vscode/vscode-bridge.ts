@@ -283,13 +283,13 @@ export async function applyProjectContentChanges(
 
 export async function sendCodeEditorDecorations(editorState: EditorState): Promise<void> {
   let decorations: Array<DecorationRange> = []
-  function addRange(filename: string, rangeType: DecorationRangeType, path: TemplatePath): void {
+  function addRange(rangeType: DecorationRangeType, path: TemplatePath): void {
     const highlightBounds = getHighlightBoundsForTemplatePath(path, editorState)
     if (highlightBounds != null) {
       decorations.push(
         decorationRange(
           rangeType,
-          filename,
+          highlightBounds.filePath,
           highlightBounds.startLine,
           highlightBounds.startCol,
           highlightBounds.endLine,
@@ -298,33 +298,28 @@ export async function sendCodeEditorDecorations(editorState: EditorState): Promi
       )
     }
   }
-  const openFilename = getOpenTextFileKey(editorState)
-  if (openFilename != null) {
-    editorState.selectedViews.forEach((selectedView) => {
-      addRange(openFilename, 'selection', selectedView)
-    })
-    editorState.highlightedViews.forEach((highlightedView) => {
-      addRange(openFilename, 'highlight', highlightedView)
-    })
-  }
+
+  editorState.selectedViews.forEach((selectedView) => {
+    addRange('selection', selectedView)
+  })
+  editorState.highlightedViews.forEach((highlightedView) => {
+    addRange('highlight', highlightedView)
+  })
   await sendUpdateDecorationsMessage(decorations)
 }
 
 export async function sendSelectedElement(newEditorState: EditorState): Promise<void> {
-  const openFilename = getOpenTextFileKey(newEditorState)
-  if (openFilename != null) {
-    const selectedView = newEditorState.selectedViews[0]
-    const highlightBounds = getHighlightBoundsForTemplatePath(selectedView, newEditorState)
-    if (highlightBounds != null) {
-      await sendSelectedElementChangedMessage(
-        boundsInFile(
-          openFilename,
-          highlightBounds.startLine,
-          highlightBounds.startCol,
-          highlightBounds.endLine,
-          highlightBounds.endCol,
-        ),
-      )
-    }
+  const selectedView = newEditorState.selectedViews[0]
+  const highlightBounds = getHighlightBoundsForTemplatePath(selectedView, newEditorState)
+  if (highlightBounds != null) {
+    await sendSelectedElementChangedMessage(
+      boundsInFile(
+        highlightBounds.filePath,
+        highlightBounds.startLine,
+        highlightBounds.startCol,
+        highlightBounds.endLine,
+        highlightBounds.endCol,
+      ),
+    )
   }
 }
