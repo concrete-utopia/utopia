@@ -73,7 +73,7 @@ export const NavigatorComponent = betterReactMemo(
 
     const onContextMenu = React.useCallback(
       (event: React.MouseEvent<HTMLElement>) => {
-        dispatch([showContextMenu('context-menu-navigator', event.nativeEvent, null)], 'everyone')
+        dispatch([showContextMenu('context-menu-navigator', event.nativeEvent)], 'everyone')
       },
       [dispatch],
     )

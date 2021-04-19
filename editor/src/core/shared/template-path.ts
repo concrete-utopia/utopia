@@ -268,8 +268,14 @@ export function isStoryboardPath(path: InstancePath): boolean {
   return isEmptyScenePath(path.scene) && isTopLevelInstancePath(path)
 }
 
-export function isStoryboardDescendant(path: InstancePath): boolean {
-  return isEmptyScenePath(path.scene) && !isStoryboardPath(path)
+export function isStoryboardDescendant(path: TemplatePath): boolean {
+  const asInstancePath = instancePathForElementAtPath(path)
+  return isEmptyScenePath(asInstancePath.scene) && !isStoryboardPath(asInstancePath)
+}
+
+export function isStoryboardChild(path: TemplatePath): boolean {
+  const asInstancePath = instancePathForElementAtPath(path)
+  return isEmptyScenePath(asInstancePath.scene) && asInstancePath.element.length === 2
 }
 
 export function scenePathPartOfTemplatePath(path: TemplatePath): ScenePath {
@@ -413,15 +419,8 @@ export function depth(path: TemplatePath): number {
 }
 
 export function navigatorDepth(path: TemplatePath): number {
-  if (isScenePath(path)) {
-    return 1
-  } else {
-    let scenePathLength = -1 // starts from -1 for the storyboard element
-    fastForEach(path.scene.sceneElementPaths, (elementPath) => {
-      scenePathLength += elementPath.length
-    })
-    return scenePathLength + path.element.length
-  }
+  const elementPathParts = fullElementPathForPath(path)
+  return elementPathParts.reduce((working, next) => working + next.length, -2)
 }
 
 export function isInsideFocusedComponent(path: TemplatePath): boolean {
@@ -1108,7 +1107,7 @@ export function outermostScenePathPart(path: TemplatePath): ScenePath {
 }
 
 export function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
-  if (focusedElementPath == null || isScenePath(path)) {
+  if (focusedElementPath == null || isStoryboardDescendant(path)) {
     return false
   } else {
     return (

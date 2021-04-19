@@ -1,4 +1,4 @@
-import { contentsToTree } from '../components/assets'
+import { contentsToTree, ProjectContentTreeRoot } from '../components/assets'
 import {
   DefaultPackageJson,
   PersistentModel,
@@ -47,13 +47,13 @@ export function simpleDefaultProject(): PersistentModel {
   return persistentModel
 }
 
-export function complexDefaultProject(): PersistentModel {
+export function createComplexDefaultProjectContents(): ProjectContents {
   function createCodeFile(path: string, contents: string): TextFile {
     const result = lintAndParse(path, contents)
     return textFile(textFileContents(contents, result, RevisionsState.BothMatch), null, Date.now())
   }
 
-  const projectContents: ProjectContents = {
+  return {
     '/package.json': textFile(
       textFileContents(
         JSON.stringify(DefaultPackageJson, null, 2),
@@ -82,17 +82,19 @@ export var SameFileApp = (props) => {
 export var storyboard = (
   <Storyboard data-uid='storyboard-entity'>
     <Scene
+      data-label='Imported App'
       data-uid='scene-1-entity'
-      component={App}
-      props={{}}
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    />
+    >
+      <App data-uid='app-entity' />
+    </Scene>
     <Scene
+      data-label='Same File App'
       data-uid='scene-2-entity'
-      component={SameFileApp}
-      props={{}}
       style={{ position: 'absolute', left: 400, top: 0, width: 375, height: 812 }}
-    />
+    >
+      <SameFileApp data-uid='same-file-app-entity' />
+    </Scene>
   </Storyboard>
 )`,
     ),
@@ -126,8 +128,11 @@ export var Card = (props) => {
 }`,
     ),
   }
+}
 
-  let persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
+export function complexDefaultProject(): PersistentModel {
+  const projectContents = createComplexDefaultProjectContents()
+  const persistentModel = persistentModelForProjectContents(contentsToTree(projectContents))
   return persistentModel
 }
 

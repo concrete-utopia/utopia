@@ -27,7 +27,10 @@ import {
   isUnparsed,
   ParsedTextFile,
   ParseSuccess,
+  RevisionsState,
+  textFile,
   TextFile,
+  textFileContents,
 } from '../../core/shared/project-file-types'
 import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
 import {
@@ -47,6 +50,7 @@ import { editorDispatch } from '../editor/store/dispatch'
 import {
   createEditorState,
   deriveState,
+  EditorState,
   EditorStore,
   PersistentModel,
   persistentModelForProjectContents,
@@ -60,8 +64,9 @@ import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { testStaticScenePath } from '../../core/shared/template-path.test-utils'
+import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 
 process.on('unhandledRejection', (reason, promise) => {
   console.warn('Unhandled promise rejection:', promise, 'reason:', (reason as any)?.stack || reason)
@@ -233,8 +238,9 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
   }
 }
 
-const TestSceneUID = 'scene-aaa'
-const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID]]
+export const TestSceneUID = 'scene-aaa'
+export const TestAppUID = 'app-entity'
+const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
 export const TestScenePath = scenePath(TestSceneElementPaths)
 export const TestStaticScenePath = testStaticScenePath(TestSceneElementPaths)
 
@@ -254,11 +260,13 @@ ${snippet}
       <Storyboard data-uid='${BakedInStoryboardUID}'>
         <Scene
           style={{ left: 0, top: 0, width: 400, height: 400 }}
-          component={App}
-          static
-          props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
           data-uid='${TestSceneUID}'
-        />
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
       </Storyboard>
     )
   }
@@ -277,7 +285,41 @@ export function getTestParseSuccess(fileContents: string): ParseSuccess {
   }
 }
 
-export function testPrintCode(parseSuccess: ParseSuccess): string {
+export function getEditorState(fileContents: string): EditorState {
+  const success = getTestParseSuccess(fileContents)
+  const storyboardFile = textFile(
+    textFileContents('', success, RevisionsState.ParsedAhead),
+    null,
+    0,
+  )
+  return {
+    ...createEditorState(NO_OP),
+    projectContents: contentsToTree({
+      [StoryboardFilePath]: storyboardFile,
+    }),
+    jsxMetadata: createFakeMetadataForParseSuccess(success),
+  }
+}
+
+export function editorStateToParseSuccess(
+  editorState: EditorState,
+  filePath: string = StoryboardFilePath,
+): ParseSuccess {
+  const file = getContentsTreeFileFromString(editorState.projectContents, filePath)
+  if (file == null) {
+    throw new Error(`Cannot find storyboard file.`)
+  } else if (isTextFile(file)) {
+    if (isParseSuccess(file.fileContents.parsed)) {
+      return file.fileContents.parsed
+    } else {
+      throw new Error(`Parsed storyboard is not a parse success.`)
+    }
+  } else {
+    throw new Error(`Storyboard file was not a text file.`)
+  }
+}
+
+export function testPrintCodeFromParseSuccess(parseSuccess: ParseSuccess): string {
   return printCode(
     printCodeOptions(false, true, true),
     parseSuccess.imports,
@@ -287,10 +329,18 @@ export function testPrintCode(parseSuccess: ParseSuccess): string {
   )
 }
 
+export function testPrintCodeFromEditorState(
+  editorState: EditorState,
+  filePath: string = StoryboardFilePath,
+): string {
+  const parseSuccess = editorStateToParseSuccess(editorState, filePath)
+  return testPrintCodeFromParseSuccess(parseSuccess)
+}
+
 export function testPrintParsedTextFile(parsedTextFile: ParsedTextFile): string {
   return foldParsedTextFile(
     (_) => 'FAILURE',
-    testPrintCode,
+    testPrintCodeFromParseSuccess,
     (_) => 'UNPARSED',
     parsedTextFile,
   )

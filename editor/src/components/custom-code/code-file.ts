@@ -331,11 +331,13 @@ export function normalisePathUnableToProceed(filePath: string): NormalisePathUna
 
 export interface NormalisePathImportNotFound {
   type: 'NORMALISE_PATH_IMPORT_NOT_FOUND'
+  notFound: string
 }
 
-export function normalisePathImportNotFound(): NormalisePathImportNotFound {
+export function normalisePathImportNotFound(notFound: string): NormalisePathImportNotFound {
   return {
     type: 'NORMALISE_PATH_IMPORT_NOT_FOUND',
+    notFound: notFound,
   }
 }
 
@@ -355,7 +357,7 @@ export function normalisePathSuccessOrThrowError(
     case 'NORMALISE_PATH_ERROR':
       throw new Error(normalisePathResult.errorMessage)
     case 'NORMALISE_PATH_IMPORT_NOT_FOUND':
-      throw new Error(`Could not find an import.`)
+      throw new Error(`Could not find an import (${normalisePathResult.notFound}).`)
     case 'NORMALISE_PATH_UNABLE_TO_PROCEED':
       throw new Error(`Could not proceed past ${normalisePathResult.filePath}.`)
     case 'NORMALISE_PATH_ENDS_AT_DEPENDENCY':
@@ -410,7 +412,7 @@ export function normalisePathToUnderlyingTarget(
 
           // Identify where the component is imported from or if it's in the same file.
           if (targetElement == null) {
-            return normalisePathImportNotFound()
+            return normalisePathImportNotFound(lastScenePathPart)
           } else {
             const nonNullTargetElement: JSXElement = targetElement
             function lookupElementImport(elementBaseVariable: string): NormalisePathResult {
@@ -421,7 +423,7 @@ export function normalisePathToUnderlyingTarget(
                 parsedContent.imports,
               )
               if (importedFrom == null) {
-                return normalisePathImportNotFound()
+                return normalisePathImportNotFound(elementBaseVariable)
               } else {
                 if (importedFrom === 'utopia-api' && elementBaseVariable === 'Scene') {
                   // Navigate around the scene with the special case handling.
@@ -495,4 +497,15 @@ export function normalisePathToUnderlyingTarget(
   } else {
     return normalisePathUnableToProceed(currentFilePath)
   }
+}
+
+export function normalisePathToUnderlyingTargetForced(
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  currentFilePath: string,
+  elementPath: InstancePath | null,
+): NormalisePathSuccess {
+  return normalisePathSuccessOrThrowError(
+    normalisePathToUnderlyingTarget(projectContents, nodeModules, currentFilePath, elementPath),
+  )
 }

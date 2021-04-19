@@ -38,7 +38,7 @@ export const UtopiaApiComponents: DependencyBoundDescriptors = {
       createBasicUtopiaComponent('Rectangle', 'Rectangle', StyleObjectProps),
       createBasicUtopiaComponent('Text', 'Text', StyleObjectProps),
       createBasicUtopiaComponent('View', 'View', StyleObjectProps),
-      // createBasicUtopiaComponent('Scene', 'Scene', StyleObjectProps), // FIXME Uncomment when we separate Scene from the component it renders
+      createBasicUtopiaComponent('Scene', 'Scene', StyleObjectProps),
     ],
   },
 }

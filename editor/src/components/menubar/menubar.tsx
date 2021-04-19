@@ -24,7 +24,7 @@ import {
 import { betterReactMemo } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
-import { useEditorState } from '../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { LeftMenuTab } from '../navigator/left-pane'
 
 interface TileProps {
@@ -107,6 +107,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
     projectId,
     projectName,
     isPreviewPaneVisible,
+    isCanvasVisible,
+    isCodeEditorVisible,
   } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -116,6 +118,8 @@ export const Menubar = betterReactMemo('Menubar', () => {
       projectId: store.editor.id,
       projectName: store.editor.projectName,
       isPreviewPaneVisible: store.editor.preview.visible,
+      isCanvasVisible: store.editor.canvas.visible,
+      isCodeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
     }
   }, 'Menubar')
 
@@ -162,6 +166,16 @@ export const Menubar = betterReactMemo('Menubar', () => {
     [dispatch, isPreviewPaneVisible],
   )
 
+  const toggleCanvasVisible = React.useCallback(
+    () => dispatch([setPanelVisibility('canvas', !isCanvasVisible)]),
+    [dispatch, isCanvasVisible],
+  )
+
+  const toggleCodeEditorVisible = React.useCallback(
+    () => dispatch([setPanelVisibility('codeEditor', !isCodeEditorVisible)]),
+    [dispatch, isCodeEditorVisible],
+  )
+
   const onReparseClick = useReParseOpenProjectFile()
 
   const onTriggerScrollTest = useTriggerScrollPerformanceTest()
@@ -170,6 +184,17 @@ export const Menubar = betterReactMemo('Menubar', () => {
 
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
+
+  const entireStateRef = useRefEditorState((store) => store)
+
+  const jsxMetadata = useRefEditorState((store) => {
+    return store.editor.jsxMetadata
+  })
+
+  const printEditorState = React.useCallback(() => {
+    console.info('Current Editor State:', entireStateRef.current)
+    console.info('Latest metadata:', jsxMetadata.current)
+  }, [entireStateRef, jsxMetadata])
 
   return (
     <FlexColumn
@@ -270,6 +295,29 @@ export const Menubar = betterReactMemo('Menubar', () => {
             </span>
           </Tooltip>
         </a>
+
+        <Tooltip title={'Show or hide the code editor'} placement={'left'}>
+          <span>
+            <MenuTile
+              selected={isCodeEditorVisible}
+              menuExpanded={false}
+              icon={<LargerIcons.Code />}
+              onClick={toggleCodeEditorVisible}
+              size='large'
+            />
+          </span>
+        </Tooltip>
+        <Tooltip title={'Show or hide the canvas'} placement={'right'}>
+          <span>
+            <MenuTile
+              selected={isCanvasVisible}
+              menuExpanded={false}
+              icon={<LargerIcons.DesignTool />}
+              onClick={toggleCanvasVisible}
+              size='large'
+            />
+          </span>
+        </Tooltip>
         <Tooltip title={'Embedded Preview'} placement={'right'}>
           <span>
             <MenuTile
@@ -284,6 +332,9 @@ export const Menubar = betterReactMemo('Menubar', () => {
       </FlexColumn>
       {isFeatureEnabled('Performance Test Triggers') ? (
         <React.Fragment>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
+            <a onClick={printEditorState}>PPP</a>
+          </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerScrollTest}>P S</a>
           </Tile>

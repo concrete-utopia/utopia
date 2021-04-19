@@ -32,6 +32,8 @@ import { getSelectableViews } from './select-mode/select-mode-hooks'
 import { getAllTargetsAtPoint } from '../dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 import { mapDropNulls } from '../../../core/shared/array-utils'
+import { isSceneAgainstImports } from '../../../core/model/project-file-utils'
+import { isRight } from '../../../core/shared/either'
 
 export const SnappingThreshold = 5
 
@@ -148,22 +150,8 @@ export class SelectModeControlContainer extends React.Component<
   onContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation()
     event.preventDefault()
-    const elementsUnderCursor = getAllTargetsAtPoint(
-      this.props.componentMetadata,
-      this.props.selectedViews,
-      this.props.hiddenInstances,
-      this.props.focusedElementPath,
-      'no-filter',
-      WindowMousePositionRaw,
-      this.props.scale,
-      this.props.canvasOffset,
-    )
     this.props.dispatch(
-      [
-        EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent, {
-          elementsUnderCursor,
-        }),
-      ],
+      [EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent)],
       'canvas',
     )
   }
@@ -494,8 +482,14 @@ export class SelectModeControlContainer extends React.Component<
   render() {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
-    const roots = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(
-      this.props.componentMetadata,
+    const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
+    const roots = mapDropNulls(
+      (child) =>
+        MetadataUtils.elementIsOldStyleScene(child) ||
+        (isRight(child.element) && isSceneAgainstImports(child.element.value, this.props.imports))
+          ? child.templatePath
+          : null,
+      storyboardChildren,
     )
     let labelDirectlySelectable = this.props.highlightsEnabled
 

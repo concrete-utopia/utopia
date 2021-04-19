@@ -89,10 +89,12 @@ import * as PP from '../shared/property-path'
 import * as TP from '../shared/template-path'
 import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
 import {
+  isImportedComponent,
   isAnimatedElementAgainstImports,
   isGivenUtopiaAPIElement,
-  isImportedComponent,
+  isSceneAgainstImports,
   isUtopiaAPIComponent,
+  isViewAgainstImports,
 } from './project-file-utils'
 import { EmptyScenePathForStoryboard, ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
@@ -639,7 +641,7 @@ export const MetadataUtils = {
     const children = MetadataUtils.getAllStoryboardChildren(metadata)
     return mapDropNulls(
       (e) =>
-        MetadataUtils.elementIsScene(e)
+        MetadataUtils.elementIsOldStyleScene(e)
           ? TP.scenePathForElementAtInstancePath(e.templatePath)
           : null,
       children,
@@ -769,13 +771,22 @@ export const MetadataUtils = {
     }
   },
   targetElementSupportsChildren(imports: Imports, instance: ElementInstanceMetadata): boolean {
-    // Explicitly prevent components / elements that we *know* don't support children
-    if (this.isUtopiaAPIElementFromImports(imports, instance)) {
-      return this.isViewAgainstImports(imports, instance)
-    } else if (isLeft(instance.element)) {
-      return intrinsicHTMLElementNamesThatSupportChildren.includes(instance.element.value)
+    // FIXME Replace with a property controls check
+    const elementEither = instance.element
+
+    if (isLeft(elementEither)) {
+      return intrinsicHTMLElementNamesThatSupportChildren.includes(elementEither.value)
     } else {
-      return true
+      const element = elementEither.value
+      if (isJSXElement(element) && isUtopiaAPIComponent(element.name, imports)) {
+        // Explicitly prevent components / elements that we *know* don't support children
+        return (
+          isViewAgainstImports(element.name, imports) || isSceneAgainstImports(element, imports)
+        )
+      } else {
+        // We don't know at this stage
+        return true
+      }
     }
   },
   targetSupportsChildren(
@@ -863,11 +874,9 @@ export const MetadataUtils = {
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
     function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
-      const isScene = MetadataUtils.elementAtPathIsScene(metadata, path)
-      const pathToAdd = isScene ? TP.scenePathForElementAtPath(path) : path
-      navigatorTargets.push(pathToAdd)
+      navigatorTargets.push(path)
       if (!collapsedAncestor) {
-        visibleNavigatorTargets.push(pathToAdd)
+        visibleNavigatorTargets.push(path)
       }
 
       const {
@@ -881,7 +890,7 @@ export const MetadataUtils = {
       const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
       const reversedChildren = R.reverse(childrenIncludingFocusedElements)
 
-      const isCollapsed = TP.containsPath(pathToAdd, collapsedViews)
+      const isCollapsed = TP.containsPath(path, collapsedViews)
       fastForEach(reversedChildren, (childElement) => {
         walkAndAddKeys(childElement, collapsedAncestor || isCollapsed)
       })
@@ -959,12 +968,12 @@ export const MetadataUtils = {
   ): string {
     const element = this.findElementByTemplatePath(metadata, path)
     if (element != null) {
-      const sceneLabelOrComponentName = element.label ?? element.componentName
+      const sceneLabel = element.label
       const dataLabelProp = element.props['data-label']
       if (dataLabelProp != null && typeof dataLabelProp === 'string' && dataLabelProp.length > 0) {
         return dataLabelProp
-      } else if (sceneLabelOrComponentName != null) {
-        return sceneLabelOrComponentName
+      } else if (sceneLabel != null) {
+        return sceneLabel
       } else {
         const possibleName: string = foldEither(
           (tagName) => {
@@ -1039,22 +1048,14 @@ export const MetadataUtils = {
     components: Array<UtopiaJSXComponent>,
     metadata: ElementInstanceMetadataMap,
   ): JSXElementName | null {
-    if (TP.isScenePath(path)) {
-      const scene = MetadataUtils.findElementByTemplatePath(metadata, path)
-      if (scene != null && scene.componentName != null) {
-        return jsxElementName(scene.componentName, [])
+    const jsxElement = findElementAtPath(path, components)
+    if (jsxElement != null) {
+      if (isJSXElement(jsxElement)) {
+        return jsxElement.name
       } else {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components)
-      if (jsxElement != null) {
-        if (isJSXElement(jsxElement)) {
-          return jsxElement.name
-        } else {
-          return null
-        }
-      }
       return null
     }
   },
@@ -1063,22 +1064,14 @@ export const MetadataUtils = {
     components: Array<UtopiaJSXComponent>,
     metadata: ElementInstanceMetadataMap,
   ): string | null {
-    if (TP.isScenePath(path)) {
-      const scene = MetadataUtils.findElementByTemplatePath(metadata, path)
-      if (scene != null) {
-        return scene.componentName
+    const jsxElement = findElementAtPath(path, components)
+    if (jsxElement != null) {
+      if (isJSXElement(jsxElement)) {
+        return jsxElement.name.baseVariable
       } else {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components)
-      if (jsxElement != null) {
-        if (isJSXElement(jsxElement)) {
-          return jsxElement.name.baseVariable
-        } else {
-          return null
-        }
-      }
       return null
     }
   },
@@ -1087,22 +1080,14 @@ export const MetadataUtils = {
     components: Array<UtopiaJSXComponent>,
     metadata: ElementInstanceMetadataMap,
   ): string | null {
-    if (TP.isScenePath(path)) {
-      const scene = MetadataUtils.findElementByTemplatePath(metadata, path)
-      if (scene != null) {
-        return scene.componentName
+    const jsxElement = findElementAtPath(path, components)
+    if (jsxElement != null) {
+      if (isJSXElement(jsxElement)) {
+        return getJSXElementNameAsString(jsxElement.name)
       } else {
         return null
       }
     } else {
-      const jsxElement = findElementAtPath(path, components)
-      if (jsxElement != null) {
-        if (isJSXElement(jsxElement)) {
-          return getJSXElementNameAsString(jsxElement.name)
-        } else {
-          return null
-        }
-      }
       return null
     }
   },
@@ -1147,12 +1132,12 @@ export const MetadataUtils = {
   getDuplicationParentTargets(targets: TemplatePath[]): TemplatePath | null {
     return TP.getCommonParent(targets)
   },
-  elementIsScene(element: ElementInstanceMetadata): boolean {
+  elementIsOldStyleScene(element: ElementInstanceMetadata): boolean {
     return isLeft(element.element) && element.element.value === 'Scene'
   },
-  elementAtPathIsScene(elements: ElementInstanceMetadataMap, path: TemplatePath): boolean {
+  elementAtPathIsOldStyleScene(elements: ElementInstanceMetadataMap, path: TemplatePath): boolean {
     const element = MetadataUtils.findElementByTemplatePath(elements, path)
-    return element == null ? false : MetadataUtils.elementIsScene(element)
+    return element == null ? false : MetadataUtils.elementIsOldStyleScene(element)
   },
   mergeComponentMetadata(
     elementsByUID: ElementsByUID,
@@ -1197,7 +1182,7 @@ export const MetadataUtils = {
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
-        if (MetadataUtils.elementIsScene(spyElem)) {
+        if (MetadataUtils.elementIsOldStyleScene(spyElem)) {
           // We have some weird special casing for Scenes (see https://github.com/concrete-utopia/utopia/pull/671)
           jsxElement = spyElem.element
         } else {
@@ -1219,7 +1204,6 @@ export const MetadataUtils = {
           rootElements: rootElements,
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
-          componentName: spyElem.componentName,
           label: spyElem.label,
         }
         workingElements[TP.toString(domElem.templatePath)] = elem
@@ -1571,6 +1555,17 @@ export const MetadataUtils = {
     } else {
       return false
     }
+  },
+  isFocusableLeafComponent(
+    path: TemplatePath,
+    components: UtopiaJSXComponent[],
+    metadata: ElementInstanceMetadataMap,
+    imports: Imports,
+  ): boolean {
+    return (
+      MetadataUtils.getChildrenPaths(metadata, path).length === 0 &&
+      MetadataUtils.isFocusableComponent(path, components, metadata, imports)
+    )
   },
 }
 

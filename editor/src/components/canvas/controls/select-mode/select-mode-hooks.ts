@@ -26,6 +26,7 @@ import {
 } from '../../../editor/actions/action-creators'
 import {
   EditorState,
+  getJSXComponentsAndImportsForPathInnerComponentFromState,
   getOpenUtopiaJSXComponentsFromState,
 } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -151,7 +152,7 @@ export function getSelectableViews(
           children,
           unfurledComponents,
         } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-          TP.dynamicPathToStaticPath(ancestor),
+          ancestor,
           componentMetadata,
           focusedElementPath,
         )
@@ -257,26 +258,19 @@ function useStartDragState(): (
         entireEditorStoreRef.current.editor,
       )
 
-      const elementsThatRespectLayout = selectElementsThatRespectLayout(
-        entireEditorStoreRef.current,
-      )
-
       const duplicate = event.altKey
       const duplicateNewUIDs = duplicate
         ? createDuplicationNewUIDs(selectedViews, componentMetadata, rootComponents)
         : null
 
       const isTargetSelected = selectedViews.some((sv) => TP.pathsEqual(sv, target))
+
+      // FIXME: Re-establish filtering based on `selectElementsThatRespectLayout`.
+      // https://github.com/concrete-utopia/utopia/pull/1088/files/460e68fb6b4156833744a5441c9e56d662c8b51d#r614029462
       const selection =
         isTargetSelected && TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
-      const moveTargets = selection.filter(
-        (view) =>
-          TP.isScenePath(view) ||
-          TP.isStoryboardDescendant(view) || // FIXME This must go in the bin when we separate the Scene from the component it renders
-          elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
-      )
 
-      let originalFrames = getOriginalCanvasFrames(moveTargets, componentMetadata)
+      let originalFrames = getOriginalCanvasFrames(selection, componentMetadata)
       originalFrames = originalFrames.filter((f) => f.frame != null)
 
       const selectionArea = boundingRectangleArray(
@@ -300,7 +294,7 @@ function useStartDragState(): (
             duplicateNewUIDs,
             start,
             componentMetadata,
-            moveTargets,
+            selection,
           ),
         ),
       ])
@@ -470,6 +464,11 @@ export function useSelectModeSelectAndHover(
     getSelectableViewsForSelectMode,
   )
 
+  const editorStoreRef = useRefEditorState((store) => ({
+    editor: store.editor,
+    derived: store.derived,
+  }))
+
   const onMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const doubleClick = event.detail > 1 // we interpret a triple click as two double clicks, a quadruple click as three double clicks, etc  // TODO TEST ME
@@ -497,6 +496,26 @@ export function useSelectModeSelectAndHover(
           updatedSelection = foundTarget != null ? [foundTarget.templatePath] : []
         }
 
+        if (foundTarget != null && TP.isInstancePath(foundTarget.templatePath) && doubleClick) {
+          // for components without passed children doubleclicking enters focus mode
+          const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+            foundTarget.templatePath,
+            editorStoreRef.current.editor,
+            editorStoreRef.current.derived,
+          )
+          const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
+            foundTarget.templatePath,
+            components,
+            editorStoreRef.current.editor.jsxMetadata,
+            imports,
+          )
+          if (isFocusableLeaf) {
+            dispatch([
+              setFocusedElement(TP.scenePathForElementAtInstancePath(foundTarget.templatePath)),
+            ])
+          }
+        }
+
         if (!(foundTarget?.isSelected ?? false)) {
           // first we only set the selected views for the canvas controls
           setSelectedViewsForCanvasControlsOnly(updatedSelection)
@@ -521,6 +540,7 @@ export function useSelectModeSelectAndHover(
       startDragStateAfterDragExceedsThreshold,
       setSelectedViewsForCanvasControlsOnly,
       getSelectableViewsForSelectMode,
+      editorStoreRef,
     ],
   )
 

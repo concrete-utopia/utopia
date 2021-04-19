@@ -20,6 +20,7 @@ import {
   jsxAttributesFromMap,
   emptyAttributeMetadatada,
   jsxAttributeOtherJavaScript,
+  JSXElementChild,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -70,8 +71,9 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
-  sampleDefaultImports,
   sampleImportsForTests,
+  TestScene0UID,
+  TestMainComponentUID,
 } from '../../../core/model/test-ui-js-file.test-utils'
 import {
   BakedInStoryboardUID,
@@ -84,99 +86,121 @@ import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'
 import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
+import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 const chaiExpect = Chai.expect
 
-describe('SET_PROP', () => {
-  const originalModel = deepFreeze(
-    parseSuccess(
-      addImport(
-        'utopia-api',
-        null,
-        [importAlias('View'), importAlias('Scene'), importAlias('Storyboard')],
-        null,
-        emptyImports(),
+function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
+  let scenes: Array<JSXElement> = []
+  for (let sceneIndex = 0; sceneIndex < numberOfScenes; sceneIndex++) {
+    scenes.push(
+      jsxElement(
+        'Scene',
+        jsxAttributesFromMap({
+          'data-uid': jsxAttributeValue(`scene-${sceneIndex}`, emptyComments),
+        }),
+        [
+          jsxElement(
+            `MyView${sceneIndex + 1}`,
+            jsxAttributesFromMap({
+              'data-uid': jsxAttributeValue(`main-component-${sceneIndex}`, emptyComments),
+              style: jsxAttributeValue(
+                {
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 375,
+                  height: 812,
+                },
+                emptyComments,
+              ),
+            }),
+            [],
+          ),
+        ],
       ),
-      [
-        utopiaJSXComponent(
-          'MyView',
-          true,
-          'var',
-          'block',
-          defaultPropsParam,
-          [],
-          jsxElement(
-            jsxElementName('View', []),
-            jsxAttributesFromMap({
-              'data-uid': jsxAttributeValue('aaa', emptyComments),
-            }),
-            [
-              jsxElement(
-                jsxElementName('View', []),
-                jsxAttributesFromMap({
-                  test: jsxAttributeNestedObjectSimple(
-                    jsxAttributesFromMap({ prop: jsxAttributeValue(5, emptyComments) }),
-                    emptyComments,
-                  ),
-                  'data-uid': jsxAttributeValue('bbb', emptyComments),
-                }),
-                [],
-              ),
-            ],
-          ),
-          null,
-          false,
-          emptyComments,
-        ),
-        utopiaJSXComponent(
-          BakedInStoryboardVariableName,
-          false,
-          'var',
-          'block',
-          null,
-          [],
-          jsxElement(
-            'Storyboard',
-            jsxAttributesFromMap({
-              'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
-            }),
-            [
-              jsxElement(
-                'Scene',
-                jsxAttributesFromMap({
-                  component: jsxAttributeOtherJavaScript(
-                    'MyView',
-                    `return MyView`,
-                    ['MyView'],
-                    null,
-                  ),
-                  'data-uid': jsxAttributeValue('scene-0', emptyComments),
-                }),
-                [],
-              ),
-            ],
-          ),
-          null,
-          false,
-          emptyComments,
-        ),
-      ],
-      {},
-      null,
-      null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+    )
+  }
+  return utopiaJSXComponent(
+    BakedInStoryboardVariableName,
+    false,
+    'var',
+    'block',
+    null,
+    [],
+    jsxElement(
+      'Storyboard',
+      jsxAttributesFromMap({
+        'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
+      }),
+      scenes,
     ),
+    null,
+    false,
+    emptyComments,
   )
-  const testEditor: EditorState = deepFreeze({
-    ...createEditorState(NO_OP),
-    projectContents: contentsToTree({
-      [StoryboardFilePath]: textFile(
-        textFileContents('', originalModel, RevisionsState.ParsedAhead),
+}
+
+const originalModel = deepFreeze(
+  parseSuccess(
+    addImport(
+      'utopia-api',
+      null,
+      [importAlias('View'), importAlias('Scene'), importAlias('Storyboard')],
+      null,
+      sampleImportsForTests,
+    ),
+    [
+      utopiaJSXComponent(
+        'MyView1',
+        true,
+        'var',
+        'block',
+        defaultPropsParam,
+        [],
+        jsxElement(
+          jsxElementName('View', []),
+          jsxAttributesFromMap({
+            'data-uid': jsxAttributeValue('aaa', emptyComments),
+          }),
+          [
+            jsxElement(
+              jsxElementName('View', []),
+              jsxAttributesFromMap({
+                test: jsxAttributeNestedObjectSimple(
+                  jsxAttributesFromMap({ prop: jsxAttributeValue(5, emptyComments) }),
+                  emptyComments,
+                ),
+                'data-uid': jsxAttributeValue('bbb', emptyComments),
+              }),
+              [],
+            ),
+          ],
+        ),
         null,
-        0,
+        false,
+        emptyComments,
       ),
-    }),
-    jsxMetadata: createFakeMetadataForComponents(originalModel.topLevelElements),
-  })
+      storyboardComponent(1),
+    ],
+    {},
+    null,
+    null,
+    addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+  ),
+)
+const testEditor: EditorState = deepFreeze({
+  ...createEditorState(NO_OP),
+  projectContents: contentsToTree({
+    [StoryboardFilePath]: textFile(
+      textFileContents('', originalModel, RevisionsState.ParsedAhead),
+      null,
+      0,
+    ),
+  }),
+  jsxMetadata: createFakeMetadataForComponents(originalModel.topLevelElements),
+})
+
+describe('SET_PROP', () => {
   it('updates a simple value property', () => {
     const action = setProp_UNSAFE(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
@@ -208,76 +232,6 @@ describe('SET_PROP', () => {
 })
 
 describe('SET_CANVAS_FRAMES', () => {
-  // Annoyingly, to test this properly we'd need the spy functions to run, so right now
-  // we're making do with having everything zero offset
-  const components = [
-    utopiaJSXComponent(
-      'MyView',
-      true,
-      'var',
-      'block',
-      defaultPropsParam,
-      [],
-      jsxElement(
-        jsxElementName('View', []),
-        jsxAttributesFromMap({
-          layout: jsxAttributeNestedObjectSimple(
-            jsxAttributesFromMap({
-              top: jsxAttributeValue(0, emptyComments),
-              left: jsxAttributeValue(0, emptyComments),
-              width: jsxAttributeValue(100, emptyComments),
-              height: jsxAttributeValue(100, emptyComments),
-            }),
-            emptyComments,
-          ),
-          'data-uid': jsxAttributeValue('aaa', emptyComments),
-        }),
-        [
-          jsxElement(
-            jsxElementName('View', []),
-            jsxAttributesFromMap({
-              layout: jsxAttributeNestedObjectSimple(
-                jsxAttributesFromMap({
-                  top: jsxAttributeValue(0, emptyComments),
-                  left: jsxAttributeValue(0, emptyComments),
-                  width: jsxAttributeValue(10, emptyComments),
-                  height: jsxAttributeValue(10, emptyComments),
-                }),
-                emptyComments,
-              ),
-              'data-uid': jsxAttributeValue('bbb', emptyComments),
-            }),
-            [],
-          ),
-        ],
-      ),
-      null,
-      false,
-      emptyComments,
-    ),
-  ]
-
-  const originalModel = deepFreeze(
-    parseSuccess(
-      emptyImports(),
-      components,
-      {},
-      null,
-      null,
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
-    ),
-  )
-  const testEditor: EditorState = deepFreeze({
-    ...createEditorState(NO_OP),
-    projectContents: contentsToTree({
-      [StoryboardFilePath]: textFile(
-        textFileContents('', originalModel, RevisionsState.ParsedAhead),
-        null,
-        0,
-      ),
-    }),
-    jsxMetadata: createFakeMetadataForComponents(originalModel.topLevelElements),
-  })
   const derivedState = deriveState(testEditor, null)
   it('Updates the frame of the child correctly', () => {
     const action = setCanvasFrames(
@@ -321,21 +275,25 @@ describe('moveTemplate', () => {
   function fileModel(rootElements: Array<JSXElement>): Readonly<ParseSuccess> {
     return deepFreeze(
       parseSuccess(
-        emptyImports(),
-        rootElements.map((element, index) =>
-          utopiaJSXComponent(
-            `MyView${index}`,
-            true,
-            'var',
-            'block',
-            defaultPropsParam,
-            [],
-            element,
-            null,
-            false,
-            emptyComments,
-          ),
-        ),
+        sampleImportsForTests,
+        [
+          storyboardComponent(rootElements.length),
+          ...rootElements.map((element, index) => {
+            const componentName = `MyView${index + 1}`
+            return utopiaJSXComponent(
+              componentName,
+              true,
+              'var',
+              'block',
+              defaultPropsParam,
+              [],
+              element,
+              null,
+              false,
+              emptyComments,
+            )
+          }),
+        ],
         {},
         null,
         null,
@@ -399,7 +357,7 @@ describe('moveTemplate', () => {
     )
   }
 
-  function testEditor(uiFile: Readonly<ParseSuccess>): EditorState {
+  function testEditorFromParseSuccess(uiFile: Readonly<ParseSuccess>): EditorState {
     let editor: EditorState = {
       ...createEditorState(NO_OP),
       projectContents: contentsToTree({
@@ -419,7 +377,7 @@ describe('moveTemplate', () => {
     const view1 = view('bbb')
     const view2 = view('ccc')
     const root = view('aaa', [view1, view2])
-    const editor = testEditor(fileModel([root]))
+    const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
@@ -438,9 +396,10 @@ describe('moveTemplate', () => {
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
-      .topLevelElements
-    const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
+    const newComponents = getUtopiaJSXComponentsFromSuccess(
+      newUiJsFile.fileContents.parsed as ParseSuccess,
+    )
+    const updatedRoot = newComponents[1] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot)).toHaveLength(1)
     const expectedView2 = Utils.path(['rootElement', 'children', 0, 'children', 0], updatedRoot)
@@ -452,7 +411,7 @@ describe('moveTemplate', () => {
     const view1 = view('bbb', [], 5, 5, 100, 100)
     const view2 = view('ccc', [], 15, 15, 100, 100)
     const root = view('aaa', [view1, view2], 10, 10, 100, 100)
-    const editor = testEditor(fileModel([root]))
+    const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
@@ -500,7 +459,7 @@ describe('moveTemplate', () => {
     const view1 = view('bbb', [], '5%', '5%', 100, 100, 'BBB')
     const view2 = view('ccc', [], '15%', '15%', 100, 100, 'CCC')
     const root = view('aaa', [view1, view2], 10, 10, 100, 100, 'AAA')
-    const editor = testEditor(fileModel([root]))
+    const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
@@ -529,9 +488,10 @@ describe('moveTemplate', () => {
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
-      .topLevelElements
-    const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
+    const newComponents = getUtopiaJSXComponentsFromSuccess(
+      newUiJsFile.fileContents.parsed as ParseSuccess,
+    )
+    const updatedRoot = newComponents[1] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot)).toHaveLength(1)
     const actual = Utils.path(['rootElement', 'children', 0, 'children', 0], updatedRoot)
@@ -543,7 +503,7 @@ describe('moveTemplate', () => {
     const view2 = view('ccc')
     const view1 = view('bbb', [view2])
     const root = view('aaa', [view1])
-    const editor = testEditor(fileModel([root]))
+    const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
@@ -562,9 +522,10 @@ describe('moveTemplate', () => {
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
-      .topLevelElements
-    const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
+    const newComponents = getUtopiaJSXComponentsFromSuccess(
+      newUiJsFile.fileContents.parsed as ParseSuccess,
+    )
+    const updatedRoot = newComponents[1] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot)).toHaveLength(2)
     const actual = Utils.path(['rootElement', 'children', 1], updatedRoot)
@@ -575,7 +536,7 @@ describe('moveTemplate', () => {
     const view2 = view('ccc')
     const view1 = view('bbb', [view2])
     const root = view('aaa', [view1])
-    const editor = testEditor(fileModel([root]))
+    const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
@@ -594,9 +555,10 @@ describe('moveTemplate', () => {
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
-      .topLevelElements
-    const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
+    const newComponents = getUtopiaJSXComponentsFromSuccess(
+      newUiJsFile.fileContents.parsed as ParseSuccess,
+    )
+    const updatedRoot = newComponents[1] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot)).toHaveLength(2)
     const actual = Utils.path(['rootElement', 'children', 0], updatedRoot)
@@ -608,7 +570,7 @@ describe('moveTemplate', () => {
     const view1 = view('bbb', [view2])
     const view3 = view('ddd')
     const root = view('aaa', [view1, view3])
-    const editor = testEditor(fileModel([root]))
+    const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
@@ -627,9 +589,10 @@ describe('moveTemplate', () => {
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
-      .topLevelElements
-    const updatedRoot = newTopLevelElements[0] as UtopiaJSXComponent
+    const newComponents = getUtopiaJSXComponentsFromSuccess(
+      newUiJsFile.fileContents.parsed as ParseSuccess,
+    )
+    const updatedRoot = newComponents[1] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot)).toHaveLength(3)
     const actual = Utils.path(['rootElement', 'children', 1], updatedRoot)
@@ -640,7 +603,7 @@ describe('moveTemplate', () => {
     const view1 = view('bbb')
     const root1 = view('aaa', [view1])
     const root2 = view('ccc', [])
-    const editor = testEditor(fileModel([root1, root2]))
+    const editor = testEditorFromParseSuccess(fileModel([root1, root2]))
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
@@ -659,12 +622,13 @@ describe('moveTemplate', () => {
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
-      .topLevelElements
-    const updatedRoot1 = newTopLevelElements[0] as UtopiaJSXComponent
+    const newComponents = getUtopiaJSXComponentsFromSuccess(
+      newUiJsFile.fileContents.parsed as ParseSuccess,
+    )
+    const updatedRoot1 = newComponents[1] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot1)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot1)).toHaveLength(0)
-    const updatedRoot2 = newTopLevelElements[1] as UtopiaJSXComponent
+    const updatedRoot2 = newComponents[2] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedRoot2)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedRoot2)).toHaveLength(1)
     const actual = Utils.path(['rootElement', 'children', 0], updatedRoot2)
@@ -689,7 +653,7 @@ describe('moveTemplate', () => {
     )
     const group1 = group('ddd', [], -10, -10, 100, 100, 'Group')
     const root1 = view('aaa', [view1])
-    const editor = testEditor(fileModel([root1, group1]))
+    const editor = testEditorFromParseSuccess(fileModel([root1, group1]))
     const groupFrame = canvasRectangle({ x: -10, y: -10, width: 100, height: 100 })
 
     const newEditor = editorMoveTemplate(
@@ -709,9 +673,10 @@ describe('moveTemplate', () => {
     ) as TextFile
     expect(isTextFile(newUiJsFile)).toBeTruthy()
     expect(isParseSuccess(newUiJsFile.fileContents.parsed)).toBeTruthy()
-    const newTopLevelElements: TopLevelElement[] = (newUiJsFile.fileContents.parsed as ParseSuccess)
-      .topLevelElements
-    const updatedGroup = newTopLevelElements[1] as UtopiaJSXComponent
+    const newComponents = getUtopiaJSXComponentsFromSuccess(
+      newUiJsFile.fileContents.parsed as ParseSuccess,
+    )
+    const updatedGroup = newComponents[2] as UtopiaJSXComponent
     expect(isUtopiaJSXComponent(updatedGroup)).toBeTruthy()
     expect(Utils.pathOr([], ['rootElement', 'children'], updatedGroup)).toHaveLength(1)
     const actual: any = Utils.path(['rootElement', 'children', 0], updatedGroup)
@@ -748,7 +713,7 @@ describe('moveTemplate', () => {
       }),
       [],
     )
-    const editor = testEditor(fileModel([flexView, group1]))
+    const editor = testEditorFromParseSuccess(fileModel([flexView, group1]))
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
@@ -799,7 +764,7 @@ describe('moveTemplate', () => {
     )
     const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
     const root1 = view('aaa', [], 0, 0, 200, 200)
-    const editor = testEditor(fileModel([root1, group1]))
+    const editor = testEditorFromParseSuccess(fileModel([root1, group1]))
 
     const newEditor = editorMoveTemplate(
       TP.instancePath(ScenePathForTestUiJsFile, ['ddd', 'bbb']),
@@ -934,7 +899,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
-    componentName: null,
     label: null,
   }
 
@@ -959,7 +923,6 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     specialSizeMeasurements: emptySpecialSizeMeasurements,
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
-    componentName: null,
     label: null,
   }
 

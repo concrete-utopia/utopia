@@ -1,7 +1,6 @@
 import { selectComponents } from '../editor/actions/action-creators'
 import CanvasActions from './canvas-actions'
 import {
-  getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -86,12 +85,9 @@ describe('createDragState', () => {
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
           <Storyboard>
-            <Scene
-              style={{ left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              static
-              props={{ style: { position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 } }}
-            />
+            <Scene style={{ left: 0, top: 0, width: 400, height: 400 }}>
+              <App style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }} />
+            </Scene>
           </Storyboard>
         )
       }`,

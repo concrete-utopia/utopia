@@ -1,9 +1,10 @@
 import {
   getPrintedUiJsCode,
   renderTestEditorWithCode,
+  TestAppUID,
   TestScenePath,
+  TestSceneUID,
   makeTestProjectCodeWithSnippet,
-  getTestParseSuccess,
 } from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
@@ -12,8 +13,6 @@ import * as Prettier from 'prettier'
 import * as TP from '../../core/shared/template-path'
 
 import { PrettierConfig } from '../../core/workers/parser-printer/prettier-utils'
-import { createFakeMetadataForParseSuccess, wait } from '../../utils/utils.test-utils'
-import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 import { setElectronWindow } from '../../core/shared/test-setup.test-utils'
@@ -21,311 +20,7 @@ import { setElectronWindow } from '../../core/shared/test-setup.test-utils'
 describe('moving a scene/rootview on the canvas', () => {
   beforeAll(setElectronWindow)
 
-  it('dragging a dynamic scene’s root view sets the scene position', async () => {
-    const testCode = Prettier.format(
-      `
-      /** @jsx jsx */
-        import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
-        export var App = (props) => {
-          return (
-            <View
-              style={{ width: 375, height: 812 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='aaa'
-              data-testid='aaa'
-            >
-              <View
-                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-                layout={{ layoutSystem: 'pinSystem' }}
-                data-uid='bbb'
-              />
-            </View>
-          )
-        }
-
-        export var storyboard = (props) => {
-          return (
-            <Storyboard data-uid='utopia-storyboard-uid'>
-              <Scene
-                style={{ position: 'absolute' }}
-                component={App}
-                data-uid='scene-aaa'
-                resizeContent
-              />
-            </Storyboard>
-          )
-        }`,
-      PrettierConfig,
-    )
-    const renderResult = await renderTestEditorWithCode(testCode)
-
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa'])], false)],
-      false,
-    )
-
-    const areaControl = renderResult.renderedDOM.getByTestId('aaa')
-
-    const areaControlBounds = areaControl.getBoundingClientRect()
-
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    fireEvent(
-      canvasControlsLayer,
-      new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: areaControlBounds.left + 5,
-        clientY: areaControlBounds.top + 5,
-        buttons: 1,
-      }),
-    )
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 25,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        canvasControlsLayer,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 25,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        window,
-        new MouseEvent('mouseup', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 25,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    const expectedCode = `/** @jsx jsx */
-      import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
-      export var App = (props) => {
-        return (
-          <View
-            style={{ width: 375, height: 812 }}
-            layout={{ layoutSystem: 'pinSystem' }}
-            data-uid='aaa'
-            data-testid='aaa'
-          >
-            <View
-              style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='bbb'
-            />
-          </View>
-        )
-      }
-
-      export var storyboard = (props) => {
-        return (
-          <Storyboard data-uid='utopia-storyboard-uid'>
-            <Scene
-              style={{ position: 'absolute', top: -30, left: 40 }}
-              component={App}
-              data-uid='scene-aaa'
-              resizeContent
-            />
-          </Storyboard>
-        )
-      }`
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      Prettier.format(expectedCode, PrettierConfig),
-    )
-  })
-  it('dragging a dynamic scene sets the scene position', async () => {
-    const testCode = Prettier.format(
-      `
-      /** @jsx jsx */
-        import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
-        export var App = (props) => {
-          return (
-            <View
-              style={{ width: 375, height: 812 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='aaa'
-            >
-              <View
-                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-                layout={{ layoutSystem: 'pinSystem' }}
-                data-uid='bbb'
-              />
-            </View>
-          )
-        }
-
-        export var storyboard = (props) => {
-          return (
-            <Storyboard data-uid='utopia-storyboard-uid'>
-              <Scene
-                style={{ position: 'absolute' }}
-                component={App}
-                data-uid='scene-aaa'
-                resizeContent
-              />
-            </Storyboard>
-          )
-        }`,
-      PrettierConfig,
-    )
-    const renderResult = await renderTestEditorWithCode(testCode)
-
-    await renderResult.dispatch([selectComponents([TestScenePath], false)], false)
-
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'label-control-utopia-storyboard-uid/scene-aaa',
-    )
-
-    const areaControlBounds = areaControl.getBoundingClientRect()
-
-    fireEvent(
-      areaControl,
-      new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: areaControlBounds.left + 5,
-        clientY: areaControlBounds.top + 5,
-        buttons: 1,
-      }),
-    )
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        areaControl,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top + 25,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        areaControl,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top + 25,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        window,
-        new MouseEvent('mouseup', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top + 25,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    const expectedCode = `/** @jsx jsx */
-      import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
-      export var App = (props) => {
-        return (
-          <View
-            style={{ width: 375, height: 812 }}
-            layout={{ layoutSystem: 'pinSystem' }}
-            data-uid='aaa'
-          >
-            <View
-              style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='bbb'
-            />
-          </View>
-        )
-      }
-
-      export var storyboard = (props) => {
-        return (
-          <Storyboard data-uid='utopia-storyboard-uid'>
-            <Scene
-              style={{ position: 'absolute', top: 20, left: 40 }}
-              component={App}
-              data-uid='scene-aaa'
-              resizeContent
-            />
-          </Storyboard>
-        )
-      }`
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      Prettier.format(expectedCode, PrettierConfig),
-    )
-  })
-
-  it('dragging a static scene’s root view sets the root view position', async () => {
+  it('dragging a scene child’s root view sets the root view position', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ width: '100%', height: '100%' }} layout={{ layoutSystem: 'pinSystem' }} data-testid='aaa' data-uid='aaa'>
@@ -431,7 +126,8 @@ describe('moving a scene/rootview on the canvas', () => {
       `),
     )
   })
-  it('dragging a static scene sets the scene position', async () => {
+
+  it('dragging a scene sets the scene position', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */
         import * as React from 'react'
@@ -455,12 +151,13 @@ describe('moving a scene/rootview on the canvas', () => {
 
         export var storyboard = (props) => {
           return (
-            <Storyboard data-uid='utopia-storyboard-uid'>
+            <Storyboard data-uid='${BakedInStoryboardUID}'>
               <Scene
                 style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-                component={App}
-                data-uid='scene-aaa'
-              />
+                data-uid='${TestSceneUID}'
+              >
+                <App data-uid='${TestAppUID}' />
+              </Scene>
             </Storyboard>
           )
         }`,
@@ -468,10 +165,11 @@ describe('moving a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    await renderResult.dispatch([selectComponents([TestScenePath], false)], false)
+    const targetPath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      'label-control-utopia-storyboard-uid/scene-aaa',
+      `label-control-${TP.toString(targetPath)}`,
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -563,12 +261,13 @@ describe('moving a scene/rootview on the canvas', () => {
 
     export var storyboard = (props) => {
       return (
-        <Storyboard data-uid='utopia-storyboard-uid'>
+        <Storyboard data-uid='${BakedInStoryboardUID}'>
           <Scene
             style={{ position: 'absolute', left: 40, top: -30, width: 400, height: 400 }}
-            component={App}
-            data-uid='scene-aaa'
-          />
+            data-uid='${TestSceneUID}'
+          >
+            <App data-uid='${TestAppUID}' />
+          </Scene>
         </Storyboard>
       )
     }`
@@ -580,402 +279,9 @@ describe('moving a scene/rootview on the canvas', () => {
 })
 
 describe('resizing a scene/rootview on the canvas', () => {
-  it('resizing a dynamic scene’s root view sets the root view size', async () => {
-    const testCode = Prettier.format(
-      `/** @jsx jsx */
-        import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
+  beforeAll(setElectronWindow)
 
-        export var App = (props) => {
-          return (
-            <View
-              style={{ width: 200, height: 400 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='aaa'
-              data-testid='aaa'
-            >
-              <View
-                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-                layout={{ layoutSystem: 'pinSystem' }}
-                data-uid='bbb'
-              />
-            </View>
-          )
-        }
-
-        export var storyboard = (props) => {
-          return (
-            <Storyboard data-uid='utopia-storyboard-uid'>
-              <Scene
-                style={{ position: 'absolute' }}
-                component={App}
-                data-uid='scene-aaa'
-                resizeContent
-              />
-            </Storyboard>
-          )
-        }`,
-      PrettierConfig,
-    )
-    const renderResult = await renderTestEditorWithCode(testCode)
-
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa'])], false)],
-      false,
-    )
-
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-resize-control-utopia-storyboard-uid/scene-aaa:aaa-0-1-1',
-    )
-
-    const areaControlBounds = areaControl.getBoundingClientRect()
-
-    fireEvent(
-      areaControl,
-      new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: areaControlBounds.left + 5,
-        clientY: areaControlBounds.top + 5,
-        buttons: 1,
-      }),
-    )
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        areaControl,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 25,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        window,
-        new MouseEvent('mouseup', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 25,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    const expectedCode = `/** @jsx jsx */
-      import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
-      export var App = (props) => {
-        return (
-          <View
-            style={{ width: 240, height: 370 }}
-            layout={{ layoutSystem: 'pinSystem' }}
-            data-uid='aaa'
-            data-testid='aaa'
-          >
-            <View
-              style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='bbb'
-            />
-          </View>
-        )
-      }
-
-      export var storyboard = (props) => {
-        return (
-          <Storyboard data-uid='utopia-storyboard-uid'>
-            <Scene
-              style={{ position: 'absolute' }}
-              component={App}
-              data-uid='scene-aaa'
-              resizeContent
-            />
-          </Storyboard>
-        )
-      }`
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      Prettier.format(expectedCode, PrettierConfig),
-    )
-  })
-  it('resizing a dynamic scene sets the root view size', async () => {
-    const testCode = Prettier.format(
-      `/** @jsx jsx */
-        import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
-        export var App = (props) => {
-          return (
-            <View
-              style={{ width: 200, height: 400 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='aaa'
-            >
-              <View
-                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-                layout={{ layoutSystem: 'pinSystem' }}
-                data-uid='bbb'
-              />
-            </View>
-          )
-        }
-
-        export var storyboard = (props) => {
-          return (
-            <Storyboard data-uid='utopia-storyboard-uid'>
-              <Scene
-                style={{ position: 'absolute' }}
-                component={App}
-                data-uid='scene-aaa'
-                resizeContent
-              />
-            </Storyboard>
-          )
-        }`,
-      PrettierConfig,
-    )
-    const renderResult = await renderTestEditorWithCode(testCode)
-
-    await renderResult.dispatch([selectComponents([TestScenePath], false)], false)
-
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-resize-control-utopia-storyboard-uid/scene-aaa-0-1-1',
-    )
-
-    const areaControlBounds = areaControl.getBoundingClientRect()
-
-    fireEvent(
-      areaControl,
-      new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: areaControlBounds.left + 5,
-        clientY: areaControlBounds.top + 5,
-        buttons: 1,
-      }),
-    )
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        areaControl,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 25,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        window,
-        new MouseEvent('mouseup', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 25,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    const expectedCode = `/** @jsx jsx */
-      import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
-      export var App = (props) => {
-        return (
-          <View
-            style={{ width: 240, height: 370 }}
-            layout={{ layoutSystem: 'pinSystem' }}
-            data-uid='aaa'
-          >
-            <View
-              style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='bbb'
-            />
-          </View>
-        )
-      }
-
-      export var storyboard = (props) => {
-        return (
-          <Storyboard data-uid='utopia-storyboard-uid'>
-            <Scene
-              style={{ position: 'absolute' }}
-              component={App}
-              data-uid='scene-aaa'
-              resizeContent
-            />
-          </Storyboard>
-        )
-      }`
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      Prettier.format(expectedCode, PrettierConfig),
-    )
-  })
-  it('resizing a (group-like) scene with resizeContent enabled that also has width and height ignores the width and height: resizing sets the root view size', async () => {
-    const testCode = Prettier.format(
-      `/** @jsx jsx */
-        import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
-        export var App = (props) => {
-          return (
-            <View
-              style={{ width: 200, height: 400 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='aaa'
-            >
-              <View
-                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-                layout={{ layoutSystem: 'pinSystem' }}
-                data-uid='bbb'
-              />
-            </View>
-          )
-        }
-
-        export var storyboard = (props) => {
-          return (
-            <Storyboard data-uid='utopia-storyboard-uid'>
-              <Scene
-                style={{ position: 'absolute', width: 200, height: 200 }}
-                component={App}
-                data-uid='scene-aaa'
-                resizeContent
-              />
-            </Storyboard>
-          )
-        }`,
-      PrettierConfig,
-    )
-    const renderResult = await renderTestEditorWithCode(testCode)
-
-    await renderResult.dispatch([selectComponents([TestScenePath], false)], false)
-
-    const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-resize-control-utopia-storyboard-uid/scene-aaa-0-1-1',
-    )
-
-    const areaControlBounds = areaControl.getBoundingClientRect()
-
-    fireEvent(
-      areaControl,
-      new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        metaKey: true,
-        clientX: areaControlBounds.left + 5,
-        clientY: areaControlBounds.top + 5,
-        buttons: 1,
-      }),
-    )
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        areaControl,
-        new MouseEvent('mousemove', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 25,
-          buttons: 1,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    await act(async () => {
-      const domFinished = renderResult.getDomReportDispatched()
-      const dispatchDone = renderResult.getDispatchFollowUpactionsFinished()
-      fireEvent(
-        window,
-        new MouseEvent('mouseup', {
-          bubbles: true,
-          cancelable: true,
-          metaKey: false,
-          clientX: areaControlBounds.left + 45,
-          clientY: areaControlBounds.top - 25,
-        }),
-      )
-      await domFinished
-      await dispatchDone
-    })
-
-    const expectedCode = `/** @jsx jsx */
-      import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
-
-      export var App = (props) => {
-        return (
-          <View
-            style={{ width: 240, height: 170 }}
-            layout={{ layoutSystem: 'pinSystem' }}
-            data-uid='aaa'
-          >
-            <View
-              style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-              layout={{ layoutSystem: 'pinSystem' }}
-              data-uid='bbb'
-            />
-          </View>
-        )
-      }
-
-      export var storyboard = (props) => {
-        return (
-          <Storyboard data-uid='utopia-storyboard-uid'>
-            <Scene
-              style={{ position: 'absolute', width: 200, height: 200 }}
-              component={App}
-              data-uid='scene-aaa'
-              resizeContent
-            />
-          </Storyboard>
-        )
-      }`
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      Prettier.format(expectedCode, PrettierConfig),
-    )
-  })
-  it('resizing a static scene’s root view sets the root view size', async () => {
+  it('resizing a scene child’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */
         import * as React from 'react'
@@ -999,12 +305,13 @@ describe('resizing a scene/rootview on the canvas', () => {
 
         export var storyboard = (props) => {
           return (
-            <Storyboard data-uid='utopia-storyboard-uid'>
+            <Storyboard data-uid='${BakedInStoryboardUID}'>
               <Scene
                 style={{ position: 'absolute', top: 0, left: 0, width: 200, height: 400 }}
-                component={App}
-                data-uid='scene-aaa'
-              />
+                data-uid='${TestSceneUID}'
+              >
+                <App data-uid='${TestAppUID}' />
+              </Scene>
             </Storyboard>
           )
         }`,
@@ -1012,13 +319,11 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa'])], false)],
-      false,
-    )
+    const targetPath = TP.instancePath(TestScenePath, ['aaa'])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-resize-control-utopia-storyboard-uid/scene-aaa:aaa-0-1-1',
+      `component-resize-control-${TP.toString(targetPath)}-0-1-1`,
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -1092,12 +397,13 @@ describe('resizing a scene/rootview on the canvas', () => {
 
     export var storyboard = (props) => {
       return (
-        <Storyboard data-uid='utopia-storyboard-uid'>
+        <Storyboard data-uid='${BakedInStoryboardUID}'>
           <Scene
             style={{ position: 'absolute', top: 0, left: 0, width: 200, height: 400 }}
-            component={App}
-            data-uid='scene-aaa'
-          />
+            data-uid='${TestSceneUID}'
+          >
+            <App data-uid='${TestAppUID}' />
+          </Scene>
         </Storyboard>
       )
     }`
@@ -1106,7 +412,8 @@ describe('resizing a scene/rootview on the canvas', () => {
       Prettier.format(expectedCode, PrettierConfig),
     )
   })
-  it('resizing a static scene sets the scene size', async () => {
+
+  it('resizing a scene sets the scene size', async () => {
     const testCode = Prettier.format(
       `/** @jsx jsx */
       import * as React from 'react'
@@ -1130,12 +437,13 @@ describe('resizing a scene/rootview on the canvas', () => {
 
       export var storyboard = (props) => {
         return (
-          <Storyboard data-uid='utopia-storyboard-uid'>
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', top: 0, left: 0, width: 200, height: 400 }}
-              component={App}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1143,10 +451,11 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    await renderResult.dispatch([selectComponents([TestScenePath], false)], false)
+    const targetPath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID])
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      'component-resize-control-utopia-storyboard-uid/scene-aaa-0-1-1',
+      `component-resize-control-${TP.toString(targetPath)}-0-1-1`,
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -1220,12 +529,13 @@ describe('resizing a scene/rootview on the canvas', () => {
       
       export var storyboard = (props) => {
         return (
-          <Storyboard data-uid='utopia-storyboard-uid'>
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', top: 0, left: 0, width: 240, height: 370 }}
-              component={App}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
           </Storyboard>
         )
       }`

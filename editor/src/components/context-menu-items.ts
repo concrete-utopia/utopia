@@ -2,9 +2,14 @@ import * as R from 'ramda'
 import { TriggerEvent } from 'react-contexify'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { Either } from '../core/shared/either'
-import { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import { ElementInstanceMetadataMap, isIntrinsicHTMLElement } from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
-import { InstancePath, NodeModules } from '../core/shared/project-file-types'
+import {
+  InstancePath,
+  NodeModules,
+  ScenePath,
+  TemplatePath,
+} from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
 import * as TP from '../core/shared/template-path'
 import RU from '../utils/react-utils'
@@ -36,15 +41,7 @@ export interface ContextMenuItem<T> {
   submenuName?: string | null
   shortcut?: string
   isSeparator?: boolean
-  isHidden?: ({
-    props,
-    data,
-    triggerEvent,
-  }: {
-    props: any
-    data: T
-    triggerEvent: TriggerEvent
-  }) => boolean
+  isHidden?: (data: T) => boolean
   action: (data: T, dispatch?: EditorDispatch, event?: MouseEvent) => void
 }
 
@@ -57,6 +54,9 @@ export interface CanvasData {
   nodeModules: NodeModules
   transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
+  focusedElementPath: ScenePath | null
+  hiddenInstances: TemplatePath[]
+  scale: number
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -149,7 +149,7 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
 }
 
 export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
-  name: 'Set As Focused Element',
+  name: 'Edit Component',
   enabled: (data) => {
     if (data.currentFilePath == null) {
       return false
@@ -167,6 +167,21 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
         return MetadataUtils.isFocusableComponent(view, components, data.jsxMetadata, imports)
       })
     }
+  },
+  isHidden: (data) => {
+    return data.selectedViews.every((view) => {
+      const { components } = getJSXComponentsAndImportsForPathInnerComponent(
+        view,
+        data.currentFilePath!,
+        data.projectContents,
+        data.nodeModules,
+        data.transientFilesState,
+        data.jsxMetadata,
+        data.resolve,
+      )
+      const elementName = MetadataUtils.getJSXElementName(view, components, data.jsxMetadata)
+      return elementName != null ? isIntrinsicHTMLElement(elementName) : true
+    })
   },
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {

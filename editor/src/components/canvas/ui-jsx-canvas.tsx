@@ -372,6 +372,7 @@ export const UiJsxCanvas = betterReactMemo(
         storyboardRootElementPath,
         rootScenePath,
       } = useGetStoryboardRoot(
+        props.focusedElementPath,
         topLevelElementsMap,
         executionScope,
         projectContents,
@@ -433,6 +434,7 @@ export const UiJsxCanvas = betterReactMemo(
 )
 
 function useGetStoryboardRoot(
+  focusedElementPath: ScenePath | null,
   topLevelElementsMap: Map<string, UtopiaJSXComponent>,
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
@@ -453,7 +455,7 @@ function useGetStoryboardRoot(
     storyboardRootJsxComponent == null
       ? []
       : getValidTemplatePaths(
-          null,
+          focusedElementPath,
           BakedInStoryboardVariableName,
           EmptyScenePathForStoryboard,
           projectContents,

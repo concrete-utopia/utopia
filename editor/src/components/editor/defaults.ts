@@ -3,26 +3,21 @@ import {
   jsxElement,
   jsxAttributeValue,
   jsxElementName,
-  jsxAttributeOtherJavaScript,
   jsxAttributesFromMap,
+  JSXElementChildren,
 } from '../../core/shared/element-template'
 import { NormalisedFrame } from 'utopia-api'
-import { PathForResizeContent } from '../../core/model/scene-utils'
-import * as PP from '../../core/shared/property-path'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export function defaultSceneElement(
   uid: string,
-  componentName: string | null,
   frame: NormalisedFrame,
   label: string,
+  children: JSXElementChildren,
 ): JSXElement {
-  const component = componentName == null ? 'null' : componentName
   const props = jsxAttributesFromMap({
     'data-uid': jsxAttributeValue(uid, emptyComments),
     'data-label': jsxAttributeValue(label, emptyComments),
-    component: jsxAttributeOtherJavaScript(component, `return ${componentName}`, [], null),
-    [PP.toString(PathForResizeContent)]: jsxAttributeValue(true, emptyComments),
     style: jsxAttributeValue(
       {
         position: 'absolute',
@@ -32,7 +27,7 @@ export function defaultSceneElement(
     ),
   })
 
-  return jsxElement(jsxElementName('Scene', []), props, [])
+  return jsxElement(jsxElementName('Scene', []), props, children)
 }
 
 export function defaultViewElement(uid: string): JSXElement {

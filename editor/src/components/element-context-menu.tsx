@@ -22,7 +22,7 @@ import {
   setAsFocusedElement,
   scrollToElement,
 } from './context-menu-items'
-import { ContextMenuInnerProps, MomentumContextMenu } from './context-menu-wrapper'
+import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
 import { filterScenes } from '../core/shared/template-path'
 import { betterReactMemo } from '../uuiui-deps'
@@ -34,6 +34,8 @@ import { TemplatePath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 import { FlexRow, Icn, IcnProps } from '../uuiui'
 import { getOpenUIJSFileKey } from './editor/store/editor-state'
+import { WindowMousePositionRaw } from '../templates/editor-canvas'
+import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
@@ -93,9 +95,19 @@ function useCanvasContextMenuItems(
           submenuName: 'Select Elements',
           enabled: true,
           action: () => dispatch([selectComponents([path], false)], 'canvas'),
-          isHidden: ({ props }: { props: ContextMenuInnerProps }) => {
-            if (props.elementsUnderCursor != null && Array.isArray(props.elementsUnderCursor)) {
-              return !props.elementsUnderCursor.some((underCursor: TemplatePath) =>
+          isHidden: (data: CanvasData) => {
+            const elementsUnderCursor = getAllTargetsAtPoint(
+              data.jsxMetadata,
+              data.selectedViews,
+              data.hiddenInstances,
+              data.focusedElementPath,
+              'no-filter',
+              WindowMousePositionRaw,
+              data.scale,
+              data.canvasOffset,
+            )
+            if (elementsUnderCursor != null) {
+              return !elementsUnderCursor.some((underCursor: TemplatePath) =>
                 TP.pathsEqual(underCursor, path),
               )
             } else {
@@ -173,6 +185,9 @@ export const ElementContextMenu = betterReactMemo(
         nodeModules: store.editor.nodeModules.files,
         transientFilesState: store.derived.canvas.transientState.filesState,
         resolve: store.editor.codeResultCache.resolve,
+        focusedElementPath: store.editor.focusedElementPath,
+        hiddenInstances: store.editor.hiddenInstances,
+        scale: store.editor.canvas.scale,
       }
     })
 
@@ -187,6 +202,9 @@ export const ElementContextMenu = betterReactMemo(
         nodeModules: currentEditor.nodeModules,
         transientFilesState: currentEditor.transientFilesState,
         resolve: currentEditor.resolve,
+        focusedElementPath: currentEditor.focusedElementPath,
+        hiddenInstances: currentEditor.hiddenInstances,
+        scale: currentEditor.scale,
       }
     }, [editorSliceRef])
 

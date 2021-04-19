@@ -2,7 +2,9 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestAppUID,
   TestScenePath,
+  TestSceneUID,
 } from './ui-jsx.test-utils' // IMPORTANT - THIS IMPORT MUST ALWAYS COME FIRST
 import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
@@ -295,6 +297,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
+  beforeAll(setElectronWindow)
   it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
@@ -779,6 +782,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
+  beforeAll(setElectronWindow)
   it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
@@ -885,6 +889,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 })
 
 describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
+  beforeAll(setElectronWindow)
   it('TLWH, but W and H are percentage works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -953,6 +958,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 })
 
 describe('moveTemplate', () => {
+  beforeAll(setElectronWindow)
   it('wraps in 1 element', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1290,6 +1296,14 @@ describe('moveTemplate', () => {
   })
 
   it('reparents a pinned element to flex using magic?', async () => {
+    //const currentWindow = require('electron').remote.getCurrentWindow()
+    //currentWindow.show()
+    //currentWindow.setPosition(500, 200)
+    //currentWindow.setSize(2200, 1000)
+    //currentWindow.openDevTools()
+    // This is necessary because the test code races against the Electron process
+    // opening the window it would appear.
+    //await wait(10000)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
@@ -1413,10 +1427,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
             <div
               style={{
                 backgroundColor: '#0091FFAA',
@@ -1547,10 +1561,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1590,11 +1604,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              static
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1603,12 +1616,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [
-        selectComponents(
-          [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['aaa', 'bbb'])],
-          false,
-        ),
-      ],
+      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -1700,11 +1708,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='${BakedInStoryboardUID}'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              component={App}
-              static
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
             <div
               style={{
                 backgroundColor: '#0091FFAA',
@@ -1851,11 +1858,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='storyboard'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 100, height: 100 }}
-              component={App}
-              static
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
           </Storyboard>
         )
       }`,
@@ -1948,11 +1954,10 @@ describe('moveTemplate', () => {
           <Storyboard data-uid='storyboard'>
             <Scene
               style={{ position: 'absolute', left: 0, top: 0, width: 100, height: 100 }}
-              component={App}
-              static
-              props={{}}
-              data-uid='scene-aaa'
-            />
+              data-uid='${TestSceneUID}'
+            >
+              <App data-uid='${TestAppUID}' />
+            </Scene>
             <View
               style={{
                 backgroundColor: '#0091FFAA',
@@ -2064,6 +2069,7 @@ describe('moveTemplate', () => {
       await dispatchDone
     })
 
+    //await wait(600000)
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>

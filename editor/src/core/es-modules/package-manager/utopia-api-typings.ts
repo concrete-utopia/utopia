@@ -57,6 +57,7 @@ declare module 'utopia-api/index' {
   export * from 'utopia-api/primitives/layoutable';
   export * from 'utopia-api/primitives/positionable';
   export * from 'utopia-api/primitives/resizeable';
+  export * from 'utopia-api/primitives/scene';
   export * from 'utopia-api/primitives/storyboard';
   export * from 'utopia-api/helpers/helper-functions';
   export * from 'utopia-api/pragma/pragma';
@@ -364,6 +365,16 @@ declare module 'utopia-api/primitives/resizeable' {
       wrappedComponent: React.JSXElementConstructor<any>;
   }
   export const Resizeable: React.FunctionComponent<ResizeableProps>;
+
+}
+declare module 'utopia-api/primitives/scene' {
+  import * as React from 'react';
+  export interface SceneProps {
+      style?: React.CSSProperties;
+      'data-label'?: string;
+      'data-uid'?: string;
+  }
+  export const Scene: React.MemoExoticComponent<(props: React.PropsWithChildren<SceneProps>) => JSX.Element>;
 
 }
 declare module 'utopia-api/primitives/storyboard' {
