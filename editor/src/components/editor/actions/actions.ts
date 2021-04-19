@@ -104,6 +104,7 @@ import {
   assetFile,
   applyToAllUIJSFiles,
   updateFileContents,
+  applyUtopiaJSXComponentsChanges,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -387,7 +388,6 @@ import {
   saveUserConfiguration,
 } from '../server'
 import {
-  applyUtopiaJSXComponentsChanges,
   areGeneratedElementsTargeted,
   CanvasBase64Blobs,
   DerivedState,

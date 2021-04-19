@@ -28,6 +28,7 @@ import {
   getHighlightBoundsFromParseResult,
   updateFileContents,
   getHighlightBoundsForProject,
+  applyUtopiaJSXComponentsChanges,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
@@ -513,37 +514,6 @@ export function modifyOpenParseSuccess(
     (elem) => elem,
     transform,
   )
-}
-
-export function applyUtopiaJSXComponentsChanges(
-  topLevelElements: Array<TopLevelElement>,
-  newUtopiaComponents: Array<UtopiaJSXComponent>,
-): Array<TopLevelElement> {
-  // Run through the old top level elements, replacing the exported elements with those in the
-  // newly updated result with the same name.
-  // If it doesn't exist in the updated result, delete it.
-  // For any new items in the updated result, add them in.
-  const addedSoFar: Set<string> = Utils.emptySet()
-  let newTopLevelElements: Array<TopLevelElement> = []
-  Utils.fastForEach(topLevelElements, (oldTopLevelElement) => {
-    if (isUtopiaJSXComponent(oldTopLevelElement)) {
-      const updatedElement = newUtopiaComponents.find((e) => e.name === oldTopLevelElement.name)
-      if (updatedElement !== undefined) {
-        addedSoFar.add(updatedElement.name)
-        newTopLevelElements.push(updatedElement)
-      }
-    } else {
-      newTopLevelElements.push(oldTopLevelElement)
-    }
-  })
-
-  Utils.fastForEach(newUtopiaComponents, (updatedElement) => {
-    if (!addedSoFar.has(updatedElement.name)) {
-      newTopLevelElements.push(updatedElement)
-    }
-  })
-
-  return newTopLevelElements
 }
 
 export function modifyOpenScenesAndJSXElements(

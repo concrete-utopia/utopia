@@ -81,6 +81,7 @@ import {
   isParseSuccess,
 } from '../../core/shared/project-file-types'
 import {
+  applyUtopiaJSXComponentsChanges,
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../core/model/project-file-utils'
@@ -107,7 +108,6 @@ import {
 } from '../../core/shared/math-utils'
 import { insertionSubjectIsJSXElement } from '../editor/editor-modes'
 import {
-  applyUtopiaJSXComponentsChanges,
   DerivedState,
   EditorState,
   getOpenImportsFromState,
