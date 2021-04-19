@@ -36,7 +36,7 @@ export function fixParseSuccessUIDs(
     }
   } = {}
 
-  zipProjectContents(
+  zipTopLevelElements(
     oldParsed.topLevelElements,
     newParsed.topLevelElements,
     (oldElement, newElement, newPath) => {
@@ -105,7 +105,7 @@ export function fixParseSuccessUIDs(
   }
 }
 
-function zipProjectContents(
+function zipTopLevelElements(
   firstTopLevelElements: Array<TopLevelElement>,
   secondTopLevelElements: Array<TopLevelElement>,
   onElement: (
