@@ -86,7 +86,8 @@ async function writeProjectFile(
     case 'TEXT_FILE': {
       const savedContent = getSavedCodeFromTextFile(file)
       const unsavedContent = getUnsavedCodeFromTextFile(file)
-      return writeFileAsUTF8(toFSPath(projectPath), savedContent, unsavedContent)
+      const filePath = toFSPath(projectPath)
+      return writeFileAsUTF8(filePath, savedContent, unsavedContent)
     }
     case 'ASSET_FILE':
       return Promise.resolve()
@@ -95,12 +96,25 @@ async function writeProjectFile(
   }
 }
 
+async function textFileDiffers(projectPath: string, file: TextFile): Promise<boolean> {
+  const savedContent = getSavedCodeFromTextFile(file)
+  const unsavedContent = getUnsavedCodeFromTextFile(file)
+  const filePath = toFSPath(projectPath)
+  const alreadyExistingFile = await readFileAsUTF8(filePath).catch((_) => null)
+  return (
+    alreadyExistingFile == null ||
+    alreadyExistingFile.content !== savedContent ||
+    alreadyExistingFile.unsavedContent !== unsavedContent
+  )
+}
+
 async function writeProjectContents(
   projectID: string,
   projectContents: ProjectContentTreeRoot,
 ): Promise<void> {
-  await walkContentsTreeAsync(projectContents, (fullPath, file) => {
-    if (isTextFile(file) || isDirectory(file)) {
+  await walkContentsTreeAsync(projectContents, async (fullPath, file) => {
+    // Avoid pushing a file to the file system if the content hasn't changed.
+    if ((isTextFile(file) && (await textFileDiffers(fullPath, file))) || isDirectory(file)) {
       return writeProjectFile(projectID, fullPath, file)
     } else {
       return Promise.resolve()
