@@ -431,7 +431,9 @@ export function isInsideFocusedComponent(path: TemplatePath): boolean {
   }
 }
 
-function elementPathParent(path: ElementPath): ElementPath {
+export function elementPathParent(path: StaticElementPath): StaticElementPath
+export function elementPathParent(path: ElementPath): ElementPath
+export function elementPathParent(path: ElementPath): ElementPath {
   return path.slice(0, path.length - 1)
 }
 

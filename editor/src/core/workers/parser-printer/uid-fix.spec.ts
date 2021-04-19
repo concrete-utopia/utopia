@@ -44,12 +44,12 @@ describe('fixParseSuccessUIDs', () => {
     `)
   })
 
-  it('does not mess with a single duplication', () => {
-    const newFile = lintAndParse('test.js', baseFileWithDuplicate, baseFile)
+  it('avoids uid shifting caused by single prepending insertion', () => {
+    const newFile = lintAndParse('test.js', fileWithOneInsertedView, baseFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "93b
+        8de
         c8a
-        af7
       storyboard-entity
         scene-2-entity
           same-file-app-entity"
@@ -57,7 +57,7 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('double duplication', () => {
-    const newFile = lintAndParse('test.js', baseFileWithTwoDuplicates, baseFile)
+    const newFile = lintAndParse('test.js', fileWithTwoDuplicatedViews, baseFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "93b
         c8a
@@ -70,8 +70,8 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('insertion at the beginning', () => {
-    const threeViews = lintAndParse('test.js', baseFileWithTwoDuplicates, null)
-    const fourViews = lintAndParse('test.js', baseFileWithTwoDuplicatesAndInsertion, threeViews)
+    const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null)
+    const fourViews = lintAndParse('test.js', fileWithTwoDuplicatesAndInsertion, threeViews)
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
       "93b
         578
@@ -147,7 +147,28 @@ export var SameFileApp = (props) => {
 }
 `)
 
-const baseFileWithDuplicate = createFileText(`
+const fileWithOneInsertedView = createFileText(`
+export var SameFileApp = (props) => {
+  return (
+    <div
+      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+    >
+      <View
+        style={{
+          width: 100,
+        }}
+      />
+      <View
+        style={{
+          width: 191,
+        }}
+      />
+    </div>
+  )
+}
+`)
+
+const fileWithTwoDuplicatedViews = createFileText(`
 export var SameFileApp = (props) => {
   return (
     <div
@@ -163,27 +184,6 @@ export var SameFileApp = (props) => {
           width: 191,
         }}
       />
-    </div>
-  )
-}
-`)
-
-const baseFileWithTwoDuplicates = createFileText(`
-export var SameFileApp = (props) => {
-  return (
-    <div
-      style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-    >
-      <View
-        style={{
-          width: 191,
-        }}
-      />
-      <View
-        style={{
-          width: 191,
-        }}
-      />
       <View
         style={{
           width: 191,
@@ -194,7 +194,7 @@ export var SameFileApp = (props) => {
 }
 `)
 
-const baseFileWithTwoDuplicatesAndInsertion = createFileText(`
+const fileWithTwoDuplicatesAndInsertion = createFileText(`
 export var SameFileApp = (props) => {
   return (
     <div

@@ -10,7 +10,11 @@ import { optionalMap } from '../../shared/optional-utils'
 import { isParseSuccess, ParsedTextFile, StaticElementPath } from '../../shared/project-file-types'
 import * as TP from '../../shared/template-path'
 import { setUtopiaIDOnJSXElement } from '../../shared/uid-utils'
-import { getUtopiaID, transformJSXComponentAtElementPath } from '../../model/element-template-utils'
+import {
+  findJSXElementChildAtPath,
+  getUtopiaID,
+  transformJSXComponentAtElementPath,
+} from '../../model/element-template-utils'
 import {
   applyUtopiaJSXComponentsChanges,
   getComponentsFromTopLevelElements,
@@ -33,6 +37,7 @@ export function fixParseSuccessUIDs(
       oldUID: string
       newUID: string
       pathToModify: StaticElementPath
+      oldPathToRestore: StaticElementPath
     }
   } = {}
 
@@ -44,8 +49,14 @@ export function fixParseSuccessUIDs(
       const newUID = optionalMap(getUtopiaID, newElement)
 
       if (oldUID != null && newUID != null && oldUID !== newUID) {
+        const oldPathToRestore = TP.appendToElementPath(TP.elementPathParent(newPath), oldUID)
         // we have a UID mismatch
-        newToOldUidMapping[newUID] = { oldUID: oldUID, newUID: newUID, pathToModify: newPath }
+        newToOldUidMapping[newUID] = {
+          oldUID: oldUID,
+          newUID: newUID,
+          pathToModify: newPath,
+          oldPathToRestore: oldPathToRestore,
+        }
       }
     },
   )
@@ -60,13 +71,23 @@ export function fixParseSuccessUIDs(
     let workingComponents = getComponentsFromTopLevelElements(newParsed.topLevelElements)
 
     newToOldUidMappingArray.forEach((mapping) => {
-      workingComponents = transformJSXComponentAtElementPath(
+      const oldPathAlreadyExistingElement = findJSXElementChildAtPath(
         workingComponents,
-        mapping.pathToModify,
-        (element) => {
-          return setUtopiaIDOnJSXElement(element, mapping.oldUID)
-        },
+        TP.staticInstancePath(TP.emptyScenePath, mapping.oldPathToRestore),
       )
+
+      if (oldPathAlreadyExistingElement == null) {
+        workingComponents = transformJSXComponentAtElementPath(
+          workingComponents,
+          mapping.pathToModify,
+          (element) => {
+            return setUtopiaIDOnJSXElement(element, mapping.oldUID)
+          },
+        )
+      } else {
+        // this is awkward, there is already an element with this UID. it means we need to bail out from this update
+        return
+      }
     })
 
     const fixedTopLevelElements = applyUtopiaJSXComponentsChanges(
