@@ -451,7 +451,7 @@ import {
   getStoryboardTemplatePath,
 } from '../../../core/model/scene-utils'
 import { getFrameAndMultiplier } from '../../images'
-import { arrayToMaybe, forceNotNull } from '../../../core/shared/optional-utils'
+import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
 import {
   updateRightMenuExpanded,
@@ -1363,9 +1363,13 @@ export const UPDATE_FNS = {
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
         const parseResult = lintAndParse(filename, file.fileContents.code)
+        const lastSavedFileContents = optionalMap((lastSaved) => {
+          const lastSavedParseResult = lintAndParse(filename, lastSaved.code)
+          return textFileContents(lastSaved.code, lastSavedParseResult, RevisionsState.BothMatch)
+        }, file.lastSavedContents)
         return textFile(
           textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
-          null,
+          lastSavedFileContents,
           Date.now(),
         )
       },
