@@ -162,6 +162,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as TP from '../../../core/shared/template-path'
 import { getParseSuccessOrTransientForFilePath } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { importedFromWhere } from '../import-utils'
+import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
@@ -355,6 +356,7 @@ export interface EditorState {
   saveError: boolean
   vscodeBridgeReady: boolean
   focusedElementPath: ScenePath | null
+  config: UtopiaVSCodeConfig
 }
 
 export interface StoredEditorState {
@@ -1242,6 +1244,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     saveError: false,
     vscodeBridgeReady: false,
     focusedElementPath: null,
+    config: defaultConfig(),
   }
 }
 
@@ -1488,6 +1491,7 @@ export function editorModelFromPersistentModel(
     codeEditorErrors: persistentModel.codeEditorErrors,
     vscodeBridgeReady: false,
     focusedElementPath: null,
+    config: defaultConfig(),
   }
   return editor
 }

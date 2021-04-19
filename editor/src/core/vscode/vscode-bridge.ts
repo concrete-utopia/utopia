@@ -13,6 +13,7 @@ import {
   markVSCodeBridgeReady,
   updateFromCodeEditor,
   sendCodeEditorInitialisation,
+  updateConfigFromVSCode,
 } from '../../components/editor/actions/action-creators'
 import {
   getSavedCodeFromTextFile,
@@ -45,6 +46,8 @@ import {
   decorationRange,
   DecorationRangeType,
   boundsInFile,
+  getUtopiaVSCodeConfig,
+  setFollowSelectionConfig,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, TemplatePath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
@@ -162,11 +165,15 @@ export async function initVSCodeBridge(
               'everyone',
             )
             break
+          case 'UTOPIA_VSCODE_CONFIG_VALUES':
+            dispatch([updateConfigFromVSCode(message.config)], 'everyone')
+            break
           default:
             const _exhaustiveCheck: never = message
             throw new Error(`Unhandled message type${JSON.stringify(message)}`)
         }
       })
+      sendGetUtopiaVSCodeConfigMessage()
       watchForChanges(dispatch)
     }
     dispatch([markVSCodeBridgeReady(true)], 'everyone')
@@ -190,6 +197,14 @@ export async function sendSelectedElementChangedMessage(
   boundsForFile: BoundsInFile,
 ): Promise<void> {
   return sendMessage(selectedElementChanged(boundsForFile))
+}
+
+export async function sendSetFollowSelectionEnabledMessage(enabled: boolean): Promise<void> {
+  return sendMessage(setFollowSelectionConfig(enabled))
+}
+
+export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
+  return sendMessage(getUtopiaVSCodeConfig())
 }
 
 export async function applyProjectContentChanges(

@@ -22,9 +22,13 @@ import {
   clearFileUnsavedContent,
   sendInitialData,
   applyPrettier,
+  UtopiaVSCodeConfig,
+  utopiaVSCodeConfigValues,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
+
+const FollowSelectionConfigKey = 'utopia.editor.followSelection.enabled'
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
@@ -137,6 +141,21 @@ const highlightDecorationType = vscode.window.createTextEditorDecorationType({
 
 const allDecorationRangeTypes: Array<DecorationRangeType> = ['highlight', 'selection']
 
+function getFollowSelectionEnabledConfig(): boolean {
+  const followSelectionEnabledConfig = vscode.workspace
+    .getConfiguration()
+    .get(FollowSelectionConfigKey)
+  return typeof followSelectionEnabledConfig === 'boolean' && followSelectionEnabledConfig
+}
+
+function getFullConfig(): UtopiaVSCodeConfig {
+  return {
+    followSelection: {
+      enabled: getFollowSelectionEnabledConfig(),
+    },
+  }
+}
+
 function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
   // State that needs to be stored between messages.
   let currentDecorations: Array<DecorationRange> = []
@@ -151,7 +170,18 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
         updateDecorations(currentDecorations)
         break
       case 'SELECTED_ELEMENT_CHANGED':
-        revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
+        const followSelectionEnabled = getFollowSelectionEnabledConfig()
+        if (followSelectionEnabled) {
+          revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
+        }
+        break
+      case 'GET_UTOPIA_VSCODE_CONFIG':
+        sendFullConfigToUtopia()
+        break
+      case 'SET_FOLLOW_SELECTION_CONFIG':
+        vscode.workspace
+          .getConfiguration()
+          .update(FollowSelectionConfigKey, message.enabled, vscode.ConfigurationTarget.Global)
         break
       default:
         const _exhaustiveCheck: never = message
@@ -170,7 +200,17 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
         cursorPositionChanged(event)
       }
     }),
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration(FollowSelectionConfigKey)) {
+        sendFullConfigToUtopia()
+      }
+    }),
   )
+}
+
+function sendFullConfigToUtopia(): Promise<void> {
+  const fullConfig = getFullConfig()
+  return sendMessage(utopiaVSCodeConfigValues(fullConfig))
 }
 
 function entireDocRange() {
