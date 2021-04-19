@@ -150,10 +150,12 @@ export class SelectModeControlContainer extends React.Component<
   onContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
     event.stopPropagation()
     event.preventDefault()
-    this.props.dispatch(
-      [EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent)],
-      'canvas',
-    )
+    if (this.props.selectedViews.length > 0) {
+      this.props.dispatch(
+        [EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent)],
+        'canvas',
+      )
+    }
   }
 
   getTargetViews(): Array<TemplatePath> {
