@@ -373,6 +373,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       return (
         <React.Fragment>
           <AlignmentButtons numberOfTargets={instancePaths.length} />
+          {anyComponents ? <ComponentSection isScene={false} /> : null}
           <RenderedLayoutSection
             anyHTMLElements={anyHTMLElements}
             layout={props.input.layout}
@@ -387,7 +388,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
           <ClassNameSubsection />
           <StyleSection />
           <WarningSubsection />
-          {anyComponents ? <ComponentSection isScene={false} /> : null}
           <ImgSection />
           <TargetSelectorSection
             targets={props.targets}
