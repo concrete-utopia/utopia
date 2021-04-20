@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as fastDeepEquals from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { Scene, SceneProps } from 'utopia-api'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
@@ -39,9 +40,11 @@ export const SceneComponent = betterReactMemo(
       prevChildren.length === nextChildren.length &&
       prevChildren.every((child, index) => childUnchanged(child, nextChildren[index]))
 
-    // FIXME Styles, Label, UID
-
-    return childrenMatch
+    return (
+      childrenMatch &&
+      fastDeepEquals(prevProps.style, nextProps.style) &&
+      fastDeepEquals(prevProps['data-label'], nextProps['data-label'])
+    )
   },
 )
 
