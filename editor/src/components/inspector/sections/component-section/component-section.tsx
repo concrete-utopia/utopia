@@ -36,11 +36,13 @@ import {
   Icn,
   PopupList,
   FunctionIcons,
+  UNSAFE_getIconURL,
+  Icons,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import { showContextMenu } from '../../../editor/actions/action-creators'
+import { setFocusedElement, showContextMenu } from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import { InstanceContextMenu } from '../../common/instance-context-menu'
@@ -72,6 +74,9 @@ import {
   ControlForSliderProp,
   ControlForStringProp,
 } from './property-control-controls'
+import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
+import { Atest, InlineButton } from '../../../documentation/documentation-components'
+import * as TP from '../../../../core/shared/template-path'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -514,6 +519,22 @@ export const ComponentSectionInner = betterReactMemo(
     )
     const missingControlsWarning = getMissingPropertyControlsWarning(propsUsedWithoutControls)
     const missingDefaultsWarning = getMissingDefaultsWarning(propsUsedWithoutDefaults)
+
+    const selectedViews = useEditorState(
+      (store) => store.editor.selectedViews,
+      'ComponentSectionInner selectedViews',
+    )
+    const target = selectedViews[0]
+    const pathAsScenePath = TP.isScenePath(target)
+      ? target
+      : TP.scenePathForElementAtInstancePath(target)
+
+    const onToggleValue = React.useCallback(() => dispatch([setFocusedElement(pathAsScenePath)]), [
+      dispatch,
+      pathAsScenePath,
+    ])
+    const locationOfComponentInstance = TP.toString(selectedViews[0])
+
     return foldEither(
       (rootParseError) => {
         return (
@@ -582,6 +603,45 @@ export const ComponentSectionInner = betterReactMemo(
               <InspectorSectionHeader>
                 <SimpleFlexRow style={{ flexGrow: 1 }}>Component props</SimpleFlexRow>
               </InspectorSectionHeader>
+
+              <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+                <span>
+                  <img src='npm-colourful-28x11@2x.png' width={28} />
+                </span>
+                <p>
+                  This <Atest href=''>Styled Component</Atest> is imported from{' '}
+                  <Atest href='@jedwatson/react-select'>
+                    @microsoft/microsoft-fabric-experimental
+                  </Atest>{' '}
+                  via NPM.
+                </p>
+              </UIGridRow>
+              <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+                <IconToggleButton
+                  value={false}
+                  srcOn={UNSAFE_getIconURL('Component', 'purple', 'onToggleValue')}
+                  srcOff={UNSAFE_getIconURL('Component', 'black', 'onToggleValue')}
+                  onToggle={onToggleValue}
+                />
+                <p>
+                  This component instance is imported from{' '}
+                  <Atest href=''>{locationOfComponentInstance}</Atest>{' '}
+                  <InlineButton>Edit it.</InlineButton>
+                </p>
+              </UIGridRow>
+
+              <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+                <IconToggleButton
+                  value={true}
+                  srcOn={UNSAFE_getIconURL('components', 'purple')}
+                  srcOff={UNSAFE_getIconURL('component', 'black')}
+                  onToggle={onToggleValue}
+                />
+                <p>
+                  This component is imported from <Atest href=''>'/src/components/button'</Atest>
+                  <InlineButton>Back</InlineButton>
+                </p>
+              </UIGridRow>
               <InfoBox message={'No properties available to configure.'} />
             </>
           )
@@ -620,19 +680,6 @@ export class ComponentSection extends React.Component<
       return (
         <>
           <InspectorSectionHeader>Component props</InspectorSectionHeader>
-          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-            {/**Component from where NPM/? */}
-          </UIGridRow>
-          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-            {/**icon toggle controls here */}
-            {/**This component instance is imported from */}
-            {/**InLineButton.. Edit it */}
-          </UIGridRow>
-          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-            {/**Icon toggle control*/}
-            {/**This component is imported from */}
-            {/**InlineButton... back */}
-          </UIGridRow>
 
           <PropertyRow
             style={{
