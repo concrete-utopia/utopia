@@ -85,6 +85,8 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_FOCUSED_ELEMENT':
     case 'SCROLL_TO_ELEMENT':
     case 'SET_SCROLL_ANIMATION':
+    case 'SET_FOLLOW_SELECTION_ENABLED':
+    case 'UPDATE_CONFIG_FROM_VSCODE':
       return true
 
     case 'NEW':

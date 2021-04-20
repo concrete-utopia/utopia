@@ -171,11 +171,11 @@ const light = {
   CanvasSelectionNotFocusable: base.darkgray,
   canvasDraggingPlaceholderYoga: base.neonpink.o(30),
 
-  canvasSelectionFocusable: lightBase.primary,
+  canvasSelectionFocusable: base.purple,
   canvasSelectionIsolatedComponent: base.purple,
   //Children of isolated component
   canvasSelectionNotFocusableChild: base.darkorange,
-  canvasSelectionFocusableChild: base.orange,
+  canvasSelectionFocusableChild: base.purple,
 
   canvasLayoutForeground: base.neonpink,
   canvasLayoutFillSolid: base.neonpink,

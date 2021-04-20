@@ -296,6 +296,10 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SCROLL_TO_ELEMENT(action, state, dispatch)
     case 'SET_SCROLL_ANIMATION':
       return UPDATE_FNS.SET_SCROLL_ANIMATION(action, state, dispatch)
+    case 'UPDATE_CONFIG_FROM_VSCODE':
+      return UPDATE_FNS.UPDATE_CONFIG_FROM_VSCODE(action, state)
+    case 'SET_FOLLOW_SELECTION_ENABLED':
+      return UPDATE_FNS.SET_FOLLOW_SELECTION_ENABLED(action, state)
     default:
       return state
   }

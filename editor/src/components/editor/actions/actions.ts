@@ -360,6 +360,8 @@ import {
   AddImports,
   ScrollToElement,
   SetScrollAnimation,
+  SetFollowSelectionEnabled,
+  UpdateConfigFromVSCode,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -449,7 +451,7 @@ import {
   getStoryboardTemplatePath,
 } from '../../../core/model/scene-utils'
 import { getFrameAndMultiplier } from '../../images'
-import { arrayToMaybe, forceNotNull } from '../../../core/shared/optional-utils'
+import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
 import {
   updateRightMenuExpanded,
@@ -503,9 +505,11 @@ import {
   sendCodeEditorDecorations,
   sendOpenFileMessage,
   sendSelectedElement,
+  sendSetFollowSelectionEnabledMessage,
 } from '../../../core/vscode/vscode-bridge'
 import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
+import { defaultConfig } from 'utopia-vscode-common'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -978,6 +982,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     saveError: currentEditor.saveError,
     vscodeBridgeReady: currentEditor.vscodeBridgeReady,
     focusedElementPath: currentEditor.focusedElementPath,
+    config: defaultConfig(),
   }
 }
 
@@ -1358,9 +1363,13 @@ export const UPDATE_FNS = {
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
         const parseResult = lintAndParse(filename, file.fileContents.code)
+        const lastSavedFileContents = optionalMap((lastSaved) => {
+          const lastSavedParseResult = lintAndParse(filename, lastSaved.code)
+          return textFileContents(lastSaved.code, lastSavedParseResult, RevisionsState.BothMatch)
+        }, file.lastSavedContents)
         return textFile(
           textFileContents(file.fileContents.code, parseResult, RevisionsState.BothMatch),
-          null,
+          lastSavedFileContents,
           Date.now(),
         )
       },
@@ -4256,6 +4265,29 @@ export const UPDATE_FNS = {
         ...editor.canvas,
         scrollAnimation: action.value,
       },
+    }
+  },
+  SET_FOLLOW_SELECTION_ENABLED: (
+    action: SetFollowSelectionEnabled,
+    editor: EditorModel,
+  ): EditorModel => {
+    // Side effects
+    sendSetFollowSelectionEnabledMessage(action.value)
+    return {
+      ...editor,
+      config: {
+        ...editor.config,
+        followSelection: {
+          ...editor.config.followSelection,
+          enabled: action.value,
+        },
+      },
+    }
+  },
+  UPDATE_CONFIG_FROM_VSCODE: (action: UpdateConfigFromVSCode, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      config: action.config,
     }
   },
 }

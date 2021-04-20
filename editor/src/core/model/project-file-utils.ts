@@ -26,6 +26,8 @@ import {
   TextFileContents,
   textFileContents,
   unparsed,
+  HighlightBoundsWithFileForUids,
+  forEachParseSuccess,
 } from '../shared/project-file-types'
 import {
   isJSXElement,
@@ -43,13 +45,14 @@ import {
   EmptyUtopiaCanvasComponent,
 } from './scene-utils'
 import { pluck } from '../shared/array-utils'
-import { mapValues } from '../shared/object-utils'
+import { forEachValue, mapValues } from '../shared/object-utils'
 import {
   getContentsTreeFileFromString,
   projectContentFile,
   ProjectContentsTree,
   ProjectContentTreeRoot,
   transformContentsTree,
+  walkContentsTree,
 } from '../../components/assets'
 import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
 
@@ -228,6 +231,24 @@ export function getHighlightBoundsFromParseResult(
     },
     result,
   )
+}
+
+export function getHighlightBoundsForProject(
+  allFiles: ProjectContentTreeRoot,
+): HighlightBoundsWithFileForUids {
+  let allHighlightBounds: HighlightBoundsWithFileForUids = {}
+  walkContentsTree(allFiles, (fullPath: string, file: ProjectFile) => {
+    if (isTextFile(file)) {
+      forEachParseSuccess((parsedFile) => {
+        const fileHighlightBounds = parsedFile.highlightBounds
+        forEachValue((bounds, uid) => {
+          allHighlightBounds[uid] = { ...bounds, filePath: fullPath }
+        }, fileHighlightBounds)
+      }, file.fileContents.parsed)
+    }
+  })
+
+  return allHighlightBounds
 }
 
 export function updateParsedTextFileHighlightBounds(

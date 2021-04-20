@@ -27,6 +27,7 @@ import {
   saveTextFileContents,
   getHighlightBoundsFromParseResult,
   updateFileContents,
+  getHighlightBoundsForProject,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
@@ -58,6 +59,8 @@ import {
   HighlightBoundsForUids,
   StaticElementPath,
   textFile,
+  HighlightBoundsWithFileForUids,
+  HighlightBoundsWithFile,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
@@ -159,6 +162,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as TP from '../../../core/shared/template-path'
 import { getParseSuccessOrTransientForFilePath } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { importedFromWhere } from '../import-utils'
+import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
@@ -352,6 +356,7 @@ export interface EditorState {
   saveError: boolean
   vscodeBridgeReady: boolean
   focusedElementPath: ScenePath | null
+  config: UtopiaVSCodeConfig
 }
 
 export interface StoredEditorState {
@@ -1239,6 +1244,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     saveError: false,
     vscodeBridgeReady: false,
     focusedElementPath: null,
+    config: defaultConfig(),
   }
 }
 
@@ -1485,6 +1491,7 @@ export function editorModelFromPersistentModel(
     codeEditorErrors: persistentModel.codeEditorErrors,
     vscodeBridgeReady: false,
     focusedElementPath: null,
+    config: defaultConfig(),
   }
   return editor
 }
@@ -1807,11 +1814,11 @@ export function getHighlightBoundsForUids(editorState: EditorState): HighlightBo
 export function getHighlightBoundsForTemplatePath(
   path: TemplatePath,
   editorState: EditorState,
-): HighlightBounds | null {
+): HighlightBoundsWithFile | null {
   if (isInstancePath(path)) {
     const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
     if (staticPath != null) {
-      const highlightBounds = getHighlightBoundsForUids(editorState)
+      const highlightBounds = getHighlightBoundsForProject(editorState.projectContents)
       if (highlightBounds != null) {
         const highlightedUID = toUid(staticPath)
         return highlightBounds[highlightedUID]
@@ -1994,7 +2001,9 @@ export function modifyUnderlyingForOpenFile(
 
 export function withUnderlyingTarget<T>(
   target: TemplatePath | null,
-  editorState: EditorState,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null,
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
@@ -2013,9 +2022,9 @@ export function withUnderlyingTarget<T>(
     instanceTarget = TP.instancePathForElementAtPath(target)
   }
   const underlyingTarget = normalisePathToUnderlyingTarget(
-    editorState.projectContents,
-    editorState.nodeModules.files,
-    forceNotNull('Designer file should be open.', editorState.canvas.openFile?.filename),
+    projectContents,
+    nodeModules,
+    forceNotNull('Designer file should be open.', openFile),
     instanceTarget,
   )
 
@@ -2043,6 +2052,27 @@ export function withUnderlyingTarget<T>(
   return defaultValue
 }
 
+export function withUnderlyingTargetFromEditorState<T>(
+  target: TemplatePath | null,
+  editorState: EditorState,
+  defaultValue: T,
+  withTarget: (
+    success: ParseSuccess,
+    element: JSXElement,
+    underlyingTarget: StaticInstancePath,
+    underlyingFilePath: string,
+  ) => T,
+): T {
+  return withUnderlyingTarget(
+    target,
+    editorState.projectContents,
+    editorState.nodeModules.files,
+    editorState.canvas.openFile?.filename ?? null,
+    defaultValue,
+    withTarget,
+  )
+}
+
 export function forUnderlyingTarget(
   target: TemplatePath | null,
   editorState: EditorState,
@@ -2053,5 +2083,5 @@ export function forUnderlyingTarget(
     underlyingFilePath: string,
   ) => void,
 ): void {
-  withUnderlyingTarget<any>(target, editorState, {}, withTarget)
+  withUnderlyingTargetFromEditorState<any>(target, editorState, {}, withTarget)
 }

@@ -1,5 +1,5 @@
 import { parseThenPrint } from './parser-printer.test-utils'
-import { applyPrettier } from './prettier-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 
 describe('Parsing and then printing code', () => {
   ;['var', 'let', 'const'].forEach((varLetOrConst) => {

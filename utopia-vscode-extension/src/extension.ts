@@ -21,9 +21,14 @@ import {
   writeFileUnsavedContentAsUTF8,
   clearFileUnsavedContent,
   sendInitialData,
+  applyPrettier,
+  UtopiaVSCodeConfig,
+  utopiaVSCodeConfigValues,
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
+
+const FollowSelectionConfigKey = 'utopia.editor.followSelection.enabled'
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   const workspaceRootUri = vscode.workspace.workspaceFolders[0].uri
@@ -100,6 +105,11 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
       if (isUtopiaDocument(event.document)) {
         const path = fromUtopiaURI(event.document.uri)
         dirtyFiles.delete(path)
+
+        if (event.reason === vscode.TextDocumentSaveReason.Manual) {
+          const formattedCode = applyPrettier(event.document.getText(), false).formatted
+          event.waitUntil(Promise.resolve([new vscode.TextEdit(entireDocRange(), formattedCode)]))
+        }
       }
     }),
     vscode.workspace.onDidCloseTextDocument((document) => {
@@ -131,6 +141,21 @@ const highlightDecorationType = vscode.window.createTextEditorDecorationType({
 
 const allDecorationRangeTypes: Array<DecorationRangeType> = ['highlight', 'selection']
 
+function getFollowSelectionEnabledConfig(): boolean {
+  const followSelectionEnabledConfig = vscode.workspace
+    .getConfiguration()
+    .get(FollowSelectionConfigKey)
+  return typeof followSelectionEnabledConfig === 'boolean' && followSelectionEnabledConfig
+}
+
+function getFullConfig(): UtopiaVSCodeConfig {
+  return {
+    followSelection: {
+      enabled: getFollowSelectionEnabledConfig(),
+    },
+  }
+}
+
 function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscode.Uri): void {
   // State that needs to be stored between messages.
   let currentDecorations: Array<DecorationRange> = []
@@ -145,7 +170,18 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
         updateDecorations(currentDecorations)
         break
       case 'SELECTED_ELEMENT_CHANGED':
-        revealRangeIfPossible(message.boundsInFile)
+        const followSelectionEnabled = getFollowSelectionEnabledConfig()
+        if (followSelectionEnabled) {
+          revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
+        }
+        break
+      case 'GET_UTOPIA_VSCODE_CONFIG':
+        sendFullConfigToUtopia()
+        break
+      case 'SET_FOLLOW_SELECTION_CONFIG':
+        vscode.workspace
+          .getConfiguration()
+          .update(FollowSelectionConfigKey, message.enabled, vscode.ConfigurationTarget.Global)
         break
       default:
         const _exhaustiveCheck: never = message
@@ -156,13 +192,25 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
   initMailbox(VSCodeInbox, parseToVSCodeMessage, handleMessage)
 
   context.subscriptions.push(
-    vscode.window.onDidChangeOpenEditors(() => {
+    vscode.window.onDidChangeVisibleTextEditors(() => {
       updateDecorations(currentDecorations)
     }),
     vscode.window.onDidChangeTextEditorSelection((event) => {
-      cursorPositionChanged(event)
+      if (event.kind != null && event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
+        cursorPositionChanged(event)
+      }
+    }),
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration(FollowSelectionConfigKey)) {
+        sendFullConfigToUtopia()
+      }
     }),
   )
+}
+
+function sendFullConfigToUtopia(): Promise<void> {
+  const fullConfig = getFullConfig()
+  return sendMessage(utopiaVSCodeConfigValues(fullConfig))
 }
 
 function entireDocRange() {
@@ -193,15 +241,19 @@ async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
   }
 }
 
-async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<void> {
+async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boolean> {
   const filePath = fromUtopiaURI(fileUri)
   const fileExists = await exists(filePath)
   if (fileExists) {
-    vscode.commands.executeCommand('vscode.open', fileUri)
+    await vscode.commands.executeCommand('vscode.open', fileUri)
+    return true
   } else {
     // Just in case the message is processed before the file has been written to the FS
     if (retries > 0) {
-      setTimeout(() => openFile(fileUri, retries - 1), 100)
+      await new Promise((resolve) => setTimeout(() => resolve(), 100))
+      return openFile(fileUri, retries - 1)
+    } else {
+      return false
     }
   }
 }
@@ -213,12 +265,36 @@ function cursorPositionChanged(event: vscode.TextEditorSelectionChangeEvent): vo
   sendMessage(editorCursorPositionChanged(filename, position.line, position.character))
 }
 
-function revealRangeIfPossible(boundsInFile: BoundsInFile): void {
-  const visibleEditors = vscode.window.visibleTextEditors
-  for (const visibleEditor of visibleEditors) {
-    const filename = visibleEditor.document.uri.path
-    if (boundsInFile.filePath === filename) {
-      visibleEditor.revealRange(getVSCodeRange(boundsInFile))
+async function revealRangeIfPossible(
+  workspaceRootUri: vscode.Uri,
+  boundsInFile: BoundsInFile,
+): Promise<void> {
+  const visibleEditor = vscode.window.visibleTextEditors.find(
+    (editor) => editor.document.uri.path === boundsInFile.filePath,
+  )
+  if (visibleEditor == null) {
+    const opened = await openFile(vscode.Uri.joinPath(workspaceRootUri, boundsInFile.filePath))
+    if (opened) {
+      revealRangeIfPossible(workspaceRootUri, boundsInFile)
+    }
+  } else {
+    const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
+    const alreadySelected = rangeToReveal.contains(visibleEditor.selection)
+    const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
+      r.contains(visibleEditor.selection),
+    )
+
+    if (!alreadySelected) {
+      const selectionRange = getVSCodeRange(boundsInFile)
+      visibleEditor.selection = new vscode.Selection(selectionRange.start, selectionRange.start)
+    }
+
+    const shouldReveal = !(alreadySelected && alreadyVisible)
+    if (shouldReveal) {
+      visibleEditor.revealRange(
+        rangeToReveal,
+        vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+      )
     }
   }
 }
@@ -269,10 +345,16 @@ function getDecorationsByFilenameAndType(
 }
 
 function getVSCodeRange(bounds: Bounds): vscode.Range {
+  const { startLine, endLine, startCol, endCol } = bounds
   return new vscode.Range(
-    new vscode.Position(bounds.startLine, bounds.startCol),
-    new vscode.Position(bounds.endLine, bounds.endCol),
+    new vscode.Position(startLine, startCol),
+    new vscode.Position(endLine, endCol),
   )
+}
+
+function getVSCodeRangeForScrolling(bounds: Bounds): vscode.Range {
+  const { startLine, endLine, startCol, endCol } = bounds
+  return new vscode.Range(new vscode.Position(startLine, 0), new vscode.Position(endLine, endCol))
 }
 
 function updateDecorations(decorations: Array<DecorationRange>): void {
