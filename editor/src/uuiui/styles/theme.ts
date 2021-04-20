@@ -196,6 +196,14 @@ const light = {
   buttonActiveBackground: base.black.shade(3),
   buttonDisabledBackground: base.black.shade(15).o(50),
 
+  toggleButtonBackground: createUtopiColor('hsl(0,0%,95%)', 'toggle button background', 'button'),
+  toggleButtonHoverBackground: createUtopiColor(
+    'hsl(0,0%,93%)',
+    'toggle button hover background',
+    'button',
+  ),
+  toggleButtonHoverBorder: createUtopiColor('hsl(0,0%,90%)', 'toggle button border', 'button'),
+
   // application utilities:
   resizingDisplayBackground: createUtopiColor(
     'hsl(0,0%,30%)',
