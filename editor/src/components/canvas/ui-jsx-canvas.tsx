@@ -380,6 +380,10 @@ export const UiJsxCanvas = betterReactMemo(
         resolve,
       )
 
+      const sceneLevelUtopiaValidPaths = useKeepReferenceEqualityIfPossible({
+        validPaths: rootValidPaths,
+      })
+
       return (
         <>
           <Helmet>{parse(linkTags)}</Helmet>
@@ -410,7 +414,7 @@ export const UiJsxCanvas = betterReactMemo(
                   canvasRootElementTemplatePath={storyboardRootElementPath}
                   scrollAnimation={props.scrollAnimation}
                 >
-                  <SceneLevelUtopiaContext.Provider value={{ validPaths: rootValidPaths }}>
+                  <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaValidPaths}>
                     <ParentLevelUtopiaContext.Provider
                       value={{
                         templatePath: storyboardRootElementPath,
