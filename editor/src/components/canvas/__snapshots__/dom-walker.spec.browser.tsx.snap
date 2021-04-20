@@ -124,6 +124,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -890,6 +891,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -1335,6 +1337,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -2046,6 +2049,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -2758,6 +2762,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
