@@ -250,8 +250,9 @@ function maybeRequestModelUpdate(
         codeNeedsPrinting(file.fileContents.revisionsState) &&
         isParseSuccess(file.fileContents.parsed)
       ) {
+        const stripUIDs = process.env.NODE_ENV === 'production'
         filesToUpdate.push(
-          createPrintCode(fullPath, file.fileContents.parsed, false, file.lastRevisedTime),
+          createPrintCode(fullPath, file.fileContents.parsed, stripUIDs, file.lastRevisedTime),
         )
       }
     }
