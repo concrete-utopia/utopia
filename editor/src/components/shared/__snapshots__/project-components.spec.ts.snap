@@ -16,21 +16,17 @@ Array [
           "props": Array [],
           "type": "JSX_ELEMENT",
         },
-        "importsToAdd": Object {
-          "/utopia/storyboard.js": Object {
-            "importedAs": null,
-            "importedFromWithin": Array [
-              Object {
-                "alias": "App",
-                "name": "App",
-              },
-            ],
-            "importedWithName": null,
-          },
-        },
+        "importsToAdd": Object {},
         "name": "App",
       },
     ],
+    "source": Object {
+      "path": "/src/app.js",
+      "type": "PROJECT_COMPONENT_GROUP",
+    },
+  },
+  Object {
+    "insertableComponents": Array [],
     "source": Object {
       "path": "/utopia/storyboard.js",
       "type": "PROJECT_COMPONENT_GROUP",
