@@ -49,7 +49,7 @@ import {
   printCodeOptions,
   getHighlightBoundsWithoutUID,
 } from './parser-printer'
-import { applyPrettier } from './prettier-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 import { transpileJavascriptFromCode } from './parser-printer-transpiling'
 import {
   clearParseResultPassTimes,

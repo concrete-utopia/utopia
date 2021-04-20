@@ -52,6 +52,7 @@ import {
 import { Notice } from '../common/notice'
 import { BuildType } from '../../core/workers/ts/ts-worker'
 import { ParseResult } from '../../utils/value-parser-utils'
+import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {
@@ -819,6 +820,16 @@ export interface SetScrollAnimation {
   value: boolean
 }
 
+export interface SetFollowSelectionEnabled {
+  action: 'SET_FOLLOW_SELECTION_ENABLED'
+  value: boolean
+}
+
+export interface UpdateConfigFromVSCode {
+  action: 'UPDATE_CONFIG_FROM_VSCODE'
+  config: UtopiaVSCodeConfig
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -953,6 +964,8 @@ export type EditorAction =
   | SetFocusedElement
   | ScrollToElement
   | SetScrollAnimation
+  | SetFollowSelectionEnabled
+  | UpdateConfigFromVSCode
 
 export type DispatchPriority =
   | 'everyone'

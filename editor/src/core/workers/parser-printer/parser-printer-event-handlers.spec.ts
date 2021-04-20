@@ -1,5 +1,5 @@
 import { printCode, printCodeOptions } from './parser-printer'
-import { applyPrettier } from './prettier-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 import { testParseCode } from './parser-printer.test-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { isParseSuccess } from '../../shared/project-file-types'

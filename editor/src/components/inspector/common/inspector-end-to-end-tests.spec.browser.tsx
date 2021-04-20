@@ -14,7 +14,7 @@ import {
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
-import { PrettierConfig } from '../../../core/workers/parser-printer/prettier-utils'
+import { PrettierConfig } from 'utopia-vscode-common'
 import * as Prettier from 'prettier'
 import { act } from 'react-test-renderer'
 import { contentsToTree } from '../../assets'

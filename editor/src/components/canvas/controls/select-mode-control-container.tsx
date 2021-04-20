@@ -1,14 +1,13 @@
-import * as R from 'ramda'
 import * as React from 'react'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
-import { TemplatePath, ScenePath } from '../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { DuplicationState } from '../../editor/store/editor-state'
 import * as TP from '../../../core/shared/template-path'
-import { CanvasPositions, MoveDragState, ResizeDragState, moveDragState } from '../canvas-types'
+import { CanvasPositions, MoveDragState, ResizeDragState } from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'
 import { ConstraintsControls } from './constraints-control'
 import { DistanceGuideline } from './distance-guideline'
@@ -21,14 +20,10 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { OutlineControls } from './outline-control'
 import { RepositionableControl } from './repositionable-control'
-import { LeftMenuTab } from '../../navigator/left-pane'
-import CanvasActions from '../canvas-actions'
-import { getOriginalCanvasFrames, createDuplicationNewUIDs } from '../canvas-utils'
 import { areYogaChildren } from './select-mode/yoga-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
 import { RightMenuTab } from '../right-menu'
-import { getSelectableViews } from './select-mode/select-mode-hooks'
 import { getAllTargetsAtPoint } from '../dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 import { mapDropNulls } from '../../../core/shared/array-utils'
@@ -96,7 +91,7 @@ export class SelectModeControlContainer extends React.Component<
   static getDerivedStateFromProps(
     props: SelectModeControlContainerProps,
     previousState: SelectModeControlContainerState,
-  ) {
+  ): Partial<SelectModeControlContainerState> {
     const guidelines = collectParentAndSiblingGuidelines(
       props.componentMetadata,
       props.selectedViews,
@@ -139,21 +134,23 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   onControlMouseDown = (
-    selectedViews: Array<TemplatePath>,
+    _selectedViews: Array<TemplatePath>,
     target: TemplatePath,
-    start: CanvasPoint,
+    _start: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
-  ) => {
+  ): void => {
     this.props.startDragStateAfterDragExceedsThreshold(originalEvent.nativeEvent, target)
   }
 
-  onContextMenu = (event: React.MouseEvent<HTMLDivElement>) => {
+  onContextMenu = (event: React.MouseEvent<HTMLDivElement>): void => {
     event.stopPropagation()
     event.preventDefault()
-    this.props.dispatch(
-      [EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent)],
-      'canvas',
-    )
+    if (this.props.selectedViews.length > 0) {
+      this.props.dispatch(
+        [EditorActions.showContextMenu('context-menu-canvas', event.nativeEvent)],
+        'canvas',
+      )
+    }
   }
 
   getTargetViews(): Array<TemplatePath> {
@@ -179,14 +176,14 @@ export class SelectModeControlContainer extends React.Component<
     return []
   }
 
-  resetState = () => {
+  resetState = (): void => {
     this.furthestDragDelta = null
     this.dragDelta = Utils.zeroPoint as CanvasVector
     this.previousDragPosition = null
     this.currentlyReparenting = false
   }
 
-  isHighlighted = (path: TemplatePath) => {
+  isHighlighted = (path: TemplatePath): boolean => {
     return this.props.highlightedViews.some((highlighted) => TP.pathsEqual(path, highlighted))
   }
 
@@ -256,13 +253,13 @@ export class SelectModeControlContainer extends React.Component<
     )
   }
 
-  clearSelection = () => {
+  clearSelection = (): void => {
     if (this.props.selectionEnabled) {
       this.props.dispatch([EditorActions.clearSelection()], 'canvas')
     }
   }
 
-  getSelectedBoundingBox = (views: TemplatePath[]) => {
+  getSelectedBoundingBox = (views: TemplatePath[]): CanvasRectangle | null => {
     let boundingRectangles: Array<CanvasRectangle> = []
     Utils.fastForEach(views, (view) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
@@ -273,7 +270,7 @@ export class SelectModeControlContainer extends React.Component<
     return Utils.boundingRectangleArray(boundingRectangles)
   }
 
-  getMoveGuidelines = () => {
+  getMoveGuidelines = (): Array<JSX.Element> => {
     if (
       this.props.selectedViews.length > 0 &&
       this.props.isDragging &&
@@ -313,7 +310,7 @@ export class SelectModeControlContainer extends React.Component<
     }
   }
 
-  onHover = (target: TemplatePath) => {
+  onHover = (target: TemplatePath): void => {
     if (this.inSelection(target)) {
       this.props.maybeClearHighlightsOnHoverEnd()
     } else {
@@ -324,7 +321,7 @@ export class SelectModeControlContainer extends React.Component<
     })
   }
 
-  onHoverEnd = (target: TemplatePath) => {
+  onHoverEnd = (_target: TemplatePath): void => {
     if (this.props.selectionEnabled && !this.props.isDragging) {
       this.props.dispatch([EditorActions.clearHighlightedViews()], 'canvas')
     }
@@ -333,7 +330,7 @@ export class SelectModeControlContainer extends React.Component<
     })
   }
 
-  getDistanceGuidelines = () => {
+  getDistanceGuidelines = (): Array<JSX.Element> => {
     if (
       this.props.selectedViews.length > 0 &&
       !this.props.isDragging &&
@@ -361,7 +358,7 @@ export class SelectModeControlContainer extends React.Component<
         }
       })
 
-      let guideLineElements: any[] = []
+      let guideLineElements: Array<JSX.Element> = []
       Utils.fastForEach(boundingBoxes, (boundingBox, index) => {
         if (boundingBox != null) {
           let distanceGuidelines: Array<Guideline> = []
@@ -456,7 +453,7 @@ export class SelectModeControlContainer extends React.Component<
     return boundingMarks
   }
 
-  inSelection(tp: TemplatePath) {
+  inSelection(tp: TemplatePath): boolean {
     return this.props.selectedViews.some((et) => TP.pathsEqual(et, tp))
   }
 
@@ -479,7 +476,7 @@ export class SelectModeControlContainer extends React.Component<
     })
   }
 
-  render() {
+  render(): JSX.Element {
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)

@@ -28,7 +28,6 @@ import {
   ParseSuccess,
 } from '../../shared/project-file-types'
 import { parseSuccess } from '../common/project-file-utils'
-import { applyPrettier } from './prettier-utils'
 import {
   clearParseResultUniqueIDsAndEmptyBlocks,
   JustImportViewAndReact,
@@ -39,6 +38,7 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model
 import { emptyComments } from './parser-printer-comments'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from './parser-printer-utils'
 import { TestAppUID, TestSceneUID } from '../../../components/canvas/ui-jsx.test-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 
 describe('JSX parser', () => {
   it('should add in uid attributes for elements', () => {

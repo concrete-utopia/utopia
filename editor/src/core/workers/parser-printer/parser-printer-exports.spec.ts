@@ -1,6 +1,6 @@
 import { clearParseResultUniqueIDsAndEmptyBlocks, testParseCode } from './parser-printer.test-utils'
 import Utils from '../../../utils/utils'
-import { applyPrettier } from './prettier-utils'
+import { applyPrettier } from 'utopia-vscode-common'
 import { testPrintParsedTextFile } from '../../../components/canvas/ui-jsx.test-utils'
 
 describe('parseCode', () => {

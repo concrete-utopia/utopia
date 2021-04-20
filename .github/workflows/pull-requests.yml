@@ -100,7 +100,7 @@ jobs:
       - name: Build Editor
         if: steps.cache-editor-tests.outputs.cache-hit != 'true'
         run: |
-          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging
+          nix-shell --arg includeServerBuildSupport false --arg includeRunLocallySupport false --run build-editor-staging-ci
       - name: Create Editor Bundle
         working-directory: editor/lib/
         run: |
