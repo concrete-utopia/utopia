@@ -1108,6 +1108,17 @@ export function outermostScenePathPart(path: TemplatePath): ScenePath {
   }
 }
 
+export function createBackwardsCompatibleScenePath(path: TemplatePath): ScenePath | null {
+  const scenePathElements = isScenePath(path)
+    ? path.sceneElementPaths[0]
+    : path.scene.sceneElementPaths[0]
+  if (scenePathElements != null) {
+    return scenePath([scenePathElements.slice(0, 2)]) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack
+  } else {
+    return null
+  }
+}
+
 export function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
   if (focusedElementPath == null || isStoryboardDescendant(path)) {
     return false

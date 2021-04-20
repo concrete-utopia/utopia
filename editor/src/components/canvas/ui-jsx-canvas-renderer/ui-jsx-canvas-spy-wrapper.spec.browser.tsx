@@ -161,9 +161,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
         ":storyboard": Object {
-          "children": Array [
-            ":storyboard/scene",
-          ],
+          "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },
@@ -342,9 +340,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
         ":storyboard": Object {
-          "children": Array [
-            ":storyboard/scene",
-          ],
+          "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },
@@ -581,9 +577,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
         ":storyboard": Object {
-          "children": Array [
-            ":storyboard/scene",
-          ],
+          "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },
@@ -834,9 +828,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
         ":storyboard": Object {
-          "children": Array [
-            ":storyboard/scene",
-          ],
+          "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },
@@ -1094,10 +1086,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
         ":storyboard-entity": Object {
-          "children": Array [
-            ":storyboard-entity/scene-1-entity",
-            ":storyboard-entity/scene-2-entity",
-          ],
+          "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },

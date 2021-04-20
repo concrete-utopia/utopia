@@ -7,6 +7,7 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
   data-utopia-valid-paths=\\":sb :sb/scene :sb/scene/app\\"
 >
   <div
+    data-utopia-scene-id=\\"sb/scene\\"
     data-paths=\\":sb/scene :sb\\"
     style=\\"
       position: absolute;
