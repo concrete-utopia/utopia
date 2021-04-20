@@ -273,33 +273,37 @@ function rangesIntersectLinesOnly(first: vscode.Range, second: vscode.Range): bo
 async function revealRangeIfPossible(
   workspaceRootUri: vscode.Uri,
   boundsInFile: BoundsInFile,
+  forceIfFocused: boolean = false,
 ): Promise<void> {
-  const visibleEditor = vscode.window.visibleTextEditors.find(
-    (editor) => editor.document.uri.path === boundsInFile.filePath,
-  )
-  if (visibleEditor == null) {
-    const opened = await openFile(vscode.Uri.joinPath(workspaceRootUri, boundsInFile.filePath))
-    if (opened) {
-      revealRangeIfPossible(workspaceRootUri, boundsInFile)
-    }
-  } else {
-    const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
-    const alreadySelected = rangesIntersectLinesOnly(visibleEditor.selection, rangeToReveal)
-    const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
-      r.contains(visibleEditor.selection),
+  const focused = vscode.window.state.focused
+  if (forceIfFocused || !focused) {
+    const visibleEditor = vscode.window.visibleTextEditors.find(
+      (editor) => editor.document.uri.path === boundsInFile.filePath,
     )
-
-    if (!alreadySelected) {
-      const selectionRange = getVSCodeRange(boundsInFile)
-      visibleEditor.selection = new vscode.Selection(selectionRange.start, selectionRange.start)
-    }
-
-    const shouldReveal = !(alreadySelected && alreadyVisible)
-    if (shouldReveal) {
-      visibleEditor.revealRange(
-        rangeToReveal,
-        vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+    if (visibleEditor == null) {
+      const opened = await openFile(vscode.Uri.joinPath(workspaceRootUri, boundsInFile.filePath))
+      if (opened) {
+        revealRangeIfPossible(workspaceRootUri, boundsInFile, true)
+      }
+    } else {
+      const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
+      const alreadySelected = rangesIntersectLinesOnly(visibleEditor.selection, rangeToReveal)
+      const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
+        r.contains(visibleEditor.selection),
       )
+
+      if (!alreadySelected) {
+        const selectionRange = getVSCodeRange(boundsInFile)
+        visibleEditor.selection = new vscode.Selection(selectionRange.start, selectionRange.start)
+      }
+
+      const shouldReveal = !(alreadySelected && alreadyVisible)
+      if (shouldReveal) {
+        visibleEditor.revealRange(
+          rangeToReveal,
+          vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+        )
+      }
     }
   }
 }
