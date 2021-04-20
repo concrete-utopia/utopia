@@ -251,7 +251,12 @@ function maybeRequestModelUpdate(
         isParseSuccess(file.fileContents.parsed)
       ) {
         filesToUpdate.push(
-          createPrintCode(fullPath, file.fileContents.parsed, true, file.lastRevisedTime),
+          createPrintCode(
+            fullPath,
+            file.fileContents.parsed,
+            isBrowserEnvironment,
+            file.lastRevisedTime,
+          ),
         )
       }
     }
