@@ -620,6 +620,20 @@ export class ComponentSection extends React.Component<
       return (
         <>
           <InspectorSectionHeader>Component props</InspectorSectionHeader>
+          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+            {/**Component from where NPM/? */}
+          </UIGridRow>
+          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+            {/**icon toggle controls here */}
+            {/**This component instance is imported from */}
+            {/**InLineButton.. Edit it */}
+          </UIGridRow>
+          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+            {/**Icon toggle control*/}
+            {/**This component is imported from */}
+            {/**InlineButton... back */}
+          </UIGridRow>
+
           <PropertyRow
             style={{
               gridTemplateColumns: '2fr 4fr',
