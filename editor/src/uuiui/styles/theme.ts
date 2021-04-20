@@ -192,6 +192,8 @@ const light = {
   segmentControlBackground: base.white.shade(90),
   segmentControlActiveSegmentBackground: base.white.shade(95),
 
+  inlineButtonColor: createUtopiColor('007AFF', 'inline-button', ''),
+
   buttonBackground: base.black.shade(0),
   buttonActiveBackground: base.black.shade(3),
   buttonDisabledBackground: base.black.shade(15).o(50),
