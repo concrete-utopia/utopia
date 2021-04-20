@@ -1,53 +1,48 @@
-import styled from '@emotion/styled'
 import * as React from 'react'
-import { UNSAFE_getIconURL } from './icn'
-import { colorTheme } from './styles/theme'
+import styled from '@emotion/styled'
+import { colorTheme, UtopiaTheme } from './styles/theme'
 
-export const InlineButton = styled.a({
-  color: colorTheme.inlineButtonColor.value,
+export const InlineLink = styled.a({
+  color: colorTheme.primary.value,
   textDecoration: 'none',
   cursor: 'pointer',
   paddingLeft: 2,
   paddingRight: 2,
-  position: 'relative',
   '&:hover': {
-    borderRadius: 1,
-    background: '#E9F3FF',
+    textDecoration: 'underline',
   },
-  '&:active': {
-    background: colorTheme.inlineButtonColor.value,
-    color: '#ffffff',
-    borderRadiusTopLeft: 2,
-    borderRadiusBottomLeft: 2,
-  },
-
   '&:visited': {
-    color: colorTheme.inlineButtonColor.value,
+    color: colorTheme.primary.value,
+  },
+  '&:focus': {
+    textDecoration: 'underline',
   },
 })
 
-export const InlinePopup = styled(InlineButton)({
-  '&:hover::after': {
-    content: '"_"',
-    backgroundColor: '#E9F3FF',
-    backgroundImage: UNSAFE_getIconURL('default', 'purple', 'component', 18, 18),
-    backgroundPosition: 'center center',
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: '9px 9px',
-    position: 'absolute',
-    width: 8,
-    right: -8,
+export const InlineButton = styled.button({
+  fontSize: 11,
+  fontFamily: 'utopian-inter',
+  color: colorTheme.primary.value,
+  background: 'transparent',
+  border: 'none',
+  outline: 'none',
+  cursor: 'pointer',
+  paddingLeft: 2,
+  paddingRight: 2,
+  borderRadius: UtopiaTheme.inputBorderRadius,
+  position: 'relative',
+  '&:hover': {
+    borderRadius: 1,
+    background: colorTheme.primary.shade(10).value,
   },
-  '&:active::after': {
-    content: '"*"',
-    backgroundColor: colorTheme.inlineButtonColor.value,
-    backgroundImage: UNSAFE_getIconURL('expansionarrow-down', 'blue'),
-
-    color: 'white',
-    position: 'absolute',
-    width: 10,
-    right: -10,
-    top: 0,
-    bottom: 0,
+  '&:focus': {
+    background: colorTheme.primary.value,
+    color: '#ffffff',
+    outline: 'none',
+  },
+  '&:active': {
+    background: colorTheme.primary.value,
+    color: '#ffffff',
+    outline: 'none',
   },
 })

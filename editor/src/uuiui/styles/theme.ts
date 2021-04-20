@@ -2,7 +2,7 @@ import { Interpolation } from '@emotion/react'
 import { createUtopiColor } from './utopi-color-helpers'
 
 const base = {
-  blue: createUtopiColor('#00ABFF', 'converted from P3 color space', 'blue'),
+  blue: createUtopiColor('#007AFF', 'converted from P3 color space', 'blue'),
   purple: createUtopiColor('#574BE2', 'Brand Purple', 'purple'),
   red: createUtopiColor('#FD003B', 'Pinkish red (eg errors)', 'red'),
   orange: createUtopiColor('#FA5E00', 'Orange (eg warnings)', 'orange'),
