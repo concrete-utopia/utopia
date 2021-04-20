@@ -61,6 +61,13 @@ export const LargerIcons = {
     width: 21,
     height: 21,
   }),
+  NpmLogo: makeIcon({
+    category: 'special',
+    type: 'npm',
+    color: 'colourful',
+    width: 28,
+    height: 11,
+  }),
 }
 
 export const SmallerIcons = {
