@@ -606,7 +606,7 @@ export const ComponentSectionInner = betterReactMemo(
 
               <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
                 <span>
-                  <img src='npm-colourful-28x11@2x.png' width={28} />
+                  <img src='/editor/icons/light/special/npm-colourful-28x11@2x.png' width={28} />
                 </span>
                 <p>
                   This <Atest href=''>Styled Component</Atest> is imported from{' '}
@@ -619,12 +619,12 @@ export const ComponentSectionInner = betterReactMemo(
               <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
                 <IconToggleButton
                   value={false}
-                  srcOn={UNSAFE_getIconURL('Component', 'purple', 'onToggleValue')}
-                  srcOff={UNSAFE_getIconURL('Component', 'black', 'onToggleValue')}
+                  srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
+                  srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
                   onToggle={onToggleValue}
                 />
                 <p>
-                  This component instance is imported from{' '}
+                  This component instance is imported from{''}
                   <Atest href=''>{locationOfComponentInstance}</Atest>{' '}
                   <InlineButton>Edit it.</InlineButton>
                 </p>
@@ -633,8 +633,8 @@ export const ComponentSectionInner = betterReactMemo(
               <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
                 <IconToggleButton
                   value={true}
-                  srcOn={UNSAFE_getIconURL('components', 'purple')}
-                  srcOff={UNSAFE_getIconURL('component', 'black')}
+                  srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
+                  srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
                   onToggle={onToggleValue}
                 />
                 <p>
