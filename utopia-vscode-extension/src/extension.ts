@@ -265,6 +265,11 @@ function cursorPositionChanged(event: vscode.TextEditorSelectionChangeEvent): vo
   sendMessage(editorCursorPositionChanged(filename, position.line, position.character))
 }
 
+function rangesIntersectLinesOnly(first: vscode.Range, second: vscode.Range): boolean {
+  // For the case when we only care if the lines overlap, and don't care about the columns
+  return first.start.line <= second.end.line && second.start.line <= first.end.line
+}
+
 async function revealRangeIfPossible(
   workspaceRootUri: vscode.Uri,
   boundsInFile: BoundsInFile,
@@ -279,7 +284,7 @@ async function revealRangeIfPossible(
     }
   } else {
     const rangeToReveal = getVSCodeRangeForScrolling(boundsInFile)
-    const alreadySelected = rangeToReveal.contains(visibleEditor.selection)
+    const alreadySelected = rangesIntersectLinesOnly(visibleEditor.selection, rangeToReveal)
     const alreadyVisible = visibleEditor.visibleRanges.some((r) =>
       r.contains(visibleEditor.selection),
     )
