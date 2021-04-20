@@ -40,7 +40,11 @@ import {
   useRefEditorState,
   useSelectorWithCallback,
 } from '../editor/store/store-hook'
-import { UTOPIA_DO_NOT_TRAVERSE_KEY, UTOPIA_PATHS_KEY } from '../../core/model/utopia-constants'
+import {
+  UTOPIA_DO_NOT_TRAVERSE_KEY,
+  UTOPIA_PATHS_KEY,
+  UTOPIA_SCENE_ID_KEY,
+} from '../../core/model/utopia-constants'
 import ResizeObserver from 'resize-observer-polyfill'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
@@ -99,14 +103,12 @@ const applicativeSidesPxTransform = (t: CSSNumber, r: CSSNumber, b: CSSNumber, l
 
 function isScene(node: Node): node is HTMLElement {
   return (
-    node instanceof HTMLElement &&
-    node.attributes.getNamedItemNS(null, 'data-utopia-scene-id') != null &&
-    node.attributes.getNamedItemNS(null, 'data-utopia-valid-paths') != null
+    node instanceof HTMLElement && node.attributes.getNamedItemNS(null, UTOPIA_SCENE_ID_KEY) != null
   )
 }
 
 function findParentScene(target: HTMLElement): string | null {
-  const sceneID = getDOMAttribute(target, 'data-utopia-scene-id')
+  const sceneID = getDOMAttribute(target, UTOPIA_SCENE_ID_KEY)
   if (sceneID != null) {
     return sceneID
   } else {
@@ -245,11 +247,13 @@ function useInvalidateScenesWhenSelectedViewChanges(
     (store) => store.editor.selectedViews,
     (newSelectedViews) => {
       newSelectedViews.forEach((sv) => {
-        const scenePath = TP.outermostScenePathPart(sv)
-        const sceneID = TP.toString(scenePath)
-        invalidatedSceneIDsRef.current.add(sceneID)
-        invalidatedPathsForStylesheetCacheRef.current.add(TP.toString(sv))
-        forceUpdate()
+        const scenePath = TP.createBackwardsCompatibleScenePath(sv)
+        if (scenePath != null) {
+          const sceneID = TP.toString(scenePath)
+          invalidatedSceneIDsRef.current.add(sceneID)
+          invalidatedPathsForStylesheetCacheRef.current.add(TP.toString(sv))
+          forceUpdate()
+        }
       })
     },
   )
@@ -627,6 +631,7 @@ function walkCanvasRootFragment(
 function walkScene(
   scene: HTMLElement,
   index: number,
+  validPaths: Array<InstancePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -638,22 +643,11 @@ function walkScene(
   if (scene instanceof HTMLElement) {
     // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
     // and that they can only have a single root element
-    const sceneIndexAttr = scene.attributes.getNamedItemNS(null, 'data-utopia-scene-id')
-    const validPathsAttr = scene.attributes.getNamedItemNS(null, 'data-utopia-valid-paths')
+    const sceneIndexAttr = scene.attributes.getNamedItemNS(null, UTOPIA_SCENE_ID_KEY)
     const sceneID = sceneIndexAttr?.value ?? null
     const scenePath = sceneID == null ? null : TP.fromString(sceneID)
 
-    if (
-      sceneID != null &&
-      scenePath != null &&
-      TP.isScenePath(scenePath) &&
-      validPathsAttr != null
-    ) {
-      const validPaths = validPathsAttr.value
-        .split(' ')
-        .map(TP.fromString)
-        .filter(TP.isInstancePath)
-
+    if (sceneID != null && scenePath != null && TP.isScenePath(scenePath)) {
       let cachedMetadata: ElementInstanceMetadata | null = null
       if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
         if (!invalidatedSceneIDsRef.current.has(sceneID)) {
@@ -776,6 +770,7 @@ function walkElements(
       rootMetadata: walkScene(
         element,
         index,
+        validPaths,
         rootMetadataInStateRef,
         invalidatedSceneIDsRef,
         invalidatedPathsForStylesheetCacheRef,
