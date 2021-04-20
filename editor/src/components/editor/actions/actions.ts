@@ -104,6 +104,7 @@ import {
   assetFile,
   applyToAllUIJSFiles,
   updateFileContents,
+  applyUtopiaJSXComponentsChanges,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -389,7 +390,6 @@ import {
   saveUserConfiguration,
 } from '../server'
 import {
-  applyUtopiaJSXComponentsChanges,
   areGeneratedElementsTargeted,
   CanvasBase64Blobs,
   DerivedState,
@@ -1362,9 +1362,9 @@ export const UPDATE_FNS = {
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
-        const parseResult = lintAndParse(filename, file.fileContents.code)
+        const parseResult = lintAndParse(filename, file.fileContents.code, null)
         const lastSavedFileContents = optionalMap((lastSaved) => {
-          const lastSavedParseResult = lintAndParse(filename, lastSaved.code)
+          const lastSavedParseResult = lintAndParse(filename, lastSaved.code, null)
           return textFileContents(lastSaved.code, lastSavedParseResult, RevisionsState.BothMatch)
         }, file.lastSavedContents)
         return textFile(

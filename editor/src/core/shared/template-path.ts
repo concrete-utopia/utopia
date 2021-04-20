@@ -168,7 +168,7 @@ function newScenePath(elementPaths: ElementPath[]): ScenePath {
   }
 }
 
-const emptyElementPath: StaticElementPath = ([] as any) as StaticElementPath
+export const emptyElementPath: StaticElementPath = ([] as any) as StaticElementPath
 
 export function staticElementPath(elements: string[]): StaticElementPath {
   return elements as StaticElementPath
@@ -431,7 +431,9 @@ export function isInsideFocusedComponent(path: TemplatePath): boolean {
   }
 }
 
-function elementPathParent(path: ElementPath): ElementPath {
+export function elementPathParent(path: StaticElementPath): StaticElementPath
+export function elementPathParent(path: ElementPath): ElementPath
+export function elementPathParent(path: ElementPath): ElementPath {
   return path.slice(0, path.length - 1)
 }
 

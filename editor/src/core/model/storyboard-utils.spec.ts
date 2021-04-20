@@ -34,7 +34,7 @@ export var App = (props) => {
   return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
 }`
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse(StoryboardFilePath, appFile) as ParsedTextFile
+  const parsedFile = lintAndParse(StoryboardFilePath, appFile, null) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')

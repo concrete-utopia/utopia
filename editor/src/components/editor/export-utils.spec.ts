@@ -23,7 +23,7 @@ export var Whatever = (props) => {
     <div />
   )
 }`
-    const parseResult = parseCode('/src/index.js', codeForFile)
+    const parseResult = parseCode('/src/index.js', codeForFile, null)
     expect(isParseSuccess(parseResult)).toEqual(true)
 
     const actualResult = getExportedComponentImports('/src/app.js', '/src/index.js', parseResult)

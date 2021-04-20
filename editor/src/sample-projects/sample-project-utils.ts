@@ -49,7 +49,7 @@ export function simpleDefaultProject(): PersistentModel {
 
 export function createComplexDefaultProjectContents(): ProjectContents {
   function createCodeFile(path: string, contents: string): TextFile {
-    const result = lintAndParse(path, contents)
+    const result = lintAndParse(path, contents, null)
     return textFile(textFileContents(contents, result, RevisionsState.BothMatch), null, Date.now())
   }
 

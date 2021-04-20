@@ -63,7 +63,7 @@ export const SampleNodeModules: NodeModules = {
 }
 
 export function createCodeFile(path: string, contents: string): TextFile {
-  const result = lintAndParse(path, contents)
+  const result = lintAndParse(path, contents, null)
   return textFile(textFileContents(contents, result, RevisionsState.CodeAhead), null, Date.now())
 }
 

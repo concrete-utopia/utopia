@@ -81,6 +81,7 @@ import {
   isParseSuccess,
 } from '../../core/shared/project-file-types'
 import {
+  applyUtopiaJSXComponentsChanges,
   getOrDefaultScenes,
   getUtopiaJSXComponentsFromSuccess,
 } from '../../core/model/project-file-utils'
@@ -107,7 +108,6 @@ import {
 } from '../../core/shared/math-utils'
 import { insertionSubjectIsJSXElement } from '../editor/editor-modes'
 import {
-  applyUtopiaJSXComponentsChanges,
   DerivedState,
   EditorState,
   getOpenImportsFromState,
@@ -2594,7 +2594,7 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile) as ParsedTextFile
+  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')

@@ -64,7 +64,7 @@ export var app = (props) => {
   )
 }
     `
-    const parsedCode = parseCode('test.js', startingCode)
+    const parsedCode = parseCode('test.js', startingCode, null)
     const actualResult = foldParsedTextFile(
       (_) => 'FAILURE',
       (success) => {

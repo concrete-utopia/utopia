@@ -55,6 +55,8 @@ import {
   walkContentsTree,
 } from '../../components/assets'
 import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
+import { emptySet } from '../shared/set-utils'
+import { fastForEach } from '../shared/utils'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -215,6 +217,37 @@ function getUtopiaJSXComponentsFromSuccessInner(success: ParseSuccess): Array<Ut
 export const getUtopiaJSXComponentsFromSuccess = Utils.memoize(
   getUtopiaJSXComponentsFromSuccessInner,
 )
+
+export function applyUtopiaJSXComponentsChanges(
+  topLevelElements: Array<TopLevelElement>,
+  newUtopiaComponents: Array<UtopiaJSXComponent>,
+): Array<TopLevelElement> {
+  // Run through the old top level elements, replacing the exported elements with those in the
+  // newly updated result with the same name.
+  // If it doesn't exist in the updated result, delete it.
+  // For any new items in the updated result, add them in.
+  const addedSoFar: Set<string> = emptySet()
+  let newTopLevelElements: Array<TopLevelElement> = []
+  fastForEach(topLevelElements, (oldTopLevelElement) => {
+    if (isUtopiaJSXComponent(oldTopLevelElement)) {
+      const updatedElement = newUtopiaComponents.find((e) => e.name === oldTopLevelElement.name)
+      if (updatedElement !== undefined) {
+        addedSoFar.add(updatedElement.name)
+        newTopLevelElements.push(updatedElement)
+      }
+    } else {
+      newTopLevelElements.push(oldTopLevelElement)
+    }
+  })
+
+  fastForEach(newUtopiaComponents, (updatedElement) => {
+    if (!addedSoFar.has(updatedElement.name)) {
+      newTopLevelElements.push(updatedElement)
+    }
+  })
+
+  return newTopLevelElements
+}
 
 export function getHighlightBoundsFromParseResult(
   result: ParsedTextFile,

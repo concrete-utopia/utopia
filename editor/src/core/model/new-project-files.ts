@@ -8,7 +8,7 @@ import {
 import { lintAndParse } from '../workers/parser-printer/parser-printer'
 
 export function getDefaultUIJsFile(): TextFile {
-  const result = lintAndParse('code.tsx', sampleCode)
+  const result = lintAndParse('code.tsx', sampleCode, null)
   return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, Date.now())
 }
 

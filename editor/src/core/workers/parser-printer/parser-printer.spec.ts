@@ -2312,7 +2312,7 @@ export var Whatever = (props) => <View>
   <MyComp layout={{left: 100}} />
 </View>
 `
-    const actualResult = parseCode('code.tsx', code)
+    const actualResult = parseCode('code.tsx', code, null)
     if (isParseSuccess(actualResult)) {
       expect(actualResult.topLevelElements.filter(isArbitraryJSBlock).length).toEqual(1)
       expect(actualResult.topLevelElements.filter(isUtopiaJSXComponent).length).toEqual(0)
@@ -4474,6 +4474,7 @@ describe('lintAndParse', () => {
         </View>
       )
     })`,
+      null,
     )
     expect(clearParseResultPassTimes(result)).toMatchSnapshot()
   })

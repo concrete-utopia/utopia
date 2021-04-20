@@ -238,7 +238,14 @@ function maybeRequestModelUpdate(
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (codeNeedsParsing(file.fileContents.revisionsState)) {
-        filesToUpdate.push(createParseFile(fullPath, file.fileContents.code, file.lastRevisedTime))
+        filesToUpdate.push(
+          createParseFile(
+            fullPath,
+            file.fileContents.code,
+            file.fileContents.parsed,
+            file.lastRevisedTime,
+          ),
+        )
       } else if (
         codeNeedsPrinting(file.fileContents.revisionsState) &&
         isParseSuccess(file.fileContents.parsed)
@@ -585,7 +592,7 @@ function editorDispatchInner(
     }
 
     const cleanedEditor = metadataChanged
-      ? removeNonExistingViewReferencesFromState(storedState.editor, result.editor)
+      ? removeNonExistingViewReferencesFromState(result.editor)
       : result.editor
 
     let frozenEditorState: EditorState = optionalDeepFreeze(cleanedEditor)
@@ -722,32 +729,26 @@ function notifyTsWorker(
   }
 }
 
-function removeNonExistingViewReferencesFromState(
-  oldEditorState: EditorState,
-  editorState: EditorState,
-): EditorState {
-  const oldRootComponents = oldEditorState.jsxMetadata
+function removeNonExistingViewReferencesFromState(editorState: EditorState): EditorState {
   const rootComponents = editorState.jsxMetadata
   const updatedSelectedViews = TemplatePathArrayKeepDeepEquality(
     editorState.selectedViews,
     mapDropNulls(
-      (selectedView) => findMatchingTemplatePath(oldRootComponents, rootComponents, selectedView),
+      (selectedView) => templatePathStillExists(rootComponents, selectedView),
       editorState.selectedViews,
     ),
   ).value
   const updatedHighlightedViews = TemplatePathArrayKeepDeepEquality(
     editorState.highlightedViews,
     mapDropNulls(
-      (highlightedView) =>
-        findMatchingTemplatePath(oldRootComponents, rootComponents, highlightedView),
+      (highlightedView) => templatePathStillExists(rootComponents, highlightedView),
       editorState.highlightedViews,
     ),
   ).value
   const updatedHiddenInstances = TemplatePathArrayKeepDeepEquality(
     editorState.hiddenInstances,
     mapDropNulls(
-      (hiddenInstance) =>
-        findMatchingTemplatePath(oldRootComponents, rootComponents, hiddenInstance),
+      (hiddenInstance) => templatePathStillExists(rootComponents, hiddenInstance),
       editorState.hiddenInstances,
     ),
   ).value
@@ -759,8 +760,7 @@ function removeNonExistingViewReferencesFromState(
   }
 }
 
-function findMatchingTemplatePath(
-  oldComponents: ElementInstanceMetadataMap,
+function templatePathStillExists(
   newComponents: ElementInstanceMetadataMap,
   pathToUpdate: TemplatePath,
 ): TemplatePath | null {
@@ -768,22 +768,7 @@ function findMatchingTemplatePath(
     MetadataUtils.findElementByTemplatePath(newComponents, pathToUpdate) != null
   if (pathStillExists) {
     return pathToUpdate
-  }
-
-  const parentPath = TP.parentPath(pathToUpdate)
-  if (parentPath == null) {
-    const oldRootPaths = MetadataUtils.getAllCanvasRootPaths(oldComponents)
-    const newRootPaths = MetadataUtils.getAllCanvasRootPaths(oldComponents)
-    const oldRootIndex = oldRootPaths.findIndex((p) => TP.pathsEqual(p, pathToUpdate))
-    const newRootPath = newRootPaths[oldRootIndex]
-    return newRootPath ?? null
   } else {
-    const oldElementsHere = MetadataUtils.getImmediateChildren(oldComponents, parentPath)
-    const newElementsHere = MetadataUtils.getImmediateChildren(newComponents, parentPath)
-    const oldChildIndex = oldElementsHere.findIndex((e) =>
-      TP.pathsEqual(e.templatePath, pathToUpdate),
-    )
-    const potentialNewElement = newElementsHere[oldChildIndex]
-    return potentialNewElement?.templatePath ?? null
+    return null
   }
 }
