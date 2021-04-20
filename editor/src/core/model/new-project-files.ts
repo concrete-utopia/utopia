@@ -20,7 +20,11 @@ export var App = (props) => {
 
 export function appJSFile(): TextFile {
   const result = lintAndParse('/src/app.js', sampleAppJSCode, null)
-  return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, Date.now())
+  return textFile(
+    textFileContents(sampleAppJSCode, result, RevisionsState.BothMatch),
+    null,
+    Date.now(),
+  )
 }
 
 export function getDefaultUIJsFile(): TextFile {
