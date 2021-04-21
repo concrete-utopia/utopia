@@ -168,12 +168,7 @@ export function createClipboardDataFromSelectionNewWorld(
   })
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
   const jsxElements = filteredSelectedViews.map((view) => {
-    if (TP.isScenePath(view)) {
-      const path = createSceneTemplatePath(view)
-      return findJSXElementChildAtPath(utopiaComponents, path)
-    } else {
-      return findElementAtPath(view, utopiaComponents)
-    }
+    return findElementAtPath(view, utopiaComponents)
   })
   return {
     data: [

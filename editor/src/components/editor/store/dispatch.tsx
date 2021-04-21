@@ -515,6 +515,12 @@ export function editorDispatch(
     storedState.workers.initWatchdogWorker(frozenEditorState.id)
   }
 
+  if (frozenEditorState.selectedViews.some(TP.isScenePath)) {
+    throw new Error(
+      `Scene path selected: ${frozenEditorState.selectedViews.map(TP.toString).join(', ')}`,
+    )
+  }
+
   return {
     editor: frozenEditorState,
     derived: frozenDerivedState,

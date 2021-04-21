@@ -796,10 +796,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
   getElementAspectRatioLocked(): boolean {
     return this.props.editor.selectedViews.every((target) => {
-      if (TP.isScenePath(target)) {
-        return false
-      }
-      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(
+      const possibleElement = MetadataUtils.findElementByTemplatePath(
         this.props.editor.jsxMetadata,
         target,
       )

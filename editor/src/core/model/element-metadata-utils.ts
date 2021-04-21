@@ -99,6 +99,7 @@ import {
 import { EmptyScenePathForStoryboard, ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
+import { UTOPIA_LABEL_KEY } from './utopia-constants'
 const ObjectPathImmutable: any = OPI
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
@@ -961,6 +962,14 @@ export const MetadataUtils = {
       )
     }
   },
+  getElementLabelFromProps(element: ElementInstanceMetadata): string | null {
+    const dataLabelProp = element.props[UTOPIA_LABEL_KEY]
+    if (dataLabelProp != null && typeof dataLabelProp === 'string' && dataLabelProp.length > 0) {
+      return dataLabelProp
+    } else {
+      return null
+    }
+  },
   getElementLabel(
     path: TemplatePath,
     metadata: ElementInstanceMetadataMap,
@@ -968,9 +977,9 @@ export const MetadataUtils = {
   ): string {
     const element = this.findElementByTemplatePath(metadata, path)
     if (element != null) {
-      const sceneLabel = element.label
-      const dataLabelProp = element.props['data-label']
-      if (dataLabelProp != null && typeof dataLabelProp === 'string' && dataLabelProp.length > 0) {
+      const sceneLabel = element.label // KILLME?
+      const dataLabelProp = MetadataUtils.getElementLabelFromProps(element)
+      if (dataLabelProp != null) {
         return dataLabelProp
       } else if (sceneLabel != null) {
         return sceneLabel
