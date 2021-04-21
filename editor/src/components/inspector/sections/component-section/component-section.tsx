@@ -36,8 +36,6 @@ import {
   Icn,
   PopupList,
   FunctionIcons,
-  UNSAFE_getIconURL,
-  Icons,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -609,10 +607,10 @@ export const ComponentSectionInner = betterReactMemo(
                   <img src='/editor/icons/light/special/npm-colourful-28x11@2x.png' width={28} />
                 </span>
                 <p>
-                  This <Atest href=''>Styled Component</Atest> is imported from{' '}
+                  {/* This <Atest href=''>Styled Component</Atest> is imported from{' '}
                   <Atest href='@jedwatson/react-select'>
                     @microsoft/microsoft-fabric-experimental
-                  </Atest>{' '}
+                  </Atest>{' '} */}
                   via NPM.
                 </p>
               </UIGridRow>
@@ -625,8 +623,8 @@ export const ComponentSectionInner = betterReactMemo(
                 />
                 <p>
                   This component instance is imported from{''}
-                  <Atest href=''>{locationOfComponentInstance}</Atest>{' '}
-                  <InlineButton>Edit it.</InlineButton>
+                  {/* <Atest href=''>{locationOfComponentInstance}</Atest>{' '}
+                  <InlineButton >Edit it.</InlineButton> */}
                 </p>
               </UIGridRow>
 
@@ -638,8 +636,8 @@ export const ComponentSectionInner = betterReactMemo(
                   onToggle={onToggleValue}
                 />
                 <p>
-                  This component is imported from <Atest href=''>'/src/components/button'</Atest>
-                  <InlineButton>Back</InlineButton>
+                  {/* This component is imported from <Atest href=''>'/src/components/button'</Atest>
+                  <InlineButton>Back</InlineButton> */}
                 </p>
               </UIGridRow>
               <InfoBox message={'No properties available to configure.'} />
