@@ -408,7 +408,9 @@ export function handleKeyDown(
         if (modeType === 'select') {
           const textTarget = getTextEditorTarget(editor)
           if (textTarget != null) {
-            return [EditorActions.openTextEditor(TP.instancePathForElementAtPath(textTarget), null)]
+            return [
+              EditorActions.openTextEditor(TP.instancePathForElementAtPath(textTarget, true), null),
+            ]
           } else {
             const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
             if (childToSelect != null) {

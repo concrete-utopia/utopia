@@ -304,7 +304,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       anyComponentsInner =
         anyComponentsInner ||
         MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
-      const possibleElement = MetadataUtils.findElementByTemplatePath(rootMetadata, view)
+      const possibleElement = MetadataUtils.findElementByTemplatePath(rootMetadata, view, true)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
         // its own compared to the props.
@@ -343,7 +343,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     }
   }, 'Inspector')
   const instancePaths = useKeepReferenceEqualityIfPossible(
-    selectedViews.map(TP.instancePathForElementAtPath),
+    selectedViews.map((p) => TP.instancePathForElementAtPath(p, true)),
   )
 
   const onFocus = React.useCallback(
@@ -590,23 +590,12 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
       let elements: Array<ElementPathElement> = []
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-        // TODO Scene Implementation
-        if (TP.isInstancePath(path)) {
-          const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
-          if (component != null) {
-            elements.push({
-              name: MetadataUtils.getElementLabel(path, jsxMetadata),
-              path: path,
-            })
-          }
-        } else {
-          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
-          if (scene != null) {
-            elements.push({
-              name: scene.label ?? undefined,
-              path: path,
-            })
-          }
+        const component = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+        if (component != null) {
+          elements.push({
+            name: MetadataUtils.getElementLabel(path, jsxMetadata),
+            path: path,
+          })
         }
       })
       return elements
@@ -745,7 +734,7 @@ export const InspectorContextProvider = betterReactMemo<{
   let newAttributeMetadatas: Array<StyleAttributeMetadata> = []
 
   Utils.fastForEach(selectedViews, (path) => {
-    const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+    const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path, true)
     if (elementMetadata != null) {
       if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
         /**

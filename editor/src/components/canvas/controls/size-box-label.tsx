@@ -78,7 +78,7 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
       true,
     )
     Utils.fastForEach(targets, (target) => {
-      const element = MetadataUtils.findElementByTemplatePath(metadata, target)
+      const element = MetadataUtils.findElementByTemplatePath(metadata, target, true)
       if (element != null) {
         const jsxElement = eitherToMaybe(element.element)
         if (jsxElement != null && isJSXElement(jsxElement)) {

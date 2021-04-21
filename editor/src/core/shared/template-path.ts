@@ -312,7 +312,14 @@ function instancePathForElementPaths(elementPaths: ElementPath[]): InstancePath 
   }
 }
 
-export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
+export function instancePathForElementAtPath(
+  path: TemplatePath,
+  throwOnScenePath: boolean = false,
+): InstancePath {
+  if (throwOnScenePath && isScenePath(path)) {
+    throw new Error(`Encountered Scene Path ${toString(path)}`)
+  }
+
   return isInstancePath(path) ? path : instancePathForElementPaths(path.sceneElementPaths)
 }
 

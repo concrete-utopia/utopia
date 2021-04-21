@@ -394,7 +394,7 @@ function collectMetadata(
   return pathsForElement.map((path) => {
     const rootsOrChildrenToAdd = pathsForElement
       .filter((otherPath) => TP.isParentOf(path, otherPath))
-      .map(TP.instancePathForElementAtPath)
+      .map((p) => TP.instancePathForElementAtPath(p, true))
     const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
 
     let filteredChildPaths: InstancePath[] = []

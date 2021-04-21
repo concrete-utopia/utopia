@@ -168,11 +168,12 @@ export const MetadataUtils = {
   findElementByTemplatePath(
     elementMap: ElementInstanceMetadataMap,
     path: TemplatePath | null,
+    throwOnScenePath: boolean = false,
   ): ElementInstanceMetadata | null {
     if (path == null) {
       return null
     } else {
-      const targetPath = TP.instancePathForElementAtPath(path)
+      const targetPath = TP.instancePathForElementAtPath(path, throwOnScenePath)
       return elementMap[TP.toString(targetPath)] ?? null
     }
   },
@@ -1358,8 +1359,8 @@ export const MetadataUtils = {
     } else {
       const duplicatedElementPath = duplicateElementMetadata(
         originalMetadata,
-        TP.instancePathForElementAtPath(oldPath),
-        TP.instancePathForElementAtPath(newPath),
+        TP.instancePathForElementAtPath(oldPath, true),
+        TP.instancePathForElementAtPath(newPath, true),
         newElement,
       )
       const updatedElements = this.updateParentWithNewChildPath(
