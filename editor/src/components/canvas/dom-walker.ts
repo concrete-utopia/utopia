@@ -279,7 +279,10 @@ function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, ()
 interface DomWalkerProps {
   selectedViews: Array<TemplatePath>
   scale: number
-  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
+  onDomReport: (
+    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+    cachedTreeRoots: Array<TemplatePath>,
+  ) => void
   canvasRootElementTemplatePath: TemplatePath
   validRootPaths: Array<InstancePath>
   mountCount: number
@@ -322,7 +325,7 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
       // This assumes that the canvas root is rendering a Storyboard fragment.
       // The necessary validPaths and the root fragment's template path comes from props,
       // because the fragment is invisible in the DOM.
-      const rootMetadata: ReadonlyArray<ElementInstanceMetadata> = walkCanvasRootFragment(
+      const { metadata, cachedTreeRoots } = walkCanvasRootFragment(
         refOfContainer,
         0,
         props.canvasRootElementTemplatePath,
@@ -340,7 +343,7 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
         performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
       }
       setInitComplete()
-      props.onDomReport(rootMetadata)
+      props.onDomReport(metadata, cachedTreeRoots)
     }
   })
 
@@ -589,7 +592,7 @@ function walkCanvasRootFragment(
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-): ReadonlyArray<ElementInstanceMetadata> {
+): { metadata: ReadonlyArray<ElementInstanceMetadata>; cachedTreeRoots: Array<TemplatePath> } {
   if (
     ObserversAvailable &&
     invalidatedSceneIDsRef.current.size === 0 &&
@@ -597,9 +600,9 @@ function walkCanvasRootFragment(
     initComplete
   ) {
     // no mutation happened on the entire canvas, just return the old metadata
-    return rootMetadataInStateRef.current
+    return { metadata: rootMetadataInStateRef.current, cachedTreeRoots: [canvasRootPath] }
   } else {
-    const { childPaths: rootElements, rootMetadata } = walkSceneInner(
+    const { childPaths: rootElements, rootMetadata, cachedTreeRoots } = walkSceneInner(
       canvasRoot,
       index,
       validPaths,
@@ -629,7 +632,7 @@ function walkCanvasRootFragment(
       emptyAttributeMetadatada,
       null,
     )
-    return [...rootMetadata, metadata]
+    return { metadata: [...rootMetadata, metadata], cachedTreeRoots: cachedTreeRoots }
   }
 }
 
@@ -644,7 +647,7 @@ function walkScene(
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-): ReadonlyArray<ElementInstanceMetadata> {
+): { metadata: ReadonlyArray<ElementInstanceMetadata>; cachedTreeRoots: Array<TemplatePath> } {
   if (scene instanceof HTMLElement) {
     // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
     // and that they can only have a single root element
@@ -671,7 +674,7 @@ function walkScene(
       }
 
       if (cachedMetadata == null || !initComplete) {
-        const { childPaths: rootElements, rootMetadata } = walkSceneInner(
+        const { childPaths: rootElements, rootMetadata, cachedTreeRoots } = walkSceneInner(
           scene,
           index,
           validPaths,
@@ -694,7 +697,7 @@ function walkScene(
           invalidatedPathsForStylesheetCacheRef,
           selectedViews,
         )
-        return [...rootMetadata, ...sceneMetadata]
+        return { metadata: [...rootMetadata, ...sceneMetadata], cachedTreeRoots: cachedTreeRoots }
       } else {
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
@@ -703,11 +706,11 @@ function walkScene(
             rootMetadataAccumulator.push(elem)
           }
         })
-        return rootMetadataAccumulator
+        return { metadata: rootMetadataAccumulator, cachedTreeRoots: [scenePath] }
       }
     }
   }
-  return [] // verify
+  return { metadata: [], cachedTreeRoots: [] } // verify
 }
 
 function walkSceneInner(
@@ -721,14 +724,19 @@ function walkSceneInner(
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-): { childPaths: Array<InstancePath>; rootMetadata: ReadonlyArray<ElementInstanceMetadata> } {
+): {
+  childPaths: Array<InstancePath>
+  rootMetadata: ReadonlyArray<ElementInstanceMetadata>
+  cachedTreeRoots: Array<TemplatePath>
+} {
   const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
 
   let childPaths: Array<InstancePath> = []
   let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
+  let cachedTreeRootsAccumulator: Array<TemplatePath> = []
 
   scene.childNodes.forEach((childNode) => {
-    const { childPaths: childNodePaths, rootMetadata } = walkElements(
+    const { childPaths: childNodePaths, rootMetadata, cachedTreeRoots } = walkElements(
       childNode,
       index,
       0,
@@ -745,9 +753,14 @@ function walkSceneInner(
 
     childPaths.push(...childNodePaths)
     rootMetadataAccumulator.push(...rootMetadata)
+    cachedTreeRootsAccumulator.push(...cachedTreeRoots)
   })
 
-  return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
+  return {
+    childPaths: childPaths,
+    rootMetadata: rootMetadataAccumulator,
+    cachedTreeRoots: cachedTreeRootsAccumulator,
+  }
 }
 
 // Walks through the DOM producing the structure and values from within.
@@ -767,23 +780,27 @@ function walkElements(
 ): {
   childPaths: ReadonlyArray<InstancePath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
+  cachedTreeRoots: Array<TemplatePath>
 } {
   if (isScene(element)) {
     // we found a nested scene, restart the walk
+    const { metadata, cachedTreeRoots } = walkScene(
+      element,
+      index,
+      validPaths,
+      rootMetadataInStateRef,
+      invalidatedSceneIDsRef,
+      invalidatedPathsForStylesheetCacheRef,
+      selectedViews,
+      initComplete,
+      scale,
+      containerRectLazy,
+    )
+
     const result = {
       childPaths: [],
-      rootMetadata: walkScene(
-        element,
-        index,
-        validPaths,
-        rootMetadataInStateRef,
-        invalidatedSceneIDsRef,
-        invalidatedPathsForStylesheetCacheRef,
-        selectedViews,
-        initComplete,
-        scale,
-        containerRectLazy,
-      ),
+      rootMetadata: metadata,
+      cachedTreeRoots: cachedTreeRoots,
     }
     return result
   }
@@ -807,9 +824,14 @@ function walkElements(
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<InstancePath> = []
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
+    let cachedTreeRootsAccumulator: Array<TemplatePath> = []
     if (traverseChildren) {
       element.childNodes.forEach((child, childIndex) => {
-        const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
+        const {
+          childPaths: childNodePaths,
+          rootMetadata: rootMetadataInner,
+          cachedTreeRoots,
+        } = walkElements(
           child,
           childIndex,
           depth + 1,
@@ -825,6 +847,7 @@ function walkElements(
         )
         childPaths.push(...childNodePaths)
         rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
+        cachedTreeRootsAccumulator.push(...cachedTreeRoots)
       })
     }
 
@@ -843,8 +866,9 @@ function walkElements(
     return {
       rootMetadata: rootMetadataAccumulator,
       childPaths: collectedMetadata.map((metadata) => metadata.templatePath), // TODO why not extract childPaths from the metadata?
+      cachedTreeRoots: cachedTreeRootsAccumulator,
     }
   } else {
-    return { childPaths: [], rootMetadata: [] }
+    return { childPaths: [], rootMetadata: [], cachedTreeRoots: [] }
   }
 }

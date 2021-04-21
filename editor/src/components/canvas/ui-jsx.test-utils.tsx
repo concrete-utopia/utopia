@@ -16,7 +16,7 @@ const monkeyCreateElement = (...params: any[]) => {
 
 jest.setTimeout(10000) // in milliseconds
 
-import { act, render } from '@testing-library/react'
+import { act, render, RenderResult } from '@testing-library/react'
 import * as Prettier from 'prettier'
 import create from 'zustand'
 import {
@@ -81,7 +81,17 @@ export async function renderTestEditorWithProjectContent(projectContent: Project
   return renderTestEditorWithModel(persistentModelForProjectContents(projectContent))
 }
 
-export async function renderTestEditorWithModel(model: PersistentModel) {
+export async function renderTestEditorWithModel(
+  model: PersistentModel,
+): Promise<{
+  dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
+  getDomReportDispatched: () => Promise<void>
+  getDispatchFollowUpactionsFinished: () => Promise<void>
+  getEditorState: () => EditorStore
+  renderedDOM: RenderResult
+  getNumberOfCommits: () => number
+  getNumberOfRenders: () => number
+}> {
   const renderCountBaseline = renderCount
 
   let emptyEditorState = createEditorState(NO_OP)
@@ -89,8 +99,8 @@ export async function renderTestEditorWithModel(model: PersistentModel) {
 
   const history = History.init(emptyEditorState, derivedState)
 
-  let domReportDispatched = Utils.defer()
-  let dispatchFollowUpActionsFinished = Utils.defer()
+  let domReportDispatched = Utils.defer<void>()
+  let dispatchFollowUpActionsFinished = Utils.defer<void>()
 
   function resetPromises() {
     domReportDispatched = Utils.defer()
@@ -117,7 +127,7 @@ export async function renderTestEditorWithModel(model: PersistentModel) {
     result.entireUpdateFinished.then(() => dispatchFollowUpActionsFinished.resolve())
     workingEditorState = result
     if (actions[0]?.action === 'SAVE_DOM_REPORT') {
-      domReportDispatched.resolve(true)
+      domReportDispatched.resolve()
     }
     if (waitForDispatchEntireUpdate) {
       await Utils.timeLimitPromise(

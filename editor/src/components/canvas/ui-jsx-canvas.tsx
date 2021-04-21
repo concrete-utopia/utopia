@@ -131,7 +131,10 @@ export interface UiJsxCanvasProps {
   editedTextElement: InstancePath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
-  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
+  onDomReport: (
+    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+    cachedTreeRoots: Array<TemplatePath>,
+  ) => void
   walkDOM: boolean
   imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
   canvasIsLive: boolean
@@ -162,7 +165,10 @@ export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
   walkDOM: boolean,
-  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void,
+  onDomReport: (
+    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+    cachedTreeRoots: Array<TemplatePath>,
+  ) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
 ): UiJsxCanvasProps | null {
@@ -484,7 +490,10 @@ export interface CanvasContainerProps {
   selectedViews: Array<TemplatePath>
   scale: number
   offset: CanvasVector
-  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
+  onDomReport: (
+    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+    cachedTreeRoots: Array<TemplatePath>,
+  ) => void
   canvasRootElementTemplatePath: TemplatePath
   validRootPaths: Array<InstancePath>
   mountCount: number
