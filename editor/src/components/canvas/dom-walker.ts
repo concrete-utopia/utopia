@@ -276,7 +276,16 @@ function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, ()
   return [initCompleteRef.current, setInitComplete]
 }
 
-export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
+interface DomWalkerProps {
+  selectedViews: Array<TemplatePath>
+  scale: number
+  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
+  canvasRootElementTemplatePath: TemplatePath
+  validRootPaths: Array<InstancePath>
+  mountCount: number
+}
+
+export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState(
     (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
@@ -284,10 +293,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'useDomWalker selectedViews',
-  )
   const resizeObserver = useResizeObserver(invalidatedSceneIDsRef)
   const mutationObserver = useMutationObserver(invalidatedSceneIDsRef)
   useInvalidateScenesWhenSelectedViewChanges(
@@ -325,7 +330,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         rootMetadataInStateRef,
         invalidatedSceneIDsRef,
         invalidatedPathsForStylesheetCacheRef,
-        selectedViews,
+        props.selectedViews,
         initComplete,
         props.scale,
         containerRect,
