@@ -1567,12 +1567,7 @@ export const MetadataUtils = {
       MetadataUtils.isFocusableComponent(path, components, metadata, imports)
     )
   },
-  isEmotionOrStyledComponent(
-    path: TemplatePath,
-    components: UtopiaJSXComponent[],
-    metadata: ElementInstanceMetadataMap,
-    imports: Imports,
-  ): boolean {
+  isEmotionOrStyledComponent(path: TemplatePath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByTemplatePath(metadata, path)
     return element?.isEmotionOrStyledComponent ?? false
   },
