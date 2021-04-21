@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as fastDeepEquals from 'fast-deep-equal'
 import { useContextSelector } from 'use-context-selector'
 import { Scene, SceneProps } from 'utopia-api'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
@@ -27,4 +28,35 @@ export const SceneComponent = betterReactMemo(
       </Scene>
     )
   },
+  (
+    prevProps: React.PropsWithChildren<SceneProps>,
+    nextProps: React.PropsWithChildren<SceneProps>,
+  ) => {
+    // Compare child types (to see if a child was actually changed), and compare style
+    const prevChildren = React.Children.toArray(prevProps.children)
+    const nextChildren = React.Children.toArray(nextProps.children)
+
+    const childrenMatch =
+      prevChildren.length === nextChildren.length &&
+      prevChildren.every((child, index) => childUnchanged(child, nextChildren[index]))
+
+    return (
+      childrenMatch &&
+      fastDeepEquals(prevProps.style, nextProps.style) &&
+      fastDeepEquals(prevProps['data-label'], nextProps['data-label'])
+    )
+  },
 )
+
+type ReactChild = Exclude<React.ReactNode, boolean | null | undefined>
+
+function childUnchanged(prevChild: ReactChild, nextChild: ReactChild): boolean {
+  if (typeof prevChild === 'string' || typeof prevChild === 'number') {
+    return nextChild === prevChild
+  } else if (React.isValidElement(prevChild)) {
+    return React.isValidElement(nextChild) && prevChild.type === nextChild.type
+  } else {
+    // FIXME Fragments are all that is left
+    return false
+  }
+}

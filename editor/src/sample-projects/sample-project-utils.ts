@@ -6,6 +6,7 @@ import {
   StoryboardFilePath,
 } from '../components/editor/store/editor-state'
 import {
+  appJSFile,
   getDefaultUIJsFile,
   getSamplePreviewFile,
   getSamplePreviewHTMLFile,
@@ -36,6 +37,7 @@ export function simpleDefaultProject(): PersistentModel {
       0,
     ),
     '/src': directory(),
+    '/src/app.js': appJSFile(),
     [StoryboardFilePath]: getDefaultUIJsFile(),
     '/assets': directory(),
     '/public': directory(),

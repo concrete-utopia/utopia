@@ -4,6 +4,7 @@ import { getUtopiaID } from '../../../core/model/element-template-utils'
 import { isSceneElementIgnoringImports } from '../../../core/model/scene-utils'
 import {
   UTOPIA_PATHS_KEY,
+  UTOPIA_SCENE_ID_KEY,
   UTOPIA_SCENE_PATH,
   UTOPIA_UIDS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
@@ -296,15 +297,24 @@ function renderJSXElement(
     !elementIsScene && elementFromScopeOrImport == null && isIntrinsicElement(jsx.name)
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
+
   const scenePathForElement = optionalMap(TP.scenePathForElementAtInstancePath, templatePath)
+
   const elementPropsWithScenePath =
     isComponentRendererComponent(FinalElement) && scenePathForElement != null
       ? { ...elementProps, [UTOPIA_SCENE_PATH]: scenePathForElement }
       : elementProps
+
+  const elementPropsWithSceneID =
+    elementIsScene && scenePathForElement != null
+      ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: TP.toString(scenePathForElement) }
+      : elementPropsWithScenePath
+
   const finalProps =
     elementIsIntrinsic && !elementIsBaseHTML
-      ? filterDataProps(elementPropsWithScenePath)
-      : elementPropsWithScenePath
+      ? filterDataProps(elementPropsWithSceneID)
+      : elementPropsWithSceneID
+
   const finalPropsIcludingTemplatePath = {
     ...finalProps,
     [UTOPIA_PATHS_KEY]: optionalMap(TP.toString, templatePath),

@@ -27,6 +27,12 @@ describe('getDirectReverseDependencies', () => {
       simpleDefaultProject().projectContents,
       SampleNodeModules,
     )
-    expect(actualResult).toMatchInlineSnapshot(`Object {}`)
+    expect(actualResult).toMatchInlineSnapshot(`
+      Object {
+        "/src/app.js": Array [
+          "/utopia/storyboard.js",
+        ],
+      }
+    `)
   })
 })

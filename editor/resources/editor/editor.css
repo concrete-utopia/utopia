@@ -1,5 +1,3 @@
-/* actual editor */
-
 ::-webkit-scrollbar {
   display: none;
 }
@@ -7,186 +5,44 @@
 body {
   margin: 0;
   background-color: transparent;
-}
-
-#nodegraph-and-canvas-container {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  flex: 1;
-  width: 100%;
-}
-
-.input-props-editor {
-  height: 33%;
-}
-
-.zoom-panel {
-  padding: 2px 10px 2px 0px;
-  margin-left: auto;
-  display: flex;
-  flex-direction: row;
-  color: white;
-  align-self: center;
-}
-
-.zoom-out-btn,
-.zoom-in-btn {
-  padding: 2px 4px;
-}
-
-.canvas-zoom {
-  padding: 0px 4px 3px 4px;
-  text-align: center;
-}
-
-@keyframes bounceup {
-  10% {
-    transform: translateY(0px);
-  }
-  90% {
-    transform: translateY(0px);
-  }
-  100% {
-    transform: translateY(600px);
-  }
-}
-
-@keyframes flipin {
-  0% {
-    transform: rotateX(90deg);
-  }
-  10% {
-    transform: rotateX(0deg);
-  }
-  90% {
-    transform: rotateX(0deg);
-  }
-  100% {
-    transform: rotateX(90deg);
-  }
-}
-/* todo put this near the contexify CSS after figuring out where _that_ lives */
-
-.node-graph {
-  overflow: hidden;
-  display: flex;
-  height: 200px;
-}
-
-.cm-s-utopia-light {
-  height: 600px;
-}
-
-.script-code-editor-top {
-  display: flex;
-  flex-direction: row;
-}
-
-.code-editor {
-  display: flex;
-  flex-direction: column;
-}
-
-.canvas-hidden {
-  width: 0px !important;
-  flex: 0 !important;
-}
-
-.script-editor-button {
-  margin-right: 0;
-  margin-left: auto;
-}
-
-.utopia-list {
-  position: relative;
-  width: 200px;
-  height: 190px;
-  overflow-y: scroll;
-}
-
-.utopia-list-item {
-  font-size: 14px;
-  height: 33px;
-}
-
-.utopia-list-item.utopia-focused {
-  color: white;
-  background-color: #007aff;
-}
-
-.utopia-list-item-subtitle {
-  color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-dialog-wrapper {
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  position: absolute;
-  background-color: rgba(0, 0, 0, 0.4);
-}
-
-.modal-dialog-click-catcher {
-  width: 100%;
-  height: 100%;
-}
-
-.publish-dialog {
-  box-shadow: 0px 0px 40px 10px rgba(0, 0, 0, 0.1);
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 500px;
-  margin-left: -250px;
-  margin-top: -350px;
-}
-
-.publish-dialog-title {
-  letter-spacing: 0.4px;
-  color: #0f91e4;
-}
-
-.publish-dialog-publish-btn {
-  background-image: linear-gradient(0deg, #1b91e4 0%, #49b8fc 100%);
-}
-
-.publish-dialog-private-btn {
-  background-image: linear-gradient(-33deg, #dba95b 0%, #ffd558 100%);
-  box-shadow: 0 4px 11px 0 rgba(255, 201, 20, 0.28);
-}
-
-.publish-dialog-rn-btn {
-  background-image: linear-gradient(0deg, #1b91e4 0%, #49b8fc 100%);
-}
-
-.publish-dialog-codepen-btn {
-  background-image: linear-gradient(-33deg, #dba95b 0%, #ffd558 100%);
-  box-shadow: 0 4px 11px 0 rgba(255, 201, 20, 0.28);
-}
-
-.publish-dialog-own-repo-btn {
-  border: 1px solid #ffc914;
-  color: #ffc914;
-}
-
-.publish-dialog-console {
-  color: white;
-  font-family: akkurat, akkurat-mono, monospace;
+  font-family: 'utopian-inter';
+  font-size: 11px;
+  letter-spacing: 0.2px;
   line-height: 17px;
-  user-select: all;
-  max-height: 100px;
-  overflow-y: scroll;
 }
 
-.examples-dialog {
-  width: 100%;
-  height: 100%;
+a {
+  color: '#007AFF';
 }
 
-.examples-image {
-  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12);
-  border-radius: 2px;
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-Regular.woff') format('woff');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-Medium.woff') format('woff');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-MediumItalic.woff') format('woff');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-SemiBold.woff') format('woff');
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('./fonts/Inter-SemiBoldItalic.woff') format('woff');
+  font-weight: 600;
+  font-style: italic;
 }

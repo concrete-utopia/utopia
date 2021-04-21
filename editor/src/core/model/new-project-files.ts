@@ -7,6 +7,26 @@ import {
 } from '../shared/project-file-types'
 import { lintAndParse } from '../workers/parser-printer/parser-printer'
 
+export const sampleAppJSCode = `/** @jsx jsx */
+import * as React from 'react'
+import { jsx } from 'utopia-api'
+export var App = (props) => {
+  return (
+    <div
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}
+    />
+  )
+}`
+
+export function appJSFile(): TextFile {
+  const result = lintAndParse('/src/app.js', sampleAppJSCode, null)
+  return textFile(
+    textFileContents(sampleAppJSCode, result, RevisionsState.BothMatch),
+    null,
+    Date.now(),
+  )
+}
+
 export function getDefaultUIJsFile(): TextFile {
   const result = lintAndParse('code.tsx', sampleCode, null)
   return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, Date.now())
@@ -15,13 +35,7 @@ export function getDefaultUIJsFile(): TextFile {
 export const sampleCode = `/** @jsx jsx */
 import * as React from 'react'
 import { Scene, Storyboard, jsx } from 'utopia-api'
-export var App = (props) => {
-  return (
-    <div
-      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}
-    />
-  )
-}
+import { App } from '/src/app.js'
 export var storyboard = (
   <Storyboard>
     <Scene
