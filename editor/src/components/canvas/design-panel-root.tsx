@@ -308,7 +308,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
           style={{
             position: 'absolute',
             top: TopMenuHeight,
-            height: 'calc(100% - 30px)',
+            height: `calc(100% - ${TopMenuHeight}px)`,
             left: getNavigatorLeft,
             width: LeftPaneDefaultWidth,
           }}
