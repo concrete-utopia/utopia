@@ -1567,6 +1567,15 @@ export const MetadataUtils = {
       MetadataUtils.isFocusableComponent(path, components, metadata, imports)
     )
   },
+  isEmotionOrStyledComponent(
+    path: TemplatePath,
+    components: UtopiaJSXComponent[],
+    metadata: ElementInstanceMetadataMap,
+    imports: Imports,
+  ): boolean {
+    const element = MetadataUtils.findElementByTemplatePath(metadata, path)
+    return element?.isEmotionOrStyledComponent ?? false
+  },
 }
 
 export function findElementAtPath(
