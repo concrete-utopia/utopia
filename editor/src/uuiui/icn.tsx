@@ -14,6 +14,7 @@ export type IcnColor =
   | 'purple'
   | 'red'
   | 'orange'
+  | 'colourful'
 
 export interface IcnPropsBase {
   category?: string
