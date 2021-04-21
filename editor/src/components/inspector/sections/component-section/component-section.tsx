@@ -36,6 +36,8 @@ import {
   Icn,
   PopupList,
   FunctionIcons,
+  Icons,
+  LargerIcons,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -73,8 +75,8 @@ import {
   ControlForStringProp,
 } from './property-control-controls'
 import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
-import { Atest, InlineButton } from '../../../documentation/documentation-components'
 import * as TP from '../../../../core/shared/template-path'
+import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -604,13 +606,13 @@ export const ComponentSectionInner = betterReactMemo(
 
               <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
                 <span>
-                  <img src='/editor/icons/light/special/npm-colourful-28x11@2x.png' width={28} />
+                  <LargerIcons.NpmLogo />
                 </span>
                 <p>
-                  {/* This <Atest href=''>Styled Component</Atest> is imported from{' '}
-                  <Atest href='@jedwatson/react-select'>
+                  This <InlineLink href=''>Styled Component</InlineLink> is imported from{' '}
+                  <InlineLink href='@jedwatson/react-select'>
                     @microsoft/microsoft-fabric-experimental
-                  </Atest>{' '} */}
+                  </InlineLink>{' '}
                   via NPM.
                 </p>
               </UIGridRow>
@@ -623,8 +625,8 @@ export const ComponentSectionInner = betterReactMemo(
                 />
                 <p>
                   This component instance is imported from{''}
-                  {/* <Atest href=''>{locationOfComponentInstance}</Atest>{' '}
-                  <InlineButton >Edit it.</InlineButton> */}
+                  <InlineLink href=''>{locationOfComponentInstance}</InlineLink>{' '}
+                  <InlineButton>Edit it.</InlineButton>
                 </p>
               </UIGridRow>
 
@@ -636,8 +638,9 @@ export const ComponentSectionInner = betterReactMemo(
                   onToggle={onToggleValue}
                 />
                 <p>
-                  {/* This component is imported from <Atest href=''>'/src/components/button'</Atest>
-                  <InlineButton>Back</InlineButton> */}
+                  This component is imported from{' '}
+                  <InlineLink href=''>'/src/components/button'</InlineLink>
+                  <InlineButton>Back</InlineButton>
                 </p>
               </UIGridRow>
               <InfoBox message={'No properties available to configure.'} />
