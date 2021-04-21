@@ -16,7 +16,7 @@ import {
   getMissingPropertyControlsWarning,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
-import { foldEither } from '../../../../core/shared/either'
+import { eitherToMaybe, foldEither } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -77,6 +77,12 @@ import {
 import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
 import * as TP from '../../../../core/shared/template-path'
 import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { getJSXElementNameAsString, isJSXElement } from '../../../../core/shared/element-template'
+import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../../../editor/store/editor-state'
+import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
+import { usePackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
+import { importedFromWhere } from '../../../editor/import-utils'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -533,7 +539,61 @@ export const ComponentSectionInner = betterReactMemo(
       dispatch,
       pathAsScenePath,
     ])
-    const locationOfComponentInstance = TP.toString(selectedViews[0])
+
+    const metadata = useEditorState(
+      (state) => state.editor.jsxMetadata,
+      'Component-Section jsxMetaData',
+    )
+    let elementName: string
+    const targetName = TP.instancePathForElementAtPath(target)
+    const element = MetadataUtils.getElementByInstancePathMaybe(metadata, targetName)
+    if (element != null) {
+      const jsxElement = eitherToMaybe(element.element)
+      if (jsxElement != null && isJSXElement(jsxElement)) {
+        elementName = getJSXElementNameAsString(jsxElement.name)
+      }
+    }
+
+    const { editor, derived } = useEditorState((store) => {
+      return {
+        editor: store.editor,
+        derived: store.derived,
+      }
+    }, 'Focusable values')
+
+    const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+      pathAsScenePath,
+      editor,
+      derived,
+    )
+
+    const underlyingTarget = normalisePathToUnderlyingTarget(
+      editor.projectContents,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename ?? '',
+      TP.instancePathForElementAtPath(selectedViews[0]),
+    )
+    const locationOfComponentInstance =
+      underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : ''
+    // you can write isImportedComponent, isEmotionOrStyledComponent -> npm logo or not
+
+    const componentPackageName = importedFromWhere(
+      locationOfComponentInstance,
+      elementName!,
+      components,
+      imports,
+    )
+
+    const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`
+
+    const isFocusable = MetadataUtils.isFocusableComponent(
+      pathAsScenePath,
+      components,
+      metadata,
+      imports,
+    )
+    const isNotFocused = TP.isFocused(pathAsScenePath, target)
+    const isFocused = TP.isFocused(pathAsScenePath, target)
 
     return foldEither(
       (rootParseError) => {
@@ -609,10 +669,8 @@ export const ComponentSectionInner = betterReactMemo(
                   <LargerIcons.NpmLogo />
                 </span>
                 <p>
-                  This <InlineLink href=''>Styled Component</InlineLink> is imported from{' '}
-                  <InlineLink href='@jedwatson/react-select'>
-                    @microsoft/microsoft-fabric-experimental
-                  </InlineLink>{' '}
+                  This ${elementName} is imported from{' '}
+                  <InlineLink href={componentPackageMgrLink}>${componentPackageName}</InlineLink>{' '}
                   via NPM.
                 </p>
               </UIGridRow>
@@ -624,9 +682,13 @@ export const ComponentSectionInner = betterReactMemo(
                   onToggle={onToggleValue}
                 />
                 <p>
-                  This component instance is imported from{''}
-                  <InlineLink href=''>{locationOfComponentInstance}</InlineLink>{' '}
-                  <InlineButton>Edit it.</InlineButton>
+                  This ${elementName} is imported from{''}
+                  <InlineLink>{locationOfComponentInstance}</InlineLink>{' '}
+                  {isFocusable && !!isNotFocused ? (
+                    <InlineButton>Edit it</InlineButton>
+                  ) : isFocusable && isFocused ? (
+                    <InlineButton>Exit Editing</InlineButton>
+                  ) : null}
                 </p>
               </UIGridRow>
 
@@ -638,8 +700,8 @@ export const ComponentSectionInner = betterReactMemo(
                   onToggle={onToggleValue}
                 />
                 <p>
-                  This component is imported from{' '}
-                  <InlineLink href=''>'/src/components/button'</InlineLink>
+                  This ${elementName} is imported from{' '}
+                  <InlineLink>{locationOfComponentInstance}</InlineLink>
                   <InlineButton>Back</InlineButton>
                 </p>
               </UIGridRow>
