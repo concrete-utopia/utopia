@@ -181,9 +181,10 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules([
-      requestedNpmDependency('react-spring', '8.0.27'),
-    ])
+    const fetchNodeModulesResult = await fetchNodeModules(
+      [requestedNpmDependency('react-spring', '8.0.27')],
+      'canvas',
+    )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -209,7 +210,10 @@ describe('ES Dependency Manager — Real-life packages', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules([requestedNpmDependency('antd', '4.2.5')])
+    const fetchNodeModulesResult = await fetchNodeModules(
+      [requestedNpmDependency('antd', '4.2.5')],
+      'canvas',
+    )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -261,9 +265,10 @@ describe('ES Dependency Manager — d.ts', () => {
       },
     )
 
-    const fetchNodeModulesResult = await fetchNodeModules([
-      requestedNpmDependency('react-spring', '8.0.27'),
-    ])
+    const fetchNodeModulesResult = await fetchNodeModules(
+      [requestedNpmDependency('react-spring', '8.0.27')],
+      'canvas',
+    )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -295,9 +300,10 @@ describe('ES Dependency Manager — Downloads extra files as-needed', () => {
         }
       },
     )
-    const fetchNodeModulesResult = await fetchNodeModules([
-      requestedNpmDependency('mypackage', '0.0.1'),
-    ])
+    const fetchNodeModulesResult = await fetchNodeModules(
+      [requestedNpmDependency('mypackage', '0.0.1')],
+      'canvas',
+    )
     if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
       fail(`Expected successful nodeModules fetch`)
     }
@@ -352,7 +358,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then(
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], 'canvas').then(
       (fetchNodeModulesResult) => {
         if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
           fail(`Expected successful nodeModule fetch`)
@@ -373,7 +379,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')]).then(
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], 'canvas').then(
       (fetchNodeModulesResult) => {
         expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
         expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')
@@ -400,7 +406,7 @@ describe('ES Dependency manager - retry behavior', () => {
       },
     )
 
-    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], false).then(
+    fetchNodeModules([requestedNpmDependency('react-spring', '8.0.27')], 'canvas', false).then(
       (fetchNodeModulesResult) => {
         expect(fetchNodeModulesResult.dependenciesWithError).toHaveLength(1)
         expect(fetchNodeModulesResult.dependenciesWithError[0].name).toBe('react-spring')

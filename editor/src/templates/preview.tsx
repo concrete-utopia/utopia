@@ -211,7 +211,7 @@ const initPreview = () => {
       if (fastDeepEquals(lastDependencies, npmDependencies)) {
         nodeModules = { ...cachedDependencies }
       } else {
-        const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, true, 'preview')
+        const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, 'preview', true)
 
         if (fetchNodeModulesResult.dependenciesWithError.length > 0) {
           const errorToThrow = Error(
