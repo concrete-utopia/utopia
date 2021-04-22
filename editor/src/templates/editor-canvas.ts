@@ -799,7 +799,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       const possibleElement = MetadataUtils.findElementByTemplatePath(
         this.props.editor.jsxMetadata,
         target,
-        true,
       )
       if (possibleElement == null) {
         return false

@@ -195,7 +195,6 @@ export class SelectModeControlContainer extends React.Component<
         const currentInstance = MetadataUtils.findElementByTemplatePath(
           this.props.componentMetadata,
           current,
-          true,
         )
         if (currentInstance == null) {
           return frameIntersect
@@ -477,11 +476,7 @@ export class SelectModeControlContainer extends React.Component<
     let repositionOnly = false
     if (this.props.selectedViews.length === 1) {
       const path = this.props.selectedViews[0]
-      const element = MetadataUtils.findElementByTemplatePath(
-        this.props.componentMetadata,
-        path,
-        true,
-      )
+      const element = MetadataUtils.findElementByTemplatePath(this.props.componentMetadata, path)
       repositionOnly =
         element != null && MetadataUtils.isAutoSizingText(this.props.imports, element)
     }

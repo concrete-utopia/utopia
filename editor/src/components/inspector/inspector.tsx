@@ -304,7 +304,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       anyComponentsInner =
         anyComponentsInner ||
         MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
-      const possibleElement = MetadataUtils.findElementByTemplatePath(rootMetadata, view, true)
+      const possibleElement = MetadataUtils.findElementByTemplatePath(rootMetadata, view)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
         // its own compared to the props.
@@ -343,7 +343,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     }
   }, 'Inspector')
   const instancePaths = useKeepReferenceEqualityIfPossible(
-    selectedViews.map((p) => TP.instancePathForElementAtPath(p, true)),
+    selectedViews.map(TP.instancePathForElementAtPath),
   )
 
   const onFocus = React.useCallback(
@@ -590,7 +590,10 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
       let elements: Array<ElementPathElement> = []
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-        const component = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+        const component = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
+          jsxMetadata,
+          path,
+        )
         if (component != null) {
           elements.push({
             name: MetadataUtils.getElementLabel(path, jsxMetadata),
@@ -734,7 +737,7 @@ export const InspectorContextProvider = betterReactMemo<{
   let newAttributeMetadatas: Array<StyleAttributeMetadata> = []
 
   Utils.fastForEach(selectedViews, (path) => {
-    const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path, true)
+    const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
     if (elementMetadata != null) {
       if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
         /**

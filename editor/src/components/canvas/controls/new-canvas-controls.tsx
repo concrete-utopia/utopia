@@ -285,7 +285,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       const possibleMetadata = MetadataUtils.findElementByTemplatePath(
         componentMetadata,
         selectedView,
-        true,
       )
       return possibleMetadata == null
     })
@@ -302,11 +301,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const renderModeControlContainer = () => {
     const elementAspectRatioLocked = localSelectedViews.every((target) => {
-      const possibleElement = MetadataUtils.findElementByTemplatePath(
-        componentMetadata,
-        target,
-        true,
-      )
+      const possibleElement = MetadataUtils.findElementByTemplatePath(componentMetadata, target)
       if (possibleElement == null) {
         return false
       } else {

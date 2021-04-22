@@ -159,11 +159,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     }
 
     const keyPrefix = TP.toComponentId(selectedView)
-    const instance = MetadataUtils.findElementByTemplatePath(
-      props.componentMetadata,
-      selectedView,
-      true,
-    )
+    const instance = MetadataUtils.findElementByTemplatePath(props.componentMetadata, selectedView)
     const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
     const selectionColor = selectionColors[index]
 
