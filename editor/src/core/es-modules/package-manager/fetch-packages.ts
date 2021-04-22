@@ -196,8 +196,9 @@ function failError(dependency: RequestedNpmDependency): DependencyFetchError {
 export async function fetchNodeModules(
   newDeps: Array<RequestedNpmDependency>,
   shouldRetry: boolean = true,
+  isPreview: boolean = false,
 ): Promise<NodeFetchResult> {
-  const dependenciesToDownload = newDeps.filter((d) => !isBuiltInDependency(d.name))
+  const dependenciesToDownload = newDeps.filter((d) => !isBuiltInDependency(d.name, isPreview))
   const nodeModulesArr = await Promise.all(
     dependenciesToDownload.map(
       async (newDep): Promise<Either<DependencyFetchError, NodeModules>> => {
