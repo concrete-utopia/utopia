@@ -1560,6 +1560,7 @@ function forciblyUpdateDataUID(
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<JSXAttributes> {
   const hash = Hash({
+    fileName: sourceFile.fileName,
     name: name,
     props: clearAttributesSourceMaps(clearAttributesUniqueIDs(props)),
   })
