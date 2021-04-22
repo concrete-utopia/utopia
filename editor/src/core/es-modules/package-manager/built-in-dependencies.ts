@@ -42,27 +42,23 @@ function builtInDependency(
 
 // Prevent ReactDOM.render from running in the canvas/editor because it's
 // entirely likely to cause either havoc or just break.
-export const SafeReactDOM = (isPreview: boolean) => {
-  if (isPreview) {
-    return ReactDOM
-  } else {
+export const SafeReactDOM = (mode: 'preview' | 'canvas') => {
+  if (mode === 'canvas') {
     return {
       ...ReactDOM,
       render: NO_OP,
     }
+  } else {
+    return ReactDOM
   }
 }
 
-const BuiltInDependencies = (isPreview: boolean): Array<BuiltInDependency> => [
+const BuiltInDependencies = (mode: 'preview' | 'canvas'): Array<BuiltInDependency> => [
   builtInDependency('utopia-api', UtopiaAPI, utopiaAPIPackageJSON.version),
   builtInDependency('uuiui', UUIUI, editorPackageJSON.version),
   builtInDependency('uuiui-deps', UUIUIDeps, editorPackageJSON.version),
   builtInDependency('react', React, editorPackageJSON.dependencies.react),
-  builtInDependency(
-    'react-dom',
-    SafeReactDOM(isPreview),
-    editorPackageJSON.dependencies['react-dom'],
-  ),
+  builtInDependency('react-dom', SafeReactDOM(mode), editorPackageJSON.dependencies['react-dom']),
   builtInDependency(
     '@emotion/react',
     EmotionReact,
@@ -80,21 +76,27 @@ const BuiltInDependencies = (isPreview: boolean): Array<BuiltInDependency> => [
   ),
 ]
 
-function findBuiltInForName(moduleName: string, isPreview: boolean): BuiltInDependency | undefined {
-  return BuiltInDependencies(isPreview).find((builtIn) => builtIn.moduleName === moduleName)
+function findBuiltInForName(
+  moduleName: string,
+  mode: 'preview' | 'canvas',
+): BuiltInDependency | undefined {
+  return BuiltInDependencies(mode).find((builtIn) => builtIn.moduleName === moduleName)
 }
 
-export function isBuiltInDependency(moduleName: string, isPreview: boolean): boolean {
-  return findBuiltInForName(moduleName, isPreview) != null
+export function isBuiltInDependency(moduleName: string, mode: 'preview' | 'canvas'): boolean {
+  return findBuiltInForName(moduleName, mode) != null
 }
 
-export function resolveBuiltInDependency(moduleName: string, isPreview: boolean): any | undefined {
-  return findBuiltInForName(moduleName, isPreview)?.nodeModule
+export function resolveBuiltInDependency(
+  moduleName: string,
+  mode: 'preview' | 'canvas',
+): any | undefined {
+  return findBuiltInForName(moduleName, mode)?.nodeModule
 }
 
 export function versionForBuiltInDependency(
   moduleName: string,
-  isPreview: boolean,
+  mode: 'preview' | 'canvas',
 ): string | undefined {
-  return findBuiltInForName(moduleName, isPreview)?.version
+  return findBuiltInForName(moduleName, mode)?.version
 }

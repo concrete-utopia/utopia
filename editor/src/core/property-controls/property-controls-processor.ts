@@ -75,7 +75,7 @@ export const initPropertyControlsProcessor = (
       projectContents,
       currentNodeModules,
       evaluationCache,
-      false,
+      'canvas',
     )
 
     const exportValues = getExportValuesFromAllModules(bundledProjectFiles, requireFn)
