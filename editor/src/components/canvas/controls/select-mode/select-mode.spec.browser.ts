@@ -206,7 +206,7 @@ describe('Select Mode Advanced Cases', () => {
     await waitForAnimationFrame()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-      TP.fromString('sb/scene-2/Card-instance:Card-Root/d63/Card-Button-3'),
+      TP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
     ])
   })
 
@@ -259,7 +259,7 @@ describe('Select Mode Advanced Cases', () => {
     await doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-      TP.fromString('sb/scene-2/Card-instance:Card-Root/d63/Card-Button-3'),
+      TP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
     ])
   })
 
@@ -331,7 +331,7 @@ describe('Select Mode Advanced Cases', () => {
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
       TP.fromString(
-        'sb/scene-CardList/CardList-instance:CardList-Root/CardList-Col/CardList-Card~~~1:Card-Root/d63/Card-Button-3',
+        'sb/scene-CardList/CardList-instance:CardList-Root/CardList-Col/CardList-Card~~~1:Card-Root/Card-Row-Buttons/Card-Button-3',
       ),
     ])
   })
@@ -454,7 +454,7 @@ export const Card = (props) => (
       />
       <LabelRow data-uid="Card-LabelRow" />
     </Row>
-    <Row style={{ minHeight: 40, gap: 12 }} data-uid="Card-Row">
+    <Row style={{ minHeight: 40, gap: 12 }} data-uid="Card-Row-Buttons">
       <Button data-uid="Card-Button-1">Hello</Button>
       <Button data-uid="Card-Button-2">Button</Button>
       <Button data-uid="Card-Button-3">Button</Button>
