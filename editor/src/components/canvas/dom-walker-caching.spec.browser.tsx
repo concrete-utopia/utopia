@@ -52,7 +52,7 @@ describe('Dom-walker Caching', () => {
     expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TP.fromString(':storyboard-entity')])
   })
 
-  it('resizing an element invalidates the cache', async () => {
+  it('resizing an out-of-file element invalidates the cache', async () => {
     const renderResult = await prepareTestProject()
 
     renderResult.clearRecordedActions()
@@ -64,11 +64,43 @@ describe('Dom-walker Caching', () => {
 
     await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
 
+    // TODO FIXME this is BAD. we dispatch a second non-action, because the dom-walker is apparently one step behind the canvas
+    await renderResult.dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 0, y: 0 }))], true)
+
     const saveDomReportActions = renderResult
       .getRecordedActions()
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
-    expect(saveDomReportActions.length).toBe(1)
-    expect(saveDomReportActions[0].cachedTreeRoots).not.toEqual([])
+    expect(saveDomReportActions.length).toBe(2)
+    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[1].cachedTreeRoots).toEqual([
+      TP.fromString('storyboard-entity/scene-2-entity'),
+    ]) // This is correct, the SameFileApp scene is still cached
+  })
+
+  it('resizing an in-file element invalidates the cache', async () => {
+    const renderResult = await prepareTestProject()
+
+    renderResult.clearRecordedActions()
+
+    const pinChange = pinFrameChange(
+      TP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
+    )
+
+    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
+
+    // TODO FIXME this is BAD. we dispatch a second non-action, because the dom-walker is apparently one step behind the canvas
+    await renderResult.dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 0, y: 0 }))], true)
+
+    const saveDomReportActions = renderResult
+      .getRecordedActions()
+      .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
+
+    expect(saveDomReportActions.length).toBe(2)
+    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[1].cachedTreeRoots).toEqual([
+      TP.fromString('storyboard-entity/scene-1-entity'),
+    ]) // This is correct, the Imported App scene is still cached
   })
 })
