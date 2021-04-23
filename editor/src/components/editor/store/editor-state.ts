@@ -40,8 +40,6 @@ import {
   ProjectContents,
   ProjectFile,
   RevisionsState,
-  SceneMetadata,
-  ScenePath,
   StaticInstancePath,
   TemplatePath,
   TextFile,
@@ -120,10 +118,8 @@ import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../ac
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
 import {
-  createSceneTemplatePath,
   isSceneElementIgnoringImports,
   BakedInStoryboardVariableName,
-  EmptyScenePathForStoryboard,
   isDynamicSceneChildWidthHeightPercentage,
   getStoryboardTemplatePath,
 } from '../../../core/model/scene-utils'
@@ -810,19 +806,6 @@ function modifyOpenScenes_INTERNAL(
   return modifyOpenScenesAndJSXElements((componentsIncludingScenes) => {
     return transform(componentsIncludingScenes)
   }, model)
-}
-
-export function modifyOpenSceneAtPath(
-  path: ScenePath,
-  transform: (scene: JSXElement) => JSXElement,
-  model: EditorState,
-): EditorState {
-  return modifyUnderlyingTarget(
-    path,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
-    model,
-    transform,
-  )
 }
 
 export function getNumberOfScenes(model: EditorState): number {

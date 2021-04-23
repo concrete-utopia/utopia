@@ -23,8 +23,6 @@ import { CanvasPoint, CanvasRectangle } from '../core/shared/math-utils'
 import json5 = require('json5')
 import { fastForEach } from '../core/shared/utils'
 import urljoin = require('url-join')
-import { findJSXElementChildAtPath } from '../core/model/element-template-utils'
-import { createSceneTemplatePath } from '../core/model/scene-utils'
 // tslint:disable-next-line:no-var-requires
 const ClipboardPolyfill = require('clipboard-polyfill') // stupid .d.ts is malformatted
 

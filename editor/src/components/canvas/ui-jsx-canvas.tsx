@@ -15,7 +15,6 @@ import { getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
   Imports,
   InstancePath,
-  ScenePath,
   TemplatePath,
   isParseSuccess,
   StaticInstancePath,

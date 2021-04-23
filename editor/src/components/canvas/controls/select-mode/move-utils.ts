@@ -68,39 +68,10 @@ export function determineElementsToOperateOnForDragging(
         }, selectedViews),
       ),
       componentMetadata,
-    ).map((view) => {
-      const parentPath = TP.parentPath(view)
-      if (parentPath != null && TP.isScenePath(parentPath)) {
-        const scene = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
-          componentMetadata,
-          parentPath,
-        )
-        if (MetadataUtils.isSceneTreatedAsGroup(scene)) {
-          return parentPath
-        } else {
-          return view
-        }
-      } else {
-        return view
-      }
-    })
+    )
   } else {
     // Resizing.
-    return flatMapArray<TemplatePath, TemplatePath>((view) => {
-      if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
-          componentMetadata,
-          view,
-        )
-        if (scene != null && MetadataUtils.isSceneTreatedAsGroup(scene)) {
-          return scene.rootElements
-        } else {
-          return [view]
-        }
-      } else {
-        return [view]
-      }
-    }, extendSelectedViewsForInteraction(selectedViews, componentMetadata))
+    return extendSelectedViewsForInteraction(selectedViews, componentMetadata)
   }
 }
 

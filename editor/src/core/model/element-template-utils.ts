@@ -28,7 +28,6 @@ import {
   InstancePath,
   isParseSuccess,
   isTextFile,
-  ScenePath,
   StaticElementPath,
   StaticInstancePath,
   StaticTemplatePath,

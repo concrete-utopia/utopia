@@ -61,6 +61,7 @@ import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
   InstancePath1ForTestUiJsFile,
+  InstancePathForTestUiJsFile,
 } from '../../../core/model/test-ui-js-file.test-utils'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
@@ -234,7 +235,7 @@ describe('action RENAME_COMPONENT', () => {
     )
   }
 
-  it('renames an existing scene', () => checkRename(ScenePathForTestUiJsFile, 'Test'))
+  it('renames an existing scene', () => checkRename(InstancePathForTestUiJsFile, 'Test'))
   it('renames an existing element', () =>
     checkRename(TP.instancePath(ScenePathForTestUiJsFile, ['aaa']), 'View'))
 })

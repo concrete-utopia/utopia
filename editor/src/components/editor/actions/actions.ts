@@ -410,8 +410,6 @@ import {
   modifyOpenJSXElements,
   modifyOpenJSXElementsAndMetadata,
   modifyOpenParseSuccess,
-  modifyOpenSceneAtPath,
-  modifyOpenScenesAndJSXElements,
   modifyParseSuccessWithSimple,
   OriginalFrame,
   ParseSuccessAndEditorChanges,
@@ -435,16 +433,7 @@ import {
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
 import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
-import {
-  PathForSceneDataLabel,
-  createSceneTemplatePath,
-  PathForSceneComponent,
-  PathForSceneProps,
-  fishOutUtopiaCanvasFromTopLevelElements,
-  createSceneFromComponent,
-  BakedInStoryboardVariableName,
-  getStoryboardTemplatePath,
-} from '../../../core/model/scene-utils'
+import { PathForSceneDataLabel, getStoryboardTemplatePath } from '../../../core/model/scene-utils'
 import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 
@@ -1785,7 +1774,8 @@ export const UPDATE_FNS = {
     }, editor)
   },
   RENAME_COMPONENT: (action: RenameComponent, editor: EditorModel): EditorModel => {
-    const { target, name } = action
+    const { name } = action
+    const target = TP.instancePathForElementAtPath(action.target)
     let propsTransform: (props: JSXAttributes) => Either<string, JSXAttributes>
     if (name == null) {
       propsTransform = (props) => unsetJSXValueAtPath(props, PathForSceneDataLabel)
@@ -1793,43 +1783,23 @@ export const UPDATE_FNS = {
       propsTransform = (props) =>
         setJSXValueAtPath(props, PathForSceneDataLabel, jsxAttributeValue(name, emptyComments))
     }
-    if (TP.isScenePath(target)) {
-      return modifyOpenSceneAtPath(
-        target,
-        (scene): JSXElement => {
-          const updatedSceneProps = propsTransform(scene.props)
-          return foldEither(
-            () => scene,
-            (sceneProps) => {
-              return {
-                ...scene,
-                props: sceneProps,
-              }
-            },
-            updatedSceneProps,
-          )
-        },
-        editor,
-      )
-    } else {
-      return modifyOpenJsxElementAtPath(
-        target,
-        (element) => {
-          const updatedElementProps = propsTransform(element.props)
-          return foldEither(
-            () => element,
-            (elementProps) => {
-              return {
-                ...element,
-                props: elementProps,
-              }
-            },
-            updatedElementProps,
-          )
-        },
-        editor,
-      )
-    }
+    return modifyOpenJsxElementAtPath(
+      target,
+      (element) => {
+        const updatedElementProps = propsTransform(element.props)
+        return foldEither(
+          () => element,
+          (elementProps) => {
+            return {
+              ...element,
+              props: elementProps,
+            }
+          },
+          updatedElementProps,
+        )
+      },
+      editor,
+    )
   },
   INSERT_SCENE: (action: InsertScene, editor: EditorModel): EditorModel => {
     const numberOfScenes = getNumberOfScenes(editor)
@@ -3854,30 +3824,13 @@ export const UPDATE_FNS = {
   RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
     const openFilePath = getOpenUIJSFileKey(editor)
     if (openFilePath != null) {
-      const propertyControls = getPropertyControlsForTargetFromEditor(action.target, editor)
-      let elementName
-      if (TP.isScenePath(action.target)) {
-        const element = findJSXElementChildAtPath(
-          getOpenUtopiaJSXComponentsFromState(editor),
-          createSceneTemplatePath(action.target),
-        )
-        if (element != null && isJSXElement(element)) {
-          elementName = foldEither(
-            (l) => null,
-            (r) => (r != null && r.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' ? r.javascript : null),
-            getModifiableJSXAttributeAtPath(element.props, PathForSceneComponent),
-          )
-        }
-      } else {
-        const element = findJSXElementAtPath(
-          action.target,
-          getOpenUtopiaJSXComponentsFromState(editor),
-        )
-        if (element != null) {
-          elementName = getJSXElementNameAsString(element.name)
-        }
-      }
-      if (elementName == null) {
+      const target = TP.instancePathForElementAtPath(action.target)
+      const propertyControls = getPropertyControlsForTargetFromEditor(target, editor)
+      const element = findJSXElementAtPath(
+        action.target,
+        getOpenUtopiaJSXComponentsFromState(editor),
+      )
+      if (element == null) {
         return editor
       }
       let defaultProps: { [key: string]: any } = {}
@@ -3890,19 +3843,10 @@ export const UPDATE_FNS = {
         })
       }
 
-      let pathToUpdate: PropertyPath | null
-      if (TP.isScenePath(action.target)) {
-        pathToUpdate =
-          action.path == null ? PathForSceneProps : PP.append(PathForSceneProps, action.path)
-      } else {
-        pathToUpdate = action.path
-      }
+      const pathToUpdate: PropertyPath | null = action.path
 
       const propsForPath =
         action.path == null ? defaultProps : defaultProps[PP.toString(action.path)]
-      const target = TP.isScenePath(action.target)
-        ? createSceneTemplatePath(action.target)
-        : action.target
 
       if (pathToUpdate == null) {
         return setPropertyOnTarget(editor, target, (props) => {

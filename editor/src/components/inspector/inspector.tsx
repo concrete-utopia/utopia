@@ -7,9 +7,7 @@ import {
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
 import { isHTMLComponent } from '../../core/model/project-file-utils'
-import { createSceneTemplatePath } from '../../core/model/scene-utils'
 import { forEachRight, isRight, right } from '../../core/shared/either'
 import {
   isJSXAttributeOtherJavaScript,
