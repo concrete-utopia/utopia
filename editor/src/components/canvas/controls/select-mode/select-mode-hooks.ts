@@ -122,7 +122,7 @@ export function getSelectableViews(
   if (allElementsDirectlySelectable) {
     candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
   } else {
-    const scenes = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(componentMetadata)
+    const scenes = MetadataUtils.getAllStoryboardChildrenPaths(componentMetadata)
     let rootElementsToFilter: TemplatePath[] = []
     let dynamicScenesWithFragmentRootViews: TemplatePath[] = []
     Utils.fastForEach(scenes, (path) => {

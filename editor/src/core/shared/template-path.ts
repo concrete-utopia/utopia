@@ -398,7 +398,18 @@ export function fromString(path: string): TemplatePath {
   }
 }
 
-function allElementPaths(path: ElementPath): Array<ElementPath> {
+function allElementPaths(fullPath: ElementPath[]): Array<ElementPath[]> {
+  let paths: Array<ElementPath[]> = []
+  for (var index = 1; index < fullPath.length; index++) {
+    const prefix: ElementPath[] = fullPath.slice(0, index)
+    const suffixes = allElementPathsForPart(fullPath[index])
+    fastForEach(suffixes, (suffix) => paths.push(prefix.concat(suffix)))
+  }
+
+  return paths
+}
+
+function allElementPathsForPart(path: ElementPath): Array<ElementPath> {
   let paths: Array<ElementPath> = []
   for (var size = 1; size <= path.length; size++) {
     paths.push(path.slice(0, size))
@@ -409,16 +420,16 @@ function allElementPaths(path: ElementPath): Array<ElementPath> {
 function allInstancePaths(path: InstancePath): Array<InstancePath> {
   const { scene } = path
   const toInstancePath = (elementPath: ElementPath) => instancePath(scene, elementPath)
-  return allElementPaths(path.element).map(toInstancePath)
+  return allElementPathsForPart(path.element).map(toInstancePath)
 }
 
 export function allPaths(path: TemplatePath | null): Array<TemplatePath> {
   if (path == null) {
     return []
   } else if (isScenePath(path)) {
-    return [path]
+    throw new Error(`Unexpected Scene Path`)
   } else {
-    return [path.scene, ...allInstancePaths(path)]
+    return [instancePathForElementAtPathDontThrowOnScene(path.scene), ...allInstancePaths(path)]
   }
 }
 

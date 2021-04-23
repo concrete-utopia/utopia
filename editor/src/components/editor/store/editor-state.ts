@@ -1234,23 +1234,6 @@ export function getElementWarnings(
         dynamicSceneChildWidthHeightPercentage: false,
       }
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
-
-      if (MetadataUtils.elementIsOldStyleScene(elementMetadata)) {
-        const sceneWarnings: ElementWarnings = {
-          widthOrHeightZero: widthOrHeightZero,
-          absoluteWithUnpositionedParent: false,
-          dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
-            elementMetadata,
-            rootMetadata,
-          ),
-        }
-        result = addToComplexMap(
-          toString,
-          result,
-          scenePathForElementAtPath(elementMetadata.templatePath),
-          sceneWarnings,
-        )
-      }
     },
   )
   return result

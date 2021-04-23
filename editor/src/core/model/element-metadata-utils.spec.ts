@@ -202,7 +202,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
       height: 100,
     },
   },
-  element: left('Scene'),
+  element: right(jsxTestElement('Scene', [], [])),
   children: [testComponentSceneChildElement.templatePath],
   rootElements: [testComponentRoot1.templatePath],
   componentInstance: false,
@@ -549,12 +549,6 @@ describe('getting the root paths', () => {
       testComponentSceneElement.templatePath,
       testStoryboardChildElement.templatePath,
     ]
-    expect(actualResult).toEqual(expectedResult)
-  })
-
-  it('getAllStoryboardChildrenPathsScenesOnly returns paths of only the scene children of the storyboard', () => {
-    const actualResult = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(testJsxMetadata)
-    const expectedResult: Array<InstancePath> = [testComponentSceneElement.templatePath]
     expect(actualResult).toEqual(expectedResult)
   })
 

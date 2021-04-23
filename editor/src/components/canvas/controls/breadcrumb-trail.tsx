@@ -39,10 +39,7 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
       }
       let elements: Array<ElementPathElement> = []
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-        const component = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
-          jsxMetadata,
-          path,
-        )
+        const component = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
         if (component != null) {
           elements.push({
             name: MetadataUtils.getElementLabel(path, jsxMetadata),
