@@ -58,7 +58,14 @@ import {
 } from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { scenePath, staticScenePath } from '../../core/shared/template-path'
+import {
+  emptyScenePath,
+  instancePath,
+  scenePath,
+  staticElementPath,
+  staticInstancePath,
+  staticScenePath,
+} from '../../core/shared/template-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
@@ -91,8 +98,11 @@ export async function renderTestEditorWithModel(
   renderedDOM: RenderResult
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
+  clearRecordedActions: () => void
+  getRecordedActions: () => ReadonlyArray<EditorAction>
 }> {
   const renderCountBaseline = renderCount
+  let recordedActions: Array<EditorAction> = []
 
   let emptyEditorState = createEditorState(NO_OP)
   const derivedState = deriveState(emptyEditorState, null)
@@ -123,6 +133,7 @@ export async function renderTestEditorWithModel(
     waitForDispatchEntireUpdate = false,
     waitForADomReport = false,
   ) => {
+    recordedActions.push(...actions)
     const result = editorDispatch(asyncTestDispatch, actions, workingEditorState, spyCollector)
     result.entireUpdateFinished.then(() => dispatchFollowUpActionsFinished.resolve())
     workingEditorState = result
@@ -221,6 +232,10 @@ export async function renderTestEditorWithModel(
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
+    clearRecordedActions: () => {
+      recordedActions = []
+    },
+    getRecordedActions: () => recordedActions,
   }
 }
 
@@ -250,6 +265,7 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
 
 export const TestSceneUID = 'scene-aaa'
 export const TestAppUID = 'app-entity'
+export const TestStoryboardPath = instancePath(emptyScenePath, [BakedInStoryboardUID])
 const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
 export const TestScenePath = scenePath(TestSceneElementPaths)
 export const TestStaticScenePath = testStaticScenePath(TestSceneElementPaths)

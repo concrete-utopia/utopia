@@ -1,6 +1,9 @@
 import * as React from 'react'
 import * as R from 'ramda'
 import { sides } from 'utopia-api'
+import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
+const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
+
 import * as TP from '../../core/shared/template-path'
 import {
   DetectedLayoutSystem,
@@ -45,7 +48,7 @@ import {
   UTOPIA_PATHS_KEY,
   UTOPIA_SCENE_ID_KEY,
 } from '../../core/model/utopia-constants'
-import ResizeObserver from 'resize-observer-polyfill'
+
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
