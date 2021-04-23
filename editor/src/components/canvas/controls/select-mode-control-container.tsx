@@ -192,12 +192,7 @@ export class SelectModeControlContainer extends React.Component<
 
     return TP.getAncestors(target).reduce(
       (frameIntersect: CanvasRectangle | null, current: TemplatePath) => {
-        if (TP.isScenePath(current)) {
-          // TODO Scene Implementation - should scenes act like they clip?
-          return frameIntersect
-        }
-
-        const currentInstance = MetadataUtils.getElementByInstancePathMaybe(
+        const currentInstance = MetadataUtils.findElementByTemplatePath(
           this.props.componentMetadata,
           current,
         )
@@ -459,20 +454,7 @@ export class SelectModeControlContainer extends React.Component<
 
   canResizeElements(): boolean {
     return this.props.selectedViews.every((target) => {
-      if (TP.isScenePath(target)) {
-        const scene = MetadataUtils.findElementByTemplatePath(this.props.componentMetadata, target)
-        let rootHasStyleProp = false
-        if (scene != null) {
-          rootHasStyleProp = scene.rootElements.some((rootElement) => {
-            return this.props.elementsThatRespectLayout.some((path) => {
-              return TP.pathsEqual(path, rootElement)
-            })
-          })
-        }
-        return MetadataUtils.isSceneTreatedAsGroup(scene) || rootHasStyleProp
-      } else {
-        return this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, target))
-      }
+      return this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, target))
     })
   }
 
@@ -492,12 +474,9 @@ export class SelectModeControlContainer extends React.Component<
 
     // TODO future span element should be included here
     let repositionOnly = false
-    if (this.props.selectedViews.length === 1 && !TP.isScenePath(this.props.selectedViews[0])) {
+    if (this.props.selectedViews.length === 1) {
       const path = this.props.selectedViews[0]
-      const element = MetadataUtils.getElementByInstancePathMaybe(
-        this.props.componentMetadata,
-        path,
-      )
+      const element = MetadataUtils.findElementByTemplatePath(this.props.componentMetadata, path)
       repositionOnly =
         element != null && MetadataUtils.isAutoSizingText(this.props.imports, element)
     }

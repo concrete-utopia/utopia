@@ -67,7 +67,7 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         projectContents,
         nodeModules,
         forceNotNull('Should be a file path.', currentFilePath),
-        TP.instancePathForElementAtPath(templatePath),
+        TP.instancePathForElementAtPathDontThrowOnScene(templatePath),
       )
       const elementFilePath =
         underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
