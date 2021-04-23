@@ -1,5 +1,7 @@
 import { canvasPoint, canvasRectangle } from '../../core/shared/math-utils'
 import * as TP from '../../core/shared/template-path'
+import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
+import { contentsToTree } from '../assets'
 import { SaveDOMReport } from '../editor/action-types'
 import { setCanvasFrames } from '../editor/actions/action-creators'
 import CanvasActions from './canvas-actions'
@@ -7,23 +9,16 @@ import { pinFrameChange } from './canvas-types'
 import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithProjectContent,
   TestScenePath,
-  TestStoryboardPath,
 } from './ui-jsx.test-utils'
 
 describe('Dom-walker Caching', () => {
   async function prepareTestProject() {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-          layout={{ layoutSystem: 'pinSystem' }}
-          data-uid='bbb'
-        />
-      </View>
-      `),
-    )
+    const projectContents = createComplexDefaultProjectContents()
+    const projectContentsTreeRoot = contentsToTree(projectContents)
+
+    const renderResult = await renderTestEditorWithProjectContent(projectContentsTreeRoot)
     // unfortunately we have to dispatch a non-action to allow the dom-walker to run for a second time.
     // It needs to run for a second time to "settle".
     await renderResult.dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: 0, y: 0 }))], true)
@@ -54,7 +49,7 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(1)
-    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TestStoryboardPath])
+    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TP.fromString(':storyboard-entity')])
   })
 
   it('resizing an element invalidates the cache', async () => {
@@ -63,7 +58,7 @@ describe('Dom-walker Caching', () => {
     renderResult.clearRecordedActions()
 
     const pinChange = pinFrameChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
