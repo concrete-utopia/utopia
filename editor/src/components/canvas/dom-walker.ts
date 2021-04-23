@@ -645,7 +645,7 @@ function walkScene(
 
     if (sceneID != null && scenePath != null && TP.isScenePath(scenePath)) {
       let cachedMetadata: ElementInstanceMetadata | null = null
-      if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
+      if (invalidatedSceneIDsRef.current != null) {
         if (!invalidatedSceneIDsRef.current.has(sceneID)) {
           // we can use the cache, if it exists
           const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
@@ -687,6 +687,7 @@ function walkScene(
         )
         return [...rootMetadata, ...sceneMetadata]
       } else {
+        console.warn('using cache')
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
         Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
