@@ -4,12 +4,7 @@ import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { Either } from '../core/shared/either'
 import { ElementInstanceMetadataMap, isIntrinsicHTMLElement } from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
-import {
-  InstancePath,
-  NodeModules,
-  ScenePath,
-  TemplatePath,
-} from '../core/shared/project-file-types'
+import { InstancePath, NodeModules, TemplatePath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
 import * as TP from '../core/shared/template-path'
 import RU from '../utils/react-utils'
@@ -54,7 +49,6 @@ export interface CanvasData {
   nodeModules: NodeModules
   transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
-  focusedElementPath: ScenePath | null
   hiddenInstances: TemplatePath[]
   scale: number
 }

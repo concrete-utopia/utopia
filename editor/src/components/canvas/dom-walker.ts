@@ -14,7 +14,7 @@ import {
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
 } from '../../core/shared/element-template'
-import { id, TemplatePath, InstancePath, ScenePath } from '../../core/shared/project-file-types'
+import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import { applicative4Either, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
@@ -641,15 +641,15 @@ function walkScene(
     // and that they can only have a single root element
     const sceneIndexAttr = scene.attributes.getNamedItemNS(null, UTOPIA_SCENE_ID_KEY)
     const sceneID = sceneIndexAttr?.value ?? null
-    const scenePath = sceneID == null ? null : TP.fromString(sceneID)
+    const instancePath = sceneID == null ? null : TP.fromString(sceneID)
 
-    if (sceneID != null && scenePath != null && TP.isScenePath(scenePath)) {
+    if (sceneID != null && instancePath != null && TP.isInstancePath(instancePath)) {
       let cachedMetadata: ElementInstanceMetadata | null = null
       if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
         if (!invalidatedSceneIDsRef.current.has(sceneID)) {
           // we can use the cache, if it exists
           const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
-            scenePath,
+            instancePath,
             rootMetadataInStateRef.current,
           )
           if (elementFromCurrentMetadata != null) {
@@ -677,7 +677,7 @@ function walkScene(
 
         const sceneMetadata = collectMetadata(
           scene,
-          [scenePath],
+          [instancePath],
           canvasPoint({ x: 0, y: 0 }),
           rootElements,
           scale,
@@ -690,7 +690,7 @@ function walkScene(
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
         Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
-          if (TP.isDescendantOf(elem.templatePath, scenePath)) {
+          if (TP.isDescendantOf(elem.templatePath, instancePath)) {
             rootMetadataAccumulator.push(elem)
           }
         })

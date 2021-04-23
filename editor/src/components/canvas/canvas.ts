@@ -11,7 +11,6 @@ import {
   TemplatePath,
   importDetails,
   importAlias,
-  ScenePath,
 } from '../../core/shared/project-file-types'
 import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
@@ -87,7 +86,6 @@ const Canvas = {
   ],
   getFramesInCanvasContext(
     metadata: ElementInstanceMetadataMap,
-    focusedElementPath: ScenePath | null,
     useBoundingFrames: boolean,
   ): Array<FrameWithPath> {
     function recurseChildren(
@@ -109,7 +107,6 @@ const Canvas = {
       } = MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponents(
         component.templatePath,
         metadata,
-        focusedElementPath,
       )
       const childFrames = children.map((child) => {
         const recurseResults = recurseChildren(child)
@@ -277,7 +274,6 @@ const Canvas = {
     componentMetadata: ElementInstanceMetadataMap,
     selectedViews: Array<TemplatePath>,
     hiddenInstances: Array<TemplatePath>,
-    focusedElementPath: ScenePath | null,
     canvasPosition: CanvasPoint,
     searchTypes: Array<TargetSearchType>,
     useBoundingFrames: boolean,
@@ -285,11 +281,7 @@ const Canvas = {
   ): Array<{ templatePath: TemplatePath; canBeFilteredOut: boolean }> {
     const looseReparentThreshold = 5
     const targetFilters = Canvas.targetFilter(selectedViews, searchTypes)
-    const framesWithPaths = Canvas.getFramesInCanvasContext(
-      componentMetadata,
-      focusedElementPath,
-      useBoundingFrames,
-    )
+    const framesWithPaths = Canvas.getFramesInCanvasContext(componentMetadata, useBoundingFrames)
     const filteredFrames = framesWithPaths.filter((frameWithPath) => {
       const shouldUseLooseTargeting =
         looseTargetingForZeroSizedElements &&

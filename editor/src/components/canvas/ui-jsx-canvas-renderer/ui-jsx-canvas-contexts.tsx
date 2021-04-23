@@ -1,16 +1,10 @@
 import * as React from 'react'
 import type { MapLike } from 'typescript'
 import { createContext } from 'use-context-selector'
-import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { Either, left } from '../../../core/shared/either'
-import type { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
-import type { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
+import type { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
-import type {
-  TransientFilesState,
-  TransientFileState,
-  UIFileBase64Blobs,
-} from '../../editor/store/editor-state'
+import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
 
 export interface MutableUtopiaContextProps {
   [filePath: string]: {
@@ -39,14 +33,12 @@ interface RerenderUtopiaContextProps {
   hiddenInstances: Array<TemplatePath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
-  focusedElementPath: ScenePath | null
 }
 
 export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
   hiddenInstances: [],
   canvasIsLive: false,
   shouldIncludeCanvasRootInTheSpy: false,
-  focusedElementPath: null,
 })
 RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 

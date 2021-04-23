@@ -18,7 +18,6 @@ import {
   LayoutWrapper,
   ProjectFile,
   PropertyPath,
-  ScenePath,
   StaticElementPath,
   TemplatePath,
   TextFile,
@@ -113,19 +112,6 @@ export interface InsertScene {
   frame: CanvasRectangle
 }
 
-export interface SetSceneProp {
-  action: 'SET_SCENE_PROP'
-  scenePath: ScenePath
-  propertyPath: PropertyPath
-  value: JSXAttribute
-}
-
-export interface UnsetSceneProp {
-  action: 'UNSET_SCENE_PROP'
-  scenePath: ScenePath
-  propertyPath: PropertyPath
-}
-
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
@@ -140,11 +126,6 @@ export type DeleteSelected = {
 export type DeleteView = {
   action: 'DELETE_VIEW'
   target: TemplatePath
-}
-
-export type DeleteViews = {
-  action: 'DELETE_VIEWS'
-  targets: Array<TemplatePath>
 }
 
 export type SelectComponents = {
@@ -806,7 +787,7 @@ export interface SendCodeEditorInitialisation {
 
 export interface SetFocusedElement {
   action: 'SET_FOCUSED_ELEMENT'
-  focusedElementPath: ScenePath | null
+  focusedElementPath: TemplatePath | null
 }
 
 export interface ScrollToElement {
@@ -836,7 +817,6 @@ export type EditorAction =
   | InsertJSXElement
   | DeleteSelected
   | DeleteView
-  | DeleteViews
   | UpdateEditorMode
   | SwitchEditorMode
   | SelectComponents
@@ -932,8 +912,6 @@ export type EditorAction =
   | DEPRECATEDToggleEnabledProperty
   | SwitchLayoutSystem
   | InsertImageIntoUI
-  | SetSceneProp
-  | UnsetSceneProp
   | SetFocus
   | ResizeLeftPane
   | WrapInLayoutable

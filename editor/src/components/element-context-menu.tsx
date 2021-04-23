@@ -100,7 +100,6 @@ function useCanvasContextMenuItems(
               data.jsxMetadata,
               data.selectedViews,
               data.hiddenInstances,
-              data.focusedElementPath,
               'no-filter',
               WindowMousePositionRaw,
               data.scale,
@@ -166,7 +165,6 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
   )
 }
 
-// TODO Scene Implementation - seems we should have a different context menu for scenes
 export const ElementContextMenu = betterReactMemo(
   'ElementContextMenu',
   ({ contextMenuInstance }: ElementContextMenuProps) => {
@@ -185,7 +183,6 @@ export const ElementContextMenu = betterReactMemo(
         nodeModules: store.editor.nodeModules.files,
         transientFilesState: store.derived.canvas.transientState.filesState,
         resolve: store.editor.codeResultCache.resolve,
-        focusedElementPath: store.editor.focusedElementPath,
         hiddenInstances: store.editor.hiddenInstances,
         scale: store.editor.canvas.scale,
       }
@@ -202,7 +199,6 @@ export const ElementContextMenu = betterReactMemo(
         nodeModules: currentEditor.nodeModules,
         transientFilesState: currentEditor.transientFilesState,
         resolve: currentEditor.resolve,
-        focusedElementPath: currentEditor.focusedElementPath,
         hiddenInstances: currentEditor.hiddenInstances,
         scale: currentEditor.scale,
       }

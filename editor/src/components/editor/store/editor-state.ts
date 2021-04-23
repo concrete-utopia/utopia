@@ -356,7 +356,7 @@ export interface EditorState {
   safeMode: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
-  focusedElementPath: ScenePath | null
+  focusedElementPath: TemplatePath | null
   config: UtopiaVSCodeConfig
 }
 
@@ -875,12 +875,6 @@ export function addSceneToJSXComponents(
   }
 }
 
-export function removeScene(model: EditorState, path: ScenePath): EditorState {
-  return modifyOpenScenes_INTERNAL((components) => {
-    return removeJSXElementChild(createSceneTemplatePath(path), components)
-  }, model)
-}
-
 const emptyImports: Imports = {}
 
 export function getOpenImportsFromState(model: EditorState): Imports {
@@ -1291,7 +1285,6 @@ export function deriveState(
   } = MetadataUtils.createOrderedTemplatePathsFromElements(
     editor.jsxMetadata,
     editor.navigator.collapsedViews,
-    editor.focusedElementPath,
   )
 
   const derived: DerivedState = {

@@ -80,7 +80,6 @@ import {
   Imports,
   InstancePath,
   PropertyPath,
-  ScenePath,
   StaticInstancePath,
   StaticTemplatePath,
   TemplatePath,
@@ -684,7 +683,6 @@ export const MetadataUtils = {
   },
   getAllPathsIncludingUnfurledFocusedComponents(
     metadata: ElementInstanceMetadataMap,
-    focusedElementPath: ScenePath | null,
   ): InstancePath[] {
     // This function needs to explicitly return the paths in a depth first manner
     let result: Array<InstancePath> = []
@@ -693,11 +691,7 @@ export const MetadataUtils = {
       const {
         children,
         unfurledComponents,
-      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-        elementPath,
-        metadata,
-        focusedElementPath,
-      )
+      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(elementPath, metadata)
       const childrenIncludingUnfurledComponents = [...children, ...unfurledComponents]
       fastForEach(childrenIncludingUnfurledComponents, recurseElement)
     }
@@ -857,7 +851,6 @@ export const MetadataUtils = {
   getAllChildrenIncludingUnfurledFocusedComponents(
     path: TemplatePath,
     metadata: ElementInstanceMetadataMap,
-    focusedElementPath: ScenePath | null,
   ): { children: Array<InstancePath>; unfurledComponents: Array<InstancePath> } {
     return {
       children: MetadataUtils.getChildrenPaths(metadata, path),
@@ -867,7 +860,6 @@ export const MetadataUtils = {
   getAllChildrenElementsIncludingUnfurledFocusedComponents(
     path: TemplatePath,
     metadata: ElementInstanceMetadataMap,
-    focusedElementPath: ScenePath | null,
   ): {
     children: Array<ElementInstanceMetadata>
     unfurledComponents: Array<ElementInstanceMetadata>
@@ -880,7 +872,6 @@ export const MetadataUtils = {
   createOrderedTemplatePathsFromElements(
     metadata: ElementInstanceMetadataMap,
     collapsedViews: Array<TemplatePath>,
-    focusedElementPath: ScenePath | null,
   ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
     // This function exists separately from getAllPaths because the Navigator has a specific
     // ordering for the paths, which arguably should go in the bin
@@ -896,11 +887,7 @@ export const MetadataUtils = {
       const {
         children,
         unfurledComponents,
-      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-        path,
-        metadata,
-        focusedElementPath,
-      )
+      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(path, metadata)
       const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
       const reversedChildren = R.reverse(childrenIncludingFocusedElements)
 

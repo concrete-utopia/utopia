@@ -31,7 +31,6 @@ import * as fileNoImports from '../../../core/es-modules/test-cases/file-no-impo
 import { createNodeModules } from '../../../core/es-modules/package-manager/test-utils'
 import {
   clearSelection,
-  deleteViews,
   duplicateSelected,
   duplicateSpecificElements,
   insertJSXElement,
@@ -47,6 +46,7 @@ import {
   updatePackageJson,
   addToast,
   removeToast,
+  deleteSelected,
 } from '../actions/action-creators'
 import * as History from '../history'
 import {
@@ -60,6 +60,7 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
+  InstancePath1ForTestUiJsFile,
 } from '../../../core/model/test-ui-js-file.test-utils'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
@@ -461,9 +462,17 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
   })
 })
 
-describe('action DELETE_VIEWS', () => {
-  it('deletes all target elements', () => {
-    const { editor, derivedState, dispatch } = createEditorStates()
+describe('action DELETE_SELECTED', () => {
+  it('deletes all selected elements', () => {
+    const firstTargetElementPath = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb'])
+    const secondTargetElementPath = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'iii'])
+    const targetScenePath = InstancePath1ForTestUiJsFile
+
+    const { editor, derivedState, dispatch } = createEditorStates([
+      firstTargetElementPath,
+      secondTargetElementPath,
+      targetScenePath,
+    ])
 
     const parseSuccess = forceParseSuccessFromFileOrFail(
       getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath),
@@ -474,14 +483,7 @@ describe('action DELETE_VIEWS', () => {
       parseSuccess.topLevelElements,
     ).length
 
-    const firstTargetElementPath = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb'])
-    const secondTargetElementPath = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'iii'])
-    const targetScenePath = ScenePath1ForTestUiJsFile
-    const deleteAction = deleteViews([
-      firstTargetElementPath,
-      secondTargetElementPath,
-      targetScenePath,
-    ])
+    const deleteAction = deleteSelected()
     const updatedEditor = runLocalEditorAction(
       editor,
       derivedState,

@@ -18,10 +18,10 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from './scene-utils'
-import { scenePath } from '../shared/template-path'
+import { emptyScenePath, scenePath } from '../shared/template-path'
 import { defaultSceneElement } from '../../components/editor/defaults'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { testStaticScenePath } from '../shared/template-path.test-utils'
+import { testStaticInstancePath, testStaticScenePath } from '../shared/template-path.test-utils'
 
 const sampleIncludedElementTypes: Array<string> = [
   'Ellipse',
@@ -332,9 +332,12 @@ export const ScenePathForTestUiJsFile = testStaticScenePath([
 ])
 const Scene1UID = 'scene-1'
 const TestMainComponent1UID = 'main-component-1'
-export const ScenePath1ForTestUiJsFile = testStaticScenePath([
-  [BakedInStoryboardUID, Scene1UID, TestMainComponent1UID],
-])
+const ElementPath1ForTestUiJsFile = [BakedInStoryboardUID, Scene1UID, TestMainComponent1UID]
+export const ScenePath1ForTestUiJsFile = testStaticScenePath([ElementPath1ForTestUiJsFile])
+export const InstancePath1ForTestUiJsFile = testStaticInstancePath(
+  emptyScenePath,
+  ElementPath1ForTestUiJsFile,
+)
 
 const Scene1 = defaultSceneElement(
   TestScene0UID,

@@ -32,7 +32,6 @@ import {
   InstancePath,
   LayoutWrapper,
   PropertyPath,
-  ScenePath,
   TemplatePath,
 } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
@@ -48,10 +47,8 @@ import {
   selectComponents,
   setAspectRatioLock,
   setProp_UNSAFE,
-  setSceneProp,
   transientActions,
   unsetProperty,
-  unsetSceneProp,
   unwrapLayoutable,
   wrapInLayoutable,
 } from '../editor/actions/action-creators'

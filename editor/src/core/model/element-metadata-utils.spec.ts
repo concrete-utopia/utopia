@@ -25,7 +25,7 @@ import {
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
-import { InstancePath, ScenePath, TemplatePath } from '../shared/project-file-types'
+import { InstancePath, TemplatePath } from '../shared/project-file-types'
 import {
   TestScenePath as TestScenePathForTestProject,
   TestStaticScenePath as TestStaticScenePathForTestProject,
@@ -602,22 +602,16 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
   ]
 
   it('with no collapsed paths', () => {
-    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
-      testJsxMetadata,
-      [],
-      null,
-    )
+    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(testJsxMetadata, [])
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual(expectedNavigatorTargets)
   })
 
   it('with the scene collapsed', () => {
-    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
-      testJsxMetadata,
-      [testComponentSceneElement.templatePath],
-      null,
-    )
+    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(testJsxMetadata, [
+      testComponentSceneElement.templatePath,
+    ])
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
@@ -628,11 +622,10 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
   })
 
   it('with collapsed roots', () => {
-    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
-      testJsxMetadata,
-      [testComponentRoot1.templatePath, testComponentSceneChildElement.templatePath],
-      null,
-    )
+    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(testJsxMetadata, [
+      testComponentRoot1.templatePath,
+      testComponentSceneChildElement.templatePath,
+    ])
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([

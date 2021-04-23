@@ -1,6 +1,5 @@
 import {
   ElementPath,
-  ScenePath,
   StaticElementPath,
   StaticInstancePath,
   StaticScenePath,

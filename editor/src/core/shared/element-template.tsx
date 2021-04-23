@@ -2,7 +2,6 @@ import {
   PropertyPath,
   InstancePath,
   PropertyPathPart,
-  ScenePath,
   StaticElementPath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'

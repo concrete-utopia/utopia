@@ -135,7 +135,6 @@ import {
   ProjectFile,
   PropertyPath,
   RevisionsState,
-  ScenePath,
   StaticElementPath,
   TemplatePath,
   TextFile,
@@ -239,7 +238,6 @@ import {
   DeleteFile,
   DeleteSelected,
   DeleteView,
-  DeleteViews,
   DistributeSelectedViews,
   Distribution,
   DuplicateSelected,
@@ -301,7 +299,6 @@ import {
   SetProjectName,
   SetProp,
   SetPropWithElementPath,
-  SetSceneProp,
   SetStoredFontSettings,
   AddToast,
   SetZIndex,
@@ -319,7 +316,6 @@ import {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnsetSceneProp,
   UnwrapGroupOrView,
   UnwrapLayoutable,
   UpdateCodeResultCache,
@@ -425,7 +421,6 @@ import {
   UIFileBase64Blobs,
   updateMainUIInEditorState,
   addNewScene,
-  removeScene,
   getNumberOfScenes,
   addSceneToJSXComponents,
   UserState,
@@ -1035,28 +1030,25 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
     const extendedTargets = [...targets, ...emptyGroupTemplatePaths]
 
     const updatedEditor = extendedTargets.reduce((working, target) => {
-      if (TP.isScenePath(target)) {
-        return removeScene(working, target)
-      } else {
-        return modifyOpenParseSuccess((parseSuccess) => {
-          const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-          const element = findElementAtPath(target, utopiaComponents)
-          if (element == null) {
-            return parseSuccess
-          } else {
-            const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
-              target,
-              utopiaComponents,
-            )
-            return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-              return {
-                ...success,
-                utopiaComponents: withTargetRemoved,
-              }
-            }, parseSuccess)
-          }
-        }, working)
-      }
+      const targetPath = TP.instancePathForElementAtPath(target)
+      return modifyOpenParseSuccess((parseSuccess) => {
+        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+        const element = findElementAtPath(targetPath, utopiaComponents)
+        if (element == null) {
+          return parseSuccess
+        } else {
+          const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
+            targetPath,
+            utopiaComponents,
+          )
+          return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+            return {
+              ...success,
+              utopiaComponents: withTargetRemoved,
+            }
+          }, parseSuccess)
+        }
+      }, working)
     }, editor)
     return {
       ...updatedEditor,
@@ -1610,24 +1602,6 @@ export const UPDATE_FNS = {
       dispatch,
     )
   },
-  DELETE_VIEWS: (
-    action: DeleteViews,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    return toastOnGeneratedElementsTargeted(
-      'Generated elements can only be deleted in code.',
-      action.targets,
-      editor,
-      true,
-      (editorState) => {
-        const components = getOpenUtopiaJSXComponentsFromState(editorState)
-        const staticSelectedElements = MetadataUtils.staticElementsOnly(components, action.targets)
-        return deleteElements(staticSelectedElements, editorState)
-      },
-      dispatch,
-    )
-  },
   DUPLICATE_SELECTED: (editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     return toastOnGeneratedElementsSelected(
       'Generated elements can only be duplicated in code',
@@ -1875,40 +1849,6 @@ export const UPDATE_FNS = {
       ...addNewScene(editor, newScene),
       selectedViews: newSelection,
     }
-  },
-  SET_SCENE_PROP: (action: SetSceneProp, editor: EditorModel): EditorModel => {
-    return modifyOpenSceneAtPath(
-      action.scenePath,
-      (scene): JSXElement => {
-        const updatedAttributes = setJSXValueAtPath(scene.props, action.propertyPath, action.value)
-        if (isRight(updatedAttributes)) {
-          return {
-            ...scene,
-            props: updatedAttributes.value,
-          }
-        } else {
-          return scene
-        }
-      },
-      editor,
-    )
-  },
-  UNSET_SCENE_PROP: (action: UnsetSceneProp, editor: EditorModel): EditorModel => {
-    return modifyOpenSceneAtPath(
-      action.scenePath,
-      (scene): JSXElement => {
-        const updatedAttributes = unsetJSXValueAtPath(scene.props, action.propertyPath)
-        if (isRight(updatedAttributes)) {
-          return {
-            ...scene,
-            props: updatedAttributes.value,
-          }
-        } else {
-          return scene
-        }
-      },
-      editor,
-    )
   },
   INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
     let newSelectedViews: TemplatePath[] = []
