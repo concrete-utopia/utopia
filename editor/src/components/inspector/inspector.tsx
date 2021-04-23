@@ -301,14 +301,10 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     let hasNonDefaultPositionAttributesInner: boolean = false
     let aspectRatioLockedInner: boolean = false
     Utils.fastForEach(selectedViews, (view) => {
-      if (TP.isScenePath(view)) {
-        // TODO Scene Implementation
-        return
-      }
       anyComponentsInner =
         anyComponentsInner ||
         MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
-      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(rootMetadata, view)
+      const possibleElement = MetadataUtils.findElementByTemplatePath(rootMetadata, view)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
         // its own compared to the props.
@@ -347,7 +343,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     }
   }, 'Inspector')
   const instancePaths = useKeepReferenceEqualityIfPossible(
-    selectedViews.filter((view) => !TP.isScenePath(view)) as InstancePath[],
+    selectedViews.map(TP.instancePathForElementAtPath),
   )
 
   const onFocus = React.useCallback(
@@ -594,23 +590,15 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
       let elements: Array<ElementPathElement> = []
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-        // TODO Scene Implementation
-        if (TP.isInstancePath(path)) {
-          const component = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
-          if (component != null) {
-            elements.push({
-              name: MetadataUtils.getElementLabel(path, jsxMetadata),
-              path: path,
-            })
-          }
-        } else {
-          const scene = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
-          if (scene != null) {
-            elements.push({
-              name: scene.label ?? undefined,
-              path: path,
-            })
-          }
+        const component = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
+          jsxMetadata,
+          path,
+        )
+        if (component != null) {
+          elements.push({
+            name: MetadataUtils.getElementLabel(path, jsxMetadata),
+            path: path,
+          })
         }
       })
       return elements
@@ -749,38 +737,30 @@ export const InspectorContextProvider = betterReactMemo<{
   let newAttributeMetadatas: Array<StyleAttributeMetadata> = []
 
   Utils.fastForEach(selectedViews, (path) => {
-    if (TP.isScenePath(path)) {
-      const sceneTemplatePath = createSceneTemplatePath(path)
-      const selectedSceneElement = findJSXElementAtStaticPath(rootComponents, sceneTemplatePath)
-      if (selectedSceneElement != null) {
-        newEditedMultiSelectedProps.push(selectedSceneElement.props)
+    const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+    if (elementMetadata != null) {
+      if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
+        /**
+         * This early return will cause the inspector to render with empty fields.
+         * Because the computedStyle is only used in some cases for some controls,
+         * the empty inspector helps us catch an otherwise silent regression
+         */
+        return
       }
-    } else {
-      const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
-      if (elementMetadata != null) {
-        if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
-          /**
-           * This early return will cause the inspector to render with empty fields.
-           * Because the computedStyle is only used in some cases for some controls,
-           * the empty inspector helps us catch an otherwise silent regression
-           */
-          return
-        }
-        const jsxElement = findElementAtPath(path, rootComponents)
-        if (jsxElement == null) {
-          /**
-           * This early return will cause the inspector to render with empty fields.
-           * With missing jsxElement manipulating style props is not possible.
-           */
-          return
-        }
+      const jsxElement = findElementAtPath(path, rootComponents)
+      if (jsxElement == null) {
+        /**
+         * This early return will cause the inspector to render with empty fields.
+         * With missing jsxElement manipulating style props is not possible.
+         */
+        return
+      }
 
-        const jsxAttributes = isJSXElement(jsxElement) ? jsxElement.props : []
-        newEditedMultiSelectedProps.push(jsxAttributes)
-        newSpiedProps.push(elementMetadata.props)
-        newComputedStyles.push(elementMetadata.computedStyle)
-        newAttributeMetadatas.push(elementMetadata.attributeMetadatada)
-      }
+      const jsxAttributes = isJSXElement(jsxElement) ? jsxElement.props : []
+      newEditedMultiSelectedProps.push(jsxAttributes)
+      newSpiedProps.push(elementMetadata.props)
+      newComputedStyles.push(elementMetadata.computedStyle)
+      newAttributeMetadatas.push(elementMetadata.attributeMetadatada)
     }
   })
 
@@ -794,26 +774,17 @@ export const InspectorContextProvider = betterReactMemo<{
     getElementsToTarget(selectedViews),
   )
 
-  const refScenesToTargetForUpdates = usePropControlledRef_DANGEROUS(
-    useKeepReferenceEqualityIfPossible(
-      selectedViews.filter((view) => TP.isScenePath(view)) as ScenePath[],
-    ),
-  )
-
   const onSubmitValueForHooks = React.useCallback(
     (newValue: JSXAttribute, path: PropertyPath, transient: boolean) => {
       const actionsArray = [
         ...refElementsToTargetForUpdates.current.map((elem) => {
           return setProp_UNSAFE(elem, path, newValue)
         }),
-        ...refScenesToTargetForUpdates.current.map((scene) => {
-          return setSceneProp(scene, path, newValue)
-        }),
       ]
       const actions: EditorAction[] = transient ? [transientActions(actionsArray)] : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates, refScenesToTargetForUpdates],
+    [dispatch, refElementsToTargetForUpdates],
   )
 
   const onUnsetValue = React.useCallback(
@@ -828,18 +799,9 @@ export const InspectorContextProvider = betterReactMemo<{
           actions.push(unsetProperty(elem, property))
         }
       })
-      Utils.fastForEach(refScenesToTargetForUpdates.current, (scene) => {
-        if (Array.isArray(property)) {
-          Utils.fastForEach(property, (p) => {
-            actions.push(unsetSceneProp(scene, p))
-          })
-        } else {
-          actions.push(unsetSceneProp(scene, property))
-        }
-      })
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates, refScenesToTargetForUpdates],
+    [dispatch, refElementsToTargetForUpdates],
   )
 
   const callbackContextValueMemoized = useKeepShallowReferenceEquality({

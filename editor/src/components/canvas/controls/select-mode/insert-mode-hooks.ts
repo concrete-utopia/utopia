@@ -27,16 +27,11 @@ function useGetHighlightableViewsForInsertMode() {
     }
     const allPaths = MetadataUtils.getAllPaths(componentMetadata)
     const insertTargets = allPaths.filter((path) => {
-      if (TP.isScenePath(path)) {
-        // TODO Scene Implementation
-        return false
-      } else {
-        return (
-          (insertionSubjectIsJSXElement(mode.subject) ||
-            insertionSubjectIsDragAndDrop(mode.subject)) &&
-          MetadataUtils.targetSupportsChildren(imports, componentMetadata, path)
-        )
-      }
+      return (
+        (insertionSubjectIsJSXElement(mode.subject) ||
+          insertionSubjectIsDragAndDrop(mode.subject)) &&
+        MetadataUtils.targetSupportsChildren(imports, componentMetadata, path)
+      )
     })
     return insertTargets
   }, [storeRef])
