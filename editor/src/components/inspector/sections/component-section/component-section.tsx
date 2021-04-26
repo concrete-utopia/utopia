@@ -42,7 +42,11 @@ import {
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
-import { setFocusedElement, showContextMenu } from '../../../editor/actions/action-creators'
+import {
+  openCodeEditorFile,
+  setFocusedElement,
+  showContextMenu,
+} from '../../../editor/actions/action-creators'
 import { useEditorState } from '../../../editor/store/store-hook'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import { InstanceContextMenu } from '../../common/instance-context-menu'
@@ -632,6 +636,11 @@ export const ComponentSectionInner = betterReactMemo(
 
     const componentType = useComponentType(target)
 
+    const OpenFile = React.useCallback(
+      () => dispatch([openCodeEditorFile(locationOfComponentInstance, true)]),
+      [dispatch, locationOfComponentInstance],
+    )
+
     return foldEither(
       (rootParseError) => {
         return (
@@ -722,7 +731,7 @@ export const ComponentSectionInner = betterReactMemo(
                 />
                 <p>
                   {`This ${componentType} is imported from `}
-                  <InlineLink>{locationOfComponentInstance}</InlineLink>{' '}
+                  <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>{' '}
                   {isFocusable && !!isNotFocused ? (
                     <InlineButton onClick={onToggleValue}>Edit it</InlineButton>
                   ) : isFocusable && isFocused ? (
