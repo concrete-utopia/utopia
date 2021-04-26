@@ -280,6 +280,7 @@ function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, ()
 }
 
 interface DomWalkerProps {
+  selectedViews: Array<TemplatePath>
   scale: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
@@ -298,10 +299,6 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
   const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'useDomWalker selectedViews',
-  )
   const resizeObserver = useResizeObserver(invalidatedSceneIDsRef)
   const mutationObserver = useMutationObserver(invalidatedSceneIDsRef)
   useInvalidateScenesWhenSelectedViewChanges(
@@ -339,7 +336,7 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
         rootMetadataInStateRef,
         invalidatedSceneIDsRef,
         invalidatedPathsForStylesheetCacheRef,
-        selectedViews,
+        props.selectedViews,
         initComplete,
         props.scale,
         containerRect,
