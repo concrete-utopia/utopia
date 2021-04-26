@@ -573,10 +573,11 @@ export const ComponentSectionInner = betterReactMemo(
       ? target
       : TP.scenePathForElementAtInstancePath(target)
 
-    const onToggleValue = React.useCallback(() => dispatch([setFocusedElement(pathAsScenePath)]), [
-      dispatch,
-      pathAsScenePath,
-    ])
+    const [onToggleValue, toggle] = React.useState(true)
+    const toggleFocusMode = React.useCallback(() => {
+      toggle(!onToggleValue)
+      dispatch([setFocusedElement(onToggleValue ? pathAsScenePath : null)])
+    }, [dispatch, onToggleValue, pathAsScenePath])
 
     const metadata = useEditorState(
       (state) => state.editor.jsxMetadata,
@@ -727,15 +728,15 @@ export const ComponentSectionInner = betterReactMemo(
                   value={false}
                   srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
                   srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
-                  onToggle={onToggleValue}
+                  onToggle={toggleFocusMode}
                 />
                 <p>
                   {`This ${componentType} is imported from `}
                   <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>{' '}
                   {isFocusable && !!isNotFocused ? (
-                    <InlineButton onClick={onToggleValue}>Edit it</InlineButton>
+                    <InlineButton onClick={toggleFocusMode}>Edit it</InlineButton>
                   ) : isFocusable && isFocused ? (
-                    <InlineButton onClick={onToggleValue}>Exit Editing</InlineButton>
+                    <InlineButton onClick={toggleFocusMode}>Exit Editing</InlineButton>
                   ) : null}
                 </p>
               </UIGridRow>
@@ -745,12 +746,12 @@ export const ComponentSectionInner = betterReactMemo(
                   value={true}
                   srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
                   srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
-                  onToggle={onToggleValue}
+                  onToggle={toggleFocusMode}
                 />
                 <p>
                   {`This ${componentType} is imported from `}
                   <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>
-                  <InlineButton onClick={onToggleValue}>Back</InlineButton>
+                  <InlineButton onClick={toggleFocusMode}>Back</InlineButton>
                 </p>
               </UIGridRow>
               <InfoBox message={'No properties available to configure.'} />
