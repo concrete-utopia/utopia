@@ -578,6 +578,7 @@ export const ComponentSectionInner = betterReactMemo(
       (state) => state.editor.jsxMetadata,
       'Component-Section jsxMetaData',
     )
+
     let elementName: string
     const targetName = TP.instancePathForElementAtPath(target)
     const element = MetadataUtils.getElementByInstancePathMaybe(metadata, targetName)
@@ -628,6 +629,8 @@ export const ComponentSectionInner = betterReactMemo(
     )
     const isNotFocused = TP.isFocused(pathAsScenePath, target)
     const isFocused = TP.isFocused(pathAsScenePath, target)
+
+    const componentType = useComponentType(target)
 
     return foldEither(
       (rootParseError) => {
@@ -703,7 +706,7 @@ export const ComponentSectionInner = betterReactMemo(
                   <LargerIcons.NpmLogo />
                 </span>
                 <p>
-                  {`This ${elementName} is imported from `}
+                  {`This ${componentType} is imported from `}
                   <InlineLink href={componentPackageMgrLink}>
                     ${componentPackageName}
                   </InlineLink>{' '}
@@ -718,7 +721,7 @@ export const ComponentSectionInner = betterReactMemo(
                   onToggle={onToggleValue}
                 />
                 <p>
-                  {`This ${elementName} is imported from `}
+                  {`This ${componentType} is imported from `}
                   <InlineLink>{locationOfComponentInstance}</InlineLink>{' '}
                   {isFocusable && !!isNotFocused ? (
                     <InlineButton>Edit it</InlineButton>
@@ -736,7 +739,7 @@ export const ComponentSectionInner = betterReactMemo(
                   onToggle={onToggleValue}
                 />
                 <p>
-                  {`This ${elementName} is imported from `}
+                  {`This ${componentType} is imported from `}
                   <InlineLink>{locationOfComponentInstance}</InlineLink>
                   <InlineButton>Back</InlineButton>
                 </p>
