@@ -142,7 +142,9 @@ export function getSelectableViews(
     })
     let siblings: Array<TemplatePath> = []
     Utils.fastForEach(selectedViews, (view) => {
-      const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
+      const allPaths = childrenSelectable
+        ? TP.allPaths(view)
+        : TP.allPaths(TP.parentTemplatePath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
         const {
           children,

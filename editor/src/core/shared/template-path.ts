@@ -483,6 +483,12 @@ export function parentPath(path: TemplatePath): TemplatePath | null {
   }
 }
 
+export function parentTemplatePath(path: TemplatePath): TemplatePath {
+  const asInstancePath = instancePathForElementAtPathDontThrowOnScene(path)
+  const parent = parentPath(asInstancePath)
+  return instancePathForElementAtPathDontThrowOnScene(parent)
+}
+
 export function isParentOf(maybeParent: TemplatePath, maybeChild: TemplatePath): boolean {
   const maybeChildAsInstancePath = instancePathForElementAtPathDontThrowOnScene(maybeChild)
   const maybeParentAsInstancePath = instancePathForElementAtPathDontThrowOnScene(maybeParent)
@@ -1144,12 +1150,12 @@ export function outermostScenePathPart(path: TemplatePath): ScenePath {
   }
 }
 
-export function createBackwardsCompatibleScenePath(path: TemplatePath): ScenePath | null {
+export function createBackwardsCompatibleScenePath(path: TemplatePath): InstancePath | null {
   const scenePathElements = isScenePath(path)
     ? path.sceneElementPaths[0]
     : path.scene.sceneElementPaths[0]
   if (scenePathElements != null) {
-    return scenePath([scenePathElements.slice(0, 2)]) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack
+    return instancePath(emptyScenePath, scenePathElements.slice(0, 2)) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack
   } else {
     return null
   }
