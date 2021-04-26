@@ -724,9 +724,9 @@ export const ComponentSectionInner = betterReactMemo(
                   {`This ${componentType} is imported from `}
                   <InlineLink>{locationOfComponentInstance}</InlineLink>{' '}
                   {isFocusable && !!isNotFocused ? (
-                    <InlineButton>Edit it</InlineButton>
+                    <InlineButton onClick={onToggleValue}>Edit it</InlineButton>
                   ) : isFocusable && isFocused ? (
-                    <InlineButton>Exit Editing</InlineButton>
+                    <InlineButton onClick={onToggleValue}>Exit Editing</InlineButton>
                   ) : null}
                 </p>
               </UIGridRow>
@@ -741,7 +741,7 @@ export const ComponentSectionInner = betterReactMemo(
                 <p>
                   {`This ${componentType} is imported from `}
                   <InlineLink>{locationOfComponentInstance}</InlineLink>
-                  <InlineButton>Back</InlineButton>
+                  <InlineButton onClick={onToggleValue}>Back</InlineButton>
                 </p>
               </UIGridRow>
               <InfoBox message={'No properties available to configure.'} />
