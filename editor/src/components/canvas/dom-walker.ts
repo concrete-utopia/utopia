@@ -53,7 +53,6 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
-import { useForceUpdate } from '../editor/hook-utils'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -245,7 +244,6 @@ function useInvalidateScenesWhenSelectedViewChanges(
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
 ): void {
-  const forceUpdate = useForceUpdate()
   return useSelectorWithCallback(
     (store) => store.editor.selectedViews,
     (newSelectedViews) => {
@@ -255,7 +253,6 @@ function useInvalidateScenesWhenSelectedViewChanges(
           const sceneID = TP.toString(scenePath)
           invalidatedSceneIDsRef.current.add(sceneID)
           invalidatedPathsForStylesheetCacheRef.current.add(TP.toString(sv))
-          forceUpdate()
         }
       })
     },

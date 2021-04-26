@@ -62,7 +62,7 @@ export function resolvedDependencyVersions(
 ): Array<PossiblyUnversionedNpmDependency> {
   let result: Array<PossiblyUnversionedNpmDependency> = []
   fastForEach(dependencies, (dependency) => {
-    const builtInVersion = versionForBuiltInDependency(dependency.name)
+    const builtInVersion = versionForBuiltInDependency(dependency.name, 'canvas')
     const version = builtInVersion ?? parseDependencyVersionFromNodeModules(files, dependency.name)
     if (version == null) {
       result.push(unversionedNpmDependency(dependency.name))
