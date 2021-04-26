@@ -708,7 +708,7 @@ export const ComponentSectionInner = betterReactMemo(
                 <p>
                   {`This ${componentType} is imported from `}
                   <InlineLink href={componentPackageMgrLink}>
-                    ${componentPackageName}
+                    {`${componentPackageName}`}
                   </InlineLink>{' '}
                   via NPM.
                 </p>
