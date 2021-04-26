@@ -37,7 +37,6 @@ interface ComponentAreaControlProps {
   keysPressed: KeysPressed
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   selectedViews: TemplatePath[]
-  imports: Imports
   showAdditionalControls: boolean
   testID?: string
 }

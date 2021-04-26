@@ -25,7 +25,6 @@ import { InstancePath } from '../../../core/shared/project-file-types'
 import * as TP from '../../../core/shared/template-path'
 import Utils from '../../../utils/utils'
 import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
-import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { getFullFrame } from '../../frame'
 import {
@@ -39,6 +38,7 @@ import React = require('react')
 import { usePropControlledRef_DANGEROUS } from './inspector-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { CSSNumber, cssNumberToString } from './css-utils'
+import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 
 const HorizontalPinPreference = [
   FramePoint.Left,
@@ -294,11 +294,14 @@ export function usePinToggling(): UsePinTogglingResult {
 
   const elementFrames = useEditorState(
     (store): ReadonlyArray<Frame> => {
-      const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
-
-      const jsxElements = TP.filterScenes(selectedViewsRef.current).map((path) =>
-        findElementAtPath(path, rootComponents),
-      )
+      const jsxElements = TP.filterScenes(selectedViewsRef.current).map((path) => {
+        const rootComponents = getJSXComponentsAndImportsForPathFromState(
+          path,
+          store.editor,
+          store.derived,
+        ).components
+        return findElementAtPath(path, rootComponents)
+      })
 
       return jsxElements.map((elem) => {
         if (elem != null && isJSXElement(elem)) {

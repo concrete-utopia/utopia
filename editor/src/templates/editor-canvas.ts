@@ -39,9 +39,7 @@ import {
   ConsoleLog,
   DerivedState,
   EditorState,
-  getOpenImportsFromState,
   isOpenFileUiJs,
-  getOpenUtopiaJSXComponentsFromState,
 } from '../components/editor/store/editor-state'
 import {
   didWeHandleMouseMoveForThisFrame,
@@ -1101,10 +1099,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         // on macOS it seems like alt prevents the 'paste' event from being ever fired, so this is dead code here
         // needs testing if it's any help for other platforms
       } else {
-        const imports = getOpenImportsFromState(editor)
         parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
-            imports,
+            editor.projectContents,
+            editor.nodeModules.files,
+            editor.canvas.openFile?.filename ?? null,
             result.utopiaData,
             result.files,
             selectedViews,

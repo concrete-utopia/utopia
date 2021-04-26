@@ -38,12 +38,7 @@ import {
   defaultViewElement,
 } from '../editor/defaults'
 import { EditorModes, Mode } from '../editor/editor-modes'
-import {
-  DerivedState,
-  EditorState,
-  getOpenImportsFromState,
-  getOpenUtopiaJSXComponentsFromState,
-} from '../editor/store/editor-state'
+import { DerivedState, EditorState } from '../editor/store/editor-state'
 import {
   toggleBorder,
   toggleShadow,

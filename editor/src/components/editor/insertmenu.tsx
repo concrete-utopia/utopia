@@ -31,7 +31,6 @@ import {
   defaultDivElement,
 } from './defaults'
 import { FontSettings } from '../inspector/common/css-utils'
-import { existingUIDs } from '../navigator/left-pane'
 import { EditorAction, EditorDispatch } from './action-types'
 import { enableInsertModeForJSXElement, enableInsertModeForScene } from './actions/action-creators'
 import {
@@ -82,6 +81,7 @@ import {
   getInsertableGroupPackageStatus,
 } from '../shared/project-components'
 import { ProjectContentTreeRoot } from '../assets'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 
 interface CurrentFileComponent {
   componentName: string
@@ -94,7 +94,6 @@ interface InsertMenuProps {
   editorDispatch: EditorDispatch
   selectedViews: Array<TemplatePath>
   mode: Mode
-  existingUIDs: Array<string>
   currentlyOpenFilename: string | null
   currentFileComponents: Array<CurrentFileComponent>
   dependencies: Array<PossiblyUnversionedNpmDependency>
@@ -140,7 +139,6 @@ export const InsertMenu = betterReactMemo('InsertMenu', () => {
       editorDispatch: store.dispatch,
       selectedViews: store.editor.selectedViews,
       mode: store.editor.mode,
-      existingUIDs: existingUIDs(openUIJSFile),
       currentlyOpenFilename: currentlyOpenFilename,
       currentFileComponents: currentFileComponents,
       packageStatus: store.editor.nodeModules.packageStatus,
@@ -238,8 +236,10 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
     this.props.editorDispatch([enableInsertModeForScene('scene')], 'everyone')
   }
 
+  getNewUID = () => generateUidWithExistingComponents(this.props.projectContents)
+
   divInsertMode = () => {
-    const newUID = generateUID(this.props.existingUIDs)
+    const newUID = this.getNewUID()
     this.props.editorDispatch(
       [enableInsertModeForJSXElement(defaultDivElement(newUID), newUID, {}, null)],
       'everyone',
@@ -251,7 +251,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
   }
 
   textInsertMode = () => {
-    const newUID = generateUID(this.props.existingUIDs)
+    const newUID = this.getNewUID()
     this.props.editorDispatch(
       [
         enableInsertModeForJSXElement(
@@ -266,7 +266,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
   }
 
   animatedDivInsertMode = () => {
-    const newUID = generateUID(this.props.existingUIDs)
+    const newUID = this.getNewUID()
     this.props.editorDispatch(
       [
         enableInsertModeForJSXElement(
@@ -281,7 +281,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
   }
 
   ellipseInsertMode = () => {
-    const newUID = generateUID(this.props.existingUIDs)
+    const newUID = this.getNewUID()
     this.props.editorDispatch(
       [
         enableInsertModeForJSXElement(
@@ -296,7 +296,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
   }
 
   rectangleInsertMode = () => {
-    const newUID = generateUID(this.props.existingUIDs)
+    const newUID = this.getNewUID()
     this.props.editorDispatch(
       [
         enableInsertModeForJSXElement(
@@ -361,7 +361,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
           >
             {insertableGroup.insertableComponents.map((component, componentIndex) => {
               const insertItemOnMouseDown = () => {
-                const newUID = generateUID(this.props.existingUIDs)
+                const newUID = this.getNewUID()
                 const newElement = {
                   ...component.element,
                   props: setJSXAttributesAttribute(

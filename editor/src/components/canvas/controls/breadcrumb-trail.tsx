@@ -6,7 +6,6 @@ import {
 } from '../../../utils/react-performance'
 import { Utils } from '../../../uuiui-deps'
 import * as TP from '../../../core/shared/template-path'
-import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-state'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { Icons, UIRow, UtopiaTheme } from '../../../uuiui'
@@ -18,11 +17,10 @@ interface ElementPathElement {
 }
 
 export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
-  const { dispatch, jsxMetadata, rootComponents, selectedViews } = useEditorState((store) => {
+  const { dispatch, jsxMetadata, selectedViews } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
-      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
       selectedViews: store.editor.selectedViews,
     }
   }, 'TopMenuContextProvider')

@@ -39,8 +39,6 @@ import {
   TemplatePath,
 } from '../shared/project-file-types'
 import {
-  getOpenImportsFromState,
-  getOpenUtopiaJSXComponentsFromState,
   getOpenUIJSFileKey,
   EditorState,
   withUnderlyingTarget,
