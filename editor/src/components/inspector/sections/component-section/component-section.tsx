@@ -749,7 +749,7 @@ export const ComponentSectionInner = betterReactMemo(
                 />
                 <p>
                   {`This ${componentType} is imported from `}
-                  <InlineLink>{locationOfComponentInstance}</InlineLink>
+                  <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>
                   <InlineButton onClick={onToggleValue}>Back</InlineButton>
                 </p>
               </UIGridRow>
