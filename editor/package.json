@@ -55,8 +55,7 @@
     "moduleNameMapper": {
       "^domtoimage$": "<rootDir>/src/components/editor/dom-to-image-stub.ts",
       "\\.(css)$": "<rootDir>/test/jest/__mocks__/styleMock.js"
-    },
-    "verbose": true
+    }
   },
   "husky": {
     "hooks": {
