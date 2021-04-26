@@ -692,7 +692,7 @@ function walkScene(
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
         Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
-          if (TP.isDescendantOf(elem.templatePath, scenePath, true)) {
+          if (TP.isDescendantOf(elem.templatePath, scenePath)) {
             rootMetadataAccumulator.push(elem)
           }
         })
