@@ -282,15 +282,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       return 'noninteractive'
     }
     const anyIncomprehensibleElementsSelected = selectedViews.some((selectedView) => {
-      if (TP.isScenePath(selectedView)) {
-        return false
-      }
-
-      const possibleMetadata = MetadataUtils.getElementByInstancePathMaybe(
+      const possibleMetadata = MetadataUtils.findElementByTemplatePath(
         componentMetadata,
         selectedView,
       )
-      return possibleMetadata == null || MetadataUtils.dynamicPathToStaticPath(selectedView) == null
+      return possibleMetadata == null
     })
     if (anyIncomprehensibleElementsSelected) {
       return 'disabled'
@@ -305,10 +301,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const renderModeControlContainer = () => {
     const elementAspectRatioLocked = localSelectedViews.every((target) => {
-      if (TP.isScenePath(target)) {
-        return false
-      }
-      const possibleElement = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
+      const possibleElement = MetadataUtils.findElementByTemplatePath(componentMetadata, target)
       if (possibleElement == null) {
         return false
       } else {

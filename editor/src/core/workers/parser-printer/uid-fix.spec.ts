@@ -9,10 +9,10 @@ describe('fixParseSuccessUIDs', () => {
     const newFile = lintAndParse('test.js', baseFileContents, baseFile)
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "c94
+      "4ed
         random-uuid
-      93b
-        c8a
+      a04
+        ce5
       storyboard
         scene
           component"
@@ -24,12 +24,12 @@ describe('fixParseSuccessUIDs', () => {
     const newFileFixed = lintAndParse('test.js', baseFileWithTwoTopLevelComponents, baseFile)
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
-      "c94
+      "4ed
         random-uuid
-      7f2
-        8de
-      93b
-        c8a
+      6f6
+        edd
+      a04
+        ce5
       storyboard
         scene
           component"
@@ -40,10 +40,10 @@ describe('fixParseSuccessUIDs', () => {
     const newFile = lintAndParse('test.js', fileWithSingleUpdateContents, baseFile)
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "c94
+      "4ed
         random-uuid
-      93b
-        c8a
+      a04
+        ce5
       storyboard
         scene
           component"
@@ -53,11 +53,11 @@ describe('fixParseSuccessUIDs', () => {
   it('avoids uid shifting caused by single prepending insertion', () => {
     const newFile = lintAndParse('test.js', fileWithOneInsertedView, baseFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "c94
+      "4ed
         random-uuid
-      93b
-        8de
-        c8a
+      a04
+        edd
+        ce5
       storyboard
         scene
           component"
@@ -67,12 +67,12 @@ describe('fixParseSuccessUIDs', () => {
   it('double duplication', () => {
     const newFile = lintAndParse('test.js', fileWithTwoDuplicatedViews, baseFile)
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
-      "c94
+      "4ed
         random-uuid
-      93b
-        c8a
-        af7
-        a72
+      a04
+        ce5
+        0b4
+        e78
       storyboard
         scene
           component"
@@ -83,13 +83,13 @@ describe('fixParseSuccessUIDs', () => {
     const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null)
     const fourViews = lintAndParse('test.js', fileWithTwoDuplicatesAndInsertion, threeViews)
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
-      "c94
+      "4ed
         random-uuid
-      93b
-        578
-        c8a
-        af7
-        a72
+      a04
+        395
+        ce5
+        0b4
+        e78
       storyboard
         scene
           component"

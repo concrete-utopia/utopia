@@ -367,10 +367,6 @@ function collectMetadataForElement(
   }
 }
 
-function isRootElement(path: InstancePath): boolean {
-  return TP.isScenePath(TP.parentPath(path))
-}
-
 function collectMetadata(
   element: HTMLElement,
   pathsForElement: Array<TemplatePath>,
@@ -405,7 +401,7 @@ function collectMetadata(
     let filteredRootElements: InstancePath[] = []
     fastForEach(unfilteredChildrenPaths, (childPath) => {
       if (TP.isParentOf(path, childPath)) {
-        if (isRootElement(childPath)) {
+        if (TP.isTopLevelInstancePath(childPath)) {
           filteredRootElements.push(childPath)
         } else {
           filteredChildPaths.push(childPath)

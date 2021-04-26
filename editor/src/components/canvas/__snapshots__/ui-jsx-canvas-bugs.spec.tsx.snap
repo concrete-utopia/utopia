@@ -21,8 +21,8 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
     data-uid=\\"scene sb\\"
   >
     <div
-      data-uid=\\"comment-root 031~~~1 app\\"
-      data-paths=\\"031~~~1:comment-root :031~~~1 :sb/scene/app\\"
+      data-uid=\\"comment-root 1d1~~~1 app\\"
+      data-paths=\\"1d1~~~1:comment-root :1d1~~~1 :sb/scene/app\\"
     >
       hat
     </div>
