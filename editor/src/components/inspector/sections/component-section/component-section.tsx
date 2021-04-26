@@ -18,7 +18,7 @@ import {
 import { joinSpecial } from '../../../../core/shared/array-utils'
 import { eitherToMaybe, foldEither } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
-import { PropertyPath } from '../../../../core/shared/project-file-types'
+import { PropertyPath, TemplatePath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import {
   betterReactMemo,
@@ -83,6 +83,11 @@ import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../../
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { usePackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
 import { importedFromWhere } from '../../../editor/import-utils'
+import { isProbablySceneFromMetadata } from '../../../navigator/navigator-item/navigator-item'
+import {
+  isAnimatedElementAgainstImports,
+  isImportedComponentNPM,
+} from '../../../../core/model/project-file-utils'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -498,6 +503,35 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
     }
   }
 })
+
+function useComponentType(path: TemplatePath): string | null {
+  return useEditorState((store) => {
+    const metadata = store.editor.jsxMetadata
+    const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+      path,
+      store.editor,
+      store.derived,
+    )
+    const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
+    if (isProbablySceneFromMetadata(metadata, path)) {
+      return null
+    }
+    if (MetadataUtils.isEmotionOrStyledComponent(path, metadata)) {
+      return 'Styled Component'
+    }
+    const isAnimatedComponent =
+      elementName != null && isAnimatedElementAgainstImports(elementName, imports)
+    if (isAnimatedComponent) {
+      return 'Animated Component'
+    }
+    const isImported = elementName != null && isImportedComponentNPM(elementName, imports)
+    if (isImported) {
+      return 'Component'
+    }
+    const isComponent = MetadataUtils.isFocusableComponent(path, components, metadata, imports)
+    return isComponent ? 'Component' : null
+  }, 'useComponentType')
+}
 
 export interface ComponentSectionProps {
   isScene: boolean
