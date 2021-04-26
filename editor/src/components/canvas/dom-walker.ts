@@ -50,7 +50,6 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
-import { useForceUpdate } from '../editor/hook-utils'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -242,7 +241,6 @@ function useInvalidateScenesWhenSelectedViewChanges(
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
 ): void {
-  const forceUpdate = useForceUpdate()
   return useSelectorWithCallback(
     (store) => store.editor.selectedViews,
     (newSelectedViews) => {
@@ -252,7 +250,6 @@ function useInvalidateScenesWhenSelectedViewChanges(
           const sceneID = TP.toString(scenePath)
           invalidatedSceneIDsRef.current.add(sceneID)
           invalidatedPathsForStylesheetCacheRef.current.add(TP.toString(sv))
-          forceUpdate()
         }
       })
     },
@@ -699,7 +696,7 @@ function walkScene(
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
         Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
-          if (TP.isDescendantOf(elem.templatePath, scenePath)) {
+          if (TP.isDescendantOf(elem.templatePath, scenePath, true)) {
             rootMetadataAccumulator.push(elem)
           }
         })
