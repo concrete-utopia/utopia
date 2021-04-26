@@ -568,16 +568,25 @@ export const ComponentSectionInner = betterReactMemo(
       (store) => store.editor.selectedViews,
       'ComponentSectionInner selectedViews',
     )
+
+    const { editor, derived } = useEditorState((store) => {
+      return {
+        editor: store.editor,
+        derived: store.derived,
+      }
+    }, 'Focusable values')
+
     const target = selectedViews[0]
     const pathAsScenePath = TP.isScenePath(target)
       ? target
       : TP.scenePathForElementAtInstancePath(target)
 
-    const [onToggleValue, toggle] = React.useState(true)
+    const isFocused = TP.isFocused(editor.focusedElementPath, target)
+    const isNotFocused = TP.isFocused(editor.focusedElementPath, target)
+
     const toggleFocusMode = React.useCallback(() => {
-      toggle(!onToggleValue)
-      dispatch([setFocusedElement(onToggleValue ? pathAsScenePath : null)])
-    }, [dispatch, onToggleValue, pathAsScenePath])
+      dispatch([setFocusedElement(isFocused ? null : pathAsScenePath)])
+    }, [dispatch, isFocused, pathAsScenePath])
 
     const metadata = useEditorState(
       (state) => state.editor.jsxMetadata,
@@ -594,15 +603,8 @@ export const ComponentSectionInner = betterReactMemo(
       }
     }
 
-    const { editor, derived } = useEditorState((store) => {
-      return {
-        editor: store.editor,
-        derived: store.derived,
-      }
-    }, 'Focusable values')
-
     const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-      pathAsScenePath,
+      target,
       editor,
       derived,
     )
@@ -626,14 +628,7 @@ export const ComponentSectionInner = betterReactMemo(
 
     const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`
 
-    const isFocusable = MetadataUtils.isFocusableComponent(
-      pathAsScenePath,
-      components,
-      metadata,
-      imports,
-    )
-    const isNotFocused = TP.isFocused(pathAsScenePath, target)
-    const isFocused = TP.isFocused(pathAsScenePath, target)
+    const isFocusable = MetadataUtils.isFocusableComponent(target, components, metadata, imports)
 
     const componentType = useComponentType(target)
 
@@ -733,7 +728,7 @@ export const ComponentSectionInner = betterReactMemo(
                 <p>
                   {`This ${componentType} is imported from `}
                   <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>{' '}
-                  {isFocusable && !!isNotFocused ? (
+                  {isFocusable && !isNotFocused ? (
                     <InlineButton onClick={toggleFocusMode}>Edit it</InlineButton>
                   ) : isFocusable && isFocused ? (
                     <InlineButton onClick={toggleFocusMode}>Exit Editing</InlineButton>
