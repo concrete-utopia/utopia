@@ -946,9 +946,9 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <input
-      data-uid=\\"9e8 567 app-entity\\"
+      data-uid=\\"5f4 567 app-entity\\"
       style=\\"top: 10px;\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:9e8 utopia-storyboard-uid/scene-aaa/app-entity:567 :utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:5f4 utopia-storyboard-uid/scene-aaa/app-entity:567 :utopia-storyboard-uid/scene-aaa/app-entity\\"
     />
   </div>
 </div>
@@ -21925,8 +21925,8 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
     data-uid=\\"scene utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"2a2~~~1 aaa-unparsed-no-template-path bbb-unparsed-no-template-path BBB app-entity\\"
-      data-paths=\\":2a2~~~1 utopia-storyboard-uid/scene/app-entity:BBB :utopia-storyboard-uid/scene/app-entity\\"
+      data-uid=\\"1a9~~~1 aaa-unparsed-no-template-path bbb-unparsed-no-template-path BBB app-entity\\"
+      data-paths=\\":1a9~~~1 utopia-storyboard-uid/scene/app-entity:BBB :utopia-storyboard-uid/scene/app-entity\\"
     >
       great
     </div>
@@ -23379,8 +23379,8 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"fa7 aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:fa7 utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-uid=\\"4cf aaa app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:4cf utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
       data-factory-function-works=\\"true\\"
     >
       Utopia
@@ -25419,8 +25419,8 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"56b aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:56b utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-uid=\\"45b aaa app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:45b utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
       style=\\"width: 50px; height: 50px; left: 15px; top: 15px;\\"
     >
       Utopia
@@ -25564,8 +25564,8 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
-      data-uid=\\"6b9 aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:6b9 utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-uid=\\"a0e aaa app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:a0e utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
       class=\\"css-f9xk9e\\"
       style=\\"width: 50px; height: 50px; left: 15px; top: 15px;\\"
     >

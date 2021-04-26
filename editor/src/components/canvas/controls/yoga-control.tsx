@@ -120,13 +120,8 @@ export class YogaControls extends React.Component<YogaControlsProps> {
 
     let color: string = ''
     if (showResizeControl) {
-      const selectedView = targets[0]
-      const instance = TP.isScenePath(selectedView)
-        ? null
-        : MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, selectedView)
-      const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
       color = getSelectionColor(
-        selectedView,
+        targets[0],
         this.props.rootComponents,
         this.props.componentMetadata,
         this.props.imports,

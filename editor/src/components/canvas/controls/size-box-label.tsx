@@ -78,19 +78,13 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
       true,
     )
     Utils.fastForEach(targets, (target) => {
-      if (TP.isScenePath(target)) {
-        const element = MetadataUtils.findElementByTemplatePath(metadata, target)
-        if (element != null) {
-          names.push(element.label ?? 'Scene')
-        }
-      } else {
-        const element = MetadataUtils.getElementByInstancePathMaybe(metadata, target)
-        if (element != null) {
-          const jsxElement = eitherToMaybe(element.element)
-          if (jsxElement != null && isJSXElement(jsxElement)) {
-            names.push(getJSXElementNameAsString(jsxElement.name))
-            properties = LayoutHelpers.getElementSizePropertyPaths(element)
-          }
+      const element = MetadataUtils.findElementByTemplatePath(metadata, target)
+      if (element != null) {
+        const jsxElement = eitherToMaybe(element.element)
+        if (jsxElement != null && isJSXElement(jsxElement)) {
+          const labelFromProps = MetadataUtils.getElementLabelFromProps(element)
+          names.push(labelFromProps ?? getJSXElementNameAsString(jsxElement.name))
+          properties = LayoutHelpers.getElementSizePropertyPaths(element)
         }
       }
     })

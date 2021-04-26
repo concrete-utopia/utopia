@@ -174,15 +174,11 @@ function jumpToParentActions(selectedViews: Array<TemplatePath>): Array<EditorAc
   }
 }
 
-function getTextEditorTarget(editor: EditorState): InstancePath | null {
+function getTextEditorTarget(editor: EditorState): TemplatePath | null {
   if (editor.canvas.dragState != null || editor.selectedViews.length !== 1) {
     return null
   } else {
     const target = editor.selectedViews[0]
-    if (TP.isScenePath(target)) {
-      return null
-    }
-
     const components = getOpenUtopiaJSXComponentsFromState(editor)
     const imports = getOpenImportsFromState(editor)
     const element = findElementAtPath(target, components)
@@ -412,7 +408,7 @@ export function handleKeyDown(
         if (modeType === 'select') {
           const textTarget = getTextEditorTarget(editor)
           if (textTarget != null) {
-            return [EditorActions.openTextEditor(textTarget, null)]
+            return [EditorActions.openTextEditor(TP.instancePathForElementAtPath(textTarget), null)]
           } else {
             const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
             if (childToSelect != null) {

@@ -188,9 +188,9 @@ export function clampString(value: string, maxLength: number) {
 export function getElementsToTarget(paths: Array<TemplatePath>): Array<InstancePath> {
   let result: Array<InstancePath> = []
   Utils.fastForEach(paths, (path) => {
-    // TODO Scene Implementation
-    if (!TP.isScenePath(path) && !TP.containsPath(path, result)) {
-      result.push(path)
+    const asInstancePath = TP.instancePathForElementAtPath(path)
+    if (!TP.containsPath(asInstancePath, result)) {
+      result.push(asInstancePath)
     }
   })
   return result

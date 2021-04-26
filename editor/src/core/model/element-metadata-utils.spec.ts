@@ -554,9 +554,7 @@ describe('getting the root paths', () => {
 
   it('getAllStoryboardChildrenPathsScenesOnly returns paths of only the scene children of the storyboard', () => {
     const actualResult = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(testJsxMetadata)
-    const expectedResult: Array<ScenePath> = [
-      TP.scenePathForElementAtInstancePath(testComponentSceneElement.templatePath),
-    ]
+    const expectedResult: Array<InstancePath> = [testComponentSceneElement.templatePath]
     expect(actualResult).toEqual(expectedResult)
   })
 

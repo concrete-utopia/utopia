@@ -71,7 +71,7 @@ describe('maybeSwitchLayoutProps', () => {
     )
     const elementPath = TP.instancePath(TestScenePath, [NewUID])
 
-    const sceneElementPath = TP.instancePathForElementAtPath(TestScenePath)
+    const sceneElementPath = TP.instancePathForElementAtPathDontThrowOnScene(TestScenePath)
 
     const metadata: ElementInstanceMetadataMap = {
       [TP.toString(sceneElementPath)]: {

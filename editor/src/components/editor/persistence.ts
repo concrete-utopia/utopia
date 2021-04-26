@@ -239,7 +239,7 @@ export function pushProjectURLToBrowserHistory(
   window.top.history.pushState({}, title, `${projectURL}${queryParams}`)
 }
 
-function onFirstSaveCompleted(projectId: string, name: string, dispatch: EditorDispatch) {
+function onFirstSaveCompleted(projectId: string, name: string, dispatch: EditorDispatch): void {
   dispatch([setProjectID(projectId)], 'everyone')
   pushProjectURLToBrowserHistory(`Utopia ${projectId}`, projectId, name)
 }
@@ -311,7 +311,7 @@ async function throttledServerSaveInner(
   projectName: string,
   modelChange: PersistentModel | null,
   nameChange: string | null,
-) {
+): Promise<void> {
   switch (_saveState.type) {
     case 'never-saved':
       await serverSaveInner(dispatch, projectId, projectName, modelChange, nameChange, false)
@@ -329,6 +329,8 @@ async function throttledServerSaveInner(
         }, waitTime)
         _saveState = {
           ..._saveState,
+          queuedModelChange: modelChange ?? _saveState.queuedModelChange,
+          queuedNameChange: nameChange ?? _saveState.queuedNameChange,
           setTimeoutId: setTimeoutId,
         }
       }
@@ -354,7 +356,7 @@ async function serverSaveInner(
   modelChange: PersistentModel | null,
   nameChange: string | null,
   forceThumbnail: boolean,
-) {
+): Promise<void> {
   const priorErrorCount = isSaveError(_saveState) ? _saveState.errorCount : 0
   const isFirstSave = isLocal()
 
@@ -408,7 +410,7 @@ function maybeTriggerQueuedSave(
   projectId: string,
   projectName: string,
   saveState: SaveInProgress,
-) {
+): void {
   const queuedModelChange = saveState.queuedModelChange
   const queuedNameChange = saveState.queuedNameChange
   const force = saveState.triggerNextImmediately
@@ -564,9 +566,9 @@ export async function loadFromLocalStorage(
   }
 }
 
-async function forceQueuedSave(): Promise<void> {
+export async function forceQueuedSave(): Promise<void> {
   if ((_saveState.type === 'saved' || _saveState.type === 'save-error') && _saveState.remote) {
-    serverSaveInner(
+    await serverSaveInner(
       _saveState.dispatch,
       _saveState.projectId,
       _saveState.projectName,

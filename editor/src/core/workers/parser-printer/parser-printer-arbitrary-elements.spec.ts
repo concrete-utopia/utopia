@@ -1063,8 +1063,8 @@ export var storyboard = (
       expect(results.alone).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "cc6",
-            "bc4",
+            "219",
+            "971",
           ],
           "js": "function _createSuper(Derived) { return function () { var Super = babelHelpers.getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
 
@@ -1086,7 +1086,7 @@ export var storyboard = (
             babelHelpers.createClass(Picker, [{
               key: \\"renderPicker\\",
               value: function renderPicker(locale) {
-                return utopiaCanvasJSXLookup(\\"cc6\\", {
+                return utopiaCanvasJSXLookup(\\"971\\", {
                   locale: locale,
                   React: React,
                   utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
@@ -1096,7 +1096,7 @@ export var storyboard = (
             }, {
               key: \\"render\\",
               value: function render() {
-                return utopiaCanvasJSXLookup(\\"bc4\\", {
+                return utopiaCanvasJSXLookup(\\"219\\", {
                   callerThis: this
                 });
               }
@@ -1114,8 +1114,8 @@ export var storyboard = (
       expect(results.combined).toMatchInlineSnapshot(`
         Object {
           "elements": Array [
-            "150",
-            "2f5",
+            "833",
+            "65e",
           ],
           "js": "function _createSuper(Derived) { return function () { var Super = babelHelpers.getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = babelHelpers.getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return babelHelpers.possibleConstructorReturn(this, result); }; }
 
@@ -1158,7 +1158,7 @@ export var storyboard = (
             babelHelpers.createClass(Picker, [{
               key: \\"renderPicker\\",
               value: function renderPicker(locale) {
-                return utopiaCanvasJSXLookup(\\"150\\", {
+                return utopiaCanvasJSXLookup(\\"833\\", {
                   locale: locale,
                   React: React,
                   utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
@@ -1168,7 +1168,7 @@ export var storyboard = (
             }, {
               key: \\"render\\",
               value: function render() {
-                return utopiaCanvasJSXLookup(\\"2f5\\", {
+                return utopiaCanvasJSXLookup(\\"65e\\", {
                   callerThis: this
                 });
               }

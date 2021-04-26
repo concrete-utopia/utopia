@@ -49,7 +49,13 @@ export const getEditorRequireFn = (
       dispatch([updateNodeModulesContents(modulesToAdd, 'incremental')]),
     )
   }
-  return getRequireFn(onRemoteModuleDownload, projectContents, nodeModules, evaluationCache)
+  return getRequireFn(
+    onRemoteModuleDownload,
+    projectContents,
+    nodeModules,
+    evaluationCache,
+    'canvas',
+  )
 }
 
 export function getRequireFn(
@@ -57,10 +63,11 @@ export function getRequireFn(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   evaluationCache: EvaluationCache,
+  mode: 'canvas' | 'preview',
   injectedEvaluator = evaluator,
 ): RequireFn {
   return function require(importOrigin, toImport): unknown {
-    const builtInDependency = resolveBuiltInDependency(toImport)
+    const builtInDependency = resolveBuiltInDependency(toImport, mode)
     if (builtInDependency != null) {
       return builtInDependency
     }
