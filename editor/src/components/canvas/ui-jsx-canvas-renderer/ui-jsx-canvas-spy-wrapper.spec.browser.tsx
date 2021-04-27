@@ -138,7 +138,7 @@ const HiElement = (props) => {
 const Button = (props) => {
   return <div data-uid="button-root">{props.children}</div>;
 };
-const Card = () => {
+export const Card = () => {
   return (
     <Button data-uid="button-instance">
       {[0, 1, 2].map(i => (
