@@ -128,15 +128,12 @@ import { RightMenuTab } from '../../canvas/right-menu'
 
 import {
   staticInstancePath,
-  instancePath,
   isInstancePath,
   toUid,
   toString,
   dynamicPathToStaticPath,
-  scenePath,
   staticScenePath,
   staticElementPath,
-  scenePathForElementAtPath,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notice'

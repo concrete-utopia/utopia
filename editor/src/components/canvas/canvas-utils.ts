@@ -978,15 +978,11 @@ export function collectGuidelines(
   // For any images create guidelines at the current multiplier setting.
   if (resizingFromPosition != null) {
     Utils.fastForEach(selectedViews, (selectedView) => {
-      if (TP.isScenePath(selectedView)) {
-        return
-      }
-
       if (MetadataUtils.isPinnedAndNotAbsolutePositioned(metadata, selectedView)) {
         return
       }
 
-      const instance = MetadataUtils.getElementByInstancePathMaybe(metadata, selectedView)
+      const instance = MetadataUtils.findElementByTemplatePath(metadata, selectedView)
       if (instance != null && MetadataUtils.isImg(instance) && instance.localFrame != null) {
         const frame = instance.localFrame
         const imageSize = getImageSizeFromMetadata(instance)
@@ -1649,17 +1645,6 @@ export function createDuplicationNewUIDs(
 
 export const SkipFrameChange = 'skipFrameChange'
 
-export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<TemplatePath> {
-  // TODO Scene Implementation - KILLME
-  const scenesSelected = targets.some(TP.isScenePath)
-  if (scenesSelected && targets.length > 1) {
-    // Prevent multiselection of scenes - if more than one are selected, only take the last one
-    return [R.findLast(TP.isScenePath, targets)!]
-  } else {
-    return targets
-  }
-}
-
 function getReparentTargetAtPosition(
   componentMeta: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
@@ -1777,8 +1762,8 @@ export function moveTemplate(
   let newInstancePath: InstancePath | null = null
   let flexContextChanged: boolean = false
 
-  const targetID = TP.toTemplateId(target)
-  if (newParentPath == null || TP.isScenePath(newParentPath) || TP.isScenePath(originalPath)) {
+  const targetID = TP.toUid(target)
+  if (newParentPath == null) {
     // TODO Scene Implementation
     return noChanges()
   } else {
@@ -1806,8 +1791,8 @@ export function moveTemplate(
               didSwitch,
             } = maybeSwitchLayoutProps(
               target,
-              originalPath,
-              newParentPath,
+              TP.instancePathForElementAtPathDontThrowOnScene(originalPath),
+              TP.instancePathForElementAtPathDontThrowOnScene(newParentPath),
               componentMetadata,
               componentMetadata,
               utopiaComponentsIncludingScenes,
@@ -1944,7 +1929,7 @@ export function moveTemplate(
 
               const updatedEditorState: EditorState = {
                 ...workingEditorState,
-                selectedViews: filterMultiSelectScenes(Utils.stripNulls(newSelectedViews)),
+                selectedViews: Utils.stripNulls(newSelectedViews),
                 highlightedViews: Utils.stripNulls(newHighlightedViews),
               }
 

@@ -516,11 +516,11 @@ export const MetadataUtils = {
     const shiftMultiplier = addOn ? 1 : -1
     let workingFrame: CanvasRectangle = originalFrame
     // If this is held within a group, then we need to add on the frames of the parent groups.
-    let ancestorPath = TP.instancePathParent(target)
+    let ancestorPath = TP.parentPath(target)
     while (TP.isInstancePath(ancestorPath)) {
       const ancestorElement = MetadataUtils.getElementByInstancePathMaybe(metadata, ancestorPath)
 
-      const ancestorParentPath = TP.instancePathParent(ancestorPath)
+      const ancestorParentPath = TP.parentPath(ancestorPath)
       if (ancestorElement == null) {
         break
       } else if (TP.isInstancePath(ancestorParentPath)) {
@@ -1112,7 +1112,7 @@ export const MetadataUtils = {
         ) {
           return parentTarget
         } else {
-          const parentOfSelected = TP.instancePathParent(parentTarget)
+          const parentOfSelected = TP.parentPath(parentTarget)
           if (TP.isScenePath(parentOfSelected)) {
             return parentOfSelected
           } else {
@@ -1214,7 +1214,6 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
   ): ElementInstanceMetadataMap {
     const parentPath = TP.parentPath(target)
-    const targetID = TP.toTemplateId(target)
     // Remove it from where it used to be.
     if (TP.isScenePath(parentPath)) {
       // TODO Scene Implementation

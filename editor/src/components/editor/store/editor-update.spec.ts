@@ -140,33 +140,6 @@ describe('action SELECT_VIEWS', () => {
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testScenePath])
   })
-  it('prevents multiselection if a scene is selected, taking the last scene path selected', () => {
-    const { editor, derivedState, dispatch } = createEditorStates()
-
-    const withOneScene = runLocalEditorAction(
-      editor,
-      derivedState,
-      defaultUserState,
-      workers,
-      selectComponents([testScenePath, testTemplatePath], false),
-      History.init(editor, derivedState),
-      dispatch,
-      emptyUiJsxCanvasContextData(),
-    )
-    chaiExpect(withOneScene.selectedViews).to.deep.equal([testScenePath])
-
-    const withMultipleScenes = runLocalEditorAction(
-      editor,
-      derivedState,
-      defaultUserState,
-      workers,
-      selectComponents([ScenePathForTestUiJsFile, testTemplatePath, testScenePath], false),
-      History.init(editor, derivedState),
-      dispatch,
-      emptyUiJsxCanvasContextData(),
-    )
-    chaiExpect(withMultipleScenes.selectedViews).to.deep.equal([testScenePath])
-  })
 })
 
 describe('action CLEAR_SELECTION', () => {

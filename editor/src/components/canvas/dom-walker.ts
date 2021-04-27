@@ -651,7 +651,7 @@ function walkScene(
     const sceneID = sceneIndexAttr?.value ?? null
     const instancePath = sceneID == null ? null : TP.fromString(sceneID)
 
-    if (sceneID != null && instancePath != null && TP.isInstancePath(instancePath)) {
+    if (sceneID != null && instancePath != null && TP.isTemplatePath(instancePath)) {
       let cachedMetadata: ElementInstanceMetadata | null = null
       if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
         if (!invalidatedSceneIDsRef.current.has(sceneID)) {
@@ -811,7 +811,7 @@ function walkElements(
 
     // Check this is a path we're interested in, otherwise skip straight to the children
     const foundValidPaths = paths.filter((path) => {
-      const staticPath = TP.dynamicPathToStaticPathKeepSceneDynamic(path)
+      const staticPath = TP.makeLastPartOfPathStatic(path)
       return validPaths.some((validPath) => {
         return TP.pathsEqual(staticPath, validPath)
       })

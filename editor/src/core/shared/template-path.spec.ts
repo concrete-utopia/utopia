@@ -6,9 +6,9 @@ const chaiExpect = Chai.expect
 
 describe('serialization', function () {
   it('path survives serialization', function () {
-    const path = TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), [
-      'VIEW1',
-      'VIEW2',
+    const path = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['VIEW1', 'VIEW2'],
     ])
     const pathString = TP.toComponentId(path)
     const restoredPath = TP.fromString(pathString)
@@ -16,22 +16,8 @@ describe('serialization', function () {
   })
 
   it('empty path survives serialization', function () {
-    const path = TP.instancePath(TP.emptyScenePath, [])
+    const path = TP.templatePath([])
     const pathString = TP.toComponentId(path)
-    const restoredPath = TP.fromString(pathString)
-    chaiExpect(restoredPath).to.deep.equal(path)
-  })
-
-  it('ScenePath survives serialization', function () {
-    const path = TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']])
-    const pathString = TP.toString(path)
-    const restoredPath = TP.fromString(pathString)
-    chaiExpect(restoredPath).to.deep.equal(path)
-  })
-
-  it('Empty ScenePath survives serialization', function () {
-    const path = TP.emptyScenePath
-    const pathString = TP.toString(path)
     const restoredPath = TP.fromString(pathString)
     chaiExpect(restoredPath).to.deep.equal(path)
   })

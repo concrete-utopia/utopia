@@ -292,7 +292,7 @@ export function getUtopiaID(element: JSXElementChild | ElementInstanceMetadata):
   } else if (isUtopiaJSXTextBlock(element)) {
     return element.uniqueID
   } else if (isElementInstanceMetadata(element)) {
-    return TP.toTemplateId(element.templatePath)
+    return TP.toUid(element.templatePath)
   } else if (isJSXFragment(element)) {
     return element.uniqueID
   }
@@ -504,7 +504,7 @@ export function removeJSXElementChild(
   }
 
   const parentPath = TP.parentPath(target)
-  const targetID = TP.toTemplateId(target)
+  const targetID = TP.toUid(target)
   // Remove it from where it used to be.
   if (TP.isScenePath(parentPath)) {
     // TODO Scene Implementation
@@ -597,7 +597,7 @@ export function getZIndexOfElement(
   topLevelElements: Array<TopLevelElement>,
   target: StaticInstancePath,
 ): number {
-  const parentPath = TP.instancePathParent(target)
+  const parentPath = TP.parentPath(target)
   if (parentPath != null) {
     if (!TP.isScenePath(parentPath)) {
       const parentElement = findJSXElementAtStaticPath(

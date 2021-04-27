@@ -117,21 +117,21 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedSpyData).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [
-            ":storyboard/scene",
+            "storyboard/scene",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "App",
           "rootElements": Array [],
@@ -160,19 +160,19 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [
@@ -203,21 +203,21 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [
-            ":storyboard/scene",
+            "storyboard/scene",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "App",
           "rootElements": Array [
@@ -276,21 +276,21 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedSpyData).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [
-            ":storyboard/scene",
+            "storyboard/scene",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "App",
           "rootElements": Array [],
@@ -339,19 +339,19 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [
@@ -408,21 +408,21 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [
-            ":storyboard/scene",
+            "storyboard/scene",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "App",
           "rootElements": Array [
@@ -508,21 +508,21 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedSpyData).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [
-            ":storyboard/scene",
+            "storyboard/scene",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "App",
           "rootElements": Array [],
@@ -576,19 +576,19 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [
@@ -652,21 +652,21 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [
-            ":storyboard/scene",
+            "storyboard/scene",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "App",
           "rootElements": Array [
@@ -759,21 +759,21 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedSpyData).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [
-            ":storyboard/scene",
+            "storyboard/scene",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "App",
           "rootElements": Array [],
@@ -827,19 +827,19 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [
@@ -903,21 +903,21 @@ describe('Spy Wrapper Template Path Tests', () => {
 
     expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard": Object {
+        "storyboard": Object {
           "children": Array [
-            ":storyboard/scene",
+            "storyboard/scene",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard/scene": Object {
+        "storyboard/scene": Object {
           "children": Array [
-            ":storyboard/scene/app",
+            "storyboard/scene/app",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard/scene/app": Object {
+        "storyboard/scene/app": Object {
           "children": Array [],
           "name": "App",
           "rootElements": Array [
@@ -1013,36 +1013,24 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
 
     expect(sanitizedSpyData).toMatchInlineSnapshot(`
       Object {
-        ":storyboard-entity": Object {
+        "storyboard-entity": Object {
           "children": Array [
-            ":storyboard-entity/scene-1-entity",
-            ":storyboard-entity/scene-2-entity",
+            "storyboard-entity/scene-1-entity",
+            "storyboard-entity/scene-2-entity",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard-entity/scene-1-entity": Object {
+        "storyboard-entity/scene-1-entity": Object {
           "children": Array [
-            ":storyboard-entity/scene-1-entity/app-entity",
+            "storyboard-entity/scene-1-entity/app-entity",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard-entity/scene-1-entity/app-entity": Object {
+        "storyboard-entity/scene-1-entity/app-entity": Object {
           "children": Array [],
           "name": "App",
-          "rootElements": Array [],
-        },
-        ":storyboard-entity/scene-2-entity": Object {
-          "children": Array [
-            ":storyboard-entity/scene-2-entity/same-file-app-entity",
-          ],
-          "name": "Scene",
-          "rootElements": Array [],
-        },
-        ":storyboard-entity/scene-2-entity/same-file-app-entity": Object {
-          "children": Array [],
-          "name": "SameFileApp",
           "rootElements": Array [],
         },
         "storyboard-entity/scene-1-entity/app-entity:app-outer-div": Object {
@@ -1073,6 +1061,18 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle": Object {
           "children": Array [],
           "name": "Rectangle",
+          "rootElements": Array [],
+        },
+        "storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-2-entity/same-file-app-entity",
+          ],
+          "name": "Scene",
+          "rootElements": Array [],
+        },
+        "storyboard-entity/scene-2-entity/same-file-app-entity": Object {
+          "children": Array [],
+          "name": "SameFileApp",
           "rootElements": Array [],
         },
         "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div": Object {
@@ -1085,37 +1085,23 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
 
     expect(sanitizedDomMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard-entity": Object {
+        "storyboard-entity": Object {
           "children": Array [],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard-entity/scene-1-entity": Object {
+        "storyboard-entity/scene-1-entity": Object {
           "children": Array [
-            ":storyboard-entity/scene-1-entity/app-entity",
+            "storyboard-entity/scene-1-entity/app-entity",
           ],
           "name": "div",
           "rootElements": Array [],
         },
-        ":storyboard-entity/scene-1-entity/app-entity": Object {
+        "storyboard-entity/scene-1-entity/app-entity": Object {
           "children": Array [],
           "name": "div",
           "rootElements": Array [
             "storyboard-entity/scene-1-entity/app-entity:app-outer-div",
-          ],
-        },
-        ":storyboard-entity/scene-2-entity": Object {
-          "children": Array [
-            ":storyboard-entity/scene-2-entity/same-file-app-entity",
-          ],
-          "name": "div",
-          "rootElements": Array [],
-        },
-        ":storyboard-entity/scene-2-entity/same-file-app-entity": Object {
-          "children": Array [],
-          "name": "div",
-          "rootElements": Array [
-            "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div",
           ],
         },
         "storyboard-entity/scene-1-entity/app-entity:app-outer-div": Object {
@@ -1150,6 +1136,20 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "name": "div",
           "rootElements": Array [],
         },
+        "storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-2-entity/same-file-app-entity",
+          ],
+          "name": "div",
+          "rootElements": Array [],
+        },
+        "storyboard-entity/scene-2-entity/same-file-app-entity": Object {
+          "children": Array [],
+          "name": "div",
+          "rootElements": Array [
+            "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div",
+          ],
+        },
         "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div": Object {
           "children": Array [],
           "name": "div",
@@ -1160,40 +1160,26 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
 
     expect(sanitizedFinalMetadata).toMatchInlineSnapshot(`
       Object {
-        ":storyboard-entity": Object {
+        "storyboard-entity": Object {
           "children": Array [
-            ":storyboard-entity/scene-1-entity",
-            ":storyboard-entity/scene-2-entity",
+            "storyboard-entity/scene-1-entity",
+            "storyboard-entity/scene-2-entity",
           ],
           "name": "Storyboard",
           "rootElements": Array [],
         },
-        ":storyboard-entity/scene-1-entity": Object {
+        "storyboard-entity/scene-1-entity": Object {
           "children": Array [
-            ":storyboard-entity/scene-1-entity/app-entity",
+            "storyboard-entity/scene-1-entity/app-entity",
           ],
           "name": "Scene",
           "rootElements": Array [],
         },
-        ":storyboard-entity/scene-1-entity/app-entity": Object {
+        "storyboard-entity/scene-1-entity/app-entity": Object {
           "children": Array [],
           "name": "App",
           "rootElements": Array [
             "storyboard-entity/scene-1-entity/app-entity:app-outer-div",
-          ],
-        },
-        ":storyboard-entity/scene-2-entity": Object {
-          "children": Array [
-            ":storyboard-entity/scene-2-entity/same-file-app-entity",
-          ],
-          "name": "Scene",
-          "rootElements": Array [],
-        },
-        ":storyboard-entity/scene-2-entity/same-file-app-entity": Object {
-          "children": Array [],
-          "name": "SameFileApp",
-          "rootElements": Array [
-            "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div",
           ],
         },
         "storyboard-entity/scene-1-entity/app-entity:app-outer-div": Object {
@@ -1227,6 +1213,20 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           "children": Array [],
           "name": "Rectangle",
           "rootElements": Array [],
+        },
+        "storyboard-entity/scene-2-entity": Object {
+          "children": Array [
+            "storyboard-entity/scene-2-entity/same-file-app-entity",
+          ],
+          "name": "Scene",
+          "rootElements": Array [],
+        },
+        "storyboard-entity/scene-2-entity/same-file-app-entity": Object {
+          "children": Array [],
+          "name": "SameFileApp",
+          "rootElements": Array [
+            "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div",
+          ],
         },
         "storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div": Object {
           "children": Array [],

@@ -193,7 +193,6 @@ import {
   canvasFrameToNormalisedFrame,
   clearDragState,
   duplicate,
-  filterMultiSelectScenes,
   getFrameChange,
   moveTemplate,
   produceCanvasTransientState,
@@ -1537,7 +1536,7 @@ export const UPDATE_FNS = {
 
     return {
       ...withMovedTemplate,
-      selectedViews: filterMultiSelectScenes(newPaths),
+      selectedViews: newPaths,
       highlightedViews: [],
     }
   },
@@ -1656,7 +1655,7 @@ export const UPDATE_FNS = {
       (path) => !TP.containsPath(path, newlySelectedPaths),
     )
 
-    const filteredNewlySelectedPaths = filterMultiSelectScenes(newlySelectedPaths)
+    const filteredNewlySelectedPaths = newlySelectedPaths
     const updatedEditor: EditorModel = {
       ...editor,
       highlightedViews: newHighlightedViews,
@@ -1707,7 +1706,7 @@ export const UPDATE_FNS = {
 
     return {
       ...editor,
-      selectedViews: filterMultiSelectScenes([...editor.selectedViews, ...additionalTargets]),
+      selectedViews: [...editor.selectedViews, ...additionalTargets],
       pasteTargetsToIgnore: [],
     }
   },
@@ -1866,7 +1865,7 @@ export const UPDATE_FNS = {
     )
     return {
       ...withNewElement,
-      selectedViews: filterMultiSelectScenes(newSelectedViews),
+      selectedViews: newSelectedViews,
     }
   },
   WRAP_IN_VIEW: (

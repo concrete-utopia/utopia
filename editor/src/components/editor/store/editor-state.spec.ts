@@ -47,7 +47,7 @@ describe('modifyUnderlyingTarget', () => {
     projectContents: defaultProjectContentsForNormalising(),
   }
   it('changes something in the same file', () => {
-    const pathToElement = instancePathFromString(':app-outer-div/card-instance')
+    const pathToElement = instancePathFromString('app-outer-div/card-instance')
     const actualResult = modifyUnderlyingTarget(
       pathToElement,
       '/src/app.js',
@@ -83,7 +83,7 @@ describe('modifyUnderlyingTarget', () => {
     `)
   })
   it('changes something in the imports of the same file', () => {
-    const pathToElement = instancePathFromString(':card-outer-div/card-inner-div')
+    const pathToElement = instancePathFromString('card-outer-div/card-inner-div')
     const actualResult = modifyUnderlyingTarget(
       pathToElement,
       '/src/card.js',
@@ -161,7 +161,7 @@ describe('modifyUnderlyingTarget', () => {
     `)
   })
   it('tries to change something in a nonsense template path', () => {
-    const pathToElement = instancePathFromString(':moon-palace/living-room')
+    const pathToElement = instancePathFromString('moon-palace/living-room')
     const modifyCall = () =>
       modifyUnderlyingTarget(
         pathToElement,
@@ -179,7 +179,7 @@ describe('modifyUnderlyingTarget', () => {
     expect(modifyCall).toThrowError(`Did not find element to transform moon-palace/living-room`)
   })
   it('tries to change something in a nonsense file path', () => {
-    const pathToElement = instancePathFromString(':app-outer-div/card-instance')
+    const pathToElement = instancePathFromString('app-outer-div/card-instance')
     const modifyCall = () =>
       modifyUnderlyingTarget(
         pathToElement,

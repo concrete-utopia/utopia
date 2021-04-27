@@ -89,7 +89,6 @@ import {
   InstancePathKeepDeepEquality,
   InstancePathArrayKeepDeepEquality,
   JSXElementNameKeepDeepEqualityCall,
-  ScenePathKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
 import {

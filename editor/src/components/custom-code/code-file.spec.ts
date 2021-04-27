@@ -423,7 +423,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       ),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(instancePathFromString(':same-file-app-div')),
+      TP.dynamicPathToStaticPath(instancePathFromString('same-file-app-div')),
       StoryboardFilePath,
       getTextFileByPath(projectContents, StoryboardFilePath),
     )
@@ -439,7 +439,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       ),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(instancePathFromString(':card-outer-div/card-inner-div')),
+      TP.dynamicPathToStaticPath(instancePathFromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
     )
@@ -450,10 +450,10 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       '/src/card.js',
-      instancePathFromString(':card-outer-div/card-inner-div'),
+      instancePathFromString('card-outer-div/card-inner-div'),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(instancePathFromString(':card-outer-div/card-inner-div')),
+      TP.dynamicPathToStaticPath(instancePathFromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
     )
@@ -464,7 +464,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       '/src/nonexistant.js',
-      instancePathFromString(':card-outer-div/card-inner-div'),
+      instancePathFromString('card-outer-div/card-inner-div'),
     )
     const expectedResult = normalisePathUnableToProceed('/src/nonexistant.js')
     expect(actualResult).toEqual(expectedResult)
