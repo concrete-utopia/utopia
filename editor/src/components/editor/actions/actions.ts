@@ -3177,7 +3177,7 @@ export const UPDATE_FNS = {
           return packageStatus
         }, {})
 
-        fetchNodeModules(deps).then((fetchNodeModulesResult) => {
+        fetchNodeModules(deps, 'canvas').then((fetchNodeModulesResult) => {
           const loadedPackagesStatus = createLoadedPackageStatusMapFromDependencies(
             deps,
             fetchNodeModulesResult.dependenciesWithError,
@@ -4358,7 +4358,7 @@ export async function newProject(
 ): Promise<void> {
   const defaultPersistentModel = defaultProject()
   const npmDependencies = dependenciesWithEditorRequirements(defaultPersistentModel.projectContents)
-  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies)
+  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, 'canvas')
 
   const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
   const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(
@@ -4421,7 +4421,11 @@ export async function load(
   // this action is now async!
   const migratedModel = applyMigrations(model)
   const npmDependencies = dependenciesWithEditorRequirements(migratedModel.projectContents)
-  const fetchNodeModulesResult = await fetchNodeModules(npmDependencies, retryFetchNodeModules)
+  const fetchNodeModulesResult = await fetchNodeModules(
+    npmDependencies,
+    'canvas',
+    retryFetchNodeModules,
+  )
 
   const nodeModules: NodeModules = fetchNodeModulesResult.nodeModules
   const packageResult: PackageStatusMap = createLoadedPackageStatusMapFromDependencies(

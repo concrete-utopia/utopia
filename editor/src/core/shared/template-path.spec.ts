@@ -37,6 +37,56 @@ describe('serialization', function () {
   })
 })
 
+describe('isDescendantOf', () => {
+  it('returns true if it is a descendant from the same instance', () => {
+    const result = TP.isDescendantOf(
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['X', 'Y']),
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['X']),
+    )
+    chaiExpect(result).to.be.true
+  })
+
+  it('returns true if it is a descendant from a higher instance', () => {
+    const result = TP.isDescendantOf(
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['X', 'Y']),
+      TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]),
+    )
+    chaiExpect(result).to.be.true
+  })
+
+  it('returns true if it is a descendant of a descendant from a higher instance', () => {
+    const result = TP.isDescendantOf(
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['X', 'Y']),
+      TP.scenePath([[BakedInStoryboardUID]]),
+    )
+    chaiExpect(result).to.be.true
+  })
+
+  it('returns false if it is the same path', () => {
+    const result = TP.isDescendantOf(
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['X']),
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['X']),
+    )
+    chaiExpect(result).to.be.false
+  })
+
+  it('returns false if not a descendant', () => {
+    const result = TP.isDescendantOf(
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['X']),
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['Y']),
+    )
+    chaiExpect(result).to.be.false
+  })
+
+  it('returns false if it is a parent of the target', () => {
+    const result = TP.isDescendantOf(
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['X']),
+      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['X', 'Y']),
+    )
+    chaiExpect(result).to.be.false
+  })
+})
+
 describe('isAncestorOf', () => {
   it('is not an ancestor', () => {
     const result = TP.isAncestorOf(

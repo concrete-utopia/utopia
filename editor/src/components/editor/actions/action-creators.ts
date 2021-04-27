@@ -947,10 +947,12 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
 
 export function saveDOMReport(
   elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+  cachedTreeRoots: Array<TemplatePath>,
 ): SaveDOMReport {
   return {
     action: 'SAVE_DOM_REPORT',
     elementMetadata: elementMetadata,
+    cachedTreeRoots: cachedTreeRoots,
   }
 }
 

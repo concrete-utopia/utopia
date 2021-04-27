@@ -608,6 +608,7 @@ export interface SendLinterRequestMessage {
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ReadonlyArray<ElementInstanceMetadata>
+  cachedTreeRoots: Array<TemplatePath>
 }
 
 export interface SetProp {
