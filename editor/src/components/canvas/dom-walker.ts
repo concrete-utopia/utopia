@@ -702,7 +702,7 @@ function walkScene(
             rootMetadataAccumulator.push(elem)
           }
         })
-        return { metadata: rootMetadataAccumulator, cachedTreeRoots: [scenePath] }
+        return { metadata: rootMetadataAccumulator, cachedTreeRoots: [instancePath] }
       }
     }
   }
