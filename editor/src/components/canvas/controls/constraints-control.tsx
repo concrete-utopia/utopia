@@ -21,22 +21,13 @@ export class ConstraintsControls extends React.Component<ConstraintsControlProps
       this.props.componentMetadata,
       this.props.selectedViews,
     )
-    const anyUnknownElements = this.props.selectedViews.some((selectedView) => {
-      const elementOriginType = withUnderlyingTarget<ElementOriginType>(
-        selectedView,
-        this.props.projectContents,
-        this.props.nodeModules,
-        this.props.openFile,
-        'unknown-element',
-        (success, element, underlyingTarget, underlyingFilePath) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(success),
-            underlyingTarget,
-          )
-        },
-      )
-      return isUnknownOrGeneratedElement(elementOriginType)
-    })
+    const anyUnknownElements = MetadataUtils.anyUnknownOrGeneratedElements(
+      this.props.projectContents,
+      this.props.nodeModules,
+      this.props.openFile,
+      this.props.selectedViews,
+    )
+
     const validResizeDragState =
       this.props.dragState == null || this.props.dragState.type === 'RESIZE_DRAG_STATE'
 

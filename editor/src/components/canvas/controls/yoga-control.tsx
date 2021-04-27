@@ -129,22 +129,12 @@ export class YogaControls extends React.Component<YogaControlsProps> {
       )
     })
 
-    const unknownElementsSelected = this.props.selectedViews.some((selectedView) => {
-      const elementOriginType = withUnderlyingTarget<ElementOriginType>(
-        selectedView,
-        this.props.projectContents,
-        this.props.nodeModules,
-        this.props.openFile,
-        'unknown-element',
-        (success, element, underlyingTarget, underlyingFilePath) => {
-          return MetadataUtils.getElementOriginType(
-            getUtopiaJSXComponentsFromSuccess(success),
-            underlyingTarget,
-          )
-        },
-      )
-      return isUnknownOrGeneratedElement(elementOriginType)
-    })
+    const unknownElementsSelected = MetadataUtils.anyUnknownOrGeneratedElements(
+      this.props.projectContents,
+      this.props.nodeModules,
+      this.props.openFile,
+      this.props.selectedViews,
+    )
 
     const showResizeControl =
       targets.length === 1 && everyThingIsYogaLayouted && !unknownElementsSelected

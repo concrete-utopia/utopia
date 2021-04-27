@@ -79,6 +79,8 @@ import {
   id,
   Imports,
   InstancePath,
+  isUnknownOrGeneratedElement,
+  NodeModules,
   PropertyPath,
   ScenePath,
   StaticInstancePath,
@@ -95,11 +97,14 @@ import {
   isSceneAgainstImports,
   isUtopiaAPIComponent,
   isViewAgainstImports,
+  getUtopiaJSXComponentsFromSuccess,
 } from './project-file-utils'
 import { EmptyScenePathForStoryboard, ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
+import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import { ProjectContentTreeRoot } from '../../components/assets'
 const ObjectPathImmutable: any = OPI
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
@@ -155,14 +160,26 @@ export const MetadataUtils = {
     }
   },
   anyUnknownOrGeneratedElements(
-    elements: Array<UtopiaJSXComponent>,
+    projectContents: ProjectContentTreeRoot,
+    nodeModules: NodeModules,
+    openFile: string | null,
     targets: Array<TemplatePath>,
   ): boolean {
     return targets.some((target) => {
-      const originType = this.getElementOriginType(elements, target)
-      return (
-        originType === 'unknown-element' || originType === 'generated-static-definition-present'
+      const elementOriginType = withUnderlyingTarget<ElementOriginType>(
+        target,
+        projectContents,
+        nodeModules,
+        openFile,
+        'unknown-element',
+        (success, element, underlyingTarget, underlyingFilePath) => {
+          return MetadataUtils.getElementOriginType(
+            getUtopiaJSXComponentsFromSuccess(success),
+            underlyingTarget,
+          )
+        },
       )
+      return isUnknownOrGeneratedElement(elementOriginType)
     })
   },
   findElementByTemplatePathDontThrowOnScenes(
