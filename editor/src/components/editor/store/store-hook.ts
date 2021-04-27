@@ -156,13 +156,13 @@ export function useSelectorWithCallback<U>(
   const callbackRef = React.useRef(callback)
   callbackRef.current = callback // the callback function is possibly a new function instance every time this hook is called, but we don't want to re-subscribe because of that
 
-  React.useEffect(() => {
-    if (explainMe) {
-      console.info('subscribing to the api')
-    }
-    const unsubscribe = api.subscribe(
-      (newSlice) => {
-        if (newSlice) {
+  const previouslySelectedStateRef = React.useRef(selectorRef.current(api.getState()))
+
+  const innerCallback = React.useCallback<(newSlice: U | null) => void>(
+    (newSlice) => {
+      if (newSlice != null) {
+        // innerCallback is called by Zustand and also by us, to make sure everything is correct we run our own equality check before calling the user's callback here
+        if (!equalityFnRef.current(previouslySelectedStateRef.current, newSlice)) {
           if (explainMe) {
             console.info(
               'selected state has a new value according to the provided equalityFn, notifying callback',
@@ -170,7 +170,34 @@ export function useSelectorWithCallback<U>(
             )
           }
           callbackRef.current(newSlice)
+          previouslySelectedStateRef.current = newSlice
         }
+      }
+    },
+    [explainMe],
+  )
+
+  /**
+   * When the EditorStore is updated, the api.subscribers are called in order. There's a chance one of our parents will be called sooner than us.
+   * To make sure the callback is fired when useSelectorWithCallback is called, we manually run the equality check and call the callback if needed.
+   * But then to avoid double-calling the callback, we need to prevent it from running again once zustand gets here
+   */
+
+  if (explainMe) {
+    console.info('useSelectorWithCallback was executed so we call the callback ourselves')
+  }
+  innerCallback(selectorRef.current(api.getState()))
+
+  React.useEffect(() => {
+    if (explainMe) {
+      console.info('subscribing to the api')
+    }
+    const unsubscribe = api.subscribe(
+      (newSlice) => {
+        if (explainMe) {
+          console.info('the Zustand api.subscribe is calling our callback')
+        }
+        innerCallback(newSlice)
       },
       (store: EditorStore) => selectorRef.current(store),
       (oldValue: any, newValue: any) => equalityFnRef.current(oldValue, newValue),
@@ -181,5 +208,5 @@ export function useSelectorWithCallback<U>(
       }
       unsubscribe()
     }
-  }, [api, explainMe])
+  }, [api, innerCallback, explainMe])
 }
