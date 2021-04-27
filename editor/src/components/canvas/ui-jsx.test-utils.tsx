@@ -16,7 +16,7 @@ const monkeyCreateElement = (...params: any[]) => {
 
 jest.setTimeout(10000) // in milliseconds
 
-import { act, render } from '@testing-library/react'
+import { act, render, RenderResult } from '@testing-library/react'
 import * as Prettier from 'prettier'
 import create from 'zustand'
 import {
@@ -58,7 +58,14 @@ import {
 } from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { scenePath, staticScenePath } from '../../core/shared/template-path'
+import {
+  emptyScenePath,
+  instancePath,
+  scenePath,
+  staticElementPath,
+  staticInstancePath,
+  staticScenePath,
+} from '../../core/shared/template-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
@@ -81,16 +88,29 @@ export async function renderTestEditorWithProjectContent(projectContent: Project
   return renderTestEditorWithModel(persistentModelForProjectContents(projectContent))
 }
 
-export async function renderTestEditorWithModel(model: PersistentModel) {
+export async function renderTestEditorWithModel(
+  model: PersistentModel,
+): Promise<{
+  dispatch: (actions: ReadonlyArray<EditorAction>, waitForDOMReport: boolean) => Promise<void>
+  getDomReportDispatched: () => Promise<void>
+  getDispatchFollowUpactionsFinished: () => Promise<void>
+  getEditorState: () => EditorStore
+  renderedDOM: RenderResult
+  getNumberOfCommits: () => number
+  getNumberOfRenders: () => number
+  clearRecordedActions: () => void
+  getRecordedActions: () => ReadonlyArray<EditorAction>
+}> {
   const renderCountBaseline = renderCount
+  let recordedActions: Array<EditorAction> = []
 
   let emptyEditorState = createEditorState(NO_OP)
   const derivedState = deriveState(emptyEditorState, null)
 
   const history = History.init(emptyEditorState, derivedState)
 
-  let domReportDispatched = Utils.defer()
-  let dispatchFollowUpActionsFinished = Utils.defer()
+  let domReportDispatched = Utils.defer<void>()
+  let dispatchFollowUpActionsFinished = Utils.defer<void>()
 
   function resetPromises() {
     domReportDispatched = Utils.defer()
@@ -113,11 +133,12 @@ export async function renderTestEditorWithModel(model: PersistentModel) {
     waitForDispatchEntireUpdate = false,
     waitForADomReport = false,
   ) => {
+    recordedActions.push(...actions)
     const result = editorDispatch(asyncTestDispatch, actions, workingEditorState, spyCollector)
     result.entireUpdateFinished.then(() => dispatchFollowUpActionsFinished.resolve())
     workingEditorState = result
     if (actions[0]?.action === 'SAVE_DOM_REPORT') {
-      domReportDispatched.resolve(true)
+      domReportDispatched.resolve()
     }
     if (waitForDispatchEntireUpdate) {
       await Utils.timeLimitPromise(
@@ -211,6 +232,10 @@ export async function renderTestEditorWithModel(model: PersistentModel) {
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
+    clearRecordedActions: () => {
+      recordedActions = []
+    },
+    getRecordedActions: () => recordedActions,
   }
 }
 
@@ -240,6 +265,7 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
 
 export const TestSceneUID = 'scene-aaa'
 export const TestAppUID = 'app-entity'
+export const TestStoryboardPath = instancePath(emptyScenePath, [BakedInStoryboardUID])
 const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
 export const TestScenePath = scenePath(TestSceneElementPaths)
 export const TestStaticScenePath = testStaticScenePath(TestSceneElementPaths)
