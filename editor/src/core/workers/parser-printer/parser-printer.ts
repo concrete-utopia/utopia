@@ -1294,7 +1294,10 @@ export function parseCode(
               }
             }
           } else {
-            highlightBounds = parsedContents.value.highlightBounds
+            highlightBounds = {
+              ...highlightBounds,
+              ...parsedContents.value.highlightBounds,
+            }
             const contents = parsedContents.value.value
             // If propsUsed is already populated, it's because the user used destructuring, so we can
             // use that. Otherwise, we have to use the list retrieved during parsing
