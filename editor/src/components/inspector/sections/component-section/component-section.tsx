@@ -92,6 +92,7 @@ import {
   isAnimatedElementAgainstImports,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
+import { theme } from 'react-contexify'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -643,7 +644,10 @@ export const ComponentSectionInner = betterReactMemo(
       (rootParseError) => {
         return (
           <>
-            <InspectorSectionHeader>Component props</InspectorSectionHeader>
+            <InspectorSectionHeader style={{ color: colorTheme.primary.value }}>
+              {' '}
+              Component{' '}
+            </InspectorSectionHeader>
             <ParseErrorControl parseError={rootParseError} />
           </>
         )
@@ -654,7 +658,13 @@ export const ComponentSectionInner = betterReactMemo(
           return (
             <>
               <InspectorSectionHeader>
-                <SimpleFlexRow style={{ flexGrow: 1 }}>Component</SimpleFlexRow>
+                <UIGridRow
+                  padded
+                  variant='<-------------1fr------------->'
+                  style={{ flexGrow: 1, color: colorTheme.primary.value }}
+                >
+                  Component
+                </UIGridRow>
                 {/* <SquareButton highlight onClick={onResetClicked}>
                   <InstanceContextMenu
                     propNames={propNames}
@@ -767,7 +777,13 @@ export const ComponentSectionInner = betterReactMemo(
           return (
             <>
               <InspectorSectionHeader>
-                <SimpleFlexRow style={{ flexGrow: 1 }}>Component</SimpleFlexRow>
+                <UIGridRow
+                  padded
+                  variant='<-------------1fr------------->'
+                  style={{ flexGrow: 1, color: colorTheme.primary.value }}
+                >
+                  Component
+                </UIGridRow>
               </InspectorSectionHeader>
 
               {isImportedComponentNPM(componentNameJsx!, imports) ? (
