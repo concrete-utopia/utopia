@@ -60,7 +60,6 @@ declare module 'utopia-api/index' {
   export * from 'utopia-api/primitives/scene';
   export * from 'utopia-api/primitives/storyboard';
   export * from 'utopia-api/helpers/helper-functions';
-  export * from 'utopia-api/pragma/pragma';
   export * from 'utopia-api/property-controls/property-controls';
 
 }
@@ -293,17 +292,6 @@ declare module 'utopia-api/layout/pins.spec' {
   export {};
 
 }
-declare module 'utopia-api/pragma/pragma' {
-  import * as React from 'react';
-  import { LayoutProps } from 'utopia-api/layout/layout';
-  module 'react' {
-      interface DOMAttributes<T> {
-          layout?: LayoutProps;
-      }
-  }
-  export const jsx: (type: any, ...pragmaParams: any[]) => React.CElement<any, React.Component<any, any, any>> | React.FunctionComponentElement<Pick<any, string | number | symbol> & React.RefAttributes<unknown>>;
-
-}
 declare module 'utopia-api/primitives/common' {
   import * as React from 'react';
   import { LayoutProps } from 'utopia-api/layout/layout';
@@ -516,10 +504,6 @@ declare module 'utopia-api/property-controls/property-controls' {
   export function getDefaultProps(propertyControls: PropertyControls): {
       [prop: string]: unknown;
   };
-  export {};
-
-}
-declare module 'utopia-api/tests/render-tests.spec' {
   export {};
 
 }

@@ -15,5 +15,4 @@ export * from './primitives/storyboard'
 
 export * from './helpers/helper-functions'
 
-export * from './pragma/pragma'
 export * from './property-controls/property-controls'

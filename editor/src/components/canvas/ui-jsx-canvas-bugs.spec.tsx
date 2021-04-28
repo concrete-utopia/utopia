@@ -7,7 +7,7 @@ describe('UiJsxCanvas', () => {
       `
 /** @jsx jsx */
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 
 const DefaultComments = [
   {

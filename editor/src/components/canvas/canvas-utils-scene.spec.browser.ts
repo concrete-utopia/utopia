@@ -129,9 +129,9 @@ describe('moving a scene/rootview on the canvas', () => {
 
   it('dragging a scene sets the scene position', async () => {
     const testCode = Prettier.format(
-      `/** @jsx jsx */
+      `
         import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
+        import { Scene, Storyboard, View } from 'utopia-api'
 
         export var App = (props) => {
           return (
@@ -239,9 +239,9 @@ describe('moving a scene/rootview on the canvas', () => {
       await dispatchDone
     })
 
-    const expectedCode = `/** @jsx jsx */
+    const expectedCode = `
     import * as React from 'react'
-    import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    import { Scene, Storyboard, View } from 'utopia-api'
 
     export var App = (props) => {
       return (
@@ -283,9 +283,9 @@ describe('resizing a scene/rootview on the canvas', () => {
 
   it('resizing a scene child’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
-      `/** @jsx jsx */
+      `
         import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
+        import { Scene, Storyboard, View } from 'utopia-api'
 
         export var App = (props) => {
           return (
@@ -375,9 +375,9 @@ describe('resizing a scene/rootview on the canvas', () => {
       await dispatchDone
     })
 
-    const expectedCode = `/** @jsx jsx */
+    const expectedCode = `
     import * as React from 'react'
-    import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    import { Scene, Storyboard, View } from 'utopia-api'
 
     export var App = (props) => {
       return (
@@ -415,9 +415,9 @@ describe('resizing a scene/rootview on the canvas', () => {
 
   it('resizing a scene sets the scene size', async () => {
     const testCode = Prettier.format(
-      `/** @jsx jsx */
+      `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
 
       export var App = (props) => {
         return (
@@ -507,9 +507,9 @@ describe('resizing a scene/rootview on the canvas', () => {
       await dispatchDone
     })
 
-    const expectedCode = `/** @jsx jsx */
+    const expectedCode = `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
 
       export var App = (props) => {
         return (

@@ -924,9 +924,9 @@ describe('inspector tests with real metadata', () => {
   it('Style using react props', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1221,9 +1221,9 @@ describe('inspector tests with real metadata', () => {
   it('Style is using css className', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1323,9 +1323,9 @@ describe('inspector tests with real metadata', () => {
   it('Style is using css className, with default values', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1436,9 +1436,9 @@ describe('inspector tests with real metadata', () => {
   it('Empty style with lots of trivial defaults', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1681,9 +1681,9 @@ describe('inspector tests with real metadata', () => {
       '/utopia': directory(),
       [StoryboardFilePath]: createCodeFile(
         StoryboardFilePath,
-        `/** @jsx jsx */
+        `
   import * as React from 'react'
-  import { Scene, Storyboard, jsx } from 'utopia-api'
+  import { Scene, Storyboard } from 'utopia-api'
   import { App } from '/src/app.js'
 
   export var storyboard = (
@@ -1699,7 +1699,7 @@ describe('inspector tests with real metadata', () => {
       ),
       '/src/app.js': createCodeFile(
         '/src/app.js',
-        `/** @jsx jsx */
+        `
   import * as React from 'react'
   import { jsx } from 'utopia-api'
   export var App = (props) => {

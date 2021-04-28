@@ -21,7 +21,7 @@ describe('Parsing JSX Pragma:', () => {
   })
 
   it('parses a simple pragma', () => {
-    const code = `/** @jsx jsx */
+    const code = `
     import Button, { LABEL } from "./src/components";
     import * as React from "react";
     import { Ellipse, Image, Rectangle, Text, UtopiaUtils, View, jsx } from "utopia-api";
@@ -38,7 +38,7 @@ describe('Parsing JSX Pragma:', () => {
 
   it('parses and prints back the same code', () => {
     const code = applyPrettier(
-      `/** @jsx jsx */
+      `
     import Button, { LABEL } from "./src/components";
     import * as React from "react";
     import { Ellipse, Image, Rectangle, Scene, Storyboard, Text, UtopiaUtils, View, jsx } from "utopia-api";

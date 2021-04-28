@@ -3,7 +3,7 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model
 
 describe('Storyboard project files', () => {
   it('are parsed and printed correctly', () => {
-    const originalCode = `/** @jsx jsx */
+    const originalCode = `
 import * as React from 'react'
 import { Canvas, Scene, View, jsx } from 'utopia-api'
 

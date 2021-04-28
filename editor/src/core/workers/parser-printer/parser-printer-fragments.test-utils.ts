@@ -3,7 +3,7 @@ import { BakedInStoryboardVariableName } from '../../model/scene-utils'
 export const AwkwardFragmentsCode = `
 /** @jsx jsx */
 import * as React from 'react'
-import { Scene, Storyboard, View, jsx } from 'utopia-api'
+import { Scene, Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return (
     <View

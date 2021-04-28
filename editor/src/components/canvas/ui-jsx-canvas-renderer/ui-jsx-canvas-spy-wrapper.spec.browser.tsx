@@ -15,7 +15,7 @@ import { setFocusedElement } from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
 import { renderTestEditorWithCode, renderTestEditorWithProjectContent } from '../ui-jsx.test-utils'
 
-const exampleProject = `/** @jsx jsx */
+const exampleProject = `
 import * as React from "react";
 import { Scene, Storyboard, jsx } from "utopia-api";
 import { View } from "utopia-api";

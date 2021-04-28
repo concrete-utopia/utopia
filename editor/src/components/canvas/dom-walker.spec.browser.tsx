@@ -105,13 +105,11 @@ describe('DOM Walker tests', () => {
   it('Simple Project with one child View', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return (
@@ -152,13 +150,11 @@ describe('DOM Walker tests', () => {
   it('Simple Project with divs', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return (
@@ -199,13 +195,11 @@ describe('DOM Walker tests', () => {
   it('Simple Project with flex parent', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return (
@@ -246,13 +240,11 @@ describe('DOM Walker tests', () => {
   it('Label carried through for normal elements', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
@@ -279,13 +271,11 @@ describe('DOM Walker tests', () => {
   it('Label carried through for generated elements', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return <div style={{ ...props.style}} data-uid={'aaa'}>

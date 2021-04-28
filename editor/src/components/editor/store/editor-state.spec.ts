@@ -63,7 +63,7 @@ describe('modifyUnderlyingTarget', () => {
     )
     const resultingCode = getCodeForFile(actualResult, '/src/app.js')
     expect(resultingCode).toMatchInlineSnapshot(`
-      "/** @jsx jsx */
+      "
       import * as React from 'react'
       import { jsx } from 'utopia-api'
       import { Card } from '/src/card.js'
@@ -127,9 +127,8 @@ describe('modifyUnderlyingTarget', () => {
     )
     const resultingCode = getCodeForFile(actualResult, '/src/card.js')
     expect(resultingCode).toMatchInlineSnapshot(`
-      "/** @jsx jsx */
-      import * as React from 'react'
-      import { jsx, Rectangle } from 'utopia-api'
+      "import * as React from 'react'
+      import { Rectangle } from 'utopia-api'
       export var Card = (props) => {
         return (
           <div style={{ ...props.style }}>
