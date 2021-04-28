@@ -984,7 +984,10 @@ return { getSizing: getSizing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      setModifierDefaultExportInDetail(
+        addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+        'getSizing',
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1084,7 +1087,10 @@ return { getSizing: getSizing };`
       expect.objectContaining({}),
       null,
       clearArbitraryJSBlockUniqueIDs(arbitraryBlock),
-      addModifierExportToDetail(EmptyExportsDetail, 'whatever'),
+      addModifierExportToDetail(
+        addModifierExportToDetail(EmptyExportsDetail, 'getSizing'),
+        'whatever',
+      ),
     )
     expect(actualResult).toEqual(expectedResult)
   })
