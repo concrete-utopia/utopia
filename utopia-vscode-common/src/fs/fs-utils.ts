@@ -404,7 +404,6 @@ async function polledWatch(): Promise<void> {
   })
 
   await Promise.all(promises)
-  watchTimeout = setTimeout(polledWatch, POLLING_TIMEOUT) as any
 }
 
 export async function watch(
@@ -429,7 +428,7 @@ export async function watch(
     targets.forEach(startWatchingPath)
 
     if (watchTimeout == null) {
-      watchTimeout = setTimeout(polledWatch, POLLING_TIMEOUT) as any
+      watchTimeout = setInterval(polledWatch, POLLING_TIMEOUT) as any
     }
   }
 }
