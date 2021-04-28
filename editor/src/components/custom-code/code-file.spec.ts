@@ -257,7 +257,7 @@ describe('transpileCode', () => {
           "errors": Array [],
           "sourceMap": Object {
             "file": "app.js",
-            "mappings": ";;;;;;;;;;;;;AAEE,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD;AAAA,SAAW,GAAA,CAAA,KAAA,EAAA;AAAA,gBAAe;AAAf,GAAA,EAAuB,UAAA,CAAA,OAAvB,CAAX;AAAA,CAAN,C",
+            "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACE,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACA,IAAA,UAAA,GAAA,eAAA,CAAA,OAAA,CAAA,YAAA,CAAA,CAAA;;AACW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD;AAAA,SAAW,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AAAA,gBAAe;AAAf,GAAA,EAAuB,UAAA,CAAA,OAAvB,CAAX;AAAA,CAAN,C",
             "names": Array [],
             "sourceRoot": "",
             "sources": Array [
@@ -274,6 +274,40 @@ describe('transpileCode', () => {
           },
           "transpiledCode": "\\"use strict\\";
 
+      var __createBinding = this && this.__createBinding || (Object.create ? function (o, m, k, k2) {
+        if (k2 === undefined) k2 = k;
+        Object.defineProperty(o, k2, {
+          enumerable: true,
+          get: function get() {
+            return m[k];
+          }
+        });
+      } : function (o, m, k, k2) {
+        if (k2 === undefined) k2 = k;
+        o[k2] = m[k];
+      });
+
+      var __setModuleDefault = this && this.__setModuleDefault || (Object.create ? function (o, v) {
+        Object.defineProperty(o, \\"default\\", {
+          enumerable: true,
+          value: v
+        });
+      } : function (o, v) {
+        o[\\"default\\"] = v;
+      });
+
+      var __importStar = this && this.__importStar || function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k in mod) {
+          if (k !== \\"default\\" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+        }
+
+        __setModuleDefault(result, mod);
+
+        return result;
+      };
+
       var __importDefault = this && this.__importDefault || function (mod) {
         return mod && mod.__esModule ? mod : {
           \\"default\\": mod
@@ -285,10 +319,12 @@ describe('transpileCode', () => {
       });
       exports.App = void 0;
 
+      var React = __importStar(require(\\"react\\"));
+
       var icon_css_1 = __importDefault(require(\\"./icon.css\\"));
 
       exports.App = function (props) {
-        return jsx(\\"div\\", {
+        return React.createElement(\\"div\\", {
           \\"data-uid\\": 'aaa'
         }, icon_css_1.default);
       }; //# sourceMappingURL=app.js.map",

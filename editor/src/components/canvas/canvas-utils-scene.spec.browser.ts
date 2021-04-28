@@ -131,7 +131,7 @@ describe('moving a scene/rootview on the canvas', () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
-        import { Scene, Storyboard, View } from 'utopia-api'
+        import { Scene, Storyboard, View, jsx } from 'utopia-api'
 
         export var App = (props) => {
           return (
@@ -241,7 +241,7 @@ describe('moving a scene/rootview on the canvas', () => {
 
     const expectedCode = `
     import * as React from 'react'
-    import { Scene, Storyboard, View } from 'utopia-api'
+    import { Scene, Storyboard, View, jsx } from 'utopia-api'
 
     export var App = (props) => {
       return (
@@ -285,7 +285,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
-        import { Scene, Storyboard, View } from 'utopia-api'
+        import { Scene, Storyboard, View, jsx } from 'utopia-api'
 
         export var App = (props) => {
           return (
@@ -377,7 +377,7 @@ describe('resizing a scene/rootview on the canvas', () => {
 
     const expectedCode = `
     import * as React from 'react'
-    import { Scene, Storyboard, View } from 'utopia-api'
+    import { Scene, Storyboard, View, jsx } from 'utopia-api'
 
     export var App = (props) => {
       return (
@@ -417,7 +417,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     const testCode = Prettier.format(
       `
       import * as React from 'react'
-      import { Scene, Storyboard, View } from 'utopia-api'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
 
       export var App = (props) => {
         return (
@@ -509,7 +509,7 @@ describe('resizing a scene/rootview on the canvas', () => {
 
     const expectedCode = `
       import * as React from 'react'
-      import { Scene, Storyboard, View } from 'utopia-api'
+      import { Scene, Storyboard, View, jsx } from 'utopia-api'
 
       export var App = (props) => {
         return (

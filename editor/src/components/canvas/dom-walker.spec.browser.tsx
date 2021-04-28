@@ -158,16 +158,14 @@ describe('DOM Walker tests', () => {
       } from 'utopia-api'
       export var App = (props) => {
         return (
-          <div style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
+          <div style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'}>
             <div
-              style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, }}
+              style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, left: 55, top: 98, width: 266, height: 124 }}
               data-uid={'ef0'}
-              layout={{ layoutSystem: 'pinSystem', left: 55, top: 98, width: 266, height: 124 }}
             >
               <div
-                style={{ backgroundColor: '#DDDDDD' }}
+                style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 71, top: 27, width: 125, height: 70 }}
                 data-uid={'488'}
-                layout={{ layoutSystem: 'pinSystem', left: 71, top: 27, width: 125, height: 70 }}
               />
             </div>
           </div>
@@ -205,14 +203,12 @@ describe('DOM Walker tests', () => {
         return (
           <div style={{ ...props.style, backgroundColor: '#FFFFFF', display: 'flex' }} data-uid={'05c'}>
             <div
-              style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, }}
+              style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, left: 55, top: 98, width: 266, height: 124 }}
               data-uid={'ef0'}
-              layout={{ layoutSystem: 'pinSystem', left: 55, top: 98, width: 266, height: 124 }}
             >
               <div
-                style={{ backgroundColor: '#DDDDDD' }}
+                style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 71, top: 27, width: 125, height: 70 }}
                 data-uid={'488'}
-                layout={{ left: 71, top: 27, width: 125, height: 70 }}
               />
             </div>
           </div>

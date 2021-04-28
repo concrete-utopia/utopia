@@ -7,6 +7,7 @@ import {
 import * as TP from '../../../core/shared/template-path'
 import {
   makeTestProjectCodeWithSnippet,
+  makeTestProjectCodeWithSnippetStyledComponents,
   renderTestEditorWithCode,
   renderTestEditorWithProjectContent,
   TestAppUID,
@@ -1052,7 +1053,7 @@ describe('inspector tests with real metadata', () => {
   })
   it('CSS props using numbers', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
+      makeTestProjectCodeWithSnippetStyledComponents(`
         <div
           style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
           data-uid={'aaa'}
@@ -1132,7 +1133,7 @@ describe('inspector tests with real metadata', () => {
   })
   it('CSS using default values set inline', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
+      makeTestProjectCodeWithSnippetStyledComponents(`
         <div
           style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
           data-uid={'aaa'}

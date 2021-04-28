@@ -5,7 +5,6 @@ describe('UiJsxCanvas', () => {
     testCanvasRender(
       null,
       `
-/** @jsx jsx */
 import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 

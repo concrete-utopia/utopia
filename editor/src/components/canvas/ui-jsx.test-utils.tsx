@@ -300,6 +300,38 @@ ${snippet}
   return Prettier.format(code, PrettierConfig)
 }
 
+export function makeTestProjectCodeWithSnippetStyledComponents(snippet: string): string {
+  const code = `
+  /** @jsx jsx */
+  import * as React from 'react'
+  import { css, jsx } from '@emotion/react'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+    return (
+${snippet}
+    )
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+      </Storyboard>
+    )
+  }
+`
+  return Prettier.format(code, PrettierConfig)
+}
+
 export function getTestParseSuccess(fileContents: string): ParseSuccess {
   const parseResult = testParseCode(fileContents)
   if (isParseFailure(parseResult)) {

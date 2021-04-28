@@ -63,9 +63,7 @@ describe('modifyUnderlyingTarget', () => {
     )
     const resultingCode = getCodeForFile(actualResult, '/src/app.js')
     expect(resultingCode).toMatchInlineSnapshot(`
-      "
-      import * as React from 'react'
-      import { jsx } from 'utopia-api'
+      "import * as React from 'react'
       import { Card } from '/src/card.js'
       export var App = (props) => {
         return (
