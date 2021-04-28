@@ -16,7 +16,6 @@ import {
 } from './navigator-item-dnd-container'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
-  getOpenImportsFromState,
   defaultElementWarnings,
   EditorStore,
   TransientFileState,

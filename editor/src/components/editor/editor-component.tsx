@@ -127,6 +127,7 @@ export const EditorComponentInner = betterReactMemo(
         handleKeyDown(
           event,
           editorStoreRef.current.editor,
+          editorStoreRef.current.derived,
           namesByKey,
           editorStoreRef.current.dispatch,
         )

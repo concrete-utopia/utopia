@@ -4,9 +4,10 @@ import * as React from 'react'
 import { createContext, useContextSelector } from 'use-context-selector'
 import { PropertyControls } from 'utopia-api'
 import {
-  getOpenImportsFromState,
-  getOpenUtopiaJSXComponentsFromState,
+  forUnderlyingTargetFromEditorState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
+  withUnderlyingTarget,
+  withUnderlyingTargetFromEditorState,
 } from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
 import {
@@ -42,7 +43,11 @@ import {
   StyleLayoutProp,
 } from '../../../core/layout/layout-helpers-new'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isHTMLComponent, isUtopiaAPIComponent } from '../../../core/model/project-file-utils'
+import {
+  getUtopiaJSXComponentsFromSuccess,
+  isHTMLComponent,
+  isUtopiaAPIComponent,
+} from '../../../core/model/project-file-utils'
 import {
   ParsedPropertyControls,
   parsePropertyControls,
@@ -924,27 +929,30 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
   const selectedViews = useRefSelectedViews()
 
   return useEditorState((store) => {
-    const imports = getOpenImportsFromState(store.editor)
-    const rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor)
     const types = selectedViews.current.map((view) => {
       if (TP.isScenePath(view)) {
         return 'scene'
       }
-
-      const element = findElementAtPath(view, rootComponents)
-      if (element == null) {
-        return null
-      } else if (isJSXElement(element)) {
-        if (isUtopiaAPIComponent(element.name, imports)) {
-          return getJSXElementNameLastPart(element.name).toString().toLowerCase()
-        } else if (isHTMLComponent(element.name, imports)) {
-          return element.name.baseVariable
-        } else {
-          return null
-        }
-      } else {
-        return null
-      }
+      return withUnderlyingTarget(
+        view,
+        store.editor.projectContents,
+        store.editor.nodeModules.files,
+        store.editor.canvas.openFile?.filename ?? null,
+        null,
+        (underlyingSuccess, underlyingElement) => {
+          if (isJSXElement(underlyingElement)) {
+            if (isUtopiaAPIComponent(underlyingElement.name, underlyingSuccess.imports)) {
+              return getJSXElementNameLastPart(underlyingElement.name).toString().toLowerCase()
+            } else if (isHTMLComponent(underlyingElement.name, underlyingSuccess.imports)) {
+              return underlyingElement.name.baseVariable
+            } else {
+              return null
+            }
+          } else {
+            return null
+          }
+        },
+      )
     })
     return types.every((type) => {
       const allowedTypes = StyleSubSectionForType[sectionName]
@@ -1007,20 +1015,25 @@ export function useUsedPropsWithoutControls(): Array<string> {
   const selectedViews = useRefSelectedViews()
 
   const selectedComponents = useEditorState((store) => {
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let components: Array<UtopiaJSXComponent> = []
-    const pushComponent = (component: UtopiaJSXComponent) => components.push(component)
     fastForEach(selectedViews.current, (path) => {
-      const element = findElementAtPath(path, rootComponents)
-      if (element != null && isJSXElement(element)) {
-        const noPathName = getJSXElementNameNoPathName(element.name)
-        const underlyingComponent = rootComponents.find(
-          (component) => component.name === noPathName,
-        )
-        forEachOptional(pushComponent, underlyingComponent)
-      }
+      forUnderlyingTargetFromEditorState(
+        path,
+        store.editor,
+        (underlyingSuccess, underlyingElement) => {
+          const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
+          if (underlyingElement != null && isJSXElement(underlyingElement)) {
+            const noPathName = getJSXElementNameNoPathName(underlyingElement.name)
+            for (const component of rootComponents) {
+              if (component.name === noPathName) {
+                components.push(component)
+                break
+              }
+            }
+          }
+        },
+      )
     })
-
     return components
   }, 'useUsedPropsWithoutControls')
 
@@ -1052,19 +1065,24 @@ export function useUsedPropsWithoutDefaults(): Array<string> {
   const selectedViews = useRefSelectedViews()
 
   const selectedComponentProps = useEditorState((store) => {
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let propsUsed: Array<string> = []
-    const pushPropsForComponent = (component: UtopiaJSXComponent) =>
-      propsUsed.push(...component.propsUsed)
     fastForEach(selectedViews.current, (path) => {
-      const element = findElementAtPath(path, rootComponents)
-      if (element != null && isJSXElement(element)) {
-        const noPathName = getJSXElementNameNoPathName(element.name)
-        const underlyingComponent = rootComponents.find(
-          (component) => component.name === noPathName,
-        )
-        forEachOptional(pushPropsForComponent, underlyingComponent)
-      }
+      forUnderlyingTargetFromEditorState(
+        path,
+        store.editor,
+        (underlyingSuccess, underlyingElement) => {
+          const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
+          if (underlyingElement != null && isJSXElement(underlyingElement)) {
+            const noPathName = getJSXElementNameNoPathName(underlyingElement.name)
+            for (const component of rootComponents) {
+              if (component.name === noPathName) {
+                propsUsed.push(...component.propsUsed)
+                break
+              }
+            }
+          }
+        },
+      )
     })
     return propsUsed
   }, 'useUsedPropsWithoutDefaults')
@@ -1077,28 +1095,28 @@ export function useInspectorWarningStatus(): boolean {
   const selectedViews = useSelectedViews()
 
   return useEditorState((store) => {
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(store.editor)
     let hasLayoutInCSSProp = false
     Utils.fastForEach(selectedViews, (view) => {
       if (TP.isScenePath(view) || hasLayoutInCSSProp) {
         return
       }
 
-      const element = findElementAtPath(view, rootComponents)
-      if (element == null || !isJSXElement(element)) {
-        return
-      } else {
-        const cssAttribute = getJSXAttribute(element.props, 'css')
-        if (cssAttribute == null) {
-          return
-        } else {
-          const cssProps = Utils.defaultIfNull(
-            {},
-            eitherToMaybe(jsxSimpleAttributeToValue(cssAttribute)),
-          )
-          hasLayoutInCSSProp = isLayoutPropDetectedInCSS(cssProps)
-        }
-      }
+      forUnderlyingTargetFromEditorState(
+        view,
+        store.editor,
+        (underlyingSuccess, underlyingElement) => {
+          if (isJSXElement(underlyingElement)) {
+            const cssAttribute = getJSXAttribute(underlyingElement.props, 'css')
+            if (cssAttribute != null) {
+              const cssProps = Utils.defaultIfNull(
+                {},
+                eitherToMaybe(jsxSimpleAttributeToValue(cssAttribute)),
+              )
+              hasLayoutInCSSProp = isLayoutPropDetectedInCSS(cssProps)
+            }
+          }
+        },
+      )
     })
     return hasLayoutInCSSProp
   }, 'useInspectorWarningStatus')

@@ -3,7 +3,11 @@ import { FlexStretch, Sides } from 'utopia-api'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
-import { InstancePath } from '../../../core/shared/project-file-types'
+import {
+  ElementOriginType,
+  InstancePath,
+  isUnknownOrGeneratedElement,
+} from '../../../core/shared/project-file-types'
 import { defaultEither, mapEither } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
@@ -14,6 +18,11 @@ import { getOriginalFrames } from '../canvas-utils'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
 import { ResizeRectangle } from './size-box'
+import {
+  getJSXComponentsAndImportsForPathInnerComponent,
+  withUnderlyingTarget,
+} from '../../editor/store/editor-state'
+import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 interface YogaResizeControlProps extends ControlProps {
   targetElement: ElementInstanceMetadata
   target: InstancePath
@@ -25,7 +34,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
   getTargetStretch = (): FlexStretch => {
     const target = this.props.targetElement
     const parentPath = TP.parentPath(this.props.target)
-    const sceneMetadataOrElementMetadata = MetadataUtils.findElementByTemplatePath(
+    const sceneMetadataOrElementMetadata = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
       this.props.componentMetadata,
       parentPath,
     )
@@ -42,10 +51,18 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
 
   getYogaSize = (visualSize: CanvasRectangle): CanvasRectangle => {
     const childStretch = this.getTargetStretch()
+    const { components } = getJSXComponentsAndImportsForPathInnerComponent(
+      this.props.target,
+      this.props.openFile,
+      this.props.projectContents,
+      this.props.nodeModules,
+      this.props.transientState.filesState,
+      this.props.resolve,
+    )
     const yogaSize = MetadataUtils.getYogaSizeProps(
       this.props.target,
       this.props.componentMetadata,
-      this.props.rootComponents,
+      components,
     )
 
     return canvasRectangle({
@@ -111,21 +128,35 @@ export class YogaControls extends React.Component<YogaControlsProps> {
         this.props.componentMetadata,
       )
     })
+
     const unknownElementsSelected = MetadataUtils.anyUnknownOrGeneratedElements(
-      this.props.rootComponents,
+      this.props.projectContents,
+      this.props.nodeModules,
+      this.props.openFile,
       this.props.selectedViews,
     )
+
     const showResizeControl =
       targets.length === 1 && everyThingIsYogaLayouted && !unknownElementsSelected
 
     let color: string = ''
-    if (showResizeControl) {
-      color = getSelectionColor(
-        targets[0],
-        this.props.rootComponents,
-        this.props.componentMetadata,
-        this.props.imports,
-        this.props.focusedElementPath,
+    if (showResizeControl && targets.length > 0) {
+      const selectedView = targets[0]
+      color = withUnderlyingTarget<string>(
+        selectedView,
+        this.props.projectContents,
+        this.props.nodeModules,
+        this.props.openFile,
+        '',
+        (success, element, underlyingTarget, underlyingFilePath) => {
+          return getSelectionColor(
+            underlyingTarget,
+            getUtopiaJSXComponentsFromSuccess(success),
+            this.props.componentMetadata,
+            success.imports,
+            this.props.focusedElementPath,
+          )
+        },
       )
     }
 

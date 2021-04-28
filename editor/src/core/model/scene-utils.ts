@@ -4,6 +4,8 @@ import {
   StaticInstancePath,
   ScenePath,
   PropertyPath,
+  isTextFile,
+  isParseSuccess,
 } from '../shared/project-file-types'
 import {
   UtopiaJSXComponent,
@@ -43,6 +45,8 @@ import { isPercentPin } from 'utopia-api'
 import { UTOPIA_UIDS_KEY } from './utopia-constants'
 import { getUtopiaID } from './element-template-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
+import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 
 export const EmptyScenePathForStoryboard = TP.emptyScenePath
 
@@ -323,14 +327,20 @@ export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string |
 }
 
 export function getStoryboardTemplatePath(
-  openComponents: UtopiaJSXComponent[],
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
 ): StaticInstancePath | null {
-  const possiblyStoryboard = openComponents.find(
-    (component) => component.name === BakedInStoryboardVariableName,
-  )
-  if (possiblyStoryboard != null) {
-    const uid = getUtopiaID(possiblyStoryboard.rootElement)
-    return TP.staticInstancePath(EmptyScenePathForStoryboard, TP.staticElementPath([uid]))
+  if (openFile != null) {
+    const file = getContentsTreeFileFromString(projectContents, openFile)
+    if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+      const possiblyStoryboard = getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed).find(
+        (component) => component.name === BakedInStoryboardVariableName,
+      )
+      if (possiblyStoryboard != null) {
+        const uid = getUtopiaID(possiblyStoryboard.rootElement)
+        return TP.staticInstancePath(EmptyScenePathForStoryboard, TP.staticElementPath([uid]))
+      }
+    }
   }
   return null
 }

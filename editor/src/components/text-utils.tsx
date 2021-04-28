@@ -9,20 +9,27 @@ import {
   ElementInstanceMetadataMap,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
-import { Imports, InstancePath, PropertyPath } from '../core/shared/project-file-types'
+import { Imports, InstancePath, NodeModules, PropertyPath } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
 import { Size } from '../core/shared/math-utils'
 import { EditorAction, EditorDispatch, TextFormattingType } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
-import { EditorState, getOpenImportsFromState } from './editor/store/editor-state'
+import {
+  EditorState,
+  forUnderlyingTarget,
+  withUnderlyingTargetFromEditorState,
+} from './editor/store/editor-state'
 import * as PP from '../core/shared/property-path'
 import { isInstancePath } from '../core/shared/template-path'
 import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
+import { ProjectContentTreeRoot } from './assets'
 
 const ObjectPathImmutable: any = OPI
 
 export function autosizingTextResizeNew(
-  imports: Imports,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null,
   metadata: ElementInstanceMetadataMap,
   targets: Array<InstancePath>,
   dispatch: EditorDispatch,
@@ -37,26 +44,31 @@ export function autosizingTextResizeNew(
   Utils.fastForEach(targets, (target) => {
     const element = MetadataUtils.getElementByInstancePathMaybe(metadata, target)
 
-    if (element != null && MetadataUtils.isTextAgainstImports(imports, element)) {
-      const updatedElementProps = ObjectPathImmutable.set(
-        element.props,
-        PP.toString(property),
-        newValue,
-      )
-      const updatedElement = {
-        ...element,
-        props: updatedElementProps,
-      }
-
-      if (updatedElement.props.textSizing === 'auto') {
-        changeAttachedToPromise = true
-        promises.push(
-          measureTextFieldNew(updatedElement).then((size: Size) => {
-            return [EditorActions.updateFrameDimensions(target, size.width, size.height)]
-          }),
+    forUnderlyingTarget(target, projectContents, nodeModules, openFile, (underlyingSuccess) => {
+      if (
+        element != null &&
+        MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element)
+      ) {
+        const updatedElementProps = ObjectPathImmutable.set(
+          element.props,
+          PP.toString(property),
+          newValue,
         )
+        const updatedElement = {
+          ...element,
+          props: updatedElementProps,
+        }
+
+        if (updatedElement.props.textSizing === 'auto') {
+          changeAttachedToPromise = true
+          promises.push(
+            measureTextFieldNew(updatedElement).then((size: Size) => {
+              return [EditorActions.updateFrameDimensions(target, size.width, size.height)]
+            }),
+          )
+        }
       }
-    }
+    })
   })
 
   Promise.all(promises).then((actionArrays) => {
@@ -170,18 +182,22 @@ export function toggleTextFormatting(
   dispatch: EditorDispatch,
   textFormatting: TextFormattingType,
 ): Array<EditorAction> {
-  const imports = getOpenImportsFromState(editor)
   // Find all the text elements.
   const instancePaths = editor.selectedViews.filter(isInstancePath)
   let textElements: Array<ElementInstanceMetadata> = []
   const textElementPaths = instancePaths.filter((selectedView) => {
-    const element = MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, selectedView)
-    if (element != null && MetadataUtils.isTextAgainstImports(imports, element)) {
-      textElements.push(element)
-      return true
-    } else {
-      return false
-    }
+    return withUnderlyingTargetFromEditorState(selectedView, editor, false, (underlyingSuccess) => {
+      const element = MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, selectedView)
+      if (
+        element != null &&
+        MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element)
+      ) {
+        textElements.push(element)
+        return true
+      } else {
+        return false
+      }
+    })
   })
 
   if (textElements.length > 0) {
@@ -218,7 +234,9 @@ export function toggleTextFormatting(
     const newValue = valueForTextFormatting(textFormatting, !optionMajorityEnabled)
 
     return autosizingTextResizeNew(
-      imports,
+      editor.projectContents,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename ?? null,
       editor.jsxMetadata,
       textElementPaths,
       dispatch,
