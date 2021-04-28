@@ -759,17 +759,6 @@ export const MetadataUtils = {
       MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Text')
     )
   },
-  isLayoutWrapperAgainstImports(
-    imports: Imports,
-    instance: ElementInstanceMetadata | null,
-  ): boolean {
-    return (
-      instance != null &&
-      (MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Layoutable') ||
-        MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Positionable') ||
-        MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Resizeable'))
-    )
-  },
   isDiv(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'div')
   },

@@ -240,10 +240,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_SCENE_PROP(action, state)
     case 'UNSET_SCENE_PROP':
       return UPDATE_FNS.UNSET_SCENE_PROP(action, state)
-    case 'WRAP_IN_LAYOUTABLE':
-      return UPDATE_FNS.WRAP_IN_LAYOUTABLE(action, state)
-    case 'UNWRAP_LAYOUTABLE':
-      return UPDATE_FNS.UNWRAP_LAYOUTABLE(action, state)
     case 'UPDATE_JSX_ELEMENT_NAME':
       return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state)
     case 'ADD_IMPORTS':

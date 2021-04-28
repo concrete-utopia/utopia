@@ -333,7 +333,6 @@ import {
   UpdateKeysPressed,
   UpdatePreviewConnected,
   UpdateThumbnailGenerated,
-  WrapInLayoutable,
   WrapInView,
   SetSafeMode,
   SaveImageDetails,
@@ -3713,116 +3712,15 @@ export const UPDATE_FNS = {
       }
     }, editor)
   },
-  WRAP_IN_LAYOUTABLE: (action: WrapInLayoutable, editor: EditorModel): EditorModel => {
-    const editorWithAddedImport = modifyOpenParseSuccess((success) => {
-      const updatedImport = addImport(
-        'utopia-api',
-        null,
-        [importAlias(action.wrapper)],
-        null,
-        success.imports,
-      )
-      return {
-        ...success,
-        imports: updatedImport,
-      }
-    }, editor)
-
-    return modifyOpenJsxElementAtPath(
-      action.target,
-      (element) => {
-        const component = element.name.baseVariable
-        if (component !== action.wrapper) {
-          const wrappedComponent =
-            getJSXAttribute(element.props, 'wrappedComponent') ??
-            jsxAttributeOtherJavaScript(component, component, [], null)
-          return {
-            ...element,
-            name: {
-              ...element.name,
-              baseVariable: action.wrapper,
-            },
-            props: {
-              ...element.props,
-              wrappedComponent: wrappedComponent,
-            },
-          }
-        } else {
-          return element
-        }
-      },
-      editorWithAddedImport,
-    )
-  },
-  UNWRAP_LAYOUTABLE: (action: UnwrapLayoutable, editor: EditorModel): EditorModel => {
-    const targetMetadata = Utils.forceNotNull(
-      `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, action.target),
-    )
-
-    return modifyOpenJsxElementAtPath(
-      action.target,
-      (element) => {
-        const imports = getOpenImportsFromState(editor)
-        const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
-        if (
-          MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
-          wrappedComponent != null
-        ) {
-          if (wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-            const updatedProps = deleteJSXAttribute(element.props, 'wrappedComponent')
-            return {
-              ...element,
-              name: {
-                ...element.name,
-                baseVariable: wrappedComponent.javascript,
-              },
-              props: updatedProps,
-            }
-          } else {
-            return element
-          }
-        } else {
-          return element
-        }
-      },
-      editor,
-    )
-  },
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
-    const targetMetadata = Utils.forceNotNull(
-      `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, action.target),
-    )
-
     const updatedEditor = UPDATE_FNS.ADD_IMPORTS(addImports(action.importsToAdd), editor)
 
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const imports = getOpenImportsFromState(editor)
-        const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
-        if (
-          MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
-          wrappedComponent != null
-        ) {
-          if (wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-            const nameAsString = getJSXElementNameAsString(action.elementName)
-            return {
-              ...element,
-              props: {
-                ...element.props,
-                wrappedComponent: jsxAttributeOtherJavaScript(nameAsString, nameAsString, [], null),
-              },
-            }
-          } else {
-            return element
-          }
-        } else {
-          return {
-            ...element,
-            name: action.elementName,
-          }
+        return {
+          ...element,
+          name: action.elementName,
         }
       },
       updatedEditor,

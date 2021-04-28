@@ -54,9 +54,6 @@ declare module 'utopia-api/index' {
   export * from 'utopia-api/primitives/text';
   export * from 'utopia-api/primitives/rectangle';
   export * from 'utopia-api/primitives/ellipse';
-  export * from 'utopia-api/primitives/layoutable';
-  export * from 'utopia-api/primitives/positionable';
-  export * from 'utopia-api/primitives/resizeable';
   export * from 'utopia-api/primitives/scene';
   export * from 'utopia-api/primitives/storyboard';
   export * from 'utopia-api/helpers/helper-functions';
@@ -296,7 +293,6 @@ declare module 'utopia-api/primitives/common' {
   import * as React from 'react';
   import { LayoutProps } from 'utopia-api/layout/layout';
   import { CSSFrame } from 'utopia-api/layout/pins';
-  import { LayoutableProps } from 'utopia-api/primitives/layoutable';
   export interface UtopiaComponentProps {
       'data-uid'?: string;
       'data-label'?: string;
@@ -309,7 +305,6 @@ declare module 'utopia-api/primitives/common' {
   export function addEventHandlersToDivProps(props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
   export function calculatePositionableStyle(props: React.PropsWithChildren<UtopiaComponentProps>): CSSFrame;
   export function calculateResizeableStyle(props: React.PropsWithChildren<UtopiaComponentProps>): CSSFrame;
-  export function isLayoutWrapped(props: React.PropsWithChildren<LayoutableProps>): boolean;
 
 }
 declare module 'utopia-api/primitives/ellipse' {
@@ -320,39 +315,12 @@ declare module 'utopia-api/primitives/ellipse' {
   export const Ellipse: React.FunctionComponent<EllipseProps>;
 
 }
-declare module 'utopia-api/primitives/layoutable' {
-  import * as React from 'react';
-  import { UtopiaComponentProps } from 'utopia-api/primitives/common';
-  export interface LayoutableProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, UtopiaComponentProps {
-      wrappedComponent: React.JSXElementConstructor<any>;
-  }
-  export const Layoutable: React.FunctionComponent<LayoutableProps>;
-
-}
-declare module 'utopia-api/primitives/positionable' {
-  import * as React from 'react';
-  import { UtopiaComponentProps } from 'utopia-api/primitives/common';
-  export interface PositionableProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, UtopiaComponentProps {
-      wrappedComponent: React.JSXElementConstructor<any>;
-  }
-  export const Positionable: React.FunctionComponent<PositionableProps>;
-
-}
 declare module 'utopia-api/primitives/rectangle' {
   import * as React from 'react';
   import { UtopiaComponentProps } from 'utopia-api/primitives/common';
   export interface RectangleProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, UtopiaComponentProps {
   }
   export const Rectangle: React.FunctionComponent<RectangleProps>;
-
-}
-declare module 'utopia-api/primitives/resizeable' {
-  import * as React from 'react';
-  import { UtopiaComponentProps } from 'utopia-api/primitives/common';
-  export interface ResizeableProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, UtopiaComponentProps {
-      wrappedComponent: React.JSXElementConstructor<any>;
-  }
-  export const Resizeable: React.FunctionComponent<ResizeableProps>;
 
 }
 declare module 'utopia-api/primitives/scene' {
