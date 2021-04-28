@@ -1,4 +1,9 @@
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
+import {
+  getContentsTreeFileFromString,
+  ProjectContentTreeRoot,
+  walkContentsTree,
+  walkContentsTreeForParseSuccess,
+} from '../../components/assets'
 import { ComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import Utils, { IndexPosition } from '../../utils/utils'
@@ -51,7 +56,7 @@ import {
 import { getStoryboardTemplatePath } from './scene-utils'
 
 function getAllUniqueUidsInner(
-  components: Array<UtopiaJSXComponent>,
+  projectContents: ProjectContentTreeRoot,
   throwErrorWithSuspiciousActions?: string,
 ): Array<string> {
   let uniqueIDs: Set<string> = Utils.emptySet()
@@ -80,8 +85,12 @@ function getAllUniqueUidsInner(
     }
   }
 
-  fastForEach(components, (tle) => {
-    extractUid(tle.rootElement)
+  walkContentsTreeForParseSuccess(projectContents, (fullPath, parseSuccess) => {
+    fastForEach(parseSuccess.topLevelElements, (tle) => {
+      if (isUtopiaJSXComponent(tle)) {
+        extractUid(tle.rootElement)
+      }
+    })
   })
 
   return Array.from(uniqueIDs)
@@ -89,8 +98,8 @@ function getAllUniqueUidsInner(
 
 export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
 
-export function generateUidWithExistingComponents(components: Array<UtopiaJSXComponent>): string {
-  const existingUIDS = getAllUniqueUids(components)
+export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
+  const existingUIDS = getAllUniqueUids(projectContents)
   return generateUID(existingUIDS)
 }
 
@@ -547,6 +556,8 @@ export function removeJSXElementChild(
 }
 
 export function insertJSXElementChild(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
   targetParent: StaticTemplatePath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
@@ -556,7 +567,8 @@ export function insertJSXElementChild(
     // TODO delete me
     throw new Error('Should not attempt to create empty elements.')
   }
-  const targetParentIncludingStoryboardRoot = targetParent ?? getStoryboardTemplatePath(components)
+  const targetParentIncludingStoryboardRoot =
+    targetParent ?? getStoryboardTemplatePath(projectContents, openFile)
   if (targetParentIncludingStoryboardRoot == null) {
     return components
   } else if (TP.isScenePath(targetParentIncludingStoryboardRoot)) {

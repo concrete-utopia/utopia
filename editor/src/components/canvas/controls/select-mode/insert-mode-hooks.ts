@@ -8,7 +8,7 @@ import {
   insertionSubjectIsJSXElement,
   isInsertMode,
 } from '../../../editor/editor-modes'
-import { getOpenImportsFromState } from '../../../editor/store/editor-state'
+import { getJSXComponentsAndImportsForPathInnerComponent } from '../../../editor/store/editor-state'
 import { useRefEditorState } from '../../../editor/store/store-hook'
 import { useHighlightCallbacks } from './select-mode-hooks'
 
@@ -17,16 +17,36 @@ function useGetHighlightableViewsForInsertMode() {
     return {
       componentMetadata: store.editor.jsxMetadata,
       mode: store.editor.mode,
-      imports: getOpenImportsFromState(store.editor),
+      openFile: store.editor.canvas.openFile?.filename ?? null,
+      projectContents: store.editor.projectContents,
+      nodeModules: store.editor.nodeModules.files,
+      transientState: store.derived.canvas.transientState,
+      resolve: store.editor.codeResultCache.resolve,
     }
   })
   return React.useCallback(() => {
-    const { componentMetadata, mode, imports } = storeRef.current
+    const {
+      componentMetadata,
+      mode,
+      openFile,
+      projectContents,
+      nodeModules,
+      transientState,
+      resolve,
+    } = storeRef.current
     if (!isInsertMode(mode)) {
       throw new Error('insert highlight callback was called oustide of insert mode')
     }
     const allPaths = MetadataUtils.getAllPaths(componentMetadata)
     const insertTargets = allPaths.filter((path) => {
+      const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
+        path,
+        openFile,
+        projectContents,
+        nodeModules,
+        transientState.filesState,
+        resolve,
+      )
       return (
         (insertionSubjectIsJSXElement(mode.subject) ||
           insertionSubjectIsDragAndDrop(mode.subject)) &&

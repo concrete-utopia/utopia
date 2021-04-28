@@ -5,7 +5,10 @@ import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared
 import { TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { DuplicationState } from '../../editor/store/editor-state'
+import {
+  DuplicationState,
+  getJSXComponentsAndImportsForPathInnerComponent,
+} from '../../editor/store/editor-state'
 import * as TP from '../../../core/shared/template-path'
 import { CanvasPositions, MoveDragState, ResizeDragState } from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'
@@ -28,7 +31,7 @@ import { getAllTargetsAtPoint } from '../dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isSceneAgainstImports } from '../../../core/model/project-file-utils'
-import { isRight } from '../../../core/shared/either'
+import { foldEither, isRight } from '../../../core/shared/either'
 
 export const SnappingThreshold = 5
 
@@ -242,7 +245,6 @@ export class SelectModeControlContainer extends React.Component<
         keysPressed={this.props.keysPressed}
         windowToCanvasPosition={this.props.windowToCanvasPosition}
         selectedViews={this.props.selectedViews}
-        imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
       />
     )
@@ -462,14 +464,31 @@ export class SelectModeControlContainer extends React.Component<
     const cmdPressed = this.props.keysPressed['cmd'] || false
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
-    const roots = mapDropNulls(
-      (child) =>
-        MetadataUtils.elementIsOldStyleScene(child) ||
-        (isRight(child.element) && isSceneAgainstImports(child.element.value, this.props.imports))
-          ? child.templatePath
-          : null,
-      storyboardChildren,
-    )
+    const roots = mapDropNulls((child) => {
+      if (MetadataUtils.elementIsOldStyleScene(child)) {
+        return child.templatePath
+      } else {
+        return foldEither(
+          () => null,
+          (elemValue) => {
+            const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
+              child.templatePath,
+              this.props.openFile,
+              this.props.projectContents,
+              this.props.nodeModules,
+              this.props.transientState.filesState,
+              this.props.resolve,
+            )
+            if (isSceneAgainstImports(elemValue, imports)) {
+              return child.templatePath
+            } else {
+              return null
+            }
+          },
+          child.element,
+        )
+      }
+    }, storyboardChildren)
     let labelDirectlySelectable = this.props.highlightsEnabled
 
     // TODO future span element should be included here
@@ -477,8 +496,15 @@ export class SelectModeControlContainer extends React.Component<
     if (this.props.selectedViews.length === 1) {
       const path = this.props.selectedViews[0]
       const element = MetadataUtils.findElementByTemplatePath(this.props.componentMetadata, path)
-      repositionOnly =
-        element != null && MetadataUtils.isAutoSizingText(this.props.imports, element)
+      const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
+        path,
+        this.props.openFile,
+        this.props.projectContents,
+        this.props.nodeModules,
+        this.props.transientState.filesState,
+        this.props.resolve,
+      )
+      repositionOnly = element != null && MetadataUtils.isAutoSizingText(imports, element)
     }
 
     return (

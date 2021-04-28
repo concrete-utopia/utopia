@@ -63,7 +63,6 @@ export class MultiselectResizeControl extends React.Component<
       return []
     } else {
       return collectGuidelines(
-        this.props.imports,
         this.props.componentMetadata,
         draggedElements,
         this.props.scale,

@@ -60,7 +60,6 @@ import {
   getAllErrorsFromFiles,
   getAllLintErrors,
   getHighlightBoundsForUids,
-  getOpenUtopiaJSXComponentsFromState,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -616,7 +615,7 @@ function editorDispatchInner(
     }
 
     const actionNames = dispatchedActions.map((action) => action.action).join(',')
-    getAllUniqueUids(getOpenUtopiaJSXComponentsFromState(frozenEditorState), actionNames)
+    getAllUniqueUids(frozenEditorState.projectContents, actionNames)
 
     if (!PRODUCTION_ENV) {
       if (typeof window.performance.mark === 'function') {
