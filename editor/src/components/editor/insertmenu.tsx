@@ -83,19 +83,12 @@ import {
 import { ProjectContentTreeRoot } from '../assets'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 
-interface CurrentFileComponent {
-  componentName: string
-  defaultProps: { [prop: string]: unknown }
-  detectedProps: Array<string>
-}
-
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
   editorDispatch: EditorDispatch
   selectedViews: Array<TemplatePath>
   mode: Mode
   currentlyOpenFilename: string | null
-  currentFileComponents: Array<CurrentFileComponent>
   dependencies: Array<PossiblyUnversionedNpmDependency>
   packageStatus: PackageStatusMap
   propertyControlsInfo: PropertyControlsInfo
@@ -105,42 +98,13 @@ interface InsertMenuProps {
 export const InsertMenu = betterReactMemo('InsertMenu', () => {
   const props = useEditorState((store) => {
     const openFileFullPath = getOpenFilename(store.editor)
-    let currentlyOpenFilename: string | null = null
-    if (openFileFullPath != null) {
-      const splitFilename = openFileFullPath.split('/')
-      currentlyOpenFilename = defaultIfNull<string | null>(null, last(splitFilename))
-    }
-
-    let currentFileComponents: Array<CurrentFileComponent> = []
-    const openUIJSFile = getOpenUIJSFile(store.editor)
-    if (openUIJSFile != null && openFileFullPath != null) {
-      forEachParseSuccess((fileContents) => {
-        Utils.fastForEach(fileContents.topLevelElements, (topLevelElement) => {
-          if (isUtopiaJSXComponent(topLevelElement)) {
-            const componentName = topLevelElement.name
-            const defaultProps = defaultPropertiesForComponentInFile(
-              componentName,
-              dropFileExtension(openFileFullPath),
-              store.editor.propertyControlsInfo,
-            )
-            const detectedProps = topLevelElement.propsUsed
-            currentFileComponents.push({
-              componentName: componentName,
-              defaultProps: defaultProps,
-              detectedProps: detectedProps,
-            })
-          }
-        })
-      }, openUIJSFile.fileContents.parsed)
-    }
 
     return {
       lastFontSettings: store.editor.lastUsedFont,
       editorDispatch: store.dispatch,
       selectedViews: store.editor.selectedViews,
       mode: store.editor.mode,
-      currentlyOpenFilename: currentlyOpenFilename,
-      currentFileComponents: currentFileComponents,
+      currentlyOpenFilename: openFileFullPath,
       packageStatus: store.editor.nodeModules.packageStatus,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       projectContents: store.editor.projectContents,
