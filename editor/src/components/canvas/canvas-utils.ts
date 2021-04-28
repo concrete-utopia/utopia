@@ -338,526 +338,384 @@ export function updateFramesOfScenesAndComponents(
 ): EditorState {
   let workingEditorState: EditorState = editorState
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
-    const { target } = frameAndTarget
-    if (TP.isScenePath(target)) {
-      switch (frameAndTarget.type) {
-        case 'PIN_FRAME_CHANGE':
-        case 'PIN_SIZE_CHANGE': {
-          // Update scene with pin based frame.
-          const sceneStaticpath = createSceneTemplatePath(target)
-          workingEditorState = modifyUnderlyingForOpenFile(
-            sceneStaticpath,
-            workingEditorState,
-            (sceneElement) => {
-              const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, [
-                {
-                  path: PP.create(['style']),
-                  value: jsxAttributeValue(
-                    {
-                      left: frameAndTarget.frame?.x,
-                      top: frameAndTarget.frame?.y,
-                      width: frameAndTarget.frame?.width,
-                      height: frameAndTarget.frame?.height,
-                    },
-                    emptyComments,
-                  ),
-                },
-              ])
-              return foldEither(
-                () => sceneElement,
-                (updatedProps) => {
-                  return {
-                    ...sceneElement,
-                    props: roundAttributeLayoutValues(updatedProps),
-                  }
-                },
-                sceneStyleUpdated,
-              )
-            },
-          )
-          break
-        }
-        case 'PIN_MOVE_CHANGE': {
-          const sceneStaticpath = createSceneTemplatePath(target)
-          workingEditorState = modifyUnderlyingForOpenFile(
-            sceneStaticpath,
-            workingEditorState,
-            (sceneElement) => {
-              const styleProps = jsxSimpleAttributeToValue(
-                getJSXAttributeAtPath(sceneElement.props, PP.create(['style'])).attribute,
-              )
-              if (isRight(styleProps)) {
-                let frameProps: { [k: string]: string | number | undefined } = {}
-                Utils.fastForEach(['PinnedLeft', 'PinnedTop'] as LayoutPinnedProp[], (p) => {
-                  const framePoint = framePointForPinnedProp(p)
-                  const value = getLayoutProperty(p, right(sceneElement.props))
-                  if (isLeft(value) || value.value != null) {
-                    frameProps[framePoint] = value.value
-                  }
-                })
-                let propsToSet = getPropsToSetToMoveElement(
-                  frameAndTarget.delta,
-                  [FramePoint.Top, FramePoint.Left],
-                  frameProps,
-                  null,
-                )
-                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, propsToSet)
-                return foldEither(
-                  () => sceneElement,
-                  (updatedProps) => {
-                    return {
-                      ...sceneElement,
-                      props: roundAttributeLayoutValues(updatedProps),
-                    }
-                  },
-                  sceneStyleUpdated,
-                )
-              } else {
-                return sceneElement
-              }
-            },
-          )
-          break
-        }
-        case 'SINGLE_RESIZE':
-          const sceneStaticpath = createSceneTemplatePath(target)
-          workingEditorState = modifyUnderlyingForOpenFile(
-            sceneStaticpath,
-            workingEditorState,
-            (sceneElement) => {
-              const styleProps = jsxSimpleAttributeToValue(
-                getJSXAttributeAtPath(sceneElement.props, PP.create(['style'])).attribute,
-              )
-              if (isRight(styleProps)) {
-                let frameProps: { [k: string]: string | number | undefined } = {}
-                Utils.fastForEach(
-                  ['PinnedLeft', 'PinnedTop', 'Width', 'Height'] as LayoutPinnedProp[],
-                  (p) => {
-                    const framePoint = framePointForPinnedProp(p)
-                    const value = getLayoutProperty(p, right(sceneElement.props))
-                    if (isLeft(value) || value.value != null) {
-                      frameProps[framePoint] = value.value
-                    }
-                  },
-                )
-                let propsToSet = getPropsToSetToResizeElement(
-                  frameAndTarget.edgePosition,
-                  frameAndTarget.sizeDelta.x,
-                  frameAndTarget.sizeDelta.y,
-                  [FramePoint.Top, FramePoint.Left, FramePoint.Width, FramePoint.Height],
-                  frameProps,
-                  null,
-                )
-                const sceneStyleUpdated = setJSXValuesAtPaths(sceneElement.props, propsToSet)
-                return foldEither(
-                  () => sceneElement,
-                  (updatedProps) => {
-                    return {
-                      ...sceneElement,
-                      props: roundAttributeLayoutValues(updatedProps),
-                    }
-                  },
-                  sceneStyleUpdated,
-                )
-              } else {
-                return sceneElement
-              }
-            },
-          )
-          break
-        case 'FLEX_MOVE':
-        case 'FLEX_RESIZE':
-          throw new Error(
-            `Attempted to change a scene with a flex change ${JSON.stringify(target)}.`,
-          )
-        default:
-          const _exhaustiveCheck: never = frameAndTarget
-          throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
-      }
-    } else {
-      // Realign to aim at the static version, not the dynamic one.
-      const originalTarget = target
-      const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
-      if (staticTarget == null) {
-        return
-      }
+    const target = TP.instancePathForElementAtPath(frameAndTarget.target)
 
-      const element = withUnderlyingTargetFromEditorState(
-        staticTarget,
-        workingEditorState,
-        null,
-        (success, underlyingElement) => underlyingElement,
-      )
-      if (element == null) {
-        throw new Error(`Unexpected result when looking for element: ${element}`)
-      }
+    // Realign to aim at the static version, not the dynamic one.
+    const originalTarget = target
+    const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+    if (staticTarget == null) {
+      return
+    }
 
-      const staticParentPath = TP.parentPath(staticTarget)
-      const parentElement = withUnderlyingTargetFromEditorState(
-        staticParentPath,
-        workingEditorState,
-        null,
-        (success, underlyingElement) => underlyingElement,
-      )
+    const element = withUnderlyingTargetFromEditorState(
+      staticTarget,
+      workingEditorState,
+      null,
+      (success, underlyingElement) => underlyingElement,
+    )
+    if (element == null) {
+      throw new Error(`Unexpected result when looking for element: ${element}`)
+    }
 
-      const isFlexContainer =
-        frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
-        frameAndTarget.type !== 'PIN_MOVE_CHANGE' &&
-        frameAndTarget.type !== 'PIN_SIZE_CHANGE' &&
-        frameAndTarget.type !== 'SINGLE_RESIZE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
+    const staticParentPath = TP.parentPath(staticTarget)
+    const parentElement = withUnderlyingTargetFromEditorState(
+      staticParentPath,
+      workingEditorState,
+      null,
+      (success, underlyingElement) => underlyingElement,
+    )
 
-      let propsToSet: Array<ValueAtPath> = []
-      let propsToSkip: Array<PropertyPath> = []
-      if (isFlexContainer) {
-        if (TP.isInstancePath(staticParentPath)) {
-          switch (frameAndTarget.type) {
-            case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-            case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-            case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-            case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-              throw new Error(
-                `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
-                  staticParentPath,
-                )}.`,
-              )
-            case 'FLEX_MOVE':
-              workingEditorState = modifyUnderlyingForOpenFile(
-                originalTarget,
-                workingEditorState,
-                (elem) => elem,
-                (success, underlyingTarget) => {
-                  const components = getUtopiaJSXComponentsFromSuccess(success)
-                  if (underlyingTarget == null) {
-                    return success
-                  } else {
-                    const updatedComponents = reorderComponent(
-                      components,
-                      underlyingTarget,
-                      frameAndTarget.newIndex,
-                    )
-                    return {
-                      ...success,
-                      topLevelElements: applyUtopiaJSXComponentsChanges(
-                        success.topLevelElements,
-                        updatedComponents,
-                      ),
-                    }
-                  }
-                },
-              )
-              break
-            case 'FLEX_RESIZE':
-              if (staticParentPath == null) {
-                throw new Error(`No parent available for ${JSON.stringify(staticParentPath)}`)
-              } else {
-                if (parentElement == null) {
-                  throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
-                }
-                // Flex based layout.
-                const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
-                  frameAndTarget.newSize.width,
-                  frameAndTarget.newSize.height,
-                  element.props,
-                  right(parentElement.props),
-                  frameAndTarget.edgePosition,
-                )
-                forEachRight(possibleFlexProps, (flexProps) => {
-                  const { flexBasis, width, height } = flexProps
-                  if (flexBasis != null) {
-                    propsToSet.push({
-                      path: createLayoutPropertyPath('flexBasis'),
-                      value: jsxAttributeValue(flexBasis, emptyComments),
-                    })
-                  }
-                  if (width != null) {
-                    propsToSet.push({
-                      path: createLayoutPropertyPath('Width'),
-                      value: jsxAttributeValue(width, emptyComments),
-                    })
-                  }
-                  if (height != null) {
-                    propsToSet.push({
-                      path: createLayoutPropertyPath('Height'),
-                      value: jsxAttributeValue(height, emptyComments),
-                    })
-                  }
-                })
-              }
-              break
-            default:
-              const _exhaustiveCheck: never = frameAndTarget
-              throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
-          }
-        } else {
-          // Shouldn't happen, but the types force our hand here.
-          throw new Error(
-            `Attempted to use non-instance path ${JSON.stringify(
-              staticParentPath,
-            )} as a flex parent.`,
-          )
-        }
-      } else {
-        let parentFrame: CanvasRectangle | null = null
-        if (optionalParentFrame == null) {
-          const nonGroupParent = MetadataUtils.findNonGroupParent(
-            workingEditorState.jsxMetadata,
-            originalTarget,
-          )
-          parentFrame =
-            nonGroupParent == null
-              ? null
-              : MetadataUtils.getFrameInCanvasCoords(nonGroupParent, workingEditorState.jsxMetadata)
-        } else {
-          parentFrame = optionalParentFrame
-        }
-        const parentOffset =
-          parentFrame == null
-            ? ({ x: 0, y: 0 } as CanvasPoint)
-            : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
+    const isFlexContainer =
+      frameAndTarget.type !== 'PIN_FRAME_CHANGE' &&
+      frameAndTarget.type !== 'PIN_MOVE_CHANGE' &&
+      frameAndTarget.type !== 'PIN_SIZE_CHANGE' &&
+      frameAndTarget.type !== 'SINGLE_RESIZE' // TODO since now we are trusting the frameAndTarget.type, there is no point in having two switches
 
+    let propsToSet: Array<ValueAtPath> = []
+    let propsToSkip: Array<PropertyPath> = []
+    if (isFlexContainer) {
+      if (TP.isInstancePath(staticParentPath)) {
         switch (frameAndTarget.type) {
-          case 'PIN_FRAME_CHANGE':
-          case 'PIN_SIZE_CHANGE':
-            if (frameAndTarget.frame != null) {
-              const newLocalFrame = Utils.getLocalRectangleInNewParentContext(
-                parentOffset,
-                frameAndTarget.frame,
-              )
-              const currentLocalFrame = MetadataUtils.getFrame(
-                target,
-                workingEditorState.jsxMetadata,
-              )
-              const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
-              const fullFrame = Frame.getFullFrame(newLocalFrame)
-              const elementProps = element.props
-
-              // Pinning layout.
-              const frameProps = LayoutPinnedProps.filter((p) => {
-                const value = getLayoutProperty(p, right(elementProps))
-                return isLeft(value) || value.value != null
-              }).map(framePointForPinnedProp)
-
-              function whichPropsToUpdate() {
-                if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
-                  // only update left, top, right or bottom if the frame is expressed as left, top, right, bottom.
-                  // otherwise try to change width and height only
-                  let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
-                  let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
-                  if (verticalPoints.length < 2) {
-                    verticalPoints.push(FramePoint.Height)
-                  }
-                  if (horizontalPoints.length < 2) {
-                    horizontalPoints.push(FramePoint.Width)
-                  }
-
-                  return [...horizontalPoints, ...verticalPoints]
-                } else if (
-                  frameAndTarget.type === 'PIN_FRAME_CHANGE' &&
-                  frameAndTarget.edgePosition != null &&
-                  isEdgePositionOnSide(frameAndTarget.edgePosition)
-                ) {
-                  // if it has partial positioning points set and dragged on an edge only the dragged edge should be added while keeping the existing frame points.
-                  return extendPartialFramePointsForResize(frameProps, frameAndTarget.edgePosition)
+          case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+          case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+          case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+          case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+            throw new Error(
+              `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
+                staticParentPath,
+              )}.`,
+            )
+          case 'FLEX_MOVE':
+            workingEditorState = modifyUnderlyingForOpenFile(
+              originalTarget,
+              workingEditorState,
+              (elem) => elem,
+              (success, underlyingTarget) => {
+                const components = getUtopiaJSXComponentsFromSuccess(success)
+                if (underlyingTarget == null) {
+                  return success
                 } else {
-                  // The "Old" behavior, for PIN_FRAME_CHANGE
-                  return frameProps.length == 4
-                    ? frameProps
-                    : [FramePoint.Left, FramePoint.Top, FramePoint.Width, FramePoint.Height]
+                  const updatedComponents = reorderComponent(
+                    components,
+                    underlyingTarget,
+                    frameAndTarget.newIndex,
+                  )
+                  return {
+                    ...success,
+                    topLevelElements: applyUtopiaJSXComponentsChanges(
+                      success.topLevelElements,
+                      updatedComponents,
+                    ),
+                  }
                 }
+              },
+            )
+            break
+          case 'FLEX_RESIZE':
+            if (staticParentPath == null) {
+              throw new Error(`No parent available for ${JSON.stringify(staticParentPath)}`)
+            } else {
+              if (parentElement == null) {
+                throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
               }
-
-              const propsToUpdate: Array<FramePoint> = whichPropsToUpdate()
-
-              Utils.fastForEach(propsToUpdate, (propToUpdate) => {
-                const absoluteValue = fullFrame[propToUpdate]
-                const previousValue =
-                  currentFullFrame == null ? null : currentFullFrame[propToUpdate]
-
-                const pinnedPropToUpdate = pinnedPropForFramePoint(propToUpdate)
-                const propPathToUpdate = createLayoutPropertyPath(pinnedPropToUpdate)
-                const existingProp = getLayoutProperty(pinnedPropToUpdate, right(elementProps))
-                if (absoluteValue === previousValue || isLeft(existingProp)) {
-                  // Only update pins that have actually changed or aren't set via code
-                  propsToSkip.push(propPathToUpdate)
-                } else {
-                  const pinIsPercentage =
-                    existingProp.value == null ? false : isPercentPin(existingProp.value)
-                  let valueToUse: string | number
-                  if (parentFrame == null) {
-                    valueToUse = absoluteValue
-                  } else {
-                    valueToUse = valueToUseForPin(
-                      propToUpdate,
-                      absoluteValue,
-                      pinIsPercentage,
-                      parentFrame,
-                    )
-                  }
+              // Flex based layout.
+              const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
+                frameAndTarget.newSize.width,
+                frameAndTarget.newSize.height,
+                element.props,
+                right(parentElement.props),
+                frameAndTarget.edgePosition,
+              )
+              forEachRight(possibleFlexProps, (flexProps) => {
+                const { flexBasis, width, height } = flexProps
+                if (flexBasis != null) {
                   propsToSet.push({
-                    path: propPathToUpdate,
-                    value: jsxAttributeValue(valueToUse, emptyComments),
+                    path: createLayoutPropertyPath('flexBasis'),
+                    value: jsxAttributeValue(flexBasis, emptyComments),
+                  })
+                }
+                if (width != null) {
+                  propsToSet.push({
+                    path: createLayoutPropertyPath('Width'),
+                    value: jsxAttributeValue(width, emptyComments),
+                  })
+                }
+                if (height != null) {
+                  propsToSet.push({
+                    path: createLayoutPropertyPath('Height'),
+                    value: jsxAttributeValue(height, emptyComments),
                   })
                 }
               })
             }
             break
+          default:
+            const _exhaustiveCheck: never = frameAndTarget
+            throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
+        }
+      } else {
+        // Shouldn't happen, but the types force our hand here.
+        throw new Error(
+          `Attempted to use non-instance path ${JSON.stringify(
+            staticParentPath,
+          )} as a flex parent.`,
+        )
+      }
+    } else {
+      let parentFrame: CanvasRectangle | null = null
+      if (optionalParentFrame == null) {
+        const nonGroupParent = MetadataUtils.findNonGroupParent(
+          workingEditorState.jsxMetadata,
+          originalTarget,
+        )
+        parentFrame =
+          nonGroupParent == null
+            ? null
+            : MetadataUtils.getFrameInCanvasCoords(nonGroupParent, workingEditorState.jsxMetadata)
+      } else {
+        parentFrame = optionalParentFrame
+      }
+      const parentOffset =
+        parentFrame == null
+          ? ({ x: 0, y: 0 } as CanvasPoint)
+          : ({ x: parentFrame.x, y: parentFrame.y } as CanvasPoint)
 
-          case 'PIN_MOVE_CHANGE': {
-            let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
-            Utils.fastForEach(LayoutPinnedProps, (p) => {
-              const framePoint = framePointForPinnedProp(p)
-              if (framePoint !== FramePoint.Width && framePoint !== FramePoint.Height) {
-                const value = getLayoutProperty(p, right(element.props))
-                if (isLeft(value) || value.value != null) {
-                  frameProps[framePoint] = value.value
-                  propsToSkip.push(createLayoutPropertyPath(p))
+      switch (frameAndTarget.type) {
+        case 'PIN_FRAME_CHANGE':
+        case 'PIN_SIZE_CHANGE':
+          if (frameAndTarget.frame != null) {
+            const newLocalFrame = Utils.getLocalRectangleInNewParentContext(
+              parentOffset,
+              frameAndTarget.frame,
+            )
+            const currentLocalFrame = MetadataUtils.getFrame(target, workingEditorState.jsxMetadata)
+            const currentFullFrame = optionalMap(Frame.getFullFrame, currentLocalFrame)
+            const fullFrame = Frame.getFullFrame(newLocalFrame)
+            const elementProps = element.props
+
+            // Pinning layout.
+            const frameProps = LayoutPinnedProps.filter((p) => {
+              const value = getLayoutProperty(p, right(elementProps))
+              return isLeft(value) || value.value != null
+            }).map(framePointForPinnedProp)
+
+            function whichPropsToUpdate() {
+              if (frameAndTarget.type === 'PIN_SIZE_CHANGE') {
+                // only update left, top, right or bottom if the frame is expressed as left, top, right, bottom.
+                // otherwise try to change width and height only
+                let verticalPoints = frameProps.filter((p) => VerticalFramePoints.includes(p))
+                let horizontalPoints = frameProps.filter((p) => HorizontalFramePoints.includes(p))
+                if (verticalPoints.length < 2) {
+                  verticalPoints.push(FramePoint.Height)
                 }
+                if (horizontalPoints.length < 2) {
+                  horizontalPoints.push(FramePoint.Width)
+                }
+
+                return [...horizontalPoints, ...verticalPoints]
+              } else if (
+                frameAndTarget.type === 'PIN_FRAME_CHANGE' &&
+                frameAndTarget.edgePosition != null &&
+                isEdgePositionOnSide(frameAndTarget.edgePosition)
+              ) {
+                // if it has partial positioning points set and dragged on an edge only the dragged edge should be added while keeping the existing frame points.
+                return extendPartialFramePointsForResize(frameProps, frameAndTarget.edgePosition)
+              } else {
+                // The "Old" behavior, for PIN_FRAME_CHANGE
+                return frameProps.length == 4
+                  ? frameProps
+                  : [FramePoint.Left, FramePoint.Top, FramePoint.Width, FramePoint.Height]
+              }
+            }
+
+            const propsToUpdate: Array<FramePoint> = whichPropsToUpdate()
+
+            Utils.fastForEach(propsToUpdate, (propToUpdate) => {
+              const absoluteValue = fullFrame[propToUpdate]
+              const previousValue = currentFullFrame == null ? null : currentFullFrame[propToUpdate]
+
+              const pinnedPropToUpdate = pinnedPropForFramePoint(propToUpdate)
+              const propPathToUpdate = createLayoutPropertyPath(pinnedPropToUpdate)
+              const existingProp = getLayoutProperty(pinnedPropToUpdate, right(elementProps))
+              if (absoluteValue === previousValue || isLeft(existingProp)) {
+                // Only update pins that have actually changed or aren't set via code
+                propsToSkip.push(propPathToUpdate)
+              } else {
+                const pinIsPercentage =
+                  existingProp.value == null ? false : isPercentPin(existingProp.value)
+                let valueToUse: string | number
+                if (parentFrame == null) {
+                  valueToUse = absoluteValue
+                } else {
+                  valueToUse = valueToUseForPin(
+                    propToUpdate,
+                    absoluteValue,
+                    pinIsPercentage,
+                    parentFrame,
+                  )
+                }
+                propsToSet.push({
+                  path: propPathToUpdate,
+                  value: jsxAttributeValue(valueToUse, emptyComments),
+                })
               }
             })
-
-            let framePointsToUse: Array<FramePoint> = [...(Object.keys(frameProps) as FramePoint[])]
-            const horizontalExistingFramePoints = framePointsToUse.filter(
-              (p) => HorizontalFramePointsExceptSize.indexOf(p) > -1,
-            )
-            if (horizontalExistingFramePoints.length === 0) {
-              framePointsToUse.push(FramePoint.Left)
-            }
-            const verticalExistingFramePoints = framePointsToUse.filter(
-              (p) => VerticalFramePointsExceptSize.indexOf(p) > -1,
-            )
-            if (verticalExistingFramePoints.length === 0) {
-              framePointsToUse.push(FramePoint.Top)
-            }
-            propsToSet.push(
-              ...getPropsToSetToMoveElement(
-                frameAndTarget.delta,
-                framePointsToUse,
-                frameProps,
-                parentFrame,
-              ),
-            )
-            break
           }
-          case 'SINGLE_RESIZE':
-            let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
-            Utils.fastForEach(LayoutPinnedProps, (p) => {
-              const framePoint = framePointForPinnedProp(p)
+          break
+
+        case 'PIN_MOVE_CHANGE': {
+          let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
+          Utils.fastForEach(LayoutPinnedProps, (p) => {
+            const framePoint = framePointForPinnedProp(p)
+            if (framePoint !== FramePoint.Width && framePoint !== FramePoint.Height) {
               const value = getLayoutProperty(p, right(element.props))
               if (isLeft(value) || value.value != null) {
                 frameProps[framePoint] = value.value
                 propsToSkip.push(createLayoutPropertyPath(p))
               }
-            })
-
-            let framePointsToUse: Array<FramePoint> = Object.keys(frameProps) as FramePoint[]
-
-            if (isEdgePositionOnSide(frameAndTarget.edgePosition)) {
-              framePointsToUse = extendPartialFramePointsForResize(
-                framePointsToUse,
-                frameAndTarget.edgePosition,
-              )
-            } else {
-              let verticalPoints = framePointsToUse.filter((p) => VerticalFramePoints.includes(p))
-              let horizontalPoints = framePointsToUse.filter((p) =>
-                HorizontalFramePoints.includes(p),
-              )
-
-              if (verticalPoints.length < 2) {
-                if (verticalPoints.length === 0) {
-                  verticalPoints.push(FramePoint.Top)
-                }
-                verticalPoints.push(FramePoint.Height)
-              }
-              if (horizontalPoints.length < 2) {
-                if (horizontalPoints.length === 0) {
-                  horizontalPoints.push(FramePoint.Left)
-                }
-                horizontalPoints.push(FramePoint.Width)
-              }
-              framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
             }
+          })
 
-            propsToSet.push(
-              ...getPropsToSetToResizeElement(
-                frameAndTarget.edgePosition,
-                frameAndTarget.sizeDelta.x,
-                frameAndTarget.sizeDelta.y,
-                framePointsToUse,
-                frameProps,
-                parentFrame,
-              ),
-            )
-            break
-          case 'FLEX_MOVE':
-          case 'FLEX_RESIZE':
-            throw new Error(
-              `Attempted to make a flex change against a pinned element ${JSON.stringify(
-                staticParentPath,
-              )}.`,
-            )
-          default:
-            const _exhaustiveCheck: never = frameAndTarget
-            throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
+          let framePointsToUse: Array<FramePoint> = [...(Object.keys(frameProps) as FramePoint[])]
+          const horizontalExistingFramePoints = framePointsToUse.filter(
+            (p) => HorizontalFramePointsExceptSize.indexOf(p) > -1,
+          )
+          if (horizontalExistingFramePoints.length === 0) {
+            framePointsToUse.push(FramePoint.Left)
+          }
+          const verticalExistingFramePoints = framePointsToUse.filter(
+            (p) => VerticalFramePointsExceptSize.indexOf(p) > -1,
+          )
+          if (verticalExistingFramePoints.length === 0) {
+            framePointsToUse.push(FramePoint.Top)
+          }
+          propsToSet.push(
+            ...getPropsToSetToMoveElement(
+              frameAndTarget.delta,
+              framePointsToUse,
+              frameProps,
+              parentFrame,
+            ),
+          )
+          break
         }
-      }
-
-      if (propsToSet.length > 0) {
-        const propsToNotDelete = [...propsToSet.map((p) => p.path), ...propsToSkip]
-
-        workingEditorState = modifyUnderlyingForOpenFile(
-          originalTarget,
-          workingEditorState,
-          (elem) => {
-            // Remove the pinning and flex props first...
-            const propsToMaybeRemove =
-              frameAndTarget.type === 'PIN_MOVE_CHANGE'
-                ? PinningAndFlexPointsExceptSize // for PIN_MOVE_CHANGE, we don't want to remove the size props, we just keep them intact
-                : PinningAndFlexPoints
-            let propsToRemove: Array<PropertyPath> = []
-            function createPropPathForProp(prop: string): PropertyPath {
-              if (isFramePoint(prop)) {
-                return createLayoutPropertyPath(pinnedPropForFramePoint(prop))
-              } else {
-                return createLayoutPropertyPath(prop as LayoutProp)
-              }
+        case 'SINGLE_RESIZE':
+          let frameProps: { [k: string]: string | number | undefined } = {} // { FramePoint: value }
+          Utils.fastForEach(LayoutPinnedProps, (p) => {
+            const framePoint = framePointForPinnedProp(p)
+            const value = getLayoutProperty(p, right(element.props))
+            if (isLeft(value) || value.value != null) {
+              frameProps[framePoint] = value.value
+              propsToSkip.push(createLayoutPropertyPath(p))
             }
-            fastForEach(propsToMaybeRemove, (prop) => {
-              const propPath = createPropPathForProp(prop)
-              if (!PP.contains(propsToNotDelete, propPath)) {
-                propsToRemove.push(propPath)
+          })
+
+          let framePointsToUse: Array<FramePoint> = Object.keys(frameProps) as FramePoint[]
+
+          if (isEdgePositionOnSide(frameAndTarget.edgePosition)) {
+            framePointsToUse = extendPartialFramePointsForResize(
+              framePointsToUse,
+              frameAndTarget.edgePosition,
+            )
+          } else {
+            let verticalPoints = framePointsToUse.filter((p) => VerticalFramePoints.includes(p))
+            let horizontalPoints = framePointsToUse.filter((p) => HorizontalFramePoints.includes(p))
+
+            if (verticalPoints.length < 2) {
+              if (verticalPoints.length === 0) {
+                verticalPoints.push(FramePoint.Top)
               }
-            })
-            const layoutPropsRemoved = unsetJSXValuesAtPaths(elem.props, propsToRemove)
-            // ...Add in the updated properties.
+              verticalPoints.push(FramePoint.Height)
+            }
+            if (horizontalPoints.length < 2) {
+              if (horizontalPoints.length === 0) {
+                horizontalPoints.push(FramePoint.Left)
+              }
+              horizontalPoints.push(FramePoint.Width)
+            }
+            framePointsToUse = Utils.uniq([...verticalPoints, ...horizontalPoints])
+          }
 
-            const layoutPropsAdded = flatMapEither(
-              (props) => setJSXValuesAtPaths(props, propsToSet),
-              layoutPropsRemoved,
-            )
-
-            return foldEither(
-              (_) => elem,
-              (updatedProps) => {
-                return {
-                  ...elem,
-                  props: updatedProps,
-                }
-              },
-              layoutPropsAdded,
-            )
-          },
-        )
+          propsToSet.push(
+            ...getPropsToSetToResizeElement(
+              frameAndTarget.edgePosition,
+              frameAndTarget.sizeDelta.x,
+              frameAndTarget.sizeDelta.y,
+              framePointsToUse,
+              frameProps,
+              parentFrame,
+            ),
+          )
+          break
+        case 'FLEX_MOVE':
+        case 'FLEX_RESIZE':
+          throw new Error(
+            `Attempted to make a flex change against a pinned element ${JSON.stringify(
+              staticParentPath,
+            )}.`,
+          )
+        default:
+          const _exhaustiveCheck: never = frameAndTarget
+          throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
       }
-
-      // Round the frame details.
-      workingEditorState = modifyUnderlyingForOpenFile(
-        staticTarget,
-        workingEditorState,
-        roundJSXElementLayoutValues,
-      )
-      // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
-      // doesn't work. Once that is fixed we can re-implement keeping the children in place
     }
+
+    if (propsToSet.length > 0) {
+      const propsToNotDelete = [...propsToSet.map((p) => p.path), ...propsToSkip]
+
+      workingEditorState = modifyUnderlyingForOpenFile(
+        originalTarget,
+        workingEditorState,
+        (elem) => {
+          // Remove the pinning and flex props first...
+          const propsToMaybeRemove =
+            frameAndTarget.type === 'PIN_MOVE_CHANGE'
+              ? PinningAndFlexPointsExceptSize // for PIN_MOVE_CHANGE, we don't want to remove the size props, we just keep them intact
+              : PinningAndFlexPoints
+          let propsToRemove: Array<PropertyPath> = []
+          function createPropPathForProp(prop: string): PropertyPath {
+            if (isFramePoint(prop)) {
+              return createLayoutPropertyPath(pinnedPropForFramePoint(prop))
+            } else {
+              return createLayoutPropertyPath(prop as LayoutProp)
+            }
+          }
+          fastForEach(propsToMaybeRemove, (prop) => {
+            const propPath = createPropPathForProp(prop)
+            if (!PP.contains(propsToNotDelete, propPath)) {
+              propsToRemove.push(propPath)
+            }
+          })
+          const layoutPropsRemoved = unsetJSXValuesAtPaths(elem.props, propsToRemove)
+          // ...Add in the updated properties.
+
+          const layoutPropsAdded = flatMapEither(
+            (props) => setJSXValuesAtPaths(props, propsToSet),
+            layoutPropsRemoved,
+          )
+
+          return foldEither(
+            (_) => elem,
+            (updatedProps) => {
+              return {
+                ...elem,
+                props: updatedProps,
+              }
+            },
+            layoutPropsAdded,
+          )
+        },
+      )
+    }
+
+    // Round the frame details.
+    workingEditorState = modifyUnderlyingForOpenFile(
+      staticTarget,
+      workingEditorState,
+      roundJSXElementLayoutValues,
+    )
+    // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
+    // doesn't work. Once that is fixed we can re-implement keeping the children in place
   })
   return workingEditorState
 }

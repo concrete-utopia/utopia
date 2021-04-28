@@ -1,6 +1,9 @@
 import * as React from 'react'
 import * as R from 'ramda'
 import { sides } from 'utopia-api'
+import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
+const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
+
 import * as TP from '../../core/shared/template-path'
 import {
   DetectedLayoutSystem,
@@ -45,12 +48,11 @@ import {
   UTOPIA_PATHS_KEY,
   UTOPIA_SCENE_ID_KEY,
 } from '../../core/model/utopia-constants'
-import ResizeObserver from 'resize-observer-polyfill'
+
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
-import { useForceUpdate } from '../editor/hook-utils'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import { mapDropNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
@@ -242,7 +244,6 @@ function useInvalidateScenesWhenSelectedViewChanges(
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
 ): void {
-  const forceUpdate = useForceUpdate()
   return useSelectorWithCallback(
     (store) => store.editor.selectedViews,
     (newSelectedViews) => {
@@ -252,7 +253,6 @@ function useInvalidateScenesWhenSelectedViewChanges(
           const sceneID = TP.toString(scenePath)
           invalidatedSceneIDsRef.current.add(sceneID)
           invalidatedPathsForStylesheetCacheRef.current.add(TP.toString(sv))
-          forceUpdate()
         }
       })
     },
@@ -276,7 +276,19 @@ function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, ()
   return [initCompleteRef.current, setInitComplete]
 }
 
-export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElement> {
+interface DomWalkerProps {
+  selectedViews: Array<TemplatePath>
+  scale: number
+  onDomReport: (
+    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+    cachedTreeRoots: Array<TemplatePath>,
+  ) => void
+  canvasRootElementTemplatePath: TemplatePath
+  validRootPaths: Array<InstancePath>
+  mountCount: number
+}
+
+export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const rootMetadataInStateRef = useRefEditorState(
     (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
@@ -284,10 +296,6 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
   const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
-  const selectedViews = useEditorState(
-    (store) => store.editor.selectedViews,
-    'useDomWalker selectedViews',
-  )
   const resizeObserver = useResizeObserver(invalidatedSceneIDsRef)
   const mutationObserver = useMutationObserver(invalidatedSceneIDsRef)
   useInvalidateScenesWhenSelectedViewChanges(
@@ -317,7 +325,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
       // This assumes that the canvas root is rendering a Storyboard fragment.
       // The necessary validPaths and the root fragment's template path comes from props,
       // because the fragment is invisible in the DOM.
-      const rootMetadata: ReadonlyArray<ElementInstanceMetadata> = walkCanvasRootFragment(
+      const { metadata, cachedTreeRoots } = walkCanvasRootFragment(
         refOfContainer,
         0,
         props.canvasRootElementTemplatePath,
@@ -325,7 +333,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         rootMetadataInStateRef,
         invalidatedSceneIDsRef,
         invalidatedPathsForStylesheetCacheRef,
-        selectedViews,
+        props.selectedViews,
         initComplete,
         props.scale,
         containerRect,
@@ -335,7 +343,7 @@ export function useDomWalker(props: CanvasContainerProps): React.Ref<HTMLDivElem
         performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
       }
       setInitComplete()
-      props.onDomReport(rootMetadata)
+      props.onDomReport(metadata, cachedTreeRoots)
     }
   })
 
@@ -365,10 +373,6 @@ function collectMetadataForElement(
     localFrame: localFrame,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
   }
-}
-
-function isRootElement(path: InstancePath): boolean {
-  return TP.isScenePath(TP.parentPath(path))
 }
 
 function collectMetadata(
@@ -405,7 +409,7 @@ function collectMetadata(
     let filteredRootElements: InstancePath[] = []
     fastForEach(unfilteredChildrenPaths, (childPath) => {
       if (TP.isParentOf(path, childPath)) {
-        if (isRootElement(childPath)) {
+        if (TP.isTopLevelInstancePath(childPath)) {
           filteredRootElements.push(childPath)
         } else {
           filteredChildPaths.push(childPath)
@@ -584,7 +588,7 @@ function walkCanvasRootFragment(
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-): ReadonlyArray<ElementInstanceMetadata> {
+): { metadata: ReadonlyArray<ElementInstanceMetadata>; cachedTreeRoots: Array<TemplatePath> } {
   if (
     ObserversAvailable &&
     invalidatedSceneIDsRef.current.size === 0 &&
@@ -592,9 +596,9 @@ function walkCanvasRootFragment(
     initComplete
   ) {
     // no mutation happened on the entire canvas, just return the old metadata
-    return rootMetadataInStateRef.current
+    return { metadata: rootMetadataInStateRef.current, cachedTreeRoots: [canvasRootPath] }
   } else {
-    const { childPaths: rootElements, rootMetadata } = walkSceneInner(
+    const { childPaths: rootElements, rootMetadata, cachedTreeRoots } = walkSceneInner(
       canvasRoot,
       index,
       validPaths,
@@ -624,7 +628,7 @@ function walkCanvasRootFragment(
       emptyAttributeMetadatada,
       null,
     )
-    return [...rootMetadata, metadata]
+    return { metadata: [...rootMetadata, metadata], cachedTreeRoots: cachedTreeRoots }
   }
 }
 
@@ -639,7 +643,7 @@ function walkScene(
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-): ReadonlyArray<ElementInstanceMetadata> {
+): { metadata: ReadonlyArray<ElementInstanceMetadata>; cachedTreeRoots: Array<TemplatePath> } {
   if (scene instanceof HTMLElement) {
     // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
     // and that they can only have a single root element
@@ -666,7 +670,7 @@ function walkScene(
       }
 
       if (cachedMetadata == null || !initComplete) {
-        const { childPaths: rootElements, rootMetadata } = walkSceneInner(
+        const { childPaths: rootElements, rootMetadata, cachedTreeRoots } = walkSceneInner(
           scene,
           index,
           validPaths,
@@ -689,7 +693,7 @@ function walkScene(
           invalidatedPathsForStylesheetCacheRef,
           selectedViews,
         )
-        return [...rootMetadata, ...sceneMetadata]
+        return { metadata: [...rootMetadata, ...sceneMetadata], cachedTreeRoots: cachedTreeRoots }
       } else {
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
@@ -698,11 +702,11 @@ function walkScene(
             rootMetadataAccumulator.push(elem)
           }
         })
-        return rootMetadataAccumulator
+        return { metadata: rootMetadataAccumulator, cachedTreeRoots: [scenePath] }
       }
     }
   }
-  return [] // verify
+  return { metadata: [], cachedTreeRoots: [] } // verify
 }
 
 function walkSceneInner(
@@ -716,14 +720,19 @@ function walkSceneInner(
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-): { childPaths: Array<InstancePath>; rootMetadata: ReadonlyArray<ElementInstanceMetadata> } {
+): {
+  childPaths: Array<InstancePath>
+  rootMetadata: ReadonlyArray<ElementInstanceMetadata>
+  cachedTreeRoots: Array<TemplatePath>
+} {
   const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
 
   let childPaths: Array<InstancePath> = []
   let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
+  let cachedTreeRootsAccumulator: Array<TemplatePath> = []
 
   scene.childNodes.forEach((childNode) => {
-    const { childPaths: childNodePaths, rootMetadata } = walkElements(
+    const { childPaths: childNodePaths, rootMetadata, cachedTreeRoots } = walkElements(
       childNode,
       index,
       0,
@@ -740,9 +749,14 @@ function walkSceneInner(
 
     childPaths.push(...childNodePaths)
     rootMetadataAccumulator.push(...rootMetadata)
+    cachedTreeRootsAccumulator.push(...cachedTreeRoots)
   })
 
-  return { childPaths: childPaths, rootMetadata: rootMetadataAccumulator }
+  return {
+    childPaths: childPaths,
+    rootMetadata: rootMetadataAccumulator,
+    cachedTreeRoots: cachedTreeRootsAccumulator,
+  }
 }
 
 // Walks through the DOM producing the structure and values from within.
@@ -762,23 +776,27 @@ function walkElements(
 ): {
   childPaths: ReadonlyArray<InstancePath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
+  cachedTreeRoots: Array<TemplatePath>
 } {
   if (isScene(element)) {
     // we found a nested scene, restart the walk
+    const { metadata, cachedTreeRoots } = walkScene(
+      element,
+      index,
+      validPaths,
+      rootMetadataInStateRef,
+      invalidatedSceneIDsRef,
+      invalidatedPathsForStylesheetCacheRef,
+      selectedViews,
+      initComplete,
+      scale,
+      containerRectLazy,
+    )
+
     const result = {
       childPaths: [],
-      rootMetadata: walkScene(
-        element,
-        index,
-        validPaths,
-        rootMetadataInStateRef,
-        invalidatedSceneIDsRef,
-        invalidatedPathsForStylesheetCacheRef,
-        selectedViews,
-        initComplete,
-        scale,
-        containerRectLazy,
-      ),
+      rootMetadata: metadata,
+      cachedTreeRoots: cachedTreeRoots,
     }
     return result
   }
@@ -802,9 +820,14 @@ function walkElements(
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<InstancePath> = []
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
+    let cachedTreeRootsAccumulator: Array<TemplatePath> = []
     if (traverseChildren) {
       element.childNodes.forEach((child, childIndex) => {
-        const { childPaths: childNodePaths, rootMetadata: rootMetadataInner } = walkElements(
+        const {
+          childPaths: childNodePaths,
+          rootMetadata: rootMetadataInner,
+          cachedTreeRoots,
+        } = walkElements(
           child,
           childIndex,
           depth + 1,
@@ -820,6 +843,7 @@ function walkElements(
         )
         childPaths.push(...childNodePaths)
         rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
+        cachedTreeRootsAccumulator.push(...cachedTreeRoots)
       })
     }
 
@@ -838,8 +862,9 @@ function walkElements(
     return {
       rootMetadata: rootMetadataAccumulator,
       childPaths: collectedMetadata.map((metadata) => metadata.templatePath), // TODO why not extract childPaths from the metadata?
+      cachedTreeRoots: cachedTreeRootsAccumulator,
     }
   } else {
-    return { childPaths: [], rootMetadata: [] }
+    return { childPaths: [], rootMetadata: [], cachedTreeRoots: [] }
   }
 }

@@ -708,7 +708,7 @@ export function getJSXComponentsAndImportsForPath(
     projectContents,
     nodeModules,
     currentFilePath,
-    TP.instancePathForElementAtPath(path),
+    TP.instancePathForElementAtPathDontThrowOnScene(path),
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
@@ -1890,7 +1890,7 @@ export function modifyUnderlyingTarget(
   } else if (TP.isInstancePath(target)) {
     instanceTarget = target
   } else {
-    instanceTarget = TP.instancePathForElementAtPath(target)
+    instanceTarget = TP.instancePathForElementAtPathDontThrowOnScene(target)
   }
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editorState.projectContents,
@@ -1989,7 +1989,7 @@ export function withUnderlyingTarget<T>(
   } else if (TP.isInstancePath(target)) {
     instanceTarget = target
   } else {
-    instanceTarget = TP.instancePathForElementAtPath(target)
+    instanceTarget = TP.instancePathForElementAtPathDontThrowOnScene(target)
   }
   const underlyingTarget = normalisePathToUnderlyingTarget(
     projectContents,

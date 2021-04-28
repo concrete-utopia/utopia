@@ -44,6 +44,7 @@ import {
   useInspectorInfoLonghandShorthand,
 } from '../../../common/longhand-shorthand-hooks'
 import { isNotUnsetOrDefault } from '../../../common/control-status'
+import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -586,7 +587,7 @@ export const GiganticSizePinsSubsection = betterReactMemo(
       isNotUnsetOrDefault(maxWidth.controlStatus) ||
       isNotUnsetOrDefault(minHeight.controlStatus) ||
       isNotUnsetOrDefault(maxHeight.controlStatus)
-    const [minMaxToggled, setMinMaxToggled] = React.useState<boolean>(hasMinMaxValues)
+    const [minMaxToggled, setMinMaxToggled] = usePropControlledStateV2(hasMinMaxValues)
     const toggleMinMax = React.useCallback(() => {
       setMinMaxToggled(!minMaxToggled)
     }, [minMaxToggled, setMinMaxToggled])

@@ -174,7 +174,7 @@ describe('useCallbackFactory', () => {
     const aTransform = () => 'hello'
     const bTransform = () => 'ello'
 
-    const { rerender } = renderHook<
+    const { result, rerender } = renderHook<
       RenderTestHookProps<any>,
       {
         submitValue1: (newValue: unknown) => void
@@ -189,14 +189,14 @@ describe('useCallbackFactory', () => {
       },
     })
 
-    expect(() => {
-      console.error('WE EXPECT AN ERROR MESSAGE ON THE CONSOLE - DONT WORRY ITS FOR A TEST')
-      rerender({
-        value: oldValue,
-        callback: aCallback,
-        transformFunction1: aTransform,
-      })
-    }).toThrow()
+    rerender({
+      value: oldValue,
+      callback: aCallback,
+      transformFunction1: aTransform,
+    })
+    expect(result.error).toMatchInlineSnapshot(
+      `[Invariant Violation: Rendered fewer hooks than expected. This may be caused by an accidental early return statement.]`,
+    )
   })
 })
 

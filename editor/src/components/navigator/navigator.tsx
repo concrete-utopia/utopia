@@ -38,7 +38,6 @@ export const NavigatorComponent = betterReactMemo(
   ({ style: navigatorStyle }) => {
     const editorSliceRef = useRefEditorState((store) => {
       const dragSelections = createDragSelections(
-        store.editor.jsxMetadata,
         store.derived.navigatorTargets,
         store.editor.selectedViews,
       )

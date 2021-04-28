@@ -124,13 +124,17 @@ export interface UiJsxCanvasProps {
   scale: number
   uiFileCode: string
   uiFilePath: string
+  selectedViews: Array<TemplatePath>
   requireFn: UtopiaRequireFn
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: TemplatePath[]
   editedTextElement: InstancePath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
-  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
+  onDomReport: (
+    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+    cachedTreeRoots: Array<TemplatePath>,
+  ) => void
   walkDOM: boolean
   imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
   canvasIsLive: boolean
@@ -161,7 +165,10 @@ export function pickUiJsxCanvasProps(
   editor: EditorState,
   derived: DerivedState,
   walkDOM: boolean,
-  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void,
+  onDomReport: (
+    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+    cachedTreeRoots: Array<TemplatePath>,
+  ) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
 ): UiJsxCanvasProps | null {
@@ -201,6 +208,7 @@ export function pickUiJsxCanvasProps(
       scale: editor.canvas.scale,
       uiFileCode: uiFile.fileContents.code,
       uiFilePath: uiFilePath,
+      selectedViews: editor.selectedViews,
       requireFn: requireFn,
       resolve: editor.codeResultCache.resolve,
       hiddenInstances: hiddenInstances,
@@ -407,6 +415,7 @@ export const UiJsxCanvas = betterReactMemo(
                 <CanvasContainer
                   mountCount={props.mountCount}
                   walkDOM={walkDOM}
+                  selectedViews={props.selectedViews}
                   scale={scale}
                   offset={offset}
                   onDomReport={onDomReport}
@@ -478,9 +487,13 @@ function useGetStoryboardRoot(
 
 export interface CanvasContainerProps {
   walkDOM: boolean
+  selectedViews: Array<TemplatePath>
   scale: number
   offset: CanvasVector
-  onDomReport: (elementMetadata: ReadonlyArray<ElementInstanceMetadata>) => void
+  onDomReport: (
+    elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
+    cachedTreeRoots: Array<TemplatePath>,
+  ) => void
   canvasRootElementTemplatePath: TemplatePath
   validRootPaths: Array<InstancePath>
   mountCount: number

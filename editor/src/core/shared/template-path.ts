@@ -269,12 +269,12 @@ export function isStoryboardPath(path: InstancePath): boolean {
 }
 
 export function isStoryboardDescendant(path: TemplatePath): boolean {
-  const asInstancePath = instancePathForElementAtPath(path)
+  const asInstancePath = instancePathForElementAtPathDontThrowOnScene(path)
   return isEmptyScenePath(asInstancePath.scene) && !isStoryboardPath(asInstancePath)
 }
 
 export function isStoryboardChild(path: TemplatePath): boolean {
-  const asInstancePath = instancePathForElementAtPath(path)
+  const asInstancePath = instancePathForElementAtPathDontThrowOnScene(path)
   return isEmptyScenePath(asInstancePath.scene) && asInstancePath.element.length === 2
 }
 
@@ -312,8 +312,16 @@ function instancePathForElementPaths(elementPaths: ElementPath[]): InstancePath 
   }
 }
 
-export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
+export function instancePathForElementAtPathDontThrowOnScene(path: TemplatePath): InstancePath {
   return isInstancePath(path) ? path : instancePathForElementPaths(path.sceneElementPaths)
+}
+
+export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
+  if (isScenePath(path)) {
+    throw new Error(`Encountered Scene Path ${toString(path)}`)
+  }
+
+  return instancePathForElementAtPathDontThrowOnScene(path)
 }
 
 export function scenePathForElementAtInstancePath(path: InstancePath): ScenePath {
@@ -461,9 +469,11 @@ export function parentPath(path: TemplatePath): TemplatePath | null {
 }
 
 export function isParentOf(maybeParent: TemplatePath, maybeChild: TemplatePath): boolean {
-  const maybeChildAsInstancePath = instancePathForElementAtPath(maybeChild)
-  const maybeParentAsInstancePath = instancePathForElementAtPath(maybeParent)
-  const actualParent = instancePathForElementAtPath(parentPath(maybeChildAsInstancePath))
+  const maybeChildAsInstancePath = instancePathForElementAtPathDontThrowOnScene(maybeChild)
+  const maybeParentAsInstancePath = instancePathForElementAtPathDontThrowOnScene(maybeParent)
+  const actualParent = instancePathForElementAtPathDontThrowOnScene(
+    parentPath(maybeChildAsInstancePath),
+  )
   return pathsEqual(actualParent, maybeParentAsInstancePath)
 }
 
@@ -628,13 +638,17 @@ export function isSiblingOf(l: TemplatePath | null, r: TemplatePath | null): boo
   return l != null && r != null && pathsEqual(parentPath(l), parentPath(r))
 }
 
-function elementIsDescendent(l: ElementPath, r: ElementPath): boolean {
-  if (l.length < r.length) {
-    return false
-  }
-
+function slicedPathsEqual(l: ElementPath, r: ElementPath): boolean {
   const slicedL = l.slice(0, r.length)
   return elementPathsEqual(slicedL, r)
+}
+
+function elementIsDescendant(l: ElementPath, r: ElementPath): boolean {
+  return l.length > r.length && slicedPathsEqual(l, r)
+}
+
+function elementIsDescendantOrEqualTo(l: ElementPath, r: ElementPath): boolean {
+  return l.length >= r.length && slicedPathsEqual(l, r)
 }
 
 function scenePathIsDescendent(path: ScenePath, targetAncestor: ScenePath): boolean {
@@ -663,9 +677,13 @@ export function isAncestorOf(
   } else if (isScenePath(targetAncestor)) {
     return scenePathIsDescendent(path.scene, targetAncestor)
   } else {
+    const elementPathCompare = includePathsEqual
+      ? elementIsDescendantOrEqualTo
+      : elementIsDescendant
+
     return (
       scenePathIsDescendent(path.scene, targetAncestor.scene) &&
-      elementIsDescendent(path.element, targetAncestor.element)
+      elementPathCompare(path.element, targetAncestor.element)
     )
   }
 }
@@ -678,23 +696,22 @@ function fullElementPathForPath(path: TemplatePath): ElementPath[] {
   }
 }
 
-export function isDescendantOf(
-  target: TemplatePath,
-  maybeAncestor: TemplatePath,
-  includePathsEqual: boolean = true,
-): boolean {
+export function isDescendantOf(target: TemplatePath, maybeAncestor: TemplatePath): boolean {
   const targetElementPath = fullElementPathForPath(target)
   const maybeAncestorElementPath = fullElementPathForPath(maybeAncestor)
-  if (fullElementPathsEqual(targetElementPath, maybeAncestorElementPath)) {
-    return includePathsEqual
-  } else if (targetElementPath.length >= maybeAncestorElementPath.length) {
+  if (targetElementPath.length >= maybeAncestorElementPath.length) {
     const partsToCheck = targetElementPath.slice(0, maybeAncestorElementPath.length)
     return partsToCheck.every((elementPath, i) => {
-      // all parts up to the last must match, and the last must be a descendent
+      // all parts up to the last must match, and the last must be a descendant
       if (i < maybeAncestorElementPath.length - 1) {
         return elementPathsEqual(elementPath, maybeAncestorElementPath[i])
       } else {
-        return elementIsDescendent(elementPath, maybeAncestorElementPath[i])
+        const finalPartComparison =
+          targetElementPath.length === maybeAncestorElementPath.length
+            ? elementIsDescendant
+            : elementIsDescendantOrEqualTo
+
+        return finalPartComparison(elementPath, maybeAncestorElementPath[i])
       }
     })
   } else {
