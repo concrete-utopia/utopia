@@ -229,11 +229,11 @@ export function runSimpleLocalEditorAction(
     case 'DELETE_VIEWS':
       return UPDATE_FNS.DELETE_VIEWS(action, state, dispatch)
     case 'DELETE_SELECTED':
-      return UPDATE_FNS.DELETE_SELECTED(action, state, dispatch)
+      return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
     case 'WRAP_IN_VIEW':
       return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch)
     case 'UNWRAP_GROUP_OR_VIEW':
-      return UPDATE_FNS.UNWRAP_GROUP_OR_VIEW(action, state, dispatch)
+      return UPDATE_FNS.UNWRAP_GROUP_OR_VIEW(action, state, derivedState, dispatch)
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
     case 'SET_SCENE_PROP':

@@ -7,14 +7,11 @@ import {
 import * as TP from '../../../core/shared/template-path'
 import * as PP from '../../../core/shared/property-path'
 import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
-import {
-  getOpenImportsFromState,
-  getOpenUtopiaJSXComponentsFromState,
-} from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
+import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 
 export interface NameAndIconResult {
   path: TemplatePath
@@ -27,8 +24,11 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
   return useEditorState(
     (store) => {
       const metadata = store.editor.jsxMetadata
-      const components = getOpenUtopiaJSXComponentsFromState(store.editor)
-      const imports = getOpenImportsFromState(store.editor)
+      const { components, imports } = getJSXComponentsAndImportsForPathFromState(
+        path,
+        store.editor,
+        store.derived,
+      )
       return getNameAndIconResult(path, components, metadata, imports)
     },
     'useNameAndIcon',
@@ -50,18 +50,17 @@ export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
     (store) => store.editor.jsxMetadata,
     'useNamesAndIconsAllPaths metadata',
   )
-  const components = useEditorState(
-    (store) => getOpenUtopiaJSXComponentsFromState(store.editor),
-    'useNamesAndIconsAllPaths components',
-  )
-  const imports = useEditorState(
-    (store) => getOpenImportsFromState(store.editor),
-    'useNamesAndIconsAllPaths imports',
-  )
+  const editor = useEditorState((store) => store.editor, 'useNamesAndIconsAllPaths editor')
+  const derived = useEditorState((store) => store.derived, 'useNamesAndIconsAllPaths derived')
 
-  return MetadataUtils.getAllPaths(metadata).map((path) =>
-    getNameAndIconResult(path, components, metadata, imports),
-  )
+  return MetadataUtils.getAllPaths(metadata).map((path) => {
+    const { components, imports } = getJSXComponentsAndImportsForPathFromState(
+      path,
+      editor,
+      derived,
+    )
+    return getNameAndIconResult(path, components, metadata, imports)
+  })
 }
 
 function getNameAndIconResult(
@@ -70,7 +69,7 @@ function getNameAndIconResult(
   metadata: ElementInstanceMetadataMap,
   imports: Imports,
 ): NameAndIconResult {
-  const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
+  const elementName = MetadataUtils.getJSXElementName(path, components)
   return {
     path: path,
     name: elementName,

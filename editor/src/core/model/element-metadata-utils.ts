@@ -79,6 +79,8 @@ import {
   id,
   Imports,
   InstancePath,
+  isUnknownOrGeneratedElement,
+  NodeModules,
   PropertyPath,
   ScenePath,
   StaticInstancePath,
@@ -95,11 +97,14 @@ import {
   isSceneAgainstImports,
   isUtopiaAPIComponent,
   isViewAgainstImports,
+  getUtopiaJSXComponentsFromSuccess,
 } from './project-file-utils'
 import { EmptyScenePathForStoryboard, ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
+import { withUnderlyingTarget } from '../../components/editor/store/editor-state'
+import { ProjectContentTreeRoot } from '../../components/assets'
 const ObjectPathImmutable: any = OPI
 
 type MergeCandidate = These<ElementInstanceMetadata, ElementInstanceMetadata>
@@ -155,14 +160,26 @@ export const MetadataUtils = {
     }
   },
   anyUnknownOrGeneratedElements(
-    elements: Array<UtopiaJSXComponent>,
+    projectContents: ProjectContentTreeRoot,
+    nodeModules: NodeModules,
+    openFile: string | null,
     targets: Array<TemplatePath>,
   ): boolean {
     return targets.some((target) => {
-      const originType = this.getElementOriginType(elements, target)
-      return (
-        originType === 'unknown-element' || originType === 'generated-static-definition-present'
+      const elementOriginType = withUnderlyingTarget<ElementOriginType>(
+        target,
+        projectContents,
+        nodeModules,
+        openFile,
+        'unknown-element',
+        (success, element, underlyingTarget, underlyingFilePath) => {
+          return MetadataUtils.getElementOriginType(
+            getUtopiaJSXComponentsFromSuccess(success),
+            underlyingTarget,
+          )
+        },
       )
+      return isUnknownOrGeneratedElement(elementOriginType)
     })
   },
   findElementByTemplatePathDontThrowOnScenes(
@@ -324,7 +341,7 @@ export const MetadataUtils = {
     components: Array<UtopiaJSXComponent>,
     metadata: ElementInstanceMetadataMap,
   ): boolean {
-    const elementName = MetadataUtils.getJSXElementName(target, components, metadata)
+    const elementName = MetadataUtils.getJSXElementName(target, components)
     if (
       elementName != null &&
       PP.depth(elementName.propertyPath) === 0 &&
@@ -806,7 +823,6 @@ export const MetadataUtils = {
   },
   // TODO update this to work with the natural width / height
   getImageMultiplier(
-    imports: Imports,
     metadata: ElementInstanceMetadataMap,
     targets: Array<TemplatePath>,
   ): number | null {
@@ -1057,7 +1073,6 @@ export const MetadataUtils = {
   getJSXElementName(
     path: TemplatePath,
     components: Array<UtopiaJSXComponent>,
-    metadata: ElementInstanceMetadataMap,
   ): JSXElementName | null {
     const jsxElement = findElementAtPath(path, components)
     if (jsxElement != null) {
@@ -1070,11 +1085,7 @@ export const MetadataUtils = {
       return null
     }
   },
-  getJSXElementBaseName(
-    path: TemplatePath,
-    components: Array<UtopiaJSXComponent>,
-    metadata: ElementInstanceMetadataMap,
-  ): string | null {
+  getJSXElementBaseName(path: TemplatePath, components: Array<UtopiaJSXComponent>): string | null {
     const jsxElement = findElementAtPath(path, components)
     if (jsxElement != null) {
       if (isJSXElement(jsxElement)) {
@@ -1086,55 +1097,13 @@ export const MetadataUtils = {
       return null
     }
   },
-  getJSXElementTagName(
-    path: TemplatePath,
-    components: Array<UtopiaJSXComponent>,
-    metadata: ElementInstanceMetadataMap,
-  ): string | null {
+  getJSXElementTagName(path: TemplatePath, components: Array<UtopiaJSXComponent>): string | null {
     const jsxElement = findElementAtPath(path, components)
     if (jsxElement != null) {
       if (isJSXElement(jsxElement)) {
         return getJSXElementNameAsString(jsxElement.name)
       } else {
         return null
-      }
-    } else {
-      return null
-    }
-  },
-  getTargetParentForPaste: function (
-    imports: Imports,
-    selectedViews: Array<TemplatePath>,
-    metadata: ElementInstanceMetadataMap,
-    pasteTargetsToIgnore: TemplatePath[],
-  ): TemplatePath | null {
-    if (selectedViews.length > 0) {
-      const parentTarget = TP.getCommonParent(selectedViews, true)
-      if (parentTarget == null) {
-        return null
-      } else {
-        // we should not paste the source into itself
-        const insertingSourceIntoItself = TP.containsPath(parentTarget, pasteTargetsToIgnore)
-
-        if (TP.isScenePath(parentTarget)) {
-          return insertingSourceIntoItself ? null : parentTarget
-        } else if (
-          this.targetSupportsChildren(imports, metadata, parentTarget) &&
-          !insertingSourceIntoItself
-        ) {
-          return parentTarget
-        } else {
-          const parentOfSelected = TP.instancePathParent(parentTarget)
-          if (TP.isScenePath(parentOfSelected)) {
-            return parentOfSelected
-          } else {
-            if (this.targetSupportsChildren(imports, metadata, parentOfSelected)) {
-              return parentOfSelected
-            } else {
-              return null
-            }
-          }
-        }
       }
     } else {
       return null
@@ -1223,14 +1192,9 @@ export const MetadataUtils = {
 
     return workingElements
   },
-  staticElementsOnly(
-    elements: Array<UtopiaJSXComponent>,
-    targets: Array<TemplatePath>,
-  ): Array<TemplatePath> {
-    return targets.filter((target) => {
-      const originType = this.getElementOriginType(elements, target)
-      return originType === 'statically-defined' || originType === 'scene'
-    })
+  isStaticElement(elements: Array<UtopiaJSXComponent>, target: TemplatePath): boolean {
+    const originType = this.getElementOriginType(elements, target)
+    return originType === 'statically-defined' || originType === 'scene'
   },
   removeElementMetadataChild(
     target: InstancePath,
@@ -1549,7 +1513,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     imports: Imports,
   ): boolean {
-    const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
+    const elementName = MetadataUtils.getJSXElementName(path, components)
     const element = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(metadata, path)
     if (element?.isEmotionOrStyledComponent) {
       return false
