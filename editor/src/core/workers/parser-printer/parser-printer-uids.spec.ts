@@ -12,11 +12,18 @@ import {
   jsxElement,
   utopiaJSXComponent,
 } from '../../shared/element-template'
-import { foldParsedTextFile } from '../../shared/project-file-types'
+import {
+  foldParsedTextFile,
+  RevisionsState,
+  textFile,
+  textFileContents,
+} from '../../shared/project-file-types'
 import { parseCode, printCode, printCodeOptions } from './parser-printer'
 import { emptyComments } from './parser-printer-comments'
 import { testParseCode } from './parser-printer.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
+import { addFileToProjectContents } from '../../../components/assets'
+import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
 
 describe('parseCode', () => {
   it('produces unique IDs for every element', () => {
@@ -24,10 +31,16 @@ describe('parseCode', () => {
     foldParsedTextFile(
       (_) => fail('Is a failure.'),
       (success) => {
-        const uniqueIDs = getAllUniqueUids(
-          getComponentsFromTopLevelElements(success.topLevelElements),
-          'Unique IDs failure.',
+        const projectContents = addFileToProjectContents(
+          {},
+          StoryboardFilePath,
+          textFile(
+            textFileContents(MajesticBrokerTestCaseCode, success, RevisionsState.BothMatch),
+            null,
+            0,
+          ),
         )
+        const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
         expect(uniq(uniqueIDs).length).toMatchInlineSnapshot(`77`)
       },
       (_) => fail('Is unparsed.'),

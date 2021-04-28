@@ -199,7 +199,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
   const componentUIDs = useEditorState((store) => {
     const uiFile = getOpenUIJSFile(store.editor)
     return uiFile != null && isParseSuccess(uiFile.fileContents.parsed)
-      ? getAllUniqueUids(getUtopiaJSXComponentsFromSuccess(uiFile.fileContents.parsed))
+      ? getAllUniqueUids(store.editor.projectContents)
       : []
   }, 'FileBrowserItems componentUIDs')
   const componentUIDsWithStableRef = useKeepReferenceEqualityIfPossible(componentUIDs)

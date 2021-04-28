@@ -51,9 +51,9 @@ import {
 import * as History from '../history'
 import {
   EditorState,
-  getOpenUtopiaJSXComponentsFromState,
   defaultUserState,
   StoryboardFilePath,
+  getJSXComponentsAndImportsForPathFromState,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
@@ -435,9 +435,9 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       isTextFile(mainUIJSFile) &&
       isParseSuccess(mainUIJSFile.fileContents.parsed)
     ) {
-      const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
+      const updatedComponents = getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed)
       const updatedChildren = Utils.pathOr([], [0, 'rootElement', 'children'], updatedComponents)
-      const originalComponents = getOpenUtopiaJSXComponentsFromState(editor)
+      const originalComponents = getUtopiaJSXComponentsFromSuccess(oldUIJSFile.fileContents.parsed)
       const originalChildren = Utils.pathOr([], [0, 'rootElement', 'children'], originalComponents)
       expect(updatedChildren).toHaveLength(originalChildren.length + 2)
       expect(updatedEditor.selectedViews).toHaveLength(2)
@@ -534,7 +534,7 @@ describe('INSERT_JSX_ELEMENT', () => {
     const { editor, derivedState, dispatch } = createEditorStates()
 
     const parentBeforeInsert = findJSXElementChildAtPath(
-      getOpenUtopiaJSXComponentsFromState(editor),
+      getJSXComponentsAndImportsForPathFromState(parentPath, editor, derivedState).components,
       parentPath,
     )
 
@@ -556,7 +556,11 @@ describe('INSERT_JSX_ELEMENT', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
+    const updatedComponents = getJSXComponentsAndImportsForPathFromState(
+      parentPath,
+      updatedEditor,
+      derivedState,
+    ).components
     const parentAfterInsert = findJSXElementChildAtPath(updatedComponents, parentPath)
     const insertedElement = findJSXElementChildAtPath(
       updatedComponents,
@@ -592,7 +596,11 @@ describe('INSERT_JSX_ELEMENT', () => {
       highlightedViews: [],
     }
 
-    const componentsBeforeInsert = getOpenUtopiaJSXComponentsFromState(editorWithNoHighlighted)
+    const componentsBeforeInsert = getJSXComponentsAndImportsForPathFromState(
+      testStaticInstancePath(ScenePathForTestUiJsFile, []),
+      editor,
+      derivedState,
+    ).components
 
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
@@ -612,7 +620,12 @@ describe('INSERT_JSX_ELEMENT', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
     )
-    const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
+    const updatedComponents = getJSXComponentsAndImportsForPathFromState(
+      testStaticInstancePath(ScenePathForTestUiJsFile, []),
+      updatedEditor,
+      derivedState,
+    ).components
+
     const insertedElement = findJSXElementChildAtPath(
       updatedComponents,
       testStaticInstancePath(ScenePathForTestUiJsFile, ['TestView']),

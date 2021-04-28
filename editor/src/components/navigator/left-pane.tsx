@@ -94,25 +94,6 @@ export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): Editor
   }
 }
 
-function getExistingUIDs(projectFile: ProjectFile | null): Array<string> {
-  if (projectFile == null) {
-    return []
-  } else {
-    if (isTextFile(projectFile)) {
-      if (isParseSuccess(projectFile.fileContents.parsed)) {
-        const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
-        return getAllUniqueUids(components)
-      } else {
-        return []
-      }
-    } else {
-      return []
-    }
-  }
-}
-
-export const existingUIDs = Utils.memoize(getExistingUIDs)
-
 export const LeftPaneMinimumWidth = 5
 
 export const LeftPaneDefaultWidth = 260

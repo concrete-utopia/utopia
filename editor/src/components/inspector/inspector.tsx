@@ -8,7 +8,10 @@ import {
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
-import { isHTMLComponent } from '../../core/model/project-file-utils'
+import {
+  getUtopiaJSXComponentsFromSuccess,
+  isHTMLComponent,
+} from '../../core/model/project-file-utils'
 import { createSceneTemplatePath } from '../../core/model/scene-utils'
 import { forEachRight, isRight, right } from '../../core/shared/either'
 import {
@@ -57,8 +60,8 @@ import {
 } from '../editor/actions/action-creators'
 import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
-  getOpenImportsFromState,
-  getOpenUtopiaJSXComponentsFromState,
+  forUnderlyingTarget,
+  getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
@@ -293,14 +296,17 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     aspectRatioLocked,
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadata
-    const imports = getOpenImportsFromState(store.editor)
-    const rootComponents = getOpenUtopiaJSXComponentsFromStateMultifile(store.editor)
     let anyComponentsInner: boolean = false
     let anyHTMLElementsInner: boolean = false
     let anyUnknownElementsInner: boolean = false
     let hasNonDefaultPositionAttributesInner: boolean = false
     let aspectRatioLockedInner: boolean = false
     Utils.fastForEach(selectedViews, (view) => {
+      const { components: rootComponents, imports } = getJSXComponentsAndImportsForPathFromState(
+        view,
+        store.editor,
+        store.derived,
+      )
       anyComponentsInner =
         anyComponentsInner ||
         MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
@@ -452,13 +458,21 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<TemplatePath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
-  const { dispatch, jsxMetadata, rootComponents, isUIJSFile, imports } = useEditorState((store) => {
+  const {
+    dispatch,
+    jsxMetadata,
+    isUIJSFile,
+    projectContents,
+    nodeModules,
+    openFile,
+  } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
-      rootComponents: getOpenUtopiaJSXComponentsFromState(store.editor),
       isUIJSFile: isOpenFileUiJs(store.editor),
-      imports: getOpenImportsFromState(store.editor),
+      projectContents: store.editor.projectContents,
+      nodeModules: store.editor.nodeModules.files,
+      openFile: store.editor.canvas.openFile?.filename ?? null,
     }
   }, 'SingleInspectorEntryPoint')
 
@@ -475,101 +489,117 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
   Utils.fastForEach(TP.filterScenes(selectedViews), (path) => {
-    // TODO multiselect
-    const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
-    if (elementMetadata != null) {
-      const jsxElement = findElementAtPath(path, rootComponents)
-      const parentPath = TP.parentPath(path)
-      const parentElement =
-        parentPath != null && TP.isInstancePath(parentPath)
-          ? findElementAtPath(parentPath, rootComponents)
-          : null
+    forUnderlyingTarget(
+      path,
+      projectContents,
+      nodeModules,
+      openFile,
+      (underlyingSuccess, underlyingElement, underlyingTarget) => {
+        const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
+        // TODO multiselect
+        const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
+        if (elementMetadata != null) {
+          const parentPath = TP.parentPath(underlyingTarget)
+          const parentElement =
+            parentPath != null && TP.isInstancePath(parentPath)
+              ? findElementAtPath(parentPath, rootComponents)
+              : null
 
-      const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadata, path)
-      const nonGroupAncestorFrame =
-        nonGroupAncestor == null
-          ? null
-          : MetadataUtils.getFrameInCanvasCoords(nonGroupAncestor, jsxMetadata)
+          const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadata, path)
+          const nonGroupAncestorFrame =
+            nonGroupAncestor == null
+              ? null
+              : MetadataUtils.getFrameInCanvasCoords(nonGroupAncestor, jsxMetadata)
 
-      const elementFrame = MetadataUtils.shiftGroupFrame(
-        jsxMetadata,
-        path,
-        canvasRectangle(elementMetadata.localFrame),
-        true,
-      )
-      inspectorModel.layout = {
-        frame: localRectangle(elementFrame),
-        parentFrame: nonGroupAncestorFrame,
-      }
-      if (jsxElement != null && isJSXElement(jsxElement)) {
-        function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
-          let localTargets: Array<CSSTarget> = []
-          function recursivelyDiscoverStyleTargets(
-            styleObject: any,
-            localPath: Array<string>,
-          ): void {
-            if (typeof styleObject === 'object' && styleObject != null) {
-              let selectorLength: TargetSelectorLength = 0
-              const keys = Object.keys(styleObject)
-              keys.forEach((key) => {
-                if (typeof styleObject[key] === 'object') {
-                  recursivelyDiscoverStyleTargets((styleObject as any)[key], [...localPath, key])
-                } else if (typeof selectorLength === 'number') {
-                  selectorLength = selectorLength + 1
+          const elementFrame = MetadataUtils.shiftGroupFrame(
+            jsxMetadata,
+            path,
+            canvasRectangle(elementMetadata.localFrame),
+            true,
+          )
+          inspectorModel.layout = {
+            frame: localRectangle(elementFrame),
+            parentFrame: nonGroupAncestorFrame,
+          }
+          if (underlyingElement != null && isJSXElement(underlyingElement)) {
+            function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
+              let localTargets: Array<CSSTarget> = []
+              function recursivelyDiscoverStyleTargets(
+                styleObject: any,
+                localPath: Array<string>,
+              ): void {
+                if (typeof styleObject === 'object' && styleObject != null) {
+                  let selectorLength: TargetSelectorLength = 0
+                  const keys = Object.keys(styleObject)
+                  keys.forEach((key) => {
+                    if (typeof styleObject[key] === 'object') {
+                      recursivelyDiscoverStyleTargets((styleObject as any)[key], [
+                        ...localPath,
+                        key,
+                      ])
+                    } else if (typeof selectorLength === 'number') {
+                      selectorLength = selectorLength + 1
+                    }
+                  })
+                  localTargets.push(cssTarget(localPath, selectorLength))
+                }
+              }
+              let defaults = [...DefaultStyleTargets]
+              defaults.reverse().map((defaultTarget) => {
+                const styleObject = getSimpleAttributeAtPath(
+                  right(localJSXElement.props),
+                  PP.create(defaultTarget.path),
+                )
+                if (isRight(styleObject) && styleObject.value instanceof Object) {
+                  recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
+                } else {
+                  // todo count keys
+                  localTargets.push(defaultTarget)
                 }
               })
-              localTargets.push(cssTarget(localPath, selectorLength))
+              localTargets.reverse()
+              return localTargets
             }
+            targets = updateTargets(underlyingElement)
           }
-          let defaults = [...DefaultStyleTargets]
-          defaults.reverse().map((defaultTarget) => {
-            const styleObject = getSimpleAttributeAtPath(
-              right(localJSXElement.props),
-              PP.create(defaultTarget.path),
+          if (parentElement != null && isJSXElement(parentElement)) {
+            const isChildOfFlexComponent = MetadataUtils.isParentYogaLayoutedContainerForElement(
+              elementMetadata,
             )
-            if (isRight(styleObject) && styleObject.value instanceof Object) {
-              recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
-            } else {
-              // todo count keys
-              localTargets.push(defaultTarget)
+            if (isChildOfFlexComponent) {
+              inspectorModel.isChildOfFlexComponent = true
+              const parentFlexDirection = FlexLayoutHelpers.getMainAxis(right(parentElement.props))
+              forEachRight(parentFlexDirection, (mainAxis) => {
+                inspectorModel.parentFlexAxis = mainAxis
+              })
             }
-          })
-          localTargets.reverse()
-          return localTargets
-        }
-        targets = updateTargets(jsxElement)
-      }
-      if (parentElement != null && isJSXElement(parentElement)) {
-        const isChildOfFlexComponent = MetadataUtils.isParentYogaLayoutedContainerForElement(
-          elementMetadata,
-        )
-        if (isChildOfFlexComponent) {
-          inspectorModel.isChildOfFlexComponent = true
-          const parentFlexDirection = FlexLayoutHelpers.getMainAxis(right(parentElement.props))
-          forEachRight(parentFlexDirection, (mainAxis) => {
-            inspectorModel.parentFlexAxis = mainAxis
-          })
-        }
-      }
-      if (jsxElement != null && isJSXElement(jsxElement)) {
-        const elementName = jsxElement.name.baseVariable
-        inspectorModel.type = elementName
-
-        inspectorModel.specialSizeMeasurements = elementMetadata.specialSizeMeasurements
-        inspectorModel.position = elementMetadata.specialSizeMeasurements.position
-
-        if (jsxElement.props != null) {
-          if (MetadataUtils.isLayoutWrapperAgainstImports(imports, elementMetadata)) {
-            inspectorModel.layoutWrapper = elementName as any
           }
-          const wrappedComponent = getJSXAttribute(jsxElement.props, 'wrappedComponent')
-          if (wrappedComponent != null && isJSXAttributeOtherJavaScript(wrappedComponent)) {
-            inspectorModel.type = wrappedComponent.javascript
+          if (underlyingElement != null && isJSXElement(underlyingElement)) {
+            const elementName = underlyingElement.name.baseVariable
+            inspectorModel.type = elementName
+
+            inspectorModel.specialSizeMeasurements = elementMetadata.specialSizeMeasurements
+            inspectorModel.position = elementMetadata.specialSizeMeasurements.position
+
+            if (underlyingElement.props != null) {
+              if (
+                MetadataUtils.isLayoutWrapperAgainstImports(
+                  underlyingSuccess.imports,
+                  elementMetadata,
+                )
+              ) {
+                inspectorModel.layoutWrapper = elementName as any
+              }
+              const wrappedComponent = getJSXAttribute(underlyingElement.props, 'wrappedComponent')
+              if (wrappedComponent != null && isJSXAttributeOtherJavaScript(wrappedComponent)) {
+                inspectorModel.type = wrappedComponent.javascript
+              }
+            }
           }
+          inspectorModel.label = MetadataUtils.getElementLabel(path, jsxMetadata)
         }
-      }
-      inspectorModel.label = MetadataUtils.getElementLabel(path, jsxMetadata)
-    }
+      },
+    )
   })
 
   // FIXME TODO HACK until we have better memoization in the Canvas Spy, we sacrifice using R.equals once
