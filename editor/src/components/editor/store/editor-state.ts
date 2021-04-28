@@ -879,7 +879,7 @@ export function removeElementAtPath(
   target: InstancePath,
   components: Array<UtopiaJSXComponent>,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+  const staticTarget = TP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
@@ -893,7 +893,7 @@ export function insertElementAtPath(
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.templatePathToStaticTemplatePath(targetParent)
+  const staticTarget = targetParent == null ? null : TP.dynamicPathToStaticPath(targetParent)
   return insertJSXElementChild(staticTarget, elementToInsert, components, indexPosition)
 }
 
@@ -902,11 +902,11 @@ export function transformElementAtPath(
   target: InstancePath,
   transform: (elem: JSXElement) => JSXElement,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+  const staticTarget = TP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
-    return transformJSXComponentAtPath(components, staticTarget, transform)
+    return transformJSXComponentAtPath(components, staticTarget as StaticInstancePath, transform)
   }
 }
 
@@ -1740,7 +1740,7 @@ export function getHighlightBoundsForTemplatePath(
   editorState: EditorState,
 ): HighlightBoundsWithFile | null {
   if (isInstancePath(path)) {
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
+    const staticPath = TP.dynamicPathToStaticPath(path)
     if (staticPath != null) {
       const highlightBounds = getHighlightBoundsForProject(editorState.projectContents)
       if (highlightBounds != null) {

@@ -1071,7 +1071,7 @@ function indexPositionForAdjustment(
       if (openUIJSFile != null && isParseSuccess(openUIJSFile.fileContents.parsed)) {
         const current = getZIndexOfElement(
           openUIJSFile.fileContents.parsed.topLevelElements,
-          TP.asStatic(target),
+          TP.asStatic(target) as StaticInstancePath,
         )
         return {
           type: 'absolute',

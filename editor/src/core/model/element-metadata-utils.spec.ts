@@ -6,7 +6,7 @@ import {
   LocalRectangle,
   CanvasRectangle,
 } from '../shared/math-utils'
-import { left, right } from '../shared/either'
+import { right } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 import {
   ElementInstanceMetadata,
@@ -26,11 +26,6 @@ import {
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { InstancePath, TemplatePath } from '../shared/project-file-types'
-import {
-  TestScenePath as TestScenePathForTestProject,
-  TestStaticScenePath as TestStaticScenePathForTestProject,
-} from '../../components/canvas/ui-jsx.test-utils'
-import { createIndexedUid } from '../shared/uid-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 
 const TestScenePath = 'scene-aaa'
@@ -635,34 +630,5 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
       testComponentRoot1.templatePath,
       testComponentSceneChildElement.templatePath,
     ])
-  })
-})
-
-describe('dynamicPathToStaticPath', () => {
-  it('converts a dynamic path to static', async () => {
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(
-      TP.appendNewElementPath(TestScenePathForTestProject, [
-        'aaa',
-        createIndexedUid('bbb', 1),
-      ]) as InstancePath,
-    )
-    expect(staticPath).toEqual(
-      TP.appendNewElementPath(
-        TestStaticScenePathForTestProject,
-        TP.staticElementPath(['aaa', 'bbb']),
-      ),
-    )
-  })
-
-  it('finds an already static path all right', async () => {
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(
-      TP.appendNewElementPath(TestScenePathForTestProject, ['aaa', 'ccc']) as InstancePath,
-    )
-    expect(staticPath).toEqual(
-      TP.appendNewElementPath(
-        TestStaticScenePathForTestProject,
-        TP.staticElementPath(['aaa', 'ccc']),
-      ),
-    )
   })
 })

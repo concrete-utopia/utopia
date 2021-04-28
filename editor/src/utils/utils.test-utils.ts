@@ -177,6 +177,7 @@ export function createFakeMetadataForParseSuccess(
       {},
       utopiaComponents,
       false,
+      false,
       { x: 0, y: 0, width: 400, height: 400 },
     )
 
@@ -230,6 +231,7 @@ export function createFakeMetadataForComponents(
         {},
         topLevelElements,
         false,
+        false,
         frame,
       )
 
@@ -257,12 +259,15 @@ function createFakeMetadataForJSXElement(
   parentScope: MapLike<any>,
   topLevelElements: Array<TopLevelElement>,
   focused: boolean,
+  rootOfInstance: boolean,
   frame: RectangleInner = Utils.zeroRectangle,
 ): Array<ElementInstanceMetadata> {
   let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {
     const elementID = getUtopiaID(element)
-    const templatePath = TP.appendToPath(rootPath, elementID)
+    const templatePath = rootOfInstance
+      ? TP.appendNewElementPath(rootPath, elementID)
+      : TP.appendToPath(rootPath, elementID)
     const definedElsewhere = getDefinedElsewhereFromAttributes(element.props)
     const inScope = {
       ...mapArrayToDictionary(
@@ -283,6 +288,7 @@ function createFakeMetadataForJSXElement(
         },
         topLevelElements,
         isSceneElementIgnoringImports(element),
+        false,
       ),
     )
     const childPaths = children.map((child) => child.templatePath)
@@ -294,7 +300,7 @@ function createFakeMetadataForJSXElement(
       )
 
       if (targetComponent != null && isUtopiaJSXComponent(targetComponent)) {
-        const elementScenePath = TP.scenePathForElementAtPath(templatePath)
+        const elementScenePath = templatePath
 
         const rootElementsMetadata = createFakeMetadataForJSXElement(
           targetComponent.rootElement,
@@ -305,6 +311,7 @@ function createFakeMetadataForJSXElement(
           },
           topLevelElements,
           false,
+          true,
         )
 
         elements.push(...rootElementsMetadata)
@@ -318,7 +325,7 @@ function createFakeMetadataForJSXElement(
     }
 
     elements.push({
-      templatePath: templatePath,
+      templatePath: templatePath as InstancePath,
       element: right(element),
       props: props,
       globalFrame: canvasRectangle(frame),
@@ -335,7 +342,14 @@ function createFakeMetadataForJSXElement(
     elements.push(...children)
   } else if (isJSXFragment(element)) {
     const children = element.children.flatMap((child) =>
-      createFakeMetadataForJSXElement(child, rootPath, parentScope, topLevelElements, focused),
+      createFakeMetadataForJSXElement(
+        child,
+        rootPath,
+        parentScope,
+        topLevelElements,
+        focused,
+        rootOfInstance,
+      ),
     )
     elements.push(...children)
   } else {

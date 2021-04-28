@@ -288,8 +288,8 @@ export function staticInstancePath(
   return instancePath(scene, elementPath) as StaticInstancePath
 }
 
-export function asStatic(path: InstancePath): StaticInstancePath {
-  return path as StaticInstancePath
+export function asStatic(path: TemplatePath): StaticTemplatePath {
+  return path as StaticTemplatePath
 }
 
 export function isScenePath(path: unknown): path is ScenePath {
@@ -334,30 +334,11 @@ export function scenePathPartOfTemplatePath(path: TemplatePath): ScenePath {
 export function instancePathForElementAtScenePath(path: ScenePath): StaticInstancePath {
   // FIXME This should be returning a regular InstancePath, not a StaticInstancePath
   // Uses the last `ElementPath` in a `ScenePath` to create an `InstancePath` pointing to that element
-  const staticScene = dynamicScenePathToStaticScenePath(path)
-  const lastElementPath = last(staticScene.sceneElementPaths)
-  if (lastElementPath == null) {
-    return emptyInstancePath
-  } else {
-    const targetSceneElementPaths = dropLast(staticScene.sceneElementPaths)
-    const targetScenePath = staticScenePath(targetSceneElementPaths)
-    return staticInstancePath(targetScenePath, lastElementPath)
-  }
-}
-
-function instancePathForElementPaths(elementPaths: ElementPath[]): InstancePath {
-  const lastElementPath = last(elementPaths)
-  if (lastElementPath == null) {
-    return emptyInstancePath
-  } else {
-    const targetSceneElementPaths = dropLast(elementPaths)
-    const targetScenePath = scenePath(targetSceneElementPaths)
-    return instancePath(targetScenePath, lastElementPath)
-  }
+  return dynamicPathToStaticPath(path) as StaticInstancePath
 }
 
 export function instancePathForElementAtPathDontThrowOnScene(path: TemplatePath): InstancePath {
-  return isInstancePath(path) ? path : instancePathForElementPaths(path.sceneElementPaths)
+  return isInstancePath(path) ? path : (templatePath(path.sceneElementPaths) as InstancePath)
 }
 
 export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
@@ -366,20 +347,6 @@ export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
   }
 
   return instancePathForElementAtPathDontThrowOnScene(path)
-}
-
-export function scenePathForElementAtInstancePath(path: InstancePath): ScenePath {
-  // Appends the `ElementPath` part of an `InstancePath` to that instance's `ScenePath`, to create a
-  // `ScenePath` pointing to that element
-  return scenePath([...path.scene.sceneElementPaths, path.element])
-}
-
-export function staticScenePathForElementAtInstancePath(path: StaticInstancePath): StaticScenePath {
-  return staticScenePath([...path.scene.sceneElementPaths, path.element])
-}
-
-export function scenePathForElementAtPath(path: TemplatePath): ScenePath {
-  return isScenePath(path) ? path : scenePathForElementAtInstancePath(path)
 }
 
 export function elementPathForPath(path: StaticScenePath): StaticElementPath
@@ -1069,18 +1036,9 @@ function dynamicScenePathToStaticScenePath(scene: ScenePath): StaticScenePath {
   return staticScenePath(scene.sceneElementPaths.map(dynamicElementPathToStaticElementPath))
 }
 
-export function dynamicPathToStaticPath(path: ScenePath): StaticScenePath
-export function dynamicPathToStaticPath(path: InstancePath): StaticInstancePath
-export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath
 export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath {
-  if (isScenePath(path)) {
-    return dynamicScenePathToStaticScenePath(path)
-  } else {
-    return staticInstancePath(
-      dynamicScenePathToStaticScenePath(path.scene),
-      dynamicElementPathToStaticElementPath(path.element),
-    )
-  }
+  const fullPath = fullElementPathForPath(path)
+  return templatePath(fullPath.map(dynamicElementPathToStaticElementPath))
 }
 
 export function makeLastPartOfPathStatic(path: TemplatePath): TemplatePath {

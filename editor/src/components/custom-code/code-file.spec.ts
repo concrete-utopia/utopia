@@ -17,7 +17,7 @@ import {
   initBrowserFS,
 } from '../../core/workers/ts/ts-worker'
 import { NO_OP, fastForEach } from '../../core/shared/utils'
-import { NodeModules, esCodeFile } from '../../core/shared/project-file-types'
+import { NodeModules, esCodeFile, StaticInstancePath } from '../../core/shared/project-file-types'
 import { MapLike } from 'typescript'
 import { objectMap } from '../../core/shared/object-utils'
 import { StoryboardFilePath } from '../editor/store/editor-state'
@@ -423,7 +423,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       ),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(instancePathFromString('same-file-app-div')),
+      TP.dynamicPathToStaticPath(instancePathFromString('same-file-app-div')) as StaticInstancePath,
       StoryboardFilePath,
       getTextFileByPath(projectContents, StoryboardFilePath),
     )
@@ -439,7 +439,9 @@ describe('normalisePathToUnderlyingTarget', () => {
       ),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(instancePathFromString('card-outer-div/card-inner-div')),
+      TP.dynamicPathToStaticPath(
+        instancePathFromString('card-outer-div/card-inner-div'),
+      ) as StaticInstancePath,
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
     )
@@ -453,7 +455,9 @@ describe('normalisePathToUnderlyingTarget', () => {
       instancePathFromString('card-outer-div/card-inner-div'),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(instancePathFromString('card-outer-div/card-inner-div')),
+      TP.dynamicPathToStaticPath(
+        instancePathFromString('card-outer-div/card-inner-div'),
+      ) as StaticInstancePath,
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
     )

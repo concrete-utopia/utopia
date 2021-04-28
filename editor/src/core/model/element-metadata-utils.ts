@@ -136,7 +136,7 @@ export const MetadataUtils = {
     if (TP.isScenePath(target)) {
       return 'scene'
     } else {
-      const staticTarget = this.dynamicPathToStaticPath(target)
+      const staticTarget = TP.dynamicPathToStaticPath(target)
       if (staticTarget == null) {
         return 'unknown-element'
       } else {
@@ -358,7 +358,7 @@ export const MetadataUtils = {
       const flexDirection = getReorderDirection(this.getFlexDirection(parentInstance))
 
       if (TP.isInstancePath(target)) {
-        const staticTarget = this.dynamicPathToStaticPath(target)
+        const staticTarget = TP.dynamicPathToStaticPath(target)
         if (staticTarget == null) {
           return {}
         } else {
@@ -487,16 +487,6 @@ export const MetadataUtils = {
         return parentPath
       }
     }
-  },
-  templatePathToStaticTemplatePath(path: TemplatePath | null): StaticTemplatePath | null {
-    if (path == null) {
-      return path
-    } else {
-      return TP.dynamicPathToStaticPath(path)
-    }
-  },
-  dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
-    return TP.dynamicPathToStaticPath(path)
   },
   shiftGroupFrame(
     metadata: ElementInstanceMetadataMap,
@@ -1421,7 +1411,7 @@ export const MetadataUtils = {
       return null
     } else {
       // TODO remove dependency on metadata from here
-      const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
+      const staticPath = TP.dynamicPathToStaticPath(path)
       const jsxElement = optionalMap((p) => findJSXElementChildAtPath(rootElements, p), staticPath)
       return optionalMap((element) => (isJSXElement(element) ? element.name : null), jsxElement)
     }
@@ -1566,16 +1556,8 @@ export function findElementAtPath(
   if (target == null) {
     return null
   } else {
-    if (TP.isScenePath(target)) {
-      return null
-    } else {
-      const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
-      if (staticTarget == null) {
-        return null
-      } else {
-        return findJSXElementChildAtPath(components, staticTarget)
-      }
-    }
+    const staticTarget = TP.dynamicPathToStaticPath(target)
+    return findJSXElementChildAtPath(components, staticTarget)
   }
 }
 

@@ -371,11 +371,4 @@ describe('Scenes, Instances and Element Paths', () => {
     expect(TP.instancePathForElementAtScenePath(cardScenePath)).toEqual(cardInstancePath)
     expect(TP.instancePathForElementAtScenePath(cardRootScenePath)).toEqual(cardRootInstancePath)
   })
-
-  it('scenePathForElementAtInstancePath creates a new scene path pointing to full element path of an instance path', () => {
-    expect(TP.scenePathForElementAtInstancePath(TP.emptyInstancePath)).toEqual(TP.emptyScenePath)
-    expect(TP.scenePathForElementAtInstancePath(appInstancePath)).toEqual(appScenePath)
-    expect(TP.scenePathForElementAtInstancePath(cardInstancePath)).toEqual(cardScenePath)
-    expect(TP.scenePathForElementAtInstancePath(cardRootInstancePath)).toEqual(cardRootScenePath)
-  })
 })

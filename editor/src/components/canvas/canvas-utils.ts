@@ -333,11 +333,10 @@ export function updateFramesOfScenesAndComponents(
 ): EditorState {
   let workingEditorState: EditorState = editorState
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
-    const target = TP.instancePathForElementAtPath(frameAndTarget.target)
-
+    const target = frameAndTarget.target
     // Realign to aim at the static version, not the dynamic one.
     const originalTarget = target
-    const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+    const staticTarget = TP.dynamicPathToStaticPath(target)
     if (staticTarget == null) {
       return
     }

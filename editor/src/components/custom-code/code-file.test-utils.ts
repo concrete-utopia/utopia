@@ -95,6 +95,6 @@ export function instancePathFromString(path: string): InstancePath {
   if (TP.isScenePath(fromStringResult)) {
     throw new Error(`${path} represents a scene path.`)
   } else {
-    return TP.dynamicPathToStaticPath(fromStringResult)
+    return TP.dynamicPathToStaticPath(fromStringResult) as InstancePath
   }
 }

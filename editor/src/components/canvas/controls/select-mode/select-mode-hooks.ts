@@ -502,9 +502,7 @@ export function useSelectModeSelectAndHover(
             imports,
           )
           if (isFocusableLeaf) {
-            dispatch([
-              setFocusedElement(TP.scenePathForElementAtInstancePath(foundTarget.templatePath)),
-            ])
+            dispatch([setFocusedElement(foundTarget.templatePath)])
           }
         }
 

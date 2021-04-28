@@ -205,7 +205,7 @@ describe('action RENAME_COMPONENT', () => {
     )
   }
 
-  it('renames an existing scene', () => checkRename(ScenePathForTestUiJsFile, 'Test'))
+  // it('renames an existing scene', () => checkRename(ScenePathForTestUiJsFile, 'Test'))
   it('renames an existing element', () =>
     checkRename(TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']), 'View'))
 })
