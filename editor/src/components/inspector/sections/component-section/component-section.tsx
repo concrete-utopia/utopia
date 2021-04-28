@@ -516,7 +516,7 @@ function useComponentType(path: TemplatePath): string | null {
       store.editor,
       store.derived,
     )
-    const elementName = MetadataUtils.getJSXElementName(path, components, metadata)
+    const elementName = MetadataUtils.getJSXElementName(path, components)
     if (isProbablySceneFromMetadata(metadata, path)) {
       return null
     }
@@ -632,7 +632,7 @@ export const ComponentSectionInner = betterReactMemo(
 
     const componentType = useComponentType(target)
 
-    const componentNameJsx = MetadataUtils.getJSXElementName(target, components, metadata)
+    const componentNameJsx = MetadataUtils.getJSXElementName(target, components)
 
     const OpenFile = React.useCallback(
       () => dispatch([openCodeEditorFile(locationOfComponentInstance, true)]),
