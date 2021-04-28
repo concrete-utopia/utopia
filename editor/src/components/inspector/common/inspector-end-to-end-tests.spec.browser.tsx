@@ -55,7 +55,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -104,7 +104,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -185,7 +185,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -266,7 +266,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -348,7 +348,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -408,7 +408,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -485,7 +485,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
     const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
@@ -599,7 +599,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -686,7 +686,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -773,7 +773,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -860,7 +860,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -977,7 +977,7 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1073,7 +1073,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1157,7 +1157,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -1268,7 +1268,7 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1371,7 +1371,7 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1472,7 +1472,7 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1551,7 +1551,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1581,7 +1581,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1634,7 +1634,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1712,7 +1712,7 @@ describe('inspector tests with real metadata', () => {
 
     const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
 
-    const targetPath = TP.instancePath(TestScenePath, ['app-outer-div', 'app-inner-div'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-inner-div'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 

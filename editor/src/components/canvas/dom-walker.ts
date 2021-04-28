@@ -284,7 +284,7 @@ interface DomWalkerProps {
     cachedTreeRoots: Array<TemplatePath>,
   ) => void
   canvasRootElementTemplatePath: TemplatePath
-  validRootPaths: Array<InstancePath>
+  validRootPaths: Array<TemplatePath>
   mountCount: number
 }
 
@@ -379,7 +379,7 @@ function collectMetadata(
   element: HTMLElement,
   pathsForElement: Array<TemplatePath>,
   parentPoint: CanvasPoint,
-  allUnfilteredChildrenPaths: InstancePath[],
+  allUnfilteredChildrenPaths: Array<TemplatePath>,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -405,8 +405,8 @@ function collectMetadata(
       .map(TP.instancePathForElementAtPath)
     const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
 
-    let filteredChildPaths: InstancePath[] = []
-    let filteredRootElements: InstancePath[] = []
+    let filteredChildPaths: TemplatePath[] = []
+    let filteredRootElements: TemplatePath[] = []
     fastForEach(unfilteredChildrenPaths, (childPath) => {
       if (TP.isParentOf(path, childPath)) {
         if (TP.isTopLevelInstancePath(childPath)) {
@@ -420,13 +420,13 @@ function collectMetadata(
     const instancePath = TP.isInstancePath(path) ? path : TP.instancePathForElementAtScenePath(path)
 
     return elementInstanceMetadata(
-      instancePath,
+      instancePath as InstancePath,
       left(tagName),
       {},
       globalFrame,
       localFrame,
-      filteredChildPaths,
-      filteredRootElements,
+      filteredChildPaths as Array<InstancePath>,
+      filteredRootElements as Array<InstancePath>,
       false,
       false,
       specialSizeMeasurementsObject,
@@ -580,7 +580,7 @@ function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   index: number,
   canvasRootPath: TemplatePath,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -619,7 +619,7 @@ function walkCanvasRootFragment(
       {},
       { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
       { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
-      rootElements,
+      rootElements as Array<InstancePath>,
       [],
       false,
       false,
@@ -635,7 +635,7 @@ function walkCanvasRootFragment(
 function walkScene(
   scene: HTMLElement,
   index: number,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -712,7 +712,7 @@ function walkScene(
 function walkSceneInner(
   scene: HTMLElement,
   index: number,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -721,13 +721,13 @@ function walkSceneInner(
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
-  childPaths: Array<InstancePath>
+  childPaths: Array<TemplatePath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
   cachedTreeRoots: Array<TemplatePath>
 } {
   const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
 
-  let childPaths: Array<InstancePath> = []
+  let childPaths: Array<TemplatePath> = []
   let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
   let cachedTreeRootsAccumulator: Array<TemplatePath> = []
 
@@ -765,7 +765,7 @@ function walkElements(
   index: number,
   depth: number,
   parentPoint: CanvasPoint,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -774,7 +774,7 @@ function walkElements(
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
-  childPaths: ReadonlyArray<InstancePath>
+  childPaths: ReadonlyArray<TemplatePath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
   cachedTreeRoots: Array<TemplatePath>
 } {
@@ -841,7 +841,7 @@ function walkElements(
           scale,
           containerRectLazy,
         )
-        childPaths.push(...childNodePaths)
+        childPaths.push(...(childNodePaths as Array<InstancePath>))
         rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
         cachedTreeRootsAccumulator.push(...cachedTreeRoots)
       })

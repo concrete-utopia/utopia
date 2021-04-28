@@ -1813,7 +1813,7 @@ export const UPDATE_FNS = {
     )
     const storyBoardPath = getStoryboardTemplatePath(components)
     const newSelection =
-      storyBoardPath != null ? [TP.scenePath([[TP.toUid(storyBoardPath), sceneUID]])] : []
+      storyBoardPath != null ? [TP.templatePath([[TP.toUid(storyBoardPath), sceneUID]])] : []
     return {
       ...addNewScene(editor, newScene),
       selectedViews: newSelection,

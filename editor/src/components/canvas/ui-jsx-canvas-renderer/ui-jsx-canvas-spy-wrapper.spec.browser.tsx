@@ -252,7 +252,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     await dispatch(
       [
         setFocusedElement(
-          TP.scenePath([
+          TP.templatePath([
             ['storyboard', 'scene', 'app'],
             ['app-root', 'inner-div', 'card-instance'],
           ]),
@@ -483,7 +483,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     await dispatch(
       [
         setFocusedElement(
-          TP.scenePath([
+          TP.templatePath([
             ['storyboard', 'scene', 'app'],
             ['app-root', 'inner-div', 'card-instance'],
             ['button-instance'],
@@ -734,7 +734,7 @@ describe('Spy Wrapper Template Path Tests', () => {
     await dispatch(
       [
         setFocusedElement(
-          TP.scenePath([
+          TP.templatePath([
             ['storyboard', 'scene', 'app'],
             ['app-root', 'inner-div', 'card-instance'],
             ['button-instance', 'hi-element~~~2'],
@@ -989,7 +989,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
     await dispatch(
       [
         setFocusedElement(
-          TP.scenePath([
+          TP.templatePath([
             ['storyboard-entity', 'scene-1-entity', 'app-entity'],
             ['app-outer-div', 'card-instance'],
           ]),

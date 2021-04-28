@@ -220,20 +220,34 @@ export const emptyInstancePath: StaticInstancePath = {
   element: emptyElementPath,
 }
 
+export const emptyTemplatePath: StaticTemplatePath = {
+  scene: emptyScenePath,
+  element: emptyElementPath,
+}
+
+export function templatePath(fullElementPath: StaticElementPath[]): StaticTemplatePath
+export function templatePath(fullElementPath: ElementPath[]): TemplatePath
 export function templatePath(fullElementPath: ElementPath[]): TemplatePath {
   if (isEmptyElementPathsArray(fullElementPath)) {
-    return emptyScenePath
+    return emptyTemplatePath
   }
 
   const pathCache = getTemplatePathCache(fullElementPath)
   if (pathCache.cached == null) {
-    pathCache.cached = instancePathForElementPaths(fullElementPath)
+    const result: TemplatePath = {
+      scene: {
+        type: 'scenepath',
+        sceneElementPaths: dropLast(fullElementPath),
+      },
+      element: last(fullElementPath)!,
+    }
+    pathCache.cached = result
   }
 
   return pathCache.cached
 }
 
-export function scenePath(elementPaths: ElementPath[]): ScenePath {
+function scenePath(elementPaths: ElementPath[]): ScenePath {
   if (isEmptyElementPathsArray(elementPaths)) {
     return emptyScenePath
   }
@@ -252,7 +266,7 @@ export function staticScenePath(elementPaths: StaticElementPath[]): StaticSceneP
   return scenePath(elementPaths) as StaticScenePath
 }
 
-export function instancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
+function instancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
   if (scene.sceneElementPaths.length === 0 && elementPath.length === 0) {
     return emptyInstancePath
   } else {
@@ -485,7 +499,7 @@ export function parentPath(path: TemplatePath): TemplatePath
 export function parentPath(path: TemplatePath): TemplatePath {
   const fullElementPath = fullElementPathForPath(path)
   const parentFullElementPath = fullElementPathParent(fullElementPath)
-  return instancePathForElementPaths(parentFullElementPath)
+  return templatePath(parentFullElementPath)
 }
 
 export function isParentOf(maybeParent: TemplatePath, maybeChild: TemplatePath): boolean {
@@ -527,10 +541,15 @@ export function appendToElementPath(path: ElementPath, next: id | Array<id>): El
   return path.concat(next)
 }
 
-export function appendNewElementPath(path: TemplatePath, next: id | ElementPath): InstancePath {
+export function appendNewElementPath(
+  path: TemplatePath,
+  next: StaticElementPath,
+): StaticTemplatePath
+export function appendNewElementPath(path: TemplatePath, next: id | ElementPath): TemplatePath
+export function appendNewElementPath(path: TemplatePath, next: id | ElementPath): TemplatePath {
   const currentPath = fullElementPathForPath(path)
   const toAppend = Array.isArray(next) ? next : [next]
-  return instancePathForElementPaths([...currentPath, toAppend])
+  return templatePath([...currentPath, toAppend])
 }
 
 export function appendToPath(path: StaticTemplatePath, next: id): StaticInstancePath
@@ -1085,9 +1104,7 @@ export function pathUpToElementPath(
   const foundIndex = pathToUse.findIndex((pathPart) => {
     return elementPathsEqual(pathPart, elementPath)
   })
-  return foundIndex === -1
-    ? null
-    : instancePathForElementPaths(fullElementPath.slice(0, foundIndex + 1))
+  return foundIndex === -1 ? null : templatePath(fullElementPath.slice(0, foundIndex + 1))
 }
 
 export function isScenePathEmpty(path: TemplatePath): boolean {

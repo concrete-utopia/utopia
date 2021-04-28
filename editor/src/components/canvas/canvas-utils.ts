@@ -2285,7 +2285,7 @@ export function duplicate(
               'Could not find storyboard element',
               getStoryboardUID(utopiaComponents),
             )
-            newPath = TP.scenePath([[storyboardUID, uid]])
+            newPath = TP.templatePath([[storyboardUID, uid]])
           } else {
             newPath = TP.appendToPath(newParentPath, uid)
           }

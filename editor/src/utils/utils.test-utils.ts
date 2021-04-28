@@ -168,7 +168,7 @@ export function createFakeMetadataForParseSuccess(
   const sceneElements = getSceneElementsFromParseSuccess(success)
   let elements: ElementInstanceMetadataMap = {}
   let storyboardChildren: InstancePath[] = []
-  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
+  const storyboardTemplatePath = TP.templatePath([[BakedInStoryboardUID]])
 
   sceneElements.forEach((scene, index) => {
     const descendantsMetadata = createFakeMetadataForJSXElement(
@@ -202,7 +202,7 @@ export function createFakeMetadataForComponents(
 ): ElementInstanceMetadataMap {
   let elements: ElementInstanceMetadataMap = {}
   let storyboardChildren: InstancePath[] = []
-  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
+  const storyboardTemplatePath = TP.templatePath([[BakedInStoryboardUID]])
 
   Utils.fastForEach(topLevelElements, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
@@ -346,13 +346,13 @@ function createFakeMetadataForJSXElement(
 }
 
 function createFakeMetadataForStoryboard(
-  templatePath: InstancePath,
+  templatePath: TemplatePath,
   children: Array<InstancePath>,
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-    templatePath: templatePath,
+    templatePath: templatePath as InstancePath,
     props: {},
     element: right(jsxTestElement('Storyboard', [], [])),
     children: children,

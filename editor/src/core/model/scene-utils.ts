@@ -1,5 +1,5 @@
 import * as R from 'ramda'
-import { SceneMetadata, StaticInstancePath, PropertyPath } from '../shared/project-file-types'
+import { SceneMetadata, PropertyPath, StaticTemplatePath } from '../shared/project-file-types'
 import {
   UtopiaJSXComponent,
   utopiaJSXComponent,
@@ -315,13 +315,13 @@ export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string |
 
 export function getStoryboardTemplatePath(
   openComponents: UtopiaJSXComponent[],
-): StaticInstancePath | null {
+): StaticTemplatePath | null {
   const possiblyStoryboard = openComponents.find(
     (component) => component.name === BakedInStoryboardVariableName,
   )
   if (possiblyStoryboard != null) {
     const uid = getUtopiaID(possiblyStoryboard.rootElement)
-    return TP.staticInstancePath(EmptyScenePathForStoryboard, TP.staticElementPath([uid]))
+    return TP.templatePath([TP.staticElementPath([uid])])
   }
   return null
 }

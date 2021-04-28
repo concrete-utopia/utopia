@@ -36,7 +36,7 @@ describe('createDragState', () => {
       `),
     )
 
-    const selectedViews = [TP.instancePath(TestScenePath, ['aaa', 'bbb'])]
+    const selectedViews = [TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
     await renderResult.dispatch([selectComponents(selectedViews, false)], true)
 
     const editorState = renderResult.getEditorState().editor

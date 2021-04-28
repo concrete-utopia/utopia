@@ -127,12 +127,10 @@ import {
 import { RightMenuTab } from '../../canvas/right-menu'
 
 import {
-  staticInstancePath,
   isInstancePath,
   toUid,
   toString,
   dynamicPathToStaticPath,
-  staticScenePath,
   staticElementPath,
 } from '../../../core/shared/template-path'
 
@@ -845,10 +843,10 @@ export function addSceneToJSXComponents(
   const storyboardComponentUID =
     storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
   if (storyboardComponentUID != null) {
-    const storyboardComponentTemplatePath = staticInstancePath(
-      staticScenePath([staticElementPath([storyboardComponentUID])]),
+    const storyboardComponentTemplatePath = TP.templatePath([
       staticElementPath([storyboardComponentUID]),
-    )
+      staticElementPath([storyboardComponentUID]),
+    ])
     return insertJSXElementChild(storyboardComponentTemplatePath, newSceneElement, components, null)
   } else {
     return components

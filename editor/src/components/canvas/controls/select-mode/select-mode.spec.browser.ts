@@ -128,48 +128,48 @@ describe('Select Mode Selection', () => {
     await doubleClick()
 
     const selectedViews1 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews1).toEqual([
-      TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID]),
-    ])
+    expect(selectedViews1).toEqual([TP.templatePath([[BakedInStoryboardUID, TestSceneUID]])])
 
     await doubleClick()
 
     const selectedViews2 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews2).toEqual([
-      TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID, TestAppUID]),
+      TP.templatePath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]]),
     ])
 
     await doubleClick()
 
     const selectedViews3 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews3).toEqual([TP.instancePath(TestScenePath, ['a'])])
+    expect(selectedViews3).toEqual([TP.appendNewElementPath(TestScenePath, ['a'])])
 
     await doubleClick()
 
     const selectedViews4 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews4).toEqual([TP.instancePath(TestScenePath, ['a', 'b'])])
+    expect(selectedViews4).toEqual([TP.appendNewElementPath(TestScenePath, ['a', 'b'])])
 
     await doubleClick()
 
     const selectedViews5 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews5).toEqual([TP.instancePath(TestScenePath, ['a', 'b', 'c'])])
+    expect(selectedViews5).toEqual([TP.appendNewElementPath(TestScenePath, ['a', 'b', 'c'])])
 
     await doubleClick()
 
     const selectedViews6 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews6).toEqual([TP.instancePath(TestScenePath, ['a', 'b', 'c', 'd'])])
+    expect(selectedViews6).toEqual([TP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd'])])
 
     await doubleClick()
 
     const selectedViews7 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews7).toEqual([TP.instancePath(TestScenePath, ['a', 'b', 'c', 'd', 'e'])])
+    expect(selectedViews7).toEqual([
+      TP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd', 'e']),
+    ])
 
     await doubleClick()
 
     // after 8 "double clicks", the `targetdiv` div should be selected
     const selectedViews8 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews8).toEqual([
-      TP.instancePath(TestScenePath, ['a', 'b', 'c', 'd', 'e', 'targetdiv']),
+      TP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd', 'e', 'targetdiv']),
     ])
   })
 })
@@ -272,7 +272,7 @@ describe('Select Mode Advanced Cases', () => {
       await renderResult.dispatch(
         [
           setFocusedElement(
-            TP.scenePath([
+            TP.templatePath([
               ['sb', 'scene-CardList', 'CardList-instance'],
               ['CardList-Root', 'CardList-Col', 'CardList-Card~~~1'],
             ]),

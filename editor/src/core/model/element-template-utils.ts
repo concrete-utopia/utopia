@@ -120,7 +120,7 @@ export function getValidTemplatePaths(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-): Array<InstancePath> {
+): Array<TemplatePath> {
   if (topLevelElementName == null) {
     return []
   }
@@ -170,7 +170,7 @@ export function getValidTemplatePathsFromElement(
   parentIsScene: boolean,
   parentIsInstance: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-): Array<InstancePath> {
+): Array<TemplatePath> {
   if (isJSXElement(element)) {
     const isScene = isSceneElement(element, filePath, projectContents)
     const uid = getUtopiaID(element)
@@ -216,7 +216,7 @@ export function getValidTemplatePathsFromElement(
 
     return paths
   } else if (isJSXArbitraryBlock(element)) {
-    let paths: Array<InstancePath> = []
+    let paths: Array<TemplatePath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
       paths.push(
         ...getValidTemplatePathsFromElement(
@@ -233,7 +233,7 @@ export function getValidTemplatePathsFromElement(
     )
     return paths
   } else if (isJSXFragment(element)) {
-    let paths: Array<InstancePath> = []
+    let paths: Array<TemplatePath> = []
     fastForEach(Object.values(element.children), (e) =>
       paths.push(
         ...getValidTemplatePathsFromElement(
@@ -426,7 +426,7 @@ function transformAtPathOptionally(
 
 export function findJSXElementChildAtPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticInstancePath,
+  path: StaticTemplatePath,
 ): JSXElementChild | null {
   function findAtPathInner(
     element: JSXElementChild,

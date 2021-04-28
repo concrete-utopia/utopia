@@ -60,8 +60,6 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,
   ScenePath1ForTestUiJsFile,
-  InstancePath1ForTestUiJsFile,
-  InstancePathForTestUiJsFile,
 } from '../../../core/model/test-ui-js-file.test-utils'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
@@ -69,7 +67,6 @@ import { getContentsTreeFileFromString } from '../../assets'
 import { forceParseSuccessFromFileOrFail } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { notice } from '../../common/notice'
-import { testStaticInstancePath } from '../../../core/shared/template-path.test-utils'
 
 const chaiExpect = Chai.expect
 
@@ -78,7 +75,7 @@ const chaiExpect = Chai.expect
 const workers = new MockUtopiaTsWorkers()
 
 const testScenePath = ScenePath1ForTestUiJsFile
-const testTemplatePath = TP.instancePath(ScenePath1ForTestUiJsFile, ['pancake'])
+const testTemplatePath = TP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['pancake'])
 
 jest.useFakeTimers()
 
@@ -208,9 +205,9 @@ describe('action RENAME_COMPONENT', () => {
     )
   }
 
-  it('renames an existing scene', () => checkRename(InstancePathForTestUiJsFile, 'Test'))
+  it('renames an existing scene', () => checkRename(ScenePathForTestUiJsFile, 'Test'))
   it('renames an existing element', () =>
-    checkRename(TP.instancePath(ScenePathForTestUiJsFile, ['aaa']), 'View'))
+    checkRename(TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']), 'View'))
 })
 
 describe('action TOGGLE_PANE', () => {
@@ -272,8 +269,8 @@ describe('action NAVIGATOR_REORDER', () => {
     // TODO Scene Implementation
     const { editor, derivedState, dispatch } = createEditorStates()
     const reparentAction = reparentComponents(
-      [TP.instancePath(ScenePath1ForTestUiJsFile, ['jjj'])],
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
+      [TP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['jjj'])],
+      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
     )
     const mainUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
     if (isTextFile(mainUIJSFile) && isParseSuccess(mainUIJSFile.fileContents.parsed)) {
@@ -343,10 +340,10 @@ describe('action NAVIGATOR_REORDER', () => {
 describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
   it('duplicates 1 element', () => {
     const { editor, derivedState, dispatch } = createEditorStates([
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'iii']),
+      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'iii']),
     ])
     const duplicateAction = duplicateSpecificElements([
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'iii']),
+      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'iii']),
     ])
     const updatedEditor = runLocalEditorAction(
       editor,
@@ -385,8 +382,8 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
     }
   })
   it('duplicates multiple elements', () => {
-    const element1 = TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'iii'])
-    const element2 = TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])
+    const element1 = TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'iii'])
+    const element2 = TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])
     const { editor, derivedState, dispatch } = createEditorStates([element1, element2])
     const duplicateAction = duplicateSelected()
     const updatedEditor = runLocalEditorAction(
@@ -438,9 +435,15 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
 
 describe('action DELETE_SELECTED', () => {
   it('deletes all selected elements', () => {
-    const firstTargetElementPath = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb'])
-    const secondTargetElementPath = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'iii'])
-    const targetScenePath = InstancePath1ForTestUiJsFile
+    const firstTargetElementPath = TP.appendNewElementPath(
+      ScenePathForTestUiJsFile,
+      TP.staticElementPath(['aaa', 'bbb']),
+    )
+    const secondTargetElementPath = TP.appendNewElementPath(
+      ScenePathForTestUiJsFile,
+      TP.staticElementPath(['aaa', 'iii']),
+    )
+    const targetScenePath = ScenePath1ForTestUiJsFile
 
     const { editor, derivedState, dispatch } = createEditorStates([
       firstTargetElementPath,
@@ -490,13 +493,13 @@ describe('action DELETE_SELECTED', () => {
       expect(
         findJSXElementChildAtPath(
           getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed),
-          firstTargetElementPath,
+          firstTargetElementPath as StaticInstancePath,
         ),
       ).toBeNull()
       expect(
         findJSXElementChildAtPath(
           getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed),
-          secondTargetElementPath,
+          secondTargetElementPath as StaticInstancePath,
         ),
       ).toBeNull()
     } else {
@@ -547,15 +550,33 @@ describe('INSERT_JSX_ELEMENT', () => {
   }
 
   it('inserts an element', () => {
-    testInsertionToParent(testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa']))
-    testInsertionToParent(testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']))
-    testInsertionToParent(testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd', 'eee']))
+    testInsertionToParent(
+      TP.appendNewElementPath(
+        ScenePathForTestUiJsFile,
+        TP.staticElementPath(['aaa']),
+      ) as StaticInstancePath,
+    )
+    testInsertionToParent(
+      TP.appendNewElementPath(
+        ScenePathForTestUiJsFile,
+        TP.staticElementPath(['aaa', 'bbb']),
+      ) as StaticInstancePath,
+    )
+    testInsertionToParent(
+      TP.appendNewElementPath(
+        ScenePathForTestUiJsFile,
+        TP.staticElementPath(['aaa', 'ddd', 'eee']),
+      ) as StaticInstancePath,
+    )
   })
 
   it('fails to insert to nonexistent parent', () => {
     expect(() => {
       testInsertionToParent(
-        testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'i-dont-exist']),
+        TP.appendNewElementPath(
+          ScenePathForTestUiJsFile,
+          TP.staticElementPath(['aaa', 'i-dont-exist']),
+        ) as StaticInstancePath,
       )
     }).toThrow()
   })
@@ -591,7 +612,10 @@ describe('INSERT_JSX_ELEMENT', () => {
     const updatedComponents = getOpenUtopiaJSXComponentsFromState(updatedEditor)
     const insertedElement = findJSXElementChildAtPath(
       updatedComponents,
-      testStaticInstancePath(ScenePathForTestUiJsFile, ['TestView']),
+      TP.appendNewElementPath(
+        ScenePathForTestUiJsFile,
+        TP.staticElementPath(['TestView']),
+      ) as StaticInstancePath,
     )
     expect(updatedComponents.length).toEqual(componentsBeforeInsert.length + 1)
     expect(insertedElement).toBeDefined()
@@ -603,7 +627,7 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
     const { editor, derivedState, dispatch } = createEditorStates()
     const editorWithSelectedView = {
       ...editor,
-      selectedViews: [TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])],
+      selectedViews: [TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd'])],
     }
     const reparentAction = moveSelectedBackward()
     const updatedEditor = runLocalEditorAction(
@@ -620,11 +644,11 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
 
     const updatedZIndex = MetadataUtils.getViewZIndexFromMetadata(
       updatedMetadata,
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
+      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
     const oldZIndex = MetadataUtils.getViewZIndexFromMetadata(
       editor.jsxMetadata,
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
+      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ddd']),
     )
     expect(updatedZIndex).toBe(oldZIndex - 2)
   })
@@ -633,7 +657,10 @@ describe('action MOVE_SELECTED_BACKWARD', () => {
 describe('action UPDATE_FRAME_DIMENSIONS', () => {
   it('updates text element frame dimension', () => {
     const { editor, derivedState, dispatch } = createEditorStates()
-    const targetText = testStaticInstancePath(ScenePathForTestUiJsFile, ['aaa', 'hhh'])
+    const targetText = TP.appendNewElementPath(
+      ScenePathForTestUiJsFile,
+      TP.staticElementPath(['aaa', 'hhh']),
+    ) as StaticInstancePath
     const newWidth = 300
     const newHeight = 400
     const updateFrameDimensionsAction = updateFrameDimensions(targetText, newWidth, newHeight)
