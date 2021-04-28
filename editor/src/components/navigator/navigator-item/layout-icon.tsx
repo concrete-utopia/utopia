@@ -13,7 +13,7 @@ interface LayoutIconProps {
 
 const borderColorForIconColor = (color: IcnProps['color']): string | undefined => {
   if (color === 'orange') {
-    return colorTheme.navigatorComponentIconBorder.value
+    return colorTheme.navigatorComponentIconBorder.shade(30).value
   } else {
     return color
   }
@@ -29,12 +29,16 @@ export const LayoutIcon: React.FunctionComponent<LayoutIconProps> = betterReactM
     } else {
       return (
         <div
-          className='w20 h20 flex justify-center items-center relative'
           style={{
+            width: 18,
+            height: 18,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             border: hasWidthOrHeight
-              ? `1px solid ${borderColorForIconColor(props.color)}`
+              ? `1px dotted ${borderColorForIconColor(props.color)}`
               : undefined,
-            borderRadius: hasWidthOrHeight ? 5 : 0,
+            borderRadius: hasWidthOrHeight ? 3 : 0,
           }}
         >
           <Icn {...iconProps} color={props.color} />
