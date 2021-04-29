@@ -308,8 +308,9 @@ export function isTopLevelInstancePath(path: TemplatePath): path is InstancePath
   return isInstancePath(path) && path.element.length === 1
 }
 
-export function isStoryboardPath(path: InstancePath): boolean {
-  return isEmptyScenePath(path.scene) && isTopLevelInstancePath(path)
+export function isStoryboardPath(path: TemplatePath): boolean {
+  const fullElementPath = fullElementPathForPath(path)
+  return fullElementPath.length === 1 && fullElementPath[0].length === 1
 }
 
 export function isStoryboardDescendant(path: TemplatePath): boolean {
@@ -495,7 +496,7 @@ export function toUid(path: TemplatePath): id {
   return elementPathToUID(elementPathToUse)
 }
 
-export function toStaticUid(path: InstancePath): id {
+export function toStaticUid(path: TemplatePath): id {
   return extractOriginalUidFromIndexedUid(toUid(path))
 }
 

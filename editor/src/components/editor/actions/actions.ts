@@ -758,7 +758,7 @@ function switchAndUpdateFrames(
   }
 
   Utils.fastForEach(targetMetadata.children, (childPath) => {
-    const child = MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, childPath)
+    const child = MetadataUtils.findElementByTemplatePath(editor.jsxMetadata, childPath)
     if (child?.globalFrame != null) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
       const isParentOfChildFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -1006,7 +1006,7 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
       }
 
       return element.children.every((childPath) => {
-        const child = MetadataUtils.getElementByInstancePathMaybe(metadata, childPath)
+        const child = MetadataUtils.findElementByTemplatePath(metadata, childPath)
         return child == null || isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child)
       })
     }

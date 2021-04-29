@@ -7,11 +7,7 @@ import {
   TestScenePath,
 } from './ui-jsx.test-utils'
 import * as TP from '../../core/shared/template-path'
-import {
-  createDuplicationNewUIDsFromEditorState,
-  getOriginalCanvasFrames,
-  getOriginalFrames,
-} from './canvas-utils'
+import { createDuplicationNewUIDsFromEditorState, getOriginalCanvasFrames } from './canvas-utils'
 import { moveDragState } from './canvas-types'
 import { canvasPoint, canvasRectangle } from '../../core/shared/math-utils'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'

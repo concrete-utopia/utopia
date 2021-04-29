@@ -46,7 +46,6 @@ import {
   textFile,
   textFileContents,
   unparsed,
-  InstancePath,
   EmptyExportsDetail,
 } from '../core/shared/project-file-types'
 import { right } from '../core/shared/either'
@@ -167,7 +166,7 @@ export function createFakeMetadataForParseSuccess(
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
   const sceneElements = getSceneElementsFromParseSuccess(success)
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: InstancePath[] = []
+  let storyboardChildren: TemplatePath[] = []
   const storyboardTemplatePath = TP.templatePath([[BakedInStoryboardUID]])
 
   sceneElements.forEach((scene, index) => {
@@ -202,7 +201,7 @@ export function createFakeMetadataForComponents(
   topLevelElements: Array<TopLevelElement>,
 ): ElementInstanceMetadataMap {
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: InstancePath[] = []
+  let storyboardChildren: TemplatePath[] = []
   const storyboardTemplatePath = TP.templatePath([[BakedInStoryboardUID]])
 
   Utils.fastForEach(topLevelElements, (component, index) => {
@@ -293,7 +292,7 @@ function createFakeMetadataForJSXElement(
     )
     const childPaths = children.map((child) => child.templatePath)
 
-    let rootElements: Array<InstancePath> = []
+    let rootElements: Array<TemplatePath> = []
     if (focused) {
       const targetComponent = topLevelElements.find(
         (c) => isUtopiaJSXComponent(c) && c.name === element.name.baseVariable,
@@ -325,7 +324,7 @@ function createFakeMetadataForJSXElement(
     }
 
     elements.push({
-      templatePath: templatePath as InstancePath,
+      templatePath: templatePath,
       element: right(element),
       props: props,
       globalFrame: canvasRectangle(frame),
@@ -361,12 +360,12 @@ function createFakeMetadataForJSXElement(
 
 function createFakeMetadataForStoryboard(
   templatePath: TemplatePath,
-  children: Array<InstancePath>,
+  children: Array<TemplatePath>,
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-    templatePath: templatePath as InstancePath,
+    templatePath: templatePath,
     props: {},
     element: right(jsxTestElement('Storyboard', [], [])),
     children: children,

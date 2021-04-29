@@ -899,7 +899,7 @@ export function insertElementAtPath(
 
 export function transformElementAtPath(
   components: Array<UtopiaJSXComponent>,
-  target: InstancePath,
+  target: TemplatePath,
   transform: (elem: JSXElement) => JSXElement,
 ): Array<UtopiaJSXComponent> {
   const staticTarget = TP.dynamicPathToStaticPath(target)
