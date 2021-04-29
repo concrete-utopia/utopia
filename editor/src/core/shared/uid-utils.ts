@@ -256,13 +256,17 @@ export function appendToUidString(
   }
 }
 
+export function getPathsFromString(pathsString: string | null): Array<InstancePath> {
+  if (pathsString == null) {
+    return []
+  } else {
+    return pathsString.split(' ').map(TP.fromString).filter(TP.isInstancePath)
+  }
+}
+
 export function getPathsOnDomElement(element: Element): Array<InstancePath> {
   const pathsAttribute = getDOMAttribute(element, UTOPIA_PATHS_KEY)
-  return (
-    optionalMap((pathsString: string) => {
-      return pathsString.split(' ').map(TP.fromString).filter(TP.isInstancePath)
-    }, pathsAttribute) ?? []
-  )
+  return getPathsFromString(pathsAttribute)
 }
 
 export function findElementWithUID(

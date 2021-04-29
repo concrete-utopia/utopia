@@ -25,7 +25,7 @@ import {
 } from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
 import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
-import { UTOPIA_INSTANCE_PATH } from '../../../core/model/utopia-constants'
+import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utopia-constants'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { useEditorState } from '../../editor/store/store-hook'
 import { getFileForName } from '../../editor/store/editor-state'
@@ -34,9 +34,11 @@ import {
   getParseSuccessOrTransientForFilePath,
   useGetTopLevelElements,
 } from './ui-jsx-canvas-top-level-elements'
+import { getPathsFromString } from '../../../core/shared/uid-utils'
 
 export type ComponentRendererComponent = React.ComponentType<{
   [UTOPIA_INSTANCE_PATH]: TemplatePath
+  [UTOPIA_PATHS_KEY]?: string
 }> & {
   topLevelElementName: string
   propertyControls?: PropertyControls
@@ -52,6 +54,21 @@ export function isComponentRendererComponent(
   )
 }
 
+function tryToGetInstancePath(
+  topLevelElementName: string,
+  instancePath: InstancePath | null,
+  pathsString: string | null,
+): InstancePath {
+  const paths = getPathsFromString(pathsString)
+  if (TP.isInstancePath(instancePath)) {
+    return instancePath
+  } else if (paths.length > 0) {
+    return paths[0]
+  } else {
+    throw new Error(`Utopia Error: Instance Path is not provided for ${topLevelElementName}.`)
+  }
+}
+
 export function createComponentRendererComponent(params: {
   topLevelElementName: string
   filePath: string
@@ -60,15 +77,15 @@ export function createComponentRendererComponent(params: {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
       [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
+      [UTOPIA_PATHS_KEY]: pathsString, // TODO types?
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
 
-    if (!TP.isTemplatePath(instancePathAny)) {
-      throw new Error(
-        `Utopia Error: Instance Path is not provided for ${params.topLevelElementName}`,
-      )
-    }
-    const instancePath: TemplatePath = instancePathAny
+    const instancePath: InstancePath = tryToGetInstancePath(
+      params.topLevelElementName,
+      instancePathAny,
+      pathsString,
+    )
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 

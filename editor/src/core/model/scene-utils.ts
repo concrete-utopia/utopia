@@ -48,6 +48,7 @@ import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../com
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 
 export const EmptyScenePathForStoryboard = TP.emptyScenePath
+export const EmptyInstancePathForStoryboard = TP.emptyInstancePath
 
 export const PathForSceneComponent = PP.create(['component'])
 export const PathForSceneDataUid = PP.create(['data-uid'])
