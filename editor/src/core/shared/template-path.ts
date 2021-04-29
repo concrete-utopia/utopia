@@ -297,7 +297,7 @@ export function isScenePath(path: unknown): path is ScenePath {
 }
 
 export function isInstancePath(path: unknown): path is InstancePath {
-  return (path as any).scene != null && (path as any).element != null
+  return (path as any)?.scene != null && (path as any)?.element != null
 }
 
 export function isTemplatePath(path: unknown): path is TemplatePath {
