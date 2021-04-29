@@ -13,9 +13,9 @@ describe('UiJsxCanvas render', () => {
   it('renders a canvas defined by a utopia storyboard component', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       
       export var App = (props) => {
         return (
@@ -50,9 +50,9 @@ describe('UiJsxCanvas render', () => {
   it('handles a component that renames its props object', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = (cardProps) => <div data-uid={'xxx'}>{cardProps.title}</div>
       export var App = (props) => {
@@ -88,9 +88,9 @@ describe('UiJsxCanvas render', () => {
   it('handles a component that destructures its props object', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       
       const Card = ({style, title}) => <div style={style} data-uid={'xxx'}>{title}</div>
       export var App = (props) => {
@@ -126,9 +126,9 @@ describe('UiJsxCanvas render', () => {
   it('handles a component with a props object written by someone that wants to watch the world burn', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = ({style, titles: [title1, , {title: title2}]}) => <div style={style} data-uid={'xxx'}>{title1} - {title2}</div>
       export var App = (props) => {
@@ -164,9 +164,9 @@ describe('UiJsxCanvas render', () => {
   it('handles a component with a props object written by someone that wants to watch the world burn and also loves defaults', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = ({style, titles: [title1, , {title: title2}, title3 = 'Now begone!']}) => <div style={style} data-uid={'xxx'}>{title1} - {title2} - {title3}</div>
       export var App = (props) => {
@@ -202,9 +202,9 @@ describe('UiJsxCanvas render', () => {
   it('handles a component that is not imported by throwing a ReferenceError', () => {
     testCanvasError(
       null,
-      `/** @jsx jsx */
+      `
     import * as React from "react"
-    import { View, jsx, Storyboard, Scene } from 'utopia-api'
+    import { View, Storyboard, Scene } from 'utopia-api'
 
     export var App = props => <MyCard data-uid={'bbb'} />
     export var ${BakedInStoryboardVariableName} = (props) => {
@@ -228,9 +228,9 @@ describe('UiJsxCanvas render', () => {
   it('renders a component used in an arbitrary block correctly', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from "react"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -261,9 +261,9 @@ describe('UiJsxCanvas render', () => {
   it('renders a component used in an arbitrary block correctly, with an HTML element name as a parameter name', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from "react"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -294,9 +294,9 @@ describe('UiJsxCanvas render', () => {
   it('supports passing down the scope to children of components', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from "react"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        export var App = (props) => {
          return <View data-uid={'aaa'}>
@@ -328,9 +328,9 @@ describe('UiJsxCanvas render', () => {
   it('renders a component used in an arbitrary block with eye-stabbingly awful nested destructuring correctly', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from "react"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -362,9 +362,9 @@ describe('UiJsxCanvas render', () => {
     // FIXME Nested array destructuring doesn't work
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from "react"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -396,9 +396,9 @@ describe('UiJsxCanvas render', () => {
   it('renders a 1st party component with uids correctly, using the passed uid instead inside App', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       export var Inner = (props) => {
         return (
@@ -452,8 +452,8 @@ describe('UiJsxCanvas render', () => {
   it('class component is available from arbitrary block in JSX element', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      `
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
        class Thing extends React.Component {
          render() {
@@ -487,8 +487,8 @@ describe('UiJsxCanvas render', () => {
   it('function component is available from arbitrary block in JSX element', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      `
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
        const Thing = (props) => <div data-uid="ccc">Thing</div>
        export var App = (props) => {
@@ -518,8 +518,8 @@ describe('UiJsxCanvas render', () => {
   it('function component works inside a map', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      `
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
        export const Thing = (props) => <div data-uid="ccc" >Thing</div>
        export var App = (props) => {
@@ -550,8 +550,8 @@ describe('UiJsxCanvas render', () => {
   it('props can be accessed inside the arbitrary js block inside a text range', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      `
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
        export const Thing = (props) => <div data-uid="ccc">Hello {props.name}!</div>
        const Thang = (props) => <div data-uid="ddd">Hello {props.name}!</div>
@@ -583,8 +583,8 @@ describe('UiJsxCanvas render', () => {
   it('arbitrary jsx block inside an element inside an arbitrary jsx block', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      `
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
        export var App = (props) => {
          return <div data-uid="zzz">
@@ -614,8 +614,8 @@ describe('UiJsxCanvas render', () => {
   it('arbitrary jsx block inside an element inside an arbitrary jsx block inside an element inside an arbitrary jsx block', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      `
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
 
        export var App = (props) => {
@@ -650,8 +650,8 @@ describe('UiJsxCanvas render', () => {
   it('renders img tag', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      `
+      import { View, Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
 
       export var App = (props) => {
@@ -680,8 +680,8 @@ describe('UiJsxCanvas render', () => {
   it('the spy wrapper is compatible with React.cloneElement', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      `
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
        export const ClonerComponent = (props) => {
         return (
@@ -730,7 +730,7 @@ describe('UiJsxCanvas render', () => {
   it('handles chaining dependencies into the appropriate order', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import { jsx } from 'utopia-api'
       import * as React from 'react'
 import { Scene, Storyboard, View } from 'utopia-api'
@@ -764,7 +764,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `/** @jsx myFactoryFunction */
       import * as React from "react"
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      import { Storyboard, Scene } from 'utopia-api'
       const MyComp = (props) => <div>Utopia</div>
       export var App = (props) => {
         return (<MyComp data-uid={'aaa'}/>)
@@ -800,8 +800,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('the utopia jsx pragma (and layout prop) works well', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { Scene, Storyboard, jsx } from 'utopia-api'
+      `
+      import { Scene, Storyboard } from 'utopia-api'
       const MyComp = (props) => <div layout={{ left: 15, top: 15, width: 50, height: 50, flex: 15 }}>Utopia</div>
       export var App = (props) => {
         return (<MyComp data-uid={'aaa'}/>)
@@ -833,8 +833,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('the utopia jsx pragma supports emotion CSS prop', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { Scene, Storyboard, jsx } from 'utopia-api'
+      `
+      import { Scene, Storyboard } from 'utopia-api'
       const MyComp = (props) => <div layout={{ left: 15, top: 15, width: 50, height: 50, flex: 15 }} css={{ backgroundColor: 'blue' }}>Utopia</div>
       export var App = (props) => {
         return (<MyComp data-uid={'aaa'}/>)
@@ -866,8 +866,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   xit('mutated variable refers to code component', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { Scene, Storyboard, jsx } from 'utopia-api'
+      `
+      import { Scene, Storyboard } from 'utopia-api'
       import * as React from "react"
       let MyComp
       MyComp = (props) => <div>Utopia</div>
@@ -895,9 +895,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('does not crash if the metadata scenes are not the appropriate value', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
       import * as React from "react"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -928,8 +928,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('does not crash if the metadata scenes are undefined', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      `
+      import { View, Storyboard, Scene } from 'utopia-api'
       import * as React from "react"
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
@@ -963,9 +963,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       export var InputElement = (props) => <input data-uid={props['data-uid']} style={{top: 10}} />
       export var App = (props) => {
         return <InputElement data-uid={'567'} />
@@ -993,9 +992,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
         return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
       }
@@ -1022,9 +1020,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
         return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
@@ -1055,9 +1052,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       console.log('root log')
       export var App = (props) => {
         console.log('inside component log')
@@ -1086,9 +1082,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
         return <div ref={() => console.log('functional component')} style={{ ...props.style}} data-uid={'aaa'} />
       }
@@ -1115,9 +1110,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       class Thing extends React.Component {
         render() {
           return <div data-uid="ccc-unparsed-no-template-path">Thing</div>
@@ -1149,9 +1143,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     const printedDom = testCanvasRenderInline(
       null,
       `
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const MyContext = React.createContext({ textToShow: 'hello' });
 
@@ -1218,9 +1211,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     const printedDom = testCanvasRenderInline(
       null,
       `
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       export class RenderPropsFunctionChild extends React.Component {
         render() {
@@ -1315,10 +1307,9 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     const printedDom = testCanvasRenderInline(
       null,
       `
-    /** @jsx jsx */
 import { DatePicker } from 'antd'
 import * as React from 'react'
-import { Ellipse, Scene, Storyboard, View, jsx } from 'utopia-api'
+import { Ellipse, Scene, Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return (
     <View
@@ -1418,9 +1409,9 @@ export var storyboard = (
   it('handles fragments in an arbitrary block', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -1522,9 +1513,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('renders a component with a fragment at the root', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-import * as React from 'react'
-import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      `import * as React from 'react'
+import { Scene, Storyboard, View } from 'utopia-api'
 
 export var Cat = (props) => {
   return (
@@ -1552,9 +1542,8 @@ export var storyboard = (
   it('renders fine with two components that reference each other', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
 
 export var A = (props) => {
   if (props.x === 0) {
@@ -1593,9 +1582,8 @@ export var storyboard = (
   it('renders fine with two circularly referencing arbitrary blocks', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -1638,9 +1626,8 @@ export var storyboard = (
   it('renders correctly with a context', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
-import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+      `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
 
 const AppContext = React.createContext({})
 const useStoreRef = () => useContext(AppContext)
@@ -1674,9 +1661,9 @@ export var storyboard = (
   it('renders correctly with a nested context in another component', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 
 const AppContext = React.createContext({})
 const InnerContext = React.createContext({})
@@ -1716,9 +1703,9 @@ export var storyboard = (
   it('renderrs correctly when a component is passed in via a prop', () => {
     testCanvasRender(
       null,
-      `/** @jsx jsx */
+      `
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 export var App = (props) => {
   return (
     <div
@@ -1755,7 +1742,7 @@ describe('UiJsxCanvas runtime errors', () => {
     testCanvasError(
       null,
       `import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'
+import { View, Storyboard, Scene } from 'utopia-api'
 const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 a.a // 16,1 this shall throw an error!
 export var App = (props) => {
@@ -1784,7 +1771,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'
+import { View, Storyboard, Scene } from 'utopia-api'
 const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 export var App = (props) => {
   return (
@@ -1817,7 +1804,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'
+import { View, Storyboard, Scene } from 'utopia-api'
 const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
@@ -1851,7 +1838,7 @@ export var App = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'
+import { View, Storyboard, Scene } from 'utopia-api'
 const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
@@ -1885,7 +1872,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'
+import { View, Storyboard, Scene } from 'utopia-api'
 const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
@@ -1919,7 +1906,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'
+import { View, Storyboard, Scene } from 'utopia-api'
 const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
@@ -1954,7 +1941,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       null,
       `
 import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'
+import { View, Storyboard, Scene } from 'utopia-api'
 const MyComp = (props) => <div data-uid={'bbb'}>Utopia</div>
 
 export var App = (props) => {
@@ -1987,9 +1974,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('React.useEffect at the root fails usefully', () => {
     testCanvasRender(
       null,
-      `
-import * as React from "react"
-import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      `import * as React from "react"
+import { View, Storyboard, Scene } from 'utopia-api'
 React.useEffect()
 export var App = (props) => {
   return "hello!"
@@ -2016,9 +2002,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('handles an undefined component gracefully', () => {
     testCanvasError(
       null,
-      `/** @jsx jsx */
-      import * as React from "react"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      `import * as React from "react"
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const MyCard = undefined
       export var App = props => <MyCard data-uid={'bbb'} />
@@ -2044,9 +2029,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
   it('handles an non-existent component gracefully', () => {
     testCanvasError(
       null,
-      `/** @jsx jsx */
-      import * as React from "react"
-      import { View, jsx, Storyboard, Scene, MyCard } from 'utopia-api'
+      `import * as React from "react"
+      import { View, Storyboard, Scene, MyCard } from 'utopia-api'
 
       export var App = props => <MyCard data-uid={'bbb'} />
       export var ${BakedInStoryboardVariableName} = (props) => {
@@ -2073,9 +2057,8 @@ describe('UiJsxCanvas render multifile projects', () => {
   it('renders a canvas with App imported from a file', () => {
     const printedDom = testCanvasRenderInlineMultifile(
       null,
-      `/** @jsx jsx */
-      import * as React from 'react'
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
       import { App } from 'app.js'
 
       export var ${BakedInStoryboardVariableName} = (props) => {
@@ -2096,7 +2079,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       }
       `,
       {
-        'app.js': `/** @jsx jsx */
+        'app.js': `
       import * as React from 'react'
       import { jsx } from 'utopia-api'
       export var App = (props) => {
@@ -2145,9 +2128,8 @@ describe('UiJsxCanvas render multifile projects', () => {
   it('renders a canvas with App and Card imported from files', () => {
     const printedDom = testCanvasRenderInlineMultifile(
       null,
-      `/** @jsx jsx */
-      import * as React from 'react'
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+      `import * as React from 'react'
+      import { Storyboard, Scene } from 'utopia-api'
       import { App } from 'app.js'
 
       export var ${BakedInStoryboardVariableName} = (props) => {
@@ -2168,7 +2150,7 @@ describe('UiJsxCanvas render multifile projects', () => {
       }
       `,
       {
-        'app.js': `/** @jsx jsx */
+        'app.js': `
       import * as React from 'react'
       import { jsx } from 'utopia-api'
       import { Card } from 'card.js'
@@ -2179,7 +2161,7 @@ describe('UiJsxCanvas render multifile projects', () => {
           </Card>
         </div>
       }`,
-        'card.js': `/** @jsx jsx */
+        'card.js': `
         import * as React from 'react'
         import { jsx } from 'utopia-api'
         export var Card = (props) => {

@@ -30,9 +30,8 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
     const updatedProject = updateFramesOfScenesAndComponents(testProject, [pinChange], null)
 
     expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
-      "/** @jsx jsx */
-      import * as React from 'react'
-      import { jsx, Rectangle } from 'utopia-api'
+      "import * as React from 'react'
+      import { Rectangle } from 'utopia-api'
       export var Card = (props) => {
         return (
           <div data-uid='card-outer-div' style={{ ...props.style }}>
@@ -78,9 +77,8 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
     const updatedProject = updateFramesOfScenesAndComponents(testProject, [pinChange], null)
 
     expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
-      "/** @jsx jsx */
-      import * as React from 'react'
-      import { jsx, Rectangle } from 'utopia-api'
+      "import * as React from 'react'
+      import { Rectangle } from 'utopia-api'
       export var Card = (props) => {
         return (
           <div data-uid='card-outer-div' style={{ ...props.style }}>

@@ -134,8 +134,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'OPEN_CODE_EDITOR_FILE':
     case 'SWITCH_LAYOUT_SYSTEM':
     case 'SAVE_CURRENT_FILE':
-    case 'WRAP_IN_LAYOUTABLE':
-    case 'UNWRAP_LAYOUTABLE':
     case 'UPDATE_JSX_ELEMENT_NAME':
     case 'ADD_IMPORTS':
     case 'SET_ASPECT_RATIO_LOCK':

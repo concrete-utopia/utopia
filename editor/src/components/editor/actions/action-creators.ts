@@ -158,7 +158,6 @@ import type {
   UnsetProperty,
   UnsetSceneProp,
   UnwrapGroupOrView,
-  UnwrapLayoutable,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -174,7 +173,6 @@ import type {
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
-  WrapInLayoutable,
   WrapInView,
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
@@ -1074,21 +1072,6 @@ export function unsetSceneProp(scenePath: ScenePath, propertyPath: PropertyPath)
     action: 'UNSET_SCENE_PROP',
     scenePath: scenePath,
     propertyPath: propertyPath,
-  }
-}
-
-export function wrapInLayoutable(target: InstancePath, wrapper: LayoutWrapper): WrapInLayoutable {
-  return {
-    action: 'WRAP_IN_LAYOUTABLE',
-    target: target,
-    wrapper: wrapper,
-  }
-}
-
-export function unwrapLayoutable(target: InstancePath): UnwrapLayoutable {
-  return {
-    action: 'UNWRAP_LAYOUTABLE',
-    target: target,
   }
 }
 

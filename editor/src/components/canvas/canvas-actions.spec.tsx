@@ -65,9 +65,9 @@ describe('createDragState', () => {
 
     expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (

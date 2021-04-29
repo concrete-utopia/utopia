@@ -5,7 +5,6 @@ import {
   calculateChildStylesToPrepend,
   calculateOwnStyleProp,
   addEventHandlersToDivProps,
-  isLayoutWrapped,
 } from './common'
 
 function filterFrameFromStyle(style: React.CSSProperties | undefined): React.CSSProperties {
@@ -45,7 +44,7 @@ export const View: React.FunctionComponent<ViewProps> = (props: ViewProps) => {
       }}
     >
       {React.Children.map(props.children, (child, index) => {
-        if (React.isValidElement(child) && !isLayoutWrapped(child.props)) {
+        if (React.isValidElement(child)) {
           const removeLayoutPropFromReactBuiltins =
             typeof child.type === 'string' ? { layout: undefined } : {}
 
