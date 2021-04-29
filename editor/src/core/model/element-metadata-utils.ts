@@ -1380,27 +1380,12 @@ export const MetadataUtils = {
       return optionalMap((element) => (isJSXElement(element) ? element.name : null), jsxElement)
     }
   },
-  isComponentInstance(
-    path: TemplatePath,
-    rootElements: Array<UtopiaJSXComponent>,
-    metadata: ElementInstanceMetadataMap,
-    imports: Imports,
-  ): boolean {
+  isComponentInstance(path: TemplatePath, rootElements: Array<UtopiaJSXComponent>): boolean {
     if (TP.isScenePath(path)) {
       return false
     } else {
       const elementName = MetadataUtils.getStaticElementName(path, rootElements)
-      const instanceMetadata = MetadataUtils.getElementByInstancePathMaybe(metadata, path)
-      return (
-        elementName != null &&
-        instanceMetadata != null &&
-        !MetadataUtils.isGivenUtopiaAPIElementFromImports(
-          imports,
-          instanceMetadata,
-          getJSXElementNameLastPart(elementName),
-        ) &&
-        !isIntrinsicElement(elementName)
-      )
+      return elementName != null && !isIntrinsicElement(elementName)
     }
   },
   isPinnedAndNotAbsolutePositioned(
