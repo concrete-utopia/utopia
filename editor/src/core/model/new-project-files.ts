@@ -9,7 +9,6 @@ import { lintAndParse } from '../workers/parser-printer/parser-printer'
 
 export const sampleAppJSCode = `
 import * as React from 'react'
-import { jsx } from 'utopia-api'
 export var App = (props) => {
   return (
     <div
