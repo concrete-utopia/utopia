@@ -1024,7 +1024,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           >
             <View data-uid='ccc'>
@@ -1051,7 +1051,7 @@ describe('moveTemplate', () => {
         <View style={{ ...props.style }} data-uid='aaa'>
           <View data-uid='eee'>
             <View
-              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: -141, width: 256, height: 202}}
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: -141, width: 256, height: 202}}
               data-uid='bbb'
             >
               <View data-uid='ccc'>
@@ -1068,7 +1068,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
+            style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           >
             <View data-uid='ccc'>
@@ -1096,7 +1096,7 @@ describe('moveTemplate', () => {
           <View data-uid='eee'>
             <View data-uid='ddd' style={{ left: 52, top: -141 }} />
             <View
-              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: -141, width: 256, height: 202 }}
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: -141, width: 256, height: 202 }}
               data-uid='bbb'
             >
               <View data-uid='ccc' />
@@ -1161,12 +1161,12 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid='bbb'
           >
             <View data-uid='ccc' style={{ backgroundColor: '#ff00ff', flexBasis: 70, height: 50 }} />
           </View>
-          <View data-testid='eee' data-uid='eee' style={{ position: 'absolute', backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }}/>
+          <View data-testid='eee' data-uid='eee' style={{ position: 'relative', backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }}/>
         </View>
       `),
     )
@@ -1251,7 +1251,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid='bbb'
           >
             <View data-uid='ccc' style={{ backgroundColor: '#ff00ff', flexBasis: 70, height: 50 }} />
