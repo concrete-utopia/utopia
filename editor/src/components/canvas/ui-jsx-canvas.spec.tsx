@@ -1145,7 +1145,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       >
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+          data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
           data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
           style=\\"
             position: absolute;
@@ -1240,7 +1240,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
       >
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+          data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
           data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
           style=\\"
             position: absolute;
@@ -1307,7 +1307,7 @@ export var storyboard = (
         data-utopia-valid-paths=\\":storyboard :storyboard/scene :storyboard/scene/app-entity storyboard/scene/app-entity:aaa storyboard/scene/app-entity:aaa/antd-date-picker\\"
       >
         <div
-          data-utopia-scene-id=\\"storyboard/scene\\"
+          data-utopia-scene-id=\\":storyboard/scene\\"
           data-paths=\\":storyboard/scene :storyboard\\"
           style=\\"
             position: absolute;
@@ -2058,7 +2058,7 @@ describe('UiJsxCanvas render multifile projects', () => {
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/inner-div\\"
       >
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+          data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
           data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
           style=\\"
             position: absolute;
@@ -2139,7 +2139,7 @@ describe('UiJsxCanvas render multifile projects', () => {
         data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance utopia-storyboard-uid/scene-aaa/app-entity:app-outer-div/card-instance/card-content\\"
       >
         <div
-          data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+          data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
           data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
           style=\\"
             position: absolute;

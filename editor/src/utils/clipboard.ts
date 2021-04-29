@@ -8,29 +8,20 @@ import {
   getOpenUIJSFile,
   withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
-import { scaleImageDimensions, getFrameAndMultiplier } from '../components/images'
+import { getFrameAndMultiplier } from '../components/images'
 import * as TP from '../core/shared/template-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import {
-  Imports,
-  InstancePath,
-  isParseSuccess,
-  NodeModules,
-  TemplatePath,
-} from '../core/shared/project-file-types'
+import { isParseSuccess, NodeModules, TemplatePath } from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
-import { isLeft } from '../core/shared/either'
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
-import { CanvasPoint, CanvasRectangle } from '../core/shared/math-utils'
+import { CanvasPoint } from '../core/shared/math-utils'
 import json5 = require('json5')
 import { fastForEach } from '../core/shared/utils'
 import urljoin = require('url-join')
-import { findJSXElementChildAtPath } from '../core/model/element-template-utils'
-import { createSceneTemplatePath } from '../core/model/scene-utils'
 import { ProjectContentTreeRoot } from '../components/assets'
 // tslint:disable-next-line:no-var-requires
 const ClipboardPolyfill = require('clipboard-polyfill') // stupid .d.ts is malformatted

@@ -7,7 +7,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -669,7 +669,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -891,7 +891,7 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:567\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -958,18 +958,20 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:567 :utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "567 app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "567",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "567",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -1034,7 +1036,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -1761,7 +1763,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -4340,7 +4342,7 @@ exports[`UiJsxCanvas render class component is available from arbitrary block in
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -4762,7 +4764,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -4969,7 +4971,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -5354,19 +5356,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~1",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n1",
@@ -5523,19 +5527,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~2",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n2",
@@ -5692,19 +5698,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~3",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n3",
@@ -5771,7 +5779,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -6156,19 +6164,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~1",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n1",
@@ -6325,19 +6335,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~2",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n2",
@@ -6494,19 +6506,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~3",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n3",
@@ -6573,7 +6587,7 @@ exports[`UiJsxCanvas render function component is available from arbitrary block
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -6835,19 +6849,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa",
       "data-uid": "aaa",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "zzz",
+          "aaa",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -6945,19 +6961,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb",
       "data-uid": "bbb",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "bbb",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "zzz",
+          "bbb",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -7023,7 +7041,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -7285,19 +7303,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~1",
       "data-uid": "aaa~~~1",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa~~~1",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "zzz",
+          "aaa~~~1",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -7395,19 +7415,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa~~~2",
       "data-uid": "aaa~~~2",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa~~~2",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "zzz",
+          "aaa~~~2",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -7473,7 +7495,7 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -7957,19 +7979,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
       "data-uid": "bbb",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -8052,7 +8076,7 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -8535,19 +8559,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
       "data-uid": "bbb",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -8618,7 +8644,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -9198,19 +9224,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
       "data-uid": "bbb",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -9287,7 +9315,7 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -9867,19 +9895,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb",
       "data-uid": "bbb",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -9956,7 +9986,7 @@ exports[`UiJsxCanvas render handles chaining dependencies into the appropriate o
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -10022,18 +10052,20 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:bbb :utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "bbb app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "bbb",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "bbb",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -10098,7 +10130,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999/000\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -12199,19 +12231,21 @@ export var storyboard = (props) => {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a",
       "data-uid": "03a",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "03a",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "03a",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -13846,21 +13880,23 @@ export var storyboard = (props) => {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~2/000",
       "data-uid": "000",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "03a",
-            "999~~~2",
-            "000",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "03a",
+          "999~~~2",
+          "000",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "shortcut": Array [
         "⌘",
@@ -14466,21 +14502,23 @@ export var storyboard = (props) => {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~4/000",
       "data-uid": "000",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "03a",
-            "999~~~4",
-            "000",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "03a",
+          "999~~~4",
+          "000",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "shortcut": "⌘⎇V",
       "skipDeepFreeze": true,
@@ -15082,21 +15120,23 @@ export var storyboard = (props) => {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/999~~~6/000",
       "data-uid": "000",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "03a",
-            "999~~~6",
-            "000",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "03a",
+          "999~~~6",
+          "000",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "shortcut": "⌘⎇C",
       "skipDeepFreeze": true,
@@ -15165,7 +15205,7 @@ exports[`UiJsxCanvas render props can be accessed inside the arbitrary js block 
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -15472,19 +15512,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/aaa",
       "data-uid": "aaa",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "aaa",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "zzz",
+          "aaa",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "name": "World!",
       "skipDeepFreeze": true,
@@ -15598,19 +15640,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/bbb",
       "data-uid": "bbb",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "bbb",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "zzz",
+          "bbb",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "name": "Dolly!",
       "skipDeepFreeze": true,
@@ -15677,7 +15721,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a class 
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -15870,7 +15914,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -16132,7 +16176,7 @@ exports[`UiJsxCanvas render renderrs correctly when a component is passed in via
   data-utopia-valid-paths=\\":eee :eee/fff :eee/fff/app-entity eee/fff/app-entity:aaa eee/fff/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"eee/fff\\"
+    data-utopia-scene-id=\\":eee/fff\\"
     data-paths=\\":eee/fff :eee\\"
     style=\\"
       position: absolute;
@@ -16507,19 +16551,21 @@ export var storyboard = (
     "props": Object {
       "data-paths": "eee/fff/app-entity:aaa/bbb",
       "data-uid": "bbb",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "eee",
-            "fff",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "eee",
+              "fff",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "thing": "REACT_ELEMENT",
@@ -16586,7 +16632,7 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59 utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -17017,19 +17063,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59",
       "data-uid": "d59",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "d59",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "d59",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -17226,7 +17274,7 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -17662,7 +17710,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -18047,19 +18095,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~1",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n1",
@@ -18216,19 +18266,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~2",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n2",
@@ -18385,19 +18437,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~3",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n3",
@@ -18464,7 +18518,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -18851,19 +18905,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~1",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n1",
@@ -19021,19 +19077,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~2",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n2",
@@ -19191,19 +19249,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~3",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n3",
@@ -19270,7 +19330,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -19662,19 +19722,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~1",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~1",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n1",
@@ -19831,19 +19893,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~2",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~2",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n2",
@@ -20000,19 +20064,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-            "bbb~~~3",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+          "bbb~~~3",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "title": "n3",
@@ -20079,7 +20145,7 @@ exports[`UiJsxCanvas render renders a component with a fragment at the root 1`] 
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -20324,7 +20390,7 @@ exports[`UiJsxCanvas render renders correctly with a context 1`] = `
   data-utopia-valid-paths=\\":ccc :ccc/ddd :ccc/ddd/app-entity ccc/ddd/app-entity:aaa ccc/ddd/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"ccc/ddd\\"
+    data-utopia-scene-id=\\":ccc/ddd\\"
     data-paths=\\":ccc/ddd :ccc\\"
     style=\\"
       position: absolute;
@@ -20701,7 +20767,7 @@ exports[`UiJsxCanvas render renders correctly with a nested context in another c
   data-utopia-valid-paths=\\":ccc :ccc/ddd :ccc/ddd/app-entity ccc/ddd/app-entity:card\\"
 >
   <div
-    data-utopia-scene-id=\\"ccc/ddd\\"
+    data-utopia-scene-id=\\":ccc/ddd\\"
     data-paths=\\":ccc/ddd :ccc\\"
     style=\\"
       position: absolute;
@@ -20768,18 +20834,20 @@ Object {
     "props": Object {
       "data-paths": "ccc/ddd/app-entity:card :ccc/ddd/app-entity",
       "data-uid": "card app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "ccc",
-            "ddd",
-            "app-entity",
-          ],
-          Array [
-            "card",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "card",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "ccc",
+              "ddd",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -20844,7 +20912,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene :utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene\\"
     data-paths=\\":utopia-storyboard-uid/scene :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -21132,7 +21200,7 @@ exports[`UiJsxCanvas render renders fine with two components that reference each
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene :utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:BBB\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene\\"
     data-paths=\\":utopia-storyboard-uid/scene :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -21279,7 +21347,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
   data-utopia-valid-paths=\\":eee :eee/fff :eee/fff/app eee/fff/app:aaa eee/fff/app:aaa/bbb eee/fff/app:aaa/bbb/ccc eee/fff/app:aaa/ddd\\"
 >
   <div
-    data-utopia-scene-id=\\"eee/fff\\"
+    data-utopia-scene-id=\\":eee/fff\\"
     data-paths=\\":eee/fff :eee\\"
     style=\\"
       position: absolute;
@@ -22202,7 +22270,7 @@ exports[`UiJsxCanvas render renders img tag 1`] = `
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -22509,7 +22577,7 @@ exports[`UiJsxCanvas render respects a jsx pragma 1`] = `
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     data-factory-function-works=\\"true\\"
     style=\\"
@@ -22580,18 +22648,20 @@ Object {
       "data-factory-function-works": "true",
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "aaa app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -22656,7 +22726,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -23982,7 +24052,7 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -24051,18 +24121,20 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "aaa app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -24127,7 +24199,7 @@ exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElemen
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner/cloned\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
@@ -24432,19 +24504,21 @@ Object {
     "props": Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:zzz/cloner",
       "data-uid": "cloner",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "zzz",
-            "cloner",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "zzz",
+          "cloner",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
     },
@@ -24617,7 +24691,7 @@ exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1
   data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
 >
   <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
     data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
     style=\\"
       position: absolute;

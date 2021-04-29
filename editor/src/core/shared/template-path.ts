@@ -256,8 +256,12 @@ export function isScenePath(path: unknown): path is ScenePath {
   return (path as any)?.type === 'scenepath'
 }
 
-export function isInstancePath(path: TemplatePath): path is InstancePath {
+export function isInstancePath(path: unknown): path is InstancePath {
   return (path as any).scene != null && (path as any).element != null
+}
+
+export function isTemplatePath(path: unknown): path is TemplatePath {
+  return isScenePath(path) || isInstancePath(path)
 }
 
 export function isTopLevelInstancePath(path: TemplatePath): path is InstancePath {
@@ -394,7 +398,18 @@ export function fromString(path: string): TemplatePath {
   }
 }
 
-function allElementPaths(path: ElementPath): Array<ElementPath> {
+function allElementPaths(fullPath: ElementPath[]): Array<ElementPath[]> {
+  let paths: Array<ElementPath[]> = []
+  for (var index = 1; index < fullPath.length; index++) {
+    const prefix: ElementPath[] = fullPath.slice(0, index)
+    const suffixes = allElementPathsForPart(fullPath[index])
+    fastForEach(suffixes, (suffix) => paths.push(prefix.concat(suffix)))
+  }
+
+  return paths
+}
+
+function allElementPathsForPart(path: ElementPath): Array<ElementPath> {
   let paths: Array<ElementPath> = []
   for (var size = 1; size <= path.length; size++) {
     paths.push(path.slice(0, size))
@@ -405,16 +420,16 @@ function allElementPaths(path: ElementPath): Array<ElementPath> {
 function allInstancePaths(path: InstancePath): Array<InstancePath> {
   const { scene } = path
   const toInstancePath = (elementPath: ElementPath) => instancePath(scene, elementPath)
-  return allElementPaths(path.element).map(toInstancePath)
+  return allElementPathsForPart(path.element).map(toInstancePath)
 }
 
 export function allPaths(path: TemplatePath | null): Array<TemplatePath> {
   if (path == null) {
     return []
   } else if (isScenePath(path)) {
-    return [path]
+    throw new Error(`Unexpected Scene Path`)
   } else {
-    return [path.scene, ...allInstancePaths(path)]
+    return [instancePathForElementAtPathDontThrowOnScene(path.scene), ...allInstancePaths(path)]
   }
 }
 
@@ -468,6 +483,12 @@ export function parentPath(path: TemplatePath): TemplatePath | null {
   }
 }
 
+export function parentTemplatePath(path: TemplatePath): TemplatePath {
+  const asInstancePath = instancePathForElementAtPathDontThrowOnScene(path)
+  const parent = parentPath(asInstancePath)
+  return instancePathForElementAtPathDontThrowOnScene(parent)
+}
+
 export function isParentOf(maybeParent: TemplatePath, maybeChild: TemplatePath): boolean {
   const maybeChildAsInstancePath = instancePathForElementAtPathDontThrowOnScene(maybeChild)
   const maybeParentAsInstancePath = instancePathForElementAtPathDontThrowOnScene(maybeParent)
@@ -514,6 +535,12 @@ export function appendToElementPath(
 export function appendToElementPath(path: ElementPath, next: id | Array<id>): ElementPath
 export function appendToElementPath(path: ElementPath, next: id | Array<id>): ElementPath {
   return path.concat(next)
+}
+
+export function appendNewElementPath(path: TemplatePath, next: id | ElementPath): InstancePath {
+  const currentPath = fullElementPathForPath(path)
+  const toAppend = Array.isArray(next) ? next : [next]
+  return instancePathForElementPaths([...currentPath, toAppend])
 }
 
 export function appendToPath(path: StaticTemplatePath, next: id): StaticInstancePath
@@ -1063,17 +1090,22 @@ export function dynamicPathToStaticPathKeepSceneDynamic(path: InstancePath): Sta
   )
 }
 
-export function scenePathUpToElementPath(
-  scene: ScenePath,
+export function pathUpToElementPath(
+  fullPath: TemplatePath,
   elementPath: ElementPath,
-  convertSceneToStatic: 'dynamic-scene-path' | 'static-scene-path',
-): ScenePath | null {
-  const staticScene =
-    convertSceneToStatic === 'static-scene-path' ? dynamicScenePathToStaticScenePath(scene) : scene
-  const foundIndex = staticScene.sceneElementPaths.findIndex((sceneElementPath) => {
-    return elementPathsEqual(sceneElementPath, elementPath)
+  convertToStatic: 'dynamic-path' | 'static-path',
+): TemplatePath | null {
+  const fullElementPath = fullElementPathForPath(fullPath)
+  const pathToUse =
+    convertToStatic === 'static-path'
+      ? fullElementPath.map(dynamicElementPathToStaticElementPath)
+      : fullElementPath
+  const foundIndex = pathToUse.findIndex((pathPart) => {
+    return elementPathsEqual(pathPart, elementPath)
   })
-  return foundIndex === -1 ? null : scenePath(scene.sceneElementPaths.slice(0, foundIndex + 1))
+  return foundIndex === -1
+    ? null
+    : instancePathForElementPaths(fullElementPath.slice(0, foundIndex + 1))
 }
 
 export function isScenePathEmpty(path: TemplatePath): boolean {
@@ -1125,27 +1157,21 @@ export function outermostScenePathPart(path: TemplatePath): ScenePath {
   }
 }
 
-export function createBackwardsCompatibleScenePath(path: TemplatePath): ScenePath | null {
+export function createBackwardsCompatibleScenePath(path: TemplatePath): InstancePath | null {
   const scenePathElements = isScenePath(path)
     ? path.sceneElementPaths[0]
     : path.scene.sceneElementPaths[0]
   if (scenePathElements != null) {
-    return scenePath([scenePathElements.slice(0, 2)]) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack
+    return instancePath(emptyScenePath, scenePathElements.slice(0, 2)) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack
   } else {
     return null
   }
 }
 
-export function isFocused(focusedElementPath: ScenePath | null, path: TemplatePath): boolean {
+export function isFocused(focusedElementPath: TemplatePath | null, path: TemplatePath): boolean {
   if (focusedElementPath == null || isStoryboardDescendant(path)) {
     return false
   } else {
-    return (
-      scenePathUpToElementPath(
-        focusedElementPath,
-        elementPathForPath(path),
-        'dynamic-scene-path',
-      ) != null
-    )
+    return pathUpToElementPath(focusedElementPath, elementPathForPath(path), 'dynamic-path') != null
   }
 }

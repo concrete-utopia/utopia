@@ -40,8 +40,6 @@ import {
   ProjectContents,
   ProjectFile,
   RevisionsState,
-  SceneMetadata,
-  ScenePath,
   StaticInstancePath,
   TemplatePath,
   TextFile,
@@ -121,10 +119,8 @@ import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../ac
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
 import {
-  createSceneTemplatePath,
   isSceneElementIgnoringImports,
   BakedInStoryboardVariableName,
-  EmptyScenePathForStoryboard,
   isDynamicSceneChildWidthHeightPercentage,
   getStoryboardTemplatePath,
 } from '../../../core/model/scene-utils'
@@ -357,7 +353,7 @@ export interface EditorState {
   safeMode: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
-  focusedElementPath: ScenePath | null
+  focusedElementPath: TemplatePath | null
   config: UtopiaVSCodeConfig
 }
 
@@ -798,19 +794,6 @@ function modifyOpenScenes_INTERNAL(
   }, model)
 }
 
-export function modifyOpenSceneAtPath(
-  path: ScenePath,
-  transform: (scene: JSXElement) => JSXElement,
-  model: EditorState,
-): EditorState {
-  return modifyUnderlyingTarget(
-    path,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
-    model,
-    transform,
-  )
-}
-
 export function getNumberOfScenes(model: EditorState): number {
   return getSceneElements(model).length
 }
@@ -874,12 +857,6 @@ export function addSceneToJSXComponents(
   } else {
     return components
   }
-}
-
-export function removeScene(model: EditorState, path: ScenePath): EditorState {
-  return modifyOpenScenes_INTERNAL((components) => {
-    return removeJSXElementChild(createSceneTemplatePath(path), components)
-  }, model)
 }
 
 const emptyImports: Imports = {}
@@ -1247,23 +1224,6 @@ export function getElementWarnings(
         dynamicSceneChildWidthHeightPercentage: false,
       }
       result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
-
-      if (MetadataUtils.elementIsOldStyleScene(elementMetadata)) {
-        const sceneWarnings: ElementWarnings = {
-          widthOrHeightZero: widthOrHeightZero,
-          absoluteWithUnpositionedParent: false,
-          dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
-            elementMetadata,
-            rootMetadata,
-          ),
-        }
-        result = addToComplexMap(
-          toString,
-          result,
-          scenePathForElementAtPath(elementMetadata.templatePath),
-          sceneWarnings,
-        )
-      }
     },
   )
   return result
@@ -1281,7 +1241,6 @@ export function deriveState(
   } = MetadataUtils.createOrderedTemplatePathsFromElements(
     editor.jsxMetadata,
     editor.navigator.collapsedViews,
-    editor.focusedElementPath,
   )
 
   const derived: DerivedState = {

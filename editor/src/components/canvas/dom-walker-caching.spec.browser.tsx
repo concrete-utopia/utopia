@@ -6,12 +6,7 @@ import { SaveDOMReport } from '../editor/action-types'
 import { setCanvasFrames } from '../editor/actions/action-creators'
 import CanvasActions from './canvas-actions'
 import { pinFrameChange } from './canvas-types'
-import {
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
-  renderTestEditorWithProjectContent,
-  TestScenePath,
-} from './ui-jsx.test-utils'
+import { renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
 
 describe('Dom-walker Caching', () => {
   async function prepareTestProject() {
@@ -74,7 +69,7 @@ describe('Dom-walker Caching', () => {
     expect(saveDomReportActions.length).toBe(2)
     expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TP.fromString(':storyboard-entity')])
     expect(saveDomReportActions[1].cachedTreeRoots).toEqual([
-      TP.fromString('storyboard-entity/scene-2-entity'),
+      TP.fromString(':storyboard-entity/scene-2-entity'),
     ]) // This is correct, the SameFileApp scene is still cached
   })
 
@@ -100,7 +95,7 @@ describe('Dom-walker Caching', () => {
     expect(saveDomReportActions.length).toBe(2)
     expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TP.fromString(':storyboard-entity')])
     expect(saveDomReportActions[1].cachedTreeRoots).toEqual([
-      TP.fromString('storyboard-entity/scene-1-entity'),
+      TP.fromString(':storyboard-entity/scene-1-entity'),
     ]) // This is correct, the Imported App scene is still cached
   })
 })

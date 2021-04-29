@@ -33,7 +33,6 @@ import {
   InstancePath,
   isParseSuccess,
   isTextFile,
-  ScenePath,
   StaticElementPath,
   StaticInstancePath,
   StaticTemplatePath,
@@ -124,9 +123,9 @@ function isSceneElement(
 }
 
 export function getValidTemplatePaths(
-  focusedElementPath: ScenePath | null,
+  focusedElementPath: TemplatePath | null,
   topLevelElementName: string | null,
-  scenePath: ScenePath,
+  instancePath: TemplatePath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
@@ -156,10 +155,11 @@ export function getValidTemplatePaths(
             return getValidTemplatePathsFromElement(
               focusedElementPath,
               topLevelElement.rootElement,
-              scenePath,
+              instancePath,
               projectContents,
               resolvedFilePath,
               false,
+              true,
               resolve,
             )
           }
@@ -171,18 +171,21 @@ export function getValidTemplatePaths(
 }
 
 export function getValidTemplatePathsFromElement(
-  focusedElementPath: ScenePath | null,
+  focusedElementPath: TemplatePath | null,
   element: JSXElementChild,
   parentPath: TemplatePath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   parentIsScene: boolean,
+  parentIsInstance: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<InstancePath> {
   if (isJSXElement(element)) {
     const isScene = isSceneElement(element, filePath, projectContents)
     const uid = getUtopiaID(element)
-    const path = TP.appendToPath(parentPath, uid)
+    const path = parentIsInstance
+      ? TP.appendNewElementPath(parentPath, uid)
+      : TP.appendToPath(parentPath, uid)
     let paths = [path]
     fastForEach(element.children, (c) =>
       paths.push(
@@ -193,6 +196,7 @@ export function getValidTemplatePathsFromElement(
           projectContents,
           filePath,
           isScene,
+          false,
           resolve,
         ),
       ),
@@ -202,11 +206,7 @@ export function getValidTemplatePathsFromElement(
     const matchingFocusedPathPart =
       focusedElementPath == null
         ? null
-        : TP.scenePathUpToElementPath(
-            focusedElementPath,
-            TP.elementPathForPath(path),
-            'static-scene-path',
-          )
+        : TP.pathUpToElementPath(focusedElementPath, TP.elementPathForPath(path), 'static-path')
 
     const isFocused = parentIsScene || matchingFocusedPathPart != null
     if (isFocused) {
@@ -215,7 +215,7 @@ export function getValidTemplatePathsFromElement(
         ...getValidTemplatePaths(
           focusedElementPath,
           name,
-          matchingFocusedPathPart || TP.scenePathForElementAtPath(path),
+          matchingFocusedPathPart ?? path,
           projectContents,
           filePath,
           resolve,
@@ -234,7 +234,8 @@ export function getValidTemplatePathsFromElement(
           parentPath,
           projectContents,
           filePath,
-          false,
+          parentIsScene,
+          parentIsInstance,
           resolve,
         ),
       ),
@@ -250,7 +251,8 @@ export function getValidTemplatePathsFromElement(
           parentPath,
           projectContents,
           filePath,
-          false,
+          parentIsScene,
+          parentIsInstance,
           resolve,
         ),
       ),

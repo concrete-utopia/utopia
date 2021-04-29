@@ -25,7 +25,7 @@ import {
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
-import { InstancePath, ScenePath, TemplatePath } from '../shared/project-file-types'
+import { InstancePath, TemplatePath } from '../shared/project-file-types'
 import {
   TestScenePath as TestScenePathForTestProject,
   TestStaticScenePath as TestStaticScenePathForTestProject,
@@ -202,7 +202,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
       height: 100,
     },
   },
-  element: left('Scene'),
+  element: right(jsxTestElement('Scene', [], [])),
   children: [testComponentSceneChildElement.templatePath],
   rootElements: [testComponentRoot1.templatePath],
   componentInstance: false,
@@ -552,12 +552,6 @@ describe('getting the root paths', () => {
     expect(actualResult).toEqual(expectedResult)
   })
 
-  it('getAllStoryboardChildrenPathsScenesOnly returns paths of only the scene children of the storyboard', () => {
-    const actualResult = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(testJsxMetadata)
-    const expectedResult: Array<InstancePath> = [testComponentSceneElement.templatePath]
-    expect(actualResult).toEqual(expectedResult)
-  })
-
   it('getAllCanvasRootPaths returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
     const actualResult = MetadataUtils.getAllCanvasRootPaths(testJsxMetadata)
     const expectedResult: Array<InstancePath> = [
@@ -602,22 +596,16 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
   ]
 
   it('with no collapsed paths', () => {
-    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
-      testJsxMetadata,
-      [],
-      null,
-    )
+    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(testJsxMetadata, [])
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual(expectedNavigatorTargets)
   })
 
   it('with the scene collapsed', () => {
-    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
-      testJsxMetadata,
-      [testComponentSceneElement.templatePath],
-      null,
-    )
+    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(testJsxMetadata, [
+      testComponentSceneElement.templatePath,
+    ])
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
@@ -628,11 +616,10 @@ describe('createOrderedTemplatePathsFromElements returns all of the ordered navi
   })
 
   it('with collapsed roots', () => {
-    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
-      testJsxMetadata,
-      [testComponentRoot1.templatePath, testComponentSceneChildElement.templatePath],
-      null,
-    )
+    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(testJsxMetadata, [
+      testComponentRoot1.templatePath,
+      testComponentSceneChildElement.templatePath,
+    ])
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([

@@ -5,7 +5,7 @@ import { isSceneElementIgnoringImports } from '../../../core/model/scene-utils'
 import {
   UTOPIA_PATHS_KEY,
   UTOPIA_SCENE_ID_KEY,
-  UTOPIA_SCENE_PATH,
+  UTOPIA_INSTANCE_PATH,
   UTOPIA_UIDS_KEY,
   UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
@@ -298,17 +298,13 @@ function renderJSXElement(
   const elementIsBaseHTML = elementIsIntrinsic && isIntrinsicHTMLElement(jsx.name)
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
 
-  const scenePathForElement = optionalMap(TP.scenePathForElementAtInstancePath, templatePath)
+  const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
+    ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: templatePath }
+    : elementProps
 
-  const elementPropsWithScenePath =
-    isComponentRendererComponent(FinalElement) && scenePathForElement != null
-      ? { ...elementProps, [UTOPIA_SCENE_PATH]: scenePathForElement }
-      : elementProps
-
-  const elementPropsWithSceneID =
-    elementIsScene && scenePathForElement != null
-      ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: TP.toString(scenePathForElement) }
-      : elementPropsWithScenePath
+  const elementPropsWithSceneID = elementIsScene
+    ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: TP.toString(templatePath) }
+    : elementPropsWithScenePath
 
   const finalProps =
     elementIsIntrinsic && !elementIsBaseHTML

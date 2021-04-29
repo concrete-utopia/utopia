@@ -465,29 +465,25 @@ export class SelectModeControlContainer extends React.Component<
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
     const roots = mapDropNulls((child) => {
-      if (MetadataUtils.elementIsOldStyleScene(child)) {
-        return child.templatePath
-      } else {
-        return foldEither(
-          () => null,
-          (elemValue) => {
-            const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
-              child.templatePath,
-              this.props.openFile,
-              this.props.projectContents,
-              this.props.nodeModules,
-              this.props.transientState.filesState,
-              this.props.resolve,
-            )
-            if (isSceneAgainstImports(elemValue, imports)) {
-              return child.templatePath
-            } else {
-              return null
-            }
-          },
-          child.element,
-        )
-      }
+      return foldEither(
+        () => null,
+        (elemValue) => {
+          const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
+            child.templatePath,
+            this.props.openFile,
+            this.props.projectContents,
+            this.props.nodeModules,
+            this.props.transientState.filesState,
+            this.props.resolve,
+          )
+          if (isSceneAgainstImports(elemValue, imports)) {
+            return child.templatePath
+          } else {
+            return null
+          }
+        },
+        child.element,
+      )
     }, storyboardChildren)
     let labelDirectlySelectable = this.props.highlightsEnabled
 

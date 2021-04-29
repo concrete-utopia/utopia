@@ -4,7 +4,7 @@ import {
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import { Imports, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import * as TP from '../../../core/shared/template-path'
 import { ControlProps } from './new-canvas-controls'
@@ -25,7 +25,7 @@ export function getSelectionColor(
   rootElements: Array<UtopiaJSXComponent>,
   metadata: ElementInstanceMetadataMap,
   imports: Imports,
-  focusedElementPath: ScenePath | null,
+  focusedElementPath: TemplatePath | null,
 ): string {
   if (TP.isInsideFocusedComponent(path)) {
     if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {

@@ -124,7 +124,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -216,15 +216,16 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -853,7 +854,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -945,15 +946,16 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -1261,7 +1263,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -1353,15 +1355,16 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -1897,7 +1900,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -1989,15 +1992,16 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -2534,7 +2538,7 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -2626,15 +2630,16 @@ Object {
     "props": Object {
       "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
-      "data-utopia-scene-path": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
+        "scene": Object {
+          "sceneElementPaths": Array [],
+          "type": "scenepath",
+        },
       },
       "skipDeepFreeze": true,
       "style": Object {
