@@ -19,6 +19,7 @@ import {
   importDetails,
   importAlias,
   isParseSuccess,
+  StaticTemplatePath,
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
@@ -417,12 +418,12 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       expect(updatedEditor.selectedViews.find((view) => view === element2)).toBe(undefined)
       const newElements = Utils.stripNulls(
         updatedEditor.selectedViews.map((view) => {
-          return findJSXElementChildAtPath(updatedComponents, view as StaticInstancePath)
+          return findJSXElementChildAtPath(updatedComponents, view as StaticTemplatePath)
         }),
       )
       const newElementsInOriginalModel = Utils.stripNulls(
         updatedEditor.selectedViews.map((view) => {
-          return findJSXElementChildAtPath(originalComponents, view as StaticInstancePath)
+          return findJSXElementChildAtPath(originalComponents, view as StaticTemplatePath)
         }),
       )
       expect(newElements).toHaveLength(2)
@@ -493,13 +494,13 @@ describe('action DELETE_SELECTED', () => {
       expect(
         findJSXElementChildAtPath(
           getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed),
-          firstTargetElementPath as StaticInstancePath,
+          firstTargetElementPath,
         ),
       ).toBeNull()
       expect(
         findJSXElementChildAtPath(
           getUtopiaJSXComponentsFromSuccess(mainUIJSFile.fileContents.parsed),
-          secondTargetElementPath as StaticInstancePath,
+          secondTargetElementPath,
         ),
       ).toBeNull()
     } else {
@@ -509,7 +510,7 @@ describe('action DELETE_SELECTED', () => {
 })
 
 describe('INSERT_JSX_ELEMENT', () => {
-  function testInsertionToParent(parentPath: StaticInstancePath) {
+  function testInsertionToParent(parentPath: StaticTemplatePath) {
     const { editor, derivedState, dispatch } = createEditorStates()
 
     const parentBeforeInsert = findJSXElementChildAtPath(
@@ -555,22 +556,16 @@ describe('INSERT_JSX_ELEMENT', () => {
 
   it('inserts an element', () => {
     testInsertionToParent(
-      TP.appendNewElementPath(
-        ScenePathForTestUiJsFile,
-        TP.staticElementPath(['aaa']),
-      ) as StaticInstancePath,
+      TP.appendNewElementPath(ScenePathForTestUiJsFile, TP.staticElementPath(['aaa'])),
     )
     testInsertionToParent(
-      TP.appendNewElementPath(
-        ScenePathForTestUiJsFile,
-        TP.staticElementPath(['aaa', 'bbb']),
-      ) as StaticInstancePath,
+      TP.appendNewElementPath(ScenePathForTestUiJsFile, TP.staticElementPath(['aaa', 'bbb'])),
     )
     testInsertionToParent(
       TP.appendNewElementPath(
         ScenePathForTestUiJsFile,
         TP.staticElementPath(['aaa', 'ddd', 'eee']),
-      ) as StaticInstancePath,
+      ),
     )
   })
 
@@ -580,7 +575,7 @@ describe('INSERT_JSX_ELEMENT', () => {
         TP.appendNewElementPath(
           ScenePathForTestUiJsFile,
           TP.staticElementPath(['aaa', 'i-dont-exist']),
-        ) as StaticInstancePath,
+        ),
       )
     }).toThrow()
   })
@@ -625,10 +620,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
     const insertedElement = findJSXElementChildAtPath(
       updatedComponents,
-      TP.appendNewElementPath(
-        ScenePathForTestUiJsFile,
-        TP.staticElementPath(['TestView']),
-      ) as StaticInstancePath,
+      TP.appendNewElementPath(ScenePathForTestUiJsFile, TP.staticElementPath(['TestView'])),
     )
     expect(updatedComponents.length).toEqual(componentsBeforeInsert.length + 1)
     expect(insertedElement).toBeDefined()
@@ -673,7 +665,7 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
     const targetText = TP.appendNewElementPath(
       ScenePathForTestUiJsFile,
       TP.staticElementPath(['aaa', 'hhh']),
-    ) as StaticInstancePath
+    )
     const newWidth = 300
     const newHeight = 400
     const updateFrameDimensionsAction = updateFrameDimensions(targetText, newWidth, newHeight)

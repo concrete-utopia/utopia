@@ -93,12 +93,3 @@ export function getTextFileByPath(projectContents: ProjectContentTreeRoot, path:
     throw new Error(`Unable to find a text file at path ${path}.`)
   }
 }
-
-export function instancePathFromString(path: string): InstancePath {
-  const fromStringResult = TP.fromString(path)
-  if (TP.isScenePath(fromStringResult)) {
-    throw new Error(`${path} represents a scene path.`)
-  } else {
-    return TP.dynamicPathToStaticPath(fromStringResult) as InstancePath
-  }
-}

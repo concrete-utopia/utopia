@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as R from 'ramda'
 import { sides } from 'utopia-api'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -17,7 +16,7 @@ import {
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
 } from '../../core/shared/element-template'
-import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
+import { TemplatePath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import { applicative4Either, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
@@ -417,16 +416,14 @@ function collectMetadata(
       }
     })
 
-    const instancePath = TP.isInstancePath(path) ? path : TP.instancePathForElementAtScenePath(path)
-
     return elementInstanceMetadata(
-      instancePath as InstancePath,
+      path,
       left(tagName),
       {},
       globalFrame,
       localFrame,
-      filteredChildPaths as Array<InstancePath>,
-      filteredRootElements as Array<InstancePath>,
+      filteredChildPaths,
+      filteredRootElements,
       false,
       false,
       specialSizeMeasurementsObject,
@@ -614,12 +611,12 @@ function walkCanvasRootFragment(
     // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
     // to provide a home for the the (really existing) childMetadata
     const metadata: ElementInstanceMetadata = elementInstanceMetadata(
-      canvasRootPath as InstancePath,
+      canvasRootPath,
       left('Storyboard'),
       {},
       { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
       { x: 0, y: 0, width: 0, height: 0 } as LocalRectangle,
-      rootElements as Array<InstancePath>,
+      rootElements,
       [],
       false,
       false,
@@ -818,7 +815,7 @@ function walkElements(
     })
 
     // Build the metadata for the children of this DOM node.
-    let childPaths: Array<InstancePath> = []
+    let childPaths: Array<TemplatePath> = []
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
     let cachedTreeRootsAccumulator: Array<TemplatePath> = []
     if (traverseChildren) {
@@ -841,7 +838,7 @@ function walkElements(
           scale,
           containerRectLazy,
         )
-        childPaths.push(...(childNodePaths as Array<InstancePath>))
+        childPaths.push(...childNodePaths)
         rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
         cachedTreeRootsAccumulator.push(...cachedTreeRoots)
       })

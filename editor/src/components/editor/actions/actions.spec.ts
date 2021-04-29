@@ -36,7 +36,6 @@ import {
   addModifierExportToDetail,
   EmptyExportsDetail,
   importAlias,
-  InstancePath,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -203,7 +202,7 @@ const testEditor: EditorState = deepFreeze({
 describe('SET_PROP', () => {
   it('updates a simple value property', () => {
     const action = setProp_UNSAFE(
-      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']) as InstancePath,
+      TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       PP.create(['test', 'prop']),
       jsxAttributeValue(100, emptyComments),
     )
@@ -887,14 +886,11 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     null,
     0,
   )
-  const rootElementPath = TP.templatePath([
-    [BakedInStoryboardUID, 'scene-0'],
-    ['aaa'],
-  ]) as InstancePath
+  const rootElementPath = TP.templatePath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])
   const childElementPath = TP.templatePath([
     [BakedInStoryboardUID, 'scene-0'],
     ['aaa', 'bbb'],
-  ]) as InstancePath
+  ])
 
   const rootElementMetadata: ElementInstanceMetadata = {
     templatePath: rootElementPath,

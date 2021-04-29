@@ -605,7 +605,7 @@ export function modifyOpenJsxElementAtPath(
 }
 
 export function modifyOpenJsxElementAtStaticPath(
-  path: StaticInstancePath,
+  path: StaticTemplatePath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
@@ -856,7 +856,7 @@ export function addSceneToJSXComponents(
 const emptyImports: Imports = {}
 
 export function removeElementAtPath(
-  target: InstancePath,
+  target: TemplatePath,
   components: Array<UtopiaJSXComponent>,
 ): Array<UtopiaJSXComponent> {
   const staticTarget = TP.dynamicPathToStaticPath(target)
@@ -1834,29 +1834,20 @@ export function modifyUnderlyingTarget(
   editorState: EditorState,
   modifyElement: (
     element: JSXElement,
-    underlying: InstancePath,
+    underlying: TemplatePath,
     underlyingFilePath: string,
   ) => JSXElement = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
-    underlying: StaticInstancePath | null,
+    underlying: StaticTemplatePath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = (success) => success,
 ): EditorState {
-  // Support just about anything as the path.
-  let instanceTarget: InstancePath | null
-  if (target == null) {
-    instanceTarget = null
-  } else if (TP.isInstancePath(target)) {
-    instanceTarget = target
-  } else {
-    instanceTarget = TP.instancePathForElementAtPathDontThrowOnScene(target)
-  }
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editorState.projectContents,
     editorState.nodeModules.files,
     currentFilePath,
-    instanceTarget,
+    target,
   )
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -1911,12 +1902,12 @@ export function modifyUnderlyingForOpenFile(
   editorState: EditorState,
   modifyElement: (
     element: JSXElement,
-    underlying: InstancePath,
+    underlying: TemplatePath,
     underlyingFilePath: string,
   ) => JSXElement = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
-    underlying: StaticInstancePath | null,
+    underlying: StaticTemplatePath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = (success) => success,
 ): EditorState {
@@ -1938,7 +1929,7 @@ export function withUnderlyingTarget<T>(
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticTemplatePath,
     underlyingFilePath: string,
   ) => T,
 ): T {
@@ -1989,7 +1980,7 @@ export function withUnderlyingTargetFromEditorState<T>(
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticTemplatePath,
     underlyingFilePath: string,
   ) => T,
 ): T {
@@ -2009,7 +2000,7 @@ export function forUnderlyingTargetFromEditorState(
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticTemplatePath,
     underlyingFilePath: string,
   ) => void,
 ): void {
@@ -2024,7 +2015,7 @@ export function forUnderlyingTarget(
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticTemplatePath,
     underlyingFilePath: string,
   ) => void,
 ): void {

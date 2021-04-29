@@ -493,7 +493,7 @@ export function findJSXElementChildAtPath(
 
 export function findJSXElementAtStaticPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticInstancePath,
+  path: StaticTemplatePath,
 ): JSXElement | null {
   const foundElement = findJSXElementChildAtPath(components, path)
   if (foundElement != null && isJSXElement(foundElement)) {

@@ -9,7 +9,7 @@ import {
   emptySpecialSizeMeasurements,
   JSXElement,
 } from '../../../core/shared/element-template'
-import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as TP from '../../../core/shared/template-path'
@@ -41,11 +41,11 @@ export function buildSpyWrappedElement(
     const isStyledComponent = Element['styledComponentId'] != null
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
-      templatePath: templatePath as InstancePath,
+      templatePath: templatePath,
       props: makeCanvasElementPropsSafe(reportedProps),
       globalFrame: null,
       localFrame: null,
-      children: childrenTemplatePaths as Array<InstancePath>,
+      children: childrenTemplatePaths,
       rootElements: [],
       componentInstance: false,
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,

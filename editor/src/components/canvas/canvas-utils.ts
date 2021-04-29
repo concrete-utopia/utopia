@@ -2389,7 +2389,7 @@ export function reorderComponent(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   components: Array<UtopiaJSXComponent>,
-  target: InstancePath,
+  target: TemplatePath,
   newIndex: number,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]

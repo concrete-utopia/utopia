@@ -10,7 +10,6 @@ import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as PP from '../../../core/shared/property-path'
 import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { InstancePath } from '../../../core/shared/project-file-types'
 
 describe('updating style properties keeps the original order', () => {
   beforeAll(setElectronWindow)
@@ -34,7 +33,7 @@ describe('updating style properties keeps the original order', () => {
     )
 
     const changePinProps = setProp_UNSAFE(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']) as InstancePath,
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       PP.create(['style', 'paddingRight']),
       jsxAttributeValue(30, emptyComments),
     )
