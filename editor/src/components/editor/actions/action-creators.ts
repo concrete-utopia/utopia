@@ -154,7 +154,6 @@ import type {
   Undo,
   UnsetProperty,
   UnwrapGroupOrView,
-  UnwrapLayoutable,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -170,7 +169,6 @@ import type {
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
-  WrapInLayoutable,
   WrapInView,
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
@@ -1042,21 +1040,6 @@ export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
   return {
     action: 'INSERT_IMAGE_INTO_UI',
     imagePath: imagePath,
-  }
-}
-
-export function wrapInLayoutable(target: InstancePath, wrapper: LayoutWrapper): WrapInLayoutable {
-  return {
-    action: 'WRAP_IN_LAYOUTABLE',
-    target: target,
-    wrapper: wrapper,
-  }
-}
-
-export function unwrapLayoutable(target: InstancePath): UnwrapLayoutable {
-  return {
-    action: 'UNWRAP_LAYOUTABLE',
-    target: target,
   }
 }
 

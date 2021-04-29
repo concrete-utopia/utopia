@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { getOpenUtopiaJSXComponentsFromState } from '../../editor/store/editor-state'
 import { useEditorState } from '../../editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
 import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'

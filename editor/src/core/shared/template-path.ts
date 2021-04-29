@@ -470,6 +470,12 @@ export function parentPath(path: TemplatePath): TemplatePath {
   return templatePath(parentFullElementPath)
 }
 
+export function parentTemplatePath(path: TemplatePath): TemplatePath {
+  const asInstancePath = instancePathForElementAtPathDontThrowOnScene(path)
+  const parent = parentPath(asInstancePath)
+  return instancePathForElementAtPathDontThrowOnScene(parent)
+}
+
 export function isParentOf(maybeParent: TemplatePath, maybeChild: TemplatePath): boolean {
   const maybeChildAsInstancePath = instancePathForElementAtPathDontThrowOnScene(maybeChild)
   const maybeParentAsInstancePath = instancePathForElementAtPathDontThrowOnScene(maybeParent)

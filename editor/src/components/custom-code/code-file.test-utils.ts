@@ -18,6 +18,7 @@ import { ProjectContentTreeRoot, contentsToTree, getContentsTreeFileFromString }
 import { DefaultPackageJson, StoryboardFilePath } from '../editor/store/editor-state'
 import * as TP from '../../core/shared/template-path'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
+import { replaceAll } from '../../core/shared/string-utils'
 
 export const SampleNodeModules: NodeModules = {
   '/node_modules/utopia-api/index.js': esCodeFile(
@@ -70,12 +71,15 @@ export function createCodeFile(path: string, contents: string): TextFile {
 export function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {
   const defaultProjectContents = createComplexDefaultProjectContents()
 
+  const unparsedCode = replaceAll(
+    (defaultProjectContents[StoryboardFilePath] as TextFile).fileContents.code,
+    `data-uid='`,
+    `data-uid='unparse-`,
+  )
+
   const projectContents: ProjectContents = {
     ...defaultProjectContents,
-    '/utopia/unparsedstoryboard.js': createCodeFile(
-      '/utopia/unparsedstoryboard.js',
-      (defaultProjectContents[StoryboardFilePath] as TextFile).fileContents.code,
-    ),
+    '/utopia/unparsedstoryboard.js': createCodeFile('/utopia/unparsedstoryboard.js', unparsedCode),
   }
 
   return contentsToTree(projectContents)

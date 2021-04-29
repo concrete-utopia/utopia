@@ -121,9 +121,8 @@ Object {
               ],
               "sourcesContent": Array [
                 "
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
         return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
@@ -191,7 +190,7 @@ Object {
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAKiCA,KAAMC,MAAND",
+                      "mappings": "OAIiCA,KAAMC,MAAND",
                       "names": Array [
                         "props",
                         "style",
@@ -201,9 +200,8 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
         return <div style={{ ...props.style}} data-uid={'aaa'}>
           {[1, 2, 3].map(n => {
@@ -757,7 +755,7 @@ Object {
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAKiCA,KAAMC,MAAND",
+                      "mappings": "OAIiCA,KAAMC,MAAND",
                       "names": Array [
                         "props",
                         "style",
@@ -767,9 +765,8 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
         return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
       }
@@ -1154,8 +1151,8 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                        "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
        export var App = (props) => {
          return <div data-uid=\\"zzz\\">
@@ -1228,8 +1225,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
        export var App = (props) => {
          return <div data-uid=\\"zzz\\">
@@ -1379,8 +1376,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
        export var App = (props) => {
          return <div data-uid=\\"zzz\\">
@@ -1526,8 +1523,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
        export var App = (props) => {
          return <div data-uid=\\"zzz\\">
@@ -1673,8 +1670,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
        export var App = (props) => {
          return <div data-uid=\\"zzz\\">
@@ -1942,8 +1939,8 @@ Object {
                                 "code.tsx",
                               ],
                               "sourcesContent": Array [
-                                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -2021,8 +2018,8 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                        "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -2114,8 +2111,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -2282,8 +2279,8 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                        "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -2361,8 +2358,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -2520,8 +2517,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -2674,8 +2671,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -2828,8 +2825,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -2991,8 +2988,8 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                        "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -3070,8 +3067,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -3229,8 +3226,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -3383,8 +3380,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -3537,8 +3534,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -3700,8 +3697,8 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                        "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -3779,8 +3776,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -3938,8 +3935,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -4092,8 +4089,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -4246,8 +4243,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        export var App = (props) => {
@@ -4871,7 +4868,7 @@ Object {
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAOiCA,KAAMC,MAAND",
+                      "mappings": "OAMiCA,KAAMC,MAAND",
                       "names": Array [
                         "props",
                         "style",
@@ -4881,9 +4878,8 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       console.log('root log')
       export var App = (props) => {
         console.log('inside component log')
@@ -5137,9 +5133,9 @@ Object {
                           "code.tsx",
                         ],
                         "sourcesContent": Array [
-                          "/** @jsx jsx */
+                          "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -5190,9 +5186,9 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -5370,9 +5366,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -5567,9 +5563,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -5764,9 +5760,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -6023,8 +6019,8 @@ Object {
                           "code.tsx",
                         ],
                         "sourcesContent": Array [
-                          "/** @jsx jsx */
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+                          "
+      import { View, Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
@@ -6076,8 +6072,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { View, Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
@@ -6256,8 +6252,8 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+                  "
+      import { View, Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
@@ -6453,8 +6449,8 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+                  "
+      import { View, Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
@@ -6650,8 +6646,8 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+                  "
+      import { View, Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
@@ -7353,8 +7349,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-      import { jsx, Storyboard, Scene } from 'utopia-api'
+                "
+      import { Storyboard, Scene } from 'utopia-api'
       import * as React from \\"react\\"
        export const Thing = (props) => <div data-uid=\\"ccc\\" >Thing</div>
        export var App = (props) => {
@@ -7840,9 +7836,9 @@ Object {
                       "code.tsx",
                     ],
                     "sourcesContent": Array [
-                      "/** @jsx jsx */
+                      "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       
       const Card = ({style, title}) => <div style={style} data-uid={'xxx'}>{title}</div>
       export var App = (props) => {
@@ -7925,9 +7921,9 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
+                        "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       
       const Card = ({style, title}) => <div style={style} data-uid={'xxx'}>{title}</div>
       export var App = (props) => {
@@ -8166,9 +8162,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       
       const Card = ({style, title}) => <div style={style} data-uid={'xxx'}>{title}</div>
       export var App = (props) => {
@@ -8464,9 +8460,9 @@ Object {
                       "code.tsx",
                     ],
                     "sourcesContent": Array [
-                      "/** @jsx jsx */
+                      "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = (cardProps) => <div data-uid={'xxx'}>{cardProps.title}</div>
       export var App = (props) => {
@@ -8549,9 +8545,9 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
+                        "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = (cardProps) => <div data-uid={'xxx'}>{cardProps.title}</div>
       export var App = (props) => {
@@ -8790,9 +8786,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = (cardProps) => <div data-uid={'xxx'}>{cardProps.title}</div>
       export var App = (props) => {
@@ -9089,9 +9085,9 @@ Object {
                             "code.tsx",
                           ],
                           "sourcesContent": Array [
-                            "/** @jsx jsx */
+                            "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = ({style, titles: [title1, , {title: title2}]}) => <div style={style} data-uid={'xxx'}>{title1} - {title2}</div>
       export var App = (props) => {
@@ -9210,9 +9206,9 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
+                        "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = ({style, titles: [title1, , {title: title2}]}) => <div style={style} data-uid={'xxx'}>{title1} - {title2}</div>
       export var App = (props) => {
@@ -9463,9 +9459,9 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
+                        "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = ({style, titles: [title1, , {title: title2}]}) => <div style={style} data-uid={'xxx'}>{title1} - {title2}</div>
       export var App = (props) => {
@@ -9804,9 +9800,9 @@ Object {
                             "code.tsx",
                           ],
                           "sourcesContent": Array [
-                            "/** @jsx jsx */
+                            "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = ({style, titles: [title1, , {title: title2}, title3 = 'Now begone!']}) => <div style={style} data-uid={'xxx'}>{title1} - {title2} - {title3}</div>
       export var App = (props) => {
@@ -9925,9 +9921,9 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
+                        "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = ({style, titles: [title1, , {title: title2}, title3 = 'Now begone!']}) => <div style={style} data-uid={'xxx'}>{title1} - {title2} - {title3}</div>
       export var App = (props) => {
@@ -10178,9 +10174,9 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
+                        "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
       const Card = ({style, titles: [title1, , {title: title2}, title3 = 'Now begone!']}) => <div style={style} data-uid={'xxx'}>{title1} - {title2} - {title3}</div>
       export var App = (props) => {
@@ -10726,9 +10722,9 @@ Object {
                             "code.tsx",
                           ],
                           "sourcesContent": Array [
-                            "/** @jsx jsx */
+                            "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -10873,9 +10869,9 @@ export var storyboard = (props) => {
                               "code.tsx",
                             ],
                             "sourcesContent": Array [
-                              "/** @jsx jsx */
+                              "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -11027,9 +11023,9 @@ export var storyboard = (props) => {
                                   "code.tsx",
                                 ],
                                 "sourcesContent": Array [
-                                  "/** @jsx jsx */
+                                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -11178,9 +11174,9 @@ export var storyboard = (props) => {
                               "code.tsx",
                             ],
                             "sourcesContent": Array [
-                              "/** @jsx jsx */
+                              "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -11316,9 +11312,9 @@ export var storyboard = (props) => {
                     "code.tsx",
                   ],
                   "sourcesContent": Array [
-                    "/** @jsx jsx */
+                    "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -11494,9 +11490,9 @@ export var storyboard = (props) => {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
+                        "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -11907,9 +11903,9 @@ export var storyboard = (props) => {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
+                        "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -12054,9 +12050,9 @@ export var storyboard = (props) => {
                           "code.tsx",
                         ],
                         "sourcesContent": Array [
-                          "/** @jsx jsx */
+                          "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -12208,9 +12204,9 @@ export var storyboard = (props) => {
                               "code.tsx",
                             ],
                             "sourcesContent": Array [
-                              "/** @jsx jsx */
+                              "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -12359,9 +12355,9 @@ export var storyboard = (props) => {
                           "code.tsx",
                         ],
                         "sourcesContent": Array [
-                          "/** @jsx jsx */
+                          "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -12497,9 +12493,9 @@ export var storyboard = (props) => {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -12764,9 +12760,9 @@ export var storyboard = (props) => {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -12911,9 +12907,9 @@ export var storyboard = (props) => {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -13108,9 +13104,9 @@ export var storyboard = (props) => {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -13255,9 +13251,9 @@ export var storyboard = (props) => {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -13452,9 +13448,9 @@ export var storyboard = (props) => {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -13599,9 +13595,9 @@ export var storyboard = (props) => {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -13824,9 +13820,9 @@ export var storyboard = (props) => {
                       "code.tsx",
                     ],
                     "sourcesContent": Array [
-                      "/** @jsx jsx */
+                      "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -13975,9 +13971,9 @@ export var storyboard = (props) => {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -14202,9 +14198,9 @@ export var storyboard = (props) => {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -14450,9 +14446,9 @@ export var storyboard = (props) => {
                       "code.tsx",
                     ],
                     "sourcesContent": Array [
-                      "/** @jsx jsx */
+                      "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -14601,9 +14597,9 @@ export var storyboard = (props) => {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -14824,9 +14820,9 @@ export var storyboard = (props) => {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -15068,9 +15064,9 @@ export var storyboard = (props) => {
                       "code.tsx",
                     ],
                     "sourcesContent": Array [
-                      "/** @jsx jsx */
+                      "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -15219,9 +15215,9 @@ export var storyboard = (props) => {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -15442,9 +15438,9 @@ export var storyboard = (props) => {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { View, jsx, Scene, Storyboard } from 'utopia-api'
+import { View, Scene, Storyboard } from 'utopia-api'
 const keyboardShortcuts = [
   {
     label: 'Copy',
@@ -16212,7 +16208,7 @@ Object {
               "javascript": "() => console.log('class component')",
               "sourceMap": Object {
                 "file": "code.tsx",
-                "mappings": "OAU4BA,CAACC;AAAAA,SAAKC,OAAQC,IAARD,CAAaE,iBAAbF,CAALD;AAAAA,CAADD",
+                "mappings": "OAS4BA,CAACC;AAAAA,SAAKC,OAAQC,IAARD,CAAaE,iBAAbF,CAALD;AAAAA,CAADD",
                 "names": Array [
                   "(",
                   ")",
@@ -16225,9 +16221,8 @@ Object {
                 ],
                 "sourcesContent": Array [
                   "
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       class Thing extends React.Component {
         render() {
           return <div data-uid=\\"ccc-unparsed-no-template-path\\">Thing</div>
@@ -16405,7 +16400,7 @@ Object {
               "javascript": "() => console.log('functional component')",
               "sourceMap": Object {
                 "file": "code.tsx",
-                "mappings": "OAK0BA,CAACC;AAAAA,SAAKC,OAAQC,IAARD,CAAaE,sBAAbF,CAALD;AAAAA,CAADD",
+                "mappings": "OAI0BA,CAACC;AAAAA,SAAKC,OAAQC,IAARD,CAAaE,sBAAbF,CAALD;AAAAA,CAADD",
                 "names": Array [
                   "(",
                   ")",
@@ -16418,9 +16413,8 @@ Object {
                 ],
                 "sourcesContent": Array [
                   "
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
         return <div ref={() => console.log('functional component')} style={{ ...props.style}} data-uid={'aaa'} />
       }
@@ -16475,7 +16469,7 @@ Object {
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAKiFA,KAAMC,MAAND",
+                      "mappings": "OAIiFA,KAAMC,MAAND",
                       "names": Array [
                         "props",
                         "style",
@@ -16485,9 +16479,8 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "
-      /** @jsx jsx */
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       export var App = (props) => {
         return <div ref={() => console.log('functional component')} style={{ ...props.style}} data-uid={'aaa'} />
       }
@@ -16749,9 +16742,9 @@ Object {
                       "code.tsx",
                     ],
                     "sourcesContent": Array [
-                      "/** @jsx jsx */
+                      "
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 export var App = (props) => {
   return (
     <div
@@ -16958,9 +16951,9 @@ export var storyboard = (
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 export var App = (props) => {
   return (
     <div
@@ -17928,9 +17921,9 @@ Object {
                         "code.tsx",
                       ],
                       "sourcesContent": Array [
-                        "/** @jsx jsx */
+                        "
       import * as React from 'react'
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
       
       export var App = (props) => {
         return (
@@ -18357,9 +18350,9 @@ Object {
                           "code.tsx",
                         ],
                         "sourcesContent": Array [
-                          "/** @jsx jsx */
+                          "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -18410,9 +18403,9 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -18590,9 +18583,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -18787,9 +18780,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -18984,9 +18977,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -19244,9 +19237,9 @@ Object {
                           "code.tsx",
                         ],
                         "sourcesContent": Array [
-                          "/** @jsx jsx */
+                          "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -19297,9 +19290,9 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -19478,9 +19471,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -19676,9 +19669,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -19874,9 +19867,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -20134,9 +20127,9 @@ Object {
                           "code.tsx",
                         ],
                         "sourcesContent": Array [
-                          "/** @jsx jsx */
+                          "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -20190,9 +20183,9 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -20373,9 +20366,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -20570,9 +20563,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -20767,9 +20760,9 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
+                  "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        const MyCard = (props) => <div data-uid={'xxx'}>{props.title} </div>
        export var App = props => {
@@ -21286,7 +21279,7 @@ Object {
               "javascript": "storeRef",
               "sourceMap": Object {
                 "file": "code.tsx",
-                "mappings": "OAUiCA",
+                "mappings": "OASiCA",
                 "names": Array [
                   "storeRef",
                 ],
@@ -21294,9 +21287,8 @@ Object {
                   "code.tsx",
                 ],
                 "sourcesContent": Array [
-                  "/** @jsx jsx */
-import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+                  "import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
 
 const AppContext = React.createContext({})
 const useStoreRef = () => useContext(AppContext)
@@ -21742,9 +21734,8 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+                "import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -21811,9 +21802,8 @@ export var storyboard = (
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
-import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+                "import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -22141,7 +22131,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
   >
     <div
       style=\\"
-        position: absolute;
+        position: relative;
         left: 0;
         top: 0;
         right: 0;
@@ -22165,13 +22155,7 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
           data-paths=\\"eee/fff/app:aaa/bbb/ccc\\"
         ></div>
       </div>
-      <div
-        data-uid=\\"ddd\\"
-        data-paths=\\"eee/fff/app:aaa/ddd\\"
-        style=\\"position: absolute;\\"
-      >
-        World
-      </div>
+      <div data-uid=\\"ddd\\" data-paths=\\"eee/fff/app:aaa/ddd\\">World</div>
     </div>
   </div>
 </div>
@@ -22424,7 +22408,7 @@ Object {
                     "javascript": "props.style",
                     "sourceMap": Object {
                       "file": "code.tsx",
-                      "mappings": "OAOmBA,KAAMC,MAAND",
+                      "mappings": "OAMmBA,KAAMC,MAAND",
                       "names": Array [
                         "props",
                         "style",
@@ -22434,14 +22418,12 @@ Object {
                       ],
                       "sourcesContent": Array [
                         "
-/** @jsx jsx */
 import * as React from 'react'
-import { Scene, Storyboard, View, jsx } from 'utopia-api'
+import { Scene, Storyboard, View } from 'utopia-api'
 export var App = (props) => {
   return (
     <View
-      style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      style={{ ...props.style, position: 'relative', backgroundColor: '#FFFFFF' }}
       data-uid={'aaa'}
     >
       <React.Fragment>
@@ -22477,6 +22459,26 @@ export var storyboard = (
                     "leadingComments": Array [],
                     "trailingComments": Array [],
                   },
+                  "key": "position",
+                  "keyComments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
+                  "type": "PROPERTY_ASSIGNMENT",
+                  "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "type": "ATTRIBUTE_VALUE",
+                    "value": "relative",
+                  },
+                },
+                Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "key": "backgroundColor",
                   "keyComments": Object {
                     "leadingComments": Array [],
@@ -22494,23 +22496,6 @@ export var storyboard = (
                 },
               ],
               "type": "ATTRIBUTE_NESTED_OBJECT",
-            },
-          },
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "layout",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": Object {
-                "layoutSystem": "pinSystem",
-              },
             },
           },
           Object {
@@ -22562,7 +22547,7 @@ export var storyboard = (
         "maxWidth": undefined,
         "minHeight": undefined,
         "minWidth": undefined,
-        "position": "absolute",
+        "position": "relative",
         "right": 0,
         "top": 0,
         "width": undefined,
@@ -23031,7 +23016,7 @@ export var storyboard = (
         "maxWidth": undefined,
         "minHeight": undefined,
         "minWidth": undefined,
-        "position": "absolute",
+        "position": undefined,
         "right": undefined,
         "top": undefined,
         "width": undefined,
@@ -23675,9 +23660,9 @@ Object {
                             "code.tsx",
                           ],
                           "sourcesContent": Array [
-                            "/** @jsx jsx */
+                            "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        export var App = (props) => {
          return <View data-uid={'aaa'}>
@@ -23782,9 +23767,9 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        export var App = (props) => {
          return <View data-uid={'aaa'}>
@@ -23938,9 +23923,9 @@ Object {
                     "code.tsx",
                   ],
                   "sourcesContent": Array [
-                    "/** @jsx jsx */
+                    "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        export var App = (props) => {
          return <View data-uid={'aaa'}>
@@ -24140,9 +24125,9 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        export var App = (props) => {
          return <View data-uid={'aaa'}>
@@ -24293,9 +24278,9 @@ Object {
                     "code.tsx",
                   ],
                   "sourcesContent": Array [
-                    "/** @jsx jsx */
+                    "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        export var App = (props) => {
          return <View data-uid={'aaa'}>
@@ -24495,9 +24480,9 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        export var App = (props) => {
          return <View data-uid={'aaa'}>
@@ -24648,9 +24633,9 @@ Object {
                     "code.tsx",
                   ],
                   "sourcesContent": Array [
-                    "/** @jsx jsx */
+                    "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        export var App = (props) => {
          return <View data-uid={'aaa'}>
@@ -24850,9 +24835,9 @@ Object {
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
       import * as React from \\"react\\"
-      import { View, jsx, Storyboard, Scene } from 'utopia-api'
+      import { View, Storyboard, Scene } from 'utopia-api'
 
        export var App = (props) => {
          return <View data-uid={'aaa'}>
@@ -25491,9 +25476,9 @@ exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
+      layout=\\"[object Object]\\"
       data-uid=\\"45b aaa app-entity\\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:45b utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      style=\\"width: 50px; height: 50px; left: 15px; top: 15px;\\"
     >
       Utopia
     </div>
@@ -25638,10 +25623,10 @@ exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] 
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
+      layout=\\"[object Object]\\"
+      css=\\"[object Object]\\"
       data-uid=\\"a0e aaa app-entity\\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:a0e utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-      class=\\"css-f9xk9e\\"
-      style=\\"width: 50px; height: 50px; left: 15px; top: 15px;\\"
     >
       Utopia
     </div>
@@ -25908,7 +25893,7 @@ Array [
         "lineNumber": 2,
       },
       ScriptLine {
-        "content": "import { View, jsx, Storyboard, Scene } from 'utopia-api'",
+        "content": "import { View, Storyboard, Scene } from 'utopia-api'",
         "highlight": false,
         "lineNumber": 3,
       },
@@ -25941,7 +25926,7 @@ Array [
         "lineNumber": 2,
       },
       ScriptLine {
-        "content": "import { View, jsx, Storyboard, Scene } from 'utopia-api'",
+        "content": "import { View, Storyboard, Scene } from 'utopia-api'",
         "highlight": false,
         "lineNumber": 3,
       },
@@ -26089,7 +26074,7 @@ Array [
         "lineNumber": 1,
       },
       ScriptLine {
-        "content": "import { View, jsx, Storyboard, Scene } from 'utopia-api'",
+        "content": "import { View, Storyboard, Scene } from 'utopia-api'",
         "highlight": false,
         "lineNumber": 2,
       },

@@ -49,9 +49,9 @@ function b(n) {
         "code.tsx",
       ],
       "sourcesContent": Array [
-        "/** @jsx jsx */
+        "
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -169,18 +169,14 @@ return { a: a, b: b };",
           "alias": "Storyboard",
           "name": "Storyboard",
         },
-        Object {
-          "alias": "jsx",
-          "name": "jsx",
-        },
       ],
       "importedWithName": null,
     },
   },
-  "jsxFactoryFunction": "jsx",
+  "jsxFactoryFunction": null,
   "topLevelElements": Array [
     Object {
-      "rawCode": "/** @jsx jsx */
+      "rawCode": "
 ",
       "type": "UNPARSED_CODE",
     },
@@ -203,10 +199,9 @@ return { a: a, b: b };",
       "imports": Array [
         "Scene",
         "Storyboard",
-        "jsx",
       ],
       "module": "utopia-api",
-      "rawCode": "import { Scene, Storyboard, jsx } from 'utopia-api'",
+      "rawCode": "import { Scene, Storyboard } from 'utopia-api'",
       "type": "IMPORT_STATEMENT",
     },
     Object {
@@ -254,9 +249,9 @@ return { a: a, b: b };",
           "code.tsx",
         ],
         "sourcesContent": Array [
-          "/** @jsx jsx */
+          "
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -353,9 +348,9 @@ return { a: a };",
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -422,9 +417,9 @@ export var storyboard = (
                 "code.tsx",
               ],
               "sourcesContent": Array [
-                "/** @jsx jsx */
+                "
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {
@@ -579,9 +574,9 @@ export var storyboard = (
           "code.tsx",
         ],
         "sourcesContent": Array [
-          "/** @jsx jsx */
+          "
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 
 function a(n) {
   if (n <= 0) {

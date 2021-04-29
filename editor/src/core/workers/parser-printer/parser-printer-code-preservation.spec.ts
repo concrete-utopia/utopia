@@ -225,7 +225,7 @@ function Picker() {
 
   it('retains empty lines in the code', () => {
     const code = applyPrettier(
-      `/** @jsx jsx */
+      `
       import * as React from 'react'
       import { 
         Loads,
@@ -243,7 +243,7 @@ function Picker() {
         Multiple,
         Lines
       } from 'some-library'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
       
       const { m } = require('./thing')
       const { n } = require('./thing')

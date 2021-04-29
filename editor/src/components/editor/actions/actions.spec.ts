@@ -62,7 +62,6 @@ import {
   EditorState,
   reconstructJSXMetadata,
   getOpenUIJSFile,
-  getOpenUtopiaJSXComponentsFromState,
   PersistentModel,
   StoryboardFilePath,
 } from '../store/editor-state'
@@ -794,6 +793,19 @@ describe('moveTemplate', () => {
   })
 })
 
+function getOpenFileComponents(editor: EditorState): Array<UtopiaJSXComponent> {
+  const openFile = getOpenUIJSFile(editor)
+  if (openFile == null) {
+    return []
+  } else {
+    if (isParseSuccess(openFile.fileContents.parsed)) {
+      return getUtopiaJSXComponentsFromSuccess(openFile.fileContents.parsed)
+    } else {
+      return []
+    }
+  }
+}
+
 describe('SWITCH_LAYOUT_SYSTEM', () => {
   const childElement = jsxElement(
     'View',
@@ -942,18 +954,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   it('switches from pins to flex correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
     const result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
-    expect(
-      getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),
-    ).toMatchSnapshot()
+    expect(getOpenFileComponents(result).map(clearTopLevelElementUniqueIDs)).toMatchSnapshot()
   })
   it('switches from flex to pins correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')
     let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
     const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem)
     result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result)
-    expect(
-      getOpenUtopiaJSXComponentsFromState(result).map(clearTopLevelElementUniqueIDs),
-    ).toMatchSnapshot()
+    expect(getOpenFileComponents(result).map(clearTopLevelElementUniqueIDs)).toMatchSnapshot()
   })
 })
 

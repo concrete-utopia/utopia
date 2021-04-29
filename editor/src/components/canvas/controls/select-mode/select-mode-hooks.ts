@@ -26,8 +26,8 @@ import {
 } from '../../../editor/actions/action-creators'
 import {
   EditorState,
+  getJSXComponentsAndImportsForPathInnerComponent,
   getJSXComponentsAndImportsForPathInnerComponentFromState,
-  getOpenUtopiaJSXComponentsFromState,
 } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
@@ -142,7 +142,9 @@ export function getSelectableViews(
     })
     let siblings: Array<TemplatePath> = []
     Utils.fastForEach(selectedViews, (view) => {
-      const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
+      const allPaths = childrenSelectable
+        ? TP.allPaths(view)
+        : TP.allPaths(TP.parentTemplatePath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
         const {
           children,
@@ -247,16 +249,17 @@ function useStartDragState(): (
       const componentMetadata = entireEditorStoreRef.current.editor.jsxMetadata
       const selectedViews = entireEditorStoreRef.current.editor.selectedViews
 
-      const rootComponents = getOpenUtopiaJSXComponentsFromState(
-        entireEditorStoreRef.current.editor,
-      )
       const elementsThatRespectLayout = selectElementsThatRespectLayout(
         entireEditorStoreRef.current,
       )
 
       const duplicate = event.altKey
       const duplicateNewUIDs = duplicate
-        ? createDuplicationNewUIDs(selectedViews, componentMetadata, rootComponents)
+        ? createDuplicationNewUIDs(
+            selectedViews,
+            componentMetadata,
+            entireEditorStoreRef.current.editor.projectContents,
+          )
         : null
 
       const isTargetSelected = selectedViews.some((sv) => TP.pathsEqual(sv, target))

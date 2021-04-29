@@ -111,11 +111,10 @@ import {
   ShortcutNamesByKey,
 } from './shortcut-definitions'
 import {
+  DerivedState,
   EditorState,
+  getJSXComponentsAndImportsForPathFromState,
   getOpenFile,
-  getOpenImportsFromState,
-  getOpenUtopiaJSXComponentsFromState,
-  UserState,
 } from './store/editor-state'
 
 function updateKeysPressed(
@@ -174,13 +173,16 @@ function jumpToParentActions(selectedViews: Array<TemplatePath>): Array<EditorAc
   }
 }
 
-function getTextEditorTarget(editor: EditorState): TemplatePath | null {
+function getTextEditorTarget(editor: EditorState, derived: DerivedState): TemplatePath | null {
   if (editor.canvas.dragState != null || editor.selectedViews.length !== 1) {
     return null
   } else {
     const target = editor.selectedViews[0]
-    const components = getOpenUtopiaJSXComponentsFromState(editor)
-    const imports = getOpenImportsFromState(editor)
+    const { components, imports } = getJSXComponentsAndImportsForPathFromState(
+      target,
+      editor,
+      derived,
+    )
     const element = findElementAtPath(target, components)
     if (element != null && isUtopiaAPITextElement(element, imports)) {
       return target
@@ -326,6 +328,7 @@ export function preventBrowserShortcuts(editor: EditorState, event: KeyboardEven
 export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
+  derived: DerivedState,
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
 ): void {
@@ -406,7 +409,7 @@ export function handleKeyDown(
       },
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (modeType === 'select') {
-          const textTarget = getTextEditorTarget(editor)
+          const textTarget = getTextEditorTarget(editor, derived)
           if (textTarget != null) {
             return [EditorActions.openTextEditor(TP.instancePathForElementAtPath(textTarget), null)]
           } else {
@@ -588,8 +591,7 @@ export function handleKeyDown(
       },
       [INSERT_RECTANGLE_SHORTCUT]: () => {
         if (modeType === 'select' || modeType === 'insert') {
-          const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
-          const newUID = generateUidWithExistingComponents(utopiaComponents)
+          const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
               defaultRectangleElement(newUID),
@@ -606,8 +608,7 @@ export function handleKeyDown(
       },
       [INSERT_ELLIPSE_SHORTCUT]: () => {
         if (modeType === 'select' || modeType === 'insert') {
-          const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
-          const newUID = generateUidWithExistingComponents(utopiaComponents)
+          const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
               defaultEllipseElement(newUID),
@@ -633,8 +634,7 @@ export function handleKeyDown(
       },
       [INSERT_TEXT_SHORTCUT]: () => {
         if (modeType === 'select' || modeType === 'insert') {
-          const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
-          const newUID = generateUidWithExistingComponents(utopiaComponents)
+          const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
               defaultTextElement(newUID),
@@ -649,8 +649,7 @@ export function handleKeyDown(
       },
       [INSERT_VIEW_SHORTCUT]: () => {
         if (modeType === 'select' || modeType === 'insert') {
-          const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
-          const newUID = generateUidWithExistingComponents(utopiaComponents)
+          const newUID = generateUidWithExistingComponents(editor.projectContents)
           return [
             EditorActions.enableInsertModeForJSXElement(
               defaultViewElement(newUID),

@@ -1412,9 +1412,9 @@ describe('moveTemplate', () => {
   it('reparents an orphan from the canvas', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1528,9 +1528,9 @@ describe('moveTemplate', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1571,9 +1571,9 @@ describe('moveTemplate', () => {
   it('reparenting to the canvas creates an orphan', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1688,9 +1688,9 @@ describe('moveTemplate', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1838,9 +1838,9 @@ describe('moveTemplate', () => {
   it('inserting a new element as an orphan', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1934,9 +1934,9 @@ describe('moveTemplate', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (

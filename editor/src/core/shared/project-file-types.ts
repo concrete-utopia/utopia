@@ -544,4 +544,11 @@ export type ElementOriginType =
   // Something from somewhere, for which we probably have access to the bounds.
   | 'unknown-element'
 
+export function isUnknownOrGeneratedElement(elementOriginType: ElementOriginType): boolean {
+  return (
+    elementOriginType === 'unknown-element' ||
+    elementOriginType === 'generated-static-definition-present'
+  )
+}
+
 export type LayoutWrapper = 'Layoutable' | 'Positionable' | 'Resizeable'

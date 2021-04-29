@@ -241,7 +241,7 @@ function createFileText(codeSnippet: string): string {
   return `
   /** @jsx jsx */
   import * as React from 'react'
-  import { Scene, Storyboard, jsx } from 'utopia-api'
+  import { Scene, Storyboard } from 'utopia-api'
   import { View } from 'utopia-api'
 
   // arbitrary block

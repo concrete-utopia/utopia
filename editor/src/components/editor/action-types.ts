@@ -656,17 +656,6 @@ export interface InsertImageIntoUI {
   imagePath: string
 }
 
-export interface WrapInLayoutable {
-  action: 'WRAP_IN_LAYOUTABLE'
-  target: InstancePath
-  wrapper: LayoutWrapper
-}
-
-export interface UnwrapLayoutable {
-  action: 'UNWRAP_LAYOUTABLE'
-  target: InstancePath
-}
-
 export interface UpdateJSXElementName {
   action: 'UPDATE_JSX_ELEMENT_NAME'
   target: InstancePath
@@ -915,8 +904,6 @@ export type EditorAction =
   | InsertImageIntoUI
   | SetFocus
   | ResizeLeftPane
-  | WrapInLayoutable
-  | UnwrapLayoutable
   | SetAspectRatioLock
   | UpdateJSXElementName
   | AddImports

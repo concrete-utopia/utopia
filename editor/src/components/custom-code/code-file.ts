@@ -75,13 +75,15 @@ export type PropertyControlsInfo = {
   [filenameNoExtension: string]: { [componentName: string]: PropertyControls }
 }
 
+export type ResolveFn = (importOrigin: string, toImport: string) => Either<string, string>
+
 export type CodeResultCache = {
   skipDeepFreeze: true
   cache: { [filename: string]: CodeResult }
   exportsInfo: ReadonlyArray<ExportsInfo>
   error: Error | null
   requireFn: UtopiaRequireFn
-  resolve: (importOrigin: string, toImport: string) => Either<string, string>
+  resolve: ResolveFn
   projectModules: MultiFileBuildResult
   evaluationCache: EvaluationCache
 }

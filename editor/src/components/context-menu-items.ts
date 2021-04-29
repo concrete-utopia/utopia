@@ -151,11 +151,10 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
       return data.selectedViews.every((view) => {
         const { components, imports } = getJSXComponentsAndImportsForPathInnerComponent(
           view,
-          data.currentFilePath!,
+          data.currentFilePath,
           data.projectContents,
           data.nodeModules,
           data.transientFilesState,
-          data.jsxMetadata,
           data.resolve,
         )
         return MetadataUtils.isFocusableComponent(view, components, data.jsxMetadata, imports)
@@ -166,14 +165,13 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
     return data.selectedViews.every((view) => {
       const { components } = getJSXComponentsAndImportsForPathInnerComponent(
         view,
-        data.currentFilePath!,
+        data.currentFilePath,
         data.projectContents,
         data.nodeModules,
         data.transientFilesState,
-        data.jsxMetadata,
         data.resolve,
       )
-      const elementName = MetadataUtils.getJSXElementName(view, components, data.jsxMetadata)
+      const elementName = MetadataUtils.getJSXElementName(view, components)
       return elementName != null ? isIntrinsicHTMLElement(elementName) : true
     })
   },

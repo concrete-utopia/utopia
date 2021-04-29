@@ -54,6 +54,7 @@ import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-ne
 import { getStoryboardTemplatePath } from '../../../core/model/scene-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { isSceneAgainstImports } from '../../../core/model/project-file-utils'
+import { withUnderlyingTarget } from '../../editor/store/editor-state'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -221,7 +222,6 @@ export class InsertModeControlContainer extends React.Component<
         keysPressed={this.props.keysPressed}
         windowToCanvasPosition={this.props.windowToCanvasPosition}
         selectedViews={this.props.selectedViews}
-        imports={this.props.imports}
         showAdditionalControls={this.props.showAdditionalControls}
       />
     )
@@ -470,7 +470,7 @@ export class InsertModeControlContainer extends React.Component<
       let element = null
       const parentPath =
         safeIndex(this.props.highlightedViews, 0) ??
-        getStoryboardTemplatePath(this.props.rootComponents)
+        getStoryboardTemplatePath(this.props.projectContents, this.props.openFile)
       let extraActions: EditorAction[] = []
 
       if (
@@ -659,13 +659,28 @@ export class InsertModeControlContainer extends React.Component<
 
   render() {
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
-    const roots = mapDropNulls(
-      (child) =>
-        isRight(child.element) && isSceneAgainstImports(child.element.value, this.props.imports)
-          ? child.templatePath
-          : null,
-      storyboardChildren,
-    )
+    const roots = mapDropNulls((child) => {
+      if (isRight(child.element)) {
+        const childElement = child.element.value
+        const isScene = withUnderlyingTarget(
+          child.templatePath,
+          this.props.projectContents,
+          this.props.nodeModules,
+          this.props.openFile,
+          false,
+          (success) => {
+            return isSceneAgainstImports(childElement, success.imports)
+          },
+        )
+        if (isScene) {
+          return child.templatePath
+        } else {
+          return null
+        }
+      } else {
+        return null
+      }
+    }, storyboardChildren)
     const dragFrame = this.state.dragFrame
 
     return (

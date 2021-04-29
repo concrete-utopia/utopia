@@ -105,26 +105,22 @@ describe('DOM Walker tests', () => {
   it('Simple Project with one child View', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return (
-          <View style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
+          <View style={{ ...props.style, backgroundColor: '#FFFFFF'}} data-uid={'05c'}>
             <View
-              style={{ backgroundColor: '#DDDDDD' }}
+              style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 55, top: 98, width: 266, height: 124  }}
               data-uid={'ef0'}
-              layout={{ layoutSystem: 'pinSystem', left: 55, top: 98, width: 266, height: 124 }}
             >
               <View
-                style={{ backgroundColor: '#DDDDDD' }}
+                style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 71, top: 27, width: 125, height: 70 }}
                 data-uid={'488'}
-                layout={{ layoutSystem: 'pinSystem', left: 71, top: 27, width: 125, height: 70 }}
               />
             </View>
           </View>
@@ -152,26 +148,22 @@ describe('DOM Walker tests', () => {
   it('Simple Project with divs', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return (
-          <div style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'} layout={{ layoutSystem: 'pinSystem' }}>
+          <div style={{ ...props.style, backgroundColor: '#FFFFFF' }} data-uid={'05c'}>
             <div
-              style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, }}
+              style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, left: 55, top: 98, width: 266, height: 124 }}
               data-uid={'ef0'}
-              layout={{ layoutSystem: 'pinSystem', left: 55, top: 98, width: 266, height: 124 }}
             >
               <div
-                style={{ backgroundColor: '#DDDDDD' }}
+                style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 71, top: 27, width: 125, height: 70 }}
                 data-uid={'488'}
-                layout={{ layoutSystem: 'pinSystem', left: 71, top: 27, width: 125, height: 70 }}
               />
             </div>
           </div>
@@ -199,26 +191,22 @@ describe('DOM Walker tests', () => {
   it('Simple Project with flex parent', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return (
           <div style={{ ...props.style, backgroundColor: '#FFFFFF', display: 'flex' }} data-uid={'05c'}>
             <div
-              style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, }}
+              style={{ backgroundColor: '#DDDDDD', position: 'fixed', padding: 20, left: 55, top: 98, width: 266, height: 124 }}
               data-uid={'ef0'}
-              layout={{ layoutSystem: 'pinSystem', left: 55, top: 98, width: 266, height: 124 }}
             >
               <div
-                style={{ backgroundColor: '#DDDDDD' }}
+                style={{ backgroundColor: '#DDDDDD', position: 'absolute', left: 71, top: 27, width: 125, height: 70 }}
                 data-uid={'488'}
-                layout={{ left: 71, top: 27, width: 125, height: 70 }}
               />
             </div>
           </div>
@@ -246,13 +234,11 @@ describe('DOM Walker tests', () => {
   it('Label carried through for normal elements', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
@@ -279,13 +265,11 @@ describe('DOM Walker tests', () => {
   it('Label carried through for generated elements', async () => {
     await renderTestEditorWithCode(
       `
-      /** @jsx jsx */
       import * as React from 'react'
       import {
         View,
         Scene,
         Storyboard,
-        jsx,
       } from 'utopia-api'
       export var App = (props) => {
         return <div style={{ ...props.style}} data-uid={'aaa'}>
