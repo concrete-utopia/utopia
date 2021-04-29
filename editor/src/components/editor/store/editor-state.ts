@@ -108,6 +108,7 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
   PropertyControlsInfo,
+  ResolveFn,
 } from '../../custom-code/code-file'
 import { EditorModes, Mode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
@@ -621,19 +622,6 @@ export function modifyOpenJsxElementAtStaticPath(
   )
 }
 
-export function getOpenUtopiaJSXComponentsFromState(model: EditorState): Array<UtopiaJSXComponent> {
-  const openUIJSFile = getOpenUIJSFile(model)
-  if (openUIJSFile == null) {
-    return []
-  } else {
-    if (isParseSuccess(openUIJSFile.fileContents.parsed)) {
-      return getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
-    } else {
-      return []
-    }
-  }
-}
-
 function getImportedUtopiaJSXComponents(
   filePath: string,
   model: EditorState,
@@ -729,35 +717,33 @@ export function getJSXComponentsAndImportsForPathInnerComponentFromState(
   imports: Imports
 } {
   const storyboardFilePath = getOpenUIJSFileKey(model)
-  if (storyboardFilePath == null) {
-    return {
-      components: [],
-      imports: {},
-    }
-  }
   return getJSXComponentsAndImportsForPathInnerComponent(
     path,
     storyboardFilePath,
     model.projectContents,
     model.nodeModules.files,
     derived.canvas.transientState.filesState,
-    model.jsxMetadata,
     model.codeResultCache.resolve,
   )
 }
 
 export function getJSXComponentsAndImportsForPathInnerComponent(
   path: TemplatePath,
-  currentFilePath: string,
+  currentFilePath: string | null | undefined,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   transientFilesState: TransientFilesState | null,
-  metadata: ElementInstanceMetadataMap,
-  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  resolve: ResolveFn,
 ): {
   components: UtopiaJSXComponent[]
   imports: Imports
 } {
+  if (currentFilePath == null) {
+    return {
+      components: [],
+      imports: {},
+    }
+  }
   const resultForPath = getJSXComponentsAndImportsForPath(
     path,
     currentFilePath,
@@ -766,7 +752,7 @@ export function getJSXComponentsAndImportsForPathInnerComponent(
     transientFilesState,
   )
 
-  const elementName = MetadataUtils.getJSXElementTagName(path, resultForPath.components, metadata)
+  const elementName = MetadataUtils.getJSXElementTagName(path, resultForPath.components)
   if (elementName != null) {
     const importSource = importedFromWhere(
       resultForPath.underlyingFilePath,
@@ -833,12 +819,20 @@ export function getSceneElementsFromParseSuccess(success: ParseSuccess): JSXElem
 
 export function addNewScene(model: EditorState, newSceneElement: JSXElement): EditorState {
   return modifyOpenScenes_INTERNAL(
-    (components) => addSceneToJSXComponents(components, newSceneElement),
+    (components) =>
+      addSceneToJSXComponents(
+        model.projectContents,
+        model.canvas.openFile?.filename ?? null,
+        components,
+        newSceneElement,
+      ),
     model,
   )
 }
 
 export function addSceneToJSXComponents(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
   components: UtopiaJSXComponent[],
   newSceneElement: JSXElement,
 ): UtopiaJSXComponent[] {
@@ -852,33 +846,20 @@ export function addSceneToJSXComponents(
       staticScenePath([staticElementPath([storyboardComponentUID])]),
       staticElementPath([storyboardComponentUID]),
     )
-    return insertJSXElementChild(storyboardComponentTemplatePath, newSceneElement, components, null)
+    return insertJSXElementChild(
+      projectContents,
+      openFile,
+      storyboardComponentTemplatePath,
+      newSceneElement,
+      components,
+      null,
+    )
   } else {
     return components
   }
 }
 
 const emptyImports: Imports = {}
-
-export function getOpenImportsFromState(model: EditorState): Imports {
-  const openUIJSFile = getOpenUIJSFile(model)
-  if (openUIJSFile == null) {
-    return {}
-  } else {
-    return foldParsedTextFile(
-      (_) => {
-        return emptyImports
-      },
-      (r) => {
-        return r.imports
-      },
-      (_) => {
-        return emptyImports
-      },
-      openUIJSFile.fileContents.parsed,
-    )
-  }
-}
 
 export function removeElementAtPath(
   target: InstancePath,
@@ -893,13 +874,22 @@ export function removeElementAtPath(
 }
 
 export function insertElementAtPath(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
   targetParent: TemplatePath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): Array<UtopiaJSXComponent> {
   const staticTarget = MetadataUtils.templatePathToStaticTemplatePath(targetParent)
-  return insertJSXElementChild(staticTarget, elementToInsert, components, indexPosition)
+  return insertJSXElementChild(
+    projectContents,
+    openFile,
+    staticTarget,
+    elementToInsert,
+    components,
+    indexPosition,
+  )
 }
 
 export function transformElementAtPath(
@@ -1611,16 +1601,20 @@ export function areGeneratedElementsTargeted(
   targets: Array<TemplatePath>,
   editor: EditorState,
 ): boolean {
-  const components = getOpenUtopiaJSXComponentsFromState(editor)
   return targets.some((target) => {
-    const originType = MetadataUtils.getElementOriginType(components, target)
-    switch (originType) {
-      case 'unknown-element':
-      case 'generated-static-definition-present':
-        return true
-      default:
-        return false
-    }
+    return withUnderlyingTargetFromEditorState(target, editor, false, (success) => {
+      const originType = MetadataUtils.getElementOriginType(
+        getUtopiaJSXComponentsFromSuccess(success),
+        target,
+      )
+      switch (originType) {
+        case 'unknown-element':
+        case 'generated-static-definition-present':
+          return true
+        default:
+          return false
+      }
+    })
   })
 }
 
@@ -1727,8 +1721,10 @@ export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMeta
 export function getStoryboardTemplatePathFromEditorState(
   editorState: EditorState,
 ): StaticTemplatePath | null {
-  const openComponents = getOpenUtopiaJSXComponentsFromState(editorState)
-  return getStoryboardTemplatePath(openComponents)
+  return getStoryboardTemplatePath(
+    editorState.projectContents,
+    editorState.canvas.openFile?.filename ?? null,
+  )
 }
 
 export function getHighlightBoundsForUids(editorState: EditorState): HighlightBoundsForUids | null {
@@ -1929,10 +1925,10 @@ export function modifyUnderlyingForOpenFile(
 }
 
 export function withUnderlyingTarget<T>(
-  target: TemplatePath | null,
+  target: TemplatePath | null | undefined,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  openFile: string | null,
+  openFile: string | null | undefined,
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
@@ -2002,7 +1998,7 @@ export function withUnderlyingTargetFromEditorState<T>(
   )
 }
 
-export function forUnderlyingTarget(
+export function forUnderlyingTargetFromEditorState(
   target: TemplatePath | null,
   editorState: EditorState,
   withTarget: (
@@ -2013,4 +2009,19 @@ export function forUnderlyingTarget(
   ) => void,
 ): void {
   withUnderlyingTargetFromEditorState<any>(target, editorState, {}, withTarget)
+}
+
+export function forUnderlyingTarget(
+  target: TemplatePath | null,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+  withTarget: (
+    success: ParseSuccess,
+    element: JSXElement,
+    underlyingTarget: StaticInstancePath,
+    underlyingFilePath: string,
+  ) => void,
+): void {
+  withUnderlyingTarget<any>(target, projectContents, nodeModules, openFile, {}, withTarget)
 }

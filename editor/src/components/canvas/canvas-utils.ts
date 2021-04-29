@@ -109,9 +109,7 @@ import { insertionSubjectIsJSXElement } from '../editor/editor-modes'
 import {
   DerivedState,
   EditorState,
-  getOpenImportsFromState,
   getOpenUIJSFile,
-  getOpenUtopiaJSXComponentsFromState,
   insertElementAtPath,
   modifyOpenParseSuccess,
   OriginalCanvasAndLocalFrame,
@@ -130,8 +128,9 @@ import {
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingForOpenFile,
   TransientFilesState,
-  forUnderlyingTarget,
+  forUnderlyingTargetFromEditorState,
   TransientFileState,
+  withUnderlyingTarget,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -391,6 +390,8 @@ export function updateFramesOfScenesAndComponents(
                   return success
                 } else {
                   const updatedComponents = reorderComponent(
+                    workingEditorState.projectContents,
+                    workingEditorState.canvas.openFile?.filename ?? null,
                     components,
                     underlyingTarget,
                     frameAndTarget.newIndex,
@@ -963,7 +964,6 @@ export function isEdgePositionOnSide(edgePosition: EdgePosition): boolean {
 export const SnappingThreshold = 5
 
 export function collectGuidelines(
-  imports: Imports,
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   scale: number,
@@ -1105,10 +1105,8 @@ function innerSnapPoint(
   point: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
 ): { point: CanvasPoint; guideline: GuidelineWithSnappingVector | null } {
-  const imports = getOpenImportsFromState(editor)
   const guidelines = oneGuidelinePerDimension(
     collectGuidelines(
-      imports,
       editor.jsxMetadata,
       editor.selectedViews,
       editor.canvas.scale,
@@ -1346,7 +1344,7 @@ function getTransientCanvasStateFromFrameChanges(
   workingEditorState = updateFramesOfScenesAndComponents(workingEditorState, framesAndTargets, null)
 
   for (const frameAndTarget of framesAndTargets) {
-    forUnderlyingTarget(
+    forUnderlyingTargetFromEditorState(
       frameAndTarget.target,
       workingEditorState,
       (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
@@ -1391,7 +1389,7 @@ export function produceResizeCanvasTransientState(
     return transientCanvasState(dragState.draggedElements, editorState.highlightedViews, null)
   } else {
     Utils.fastForEach(elementsToTarget, (target) => {
-      forUnderlyingTarget(
+      forUnderlyingTargetFromEditorState(
         target,
         editorState,
         (success, element, underlyingTarget, underlyingFilePath) => {
@@ -1459,7 +1457,7 @@ export function produceResizeSingleSelectCanvasTransientState(
   const originalFrame = getOriginalFrameInCanvasCoords(dragState.originalFrames, elementToTarget)
   if (originalFrame != null && globalFrame != null) {
     const nonNullGlobalFrame = globalFrame
-    forUnderlyingTarget(
+    forUnderlyingTargetFromEditorState(
       elementToTarget,
       editorState,
       (success, element, underlyingTarget, underlyingFilePath) => {
@@ -1533,6 +1531,8 @@ export function produceCanvasTransientState(
               const openComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
 
               const updatedComponents = insertJSXElementChild(
+                editorState.projectContents,
+                currentOpenFile,
                 underlying,
                 insertionElement,
                 openComponents,
@@ -1612,18 +1612,17 @@ export function produceCanvasTransientState(
 export function createDuplicationNewUIDsFromEditorState(
   editorState: EditorState,
 ): Array<DuplicateNewUID> {
-  const rootComponents = getOpenUtopiaJSXComponentsFromState(editorState)
   return createDuplicationNewUIDs(
     editorState.selectedViews,
     editorState.jsxMetadata,
-    rootComponents,
+    editorState.projectContents,
   )
 }
 
 export function createDuplicationNewUIDs(
   selectedViews: Array<TemplatePath>,
   componentMetadata: ElementInstanceMetadataMap,
-  rootComponents: Array<UtopiaJSXComponent>,
+  projectContents: ProjectContentTreeRoot,
 ): Array<DuplicateNewUID> {
   const targetViews = determineElementsToOperateOnForDragging(
     selectedViews,
@@ -1632,7 +1631,7 @@ export function createDuplicationNewUIDs(
     false,
   )
 
-  let existingIDs = getAllUniqueUids(rootComponents)
+  let existingIDs = getAllUniqueUids(projectContents)
 
   let result: Array<DuplicateNewUID> = []
   Utils.fastForEach(targetViews, (targetView) => {
@@ -1704,11 +1703,19 @@ export function getReparentTarget(
   )
   let parentSupportsChild = true
   if (possibleNewParent != null) {
-    const imports = getOpenImportsFromState(editorState)
-    parentSupportsChild = MetadataUtils.targetSupportsChildren(
-      imports,
-      editorState.jsxMetadata,
+    parentSupportsChild = withUnderlyingTarget(
       possibleNewParent,
+      editorState.projectContents,
+      editorState.nodeModules.files,
+      editorState.canvas.openFile?.filename,
+      false,
+      (success) => {
+        return MetadataUtils.targetSupportsChildren(
+          success.imports,
+          editorState.jsxMetadata,
+          possibleNewParent,
+        )
+      },
     )
   } else {
     // a null template path means Canvas, let's translate that to the storyboard component
@@ -1839,6 +1846,8 @@ export function moveTemplate(
                   )
 
                   updatedUtopiaComponents = insertElementAtPath(
+                    workingEditorState.projectContents,
+                    workingEditorState.canvas.openFile?.filename ?? null,
                     underlyingNewParentPath,
                     updatedUnderlyingElement,
                     updatedUtopiaComponents,
@@ -2093,7 +2102,7 @@ function produceMoveTransientCanvasState(
 
   let transientFilesState: TransientFilesState = {}
   for (const elementToTarget of elementsToTarget) {
-    forUnderlyingTarget(
+    forUnderlyingTargetFromEditorState(
       elementToTarget,
       workingEditorState,
       (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
@@ -2249,6 +2258,7 @@ export function duplicate(
 
   let newSelectedViews: Array<TemplatePath> = []
   let workingEditorState: EditorState = editor
+  const existingIDs = getAllUniqueUids(editor.projectContents)
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
       metadata,
@@ -2275,7 +2285,6 @@ export function duplicate(
           const duplicateNewUID: DuplicateNewUID | undefined = duplicateNewUIDs.find((entry) =>
             TP.pathsEqual(entry.originalPath, path),
           )
-          const existingIDs = getAllUniqueUids(utopiaComponents)
           if (duplicateNewUID === undefined) {
             newElement = guaranteeUniqueUids([jsxElement], existingIDs)[0]
             uid = getUtopiaID(newElement)
@@ -2335,9 +2344,16 @@ export function duplicate(
               ...jsxElement,
               props: props,
             }
-            utopiaComponents = addSceneToJSXComponents(utopiaComponents, newSceneElement)
+            utopiaComponents = addSceneToJSXComponents(
+              workingEditorState.projectContents,
+              workingEditorState.canvas.openFile?.filename ?? null,
+              utopiaComponents,
+              newSceneElement,
+            )
           } else {
             utopiaComponents = insertElementAtPath(
+              workingEditorState.projectContents,
+              workingEditorState.canvas.openFile?.filename ?? null,
               newParentPath,
               newElement,
               utopiaComponents,
@@ -2388,6 +2404,8 @@ export function duplicate(
 }
 
 export function reorderComponent(
+  projectContents: ProjectContentTreeRoot,
+  openFile: string | null,
   components: Array<UtopiaJSXComponent>,
   target: InstancePath,
   newIndex: number,
@@ -2405,7 +2423,14 @@ export function reorderComponent(
 
     workingComponents = removeElementAtPath(target, workingComponents)
 
-    workingComponents = insertElementAtPath(parentPath, jsxElement, workingComponents, newPosition)
+    workingComponents = insertElementAtPath(
+      projectContents,
+      openFile,
+      parentPath,
+      jsxElement,
+      workingComponents,
+      newPosition,
+    )
   }
 
   return workingComponents

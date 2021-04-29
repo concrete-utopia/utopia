@@ -5,6 +5,10 @@ import {
   Directory,
   TextFile,
   AssetFile,
+  ParseSuccess,
+  isParsedTextFile,
+  isTextFile,
+  isParseSuccess,
 } from '../core/shared/project-file-types'
 import { isDirectory, directory, isImageFile } from '../core/model/project-file-utils'
 import Utils from '../utils/utils'
@@ -218,6 +222,17 @@ export function walkContentsTree(
       default:
         const _exhaustiveCheck: never = treeElement
         throw new Error(`Unhandled tree element ${JSON.stringify(treeElement)}`)
+    }
+  })
+}
+
+export function walkContentsTreeForParseSuccess(
+  tree: ProjectContentTreeRoot,
+  onElement: (fullPath: string, parseSuccess: ParseSuccess) => void,
+): void {
+  walkContentsTree(tree, (fullPath, file) => {
+    if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+      onElement(fullPath, file.fileContents.parsed)
     }
   })
 }

@@ -8,13 +8,12 @@ import { EditorDispatch } from '../../editor/action-types'
 import {
   DerivedState,
   EditorState,
-  getOpenUtopiaJSXComponentsFromState,
-  getOpenImportsFromState,
   getMetadata,
   EditorStore,
   getOpenUIJSFileKey,
   TransientCanvasState,
   getJSXComponentsAndImportsForPathInnerComponentFromState,
+  TransientFilesState,
 } from '../../editor/store/editor-state'
 import {
   TemplatePath,
@@ -42,7 +41,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { flatMapArray } from '../../../core/shared/array-utils'
 import { targetRespectsLayout } from '../../../core/layout/layout-helpers'
 import { createSelector } from 'reselect'
-import { PropertyControlsInfo } from '../../custom-code/code-file'
+import { PropertyControlsInfo, ResolveFn } from '../../custom-code/code-file'
 import { colorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import {
@@ -88,9 +87,10 @@ function useLocalSelectedHighlightedViews(
 export interface ControlProps {
   selectedViews: Array<TemplatePath>
   highlightedViews: Array<TemplatePath>
-  rootComponents: Array<UtopiaJSXComponent>
   componentMetadata: ElementInstanceMetadataMap
-  imports: Imports
+  projectContents: ProjectContentTreeRoot
+  nodeModules: NodeModules
+  openFile: string | null
   hiddenInstances: Array<TemplatePath>
   focusedElementPath: TemplatePath | null
   highlightsEnabled: boolean
@@ -105,6 +105,8 @@ export interface ControlProps {
   showAdditionalControls: boolean
   elementsThatRespectLayout: Array<TemplatePath>
   maybeClearHighlightsOnHoverEnd: () => void
+  transientState: TransientCanvasState
+  resolve: ResolveFn
 }
 
 interface NewCanvasControlsProps {
@@ -307,19 +309,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         return isAspectRatioLockedNew(possibleElement)
       }
     })
-    const imports = getOpenImportsFromState(props.editor)
     const imageMultiplier: number | null = MetadataUtils.getImageMultiplier(
-      imports,
       componentMetadata,
       localSelectedViews,
     )
-    const rootComponents = getOpenUtopiaJSXComponentsFromState(props.editor)
     const controlProps: ControlProps = {
       selectedViews: localSelectedViews,
       highlightedViews: localHighlightedViews,
-      rootComponents: rootComponents,
       componentMetadata: componentMetadata,
-      imports: imports,
       hiddenInstances: props.editor.hiddenInstances,
       focusedElementPath: props.editor.focusedElementPath,
       highlightsEnabled: props.editor.canvas.highlightsEnabled,
@@ -334,6 +331,11 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       showAdditionalControls: props.editor.interfaceDesigner.additionalControls,
       elementsThatRespectLayout: elementsThatRespectLayout,
       maybeClearHighlightsOnHoverEnd: maybeClearHighlightsOnHoverEnd,
+      projectContents: props.editor.projectContents,
+      nodeModules: props.editor.nodeModules.files,
+      openFile: props.editor.canvas.openFile?.filename ?? null,
+      transientState: props.derived.canvas.transientState,
+      resolve: props.editor.codeResultCache.resolve,
     }
     const dragState = props.editor.canvas.dragState
     switch (props.editor.mode.type) {

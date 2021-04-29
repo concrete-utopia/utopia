@@ -4,6 +4,7 @@ import Utils from '../../../utils/utils'
 import * as TP from '../../../core/shared/template-path'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
+import { getJSXComponentsAndImportsForPathInnerComponent } from '../../editor/store/editor-state'
 
 const Size = 6
 
@@ -18,11 +19,19 @@ export class RepositionableControl extends React.Component<ControlProps> {
         return
       }
 
+      const { components, imports } = getJSXComponentsAndImportsForPathInnerComponent(
+        selectedView,
+        this.props.openFile,
+        this.props.projectContents,
+        this.props.nodeModules,
+        this.props.transientState.filesState,
+        this.props.resolve,
+      )
       const selectionColor = getSelectionColor(
         selectedView,
-        this.props.rootComponents,
+        components,
         this.props.componentMetadata,
-        this.props.imports,
+        imports,
         this.props.focusedElementPath,
       )
 

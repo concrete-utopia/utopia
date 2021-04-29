@@ -181,6 +181,7 @@ import {
   removeFromProjectContents,
   treeToContents,
   walkContentsTree,
+  walkContentsTreeForParseSuccess,
 } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import {
@@ -398,11 +399,9 @@ import {
   getFileForName,
   getMainUIFromModel,
   getOpenFilename,
-  getOpenImportsFromState,
   getOpenTextFileKey,
   getOpenUIJSFile,
   getOpenUIJSFileKey,
-  getOpenUtopiaJSXComponentsFromState,
   insertElementAtPath,
   mergeStoredEditorStateIntoEditorState,
   ModalDialog,
@@ -429,6 +428,10 @@ import {
   modifyUnderlyingTarget,
   BaseCanvasOffsetLeftPane,
   BaseCanvasOffset,
+  getJSXComponentsAndImportsForPathFromState,
+  withUnderlyingTargetFromEditorState,
+  modifyUnderlyingForOpenFile,
+  forUnderlyingTargetFromEditorState,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -494,6 +497,7 @@ import {
 import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
+import { getTargetParentForPaste } from '../../../utils/clipboard'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -561,8 +565,6 @@ function switchAndUpdateFrames(
 
   const layoutSystemPath = createLayoutPropertyPath('LayoutSystem')
   const styleDisplayPath = createLayoutPropertyPath('display')
-
-  const originalComponents = getOpenUtopiaJSXComponentsFromState(editor)
 
   let withUpdatedLayoutSystem: EditorModel = editor
   switch (layoutSystem) {
@@ -1556,6 +1558,7 @@ export const UPDATE_FNS = {
   DELETE_SELECTED: (
     action: DeleteSelected,
     editorForAction: EditorModel,
+    derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
@@ -1563,11 +1566,14 @@ export const UPDATE_FNS = {
       editorForAction,
       true,
       (editor) => {
-        const components = getOpenUtopiaJSXComponentsFromState(editor)
-        const staticSelectedElements = MetadataUtils.staticElementsOnly(
-          components,
-          editor.selectedViews,
-        )
+        const staticSelectedElements = editor.selectedViews.filter((selectedView) => {
+          const { components } = getJSXComponentsAndImportsForPathFromState(
+            selectedView,
+            editorForAction,
+            derived,
+          )
+          return MetadataUtils.isStaticElement(components, selectedView)
+        })
         return deleteElements(staticSelectedElements, editor)
       },
       dispatch,
@@ -1803,8 +1809,7 @@ export const UPDATE_FNS = {
   },
   INSERT_SCENE: (action: InsertScene, editor: EditorModel): EditorModel => {
     const numberOfScenes = getNumberOfScenes(editor)
-    const components = getOpenUtopiaJSXComponentsFromState(editor)
-    const sceneUID = generateUidWithExistingComponents(components)
+    const sceneUID = generateUidWithExistingComponents(editor.projectContents)
     const newSceneLabel = `Scene ${numberOfScenes}`
     const newScene: JSXElement = defaultSceneElement(
       sceneUID,
@@ -1812,7 +1817,10 @@ export const UPDATE_FNS = {
       newSceneLabel,
       [],
     )
-    const storyBoardPath = getStoryboardTemplatePath(components)
+    const storyBoardPath = getStoryboardTemplatePath(
+      editor.projectContents,
+      editor.canvas.openFile?.filename ?? null,
+    )
     const newSelection =
       storyBoardPath != null ? [TP.scenePath([[TP.toUid(storyBoardPath), sceneUID]])] : []
     return {
@@ -1832,7 +1840,10 @@ export const UPDATE_FNS = {
         const targetParent =
           action.parent == null
             ? // action.parent == null means Canvas, which means storyboard root element
-              getStoryboardTemplatePath(utopiaComponents)
+              getStoryboardTemplatePath(
+                editor.projectContents,
+                editor.canvas.openFile?.filename ?? null,
+              )
             : action.parent
 
         if (targetParent == null || TP.isScenePath(targetParent)) {
@@ -1841,6 +1852,8 @@ export const UPDATE_FNS = {
         }
 
         const withInsertedElement = insertElementAtPath(
+          editor.projectContents,
+          editor.canvas.openFile?.filename ?? null,
           targetParent,
           action.jsxElement,
           utopiaComponents,
@@ -1885,8 +1898,7 @@ export const UPDATE_FNS = {
           return editor
         }
 
-        const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
-        const newUID = generateUidWithExistingComponents(utopiaComponents)
+        const newUID = generateUidWithExistingComponents(editor.projectContents)
 
         const orderedActionTargets = getZIndexOrderedViewsWithoutDirectChildren(
           action.targets,
@@ -1913,6 +1925,8 @@ export const UPDATE_FNS = {
             const elementToInsert: JSXElement = defaultTransparentViewElement(newUID)
             const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
             const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
+              editor.projectContents,
+              editor.canvas.openFile?.filename ?? null,
               parentPath,
               elementToInsert,
               utopiaJSXComponents,
@@ -1978,6 +1992,7 @@ export const UPDATE_FNS = {
   UNWRAP_GROUP_OR_VIEW: (
     action: UnwrapGroupOrView,
     editorForAction: EditorModel,
+    derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
@@ -2003,7 +2018,11 @@ export const UPDATE_FNS = {
           action.target,
           true,
         )
-        const imports = getOpenImportsFromState(editorForAction)
+        const { imports } = getJSXComponentsAndImportsForPathFromState(
+          action.target,
+          editorForAction,
+          derived,
+        )
         if (children.length === 0 || !MetadataUtils.isViewAgainstImports(imports, element)) {
           return editor
         }
@@ -2300,9 +2319,10 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const imports = getOpenImportsFromState(editor)
-    const targetParent = MetadataUtils.getTargetParentForPaste(
-      imports,
+    const targetParent = getTargetParentForPaste(
+      editor.projectContents,
+      editor.nodeModules.files,
+      editor.canvas.openFile?.filename ?? null,
       editor.selectedViews,
       editor.jsxMetadata,
       editor.pasteTargetsToIgnore,
@@ -2310,9 +2330,16 @@ export const UPDATE_FNS = {
 
     let insertionAllowed: boolean = true
     if (targetParent != null) {
-      const parentOriginType = MetadataUtils.getElementOriginType(
-        getOpenUtopiaJSXComponentsFromState(editor),
+      const parentOriginType = withUnderlyingTargetFromEditorState(
         targetParent,
+        editor,
+        'unknown-element',
+        (targetParentSuccess) => {
+          return MetadataUtils.getElementOriginType(
+            getUtopiaJSXComponentsFromSuccess(targetParentSuccess),
+            targetParent,
+          )
+        },
       )
       switch (parentOriginType) {
         case 'unknown-element':
@@ -2323,55 +2350,73 @@ export const UPDATE_FNS = {
       }
     }
     if (insertionAllowed) {
-      const pasteToParseSuccess = (parseSuccess: ParseSuccess) => {
-        const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-        const withTargetAdded = action.elements.reduce((accumulator, currentValue, index) => {
-          const newUID = generateUidWithExistingComponents(accumulator)
-          const elementToAdd = setUtopiaID(currentValue, newUID)
-          const originalPath = action.originalTemplatePaths[index]
-          if (TP.isScenePath(originalPath)) {
-            const numberOfScenes = getNumberOfScenes(editor)
-            const newSceneLabel = `Scene ${numberOfScenes}`
-            const props = setJSXValuesAtPaths(currentValue.props, [
-              {
-                path: PP.create(['data-label']),
-                value: jsxAttributeValue(newSceneLabel, emptyComments),
-              },
-              { path: PP.create(['data-uid']), value: jsxAttributeValue(newUID, emptyComments) },
-            ])
-            const newSceneElement = {
-              ...currentValue,
-              props: defaultEither(currentValue.props, props),
-            }
-            return addSceneToJSXComponents(accumulator, newSceneElement)
-          } else {
-            const components = insertElementAtPath(targetParent, elementToAdd, accumulator, null)
-            if (targetParent == null || TP.isScenePath(targetParent)) {
-              return components
+      return action.elements.reduce((workingEditorState, currentValue, index) => {
+        return modifyUnderlyingForOpenFile(
+          targetParent,
+          workingEditorState,
+          (elem) => elem,
+          (underlyingSuccess) => {
+            const originalComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
+            const newUID = generateUidWithExistingComponents(workingEditorState.projectContents)
+            const elementToAdd = setUtopiaID(currentValue, newUID)
+            const originalPath = action.originalTemplatePaths[index]
+            let updatedComponents: Array<UtopiaJSXComponent>
+            if (TP.isScenePath(originalPath)) {
+              const numberOfScenes = getNumberOfScenes(workingEditorState)
+              const newSceneLabel = `Scene ${numberOfScenes}`
+              const props = setJSXValuesAtPaths(currentValue.props, [
+                {
+                  path: PP.create(['data-label']),
+                  value: jsxAttributeValue(newSceneLabel, emptyComments),
+                },
+                { path: PP.create(['data-uid']), value: jsxAttributeValue(newUID, emptyComments) },
+              ])
+              const newSceneElement = {
+                ...currentValue,
+                props: defaultEither(currentValue.props, props),
+              }
+              updatedComponents = addSceneToJSXComponents(
+                workingEditorState.projectContents,
+                workingEditorState.canvas.openFile?.filename ?? null,
+                originalComponents,
+                newSceneElement,
+              )
             } else {
-              const newPath = TP.appendToPath(targetParent, newUID)
-              return maybeSwitchLayoutProps(
-                newPath,
-                originalPath,
+              const components = insertElementAtPath(
+                workingEditorState.projectContents,
+                workingEditorState.canvas.openFile?.filename ?? null,
                 targetParent,
-                action.targetOriginalContextMetadata,
-                editor.jsxMetadata,
-                components,
+                elementToAdd,
+                originalComponents,
                 null,
-                null,
-              ).components
+              )
+              if (targetParent == null || TP.isScenePath(targetParent)) {
+                updatedComponents = components
+              } else {
+                const newPath = TP.appendToPath(targetParent, newUID)
+                updatedComponents = maybeSwitchLayoutProps(
+                  newPath,
+                  originalPath,
+                  targetParent,
+                  action.targetOriginalContextMetadata,
+                  workingEditorState.jsxMetadata,
+                  components,
+                  null,
+                  null,
+                ).components
+              }
             }
-          }
-        }, utopiaComponents)
-        return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-          return {
-            ...success,
-            utopiaComponents: withTargetAdded,
-          }
-        }, parseSuccess)
-      }
 
-      return modifyOpenParseSuccess(pasteToParseSuccess, editor)
+            return {
+              ...underlyingSuccess,
+              topLevelElements: applyUtopiaJSXComponentsChanges(
+                underlyingSuccess.topLevelElements,
+                updatedComponents,
+              ),
+            }
+          },
+        )
+      }, editor)
     } else {
       const showToastAction = showToast(
         notice(`Unable to paste into a generated element.`, 'WARNING'),
@@ -2655,19 +2700,20 @@ export const UPDATE_FNS = {
         editor.jsxMetadata,
         action.element,
       )
-      const imports = getOpenImportsFromState(editor)
-      if (
-        element != null &&
-        MetadataUtils.isTextAgainstImports(imports, element) &&
-        element.props.textSizing == 'auto'
-      ) {
-        const alignment = element.props.style.textAlign
-        if (alignment === 'center') {
-          frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
-        } else if (alignment === 'right') {
-          frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
+      forUnderlyingTargetFromEditorState(action.element, editor, (underlyingSuccess) => {
+        if (
+          element != null &&
+          MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element) &&
+          element.props.textSizing == 'auto'
+        ) {
+          const alignment = element.props.style.textAlign
+          if (alignment === 'center') {
+            frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
+          } else if (alignment === 'right') {
+            frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
+          }
         }
-      }
+      })
     }
 
     const parentPath = TP.parentPath(action.element)
@@ -2680,7 +2726,6 @@ export const UPDATE_FNS = {
     }
     const canvasFrame = Utils.getCanvasRectangleWithCanvasOffset(offset, frame)
 
-    const components = getOpenUtopiaJSXComponentsFromState(editor)
     const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       action.element,
       editor.jsxMetadata,
@@ -2737,8 +2782,7 @@ export const UPDATE_FNS = {
     const imageURL = imagePathURL(assetFilename)
     const imageAttribute = jsxAttributeValue(imageURL, emptyComments)
 
-    const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
-    const newUID = generateUidWithExistingComponents(utopiaComponents)
+    const newUID = generateUidWithExistingComponents(editor.projectContents)
     const openUIJSFile = getOpenUIJSFileKey(editor)
 
     let actionsToRunAfterSave: Array<EditorAction> = []
@@ -2746,23 +2790,24 @@ export const UPDATE_FNS = {
     if (action.imageDetails != null) {
       if (replaceImage) {
         const imageWithoutHashURL = imagePathURL(assetFilename)
-        const components = getOpenUtopiaJSXComponentsFromState(editor)
         const propertyPath = PP.create(['src'])
-        walkElements(components, (element, elementPath) => {
-          if (isJSXElement(element)) {
-            const srcAttribute = getJSXAttribute(element.props, 'src')
-            if (srcAttribute != null && isJSXAttributeValue(srcAttribute)) {
-              const srcValue: JSXAttributeValue<any> = srcAttribute
-              if (
-                typeof srcValue.value === 'string' &&
-                srcValue.value.startsWith(imageWithoutHashURL)
-              ) {
-                actionsToRunAfterSave.push(
-                  setPropWithElementPath_UNSAFE(elementPath, propertyPath, imageAttribute),
-                )
+        walkContentsTreeForParseSuccess(editor.projectContents, (filePath, success) => {
+          walkElements(getUtopiaJSXComponentsFromSuccess(success), (element, elementPath) => {
+            if (isJSXElement(element)) {
+              const srcAttribute = getJSXAttribute(element.props, 'src')
+              if (srcAttribute != null && isJSXAttributeValue(srcAttribute)) {
+                const srcValue: JSXAttributeValue<any> = srcAttribute
+                if (
+                  typeof srcValue.value === 'string' &&
+                  srcValue.value.startsWith(imageWithoutHashURL)
+                ) {
+                  actionsToRunAfterSave.push(
+                    setPropWithElementPath_UNSAFE(elementPath, propertyPath, imageAttribute),
+                  )
+                }
               }
             }
-          }
+          })
         })
       } else {
         if (action.imageDetails.afterSave.type !== 'SAVE_IMAGE_DO_NOTHING') {
@@ -2922,8 +2967,7 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     const possiblyAnImage = getContentsTreeFileFromString(editor.projectContents, action.imagePath)
     if (possiblyAnImage != null && isImageFile(possiblyAnImage)) {
-      const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
-      const newUID = generateUidWithExistingComponents(utopiaComponents)
+      const newUID = generateUidWithExistingComponents(editor.projectContents)
       const imageURL = imagePathURL(action.imagePath)
       const imageSrcAttribute = jsxAttributeValue(imageURL, emptyComments)
       const width = Utils.optionalMap((w) => w / 2, possiblyAnImage.width)
@@ -3664,7 +3708,11 @@ export const UPDATE_FNS = {
       editorWithAddedImport,
     )
   },
-  UNWRAP_LAYOUTABLE: (action: UnwrapLayoutable, editor: EditorModel): EditorModel => {
+  UNWRAP_LAYOUTABLE: (
+    action: UnwrapLayoutable,
+    editor: EditorModel,
+    derived: DerivedState,
+  ): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
       MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, action.target),
@@ -3673,7 +3721,11 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const imports = getOpenImportsFromState(editor)
+        const { imports } = getJSXComponentsAndImportsForPathFromState(
+          action.target,
+          editor,
+          derived,
+        )
         const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
         if (
           MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
@@ -3699,7 +3751,11 @@ export const UPDATE_FNS = {
       editor,
     )
   },
-  UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
+  UPDATE_JSX_ELEMENT_NAME: (
+    action: UpdateJSXElementName,
+    editor: EditorModel,
+    derived: DerivedState,
+  ): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
       MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, action.target),
@@ -3710,7 +3766,11 @@ export const UPDATE_FNS = {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const imports = getOpenImportsFromState(editor)
+        const { imports } = getJSXComponentsAndImportsForPathFromState(
+          action.target,
+          editor,
+          derived,
+        )
         const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
         if (
           MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
@@ -3778,8 +3838,7 @@ export const UPDATE_FNS = {
     const projectContent = getContentsTreeFileFromString(editor.projectContents, action.imagePath)
     const parent = arrayToMaybe(editor.highlightedViews)
     if (projectContent != null && isImageFile(projectContent)) {
-      const utopiaComponents = getOpenUtopiaJSXComponentsFromState(editor)
-      const newUID = generateUidWithExistingComponents(utopiaComponents)
+      const newUID = generateUidWithExistingComponents(editor.projectContents)
       const imageAttribute = jsxAttributeValue(imagePathURL(action.imagePath), emptyComments)
       const size: Size = {
         width: projectContent.width ?? 100,
@@ -3826,9 +3885,13 @@ export const UPDATE_FNS = {
     if (openFilePath != null) {
       const target = TP.instancePathForElementAtPath(action.target)
       const propertyControls = getPropertyControlsForTargetFromEditor(target, editor)
-      const element = findJSXElementAtPath(
+      let element: JSXElement | null = null
+      forUnderlyingTargetFromEditorState(
         action.target,
-        getOpenUtopiaJSXComponentsFromState(editor),
+        editor,
+        (_underlyingSuccess, underlyingElement) => {
+          element = underlyingElement
+        },
       )
       if (element == null) {
         return editor
@@ -4215,9 +4278,7 @@ export function alignOrDistributeSelectedViews(
       } else {
         source = Utils.boundingRectangleArray(Utils.pluck(canvasFrames, 'frame'))! // I know this can't be null because we checked the canvasFrames array is non-empty
       }
-      const components = getOpenUtopiaJSXComponentsFromState(editor)
       const updatedCanvasFrames = alignOrDistributeCanvasRects(
-        components,
         editor.jsxMetadata,
         canvasFrames,
         source,
@@ -4231,7 +4292,6 @@ export function alignOrDistributeSelectedViews(
 }
 
 function alignOrDistributeCanvasRects(
-  components: Array<UtopiaJSXComponent>,
   componentMetadata: ElementInstanceMetadataMap,
   targets: CanvasFrameAndTarget[],
   source: CanvasRectangle,

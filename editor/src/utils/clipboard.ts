@@ -2,27 +2,27 @@ import * as R from 'ramda'
 import { EditorAction } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
-import { DerivedState, EditorState, getOpenUIJSFile } from '../components/editor/store/editor-state'
-import { scaleImageDimensions, getFrameAndMultiplier } from '../components/images'
+import {
+  DerivedState,
+  EditorState,
+  getOpenUIJSFile,
+  withUnderlyingTarget,
+} from '../components/editor/store/editor-state'
+import { getFrameAndMultiplier } from '../components/images'
 import * as TP from '../core/shared/template-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import {
-  Imports,
-  InstancePath,
-  isParseSuccess,
-  TemplatePath,
-} from '../core/shared/project-file-types'
+import { isParseSuccess, NodeModules, TemplatePath } from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
-import { isLeft } from '../core/shared/either'
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
-import { CanvasPoint, CanvasRectangle } from '../core/shared/math-utils'
+import { CanvasPoint } from '../core/shared/math-utils'
 import json5 = require('json5')
 import { fastForEach } from '../core/shared/utils'
 import urljoin = require('url-join')
+import { ProjectContentTreeRoot } from '../components/assets'
 // tslint:disable-next-line:no-var-requires
 const ClipboardPolyfill = require('clipboard-polyfill') // stupid .d.ts is malformatted
 
@@ -61,7 +61,9 @@ export function setClipboardData(
 }
 
 export function getActionsForClipboardItems(
-  imports: Imports,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
   selectedViews: Array<TemplatePath>,
@@ -76,8 +78,10 @@ export function getActionsForClipboardItems(
     }, clipboardData)
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
-      const target = MetadataUtils.getTargetParentForPaste(
-        imports,
+      const target = getTargetParentForPaste(
+        projectContents,
+        nodeModules,
+        openFile,
         selectedViews,
         componentMetadata,
         pasteTargetsToIgnore,
@@ -179,5 +183,76 @@ export function createClipboardDataFromSelectionNewWorld(
     ],
     imageFilenames: [],
     plaintext: '',
+  }
+}
+
+export function getTargetParentForPaste(
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null,
+  selectedViews: Array<TemplatePath>,
+  metadata: ElementInstanceMetadataMap,
+  pasteTargetsToIgnore: TemplatePath[],
+): TemplatePath | null {
+  if (selectedViews.length > 0) {
+    const parentTarget = TP.getCommonParent(selectedViews, true)
+    if (parentTarget == null) {
+      return null
+    } else {
+      // we should not paste the source into itself
+      const insertingSourceIntoItself = TP.containsPath(parentTarget, pasteTargetsToIgnore)
+
+      if (TP.isScenePath(parentTarget)) {
+        return insertingSourceIntoItself ? null : parentTarget
+      } else {
+        return withUnderlyingTarget(
+          parentTarget,
+          projectContents,
+          nodeModules,
+          openFile,
+          null,
+          (parentTargetSuccess) => {
+            if (
+              MetadataUtils.targetSupportsChildren(
+                parentTargetSuccess.imports,
+                metadata,
+                parentTarget,
+              ) &&
+              !insertingSourceIntoItself
+            ) {
+              return parentTarget
+            } else {
+              const parentOfSelected = TP.instancePathParent(parentTarget)
+              if (TP.isScenePath(parentOfSelected)) {
+                return parentOfSelected
+              } else {
+                return withUnderlyingTarget(
+                  parentOfSelected,
+                  projectContents,
+                  nodeModules,
+                  openFile,
+                  null,
+                  (parentOfSelectedSuccess) => {
+                    if (
+                      MetadataUtils.targetSupportsChildren(
+                        parentOfSelectedSuccess.imports,
+                        metadata,
+                        parentOfSelected,
+                      )
+                    ) {
+                      return parentOfSelected
+                    } else {
+                      return null
+                    }
+                  },
+                )
+              }
+            }
+          },
+        )
+      }
+    }
+  } else {
+    return null
   }
 }
