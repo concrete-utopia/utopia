@@ -731,7 +731,6 @@ describe('UiJsxCanvas render', () => {
     testCanvasRender(
       null,
       `
-      import { jsx } from 'utopia-api'
       import * as React from 'react'
 import { Scene, Storyboard, View } from 'utopia-api'
 export var App = (props) => {
@@ -777,72 +776,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         } else {
           return React.createElement(type, modifiedProps, children)
         }
-      }
-      export var ${BakedInStoryboardVariableName} = (props) => {
-        return (
-          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
-            <Scene
-              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              data-uid={'${TestSceneUID}'}
-            >
-              <App
-                data-uid='${TestAppUID}'
-                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
-              />
-            </Scene>
-          </Storyboard>
-        )
-      }
-      `,
-    )
-  })
-
-  it('the utopia jsx pragma (and layout prop) works well', () => {
-    testCanvasRender(
-      null,
-      `
-      import { Scene, Storyboard } from 'utopia-api'
-      const MyComp = (props) => <div layout={{ left: 15, top: 15, width: 50, height: 50, flex: 15 }}>Utopia</div>
-      export var App = (props) => {
-        return (<MyComp data-uid={'aaa'}/>)
-      }
-
-      function myFactoryFunction(type, props, children) {
-        const modifiedProps = {...props, 'data-factory-function-works': "true"}
-        return React.createElement(type, modifiedProps, children)
-      }
-      export var ${BakedInStoryboardVariableName} = (props) => {
-        return (
-          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
-            <Scene
-              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
-              data-uid={'${TestSceneUID}'}
-            >
-              <App
-                data-uid='${TestAppUID}'
-                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
-              />
-            </Scene>
-          </Storyboard>
-        )
-      }
-      `,
-    )
-  })
-
-  it('the utopia jsx pragma supports emotion CSS prop', () => {
-    testCanvasRender(
-      null,
-      `
-      import { Scene, Storyboard } from 'utopia-api'
-      const MyComp = (props) => <div layout={{ left: 15, top: 15, width: 50, height: 50, flex: 15 }} css={{ backgroundColor: 'blue' }}>Utopia</div>
-      export var App = (props) => {
-        return (<MyComp data-uid={'aaa'}/>)
-      }
-
-      function myFactoryFunction(type, props, children) {
-        const modifiedProps = {...props, 'data-factory-function-works': "true"}
-        return React.createElement(type, modifiedProps, children)
       }
       export var ${BakedInStoryboardVariableName} = (props) => {
         return (
@@ -1358,7 +1291,7 @@ export var storyboard = (
           data-uid=\\"scene storyboard\\"
         >
           <div
-            style=\\"left: 0; top: 0; right: 0; bottom: 0; background-color: #ffffff;\\"
+            style=\\"bottom: 0; left: 0; right: 0; top: 0; background-color: #ffffff;\\"
             data-paths=\\"storyboard/scene/app-entity:aaa :storyboard/scene/app-entity\\"
             data-uid=\\"aaa app-entity\\"
           >
@@ -2081,7 +2014,6 @@ describe('UiJsxCanvas render multifile projects', () => {
       {
         'app.js': `
       import * as React from 'react'
-      import { jsx } from 'utopia-api'
       export var App = (props) => {
         return <div data-uid='app-outer-div'>
           <div data-uid='inner-div'>hello</div>
@@ -2152,7 +2084,6 @@ describe('UiJsxCanvas render multifile projects', () => {
       {
         'app.js': `
       import * as React from 'react'
-      import { jsx } from 'utopia-api'
       import { Card } from 'card.js'
       export var App = (props) => {
         return <div data-uid='app-outer-div'>
@@ -2163,7 +2094,6 @@ describe('UiJsxCanvas render multifile projects', () => {
       }`,
         'card.js': `
         import * as React from 'react'
-        import { jsx } from 'utopia-api'
         export var Card = (props) => {
           return <div data-uid='card-outer-div'>
             <div data-uid='card-header'>Card</div>

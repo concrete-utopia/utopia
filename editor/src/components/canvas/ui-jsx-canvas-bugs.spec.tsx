@@ -21,7 +21,7 @@ export var App = () =>
   true ? DefaultComments.map((comment) => <Comment comment={comment} />) : null
 
 export var storyboard = (
-  <Storyboard layout={{ layoutSystem: 'pinSystem' }} data-uid='sb'>
+  <Storyboard data-uid='sb'>
     <Scene
       data-uid='scene'
       style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}

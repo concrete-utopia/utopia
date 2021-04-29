@@ -4490,7 +4490,6 @@ describe('Babel transpile', () => {
   it('can transpile jsx fragment', () => {
     const file = `
 import * as React from 'react'
-import { View, jsx } from 'utopia-api'
 
 export var App = (props) => {
   return (
