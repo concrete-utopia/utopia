@@ -200,10 +200,11 @@ export function getValidTemplatePathsFromElement(
     )
 
     const name = getJSXElementNameAsString(element.name)
+    const lastElementPathPart = TP.lastElementPathForPath(path)
     const matchingFocusedPathPart =
-      focusedElementPath == null
+      focusedElementPath == null || lastElementPathPart == null
         ? null
-        : TP.pathUpToElementPath(focusedElementPath, TP.elementPathForPath(path), 'static-path')
+        : TP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
 
     const isFocused = parentIsScene || matchingFocusedPathPart != null
     if (isFocused) {
@@ -323,7 +324,10 @@ export function transformJSXComponentAtPath(
   path: StaticTemplatePath,
   transform: (elem: JSXElement) => JSXElement,
 ): Array<UtopiaJSXComponent> {
-  return transformJSXComponentAtElementPath(components, TP.elementPathForPath(path), transform)
+  const lastElementPathPart = TP.lastElementPathForPath(path)
+  return lastElementPathPart == null
+    ? components
+    : transformJSXComponentAtElementPath(components, lastElementPathPart, transform)
 }
 
 export function transformJSXComponentAtElementPath(
@@ -477,9 +481,10 @@ export function findJSXElementChildAtPath(
     return null
   }
 
-  const pathElements = TP.elementPathForPath(path)
+  const pathElements = TP.lastElementPathForPath(path)
   for (const component of components) {
-    const topLevelResult = findAtPathInner(component.rootElement, pathElements)
+    const topLevelResult =
+      pathElements == null ? null : findAtPathInner(component.rootElement, pathElements)
     if (topLevelResult != null) {
       return topLevelResult
     }
@@ -536,13 +541,13 @@ export function removeJSXElementChild(
       return parentElement
     }
   }
-  return transformAtPathOptionally(
-    rootElements,
-    TP.elementPathForPath(parentPath),
-    (parentElement: JSXElement) => {
-      return removeRelevantChild(parentElement, true)
-    },
-  ).elements
+
+  const lastElementPathPart = TP.lastElementPathForPath(parentPath)
+  return lastElementPathPart == null
+    ? rootElements
+    : transformAtPathOptionally(rootElements, lastElementPathPart, (parentElement: JSXElement) => {
+        return removeRelevantChild(parentElement, true)
+      }).elements
 }
 
 export function insertJSXElementChild(

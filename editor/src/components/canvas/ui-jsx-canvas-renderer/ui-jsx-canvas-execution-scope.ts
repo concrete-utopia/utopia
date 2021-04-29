@@ -100,7 +100,7 @@ export function createExecutionScope(
   // First make sure everything is in scope
   if (combinedTopLevelArbitraryBlock != null && openStoryboardFileNameKILLME != null) {
     const lookupRenderer = createLookupRender(
-      TP.emptyInstancePath,
+      TP.emptyTemplatePath,
       executionScope,
       {},
       requireResult,

@@ -70,11 +70,9 @@ describe('maybeSwitchLayoutProps', () => {
     )
     const elementPath = TP.appendNewElementPath(TestScenePath, [NewUID])
 
-    const sceneElementPath = TP.instancePathForElementAtPathDontThrowOnScene(TestScenePath)
-
     const metadata: ElementInstanceMetadataMap = {
-      [TP.toString(sceneElementPath)]: {
-        templatePath: sceneElementPath,
+      [TP.toString(TestScenePath)]: {
+        templatePath: TestScenePath,
         element: left('Scene'),
         props: {
           style: {

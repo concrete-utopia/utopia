@@ -29,7 +29,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
   getTargetStretch = (): FlexStretch => {
     const target = this.props.targetElement
     const parentPath = TP.parentPath(this.props.target)
-    const sceneMetadataOrElementMetadata = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
+    const sceneMetadataOrElementMetadata = MetadataUtils.findElementByTemplatePath(
       this.props.componentMetadata,
       parentPath,
     )
@@ -116,7 +116,7 @@ export interface YogaControlsProps extends ControlProps {
 
 export class YogaControls extends React.Component<YogaControlsProps> {
   render() {
-    const targets = TP.filterScenes(this.props.selectedViews)
+    const targets = this.props.selectedViews
     const everyThingIsYogaLayouted = targets.every((selectedView) => {
       return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
         selectedView,

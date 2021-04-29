@@ -94,7 +94,7 @@ import {
   isViewAgainstImports,
   getUtopiaJSXComponentsFromSuccess,
 } from './project-file-utils'
-import { EmptyScenePathForStoryboard, ResizesContentProp } from './scene-utils'
+import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
@@ -119,9 +119,7 @@ export const getChildrenOfCollapsedViews = (
   return Utils.flatMapArray((view) => {
     return Utils.stripNulls(
       templatePaths.map((childPath) => {
-        return TP.isAncestorOf(childPath, view) && !TP.pathsEqual(view, childPath)
-          ? childPath
-          : null
+        return TP.isDescendantOf(childPath, view) ? childPath : null
       }),
     )
   }, collapsedViews)
@@ -173,17 +171,6 @@ export const MetadataUtils = {
       return isUnknownOrGeneratedElement(elementOriginType)
     })
   },
-  findElementByTemplatePathDontThrowOnScenes(
-    elementMap: ElementInstanceMetadataMap,
-    path: TemplatePath | null,
-  ): ElementInstanceMetadata | null {
-    if (path == null) {
-      return null
-    } else {
-      const targetPath = TP.instancePathForElementAtPathDontThrowOnScene(path)
-      return elementMap[TP.toString(targetPath)] ?? null
-    }
-  },
   findElementByTemplatePath(
     elementMap: ElementInstanceMetadataMap,
     path: TemplatePath | null,
@@ -191,8 +178,7 @@ export const MetadataUtils = {
     if (path == null) {
       return null
     } else {
-      const targetPath = TP.instancePathForElementAtPath(path)
-      return elementMap[TP.toString(targetPath)] ?? null
+      return elementMap[TP.toString(path)] ?? null
     }
   },
   findElementsByTemplatePath(
@@ -856,11 +842,11 @@ export const MetadataUtils = {
     path: TemplatePath,
     metadata: ElementInstanceMetadataMap,
   ): CanvasRectangle | null {
-    const element = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(metadata, path)
+    const element = MetadataUtils.findElementByTemplatePath(metadata, path)
     return Utils.optionalMap((e) => e.globalFrame, element)
   },
   getFrame(path: TemplatePath, metadata: ElementInstanceMetadataMap): LocalRectangle | null {
-    const element = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(metadata, path)
+    const element = MetadataUtils.findElementByTemplatePath(metadata, path)
     return Utils.optionalMap((e) => e.localFrame, element)
   },
   getFrameRelativeTo: function (
@@ -871,7 +857,7 @@ export const MetadataUtils = {
     if (parent == null) {
       return Utils.asLocal(frame)
     } else {
-      const paths = TP.allPaths(parent)
+      const paths = TP.allPathsForLastPart(parent)
       const parentFrames: Array<LocalRectangle> = Utils.stripNulls(
         paths.map((path) => this.getFrame(path, metadata)),
       )
@@ -1207,17 +1193,14 @@ export const MetadataUtils = {
     }
 
     // Everything about this feels wrong
-    const originalMetadata = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
-      metadata,
-      oldPath,
-    )
+    const originalMetadata = MetadataUtils.findElementByTemplatePath(metadata, oldPath)
     if (originalMetadata == null) {
       return metadata
     } else {
       const duplicatedElementPath = duplicateElementMetadata(
         originalMetadata,
-        TP.instancePathForElementAtPath(oldPath),
-        TP.instancePathForElementAtPath(newPath),
+        oldPath,
+        newPath,
         newElement,
       )
       const updatedElements = this.updateParentWithNewChildPath(
@@ -1241,7 +1224,7 @@ export const MetadataUtils = {
 
     const allPathsWithReplacements = Object.values(metadata)
       .map((e) => e.templatePath)
-      .filter((path) => TP.isAncestorOf(path, replaceSearch, true))
+      .filter((path) => TP.isDescendantOfOrEqualTo(path, replaceSearch))
       .map((path) => {
         const replacement = TP.replaceOrDefault(path, replaceSearch, replaceWith)
         return {

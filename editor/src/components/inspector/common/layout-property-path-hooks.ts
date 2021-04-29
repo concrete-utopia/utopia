@@ -282,19 +282,15 @@ export function usePinToggling(): UsePinTogglingResult {
     return store.editor.jsxMetadata
   })
 
-  const filteredSelectedViews = usePropControlledRef_DANGEROUS(
-    TP.filterScenes(selectedViewsRef.current),
-  )
-
   const elementsRef = useRefEditorState((store) =>
-    TP.filterScenes(selectedViewsRef.current).map((e) =>
+    selectedViewsRef.current.map((e) =>
       MetadataUtils.findElementByTemplatePath(store.editor.jsxMetadata, e),
     ),
   )
 
   const elementFrames = useEditorState(
     (store): ReadonlyArray<Frame> => {
-      const jsxElements = TP.filterScenes(selectedViewsRef.current).map((path) => {
+      const jsxElements = selectedViewsRef.current.map((path) => {
         const rootComponents = getJSXComponentsAndImportsForPathFromState(
           path,
           store.editor,
@@ -360,7 +356,7 @@ export function usePinToggling(): UsePinTogglingResult {
   const togglePin = React.useCallback(
     (newFrameProp: LayoutPinnedProp) => {
       const frameInfo: ReadonlyArray<ElementFrameInfo> = elementFrames.map((frame, index) => {
-        const path = filteredSelectedViews.current[index]
+        const path = selectedViewsRef.current[index]
         const parentPath = TP.parentPath(path)
         const parentFrame = MetadataUtils.getFrame(parentPath, jsxMetadataRef.current)
         return {
@@ -411,7 +407,7 @@ export function usePinToggling(): UsePinTogglingResult {
     },
     [
       elementFrames,
-      filteredSelectedViews,
+      selectedViewsRef,
       elementsRef,
       Width,
       Height,
@@ -429,9 +425,9 @@ export function usePinToggling(): UsePinTogglingResult {
   )
 
   const resetAllPins = React.useCallback(() => {
-    const actions = filteredSelectedViews.current.map(resetPins)
+    const actions = selectedViewsRef.current.map(resetPins)
     dispatch(actions, 'everyone')
-  }, [filteredSelectedViews, dispatch])
+  }, [selectedViewsRef, dispatch])
 
   return {
     framePins: framePins,

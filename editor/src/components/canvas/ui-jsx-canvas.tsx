@@ -45,14 +45,7 @@ import {
 import { proxyConsole } from './console-proxy'
 import { useDomWalker } from './dom-walker'
 import { isLiveMode } from '../editor/editor-modes'
-import {
-  BakedInStoryboardVariableName,
-  EmptyScenePathForStoryboard,
-} from '../../core/model/scene-utils'
-import { EditorDispatch } from '../editor/action-types'
-import { usePrevious } from '../editor/hook-utils'
-import { arrayEquals, fastForEach } from '../../core/shared/utils'
-import { removeAll } from '../../core/shared/array-utils'
+import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
@@ -467,7 +460,7 @@ function useGetStoryboardRoot(
       : getValidTemplatePaths(
           focusedElementPath,
           BakedInStoryboardVariableName,
-          EmptyScenePathForStoryboard,
+          TP.emptyTemplatePath,
           projectContents,
           uiFilePath,
           resolve,
@@ -478,7 +471,7 @@ function useGetStoryboardRoot(
     StoryboardRootComponent: StoryboardRootComponent,
     storyboardRootElementPath: storyboardRootElementPath,
     rootValidPaths: validPaths,
-    rootInstancePath: EmptyScenePathForStoryboard,
+    rootInstancePath: TP.emptyTemplatePath,
   }
 }
 

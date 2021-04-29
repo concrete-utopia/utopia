@@ -676,7 +676,7 @@ export function getJSXComponentsAndImportsForPath(
     projectContents,
     nodeModules,
     currentFilePath,
-    TP.instancePathForElementAtPathDontThrowOnScene(path),
+    path,
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath

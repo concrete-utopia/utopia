@@ -12,31 +12,20 @@ import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
 export type id = string
-
-export type ScenePath = {
-  type: 'scenepath'
-  sceneElementPaths: ElementPath[]
-}
-
-export type StaticScenePath = {
-  type: 'scenepath'
-  sceneElementPaths: StaticElementPath[]
-}
+enum StaticModifier {}
 
 export type StaticElementPath = StaticModifier & Array<id>
 export type ElementPath = Array<id> | StaticElementPath
-export type InstancePath = {
-  scene: ScenePath
-  element: ElementPath
-}
-enum StaticModifier {}
-export type StaticInstancePath = {
-  scene: StaticScenePath
-  element: StaticElementPath
+
+export interface StaticTemplatePath {
+  type: 'templatepath'
+  parts: Array<StaticElementPath>
 }
 
-export type StaticTemplatePath = StaticScenePath | StaticInstancePath
-export type TemplatePath = StaticTemplatePath | ScenePath | InstancePath
+export interface TemplatePath {
+  type: 'templatepath'
+  parts: Array<ElementPath>
+}
 
 export type PropertyPathPart = string | number
 

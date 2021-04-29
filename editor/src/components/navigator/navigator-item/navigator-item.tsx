@@ -210,7 +210,7 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
       if (
         selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
         !isParentOfSelected &&
-        TP.isAncestorOf(selected, path) &&
+        TP.isDescendantOfOrEqualTo(selected, path) &&
         parentPath != null
       ) {
         const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(

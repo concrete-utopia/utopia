@@ -86,8 +86,6 @@ import {
   HigherOrderControlArrayKeepDeepEquality,
   TemplatePathKeepDeepEquality,
   EitherKeepDeepEquality,
-  InstancePathKeepDeepEquality,
-  InstancePathArrayKeepDeepEquality,
   JSXElementNameKeepDeepEqualityCall,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'

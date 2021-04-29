@@ -198,7 +198,7 @@ export function getOriginalFrames(
   Utils.fastForEach(
     extendSelectedViewsForInteraction(selectedViews, componentMetadata),
     (selectedView) => {
-      const allPaths = Utils.flatMapArray(includeChildren, TP.allPaths(selectedView))
+      const allPaths = Utils.flatMapArray(includeChildren, TP.allPathsForLastPart(selectedView))
       Utils.fastForEach(allPaths, (path) => {
         let alreadyAdded = false
         Utils.fastForEach(originalFrames, (originalFrame) => {
@@ -248,7 +248,10 @@ export function getOriginalCanvasFrames(
     ]
   }
   Utils.fastForEach(selectedViews, (selectedView) => {
-    const selectedAndChildren = Utils.flatMapArray(includeChildren, TP.allPaths(selectedView))
+    const selectedAndChildren = Utils.flatMapArray(
+      includeChildren,
+      TP.allPathsForLastPart(selectedView),
+    )
     const includingParents = [...selectedAndChildren, ...selectedAndChildren.map(TP.parentPath)]
     const allPaths = R.uniqBy(TP.toComponentId, Utils.stripNulls(includingParents))
     Utils.fastForEach(allPaths, (path) => {
@@ -1732,7 +1735,7 @@ export function getFrameChange(
 }
 
 export function moveTemplate(
-  targetPath: TemplatePath,
+  target: TemplatePath,
   originalPath: TemplatePath,
   newFrame: CanvasRectangle | typeof SkipFrameChange | null,
   indexPosition: IndexPosition,
@@ -1750,7 +1753,6 @@ export function moveTemplate(
       newPath: target,
     }
   }
-  const target = TP.instancePathForElementAtPath(targetPath)
   let newIndex: number = 0
   let newPath: TemplatePath | null = null
   let flexContextChanged: boolean = false
@@ -1784,8 +1786,8 @@ export function moveTemplate(
               didSwitch,
             } = maybeSwitchLayoutProps(
               target,
-              TP.instancePathForElementAtPathDontThrowOnScene(originalPath),
-              TP.instancePathForElementAtPathDontThrowOnScene(newParentPath),
+              originalPath,
+              newParentPath,
               componentMetadata,
               componentMetadata,
               utopiaComponentsIncludingScenes,

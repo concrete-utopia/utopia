@@ -399,9 +399,9 @@ function collectMetadata(
   )
 
   return pathsForElement.map((path) => {
-    const rootsOrChildrenToAdd = pathsForElement
-      .filter((otherPath) => TP.isParentOf(path, otherPath))
-      .map(TP.instancePathForElementAtPath)
+    const rootsOrChildrenToAdd = pathsForElement.filter((otherPath) =>
+      TP.isParentOf(path, otherPath),
+    )
     const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
 
     let filteredChildPaths: TemplatePath[] = []

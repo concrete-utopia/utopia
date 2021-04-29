@@ -2,7 +2,6 @@ import * as React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { emptySpecialSizeMeasurements } from '../../../../core/shared/element-template'
 import * as PP from '../../../../core/shared/property-path'
-import { filterScenes } from '../../../../core/shared/template-path'
 import utils from '../../../../utils/utils'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { useEditorState } from '../../../editor/store/store-hook'
@@ -22,22 +21,15 @@ import { betterReactMemo } from '../../../../uuiui-deps'
 const imgSrcProp = [PP.create(['src'])]
 const imgAltProp = [PP.create(['alt'])]
 
-function useSelectedPaths() {
-  const selectedViews = useSelectedViews()
-
-  const selectedPaths = filterScenes(selectedViews)
-  return selectedPaths
-}
-
 export const ImgSection = betterReactMemo('ImgSection', () => {
-  const selectedNonSceneViews = useSelectedPaths()
+  const selectedViews = useSelectedViews()
 
   const { dispatch, zerothElementInstanceMetadata } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       zerothElementInstanceMetadata: MetadataUtils.findElementByTemplatePath(
         store.editor.jsxMetadata,
-        selectedNonSceneViews[0],
+        selectedViews[0],
       ),
     }
   }, 'ImgSection')
@@ -126,7 +118,7 @@ export const ImgSection = betterReactMemo('ImgSection', () => {
         <PropertyLabel target={imgAltProp}>Density</PropertyLabel>
         <ImageDensityControl
           dispatch={dispatch}
-          selectedViews={selectedNonSceneViews}
+          selectedViews={selectedViews}
           naturalWidth={naturalWidth}
           naturalHeight={naturalHeight}
           clientWidth={clientWidth}

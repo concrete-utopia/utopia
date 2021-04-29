@@ -193,7 +193,7 @@ export class SelectModeControlContainer extends React.Component<
   getClippedArea = (target: TemplatePath): CanvasRectangle | null => {
     const targetFrame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
 
-    return TP.getAncestors(target).reduce(
+    return TP.getAncestorsForLastPart(target).reduce(
       (frameIntersect: CanvasRectangle | null, current: TemplatePath) => {
         const currentInstance = MetadataUtils.findElementByTemplatePath(
           this.props.componentMetadata,
@@ -334,7 +334,7 @@ export class SelectModeControlContainer extends React.Component<
       this.props.keysPressed['alt']
     ) {
       let boundingBoxes: (CanvasRectangle | null)[] = []
-      if (TP.areAllElementsInSameScene(this.props.selectedViews)) {
+      if (TP.areAllElementsInSameInstance(this.props.selectedViews)) {
         boundingBoxes = [this.getSelectedBoundingBox(this.props.selectedViews)]
       } else {
         boundingBoxes = this.props.selectedViews.map((view) => this.getSelectedBoundingBox([view]))
@@ -367,7 +367,7 @@ export class SelectModeControlContainer extends React.Component<
               if (highlightedViewIsSelected) {
                 return []
               } else {
-                if (TP.isFromSameSceneAs(highlightedView, this.props.selectedViews[index])) {
+                if (TP.isFromSameInstanceAs(highlightedView, this.props.selectedViews[index])) {
                   return getDistanceGuidelines(highlightedView, this.props.componentMetadata)
                 } else {
                   return []
@@ -377,7 +377,7 @@ export class SelectModeControlContainer extends React.Component<
           } else {
             const parentPath = TP.parentPath(hoveredSelectedItem)
             if (parentPath != null) {
-              if (TP.isFromSameSceneAs(parentPath, this.props.selectedViews[index])) {
+              if (TP.isFromSameInstanceAs(parentPath, this.props.selectedViews[index])) {
                 distanceGuidelines = getDistanceGuidelines(parentPath, this.props.componentMetadata)
               }
             }
@@ -405,7 +405,7 @@ export class SelectModeControlContainer extends React.Component<
   getBoundingMarks = (): Array<JSX.Element> => {
     let boundingMarks: Array<JSX.Element> = []
     if (this.props.isDragging || this.props.keysPressed['alt']) {
-      const targets = TP.filterScenes(this.props.selectedViews)
+      const targets = this.props.selectedViews
       if (targets.length > 0) {
         const targetInstance = MetadataUtils.findElementByTemplatePath(
           this.props.componentMetadata,

@@ -64,7 +64,7 @@ export function determineElementsToOperateOnForDragging(
     return extendSelectedViewsForInteraction(
       selectedViews.filter((view) =>
         R.none((otherView) => {
-          return !TP.pathsEqual(view, otherView) && TP.isAncestorOf(view, otherView)
+          return !TP.pathsEqual(view, otherView) && TP.isDescendantOfOrEqualTo(view, otherView)
         }, selectedViews),
       ),
       componentMetadata,

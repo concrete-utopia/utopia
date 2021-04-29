@@ -166,7 +166,7 @@ export function createClipboardDataFromSelectionNewWorld(
   }
   const parseSuccess = openUIJSFile.fileContents.parsed
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
-    return R.none((otherView) => TP.isAncestorOf(view, otherView, false), editor.selectedViews)
+    return R.none((otherView) => TP.isDescendantOf(view, otherView), editor.selectedViews)
   })
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
   const jsxElements = filteredSelectedViews.map((view) => {

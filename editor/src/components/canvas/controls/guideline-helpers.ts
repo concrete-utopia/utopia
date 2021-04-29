@@ -31,7 +31,7 @@ export function collectParentAndSiblingGuidelines(
         const isSibling = TP.isSiblingOf(maybeTarget, target)
         const isParent = TP.pathsEqual(parent, maybeTarget)
         const notSelectedOrDescendantOfSelected = targets.every(
-          (view) => !TP.isAncestorOf(maybeTarget, view),
+          (view) => !TP.isDescendantOfOrEqualTo(maybeTarget, view),
         )
         const isGroup = MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, parent)
         if ((isSibling || (isParent && !isGroup)) && notSelectedOrDescendantOfSelected) {

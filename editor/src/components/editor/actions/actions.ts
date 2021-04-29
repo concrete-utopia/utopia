@@ -1006,15 +1006,14 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
     const extendedTargets = [...targets, ...emptyGroupTemplatePaths]
 
     const updatedEditor = extendedTargets.reduce((working, target) => {
-      const targetPath = TP.instancePathForElementAtPath(target)
       return modifyOpenParseSuccess((parseSuccess) => {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-        const element = findElementAtPath(targetPath, utopiaComponents)
+        const element = findElementAtPath(target, utopiaComponents)
         if (element == null) {
           return parseSuccess
         } else {
           const withTargetRemoved: Array<UtopiaJSXComponent> = removeElementAtPath(
-            targetPath,
+            target,
             utopiaComponents,
           )
           return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
@@ -1113,7 +1112,7 @@ function updateNavigatorCollapsedState(
   selectedViews.forEach((selectedView) => {
     allCollapsedViews.forEach((collapsedView) => {
       if (
-        TP.isAncestorOf(selectedView, collapsedView) &&
+        TP.isDescendantOfOrEqualTo(selectedView, collapsedView) &&
         !TP.pathsEqual(selectedView, collapsedView)
       ) {
         if (!TP.containsPath(collapsedView, collapsedWithChildrenSelected)) {
@@ -1760,7 +1759,7 @@ export const UPDATE_FNS = {
   },
   RENAME_COMPONENT: (action: RenameComponent, editor: EditorModel): EditorModel => {
     const { name } = action
-    const target = TP.instancePathForElementAtPath(action.target)
+    const target = action.target
     let propsTransform: (props: JSXAttributes) => Either<string, JSXAttributes>
     if (name == null) {
       propsTransform = (props) => unsetJSXValueAtPath(props, PathForSceneDataLabel)
@@ -3706,7 +3705,7 @@ export const UPDATE_FNS = {
   RESET_PROP_TO_DEFAULT: (action: ResetPropToDefault, editor: EditorModel): EditorModel => {
     const openFilePath = getOpenUIJSFileKey(editor)
     if (openFilePath != null) {
-      const target = TP.instancePathForElementAtPath(action.target)
+      const target = action.target
       const propertyControls = getPropertyControlsForTargetFromEditor(target, editor)
       let element: JSXElement | null = null
       forUnderlyingTargetFromEditorState(

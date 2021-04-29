@@ -406,7 +406,7 @@ export function handleKeyDown(
         if (modeType === 'select') {
           const textTarget = getTextEditorTarget(editor, derived)
           if (textTarget != null) {
-            return [EditorActions.openTextEditor(TP.instancePathForElementAtPath(textTarget), null)]
+            return [EditorActions.openTextEditor(textTarget, null)]
           } else {
             const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
             if (childToSelect != null) {
@@ -528,7 +528,7 @@ export function handleKeyDown(
         return toggleTextFormatting(editor, dispatch, 'bold')
       },
       [TOGGLE_BORDER_SHORTCUT]: () => {
-        return TP.filterScenes(editor.selectedViews).map((target) =>
+        return editor.selectedViews.map((target) =>
           EditorActions.toggleProperty(
             target,
             toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
@@ -542,7 +542,7 @@ export function handleKeyDown(
         return [EditorActions.duplicateSelected()]
       },
       [TOGGLE_BACKGROUND_SHORTCUT]: () => {
-        return TP.filterScenes(editor.selectedViews).map((target) =>
+        return editor.selectedViews.map((target) =>
           EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
         )
       },
@@ -620,7 +620,7 @@ export function handleKeyDown(
         return [EditorActions.saveCurrentFile()]
       },
       [TOGGLE_SHADOW_SHORTCUT]: () => {
-        return TP.filterScenes(editor.selectedViews).map((target) =>
+        return editor.selectedViews.map((target) =>
           EditorActions.toggleProperty(
             target,
             toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),

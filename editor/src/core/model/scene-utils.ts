@@ -47,8 +47,6 @@ import { emptyComments } from '../workers/parser-printer/parser-printer-comments
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 
-export const EmptyScenePathForStoryboard = TP.emptyScenePath
-
 export const PathForSceneComponent = PP.create(['component'])
 export const PathForSceneDataUid = PP.create(['data-uid'])
 export const PathForSceneDataLabel = PP.create(['data-label'])
