@@ -439,6 +439,7 @@ import {
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingForOpenFile,
   forUnderlyingTargetFromEditorState,
+  getHighlightBoundsForFile,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4227,23 +4228,18 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const currentlyOpenFile = getOpenTextFileKey(editor)
-    if (currentlyOpenFile === action.filePath) {
-      const allTemplatePaths = derived.navigatorTargets
-      const highlightBoundsForUids = getHighlightBoundsForUids(editor)
-      const newlySelectedElements = getTemplatePathsInBounds(
-        action.line,
-        highlightBoundsForUids,
-        allTemplatePaths,
-      )
-      return UPDATE_FNS.SELECT_COMPONENTS(
-        selectComponents(newlySelectedElements, false),
-        editor,
-        dispatch,
-      )
-    } else {
-      return editor
-    }
+    const allTemplatePaths = derived.navigatorTargets
+    const highlightBoundsForUids = getHighlightBoundsForFile(editor, action.filePath)
+    const newlySelectedElements = getTemplatePathsInBounds(
+      action.line,
+      highlightBoundsForUids,
+      allTemplatePaths,
+    )
+    return UPDATE_FNS.SELECT_COMPONENTS(
+      selectComponents(newlySelectedElements, false),
+      editor,
+      dispatch,
+    )
   },
   SEND_CODE_EDITOR_INITIALISATION: (
     action: SendCodeEditorInitialisation,
