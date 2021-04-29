@@ -796,6 +796,36 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     )
   })
 
+  it('the canvas supports emotion CSS prop', () => {
+    testCanvasRender(
+      null,
+      `
+      /** @jsx jsx */
+      import { css, jsx } from '@emotion/react'
+      import { Scene, Storyboard } from 'utopia-api'
+      const MyComp = (props) => <div css={{ backgroundColor: 'blue', position: 'absolute', left: 15, top: 15, width: 50, height: 50, flex: 15 }}>Utopia</div>
+      export var App = (props) => {
+        return (<MyComp data-uid={'aaa'}/>)
+      }
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid={'${BakedInStoryboardUID}'}>
+            <Scene
+              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}
+              data-uid={'${TestSceneUID}'}
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+      `,
+    )
+  })
+
   xit('mutated variable refers to code component', () => {
     testCanvasRender(
       null,

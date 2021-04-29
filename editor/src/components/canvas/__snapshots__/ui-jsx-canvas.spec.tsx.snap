@@ -23975,6 +23975,151 @@ Object {
 }
 `;
 
+exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"all: initial; position: absolute;\\"
+  data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+>
+  <div
+    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
+    style=\\"
+      position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
+    \\"
+    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+  >
+    <div
+      data-uid=\\"d39 aaa app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d39 utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
+      class=\\"css-16au7uv\\"
+    >
+      Utopia
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render the canvas supports emotion CSS prop 2`] = `
+Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "MyComp",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-uid": "aaa app-entity",
+      "data-utopia-scene-path": Object {
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "aaa",
+          ],
+        ],
+        "type": "scenepath",
+      },
+      "skipDeepFreeze": true,
+    },
+    "rootElements": Array [],
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
+      ],
+      "scene": Object {
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
 exports[`UiJsxCanvas render the spy wrapper is compatible with React.cloneElement 1`] = `
 "<div
   id=\\"canvas-container\\"
