@@ -291,20 +291,12 @@ declare module 'utopia-api/layout/pins.spec' {
 }
 declare module 'utopia-api/primitives/common' {
   import * as React from 'react';
-  import { LayoutProps } from 'utopia-api/layout/layout';
-  import { CSSFrame } from 'utopia-api/layout/pins';
   export interface UtopiaComponentProps {
       'data-uid'?: string;
       'data-label'?: string;
-      layout?: LayoutProps;
       style?: React.CSSProperties;
   }
-  export function calculateChildStylesToPrepend(props: React.PropsWithChildren<UtopiaComponentProps>, children: React.ReactNode): Array<CSSFrame>;
-  export function calculateChildStylesThatOverwriteStyle(props: React.PropsWithChildren<UtopiaComponentProps>, children: React.ReactNode): Array<CSSFrame>;
-  export function calculateOwnStyleProp(props: React.PropsWithChildren<UtopiaComponentProps>, children: React.ReactNode): CSSFrame;
   export function addEventHandlersToDivProps(props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>): React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>;
-  export function calculatePositionableStyle(props: React.PropsWithChildren<UtopiaComponentProps>): CSSFrame;
-  export function calculateResizeableStyle(props: React.PropsWithChildren<UtopiaComponentProps>): CSSFrame;
 
 }
 declare module 'utopia-api/primitives/ellipse' {
