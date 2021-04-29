@@ -7,7 +7,12 @@ import {
   UtopiaJSXComponent,
 } from '../../shared/element-template'
 import { optionalMap } from '../../shared/optional-utils'
-import { isParseSuccess, ParsedTextFile, StaticElementPath } from '../../shared/project-file-types'
+import {
+  isParseSuccess,
+  ParsedTextFile,
+  StaticElementPath,
+  StaticInstancePath,
+} from '../../shared/project-file-types'
 import * as TP from '../../shared/template-path'
 import { setUtopiaIDOnJSXElement } from '../../shared/uid-utils'
 import {
@@ -74,7 +79,7 @@ export function fixParseSuccessUIDs(
     newToOldUidMappingArray.forEach((mapping) => {
       const oldPathAlreadyExistingElement = findJSXElementChildAtPath(
         workingComponents,
-        TP.staticInstancePath(TP.emptyScenePath, mapping.oldPathToRestore),
+        TP.templatePath([mapping.oldPathToRestore]),
       )
 
       if (oldPathAlreadyExistingElement == null) {

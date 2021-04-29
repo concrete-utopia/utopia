@@ -25,6 +25,7 @@ import {
   InstancePath,
   StaticInstancePath,
   isParseSuccess,
+  StaticTemplatePath,
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
@@ -277,13 +278,13 @@ export function codeCacheToBuildResult(cache: {
 
 export interface NormalisePathSuccess {
   type: 'NORMALISE_PATH_SUCCESS'
-  normalisedPath: StaticInstancePath | null
+  normalisedPath: StaticTemplatePath | null
   filePath: string
   textFile: TextFile
 }
 
 export function normalisePathSuccess(
-  normalisedPath: StaticInstancePath | null,
+  normalisedPath: StaticTemplatePath | null,
   filePath: string,
   textFile: TextFile,
 ): NormalisePathSuccess {
@@ -374,7 +375,7 @@ export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   currentFilePath: string,
-  elementPath: InstancePath | null,
+  elementPath: TemplatePath | null,
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
   if (isTextFile(currentFile)) {
@@ -386,7 +387,8 @@ export function normalisePathToUnderlyingTarget(
       // which now doesn't exist.
       return normalisePathUnableToProceed(currentFilePath)
     } else {
-      const staticPath = elementPath == null ? null : TP.dynamicPathToStaticPath(elementPath)
+      const staticPath =
+        elementPath == null ? null : (TP.dynamicPathToStaticPath(elementPath) as StaticInstancePath)
       const potentiallyDroppedFirstSceneElementResult = TP.dropFirstScenePathElement(staticPath)
       if (potentiallyDroppedFirstSceneElementResult.droppedScenePathElements == null) {
         // As the scene path is empty, there's no more traversing to do, the target is in this file.

@@ -45,7 +45,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -78,7 +78,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -111,7 +111,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -144,7 +144,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -177,7 +177,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -211,7 +211,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -244,7 +244,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -276,7 +276,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
     )
 
     const pinChange = pinFrameChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -311,7 +311,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -344,7 +344,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -377,7 +377,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 20,
       y: 20,
     } as CanvasVector)
@@ -410,7 +410,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 20,
       y: 20,
     } as CanvasVector)
@@ -443,7 +443,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 20,
       y: 20,
     } as CanvasVector)
@@ -476,7 +476,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 0,
       y: 20,
     } as CanvasVector)
@@ -509,7 +509,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       `),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -542,7 +542,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       `),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: 45,
     } as CanvasVector)
@@ -575,7 +575,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -608,7 +608,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: 20,
       y: 65,
     } as CanvasVector)
@@ -647,7 +647,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -680,7 +680,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -713,7 +713,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       `),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -760,7 +760,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
       ),
     )
 
-    const pinChange = pinMoveChange(TP.instancePath(TestScenePath, ['aaa', 'bbb']), {
+    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
       x: -32,
       y: -41,
     } as CanvasVector)
@@ -797,7 +797,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
     )
 
     const pinChange = pinSizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
       null,
     )
@@ -831,7 +831,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
     )
 
     const pinChange = pinSizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
       null,
     )
@@ -867,7 +867,7 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
     )
 
     const pinChange = pinSizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
       null,
     )
@@ -904,7 +904,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 1, y: 1 } as EdgePosition,
       { x: -20, y: -10 } as CanvasVector,
     )
@@ -936,7 +936,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 0, y: 0 } as EdgePosition,
       { x: 50, y: 60 } as CanvasVector,
     )
@@ -971,7 +971,7 @@ describe('moveTemplate', () => {
       `),
     )
 
-    const targets = [TP.instancePath(TestScenePath, ['aaa', 'bbb'])]
+    const targets = [TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
     await renderResult.dispatch([wrapInView(targets)], true)
@@ -1023,8 +1023,8 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.instancePath(TestScenePath, ['aaa', 'bbb', 'ccc']),
-      TP.instancePath(TestScenePath, ['aaa', 'fff', 'ggg']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'fff', 'ggg']),
     ]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
@@ -1080,8 +1080,8 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      TP.instancePath(TestScenePath, ['aaa', 'bbb', 'ccc']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
     ]
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
@@ -1131,13 +1131,13 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      TP.instancePath(TestScenePath, ['aaa', 'hhh']),
-      TP.instancePath(TestScenePath, ['aaa', 'fff', 'ggg']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'hhh']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'fff', 'ggg']),
     ]
 
     await renderResult.dispatch(
-      [reparentComponents(targets, TP.instancePath(TestScenePath, ['aaa', 'eee']))],
+      [reparentComponents(targets, TP.appendNewElementPath(TestScenePath, ['aaa', 'eee']))],
       true,
     )
 
@@ -1181,12 +1181,12 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      TP.instancePath(TestScenePath, ['aaa', 'bbb', 'ccc']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc']),
     ]
 
     await renderResult.dispatch(
-      [reparentComponents(targets, TP.instancePath(TestScenePath, ['aaa', 'eee']))],
+      [reparentComponents(targets, TP.appendNewElementPath(TestScenePath, ['aaa', 'eee']))],
       true,
     )
 
@@ -1227,12 +1227,12 @@ describe('moveTemplate', () => {
     )
 
     const targets = [
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
-      TP.instancePath(TestScenePath, ['aaa', 'bbb', 'ccc', 'ddd']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', 'ccc', 'ddd']),
     ]
 
     await renderResult.dispatch(
-      [reparentComponents(targets, TP.instancePath(TestScenePath, ['aaa', 'eee']))],
+      [reparentComponents(targets, TP.appendNewElementPath(TestScenePath, ['aaa', 'eee']))],
       true,
     )
 
@@ -1273,8 +1273,8 @@ describe('moveTemplate', () => {
     await renderResult.dispatch(
       [
         reparentComponents(
-          [TP.instancePath(TestScenePath, ['aaa', 'eee'])],
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          [TP.appendNewElementPath(TestScenePath, ['aaa', 'eee'])],
+          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
         ),
       ],
       true,
@@ -1319,7 +1319,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'eee'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'eee'])], false)],
       false,
     )
 
@@ -1451,12 +1451,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [
-        selectComponents(
-          [TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'orphan-bbb'])],
-          false,
-        ),
-      ],
+      [selectComponents([TP.templatePath([[BakedInStoryboardUID, 'orphan-bbb']])], false)],
       false,
     )
 
@@ -1616,7 +1611,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -1748,7 +1743,7 @@ describe('moveTemplate', () => {
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -1994,7 +1989,7 @@ describe('moveTemplate', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'eee'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'eee'])], false)],
       false,
     )
 
@@ -2113,7 +2108,7 @@ describe('moveTemplate', () => {
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 

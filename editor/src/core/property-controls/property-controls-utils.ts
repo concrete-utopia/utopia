@@ -35,7 +35,7 @@ import {
   NodeModules,
   ParseSuccess,
   ProjectContents,
-  StaticInstancePath,
+  StaticTemplatePath,
   TemplatePath,
 } from '../shared/project-file-types'
 import {
@@ -385,7 +385,7 @@ export function getPropertyControlsForTarget(
     (
       success: ParseSuccess,
       element: JSXElement,
-      underlyingTarget: StaticInstancePath,
+      underlyingTarget: StaticTemplatePath,
       underlyingFilePath: string,
     ) => {
       const importedFrom = importedFromWhere(

@@ -222,31 +222,27 @@ export function getTargetParentForPaste(
             ) {
               return parentTarget
             } else {
-              const parentOfSelected = TP.instancePathParent(parentTarget)
-              if (TP.isScenePath(parentOfSelected)) {
-                return parentOfSelected
-              } else {
-                return withUnderlyingTarget(
-                  parentOfSelected,
-                  projectContents,
-                  nodeModules,
-                  openFile,
-                  null,
-                  (parentOfSelectedSuccess) => {
-                    if (
-                      MetadataUtils.targetSupportsChildren(
-                        parentOfSelectedSuccess.imports,
-                        metadata,
-                        parentOfSelected,
-                      )
-                    ) {
-                      return parentOfSelected
-                    } else {
-                      return null
-                    }
-                  },
-                )
-              }
+              const parentOfSelected = TP.parentPath(parentTarget)
+              return withUnderlyingTarget(
+                parentOfSelected,
+                projectContents,
+                nodeModules,
+                openFile,
+                null,
+                (parentOfSelectedSuccess) => {
+                  if (
+                    MetadataUtils.targetSupportsChildren(
+                      parentOfSelectedSuccess.imports,
+                      metadata,
+                      parentOfSelected,
+                    )
+                  ) {
+                    return parentOfSelected
+                  } else {
+                    return null
+                  }
+                },
+              )
             }
           },
         )

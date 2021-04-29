@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import {
   SceneMetadata,
-  StaticInstancePath,
+  StaticTemplatePath,
   PropertyPath,
   isTextFile,
   isParseSuccess,
@@ -324,7 +324,7 @@ export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string |
 export function getStoryboardTemplatePath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-): StaticInstancePath | null {
+): StaticTemplatePath | null {
   if (openFile != null) {
     const file = getContentsTreeFileFromString(projectContents, openFile)
     if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
@@ -333,7 +333,7 @@ export function getStoryboardTemplatePath(
       )
       if (possiblyStoryboard != null) {
         const uid = getUtopiaID(possiblyStoryboard.rootElement)
-        return TP.staticInstancePath(EmptyScenePathForStoryboard, TP.staticElementPath([uid]))
+        return TP.templatePath([TP.staticElementPath([uid])])
       }
     }
   }

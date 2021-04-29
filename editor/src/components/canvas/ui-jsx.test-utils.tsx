@@ -28,6 +28,7 @@ import {
   ParsedTextFile,
   ParseSuccess,
   RevisionsState,
+  ScenePath,
   textFile,
   TextFile,
   textFileContents,
@@ -41,7 +42,6 @@ import {
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { HotRoot } from '../../templates/editor'
-import { left, Right, isLeft } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
@@ -58,21 +58,13 @@ import {
 } from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import {
-  emptyScenePath,
-  instancePath,
-  scenePath,
-  staticElementPath,
-  staticInstancePath,
-  staticScenePath,
-} from '../../core/shared/template-path'
+import { templatePath } from '../../core/shared/template-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
-import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
 import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
-import { testStaticScenePath } from '../../core/shared/template-path.test-utils'
+import { testStaticTemplatePath } from '../../core/shared/template-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -265,10 +257,10 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
 
 export const TestSceneUID = 'scene-aaa'
 export const TestAppUID = 'app-entity'
-export const TestStoryboardPath = instancePath(emptyScenePath, [BakedInStoryboardUID])
-const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
-export const TestScenePath = scenePath(TestSceneElementPaths)
-export const TestStaticScenePath = testStaticScenePath(TestSceneElementPaths)
+export const TestStoryboardPath = templatePath([[BakedInStoryboardUID]])
+export const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
+export const TestScenePath = templatePath(TestSceneElementPaths)
+export const TestStaticScenePath = testStaticTemplatePath(TestSceneElementPaths)
 
 export function makeTestProjectCodeWithSnippet(snippet: string): string {
   const code = `

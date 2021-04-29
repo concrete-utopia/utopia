@@ -89,7 +89,6 @@ import {
   InstancePathKeepDeepEquality,
   InstancePathArrayKeepDeepEquality,
   JSXElementNameKeepDeepEqualityCall,
-  ScenePathKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
 import {
@@ -644,7 +643,7 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
 > {
   return combine13EqualityCalls(
     (metadata) => metadata.templatePath,
-    InstancePathKeepDeepEquality,
+    TemplatePathKeepDeepEquality,
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
     (metadata) => metadata.props,
@@ -654,9 +653,9 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.localFrame,
     nullableDeepEquality(LocalRectangleKeepDeepEquality),
     (metadata) => metadata.children,
-    InstancePathArrayKeepDeepEquality,
+    TemplatePathArrayKeepDeepEquality,
     (metadata) => metadata.rootElements,
-    InstancePathArrayKeepDeepEquality,
+    TemplatePathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),
     (metadata) => metadata.isEmotionOrStyledComponent,

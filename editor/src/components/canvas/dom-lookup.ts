@@ -43,13 +43,13 @@ export function findFirstParentWithValidTemplatePath(
       : R.intersection(
           validDynamicTemplatePathsForLookup
             .filter(TP.isInstancePath)
-            .map(TP.dynamicPathToStaticPathKeepSceneDynamic),
+            .map(TP.makeLastPartOfPathStatic),
           validStaticTemplatePathsForScene,
         )
 
   const filteredValidPathsMappedToDynamic = mapDropNulls((validPath: TemplatePath) => {
     return dynamicTemplatePaths.find((tp) => {
-      const templatePathWithStaticElementPart = TP.dynamicPathToStaticPathKeepSceneDynamic(tp)
+      const templatePathWithStaticElementPart = TP.makeLastPartOfPathStatic(tp)
       return TP.pathsEqual(validPath, templatePathWithStaticElementPart)
     })
   }, validStaticTemplatePaths)

@@ -332,11 +332,10 @@ export function updateFramesOfScenesAndComponents(
 ): EditorState {
   let workingEditorState: EditorState = editorState
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
-    const target = TP.instancePathForElementAtPath(frameAndTarget.target)
-
+    const target = frameAndTarget.target
     // Realign to aim at the static version, not the dynamic one.
     const originalTarget = target
-    const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+    const staticTarget = TP.dynamicPathToStaticPath(target)
     if (staticTarget == null) {
       return
     }
@@ -978,15 +977,11 @@ export function collectGuidelines(
   // For any images create guidelines at the current multiplier setting.
   if (resizingFromPosition != null) {
     Utils.fastForEach(selectedViews, (selectedView) => {
-      if (TP.isScenePath(selectedView)) {
-        return
-      }
-
       if (MetadataUtils.isPinnedAndNotAbsolutePositioned(metadata, selectedView)) {
         return
       }
 
-      const instance = MetadataUtils.getElementByInstancePathMaybe(metadata, selectedView)
+      const instance = MetadataUtils.findElementByTemplatePath(metadata, selectedView)
       if (instance != null && MetadataUtils.isImg(instance) && instance.localFrame != null) {
         const frame = instance.localFrame
         const imageSize = getImageSizeFromMetadata(instance)
@@ -1648,17 +1643,6 @@ export function createDuplicationNewUIDs(
 
 export const SkipFrameChange = 'skipFrameChange'
 
-export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<TemplatePath> {
-  // TODO Scene Implementation - KILLME
-  const scenesSelected = targets.some(TP.isScenePath)
-  if (scenesSelected && targets.length > 1) {
-    // Prevent multiselection of scenes - if more than one are selected, only take the last one
-    return [R.findLast(TP.isScenePath, targets)!]
-  } else {
-    return targets
-  }
-}
-
 function getReparentTargetAtPosition(
   componentMeta: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
@@ -1781,11 +1765,11 @@ export function moveTemplate(
   }
   const target = TP.instancePathForElementAtPath(targetPath)
   let newIndex: number = 0
-  let newInstancePath: InstancePath | null = null
+  let newPath: TemplatePath | null = null
   let flexContextChanged: boolean = false
 
-  const targetID = TP.toTemplateId(target)
-  if (newParentPath == null || TP.isScenePath(newParentPath) || TP.isScenePath(originalPath)) {
+  const targetID = TP.toUid(target)
+  if (newParentPath == null) {
     // TODO Scene Implementation
     return noChanges()
   } else {
@@ -1813,8 +1797,8 @@ export function moveTemplate(
               didSwitch,
             } = maybeSwitchLayoutProps(
               target,
-              originalPath,
-              newParentPath,
+              TP.instancePathForElementAtPathDontThrowOnScene(originalPath),
+              TP.instancePathForElementAtPathDontThrowOnScene(newParentPath),
               componentMetadata,
               componentMetadata,
               utopiaComponentsIncludingScenes,
@@ -1831,7 +1815,6 @@ export function moveTemplate(
               let workingEditorState: EditorState = editorState
 
               let updatedUtopiaComponents: Array<UtopiaJSXComponent> = withLayoutUpdatedForNewContext
-              let newPath: TemplatePath | null = null
 
               flexContextChanged = flexContextChanged || didSwitch
 
@@ -1887,7 +1870,6 @@ export function moveTemplate(
               }
 
               newPath = TP.appendToPath(newParentPath, targetID)
-              newInstancePath = newPath
 
               let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
               // Need to make these changes ahead of updating the frame.
@@ -1912,7 +1894,7 @@ export function moveTemplate(
                 updatedComponentMetadata = MetadataUtils.transformAllPathsInMetadata(
                   updatedComponentMetadata,
                   target,
-                  newInstancePath,
+                  newPath,
                 )
               }
               workingEditorState.jsxMetadata = updatedComponentMetadata
@@ -1920,7 +1902,7 @@ export function moveTemplate(
               if (
                 newFrame !== SkipFrameChange &&
                 newFrame != null &&
-                newInstancePath != null &&
+                newPath != null &&
                 !flexContextChanged
               ) {
                 const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -1928,7 +1910,7 @@ export function moveTemplate(
                   componentMetadata,
                 )
                 const frameChanges: Array<PinOrFlexFrameChange> = [
-                  getFrameChange(newInstancePath, newFrame, isParentFlex),
+                  getFrameChange(newPath, newFrame, isParentFlex),
                 ]
 
                 workingEditorState = updateFramesOfScenesAndComponents(
@@ -1940,7 +1922,7 @@ export function moveTemplate(
 
               const newSelectedViews = selectedViews.map((v) => {
                 if (TP.pathsEqual(v, target)) {
-                  return newInstancePath
+                  return newPath
                 } else {
                   return v
                 }
@@ -1948,18 +1930,18 @@ export function moveTemplate(
 
               const newHighlightedViews =
                 newParentPath == null
-                  ? highlightedViews.map((t) => (TP.pathsEqual(t, target) ? newInstancePath : t))
+                  ? highlightedViews.map((t) => (TP.pathsEqual(t, target) ? newPath : t))
                   : [newParentPath]
 
               const updatedEditorState: EditorState = {
                 ...workingEditorState,
-                selectedViews: filterMultiSelectScenes(Utils.stripNulls(newSelectedViews)),
+                selectedViews: Utils.stripNulls(newSelectedViews),
                 highlightedViews: Utils.stripNulls(newHighlightedViews),
               }
 
               return {
                 updatedEditorState: updatedEditorState,
-                newPath: newInstancePath,
+                newPath: newPath,
               }
             }
           },
@@ -2309,7 +2291,7 @@ export function duplicate(
               'Could not find storyboard element',
               getStoryboardUID(utopiaComponents),
             )
-            newPath = TP.scenePath([[storyboardUID, uid]])
+            newPath = TP.templatePath([[storyboardUID, uid]])
           } else {
             newPath = TP.appendToPath(newParentPath, uid)
           }
@@ -2407,7 +2389,7 @@ export function reorderComponent(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   components: Array<UtopiaJSXComponent>,
-  target: InstancePath,
+  target: TemplatePath,
   newIndex: number,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
