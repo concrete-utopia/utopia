@@ -4,7 +4,6 @@ import { NormalisedFrame } from '../layout/frame'
 import { LayoutSystem, LayoutProps, AllLayoutBasePropsKeys } from '../layout/layout'
 import { CSSFrame, convertPinsToStyleProps, convertPinsToAbsoluteStyleProps } from '../layout/pins'
 import { flexElementPropsToStyle, flexParentPropsToStyle } from '../layout/flex'
-import { LayoutableProps } from './layoutable'
 
 export interface UtopiaComponentProps {
   'data-uid'?: string
@@ -305,8 +304,4 @@ export function calculateResizeableStyle(
       ...flexParentPropsToStyle(layout),
     }
   }
-}
-
-export function isLayoutWrapped(props: React.PropsWithChildren<LayoutableProps>): boolean {
-  return props.wrappedComponent != null
 }

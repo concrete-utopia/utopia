@@ -30,7 +30,7 @@ export function getUiBuilderUIJSFile(): TextFile {
   return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, 0)
 }
 
-export const sampleCode = `/** @jsx jsx */
+export const sampleCode = `
 import * as React from 'react'
 import {
   Ellipse,
@@ -39,7 +39,6 @@ import {
   Text,
   UtopiaUtils,
   View,
-  jsx,
 } from 'utopia-api'
 import {
   colorTheme,

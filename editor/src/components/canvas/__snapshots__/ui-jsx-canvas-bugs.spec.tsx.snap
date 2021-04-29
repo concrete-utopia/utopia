@@ -13,10 +13,10 @@ exports[`UiJsxCanvas #747 - DOM object constructor cannot be called as a functio
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
       box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      width: 375px;
-      height: 812px;
       left: 0;
       top: 0;
+      width: 375px;
+      height: 812px;
     \\"
     data-uid=\\"scene sb\\"
   >

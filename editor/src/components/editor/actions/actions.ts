@@ -318,7 +318,6 @@ import {
   Undo,
   UnsetProperty,
   UnwrapGroupOrView,
-  UnwrapLayoutable,
   UpdateCodeResultCache,
   UpdateDuplicationState,
   UpdateEditorMode,
@@ -330,7 +329,6 @@ import {
   UpdateKeysPressed,
   UpdatePreviewConnected,
   UpdateThumbnailGenerated,
-  WrapInLayoutable,
   WrapInView,
   SetSafeMode,
   SaveImageDetails,
@@ -432,6 +430,7 @@ import {
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingForOpenFile,
   forUnderlyingTargetFromEditorState,
+  getHighlightBoundsForFile,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -3667,132 +3666,19 @@ export const UPDATE_FNS = {
       }
     }, editor)
   },
-  WRAP_IN_LAYOUTABLE: (action: WrapInLayoutable, editor: EditorModel): EditorModel => {
-    const editorWithAddedImport = modifyOpenParseSuccess((success) => {
-      const updatedImport = addImport(
-        'utopia-api',
-        null,
-        [importAlias(action.wrapper)],
-        null,
-        success.imports,
-      )
-      return {
-        ...success,
-        imports: updatedImport,
-      }
-    }, editor)
-
-    return modifyOpenJsxElementAtPath(
-      action.target,
-      (element) => {
-        const component = element.name.baseVariable
-        if (component !== action.wrapper) {
-          const wrappedComponent =
-            getJSXAttribute(element.props, 'wrappedComponent') ??
-            jsxAttributeOtherJavaScript(component, component, [], null)
-          return {
-            ...element,
-            name: {
-              ...element.name,
-              baseVariable: action.wrapper,
-            },
-            props: {
-              ...element.props,
-              wrappedComponent: wrappedComponent,
-            },
-          }
-        } else {
-          return element
-        }
-      },
-      editorWithAddedImport,
-    )
-  },
-  UNWRAP_LAYOUTABLE: (
-    action: UnwrapLayoutable,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
+  UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
     const targetMetadata = Utils.forceNotNull(
       `Could not find metadata for ${JSON.stringify(action.target)}`,
       MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, action.target),
     )
-
-    return modifyOpenJsxElementAtPath(
-      action.target,
-      (element) => {
-        const { imports } = getJSXComponentsAndImportsForPathFromState(
-          action.target,
-          editor,
-          derived,
-        )
-        const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
-        if (
-          MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
-          wrappedComponent != null
-        ) {
-          if (wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-            const updatedProps = deleteJSXAttribute(element.props, 'wrappedComponent')
-            return {
-              ...element,
-              name: {
-                ...element.name,
-                baseVariable: wrappedComponent.javascript,
-              },
-              props: updatedProps,
-            }
-          } else {
-            return element
-          }
-        } else {
-          return element
-        }
-      },
-      editor,
-    )
-  },
-  UPDATE_JSX_ELEMENT_NAME: (
-    action: UpdateJSXElementName,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
-    const targetMetadata = Utils.forceNotNull(
-      `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, action.target),
-    )
-
     const updatedEditor = UPDATE_FNS.ADD_IMPORTS(addImports(action.importsToAdd), editor)
 
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
-        const { imports } = getJSXComponentsAndImportsForPathFromState(
-          action.target,
-          editor,
-          derived,
-        )
-        const wrappedComponent = getJSXAttribute(element.props, 'wrappedComponent')
-        if (
-          MetadataUtils.isLayoutWrapperAgainstImports(imports, targetMetadata) &&
-          wrappedComponent != null
-        ) {
-          if (wrappedComponent.type === 'ATTRIBUTE_OTHER_JAVASCRIPT') {
-            const nameAsString = getJSXElementNameAsString(action.elementName)
-            return {
-              ...element,
-              props: {
-                ...element.props,
-                wrappedComponent: jsxAttributeOtherJavaScript(nameAsString, nameAsString, [], null),
-              },
-            }
-          } else {
-            return element
-          }
-        } else {
-          return {
-            ...element,
-            name: action.elementName,
-          }
+        return {
+          ...element,
+          name: action.elementName,
         }
       },
       updatedEditor,
@@ -4106,23 +3992,18 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const currentlyOpenFile = getOpenTextFileKey(editor)
-    if (currentlyOpenFile === action.filePath) {
-      const allTemplatePaths = derived.navigatorTargets
-      const highlightBoundsForUids = getHighlightBoundsForUids(editor)
-      const newlySelectedElements = getTemplatePathsInBounds(
-        action.line,
-        highlightBoundsForUids,
-        allTemplatePaths,
-      )
-      return UPDATE_FNS.SELECT_COMPONENTS(
-        selectComponents(newlySelectedElements, false),
-        editor,
-        dispatch,
-      )
-    } else {
-      return editor
-    }
+    const allTemplatePaths = derived.navigatorTargets
+    const highlightBoundsForUids = getHighlightBoundsForFile(editor, action.filePath)
+    const newlySelectedElements = getTemplatePathsInBounds(
+      action.line,
+      highlightBoundsForUids,
+      allTemplatePaths,
+    )
+    return UPDATE_FNS.SELECT_COMPONENTS(
+      selectComponents(newlySelectedElements, false),
+      editor,
+      dispatch,
+    )
   },
   SEND_CODE_EDITOR_INITIALISATION: (
     action: SendCodeEditorInitialisation,

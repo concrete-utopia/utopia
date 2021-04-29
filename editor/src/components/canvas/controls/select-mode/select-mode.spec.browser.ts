@@ -350,9 +350,8 @@ function waitForAnimationFrame(): Promise<void> {
 }
 
 const TestProjectAlpineClimb = `
-/** @jsx jsx */
 import * as React from "react";
-import { Scene, Storyboard, jsx } from "utopia-api";
+import { Scene, Storyboard } from "utopia-api";
 import styled from "@emotion/styled";
 
 export const Col = (props) => (

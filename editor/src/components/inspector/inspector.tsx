@@ -44,8 +44,6 @@ import {
   setProp_UNSAFE,
   transientActions,
   unsetProperty,
-  unwrapLayoutable,
-  wrapInLayoutable,
 } from '../editor/actions/action-creators'
 import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
@@ -569,21 +567,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
             inspectorModel.specialSizeMeasurements = elementMetadata.specialSizeMeasurements
             inspectorModel.position = elementMetadata.specialSizeMeasurements.position
-
-            if (underlyingElement.props != null) {
-              if (
-                MetadataUtils.isLayoutWrapperAgainstImports(
-                  underlyingSuccess.imports,
-                  elementMetadata,
-                )
-              ) {
-                inspectorModel.layoutWrapper = elementName as any
-              }
-              const wrappedComponent = getJSXAttribute(underlyingElement.props, 'wrappedComponent')
-              if (wrappedComponent != null && isJSXAttributeOtherJavaScript(wrappedComponent)) {
-                inspectorModel.type = wrappedComponent.javascript
-              }
-            }
           }
           inspectorModel.label = MetadataUtils.getElementLabel(path, jsxMetadata)
         }
@@ -690,22 +673,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     },
     [refElementsToTargetForUpdates, dispatch],
   )
-
-  const onWrap = React.useCallback(
-    (value: string) => {
-      const actions = refElementsToTargetForUpdates.current.map((path) => {
-        return wrapInLayoutable(path, value as any)
-      })
-      dispatch(actions, 'everyone')
-    },
-    [dispatch, refElementsToTargetForUpdates],
-  )
-  const onUnwrap = React.useCallback(() => {
-    const actions = refElementsToTargetForUpdates.current.map((path) => {
-      return unwrapLayoutable(path)
-    })
-    dispatch(actions, 'everyone')
-  }, [dispatch, refElementsToTargetForUpdates])
 
   const inspector = isUIJSFile ? (
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>

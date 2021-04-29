@@ -14,8 +14,7 @@ describe('JSX parser', () => {
     const parseResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     if (isParseSuccess(parseResult)) {
       expect(elementsStructure(parseResult.topLevelElements)).toMatchInlineSnapshot(`
-        "UNPARSED_CODE
-        IMPORT_STATEMENT
+        "IMPORT_STATEMENT
         UNPARSED_CODE
         IMPORT_STATEMENT
         UNPARSED_CODE
@@ -48,14 +47,12 @@ describe('JSX parser', () => {
       )
 
       expect(printedCode).toMatchInlineSnapshot(`
-        "/** @jsx jsx */
-        import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
+        "import * as React from 'react'
+        import { Scene, Storyboard, View } from 'utopia-api'
         export var App = (props) => {
           return (
             <View
-              style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ ...props.style, position: 'relative', backgroundColor: '#FFFFFF' }}
               data-uid='aaa'
             >
               <React.Fragment>

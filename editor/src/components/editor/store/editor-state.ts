@@ -1736,6 +1736,17 @@ export function getHighlightBoundsForUids(editorState: EditorState): HighlightBo
   return null
 }
 
+export function getHighlightBoundsForFile(
+  editorState: EditorState,
+  fullPath: string,
+): HighlightBoundsForUids | null {
+  const file = getContentsTreeFileFromString(editorState.projectContents, fullPath)
+  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    return getHighlightBoundsFromParseResult(file.fileContents.parsed)
+  }
+  return null
+}
+
 export function getHighlightBoundsForTemplatePath(
   path: TemplatePath,
   editorState: EditorState,
