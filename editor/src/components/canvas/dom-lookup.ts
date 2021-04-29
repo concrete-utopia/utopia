@@ -12,7 +12,7 @@ import {
   windowPoint,
   WindowPoint,
 } from '../../core/shared/math-utils'
-import { InstancePath, ScenePath, TemplatePath } from '../../core/shared/project-file-types'
+import { TemplatePath } from '../../core/shared/project-file-types'
 import * as TP from '../../core/shared/template-path'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
@@ -69,7 +69,6 @@ export function getValidTargetAtPoint(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
-  focusedElementPath: ScenePath | null,
   validTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
   point: WindowPoint | null,
   canvasScale: number,
@@ -83,7 +82,6 @@ export function getValidTargetAtPoint(
       componentMetadata,
       selectedViews,
       hiddenInstances,
-      focusedElementPath,
       validTemplatePathsForLookup,
       point,
       canvasScale,
@@ -96,7 +94,6 @@ export function getAllTargetsAtPoint(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
-  focusedElementPath: ScenePath | null,
   validTemplatePathsForLookup: Array<TemplatePath> | 'no-filter',
   point: WindowPoint | null,
   canvasScale: number,
@@ -110,7 +107,6 @@ export function getAllTargetsAtPoint(
     componentMetadata,
     selectedViews,
     hiddenInstances,
-    focusedElementPath,
     pointOnCanvas.canvasPositionRaw,
     [TargetSearchType.All],
     true,

@@ -660,9 +660,7 @@ export class InsertModeControlContainer extends React.Component<
   render() {
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
     const roots = mapDropNulls((child) => {
-      if (MetadataUtils.elementIsOldStyleScene(child)) {
-        return child.templatePath
-      } else if (isRight(child.element)) {
+      if (isRight(child.element)) {
         const childElement = child.element.value
         const isScene = withUnderlyingTarget(
           child.templatePath,

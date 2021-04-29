@@ -7,12 +7,10 @@ import {
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
 import {
   getUtopiaJSXComponentsFromSuccess,
   isHTMLComponent,
 } from '../../core/model/project-file-utils'
-import { createSceneTemplatePath } from '../../core/model/scene-utils'
 import { forEachRight, isRight, right } from '../../core/shared/either'
 import {
   isJSXAttributeOtherJavaScript,
@@ -30,14 +28,7 @@ import {
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
-import {
-  Imports,
-  InstancePath,
-  LayoutWrapper,
-  PropertyPath,
-  ScenePath,
-  TemplatePath,
-} from '../../core/shared/project-file-types'
+import { LayoutWrapper, PropertyPath, TemplatePath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import * as TP from '../../core/shared/template-path'
 import Utils from '../../utils/utils'
@@ -51,10 +42,8 @@ import {
   selectComponents,
   setAspectRatioLock,
   setProp_UNSAFE,
-  setSceneProp,
   transientActions,
   unsetProperty,
-  unsetSceneProp,
 } from '../editor/actions/action-creators'
 import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
@@ -603,10 +592,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
       let elements: Array<ElementPathElement> = []
       Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-        const component = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
-          jsxMetadata,
-          path,
-        )
+        const component = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
         if (component != null) {
           elements.push({
             name: MetadataUtils.getElementLabel(path, jsxMetadata),

@@ -82,7 +82,6 @@ import {
   isUnknownOrGeneratedElement,
   NodeModules,
   PropertyPath,
-  ScenePath,
   StaticInstancePath,
   StaticTemplatePath,
   TemplatePath,
@@ -586,7 +585,7 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: TemplatePath,
   ): Array<InstancePath> {
-    const element = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(elements, target)
+    const element = MetadataUtils.findElementByTemplatePath(elements, target)
     return element?.rootElements ?? []
   },
   getRootViews(
@@ -600,7 +599,7 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: TemplatePath,
   ): Array<InstancePath> {
-    const element = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(elements, target)
+    const element = MetadataUtils.findElementByTemplatePath(elements, target)
     return element?.children ?? []
   },
   getChildren(
@@ -614,7 +613,7 @@ export const MetadataUtils = {
     elements: ElementInstanceMetadataMap,
     target: TemplatePath,
   ): Array<InstancePath> {
-    const element = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(elements, target)
+    const element = MetadataUtils.findElementByTemplatePath(elements, target)
     return element == null ? [] : [...element.rootElements, ...element.children]
   },
   getImmediateChildren(
@@ -668,13 +667,6 @@ export const MetadataUtils = {
       ? []
       : MetadataUtils.getImmediateChildrenPaths(metadata, storyboardMetadata.templatePath)
   },
-  getAllStoryboardChildrenPathsScenesOnly(metadata: ElementInstanceMetadataMap): InstancePath[] {
-    const children = MetadataUtils.getAllStoryboardChildren(metadata)
-    return mapDropNulls(
-      (e) => (MetadataUtils.elementIsOldStyleScene(e) ? e.templatePath : null),
-      children,
-    )
-  },
   getAllCanvasRootPaths(metadata: ElementInstanceMetadataMap): TemplatePath[] {
     const rootScenesAndElements = MetadataUtils.getAllStoryboardChildren(metadata)
     return flatMapArray<ElementInstanceMetadata, TemplatePath>((root) => {
@@ -701,7 +693,6 @@ export const MetadataUtils = {
   },
   getAllPathsIncludingUnfurledFocusedComponents(
     metadata: ElementInstanceMetadataMap,
-    focusedElementPath: ScenePath | null,
   ): InstancePath[] {
     // This function needs to explicitly return the paths in a depth first manner
     let result: Array<InstancePath> = []
@@ -710,11 +701,7 @@ export const MetadataUtils = {
       const {
         children,
         unfurledComponents,
-      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-        elementPath,
-        metadata,
-        focusedElementPath,
-      )
+      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(elementPath, metadata)
       const childrenIncludingUnfurledComponents = [...children, ...unfurledComponents]
       fastForEach(childrenIncludingUnfurledComponents, recurseElement)
     }
@@ -722,10 +709,7 @@ export const MetadataUtils = {
     const rootInstances = this.getAllStoryboardChildrenPaths(metadata)
 
     fastForEach(rootInstances, (rootInstance) => {
-      const element = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
-        metadata,
-        rootInstance,
-      )
+      const element = MetadataUtils.findElementByTemplatePath(metadata, rootInstance)
       if (element != null) {
         result.push(rootInstance)
         element.rootElements.forEach(recurseElement)
@@ -862,7 +846,6 @@ export const MetadataUtils = {
   getAllChildrenIncludingUnfurledFocusedComponents(
     path: TemplatePath,
     metadata: ElementInstanceMetadataMap,
-    focusedElementPath: ScenePath | null,
   ): { children: Array<InstancePath>; unfurledComponents: Array<InstancePath> } {
     return {
       children: MetadataUtils.getChildrenPaths(metadata, path),
@@ -872,7 +855,6 @@ export const MetadataUtils = {
   getAllChildrenElementsIncludingUnfurledFocusedComponents(
     path: TemplatePath,
     metadata: ElementInstanceMetadataMap,
-    focusedElementPath: ScenePath | null,
   ): {
     children: Array<ElementInstanceMetadata>
     unfurledComponents: Array<ElementInstanceMetadata>
@@ -885,7 +867,6 @@ export const MetadataUtils = {
   createOrderedTemplatePathsFromElements(
     metadata: ElementInstanceMetadataMap,
     collapsedViews: Array<TemplatePath>,
-    focusedElementPath: ScenePath | null,
   ): { navigatorTargets: Array<TemplatePath>; visibleNavigatorTargets: Array<TemplatePath> } {
     // This function exists separately from getAllPaths because the Navigator has a specific
     // ordering for the paths, which arguably should go in the bin
@@ -901,11 +882,7 @@ export const MetadataUtils = {
       const {
         children,
         unfurledComponents,
-      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
-        path,
-        metadata,
-        focusedElementPath,
-      )
+      } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(path, metadata)
       const childrenIncludingFocusedElements = [...children, ...unfurledComponents]
       const reversedChildren = R.reverse(childrenIncludingFocusedElements)
 
@@ -993,7 +970,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     staticName: JSXElementName | null = null,
   ): string {
-    const element = this.findElementByTemplatePathDontThrowOnScenes(metadata, path)
+    const element = this.findElementByTemplatePath(metadata, path)
     if (element != null) {
       const sceneLabel = element.label // KILLME?
       const dataLabelProp = MetadataUtils.getElementLabelFromProps(element)
@@ -1112,13 +1089,6 @@ export const MetadataUtils = {
   getDuplicationParentTargets(targets: TemplatePath[]): TemplatePath | null {
     return TP.getCommonParent(targets)
   },
-  elementIsOldStyleScene(element: ElementInstanceMetadata): boolean {
-    return isLeft(element.element) && element.element.value === 'Scene'
-  },
-  elementAtPathIsOldStyleScene(elements: ElementInstanceMetadataMap, path: TemplatePath): boolean {
-    const element = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(elements, path)
-    return element == null ? false : MetadataUtils.elementIsOldStyleScene(element)
-  },
   mergeComponentMetadata(
     elementsByUID: ElementsByUID,
     fromSpy: ElementInstanceMetadataMap,
@@ -1162,17 +1132,13 @@ export const MetadataUtils = {
       } else {
         let componentInstance = spyElem.componentInstance || domElem.componentInstance
         let jsxElement = alternativeEither(spyElem.element, domElem.element)
-        if (MetadataUtils.elementIsOldStyleScene(spyElem)) {
-          // We have some weird special casing for Scenes (see https://github.com/concrete-utopia/utopia/pull/671)
-          jsxElement = spyElem.element
-        } else {
-          const elemUID: string | null = TP.toStaticUid(domElem.templatePath)
-          const possibleElement = elementsByUID[elemUID]
-          if (possibleElement != null) {
-            if (!isIntrinsicElement(possibleElement.name)) {
-              componentInstance = true
-              jsxElement = right(possibleElement)
-            }
+
+        const elemUID: string | null = TP.toStaticUid(domElem.templatePath)
+        const possibleElement = elementsByUID[elemUID]
+        if (possibleElement != null) {
+          if (!isIntrinsicElement(possibleElement.name)) {
+            componentInstance = true
+            jsxElement = right(possibleElement)
           }
         }
 
@@ -1514,7 +1480,7 @@ export const MetadataUtils = {
     imports: Imports,
   ): boolean {
     const elementName = MetadataUtils.getJSXElementName(path, components)
-    const element = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(metadata, path)
+    const element = MetadataUtils.findElementByTemplatePath(metadata, path)
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
@@ -1585,7 +1551,7 @@ export function getScenePropsOrElementAttributes(
   target: TemplatePath,
   metadata: ElementInstanceMetadataMap,
 ): PropsOrJSXAttributes | null {
-  const targetMetadata = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(metadata, target)
+  const targetMetadata = MetadataUtils.findElementByTemplatePath(metadata, target)
   if (targetMetadata == null) {
     return null
   } else {

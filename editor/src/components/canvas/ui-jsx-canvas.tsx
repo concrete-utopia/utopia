@@ -15,7 +15,6 @@ import { getValidTemplatePaths } from '../../core/model/element-template-utils'
 import {
   Imports,
   InstancePath,
-  ScenePath,
   TemplatePath,
   isParseSuccess,
   StaticInstancePath,
@@ -79,7 +78,7 @@ import { CanvasContainerID } from './canvas-types'
 import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
-import { UTOPIA_SCENE_PATH } from '../../core/model/utopia-constants'
+import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
 import {
   createLookupRender,
   utopiaCanvasJSXLookup,
@@ -142,7 +141,7 @@ export interface UiJsxCanvasProps {
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
-  focusedElementPath: ScenePath | null
+  focusedElementPath: TemplatePath | null
   projectContents: ProjectContentTreeRoot
   transientFilesState: TransientFilesState | null
   scrollAnimation: boolean
@@ -378,7 +377,7 @@ export const UiJsxCanvas = betterReactMemo(
         StoryboardRootComponent,
         rootValidPaths,
         storyboardRootElementPath,
-        rootScenePath,
+        rootInstancePath,
       } = useGetStoryboardRoot(
         props.focusedElementPath,
         topLevelElementsMap,
@@ -401,7 +400,6 @@ export const UiJsxCanvas = betterReactMemo(
                 hiddenInstances: hiddenInstances,
                 canvasIsLive: canvasIsLive,
                 shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
-                focusedElementPath: props.focusedElementPath,
               }}
             >
               <UtopiaProjectContext.Provider
@@ -430,7 +428,9 @@ export const UiJsxCanvas = betterReactMemo(
                       }}
                     >
                       {StoryboardRootComponent == null ? null : (
-                        <StoryboardRootComponent {...{ [UTOPIA_SCENE_PATH]: rootScenePath }} />
+                        <StoryboardRootComponent
+                          {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }}
+                        />
                       )}
                     </ParentLevelUtopiaContext.Provider>
                   </SceneLevelUtopiaContext.Provider>
@@ -447,7 +447,7 @@ export const UiJsxCanvas = betterReactMemo(
 )
 
 function useGetStoryboardRoot(
-  focusedElementPath: ScenePath | null,
+  focusedElementPath: TemplatePath | null,
   topLevelElementsMap: Map<string, UtopiaJSXComponent>,
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
@@ -457,7 +457,7 @@ function useGetStoryboardRoot(
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootElementPath: InstancePath
   rootValidPaths: Array<InstancePath>
-  rootScenePath: ScenePath
+  rootInstancePath: TemplatePath
 } {
   const StoryboardRootComponent = executionScope[BakedInStoryboardVariableName] as
     | ComponentRendererComponent
@@ -481,7 +481,7 @@ function useGetStoryboardRoot(
     StoryboardRootComponent: StoryboardRootComponent,
     storyboardRootElementPath: storyboardRootElementPath,
     rootValidPaths: validPaths,
-    rootScenePath: EmptyScenePathForStoryboard,
+    rootInstancePath: EmptyScenePathForStoryboard,
   }
 }
 

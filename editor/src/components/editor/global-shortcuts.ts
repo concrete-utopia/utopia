@@ -458,7 +458,6 @@ export function handleKeyDown(
             editor.jsxMetadata,
             editor.selectedViews,
             editor.hiddenInstances,
-            editor.focusedElementPath,
             'no-filter',
             WindowMousePositionRaw,
             editor.canvas.scale,

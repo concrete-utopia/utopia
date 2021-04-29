@@ -19,7 +19,6 @@ import {
   TemplatePath,
   InstancePath,
   Imports,
-  ScenePath,
   NodeModules,
 } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
@@ -93,7 +92,7 @@ export interface ControlProps {
   nodeModules: NodeModules
   openFile: string | null
   hiddenInstances: Array<TemplatePath>
-  focusedElementPath: ScenePath | null
+  focusedElementPath: TemplatePath | null
   highlightsEnabled: boolean
   canvasOffset: CanvasPoint
   scale: number

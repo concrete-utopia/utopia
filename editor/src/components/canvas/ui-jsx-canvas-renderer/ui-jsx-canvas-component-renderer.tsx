@@ -24,8 +24,8 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
-import { isParseSuccess, isTextFile, ScenePath } from '../../../core/shared/project-file-types'
-import { UTOPIA_SCENE_PATH } from '../../../core/model/utopia-constants'
+import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { UTOPIA_INSTANCE_PATH } from '../../../core/model/utopia-constants'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { useEditorState } from '../../editor/store/store-hook'
 import { getFileForName } from '../../editor/store/editor-state'
@@ -35,7 +35,9 @@ import {
   useGetTopLevelElements,
 } from './ui-jsx-canvas-top-level-elements'
 
-export type ComponentRendererComponent = React.ComponentType<{ [UTOPIA_SCENE_PATH]: ScenePath }> & {
+export type ComponentRendererComponent = React.ComponentType<{
+  [UTOPIA_INSTANCE_PATH]: TemplatePath
+}> & {
   topLevelElementName: string
   propertyControls?: PropertyControls
 }
@@ -57,14 +59,16 @@ export function createComponentRendererComponent(params: {
 }): ComponentRendererComponent {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
-      [UTOPIA_SCENE_PATH]: scenePathAny, // TODO types?
+      [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
 
-    if (!TP.isScenePath(scenePathAny)) {
-      throw new Error(`Utopia Error: ScenePath is not provided for ${params.topLevelElementName}`)
+    if (!TP.isTemplatePath(instancePathAny)) {
+      throw new Error(
+        `Utopia Error: Instance Path is not provided for ${params.topLevelElementName}`,
+      )
     }
-    const scenePath: ScenePath = scenePathAny
+    const instancePath: TemplatePath = instancePathAny
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
@@ -107,9 +111,10 @@ export function createComponentRendererComponent(params: {
 
     let codeError: Error | null = null
 
-    const rootTemplatePath = TP.instancePath(scenePath, [
+    const rootTemplatePath = TP.appendNewElementPath(
+      instancePath,
       getUtopiaID(utopiaJsxComponent.rootElement),
-    ])
+    )
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const lookupRenderer = createLookupRender(
@@ -144,7 +149,7 @@ export function createComponentRendererComponent(params: {
       if (isJSXFragment(element)) {
         return <>{element.children.map(buildComponentRenderResult)}</>
       } else {
-        const ownTemplatePath = TP.instancePath(scenePath, [getUtopiaID(element)])
+        const ownTemplatePath = TP.appendNewElementPath(instancePath, getUtopiaID(element))
 
         return renderCoreElement(
           element,

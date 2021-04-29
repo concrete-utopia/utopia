@@ -10,7 +10,7 @@ import {
   WindowPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { ScenePath, TemplatePath } from '../../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../../core/shared/project-file-types'
 import * as TP from '../../../../core/shared/template-path'
 import { fastForEach, NO_OP } from '../../../../core/shared/utils'
 import { WindowMousePositionRaw } from '../../../../templates/editor-canvas'
@@ -114,19 +114,15 @@ export function getSelectableViews(
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<TemplatePath>,
   hiddenInstances: Array<TemplatePath>,
-  focusedElementPath: ScenePath | null,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
 ): TemplatePath[] {
   let candidateViews: Array<TemplatePath>
 
   if (allElementsDirectlySelectable) {
-    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
-      componentMetadata,
-      focusedElementPath,
-    )
+    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
   } else {
-    const scenes = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(componentMetadata)
+    const scenes = MetadataUtils.getAllStoryboardChildrenPaths(componentMetadata)
     let rootElementsToFilter: TemplatePath[] = []
     let dynamicScenesWithFragmentRootViews: TemplatePath[] = []
     Utils.fastForEach(scenes, (path) => {
@@ -146,7 +142,9 @@ export function getSelectableViews(
     })
     let siblings: Array<TemplatePath> = []
     Utils.fastForEach(selectedViews, (view) => {
-      const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
+      const allPaths = childrenSelectable
+        ? TP.allPaths(view)
+        : TP.allPaths(TP.parentTemplatePath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
         const {
           children,
@@ -154,7 +152,6 @@ export function getSelectableViews(
         } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
           ancestor,
           componentMetadata,
-          focusedElementPath,
         )
         const ancestorChildren = [...children, ...unfurledComponents]
         fastForEach(ancestorChildren, (child) => siblings.push(child))
@@ -206,7 +203,6 @@ function useFindValidTarget(): (
         selectedViews,
         componentMetadata,
         hiddenInstances,
-        focusedElementPath,
         canvasScale,
         canvasOffset,
       } = storeRef.current
@@ -214,7 +210,6 @@ function useFindValidTarget(): (
         componentMetadata,
         selectedViews,
         hiddenInstances,
-        focusedElementPath,
         selectableViews,
         mousePoint,
         canvasScale,
@@ -372,17 +367,11 @@ function useGetSelectableViewsForSelectMode() {
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
-      const {
-        componentMetadata,
-        selectedViews,
-        hiddenInstances,
-        focusedElementPath,
-      } = storeRef.current
+      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
         selectedViews,
         hiddenInstances,
-        focusedElementPath,
         allElementsDirectlySelectable,
         childrenSelectable,
       )

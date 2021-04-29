@@ -6,7 +6,7 @@ import {
   isJSXElement,
   JSXElementName,
 } from '../../../core/shared/element-template'
-import { ElementOriginType, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementOriginType, TemplatePath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import * as TP from '../../../core/shared/template-path'

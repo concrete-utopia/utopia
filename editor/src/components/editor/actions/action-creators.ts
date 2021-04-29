@@ -29,7 +29,6 @@ import type {
   ParsedTextFile,
   ProjectFile,
   PropertyPath,
-  ScenePath,
   StaticElementPath,
   TemplatePath,
   TextFile,
@@ -70,7 +69,6 @@ import type {
   CopySelectionToClipboard,
   DeleteFile,
   DeleteView,
-  DeleteViews,
   DistributeSelectedViews,
   Distribution,
   DuplicateSelected,
@@ -137,7 +135,6 @@ import type {
   SetRightMenuTab,
   SetSafeMode,
   SetSaveError,
-  SetSceneProp,
   SetShortcut,
   SetStoredFontSettings,
   SetZIndex,
@@ -156,7 +153,6 @@ import type {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnsetSceneProp,
   UnwrapGroupOrView,
   UpdateChildText,
   UpdateCodeResultCache,
@@ -226,13 +222,6 @@ export function deleteView(target: TemplatePath): DeleteView {
   return {
     action: 'DELETE_VIEW',
     target: target,
-  }
-}
-
-export function deleteViews(targets: Array<TemplatePath>): DeleteViews {
-  return {
-    action: 'DELETE_VIEWS',
-    targets: targets,
   }
 }
 
@@ -1054,27 +1043,6 @@ export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
   }
 }
 
-export function setSceneProp(
-  scenePath: ScenePath,
-  propertyPath: PropertyPath,
-  value: JSXAttribute,
-): SetSceneProp {
-  return {
-    action: 'SET_SCENE_PROP',
-    scenePath: scenePath,
-    propertyPath: propertyPath,
-    value: value,
-  }
-}
-
-export function unsetSceneProp(scenePath: ScenePath, propertyPath: PropertyPath): UnsetSceneProp {
-  return {
-    action: 'UNSET_SCENE_PROP',
-    scenePath: scenePath,
-    propertyPath: propertyPath,
-  }
-}
-
 export function updateJSXElementName(
   target: InstancePath,
   elementName: JSXElementName,
@@ -1265,7 +1233,9 @@ export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
   }
 }
 
-export function setFocusedElement(focusedElementTemplatePath: ScenePath | null): SetFocusedElement {
+export function setFocusedElement(
+  focusedElementTemplatePath: TemplatePath | null,
+): SetFocusedElement {
   return {
     action: 'SET_FOCUSED_ELEMENT',
     focusedElementPath: focusedElementTemplatePath,

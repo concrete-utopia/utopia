@@ -2,7 +2,6 @@ import * as R from 'ramda'
 import {
   SceneMetadata,
   StaticInstancePath,
-  ScenePath,
   PropertyPath,
   isTextFile,
   isParseSuccess,
@@ -68,10 +67,6 @@ export const PathForResizeContent = PP.create([ResizesContentProp])
 
 export function createSceneUidFromIndex(sceneIndex: number): string {
   return `scene-${sceneIndex}`
-}
-
-export function createSceneTemplatePath(scenePath: ScenePath): StaticInstancePath {
-  return TP.instancePathForElementAtScenePath(scenePath)
 }
 
 export function mapScene(scene: SceneMetadata): JSXElement {
