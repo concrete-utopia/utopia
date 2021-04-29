@@ -297,7 +297,7 @@ export interface SetProjectID {
 
 export interface OpenTextEditor {
   action: 'OPEN_TEXT_EDITOR'
-  target: InstancePath
+  target: TemplatePath
   mousePosition: WindowPoint | null
 }
 
@@ -613,7 +613,7 @@ export interface SaveDOMReport {
 
 export interface SetProp {
   action: 'SET_PROP'
-  target: InstancePath
+  target: TemplatePath
   propertyPath: PropertyPath
   value: JSXAttribute
 }

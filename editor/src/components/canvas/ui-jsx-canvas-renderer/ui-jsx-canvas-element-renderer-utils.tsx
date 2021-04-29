@@ -328,7 +328,7 @@ function renderJSXElement(
     templatePath != null &&
     TP.containsPath(staticTemplatePathForGeneratedElement, staticValidPaths)
   ) {
-    let childrenTemplatePaths: InstancePath[] = []
+    let childrenTemplatePaths: TemplatePath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {
       if (isJSXElement(child)) {

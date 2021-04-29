@@ -511,7 +511,7 @@ function applyUpdateToJSXElement(
 
 function setPropertyOnTarget(
   editor: EditorModel,
-  target: InstancePath,
+  target: TemplatePath,
   updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
 ): EditorModel {
   return modifyOpenJsxElementAtPath(

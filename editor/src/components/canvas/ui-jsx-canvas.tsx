@@ -125,7 +125,7 @@ export interface UiJsxCanvasProps {
   requireFn: UtopiaRequireFn
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: TemplatePath[]
-  editedTextElement: InstancePath | null
+  editedTextElement: TemplatePath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
   onDomReport: (

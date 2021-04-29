@@ -520,23 +520,20 @@ export function appendNewElementPath(path: TemplatePath, next: id | ElementPath)
   return templatePath([...currentPath, toAppend])
 }
 
-export function appendToPath(path: StaticTemplatePath, next: id): StaticInstancePath
-export function appendToPath(path: TemplatePath, next: id): InstancePath
-export function appendToPath(path: StaticInstancePath, next: Array<id>): StaticInstancePath
-export function appendToPath(path: InstancePath, next: Array<id>): InstancePath
-export function appendToPath(path: StaticTemplatePath, next: Array<id>): StaticTemplatePath
-export function appendToPath(path: TemplatePath, next: Array<id>): TemplatePath
-export function appendToPath(path: TemplatePath, next: id | Array<id>): TemplatePath
-export function appendToPath(path: TemplatePath, next: id | Array<id>): TemplatePath {
-  const nextArray = Array.isArray(next) ? next : [next]
-  if (nextArray.length === 0) {
-    return path
-  }
-
-  if (isScenePath(path)) {
-    return instancePath(path, nextArray)
+export function appendToPath(
+  path: StaticTemplatePath,
+  next: id | StaticElementPath,
+): StaticTemplatePath
+export function appendToPath(path: TemplatePath, next: id | ElementPath): TemplatePath
+export function appendToPath(path: TemplatePath, next: id | ElementPath): TemplatePath {
+  const fullElementPath = fullElementPathForPath(path)
+  if (isEmptyElementPathsArray(fullElementPath)) {
+    return templatePath([Array.isArray(next) ? next : [next]])
   } else {
-    return instancePath(path.scene, appendToElementPath(path.element, nextArray))
+    const prefix = dropLast(fullElementPath)
+    const lastPart = last(fullElementPath)!
+    const updatedLastPart = appendToElementPath(lastPart, next)
+    return templatePath([...prefix, updatedLastPart])
   }
 }
 

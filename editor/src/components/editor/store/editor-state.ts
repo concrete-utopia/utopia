@@ -285,7 +285,7 @@ export interface EditorState {
     realCanvasOffset: CanvasVector
     roundedCanvasOffset: CanvasVector
     textEditor: {
-      templatePath: InstancePath
+      templatePath: TemplatePath
       triggerMousePosition: WindowPoint | null
     } | null
     selectionControlsVisible: boolean
@@ -591,7 +591,7 @@ export function modifyOpenJSXElementsAndMetadata(
 }
 
 export function modifyOpenJsxElementAtPath(
-  path: InstancePath,
+  path: TemplatePath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {

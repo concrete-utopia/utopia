@@ -31,6 +31,79 @@ describe('factory function', () => {
   })
 })
 
+describe('appending to a path', () => {
+  it('appendToPath appends to the last part', () => {
+    const start = TP.templatePath([
+      ['A', 'B'],
+      ['C', 'D'],
+    ])
+    const singleElementAdded = TP.appendToPath(start, 'E')
+    const singleElementAddedViaArray = TP.appendToPath(start, ['E'])
+    const multipleElementsAdded = TP.appendToPath(start, ['E', 'F'])
+
+    expect(singleElementAdded).toEqual(
+      TP.templatePath([
+        ['A', 'B'],
+        ['C', 'D', 'E'],
+      ]),
+    )
+    expect(singleElementAddedViaArray).toEqual(
+      TP.templatePath([
+        ['A', 'B'],
+        ['C', 'D', 'E'],
+      ]),
+    )
+    expect(multipleElementsAdded).toEqual(
+      TP.templatePath([
+        ['A', 'B'],
+        ['C', 'D', 'E', 'F'],
+      ]),
+    )
+  })
+
+  it('appendToPath works with an empty path', () => {
+    const start = TP.emptyTemplatePath
+    const singleElementAdded = TP.appendToPath(start, 'E')
+    const singleElementAddedViaArray = TP.appendToPath(start, ['E'])
+    const multipleElementsAdded = TP.appendToPath(start, ['E', 'F'])
+
+    expect(singleElementAdded).toEqual(TP.templatePath([['E']]))
+    expect(singleElementAddedViaArray).toEqual(TP.templatePath([['E']]))
+    expect(multipleElementsAdded).toEqual(TP.templatePath([['E', 'F']]))
+  })
+
+  it('appendNewElementPath appends a new element path array', () => {
+    const start = TP.templatePath([
+      ['A', 'B'],
+      ['C', 'D'],
+    ])
+    const singleElementAdded = TP.appendNewElementPath(start, 'E')
+    const singleElementAddedViaArray = TP.appendNewElementPath(start, ['E'])
+    const multipleElementsAdded = TP.appendNewElementPath(start, ['E', 'F'])
+
+    expect(singleElementAdded).toEqual(TP.templatePath([['A', 'B'], ['C', 'D'], ['E']]))
+    expect(singleElementAddedViaArray).toEqual(TP.templatePath([['A', 'B'], ['C', 'D'], ['E']]))
+    expect(multipleElementsAdded).toEqual(
+      TP.templatePath([
+        ['A', 'B'],
+        ['C', 'D'],
+        ['E', 'F'],
+      ]),
+    )
+  })
+
+  it('appendNewElementPath works with an empty path', () => {
+    const start = TP.emptyTemplatePath
+    const singleElementAdded = TP.appendNewElementPath(start, 'E')
+    const singleElementAddedViaArray = TP.appendNewElementPath(start, ['E'])
+    const multipleElementsAdded = TP.appendNewElementPath(start, ['E', 'F'])
+
+    expect(singleElementAdded).toEqual(TP.templatePath([['E']]))
+    expect(singleElementAddedViaArray).toEqual(TP.templatePath([['E']]))
+    expect(multipleElementsAdded).toEqual(TP.templatePath([['E', 'F']]))
+  })
+})
+
 describe('pathsEqual', () => {
   it('returns true for empty paths', () => {
     const l = TP.templatePath([])

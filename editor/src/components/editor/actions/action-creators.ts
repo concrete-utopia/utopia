@@ -366,7 +366,7 @@ export function copySelectionToClipboard(): CopySelectionToClipboard {
 }
 
 export function openTextEditor(
-  target: InstancePath,
+  target: TemplatePath,
   mousePosition: WindowPoint | null, // if mousePosition is zero, the whole text will be selected
 ): OpenTextEditor {
   return {
@@ -958,7 +958,7 @@ export function saveDOMReport(
 
 /** WARNING: you probably don't want to use setProp, instead you should use a domain-specific action! */
 export function setProp_UNSAFE(
-  target: InstancePath,
+  target: TemplatePath,
   propertyPath: PropertyPath,
   value: JSXAttribute,
 ): SetProp {

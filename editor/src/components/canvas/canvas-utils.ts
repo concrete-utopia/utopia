@@ -1758,7 +1758,7 @@ export function moveTemplate(
   }
   const target = TP.instancePathForElementAtPath(targetPath)
   let newIndex: number = 0
-  let newInstancePath: InstancePath | null = null
+  let newPath: TemplatePath | null = null
   let flexContextChanged: boolean = false
 
   const targetID = TP.toUid(target)
@@ -1808,7 +1808,6 @@ export function moveTemplate(
               let workingEditorState: EditorState = editorState
 
               let updatedUtopiaComponents: Array<UtopiaJSXComponent> = withLayoutUpdatedForNewContext
-              let newPath: TemplatePath | null = null
 
               flexContextChanged = flexContextChanged || didSwitch
 
@@ -1862,7 +1861,6 @@ export function moveTemplate(
               }
 
               newPath = TP.appendToPath(newParentPath, targetID)
-              newInstancePath = newPath
 
               let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
               // Need to make these changes ahead of updating the frame.
@@ -1887,7 +1885,7 @@ export function moveTemplate(
                 updatedComponentMetadata = MetadataUtils.transformAllPathsInMetadata(
                   updatedComponentMetadata,
                   target,
-                  newInstancePath,
+                  newPath,
                 )
               }
               workingEditorState.jsxMetadata = updatedComponentMetadata
@@ -1895,7 +1893,7 @@ export function moveTemplate(
               if (
                 newFrame !== SkipFrameChange &&
                 newFrame != null &&
-                newInstancePath != null &&
+                newPath != null &&
                 !flexContextChanged
               ) {
                 const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -1903,7 +1901,7 @@ export function moveTemplate(
                   componentMetadata,
                 )
                 const frameChanges: Array<PinOrFlexFrameChange> = [
-                  getFrameChange(newInstancePath, newFrame, isParentFlex),
+                  getFrameChange(newPath, newFrame, isParentFlex),
                 ]
 
                 workingEditorState = updateFramesOfScenesAndComponents(
@@ -1915,7 +1913,7 @@ export function moveTemplate(
 
               const newSelectedViews = selectedViews.map((v) => {
                 if (TP.pathsEqual(v, target)) {
-                  return newInstancePath
+                  return newPath
                 } else {
                   return v
                 }
@@ -1923,7 +1921,7 @@ export function moveTemplate(
 
               const newHighlightedViews =
                 newParentPath == null
-                  ? highlightedViews.map((t) => (TP.pathsEqual(t, target) ? newInstancePath : t))
+                  ? highlightedViews.map((t) => (TP.pathsEqual(t, target) ? newPath : t))
                   : [newParentPath]
 
               const updatedEditorState: EditorState = {
@@ -1934,7 +1932,7 @@ export function moveTemplate(
 
               return {
                 updatedEditorState: updatedEditorState,
-                newPath: newInstancePath,
+                newPath: newPath,
               }
             }
           },
