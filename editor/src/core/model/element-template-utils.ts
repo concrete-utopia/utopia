@@ -27,14 +27,11 @@ import {
   getJSXAttribute,
   getJSXElementNameAsString,
 } from '../shared/element-template'
-import { optionalMap } from '../shared/optional-utils'
 import {
   Imports,
-  InstancePath,
   isParseSuccess,
   isTextFile,
   StaticElementPath,
-  StaticInstancePath,
   StaticTemplatePath,
   TemplatePath,
 } from '../shared/project-file-types'
@@ -323,7 +320,7 @@ export function elementSupportsChildren(imports: Imports, element: JSXElementChi
 
 export function transformJSXComponentAtPath(
   components: Array<UtopiaJSXComponent>,
-  path: StaticInstancePath,
+  path: StaticTemplatePath,
   transform: (elem: JSXElement) => JSXElement,
 ): Array<UtopiaJSXComponent> {
   return transformJSXComponentAtElementPath(components, TP.elementPathForPath(path), transform)
@@ -507,54 +504,45 @@ export function removeJSXElementChild(
   target: StaticTemplatePath,
   rootElements: Array<UtopiaJSXComponent>,
 ): Array<UtopiaJSXComponent> {
-  if (TP.isScenePath(target)) {
-    // TODO Scene Implementation
-    return rootElements
-  }
-
   const parentPath = TP.parentPath(target)
   const targetID = TP.toUid(target)
   // Remove it from where it used to be.
-  if (TP.isScenePath(parentPath)) {
-    // TODO Scene Implementation
-    return rootElements
-  } else {
-    function removeRelevantChild<T extends JSXElementChild>(
-      parentElement: T,
-      descendIntoElements: boolean,
-    ): T {
-      if (isJSXElement(parentElement) && descendIntoElements) {
-        let updatedChildren = parentElement.children.filter((child) => {
-          return getUtopiaID(child) != targetID
-        })
-        updatedChildren = updatedChildren.map((child) => {
-          return removeRelevantChild(child, false)
-        })
-        return {
-          ...parentElement,
-          children: updatedChildren,
-        }
-      } else if (isJSXFragment(parentElement)) {
-        let updatedChildren = parentElement.children.filter((child) => {
-          return getUtopiaID(child) != targetID
-        })
-        updatedChildren = updatedChildren.map((child) => removeRelevantChild(child, false))
-        return {
-          ...parentElement,
-          children: updatedChildren,
-        }
-      } else {
-        return parentElement
+
+  function removeRelevantChild<T extends JSXElementChild>(
+    parentElement: T,
+    descendIntoElements: boolean,
+  ): T {
+    if (isJSXElement(parentElement) && descendIntoElements) {
+      let updatedChildren = parentElement.children.filter((child) => {
+        return getUtopiaID(child) != targetID
+      })
+      updatedChildren = updatedChildren.map((child) => {
+        return removeRelevantChild(child, false)
+      })
+      return {
+        ...parentElement,
+        children: updatedChildren,
       }
+    } else if (isJSXFragment(parentElement)) {
+      let updatedChildren = parentElement.children.filter((child) => {
+        return getUtopiaID(child) != targetID
+      })
+      updatedChildren = updatedChildren.map((child) => removeRelevantChild(child, false))
+      return {
+        ...parentElement,
+        children: updatedChildren,
+      }
+    } else {
+      return parentElement
     }
-    return transformAtPathOptionally(
-      rootElements,
-      TP.elementPathForPath(parentPath),
-      (parentElement: JSXElement) => {
-        return removeRelevantChild(parentElement, true)
-      },
-    ).elements
   }
+  return transformAtPathOptionally(
+    rootElements,
+    TP.elementPathForPath(parentPath),
+    (parentElement: JSXElement) => {
+      return removeRelevantChild(parentElement, true)
+    },
+  ).elements
 }
 
 export function insertJSXElementChild(
@@ -572,9 +560,6 @@ export function insertJSXElementChild(
   const targetParentIncludingStoryboardRoot =
     targetParent ?? getStoryboardTemplatePath(projectContents, openFile)
   if (targetParentIncludingStoryboardRoot == null) {
-    return components
-  } else if (TP.isScenePath(targetParentIncludingStoryboardRoot)) {
-    // TODO Scene Implementation
     return components
   } else {
     return transformJSXComponentAtPath(
@@ -607,22 +592,19 @@ export function insertJSXElementChild(
 
 export function getZIndexOfElement(
   topLevelElements: Array<TopLevelElement>,
-  target: StaticInstancePath,
+  target: StaticTemplatePath,
 ): number {
   const parentPath = TP.parentPath(target)
-  if (parentPath != null) {
-    if (!TP.isScenePath(parentPath)) {
-      const parentElement = findJSXElementAtStaticPath(
-        getComponentsFromTopLevelElements(topLevelElements),
-        parentPath,
-      )
-      if (parentElement != null) {
-        const elementUID = TP.toUid(target)
-        return parentElement.children.findIndex((child) => {
-          return isJSXElement(child) && getUtopiaID(child) === elementUID
-        })
-      }
-    }
+  const parentElement = findJSXElementAtStaticPath(
+    getComponentsFromTopLevelElements(topLevelElements),
+    parentPath,
+  )
+  if (parentElement != null) {
+    const elementUID = TP.toUid(target)
+    return parentElement.children.findIndex((child) => {
+      return isJSXElement(child) && getUtopiaID(child) === elementUID
+    })
+  } else {
+    return -1
   }
-  return -1
 }

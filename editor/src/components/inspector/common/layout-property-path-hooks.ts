@@ -21,7 +21,7 @@ import { findElementAtPath, MetadataUtils } from '../../../core/model/element-me
 import { isLeft, right } from '../../../core/shared/either'
 import { isJSXElement, jsxAttributeValue } from '../../../core/shared/element-template'
 import { LocalRectangle } from '../../../core/shared/math-utils'
-import { InstancePath } from '../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 import * as TP from '../../../core/shared/template-path'
 import Utils from '../../../utils/utils'
 import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
@@ -71,13 +71,13 @@ function allPinsMatch(point: FramePoint, framesToCheck: readonly Frame[]): boole
 }
 
 interface PinToSet {
-  path: InstancePath
+  path: TemplatePath
   pin: FramePoint
   value: FramePin
 }
 
 interface PinToUnset {
-  path: InstancePath
+  path: TemplatePath
   pin: FramePoint
 }
 
@@ -88,7 +88,7 @@ interface ChangePinResult {
 }
 
 export interface ElementFrameInfo {
-  path: InstancePath
+  path: TemplatePath
   frame: Frame
   localFrame: LocalRectangle | null
   parentFrame: LocalRectangle | null
@@ -288,7 +288,7 @@ export function usePinToggling(): UsePinTogglingResult {
 
   const elementsRef = useRefEditorState((store) =>
     TP.filterScenes(selectedViewsRef.current).map((e) =>
-      MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadata, e),
+      MetadataUtils.findElementByTemplatePath(store.editor.jsxMetadata, e),
     ),
   )
 

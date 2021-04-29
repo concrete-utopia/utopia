@@ -484,13 +484,10 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       (underlyingSuccess, underlyingElement, underlyingTarget) => {
         const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
         // TODO multiselect
-        const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
+        const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
         if (elementMetadata != null) {
           const parentPath = TP.parentPath(underlyingTarget)
-          const parentElement =
-            parentPath != null && TP.isInstancePath(parentPath)
-              ? findElementAtPath(parentPath, rootComponents)
-              : null
+          const parentElement = findElementAtPath(parentPath, rootComponents)
 
           const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadata, path)
           const nonGroupAncestorFrame =

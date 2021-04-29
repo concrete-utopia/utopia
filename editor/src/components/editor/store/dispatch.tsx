@@ -7,22 +7,7 @@ import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import {
-  fileTypeFromFileName,
-  updateParsedTextFileHighlightBounds,
-} from '../../../core/model/project-file-utils'
-import {
-  TemplatePath,
-  TextFile,
-  isParseSuccess,
-  ProjectContents,
-  isTextFile,
-  textFile,
-  textFileContents,
-  RevisionsState,
-  InstancePath,
-  NodeModules,
-} from '../../../core/shared/project-file-types'
+import { TemplatePath, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -512,12 +497,6 @@ export function editorDispatch(
 
   if (frozenEditorState.id != null && frozenEditorState.id != storedState.editor.id) {
     storedState.workers.initWatchdogWorker(frozenEditorState.id)
-  }
-
-  if (frozenEditorState.selectedViews.some(TP.isScenePath)) {
-    throw new Error(
-      `Scene path selected: ${frozenEditorState.selectedViews.map(TP.toString).join(', ')}`,
-    )
   }
 
   return {

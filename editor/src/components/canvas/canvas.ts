@@ -6,12 +6,7 @@ import {
 } from '../../core/shared/element-template'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
-import {
-  InstancePath,
-  TemplatePath,
-  importDetails,
-  importAlias,
-} from '../../core/shared/project-file-types'
+import { TemplatePath } from '../../core/shared/project-file-types'
 import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
   KeyCharacter,

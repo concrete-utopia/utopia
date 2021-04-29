@@ -125,12 +125,9 @@ import type {
   RequestedNpmDependency,
 } from '../../../core/shared/npm-dependency-types'
 import {
-  InstancePath,
   isParseSuccess,
   isTextFile,
-  LayoutWrapper,
   ParsedTextFile,
-  ParseSuccess,
   ProjectContents,
   ProjectFile,
   PropertyPath,
@@ -138,21 +135,15 @@ import {
   StaticElementPath,
   TemplatePath,
   TextFile,
-  importAlias,
   isAssetFile,
-  ESCodeFile,
-  esCodeFile,
   NodeModules,
-  Imports,
-  importDetails,
-  StaticInstancePath,
+  StaticTemplatePath,
   textFileContents,
   textFile,
   codeFile,
   unparsed,
 } from '../../../core/shared/project-file-types'
 import {
-  addImport,
   codeNeedsParsing,
   codeNeedsPrinting,
   mergeImports,
@@ -538,7 +529,7 @@ function setPropertyOnTargetAtElementPath(
 
 function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
   scenes: ElementInstanceMetadataMap,
-  parentPath: InstancePath,
+  parentPath: TemplatePath,
   value: DetectedLayoutSystem,
 ): ElementInstanceMetadataMap {
   const allChildren = MetadataUtils.getImmediateChildren(scenes, parentPath)
@@ -549,12 +540,12 @@ function setSpecialSizeMeasurementParentLayoutSystemOnAllChildren(
 
 function switchAndUpdateFrames(
   editor: EditorModel,
-  target: InstancePath,
+  target: TemplatePath,
   layoutSystem: SettableLayoutSystem,
 ): EditorModel {
   const targetMetadata = Utils.forceNotNull(
     `Could not find metadata for ${JSON.stringify(target)}`,
-    MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, target),
+    MetadataUtils.findElementByTemplatePath(editor.jsxMetadata, target),
   )
   if (targetMetadata.globalFrame == null) {
     // The target is a non-layoutable
@@ -788,10 +779,6 @@ export function editorMoveMultiSelectedTemplates(
   let updatedTargets: Array<TemplatePath> = [...targets]
   let newPaths: Array<TemplatePath> = []
   const updatedEditor = targets.reduce((working, target, i) => {
-    if (TP.isScenePath(target)) {
-      // TODO Scene Implementation
-      return working
-    }
     const frame = MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
 
     let templateToMove = updatedTargets[i]
@@ -1057,7 +1044,7 @@ function duplicateMany(paths: TemplatePath[], editor: EditorModel): EditorModel 
 }
 
 function indexPositionForAdjustment(
-  target: StaticInstancePath | InstancePath,
+  target: StaticTemplatePath | TemplatePath,
   editor: EditorModel,
   index: 'back' | 'front' | 'backward' | 'forward',
 ): IndexPosition {
@@ -1072,7 +1059,7 @@ function indexPositionForAdjustment(
       if (openUIJSFile != null && isParseSuccess(openUIJSFile.fileContents.parsed)) {
         const current = getZIndexOfElement(
           openUIJSFile.fileContents.parsed.topLevelElements,
-          TP.asStatic(target) as StaticInstancePath,
+          TP.asStatic(target),
         )
         return {
           type: 'absolute',
@@ -1091,11 +1078,6 @@ function setZIndexOnSelected(
   const selectedViews = editor.selectedViews
   return selectedViews.reduce(
     (working, selectedView) => {
-      if (TP.isScenePath(selectedView)) {
-        // TODO Scene Implementation
-        return working
-      }
-
       const indexPosition = indexPositionForAdjustment(selectedView, working, index)
       return editorMoveTemplate(
         selectedView,
@@ -1588,8 +1570,7 @@ export const UPDATE_FNS = {
         const newSelection = TP.parentPath(action.target)
         return {
           ...updatedEditor,
-          selectedViews:
-            newSelection != null && !TP.isScenePath(newSelection) ? [newSelection] : [],
+          selectedViews: [newSelection],
         }
       },
       dispatch,
@@ -1844,8 +1825,8 @@ export const UPDATE_FNS = {
               )
             : action.parent
 
-        if (targetParent == null || TP.isScenePath(targetParent)) {
-          // TODO Scene Implementation
+        if (targetParent == null) {
+          // This means there is no storyboard element to add it to
           return success
         }
 
@@ -1945,9 +1926,7 @@ export const UPDATE_FNS = {
             return editor
           }
 
-          const parent = TP.isInstancePath(parentPath)
-            ? MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, parentPath)
-            : null
+          const parent = MetadataUtils.findElementByTemplatePath(editor.jsxMetadata, parentPath)
           const isParentFlex =
             parent != null ? MetadataUtils.isFlexLayoutedContainer(parent) : false
           const frameChanges: Array<PinOrFlexFrameChange> = [
@@ -2003,14 +1982,8 @@ export const UPDATE_FNS = {
           // bail early, we shouldn't delete a non-group view
           return editor
         }
-        if (TP.isScenePath(action.target)) {
-          return editor
-        }
 
-        const element = MetadataUtils.getElementByInstancePathMaybe(
-          editor.jsxMetadata,
-          action.target,
-        )
+        const element = MetadataUtils.findElementByTemplatePath(editor.jsxMetadata, action.target)
         const children = MetadataUtils.getChildrenHandlingGroups(
           editor.jsxMetadata,
           action.target,
@@ -2359,50 +2332,28 @@ export const UPDATE_FNS = {
             const elementToAdd = setUtopiaID(currentValue, newUID)
             const originalPath = action.originalTemplatePaths[index]
             let updatedComponents: Array<UtopiaJSXComponent>
-            if (TP.isScenePath(originalPath)) {
-              const numberOfScenes = getNumberOfScenes(workingEditorState)
-              const newSceneLabel = `Scene ${numberOfScenes}`
-              const props = setJSXValuesAtPaths(currentValue.props, [
-                {
-                  path: PP.create(['data-label']),
-                  value: jsxAttributeValue(newSceneLabel, emptyComments),
-                },
-                { path: PP.create(['data-uid']), value: jsxAttributeValue(newUID, emptyComments) },
-              ])
-              const newSceneElement = {
-                ...currentValue,
-                props: defaultEither(currentValue.props, props),
-              }
-              updatedComponents = addSceneToJSXComponents(
-                workingEditorState.projectContents,
-                workingEditorState.canvas.openFile?.filename ?? null,
-                originalComponents,
-                newSceneElement,
-              )
+            const components = insertElementAtPath(
+              workingEditorState.projectContents,
+              workingEditorState.canvas.openFile?.filename ?? null,
+              targetParent,
+              elementToAdd,
+              originalComponents,
+              null,
+            )
+            if (targetParent == null) {
+              updatedComponents = components
             } else {
-              const components = insertElementAtPath(
-                workingEditorState.projectContents,
-                workingEditorState.canvas.openFile?.filename ?? null,
+              const newPath = TP.appendToPath(targetParent, newUID)
+              updatedComponents = maybeSwitchLayoutProps(
+                newPath,
+                originalPath,
                 targetParent,
-                elementToAdd,
-                originalComponents,
+                action.targetOriginalContextMetadata,
+                workingEditorState.jsxMetadata,
+                components,
                 null,
-              )
-              if (targetParent == null || TP.isScenePath(targetParent)) {
-                updatedComponents = components
-              } else {
-                const newPath = TP.appendToPath(targetParent, newUID)
-                updatedComponents = maybeSwitchLayoutProps(
-                  newPath,
-                  originalPath,
-                  targetParent,
-                  action.targetOriginalContextMetadata,
-                  workingEditorState.jsxMetadata,
-                  components,
-                  null,
-                  null,
-                ).components
-              }
+                null,
+              ).components
             }
 
             return {
@@ -2693,26 +2644,21 @@ export const UPDATE_FNS = {
       height: action.height,
     } as LocalRectangle
 
-    if (TP.isInstancePath(action.element)) {
-      const element = MetadataUtils.getElementByInstancePathMaybe(
-        editor.jsxMetadata,
-        action.element,
-      )
-      forUnderlyingTargetFromEditorState(action.element, editor, (underlyingSuccess) => {
-        if (
-          element != null &&
-          MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element) &&
-          element.props.textSizing == 'auto'
-        ) {
-          const alignment = element.props.style.textAlign
-          if (alignment === 'center') {
-            frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
-          } else if (alignment === 'right') {
-            frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
-          }
+    const element = MetadataUtils.findElementByTemplatePath(editor.jsxMetadata, action.element)
+    forUnderlyingTargetFromEditorState(action.element, editor, (underlyingSuccess) => {
+      if (
+        element != null &&
+        MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element) &&
+        element.props.textSizing == 'auto'
+      ) {
+        const alignment = element.props.style.textAlign
+        if (alignment === 'center') {
+          frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
+        } else if (alignment === 'right') {
+          frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
         }
-      })
-    }
+      }
+    })
 
     const parentPath = TP.parentPath(action.element)
     let offset = { x: 0, y: 0 } as CanvasPoint
@@ -3658,18 +3604,10 @@ export const UPDATE_FNS = {
   },
   SWITCH_LAYOUT_SYSTEM: (action: SwitchLayoutSystem, editor: EditorModel): EditorModel => {
     return editor.selectedViews.reduce((working, target) => {
-      if (TP.isInstancePath(target)) {
-        return switchAndUpdateFrames(working, target, action.layoutSystem)
-      } else {
-        return working
-      }
+      return switchAndUpdateFrames(working, target, action.layoutSystem)
     }, editor)
   },
   UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
-    const targetMetadata = Utils.forceNotNull(
-      `Could not find metadata for ${JSON.stringify(action.target)}`,
-      MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, action.target),
-    )
     const updatedEditor = UPDATE_FNS.ADD_IMPORTS(addImports(action.importsToAdd), editor)
 
     return modifyOpenJsxElementAtPath(
@@ -4125,12 +4063,12 @@ export function alignOrDistributeSelectedViews(
   derived: DerivedState,
   alignmentOrDistribution: Alignment | Distribution,
 ): EditorModel {
-  const instancePaths = editor.selectedViews.filter(TP.isInstancePath)
+  const selectedViews = editor.selectedViews
 
-  if (instancePaths.length > 0) {
+  if (selectedViews.length > 0) {
     // this array of canvasFrames excludes the non-layoutables. it means in a multiselect, they will not be considered
     const canvasFrames: Array<{ target: TemplatePath; frame: CanvasRectangle }> = Utils.stripNulls(
-      instancePaths.map((target) => {
+      selectedViews.map((target) => {
         const instanceGlobalFrame = MetadataUtils.getFrameInCanvasCoords(target, editor.jsxMetadata)
         if (instanceGlobalFrame == null) {
           return null
@@ -4144,8 +4082,8 @@ export function alignOrDistributeSelectedViews(
     )
 
     if (canvasFrames.length > 0) {
-      const parentPath = TP.parentPath(instancePaths[0])
-      const sourceIsParent = instancePaths.length === 1 && parentPath != null
+      const parentPath = TP.parentPath(selectedViews[0])
+      const sourceIsParent = selectedViews.length === 1 && parentPath != null
       let source: CanvasRectangle
       if (sourceIsParent) {
         const parentFrame = MetadataUtils.getFrameInCanvasCoords(parentPath, editor.jsxMetadata)

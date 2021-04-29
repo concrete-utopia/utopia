@@ -66,7 +66,6 @@ import {
 } from '../../core/shared/jsx-attributes'
 import {
   Imports,
-  InstancePath,
   isParseFailure,
   ParsedTextFile,
   ParseSuccess,
@@ -367,94 +366,85 @@ export function updateFramesOfScenesAndComponents(
     let propsToSet: Array<ValueAtPath> = []
     let propsToSkip: Array<PropertyPath> = []
     if (isFlexContainer) {
-      if (TP.isInstancePath(staticParentPath)) {
-        switch (frameAndTarget.type) {
-          case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-          case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-          case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-          case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-            throw new Error(
-              `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
-                staticParentPath,
-              )}.`,
-            )
-          case 'FLEX_MOVE':
-            workingEditorState = modifyUnderlyingForOpenFile(
-              originalTarget,
-              workingEditorState,
-              (elem) => elem,
-              (success, underlyingTarget) => {
-                const components = getUtopiaJSXComponentsFromSuccess(success)
-                if (underlyingTarget == null) {
-                  return success
-                } else {
-                  const updatedComponents = reorderComponent(
-                    workingEditorState.projectContents,
-                    workingEditorState.canvas.openFile?.filename ?? null,
-                    components,
-                    underlyingTarget,
-                    frameAndTarget.newIndex,
-                  )
-                  return {
-                    ...success,
-                    topLevelElements: applyUtopiaJSXComponentsChanges(
-                      success.topLevelElements,
-                      updatedComponents,
-                    ),
-                  }
+      switch (frameAndTarget.type) {
+        case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+        case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+        case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+        case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+          throw new Error(
+            `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
+              staticParentPath,
+            )}.`,
+          )
+        case 'FLEX_MOVE':
+          workingEditorState = modifyUnderlyingForOpenFile(
+            originalTarget,
+            workingEditorState,
+            (elem) => elem,
+            (success, underlyingTarget) => {
+              const components = getUtopiaJSXComponentsFromSuccess(success)
+              if (underlyingTarget == null) {
+                return success
+              } else {
+                const updatedComponents = reorderComponent(
+                  workingEditorState.projectContents,
+                  workingEditorState.canvas.openFile?.filename ?? null,
+                  components,
+                  underlyingTarget,
+                  frameAndTarget.newIndex,
+                )
+                return {
+                  ...success,
+                  topLevelElements: applyUtopiaJSXComponentsChanges(
+                    success.topLevelElements,
+                    updatedComponents,
+                  ),
                 }
-              },
-            )
-            break
-          case 'FLEX_RESIZE':
-            if (staticParentPath == null) {
-              throw new Error(`No parent available for ${JSON.stringify(staticParentPath)}`)
-            } else {
-              if (parentElement == null) {
-                throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
               }
-              // Flex based layout.
-              const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
-                frameAndTarget.newSize.width,
-                frameAndTarget.newSize.height,
-                element.props,
-                right(parentElement.props),
-                frameAndTarget.edgePosition,
-              )
-              forEachRight(possibleFlexProps, (flexProps) => {
-                const { flexBasis, width, height } = flexProps
-                if (flexBasis != null) {
-                  propsToSet.push({
-                    path: createLayoutPropertyPath('flexBasis'),
-                    value: jsxAttributeValue(flexBasis, emptyComments),
-                  })
-                }
-                if (width != null) {
-                  propsToSet.push({
-                    path: createLayoutPropertyPath('Width'),
-                    value: jsxAttributeValue(width, emptyComments),
-                  })
-                }
-                if (height != null) {
-                  propsToSet.push({
-                    path: createLayoutPropertyPath('Height'),
-                    value: jsxAttributeValue(height, emptyComments),
-                  })
-                }
-              })
+            },
+          )
+          break
+        case 'FLEX_RESIZE':
+          if (staticParentPath == null) {
+            throw new Error(`No parent available for ${JSON.stringify(staticParentPath)}`)
+          } else {
+            if (parentElement == null) {
+              throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
             }
-            break
-          default:
-            const _exhaustiveCheck: never = frameAndTarget
-            throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
-        }
-      } else {
-        // Shouldn't happen, but the types force our hand here.
-        throw new Error(
-          `Attempted to use non-instance path ${JSON.stringify(
-            staticParentPath,
-          )} as a flex parent.`,
-        )
+            // Flex based layout.
+            const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
+              frameAndTarget.newSize.width,
+              frameAndTarget.newSize.height,
+              element.props,
+              right(parentElement.props),
+              frameAndTarget.edgePosition,
+            )
+            forEachRight(possibleFlexProps, (flexProps) => {
+              const { flexBasis, width, height } = flexProps
+              if (flexBasis != null) {
+                propsToSet.push({
+                  path: createLayoutPropertyPath('flexBasis'),
+                  value: jsxAttributeValue(flexBasis, emptyComments),
+                })
+              }
+              if (width != null) {
+                propsToSet.push({
+                  path: createLayoutPropertyPath('Width'),
+                  value: jsxAttributeValue(width, emptyComments),
+                })
+              }
+              if (height != null) {
+                propsToSet.push({
+                  path: createLayoutPropertyPath('Height'),
+                  value: jsxAttributeValue(height, emptyComments),
+                })
+              }
+            })
+          }
+          break
+        default:
+          const _exhaustiveCheck: never = frameAndTarget
+          throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
       }
     } else {
       let parentFrame: CanvasRectangle | null = null
@@ -1512,13 +1502,10 @@ export function produceCanvasTransientState(
           const insertionElement = editorMode.subject.element
           const importsToAdd = editorMode.subject.importsToAdd
           const insertionParent = editorMode.subject.parent?.target ?? null
-          const insertionParentAsInstancePath = TP.isScenePath(insertionParent)
-            ? TP.instancePathForElementAtScenePath(insertionParent)
-            : insertionParent
 
           // Not actually modifying the underlying target, but we'll exploit the functionality.
           modifyUnderlyingTarget(
-            insertionParentAsInstancePath,
+            insertionParent,
             currentOpenFile,
             editorState,
             (element) => element,
@@ -1873,7 +1860,7 @@ export function moveTemplate(
 
               let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
               // Need to make these changes ahead of updating the frame.
-              const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
+              const elementMetadata = MetadataUtils.findElementByTemplatePath(
                 updatedComponentMetadata,
                 target,
               )
@@ -2252,13 +2239,10 @@ export function duplicate(
       (success, underlyingInstancePath, underlyingFilePath) => {
         let utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
         let newElement: JSXElementChild | null = null
-        let jsxElement: JSXElementChild | null = null
-        if (TP.isScenePath(path)) {
-          const scenepath = TP.instancePathForElementAtScenePath(path)
-          jsxElement = findJSXElementChildAtPath(utopiaComponents, scenepath)
-        } else {
-          jsxElement = findElementAtPath(underlyingInstancePath, utopiaComponents)
-        }
+        let jsxElement: JSXElementChild | null = findElementAtPath(
+          underlyingInstancePath,
+          utopiaComponents,
+        )
         let uid: string
         if (jsxElement == null) {
           console.warn(`Could not find element ${TP.toVarSafeComponentId(path)}`)
@@ -2308,40 +2292,15 @@ export function duplicate(
               }
             })
           }
-          if (TP.isScenePath(path) && isJSXElement(jsxElement)) {
-            const numberOfScenes = getNumberOfScenes(editor)
-            const newSceneLabel = `Scene ${numberOfScenes}`
-            let props = setJSXAttributesAttribute(
-              jsxElement.props,
-              'data-label',
-              jsxAttributeValue(newSceneLabel, emptyComments),
-            )
-            props = setJSXAttributesAttribute(
-              props,
-              'data-uid',
-              jsxAttributeValue(getUtopiaID(newElement), emptyComments),
-            )
 
-            const newSceneElement = {
-              ...jsxElement,
-              props: props,
-            }
-            utopiaComponents = addSceneToJSXComponents(
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename ?? null,
-              utopiaComponents,
-              newSceneElement,
-            )
-          } else {
-            utopiaComponents = insertElementAtPath(
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename ?? null,
-              newParentPath,
-              newElement,
-              utopiaComponents,
-              null,
-            )
-          }
+          utopiaComponents = insertElementAtPath(
+            workingEditorState.projectContents,
+            workingEditorState.canvas.openFile?.filename ?? null,
+            newParentPath,
+            newElement,
+            utopiaComponents,
+            null,
+          )
 
           if (newElement == null) {
             console.warn(`Could not duplicate ${TP.toVarSafeComponentId(path)}`)
@@ -2447,17 +2406,11 @@ export function cullSpyCollector(
   // Note: Mutates `spyCollector`.
   // Collate all the valid paths.
   let elementPaths: Set<string> = Utils.emptySet()
-  let scenePaths: Set<string> = Utils.emptySet()
   fastForEach(domMetadata, (element) => {
     let workingPath: TemplatePath | null = element.templatePath
     while (workingPath != null && !TP.isEmptyPath(workingPath)) {
       const pathAsString = TP.toString(workingPath)
-      if (TP.isScenePath(workingPath)) {
-        elementPaths.add(TP.toString(TP.instancePathForElementAtScenePath(workingPath)))
-        scenePaths.add(pathAsString)
-      } else {
-        elementPaths.add(pathAsString)
-      }
+      elementPaths.add(pathAsString)
       workingPath = TP.parentPath(workingPath)
     }
   })

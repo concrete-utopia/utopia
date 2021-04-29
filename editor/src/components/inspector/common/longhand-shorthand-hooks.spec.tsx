@@ -19,9 +19,8 @@ import * as TP from '../../../core/shared/template-path'
 import * as PP from '../../../core/shared/property-path'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { InstancePath } from '../../../core/shared/project-file-types'
 
-const TestSelectedComponent = TP.templatePath([['scene1'], ['aaa', 'bbb']]) as InstancePath
+const TestSelectedComponent = TP.templatePath([['scene1'], ['aaa', 'bbb']])
 
 function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPropertiesKeys>(
   longhands: Array<P>,

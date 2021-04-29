@@ -292,11 +292,11 @@ export function asStatic(path: TemplatePath): StaticTemplatePath {
   return path as StaticTemplatePath
 }
 
-export function isScenePath(path: unknown): path is ScenePath {
+function isScenePath(path: unknown): path is ScenePath {
   return (path as any)?.type === 'scenepath'
 }
 
-export function isInstancePath(path: unknown): path is InstancePath {
+function isInstancePath(path: unknown): path is InstancePath {
   return (path as any)?.scene != null && (path as any)?.element != null
 }
 
@@ -304,7 +304,7 @@ export function isTemplatePath(path: unknown): path is TemplatePath {
   return isScenePath(path) || isInstancePath(path)
 }
 
-export function isTopLevelInstancePath(path: TemplatePath): path is InstancePath {
+export function isRootElementPath(path: TemplatePath): boolean {
   return isInstancePath(path) && path.element.length === 1
 }
 
@@ -350,10 +350,7 @@ export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
   return instancePathForElementAtPathDontThrowOnScene(path)
 }
 
-export function elementPathForPath(path: StaticScenePath): StaticElementPath
-export function elementPathForPath(path: ScenePath): ElementPath
-export function elementPathForPath(path: StaticInstancePath): StaticElementPath
-export function elementPathForPath(path: InstancePath): ElementPath
+export function elementPathForPath(path: StaticTemplatePath): StaticElementPath
 export function elementPathForPath(path: TemplatePath): ElementPath
 export function elementPathForPath(path: TemplatePath): ElementPath {
   if (isScenePath(path)) {
@@ -683,6 +680,8 @@ export function isAncestorOf(
   }
 }
 
+function fullElementPathForPath(path: StaticTemplatePath): StaticElementPath[]
+function fullElementPathForPath(path: TemplatePath): ElementPath[]
 function fullElementPathForPath(path: TemplatePath): ElementPath[] {
   if (isScenePath(path)) {
     return path.sceneElementPaths
@@ -1077,31 +1076,31 @@ export function isScenePathEmpty(path: TemplatePath): boolean {
   }
 }
 
-interface DropFirstScenePathElementResultType {
-  newPath: InstancePath | null
-  droppedScenePathElements: StaticElementPath | null
+interface DropFirstPathElementResultType {
+  newPath: StaticTemplatePath | null
+  droppedPathElements: StaticElementPath | null
 }
 
-export function dropFirstScenePathElement(
-  path: StaticInstancePath | null,
-): DropFirstScenePathElementResultType {
+export function dropFirstPathElement(
+  path: StaticTemplatePath | null,
+): DropFirstPathElementResultType {
   if (path == null) {
     return {
       newPath: null,
-      droppedScenePathElements: null,
-    }
-  } else if (isScenePathEmpty(path)) {
-    return {
-      newPath: path,
-      droppedScenePathElements: null,
+      droppedPathElements: null,
     }
   } else {
-    return {
-      newPath: {
-        ...path,
-        scene: scenePath(path.scene.sceneElementPaths.slice(1)),
-      },
-      droppedScenePathElements: path.scene.sceneElementPaths[0],
+    const fullElementPath = fullElementPathForPath(path)
+    if (fullElementPath.length > 1) {
+      return {
+        newPath: templatePath(drop(1, fullElementPath)),
+        droppedPathElements: fullElementPath[0],
+      }
+    } else {
+      return {
+        newPath: path,
+        droppedPathElements: null,
+      }
     }
   }
 }

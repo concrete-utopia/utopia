@@ -3,15 +3,10 @@ import { FlexStretch, Sides } from 'utopia-api'
 import { LayoutHelpers } from '../../../core/layout/layout-helpers'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadata } from '../../../core/shared/element-template'
-import {
-  ElementOriginType,
-  InstancePath,
-  isUnknownOrGeneratedElement,
-} from '../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 import { defaultEither, mapEither } from '../../../core/shared/either'
 import Utils from '../../../utils/utils'
 import { CanvasRectangle, canvasRectangle } from '../../../core/shared/math-utils'
-import { EditorDispatch } from '../../editor/action-types'
 import * as TP from '../../../core/shared/template-path'
 import { ResizeDragState } from '../canvas-types'
 import { getOriginalFrames } from '../canvas-utils'
@@ -25,7 +20,7 @@ import {
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 interface YogaResizeControlProps extends ControlProps {
   targetElement: ElementInstanceMetadata
-  target: InstancePath
+  target: TemplatePath
   color: string
   dragState: ResizeDragState | null
 }
@@ -167,7 +162,7 @@ export class YogaControls extends React.Component<YogaControlsProps> {
             {...this.props}
             target={targets[0]}
             targetElement={
-              MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, targets[0])!
+              MetadataUtils.findElementByTemplatePath(this.props.componentMetadata, targets[0])!
             }
             color={color}
           />

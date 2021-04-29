@@ -1,12 +1,7 @@
 import { findElementAtPath } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
-import {
-  importAlias,
-  importDetails,
-  InstancePath,
-  TemplatePath,
-} from '../../core/shared/project-file-types'
+import { importAlias, importDetails, TemplatePath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import * as TP from '../../core/shared/template-path'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'

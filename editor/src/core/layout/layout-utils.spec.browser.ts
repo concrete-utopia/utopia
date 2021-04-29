@@ -1,4 +1,4 @@
-import { LayoutSystem, sides } from 'utopia-api'
+import { sides } from 'utopia-api'
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -21,9 +21,7 @@ import {
 import { generateUidWithExistingComponents } from '../model/element-template-utils'
 import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
-import { BakedInStoryboardUID } from '../model/scene-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { InstancePath } from '../shared/project-file-types'
 
 const NewUID = 'catdog'
 
@@ -70,7 +68,7 @@ describe('maybeSwitchLayoutProps', () => {
       }),
       [],
     )
-    const elementPath = TP.appendNewElementPath(TestScenePath, [NewUID]) as InstancePath
+    const elementPath = TP.appendNewElementPath(TestScenePath, [NewUID])
 
     const sceneElementPath = TP.instancePathForElementAtPathDontThrowOnScene(TestScenePath)
 

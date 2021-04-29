@@ -491,7 +491,7 @@ export function useSelectModeSelectAndHover(
           updatedSelection = foundTarget != null ? [foundTarget.templatePath] : []
         }
 
-        if (foundTarget != null && TP.isInstancePath(foundTarget.templatePath) && doubleClick) {
+        if (foundTarget != null && doubleClick) {
           // for components without passed children doubleclicking enters focus mode
           const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
             foundTarget.templatePath,

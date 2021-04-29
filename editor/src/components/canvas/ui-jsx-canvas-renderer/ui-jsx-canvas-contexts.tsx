@@ -2,7 +2,7 @@ import * as React from 'react'
 import type { MapLike } from 'typescript'
 import { createContext } from 'use-context-selector'
 import { Either, left } from '../../../core/shared/either'
-import type { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
+import type { TemplatePath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
 import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
 

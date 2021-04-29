@@ -407,7 +407,7 @@ export class SelectModeControlContainer extends React.Component<
     if (this.props.isDragging || this.props.keysPressed['alt']) {
       const targets = TP.filterScenes(this.props.selectedViews)
       if (targets.length > 0) {
-        const targetInstance = MetadataUtils.getElementByInstancePathMaybe(
+        const targetInstance = MetadataUtils.findElementByTemplatePath(
           this.props.componentMetadata,
           targets[0],
         )

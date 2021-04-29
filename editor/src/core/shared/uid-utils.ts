@@ -26,7 +26,7 @@ import { getDOMAttribute } from './dom-utils'
 import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../model/utopia-constants'
 import { optionalMap } from './optional-utils'
 import { addAllUniquely } from './array-utils'
-import { InstancePath, TemplatePath } from './project-file-types'
+import { TemplatePath } from './project-file-types'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 

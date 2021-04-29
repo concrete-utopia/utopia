@@ -535,8 +535,6 @@ export type NodeModules = {
 export type ProjectContents = { [filepath: string]: ProjectFile }
 
 export type ElementOriginType =
-  // Mostly self explanatory, this is a scene.
-  | 'scene'
   // Completely statically defined element with a known single place in the hierarchy.
   | 'statically-defined'
   // An element generated from within some arbitrary code, but for which we have access to the definition.

@@ -9,7 +9,6 @@ import * as TP from '../shared/template-path'
 import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { InstancePath } from '../shared/project-file-types'
 
 describe('React Render Count Tests - ', () => {
   it('Clicking on opacity slider', async () => {
@@ -40,7 +39,7 @@ describe('React Render Count Tests - ', () => {
     await renderResult.dispatch(
       [
         setProp_UNSAFE(
-          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']) as InstancePath,
+          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           PP.create(['style', 'opacity']),
           jsxAttributeValue(0.3, emptyComments),
         ),
