@@ -186,10 +186,10 @@ const StoryboardsPane = betterReactMemo('StoryboardsPane', () => {
     dispatch([EditorActions.setPanelVisibility('canvas', true)])
   }, [dispatch])
 
-  const storyboardList = [StoryboardFilePath]
-
   const noStoryboardFileAvailable =
     getContentsTreeFileFromString(projectContents, StoryboardFilePath) == null
+
+  const storyboardList = noStoryboardFileAvailable ? [] : [StoryboardFilePath]
 
   return (
     <FlexColumn
