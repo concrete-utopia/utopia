@@ -58,7 +58,7 @@ function tryToGetInstancePath(
   topLevelElementName: string,
   instancePath: InstancePath | null,
   pathsString: string | null,
-): InstancePath {
+): TemplatePath {
   const paths = getPathsFromString(pathsString)
   if (TP.isInstancePath(instancePath)) {
     return instancePath
@@ -81,7 +81,7 @@ export function createComponentRendererComponent(params: {
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
 
-    const instancePath: InstancePath = tryToGetInstancePath(
+    const instancePath: TemplatePath = tryToGetInstancePath(
       params.topLevelElementName,
       instancePathAny,
       pathsString,
