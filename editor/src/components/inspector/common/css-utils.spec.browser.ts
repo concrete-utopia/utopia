@@ -1,3 +1,4 @@
+import { InstancePath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import * as TP from '../../../core/shared/template-path'
 import {
@@ -25,7 +26,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']) as InstancePath,
           toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
@@ -59,7 +60,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']) as InstancePath,
           toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
@@ -92,7 +93,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']) as InstancePath,
           toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
@@ -133,7 +134,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']) as InstancePath,
           toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
         ),
       ],
@@ -166,7 +167,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']) as InstancePath,
           toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
         ),
       ],

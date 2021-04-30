@@ -17,8 +17,6 @@ import {
   InstancePath,
   TemplatePath,
   isParseSuccess,
-  StaticInstancePath,
-  ParseSuccess,
   isTextFile,
 } from '../../core/shared/project-file-types'
 import {
@@ -50,6 +48,7 @@ import { useDomWalker } from './dom-walker'
 import { isLiveMode } from '../editor/editor-modes'
 import {
   BakedInStoryboardVariableName,
+  EmptyInstancePathForStoryboard,
   EmptyScenePathForStoryboard,
 } from '../../core/model/scene-utils'
 import { EditorDispatch } from '../editor/action-types'
@@ -78,7 +77,7 @@ import { CanvasContainerID } from './canvas-types'
 import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
-import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
+import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../core/model/utopia-constants'
 import {
   createLookupRender,
   utopiaCanvasJSXLookup,
@@ -127,7 +126,7 @@ export interface UiJsxCanvasProps {
   requireFn: UtopiaRequireFn
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: TemplatePath[]
-  editedTextElement: InstancePath | null
+  editedTextElement: TemplatePath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
   onDomReport: (
@@ -455,8 +454,8 @@ function useGetStoryboardRoot(
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
-  storyboardRootElementPath: InstancePath
-  rootValidPaths: Array<InstancePath>
+  storyboardRootElementPath: TemplatePath
+  rootValidPaths: Array<TemplatePath>
   rootInstancePath: TemplatePath
 } {
   const StoryboardRootComponent = executionScope[BakedInStoryboardVariableName] as
@@ -481,7 +480,7 @@ function useGetStoryboardRoot(
     StoryboardRootComponent: StoryboardRootComponent,
     storyboardRootElementPath: storyboardRootElementPath,
     rootValidPaths: validPaths,
-    rootInstancePath: EmptyScenePathForStoryboard,
+    rootInstancePath: EmptyInstancePathForStoryboard,
   }
 }
 
@@ -495,7 +494,7 @@ export interface CanvasContainerProps {
     cachedTreeRoots: Array<TemplatePath>,
   ) => void
   canvasRootElementTemplatePath: TemplatePath
-  validRootPaths: Array<InstancePath>
+  validRootPaths: Array<TemplatePath>
   mountCount: number
   scrollAnimation: boolean
 }

@@ -43,13 +43,13 @@ import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer
 import { optionalMap } from '../../../core/shared/optional-utils'
 
 export function createLookupRender(
-  templatePath: InstancePath,
+  templatePath: TemplatePath,
   rootScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   hiddenInstances: Array<TemplatePath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   jsxFactoryFunctionName: string | null,
@@ -120,14 +120,14 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
 
 export function renderCoreElement(
   element: JSXElementChild,
-  templatePath: InstancePath,
+  templatePath: TemplatePath,
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   hiddenInstances: Array<TemplatePath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
@@ -237,14 +237,14 @@ export function renderCoreElement(
 function renderJSXElement(
   key: string,
   jsx: JSXElement,
-  templatePath: InstancePath,
+  templatePath: TemplatePath,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   hiddenInstances: Array<TemplatePath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   jsxFactoryFunctionName: string | null,
@@ -328,7 +328,7 @@ function renderJSXElement(
     templatePath != null &&
     TP.containsPath(staticTemplatePathForGeneratedElement, staticValidPaths)
   ) {
-    let childrenTemplatePaths: InstancePath[] = []
+    let childrenTemplatePaths: TemplatePath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {
       if (isJSXElement(child)) {

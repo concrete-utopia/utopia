@@ -1,8 +1,8 @@
 import {
   PropertyPath,
-  InstancePath,
   PropertyPathPart,
   StaticElementPath,
+  TemplatePath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
 import { Either, isLeft } from './either'
@@ -1268,13 +1268,13 @@ export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadat
 export const emptyJsxMetadata: ElementInstanceMetadataMap = {}
 
 export interface ElementInstanceMetadata {
-  templatePath: InstancePath
+  templatePath: TemplatePath
   element: Either<string, JSXElementChild>
   props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
-  children: Array<InstancePath>
-  rootElements: Array<InstancePath>
+  children: Array<TemplatePath>
+  rootElements: Array<TemplatePath>
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -1284,13 +1284,13 @@ export interface ElementInstanceMetadata {
 }
 
 export function elementInstanceMetadata(
-  templatePath: InstancePath,
+  templatePath: TemplatePath,
   element: Either<string, JSXElementChild>,
   props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
-  children: Array<InstancePath>,
-  rootElements: Array<InstancePath>,
+  children: Array<TemplatePath>,
+  rootElements: Array<TemplatePath>,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
@@ -1413,9 +1413,6 @@ export const emptyComputedStyle: ComputedStyle = {}
 export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>> // TODO update typescript!!
-export type MetadataWithoutChildren = Omit<ElementInstanceMetadata, 'children'> & {
-  childrenTemplatePaths: Array<InstancePath>
-}
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 

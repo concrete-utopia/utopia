@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as R from 'ramda'
 import { sides } from 'utopia-api'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
@@ -17,7 +16,7 @@ import {
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
 } from '../../core/shared/element-template'
-import { id, TemplatePath, InstancePath } from '../../core/shared/project-file-types'
+import { TemplatePath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import { applicative4Either, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
@@ -284,7 +283,7 @@ interface DomWalkerProps {
     cachedTreeRoots: Array<TemplatePath>,
   ) => void
   canvasRootElementTemplatePath: TemplatePath
-  validRootPaths: Array<InstancePath>
+  validRootPaths: Array<TemplatePath>
   mountCount: number
 }
 
@@ -379,7 +378,7 @@ function collectMetadata(
   element: HTMLElement,
   pathsForElement: Array<TemplatePath>,
   parentPoint: CanvasPoint,
-  allUnfilteredChildrenPaths: InstancePath[],
+  allUnfilteredChildrenPaths: Array<TemplatePath>,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -405,8 +404,8 @@ function collectMetadata(
       .map(TP.instancePathForElementAtPath)
     const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
 
-    let filteredChildPaths: InstancePath[] = []
-    let filteredRootElements: InstancePath[] = []
+    let filteredChildPaths: TemplatePath[] = []
+    let filteredRootElements: TemplatePath[] = []
     fastForEach(unfilteredChildrenPaths, (childPath) => {
       if (TP.isParentOf(path, childPath)) {
         if (TP.isTopLevelInstancePath(childPath)) {
@@ -417,10 +416,8 @@ function collectMetadata(
       }
     })
 
-    const instancePath = TP.isInstancePath(path) ? path : TP.instancePathForElementAtScenePath(path)
-
     return elementInstanceMetadata(
-      instancePath,
+      path,
       left(tagName),
       {},
       globalFrame,
@@ -580,7 +577,7 @@ function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   index: number,
   canvasRootPath: TemplatePath,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -614,7 +611,7 @@ function walkCanvasRootFragment(
     // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
     // to provide a home for the the (really existing) childMetadata
     const metadata: ElementInstanceMetadata = elementInstanceMetadata(
-      canvasRootPath as InstancePath,
+      canvasRootPath,
       left('Storyboard'),
       {},
       { x: 0, y: 0, width: 0, height: 0 } as CanvasRectangle,
@@ -635,7 +632,7 @@ function walkCanvasRootFragment(
 function walkScene(
   scene: HTMLElement,
   index: number,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -651,7 +648,7 @@ function walkScene(
     const sceneID = sceneIndexAttr?.value ?? null
     const instancePath = sceneID == null ? null : TP.fromString(sceneID)
 
-    if (sceneID != null && instancePath != null && TP.isInstancePath(instancePath)) {
+    if (sceneID != null && instancePath != null && TP.isTemplatePath(instancePath)) {
       let cachedMetadata: ElementInstanceMetadata | null = null
       if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
         if (!invalidatedSceneIDsRef.current.has(sceneID)) {
@@ -712,7 +709,7 @@ function walkScene(
 function walkSceneInner(
   scene: HTMLElement,
   index: number,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -721,13 +718,13 @@ function walkSceneInner(
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
-  childPaths: Array<InstancePath>
+  childPaths: Array<TemplatePath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
   cachedTreeRoots: Array<TemplatePath>
 } {
   const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
 
-  let childPaths: Array<InstancePath> = []
+  let childPaths: Array<TemplatePath> = []
   let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
   let cachedTreeRootsAccumulator: Array<TemplatePath> = []
 
@@ -765,7 +762,7 @@ function walkElements(
   index: number,
   depth: number,
   parentPoint: CanvasPoint,
-  validPaths: Array<InstancePath>,
+  validPaths: Array<TemplatePath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
@@ -774,7 +771,7 @@ function walkElements(
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
-  childPaths: ReadonlyArray<InstancePath>
+  childPaths: ReadonlyArray<TemplatePath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
   cachedTreeRoots: Array<TemplatePath>
 } {
@@ -811,14 +808,14 @@ function walkElements(
 
     // Check this is a path we're interested in, otherwise skip straight to the children
     const foundValidPaths = paths.filter((path) => {
-      const staticPath = TP.dynamicPathToStaticPathKeepSceneDynamic(path)
+      const staticPath = TP.makeLastPartOfPathStatic(path)
       return validPaths.some((validPath) => {
         return TP.pathsEqual(staticPath, validPath)
       })
     })
 
     // Build the metadata for the children of this DOM node.
-    let childPaths: Array<InstancePath> = []
+    let childPaths: Array<TemplatePath> = []
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
     let cachedTreeRootsAccumulator: Array<TemplatePath> = []
     if (traverseChildren) {

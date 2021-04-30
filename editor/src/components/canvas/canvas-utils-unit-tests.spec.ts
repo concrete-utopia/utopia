@@ -15,11 +15,11 @@ import { editorModelFromPersistentModel } from '../editor/store/editor-state'
 describe('updateFramesOfScenesAndComponents - multi-file', () => {
   it('a simple TLWH pin change works', async () => {
     const testProject = editorModelFromPersistentModel(complexDefaultProject(), NO_OP)
-    const targetScenePath = TP.scenePath([
+    const targetPath = TP.templatePath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
+      ['card-outer-div', 'card-inner-rectangle'],
     ])
-    const targetPath = TP.instancePath(targetScenePath, ['card-outer-div', 'card-inner-rectangle'])
 
     const pinChange = singleResizeChange(
       targetPath,
@@ -66,11 +66,11 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
 
   it('an element move works', async () => {
     const testProject = editorModelFromPersistentModel(complexDefaultProject(), NO_OP)
-    const targetScenePath = TP.scenePath([
+    const targetPath = TP.templatePath([
       ['storyboard-entity', 'scene-1-entity', 'app-entity'],
       ['app-outer-div', 'card-instance'],
+      ['card-outer-div', 'card-inner-rectangle'],
     ])
-    const targetPath = TP.instancePath(targetScenePath, ['card-outer-div', 'card-inner-rectangle'])
 
     const pinChange = pinMoveChange(targetPath, { x: 60, y: 40 } as CanvasVector)
 
@@ -126,7 +126,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 1, y: 1 } as EdgePosition,
       { x: 60, y: 40 } as CanvasVector,
     )
@@ -161,7 +161,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 1, y: 1 } as EdgePosition,
       { x: 40, y: 30 } as CanvasVector,
     )
@@ -196,7 +196,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 1, y: 1 } as EdgePosition,
       { x: 50, y: 50 } as CanvasVector,
     )
@@ -241,7 +241,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 0, y: 0 } as EdgePosition,
       { x: 50, y: 20 } as CanvasVector,
     )
@@ -276,7 +276,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 1, y: 1 } as EdgePosition,
       { x: 80, y: -10 } as CanvasVector,
     )
@@ -311,7 +311,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 1, y: 1 } as EdgePosition,
       { x: 60, y: 40 } as CanvasVector,
     )
@@ -346,7 +346,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 1, y: 1 } as EdgePosition,
       { x: 60, y: 40 } as CanvasVector,
     )
@@ -381,7 +381,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
     )
 
     const pinChange = singleResizeChange(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       { x: 1, y: 1 } as EdgePosition,
       { x: 60, y: 40 } as CanvasVector,
     )

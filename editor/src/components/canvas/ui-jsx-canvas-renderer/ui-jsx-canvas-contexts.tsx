@@ -60,7 +60,7 @@ export const UtopiaProjectContext = createContext<UtopiaProjectContextProps>({
 })
 
 interface SceneLevelContextProps {
-  validPaths: Array<InstancePath>
+  validPaths: Array<TemplatePath>
 }
 
 export const SceneLevelUtopiaContext = React.createContext<SceneLevelContextProps>({

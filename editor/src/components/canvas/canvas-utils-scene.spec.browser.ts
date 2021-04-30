@@ -33,7 +33,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
       false,
     )
 
@@ -160,7 +160,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    const targetPath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID])
+    const targetPath = TP.templatePath([[BakedInStoryboardUID, TestSceneUID]])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
@@ -310,7 +310,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa'])
+    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
@@ -438,7 +438,7 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    const targetPath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID])
+    const targetPath = TP.templatePath([[BakedInStoryboardUID, TestSceneUID]])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(

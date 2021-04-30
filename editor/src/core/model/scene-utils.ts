@@ -1,7 +1,7 @@
 import * as R from 'ramda'
 import {
   SceneMetadata,
-  StaticInstancePath,
+  StaticTemplatePath,
   PropertyPath,
   isTextFile,
   isParseSuccess,
@@ -48,6 +48,7 @@ import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../com
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 
 export const EmptyScenePathForStoryboard = TP.emptyScenePath
+export const EmptyInstancePathForStoryboard = TP.emptyInstancePath
 
 export const PathForSceneComponent = PP.create(['component'])
 export const PathForSceneDataUid = PP.create(['data-uid'])
@@ -324,7 +325,7 @@ export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string |
 export function getStoryboardTemplatePath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-): StaticInstancePath | null {
+): StaticTemplatePath | null {
   if (openFile != null) {
     const file = getContentsTreeFileFromString(projectContents, openFile)
     if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
@@ -333,7 +334,7 @@ export function getStoryboardTemplatePath(
       )
       if (possiblyStoryboard != null) {
         const uid = getUtopiaID(possiblyStoryboard.rootElement)
-        return TP.staticInstancePath(EmptyScenePathForStoryboard, TP.staticElementPath([uid]))
+        return TP.templatePath([TP.staticElementPath([uid])])
       }
     }
   }

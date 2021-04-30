@@ -1,9 +1,9 @@
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file.test-utils'
 import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
+import { InstancePath } from '../../../core/shared/project-file-types'
 import * as TP from '../../../core/shared/template-path'
 import {
   SimplePinsInfo,
-  testInspectorInfo,
   SimpleRect,
   TLWHSimplePins,
   pinsInfoForPins,
@@ -19,7 +19,7 @@ function frameInfoForPins(
   parentFrame: LocalRectangle = SimpleRect,
 ): ElementFrameInfo {
   return {
-    path: TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
+    path: TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']) as InstancePath,
     frame: frameForPins(pins),
     localFrame,
     parentFrame,

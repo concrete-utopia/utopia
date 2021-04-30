@@ -23,6 +23,7 @@ import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
 import { BakedInStoryboardUID } from '../model/scene-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
+import { InstancePath } from '../shared/project-file-types'
 
 const NewUID = 'catdog'
 
@@ -49,7 +50,7 @@ describe('maybeSwitchLayoutProps', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
@@ -69,7 +70,7 @@ describe('maybeSwitchLayoutProps', () => {
       }),
       [],
     )
-    const elementPath = TP.instancePath(TestScenePath, [NewUID])
+    const elementPath = TP.appendNewElementPath(TestScenePath, [NewUID]) as InstancePath
 
     const sceneElementPath = TP.instancePathForElementAtPathDontThrowOnScene(TestScenePath)
 
@@ -135,7 +136,7 @@ describe('maybeSwitchLayoutProps', () => {
 
     const pasteElements = pasteJSXElements(
       [elementToPaste],
-      [TP.instancePath(TestScenePath, [NewUID])],
+      [TP.appendNewElementPath(TestScenePath, [NewUID])],
       metadata,
     )
     await renderResult.dispatch([pasteElements], true)

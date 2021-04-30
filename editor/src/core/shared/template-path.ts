@@ -37,6 +37,22 @@ interface InstancePathCache {
   childInstanceCaches: { [key: string]: InstancePathCache }
 }
 
+interface TemplatePathCache {
+  cached: TemplatePath | null
+  cachedToString: string | null
+  childCaches: { [key: string]: TemplatePathCache }
+  rootElementCaches: { [key: string]: TemplatePathCache }
+}
+
+function emptyTemplatePathCache(): TemplatePathCache {
+  return {
+    cached: null,
+    cachedToString: null,
+    childCaches: {},
+    rootElementCaches: {},
+  }
+}
+
 function emptyScenePathCache(): ScenePathCache {
   return {
     cached: null,
@@ -55,11 +71,30 @@ function emptyInstancePathCache(): InstancePathCache {
 }
 
 let globalPathStringToPathCache: { [key: string]: TemplatePath } = {}
+let globalTemplatePathCache: TemplatePathCache = emptyTemplatePathCache()
 let globalScenePathCache: ScenePathCache = emptyScenePathCache()
 
 export function clearTemplatePathCache() {
   globalPathStringToPathCache = {}
+  globalTemplatePathCache = emptyTemplatePathCache()
   globalScenePathCache = emptyScenePathCache()
+}
+
+function getTemplatePathCache(fullElementPath: ElementPath[]): TemplatePathCache {
+  let workingPathCache: TemplatePathCache = globalTemplatePathCache
+
+  fastForEach(fullElementPath, (elementPath) => {
+    fastForEach(elementPath, (pathPart, index) => {
+      const cacheToUse = index === 0 ? 'rootElementCaches' : 'childCaches'
+      if (workingPathCache[cacheToUse][pathPart] == null) {
+        workingPathCache[cacheToUse][pathPart] = emptyTemplatePathCache()
+      }
+
+      workingPathCache = workingPathCache[cacheToUse][pathPart]
+    })
+  })
+
+  return workingPathCache
 }
 
 function getScenePathCache(sceneElementPaths: ElementPath[]): ScenePathCache {
@@ -117,17 +152,6 @@ function getInstancePathCache(scene: ScenePath, elementPath: ElementPath): Insta
 const SceneSeparator = ':'
 const ElementSeparator = '/'
 
-function scenePathToString(path: ScenePath): string {
-  const pathCache = getScenePathCacheForScenePath(path)
-  if (pathCache.cachedToString == null) {
-    const result = path.sceneElementPaths.map(elementPathToString).join(SceneSeparator)
-    pathCache.cachedToString = result
-    return result
-  } else {
-    return pathCache.cachedToString
-  }
-}
-
 export function elementPathToString(path: ElementPath): string {
   let result: string = ''
   const elementsLength = path.length
@@ -140,25 +164,14 @@ export function elementPathToString(path: ElementPath): string {
   return result
 }
 
-function instancePathToString(path: InstancePath): string {
-  const pathCache = getInstancePathCache(path.scene, path.element)
-  if (pathCache.cachedToString == null) {
-    const result = `${scenePathToString(path.scene)}${SceneSeparator}${elementPathToString(
-      path.element,
-    )}`
-    pathCache.cachedToString = result
-    return result
-  } else {
-    return pathCache.cachedToString
-  }
-}
-
 export function toString(target: TemplatePath): string {
-  if (isScenePath(target)) {
-    return scenePathToString(target)
-  } else {
-    return instancePathToString(target)
+  const fullElementPath = fullElementPathForPath(target)
+  const pathCache = getTemplatePathCache(fullElementPath)
+  if (pathCache.cachedToString == null) {
+    pathCache.cachedToString = fullElementPath.map(elementPathToString).join(SceneSeparator)
   }
+
+  return pathCache.cachedToString
 }
 
 function newScenePath(elementPaths: ElementPath[]): ScenePath {
@@ -207,7 +220,34 @@ export const emptyInstancePath: StaticInstancePath = {
   element: emptyElementPath,
 }
 
-export function scenePath(elementPaths: ElementPath[]): ScenePath {
+export const emptyTemplatePath: StaticTemplatePath = {
+  scene: emptyScenePath,
+  element: emptyElementPath,
+}
+
+export function templatePath(fullElementPath: StaticElementPath[]): StaticTemplatePath
+export function templatePath(fullElementPath: ElementPath[]): TemplatePath
+export function templatePath(fullElementPath: ElementPath[]): TemplatePath {
+  if (isEmptyElementPathsArray(fullElementPath)) {
+    return emptyTemplatePath
+  }
+
+  const pathCache = getTemplatePathCache(fullElementPath)
+  if (pathCache.cached == null) {
+    const result: TemplatePath = {
+      scene: {
+        type: 'scenepath',
+        sceneElementPaths: dropLast(fullElementPath),
+      },
+      element: last(fullElementPath)!,
+    }
+    pathCache.cached = result
+  }
+
+  return pathCache.cached
+}
+
+function scenePath(elementPaths: ElementPath[]): ScenePath {
   if (isEmptyElementPathsArray(elementPaths)) {
     return emptyScenePath
   }
@@ -226,7 +266,7 @@ export function staticScenePath(elementPaths: StaticElementPath[]): StaticSceneP
   return scenePath(elementPaths) as StaticScenePath
 }
 
-export function instancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
+function instancePath(scene: ScenePath, elementPath: ElementPath): InstancePath {
   if (scene.sceneElementPaths.length === 0 && elementPath.length === 0) {
     return emptyInstancePath
   } else {
@@ -248,8 +288,8 @@ export function staticInstancePath(
   return instancePath(scene, elementPath) as StaticInstancePath
 }
 
-export function asStatic(path: InstancePath): StaticInstancePath {
-  return path as StaticInstancePath
+export function asStatic(path: TemplatePath): StaticTemplatePath {
+  return path as StaticTemplatePath
 }
 
 export function isScenePath(path: unknown): path is ScenePath {
@@ -257,7 +297,7 @@ export function isScenePath(path: unknown): path is ScenePath {
 }
 
 export function isInstancePath(path: unknown): path is InstancePath {
-  return (path as any).scene != null && (path as any).element != null
+  return (path as any)?.scene != null && (path as any)?.element != null
 }
 
 export function isTemplatePath(path: unknown): path is TemplatePath {
@@ -268,8 +308,9 @@ export function isTopLevelInstancePath(path: TemplatePath): path is InstancePath
   return isInstancePath(path) && path.element.length === 1
 }
 
-export function isStoryboardPath(path: InstancePath): boolean {
-  return isEmptyScenePath(path.scene) && isTopLevelInstancePath(path)
+export function isStoryboardPath(path: TemplatePath): boolean {
+  const fullElementPath = fullElementPathForPath(path)
+  return fullElementPath.length === 1 && fullElementPath[0].length === 1
 }
 
 export function isStoryboardDescendant(path: TemplatePath): boolean {
@@ -294,30 +335,11 @@ export function scenePathPartOfTemplatePath(path: TemplatePath): ScenePath {
 export function instancePathForElementAtScenePath(path: ScenePath): StaticInstancePath {
   // FIXME This should be returning a regular InstancePath, not a StaticInstancePath
   // Uses the last `ElementPath` in a `ScenePath` to create an `InstancePath` pointing to that element
-  const staticScene = dynamicScenePathToStaticScenePath(path)
-  const lastElementPath = last(staticScene.sceneElementPaths)
-  if (lastElementPath == null) {
-    return emptyInstancePath
-  } else {
-    const targetSceneElementPaths = dropLast(staticScene.sceneElementPaths)
-    const targetScenePath = staticScenePath(targetSceneElementPaths)
-    return staticInstancePath(targetScenePath, lastElementPath)
-  }
-}
-
-function instancePathForElementPaths(elementPaths: ElementPath[]): InstancePath {
-  const lastElementPath = last(elementPaths)
-  if (lastElementPath == null) {
-    return emptyInstancePath
-  } else {
-    const targetSceneElementPaths = dropLast(elementPaths)
-    const targetScenePath = scenePath(targetSceneElementPaths)
-    return instancePath(targetScenePath, lastElementPath)
-  }
+  return dynamicPathToStaticPath(path) as StaticInstancePath
 }
 
 export function instancePathForElementAtPathDontThrowOnScene(path: TemplatePath): InstancePath {
-  return isInstancePath(path) ? path : instancePathForElementPaths(path.sceneElementPaths)
+  return isInstancePath(path) ? path : (templatePath(path.sceneElementPaths) as InstancePath)
 }
 
 export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
@@ -326,20 +348,6 @@ export function instancePathForElementAtPath(path: TemplatePath): InstancePath {
   }
 
   return instancePathForElementAtPathDontThrowOnScene(path)
-}
-
-export function scenePathForElementAtInstancePath(path: InstancePath): ScenePath {
-  // Appends the `ElementPath` part of an `InstancePath` to that instance's `ScenePath`, to create a
-  // `ScenePath` pointing to that element
-  return scenePath([...path.scene.sceneElementPaths, path.element])
-}
-
-export function staticScenePathForElementAtInstancePath(path: StaticInstancePath): StaticScenePath {
-  return staticScenePath([...path.scene.sceneElementPaths, path.element])
-}
-
-export function scenePathForElementAtPath(path: TemplatePath): ScenePath {
-  return isScenePath(path) ? path : scenePathForElementAtInstancePath(path)
 }
 
 export function elementPathForPath(path: StaticScenePath): StaticElementPath
@@ -361,30 +369,12 @@ export function filterScenes(paths: TemplatePath[]): StaticInstancePath | Instan
   return paths.filter(isInstancePath)
 }
 
-// FIXME: This should be retired, it's just plain dangerous.
-// Right now this is only used for SpecialNodes (in CanvasMetaData)
 function fromStringUncached(path: string): TemplatePath {
-  let elementPathStrs = path.split(SceneSeparator)
-  const lastElementStr = elementPathStrs.pop()! // We know this is safe because ''.split(SceneSeparator).pop() returns ''
-  let sceneStrs = elementPathStrs.length > 0 ? elementPathStrs : [lastElementStr]
-  let elementStr = elementPathStrs.length > 0 ? lastElementStr : null
-
-  const sceneElementPaths = sceneStrs.map((scene) =>
-    scene.split(ElementSeparator).filter((e) => e.length > 0),
+  const elementPathStrings = path.split(SceneSeparator)
+  const fullElementPath = elementPathStrings.map((pathString) =>
+    pathString.split(ElementSeparator).filter((str) => str.trim().length > 0),
   )
-  const scene = scenePath(sceneElementPaths)
-
-  if (elementStr == null) {
-    return scene
-  } else {
-    const element = elementStr.split(ElementSeparator)
-    if (element.length > 0) {
-      const filteredElement = element.filter((e) => e.length > 0)
-      return instancePath(scene, filteredElement)
-    } else {
-      return scene
-    }
-  }
+  return templatePath(fullElementPath)
 }
 
 export function fromString(path: string): TemplatePath {
@@ -454,33 +444,30 @@ export function isInsideFocusedComponent(path: TemplatePath): boolean {
   }
 }
 
+function fullElementPathParent(path: StaticElementPath[]): StaticElementPath[]
+function fullElementPathParent(path: ElementPath[]): ElementPath[]
+function fullElementPathParent(path: ElementPath[]): ElementPath[] {
+  const prefix = dropLast(path)
+  const lastPart = last(path)
+  if (lastPart != null && lastPart.length > 1) {
+    return [...prefix, elementPathParent(lastPart)]
+  } else {
+    return prefix
+  }
+}
+
 export function elementPathParent(path: StaticElementPath): StaticElementPath
 export function elementPathParent(path: ElementPath): ElementPath
 export function elementPathParent(path: ElementPath): ElementPath {
   return path.slice(0, path.length - 1)
 }
 
-export function instancePathParent(path: StaticInstancePath): ScenePath | StaticInstancePath
-export function instancePathParent(path: InstancePath): TemplatePath
-export function instancePathParent(path: InstancePath): TemplatePath {
-  const parentElementPath = elementPathParent(path.element)
-  if (parentElementPath.length === 0) {
-    return path.scene
-  } else {
-    return instancePath(path.scene, parentElementPath)
-  }
-}
-
-export function parentPath(path: ScenePath): null
-export function parentPath(path: StaticInstancePath): StaticTemplatePath
-export function parentPath(path: InstancePath): TemplatePath
-export function parentPath(path: TemplatePath): TemplatePath | null
-export function parentPath(path: TemplatePath): TemplatePath | null {
-  if (isScenePath(path)) {
-    return null // FIXME This is wrong!
-  } else {
-    return instancePathParent(path)
-  }
+export function parentPath(path: StaticTemplatePath): StaticTemplatePath
+export function parentPath(path: TemplatePath): TemplatePath
+export function parentPath(path: TemplatePath): TemplatePath {
+  const fullElementPath = fullElementPathForPath(path)
+  const parentFullElementPath = fullElementPathParent(fullElementPath)
+  return templatePath(parentFullElementPath)
 }
 
 export function parentTemplatePath(path: TemplatePath): TemplatePath {
@@ -502,11 +489,6 @@ export function elementPathToUID(path: ElementPath): id {
   return forceNotNull('Attempting to get the UID of an empty ElementPath', last(path))
 }
 
-// KILLME DEPRECATED, use toUid instead
-export function toTemplateId(path: InstancePath): id {
-  return elementPathToUID(path.element)
-}
-
 function lastElementPathPart(path: TemplatePath): ElementPath {
   if (isInstancePath(path)) {
     return path.element
@@ -520,12 +502,8 @@ export function toUid(path: TemplatePath): id {
   return elementPathToUID(elementPathToUse)
 }
 
-export function toStaticUid(path: InstancePath): id {
+export function toStaticUid(path: TemplatePath): id {
   return extractOriginalUidFromIndexedUid(toUid(path))
-}
-
-export function allTemplateIds(path: InstancePath): Array<id> {
-  return path.element
 }
 
 export function appendToElementPath(
@@ -537,29 +515,31 @@ export function appendToElementPath(path: ElementPath, next: id | Array<id>): El
   return path.concat(next)
 }
 
-export function appendNewElementPath(path: TemplatePath, next: id | ElementPath): InstancePath {
+export function appendNewElementPath(
+  path: TemplatePath,
+  next: StaticElementPath,
+): StaticTemplatePath
+export function appendNewElementPath(path: TemplatePath, next: id | ElementPath): TemplatePath
+export function appendNewElementPath(path: TemplatePath, next: id | ElementPath): TemplatePath {
   const currentPath = fullElementPathForPath(path)
   const toAppend = Array.isArray(next) ? next : [next]
-  return instancePathForElementPaths([...currentPath, toAppend])
+  return templatePath([...currentPath, toAppend])
 }
 
-export function appendToPath(path: StaticTemplatePath, next: id): StaticInstancePath
-export function appendToPath(path: TemplatePath, next: id): InstancePath
-export function appendToPath(path: StaticInstancePath, next: Array<id>): StaticInstancePath
-export function appendToPath(path: InstancePath, next: Array<id>): InstancePath
-export function appendToPath(path: StaticTemplatePath, next: Array<id>): StaticTemplatePath
-export function appendToPath(path: TemplatePath, next: Array<id>): TemplatePath
-export function appendToPath(path: TemplatePath, next: id | Array<id>): TemplatePath
-export function appendToPath(path: TemplatePath, next: id | Array<id>): TemplatePath {
-  const nextArray = Array.isArray(next) ? next : [next]
-  if (nextArray.length === 0) {
-    return path
-  }
-
-  if (isScenePath(path)) {
-    return instancePath(path, nextArray)
+export function appendToPath(
+  path: StaticTemplatePath,
+  next: id | StaticElementPath,
+): StaticTemplatePath
+export function appendToPath(path: TemplatePath, next: id | ElementPath): TemplatePath
+export function appendToPath(path: TemplatePath, next: id | ElementPath): TemplatePath {
+  const fullElementPath = fullElementPathForPath(path)
+  if (isEmptyElementPathsArray(fullElementPath)) {
+    return templatePath([Array.isArray(next) ? next : [next]])
   } else {
-    return instancePath(path.scene, appendToElementPath(path.element, nextArray))
+    const prefix = dropLast(fullElementPath)
+    const lastPart = last(fullElementPath)!
+    const updatedLastPart = appendToElementPath(lastPart, next)
+    return templatePath([...prefix, updatedLastPart])
   }
 }
 
@@ -570,10 +550,6 @@ export function notNullPathsEqual(l: TemplatePath, r: TemplatePath): boolean {
 export function elementsEqual(l: id | null, r: id | null): boolean {
   // Keeping this function incase we make template path elements complicated again
   return l === r
-}
-
-export function scenePathsEqual(l: ScenePath, r: ScenePath): boolean {
-  return l === r || fullElementPathsEqual(l.sceneElementPaths, r.sceneElementPaths)
 }
 
 function elementPathsEqual(l: ElementPath, r: ElementPath): boolean {
@@ -588,10 +564,6 @@ function fullElementPathsEqual(l: ElementPath[], r: ElementPath[]): boolean {
   return l === r || arrayEquals(l, r, elementPathsEqual)
 }
 
-function instancePathsEqual(l: InstancePath, r: InstancePath): boolean {
-  return l === r || (scenePathsEqual(l.scene, r.scene) && elementPathsEqual(l.element, r.element))
-}
-
 export function pathsEqual(l: TemplatePath | null, r: TemplatePath | null): boolean {
   if (l == null) {
     return r == null
@@ -599,12 +571,8 @@ export function pathsEqual(l: TemplatePath | null, r: TemplatePath | null): bool
     return false
   } else if (l === r) {
     return true
-  } else if (isScenePath(l)) {
-    return isScenePath(r) && scenePathsEqual(l, r)
-  } else if (isScenePath(r)) {
-    return false
   } else {
-    return instancePathsEqual(l, r)
+    return fullElementPathsEqual(fullElementPathForPath(l), fullElementPathForPath(r))
   }
 }
 
@@ -876,7 +844,7 @@ export function closestSharedAncestor(
   } else {
     const lScene = scenePathPartOfTemplatePath(lTarget)
     const rScene = scenePathPartOfTemplatePath(rTarget)
-    const scenesEqual = scenePathsEqual(lScene, rScene)
+    const scenesEqual = pathsEqual(lScene, rScene)
     if (scenesEqual) {
       if (isScenePath(lTarget) || isScenePath(rTarget)) {
         return lScene
@@ -902,7 +870,10 @@ export function getCommonParent(
     return null
   } else {
     const parents = includeSelf ? paths : paths.map(parentPath)
-    return parents.reduce((l, r) => closestSharedAncestor(l, r, true), parents[0])
+    return parents.reduce<TemplatePath | null>(
+      (l, r) => closestSharedAncestor(l, r, true),
+      parents[0],
+    )
   }
 }
 
@@ -1053,12 +1024,12 @@ export function areAllElementsInSameScene(paths: TemplatePath[]): boolean {
     return true
   } else {
     const firstScenePath = scenePathPartOfTemplatePath(paths[0])
-    return paths.every((p) => scenePathsEqual(firstScenePath, scenePathPartOfTemplatePath(p)))
+    return paths.every((p) => pathsEqual(firstScenePath, scenePathPartOfTemplatePath(p)))
   }
 }
 
 export function isFromSameSceneAs(a: TemplatePath, b: TemplatePath): boolean {
-  return scenePathsEqual(scenePathPartOfTemplatePath(a), scenePathPartOfTemplatePath(b))
+  return pathsEqual(scenePathPartOfTemplatePath(a), scenePathPartOfTemplatePath(b))
 }
 
 function dynamicElementPathToStaticElementPath(element: ElementPath): StaticElementPath {
@@ -1069,25 +1040,17 @@ function dynamicScenePathToStaticScenePath(scene: ScenePath): StaticScenePath {
   return staticScenePath(scene.sceneElementPaths.map(dynamicElementPathToStaticElementPath))
 }
 
-export function dynamicPathToStaticPath(path: ScenePath): StaticScenePath
-export function dynamicPathToStaticPath(path: InstancePath): StaticInstancePath
-export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath
 export function dynamicPathToStaticPath(path: TemplatePath): StaticTemplatePath {
-  if (isScenePath(path)) {
-    return dynamicScenePathToStaticScenePath(path)
-  } else {
-    return staticInstancePath(
-      dynamicScenePathToStaticScenePath(path.scene),
-      dynamicElementPathToStaticElementPath(path.element),
-    )
-  }
+  const fullPath = fullElementPathForPath(path)
+  return templatePath(fullPath.map(dynamicElementPathToStaticElementPath))
 }
 
-export function dynamicPathToStaticPathKeepSceneDynamic(path: InstancePath): StaticInstancePath {
-  return staticInstancePath(
-    path.scene as StaticScenePath, // TODO I'm cheating with the types, but this is how valid paths works now
-    dynamicElementPathToStaticElementPath(path.element),
-  )
+export function makeLastPartOfPathStatic(path: TemplatePath): TemplatePath {
+  const fullElementPath = fullElementPathForPath(path)
+  const dynamicPrefix = dropLast(fullElementPath)
+  const dynamicLastPart = last(fullElementPath)!
+  const staticLastPart = dynamicElementPathToStaticElementPath(dynamicLastPart)
+  return templatePath([...dynamicPrefix, staticLastPart])
 }
 
 export function pathUpToElementPath(
@@ -1103,9 +1066,7 @@ export function pathUpToElementPath(
   const foundIndex = pathToUse.findIndex((pathPart) => {
     return elementPathsEqual(pathPart, elementPath)
   })
-  return foundIndex === -1
-    ? null
-    : instancePathForElementPaths(fullElementPath.slice(0, foundIndex + 1))
+  return foundIndex === -1 ? null : templatePath(fullElementPath.slice(0, foundIndex + 1))
 }
 
 export function isScenePathEmpty(path: TemplatePath): boolean {

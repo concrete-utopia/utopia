@@ -194,7 +194,6 @@ import {
   canvasFrameToNormalisedFrame,
   clearDragState,
   duplicate,
-  filterMultiSelectScenes,
   getFrameChange,
   moveTemplate,
   produceCanvasTransientState,
@@ -515,7 +514,7 @@ function applyUpdateToJSXElement(
 
 function setPropertyOnTarget(
   editor: EditorModel,
-  target: InstancePath,
+  target: TemplatePath,
   updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
 ): EditorModel {
   return modifyOpenJsxElementAtPath(
@@ -760,7 +759,7 @@ function switchAndUpdateFrames(
   }
 
   Utils.fastForEach(targetMetadata.children, (childPath) => {
-    const child = MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, childPath)
+    const child = MetadataUtils.findElementByTemplatePath(editor.jsxMetadata, childPath)
     if (child?.globalFrame != null) {
       // if the globalFrame is null, this child is a non-layoutable so just skip it
       const isParentOfChildFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -1008,7 +1007,7 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
       }
 
       return element.children.every((childPath) => {
-        const child = MetadataUtils.getElementByInstancePathMaybe(metadata, childPath)
+        const child = MetadataUtils.findElementByTemplatePath(metadata, childPath)
         return child == null || isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child)
       })
     }
@@ -1073,7 +1072,7 @@ function indexPositionForAdjustment(
       if (openUIJSFile != null && isParseSuccess(openUIJSFile.fileContents.parsed)) {
         const current = getZIndexOfElement(
           openUIJSFile.fileContents.parsed.topLevelElements,
-          TP.asStatic(target),
+          TP.asStatic(target) as StaticInstancePath,
         )
         return {
           type: 'absolute',
@@ -1538,7 +1537,7 @@ export const UPDATE_FNS = {
 
     return {
       ...withMovedTemplate,
-      selectedViews: filterMultiSelectScenes(newPaths),
+      selectedViews: newPaths,
       highlightedViews: [],
     }
   },
@@ -1661,7 +1660,7 @@ export const UPDATE_FNS = {
       (path) => !TP.containsPath(path, newlySelectedPaths),
     )
 
-    const filteredNewlySelectedPaths = filterMultiSelectScenes(newlySelectedPaths)
+    const filteredNewlySelectedPaths = newlySelectedPaths
     const updatedEditor: EditorModel = {
       ...editor,
       highlightedViews: newHighlightedViews,
@@ -1712,7 +1711,7 @@ export const UPDATE_FNS = {
 
     return {
       ...editor,
-      selectedViews: filterMultiSelectScenes([...editor.selectedViews, ...additionalTargets]),
+      selectedViews: [...editor.selectedViews, ...additionalTargets],
       pasteTargetsToIgnore: [],
     }
   },
@@ -1821,7 +1820,7 @@ export const UPDATE_FNS = {
       editor.canvas.openFile?.filename ?? null,
     )
     const newSelection =
-      storyBoardPath != null ? [TP.scenePath([[TP.toUid(storyBoardPath), sceneUID]])] : []
+      storyBoardPath != null ? [TP.templatePath([[TP.toUid(storyBoardPath), sceneUID]])] : []
     return {
       ...addNewScene(editor, newScene),
       selectedViews: newSelection,
@@ -1878,7 +1877,7 @@ export const UPDATE_FNS = {
     )
     return {
       ...withNewElement,
-      selectedViews: filterMultiSelectScenes(newSelectedViews),
+      selectedViews: newSelectedViews,
     }
   },
   WRAP_IN_VIEW: (

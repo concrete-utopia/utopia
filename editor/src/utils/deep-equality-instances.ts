@@ -41,10 +41,6 @@ export const InstancePathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
   InstancePath
 >> = arrayDeepEquality(InstancePathKeepDeepEquality)
 
-export const ScenePathKeepDeepEquality: KeepDeepEqualityCall<ScenePath> = createCallFromEqualsFunction(
-  TP.scenePathsEqual,
-)
-
 export const PropertyPathKeepDeepEquality: KeepDeepEqualityCall<PropertyPath> = createCallFromEqualsFunction(
   (oldPath: PropertyPath, newPath: PropertyPath) => {
     return PP.pathsEqual(oldPath, newPath)

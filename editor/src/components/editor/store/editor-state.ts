@@ -128,16 +128,11 @@ import {
 import { RightMenuTab } from '../../canvas/right-menu'
 
 import {
-  staticInstancePath,
-  instancePath,
   isInstancePath,
   toUid,
   toString,
   dynamicPathToStaticPath,
-  scenePath,
-  staticScenePath,
   staticElementPath,
-  scenePathForElementAtPath,
 } from '../../../core/shared/template-path'
 
 import { Notice } from '../../common/notice'
@@ -291,7 +286,7 @@ export interface EditorState {
     realCanvasOffset: CanvasVector
     roundedCanvasOffset: CanvasVector
     textEditor: {
-      templatePath: InstancePath
+      templatePath: TemplatePath
       triggerMousePosition: WindowPoint | null
     } | null
     selectionControlsVisible: boolean
@@ -597,7 +592,7 @@ export function modifyOpenJSXElementsAndMetadata(
 }
 
 export function modifyOpenJsxElementAtPath(
-  path: InstancePath,
+  path: TemplatePath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
@@ -610,7 +605,7 @@ export function modifyOpenJsxElementAtPath(
 }
 
 export function modifyOpenJsxElementAtStaticPath(
-  path: StaticInstancePath,
+  path: StaticTemplatePath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
@@ -842,10 +837,9 @@ export function addSceneToJSXComponents(
   const storyboardComponentUID =
     storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
   if (storyboardComponentUID != null) {
-    const storyboardComponentTemplatePath = staticInstancePath(
-      staticScenePath([staticElementPath([storyboardComponentUID])]),
+    const storyboardComponentTemplatePath = TP.templatePath([
       staticElementPath([storyboardComponentUID]),
-    )
+    ])
     return insertJSXElementChild(
       projectContents,
       openFile,
@@ -862,10 +856,10 @@ export function addSceneToJSXComponents(
 const emptyImports: Imports = {}
 
 export function removeElementAtPath(
-  target: InstancePath,
+  target: TemplatePath,
   components: Array<UtopiaJSXComponent>,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+  const staticTarget = TP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
@@ -881,7 +875,7 @@ export function insertElementAtPath(
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.templatePathToStaticTemplatePath(targetParent)
+  const staticTarget = targetParent == null ? null : TP.dynamicPathToStaticPath(targetParent)
   return insertJSXElementChild(
     projectContents,
     openFile,
@@ -894,14 +888,14 @@ export function insertElementAtPath(
 
 export function transformElementAtPath(
   components: Array<UtopiaJSXComponent>,
-  target: InstancePath,
+  target: TemplatePath,
   transform: (elem: JSXElement) => JSXElement,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+  const staticTarget = TP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
-    return transformJSXComponentAtPath(components, staticTarget, transform)
+    return transformJSXComponentAtPath(components, staticTarget as StaticInstancePath, transform)
   }
 }
 
@@ -1752,7 +1746,7 @@ export function getHighlightBoundsForTemplatePath(
   editorState: EditorState,
 ): HighlightBoundsWithFile | null {
   if (isInstancePath(path)) {
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
+    const staticPath = TP.dynamicPathToStaticPath(path)
     if (staticPath != null) {
       const highlightBounds = getHighlightBoundsForProject(editorState.projectContents)
       if (highlightBounds != null) {
@@ -1840,29 +1834,20 @@ export function modifyUnderlyingTarget(
   editorState: EditorState,
   modifyElement: (
     element: JSXElement,
-    underlying: InstancePath,
+    underlying: TemplatePath,
     underlyingFilePath: string,
   ) => JSXElement = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
-    underlying: StaticInstancePath | null,
+    underlying: StaticTemplatePath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = (success) => success,
 ): EditorState {
-  // Support just about anything as the path.
-  let instanceTarget: InstancePath | null
-  if (target == null) {
-    instanceTarget = null
-  } else if (TP.isInstancePath(target)) {
-    instanceTarget = target
-  } else {
-    instanceTarget = TP.instancePathForElementAtPathDontThrowOnScene(target)
-  }
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editorState.projectContents,
     editorState.nodeModules.files,
     currentFilePath,
-    instanceTarget,
+    target,
   )
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -1917,12 +1902,12 @@ export function modifyUnderlyingForOpenFile(
   editorState: EditorState,
   modifyElement: (
     element: JSXElement,
-    underlying: InstancePath,
+    underlying: TemplatePath,
     underlyingFilePath: string,
   ) => JSXElement = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
-    underlying: StaticInstancePath | null,
+    underlying: StaticTemplatePath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = (success) => success,
 ): EditorState {
@@ -1944,7 +1929,7 @@ export function withUnderlyingTarget<T>(
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticTemplatePath,
     underlyingFilePath: string,
   ) => T,
 ): T {
@@ -1995,7 +1980,7 @@ export function withUnderlyingTargetFromEditorState<T>(
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticTemplatePath,
     underlyingFilePath: string,
   ) => T,
 ): T {
@@ -2015,7 +2000,7 @@ export function forUnderlyingTargetFromEditorState(
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticTemplatePath,
     underlyingFilePath: string,
   ) => void,
 ): void {
@@ -2030,7 +2015,7 @@ export function forUnderlyingTarget(
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticTemplatePath,
     underlyingFilePath: string,
   ) => void,
 ): void {

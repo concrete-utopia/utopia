@@ -141,7 +141,7 @@ export const MetadataUtils = {
     if (TP.isScenePath(target)) {
       return 'scene'
     } else {
-      const staticTarget = this.dynamicPathToStaticPath(target)
+      const staticTarget = TP.dynamicPathToStaticPath(target)
       if (staticTarget == null) {
         return 'unknown-element'
       } else {
@@ -213,12 +213,12 @@ export const MetadataUtils = {
       return elementMap[TP.toString(path)] ?? null
     }
   },
-  getElementsByInstancePath(
+  findElementsByTemplatePath(
     elementMap: ElementInstanceMetadataMap,
-    paths: Array<InstancePath>,
+    paths: Array<TemplatePath>,
   ): Array<ElementInstanceMetadata> {
     return stripNulls(
-      paths.map((path) => MetadataUtils.getElementByInstancePathMaybe(elementMap, path)),
+      paths.map((path) => MetadataUtils.findElementByTemplatePath(elementMap, path)),
     )
   },
   isSceneTreatedAsGroup(scene: ElementInstanceMetadata | null): boolean {
@@ -272,12 +272,12 @@ export const MetadataUtils = {
         parentPath,
       )
       const rootElementPaths = parentMetadata?.rootElements ?? []
-      return MetadataUtils.getElementsByInstancePath(metadata, rootElementPaths)
+      return MetadataUtils.findElementsByTemplatePath(metadata, rootElementPaths)
     } else {
       const parent = metadata[TP.toString(parentPath)]
       return parent == null
         ? []
-        : MetadataUtils.getElementsByInstancePath(metadata, parent.children)
+        : MetadataUtils.findElementsByTemplatePath(metadata, parent.children)
     }
   },
   isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -375,7 +375,7 @@ export const MetadataUtils = {
       const flexDirection = getReorderDirection(this.getFlexDirection(parentInstance))
 
       if (TP.isInstancePath(target)) {
-        const staticTarget = this.dynamicPathToStaticPath(target)
+        const staticTarget = TP.dynamicPathToStaticPath(target)
         if (staticTarget == null) {
           return {}
         } else {
@@ -505,16 +505,6 @@ export const MetadataUtils = {
       }
     }
   },
-  templatePathToStaticTemplatePath(path: TemplatePath | null): StaticTemplatePath | null {
-    if (path == null) {
-      return path
-    } else {
-      return TP.dynamicPathToStaticPath(path)
-    }
-  },
-  dynamicPathToStaticPath(path: InstancePath): StaticInstancePath {
-    return TP.dynamicPathToStaticPath(path)
-  },
   shiftGroupFrame(
     metadata: ElementInstanceMetadataMap,
     target: TemplatePath,
@@ -533,11 +523,11 @@ export const MetadataUtils = {
     const shiftMultiplier = addOn ? 1 : -1
     let workingFrame: CanvasRectangle = originalFrame
     // If this is held within a group, then we need to add on the frames of the parent groups.
-    let ancestorPath = TP.instancePathParent(target)
+    let ancestorPath = TP.parentPath(target)
     while (TP.isInstancePath(ancestorPath)) {
       const ancestorElement = MetadataUtils.getElementByInstancePathMaybe(metadata, ancestorPath)
 
-      const ancestorParentPath = TP.instancePathParent(ancestorPath)
+      const ancestorParentPath = TP.parentPath(ancestorPath)
       if (ancestorElement == null) {
         break
       } else if (TP.isInstancePath(ancestorParentPath)) {
@@ -584,7 +574,7 @@ export const MetadataUtils = {
   getRootViewPaths(
     elements: ElementInstanceMetadataMap,
     target: TemplatePath,
-  ): Array<InstancePath> {
+  ): Array<TemplatePath> {
     const element = MetadataUtils.findElementByTemplatePath(elements, target)
     return element?.rootElements ?? []
   },
@@ -593,12 +583,12 @@ export const MetadataUtils = {
     target: TemplatePath,
   ): Array<ElementInstanceMetadata> {
     const rootPaths = MetadataUtils.getRootViewPaths(elements, target)
-    return MetadataUtils.getElementsByInstancePath(elements, rootPaths ?? [])
+    return MetadataUtils.findElementsByTemplatePath(elements, rootPaths ?? [])
   },
   getChildrenPaths(
     elements: ElementInstanceMetadataMap,
     target: TemplatePath,
-  ): Array<InstancePath> {
+  ): Array<TemplatePath> {
     const element = MetadataUtils.findElementByTemplatePath(elements, target)
     return element?.children ?? []
   },
@@ -607,12 +597,12 @@ export const MetadataUtils = {
     target: TemplatePath,
   ): Array<ElementInstanceMetadata> {
     const childrenPaths = MetadataUtils.getChildrenPaths(elements, target)
-    return MetadataUtils.getElementsByInstancePath(elements, childrenPaths ?? [])
+    return MetadataUtils.findElementsByTemplatePath(elements, childrenPaths ?? [])
   },
   getImmediateChildrenPaths(
     elements: ElementInstanceMetadataMap,
     target: TemplatePath,
-  ): Array<InstancePath> {
+  ): Array<TemplatePath> {
     const element = MetadataUtils.findElementByTemplatePath(elements, target)
     return element == null ? [] : [...element.rootElements, ...element.children]
   },
@@ -621,7 +611,7 @@ export const MetadataUtils = {
     target: TemplatePath,
   ): Array<ElementInstanceMetadata> {
     const childrenPaths = MetadataUtils.getImmediateChildrenPaths(metadata, target)
-    return MetadataUtils.getElementsByInstancePath(metadata, childrenPaths ?? [])
+    return MetadataUtils.findElementsByTemplatePath(metadata, childrenPaths ?? [])
   },
   getChildrenHandlingGroups(
     metadata: ElementInstanceMetadataMap,
@@ -635,7 +625,7 @@ export const MetadataUtils = {
     ): Array<ElementInstanceMetadata> => {
       // autoSizing views are the new groups
       if (this.isAutoSizingViewFromComponents(metadata, childInstance.templatePath)) {
-        const rawChildren = MetadataUtils.getElementsByInstancePath(
+        const rawChildren = MetadataUtils.findElementsByTemplatePath(
           metadata,
           childInstance.children,
         )
@@ -661,7 +651,7 @@ export const MetadataUtils = {
       ? []
       : MetadataUtils.getImmediateChildren(metadata, storyboardMetadata.templatePath)
   },
-  getAllStoryboardChildrenPaths(metadata: ElementInstanceMetadataMap): InstancePath[] {
+  getAllStoryboardChildrenPaths(metadata: ElementInstanceMetadataMap): TemplatePath[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
     return storyboardMetadata == null
       ? []
@@ -677,10 +667,10 @@ export const MetadataUtils = {
       }
     }, rootScenesAndElements)
   },
-  getAllPaths(metadata: ElementInstanceMetadataMap): InstancePath[] {
+  getAllPaths(metadata: ElementInstanceMetadataMap): TemplatePath[] {
     // This function needs to explicitly return the paths in a depth first manner
-    let result: Array<InstancePath> = []
-    function recurseElement(elementPath: InstancePath): void {
+    let result: Array<TemplatePath> = []
+    function recurseElement(elementPath: TemplatePath): void {
       result.push(elementPath)
       const descendants = MetadataUtils.getImmediateChildrenPaths(metadata, elementPath)
       fastForEach(descendants, recurseElement)
@@ -689,14 +679,14 @@ export const MetadataUtils = {
     const storyboardChildren = this.getAllStoryboardChildrenPaths(metadata)
     fastForEach(storyboardChildren, recurseElement)
 
-    return uniqBy<InstancePath>(result, TP.pathsEqual)
+    return uniqBy<TemplatePath>(result, TP.pathsEqual)
   },
   getAllPathsIncludingUnfurledFocusedComponents(
     metadata: ElementInstanceMetadataMap,
-  ): InstancePath[] {
+  ): TemplatePath[] {
     // This function needs to explicitly return the paths in a depth first manner
-    let result: Array<InstancePath> = []
-    function recurseElement(elementPath: InstancePath): void {
+    let result: Array<TemplatePath> = []
+    function recurseElement(elementPath: TemplatePath): void {
       result.push(elementPath)
       const {
         children,
@@ -717,7 +707,7 @@ export const MetadataUtils = {
       }
     })
 
-    return uniqBy<InstancePath>(result, TP.pathsEqual)
+    return uniqBy<TemplatePath>(result, TP.pathsEqual)
   },
   isElementOfType(instance: ElementInstanceMetadata, elementType: string): boolean {
     return foldEither(
@@ -846,7 +836,7 @@ export const MetadataUtils = {
   getAllChildrenIncludingUnfurledFocusedComponents(
     path: TemplatePath,
     metadata: ElementInstanceMetadataMap,
-  ): { children: Array<InstancePath>; unfurledComponents: Array<InstancePath> } {
+  ): { children: Array<TemplatePath>; unfurledComponents: Array<TemplatePath> } {
     return {
       children: MetadataUtils.getChildrenPaths(metadata, path),
       unfurledComponents: MetadataUtils.getRootViewPaths(metadata, path),
@@ -873,7 +863,7 @@ export const MetadataUtils = {
     let navigatorTargets: Array<TemplatePath> = []
     let visibleNavigatorTargets: Array<TemplatePath> = []
 
-    function walkAndAddKeys(path: InstancePath, collapsedAncestor: boolean): void {
+    function walkAndAddKeys(path: TemplatePath, collapsedAncestor: boolean): void {
       navigatorTargets.push(path)
       if (!collapsedAncestor) {
         visibleNavigatorTargets.push(path)
@@ -904,10 +894,10 @@ export const MetadataUtils = {
   },
   transformAtPathOptionally(
     elementMap: ElementInstanceMetadataMap,
-    path: InstancePath,
+    path: TemplatePath,
     transform: (element: ElementInstanceMetadata) => ElementInstanceMetadata,
   ): ElementInstanceMetadataMap {
-    const existing = MetadataUtils.getElementByInstancePathMaybe(elementMap, path)
+    const existing = MetadataUtils.findElementByTemplatePath(elementMap, path)
     if (existing == null) {
       return elementMap
     } else {
@@ -1101,15 +1091,15 @@ export const MetadataUtils = {
     // like that in the future. But for now this is likely "good enough" that it
     // wont make any difference.
     let workingElements: ElementInstanceMetadataMap = { ...fromSpy }
-    let newlyFoundElements: Array<InstancePath> = []
+    let newlyFoundElements: Array<TemplatePath> = []
     fastForEach(fromDOM, (domElem) => {
-      const spyElem = MetadataUtils.getElementByInstancePathMaybe(fromSpy, domElem.templatePath)
+      const spyElem = MetadataUtils.findElementByTemplatePath(fromSpy, domElem.templatePath)
 
       // Checking if our elements support children should prevent us from ending up with the
       // internals of draft-js showing up underneath Text elements.
       const shouldNotTraverse = Utils.path(['props', 'data-utopia-do-not-traverse'], fromDOM)
-      let children: Array<InstancePath>
-      let rootElements: Array<InstancePath>
+      let children: Array<TemplatePath>
+      let rootElements: Array<TemplatePath>
       if (shouldNotTraverse) {
         children = []
         rootElements = []
@@ -1167,7 +1157,6 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
   ): ElementInstanceMetadataMap {
     const parentPath = TP.parentPath(target)
-    const targetID = TP.toTemplateId(target)
     // Remove it from where it used to be.
     if (TP.isScenePath(parentPath)) {
       // TODO Scene Implementation
@@ -1199,7 +1188,7 @@ export const MetadataUtils = {
   },
   updateParentWithNewChildPath(
     targetParent: TemplatePath | null,
-    childPath: InstancePath,
+    childPath: TemplatePath,
     elements: ElementInstanceMetadataMap,
     indexPosition: IndexPosition | null,
   ): ElementInstanceMetadataMap {
@@ -1212,7 +1201,7 @@ export const MetadataUtils = {
       return elements
     } else {
       return this.transformAtPathOptionally(elements, targetParent, (parentElement) => {
-        let updatedChildren: Array<InstancePath>
+        let updatedChildren: Array<TemplatePath>
         if (indexPosition == null) {
           updatedChildren = parentElement.children.concat(childPath)
         } else {
@@ -1261,15 +1250,15 @@ export const MetadataUtils = {
 
     function duplicateElementMetadata(
       element: ElementInstanceMetadata,
-      pathToReplace: InstancePath,
-      pathToReplaceWith: InstancePath,
+      pathToReplace: TemplatePath,
+      pathToReplaceWith: TemplatePath,
       newElementInner: Either<string, JSXElementChild>,
-    ): InstancePath {
+    ): TemplatePath {
       const newTemplatePath = TP.replaceIfAncestor(
         element.templatePath,
         pathToReplace,
         pathToReplaceWith,
-      )
+      )!
 
       const newElementMetadata: ElementInstanceMetadata = {
         ...element,
@@ -1329,7 +1318,7 @@ export const MetadataUtils = {
         }
       })
 
-    function updateChildren(children: InstancePath[]): InstancePath[] {
+    function updateChildren(children: TemplatePath[]): TemplatePath[] {
       let childWasUpdated = false
       const updatedChildren = children.map((child) => {
         const replacementChild = allPathsWithReplacements.find((pathWithReplacement) =>
@@ -1345,7 +1334,7 @@ export const MetadataUtils = {
     fastForEach(
       allPathsWithReplacements,
       ({ path, replacement, pathString, replacementString }) => {
-        const existing = MetadataUtils.getElementByInstancePathMaybe(updatedElements, path)
+        const existing = MetadataUtils.findElementByTemplatePath(updatedElements, path)
         if (existing != null) {
           delete updatedElements[pathString]
           updatedElements[replacementString] = {
@@ -1375,7 +1364,7 @@ export const MetadataUtils = {
       return null
     } else {
       // TODO remove dependency on metadata from here
-      const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
+      const staticPath = TP.dynamicPathToStaticPath(path)
       const jsxElement = optionalMap((p) => findJSXElementChildAtPath(rootElements, p), staticPath)
       return optionalMap((element) => (isJSXElement(element) ? element.name : null), jsxElement)
     }
@@ -1520,16 +1509,8 @@ export function findElementAtPath(
   if (target == null) {
     return null
   } else {
-    if (TP.isScenePath(target)) {
-      return null
-    } else {
-      const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
-      if (staticTarget == null) {
-        return null
-      } else {
-        return findJSXElementChildAtPath(components, staticTarget)
-      }
-    }
+    const staticTarget = TP.dynamicPathToStaticPath(target)
+    return findJSXElementChildAtPath(components, staticTarget)
   }
 }
 

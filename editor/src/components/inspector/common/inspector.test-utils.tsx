@@ -40,7 +40,9 @@ type UpdateFunctionHelpers = {
 export function getStoreHook(
   mockDispatch: EditorDispatch,
 ): EditorStateContextData & UpdateFunctionHelpers {
-  const editor = createEditorStates([TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb'])])
+  const editor = createEditorStates([
+    TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+  ])
   const defaultState: EditorStore = {
     editor: editor.editor,
     derived: editor.derivedState,

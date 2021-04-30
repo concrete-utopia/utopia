@@ -356,7 +356,7 @@ addCacheControl :: Middleware
 addCacheControl = addMiddlewareHeader "Cache-Control" "public, immutable, max-age=2592000"
 
 addCacheControlRevalidate :: Middleware
-addCacheControlRevalidate = addMiddlewareHeader "Cache-Control" "public, must-revalidate"
+addCacheControlRevalidate = addMiddlewareHeader "Cache-Control" "public, must-revalidate, proxy-revalidate, max-age=0"
 
 addCDNHeaders :: Middleware
 addCDNHeaders = addCacheControl . addAccessControlAllowOrigin

@@ -2,7 +2,7 @@
 
 exports[`DOM Walker tests Label carried through for generated elements 1`] = `
 Object {
-  ":utopia-storyboard-uid": Object {
+  "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
@@ -37,7 +37,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid",
+      "data-paths": "utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -86,7 +86,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa": Object {
+  "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
@@ -122,9 +122,9 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa",
+      "data-paths": "utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -190,7 +190,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa/app-entity": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
     "children": Array [],
     "componentInstance": true,
@@ -214,7 +214,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
         "element": Array [
@@ -382,7 +382,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
@@ -732,7 +732,7 @@ Object {
 
 exports[`DOM Walker tests Label carried through for normal elements 1`] = `
 Object {
-  ":utopia-storyboard-uid": Object {
+  "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
@@ -767,7 +767,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid",
+      "data-paths": "utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -816,7 +816,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa": Object {
+  "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
@@ -852,9 +852,9 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa",
+      "data-paths": "utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -920,7 +920,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa/app-entity": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
     "children": Array [],
     "componentInstance": true,
@@ -944,7 +944,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
         "element": Array [
@@ -1064,7 +1064,7 @@ Object {
     },
     "props": Object {
       "data-label": "Hat",
-      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
@@ -1141,7 +1141,7 @@ Object {
 
 exports[`DOM Walker tests Simple Project with divs 1`] = `
 Object {
-  ":utopia-storyboard-uid": Object {
+  "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
@@ -1176,7 +1176,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid",
+      "data-paths": "utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -1225,7 +1225,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa": Object {
+  "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
@@ -1261,9 +1261,9 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa",
+      "data-paths": "utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -1329,7 +1329,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa/app-entity": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
     "children": Array [],
     "componentInstance": true,
@@ -1353,7 +1353,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
         "element": Array [
@@ -1489,7 +1489,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c :utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "05c app-entity",
       "skipDeepFreeze": true,
       "style": Object {
@@ -1778,7 +1778,7 @@ Object {
 
 exports[`DOM Walker tests Simple Project with flex parent 1`] = `
 Object {
-  ":utopia-storyboard-uid": Object {
+  "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
@@ -1813,7 +1813,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid",
+      "data-paths": "utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -1862,7 +1862,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa": Object {
+  "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
@@ -1898,9 +1898,9 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa",
+      "data-paths": "utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -1966,7 +1966,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa/app-entity": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
     "children": Array [],
     "componentInstance": true,
@@ -1990,7 +1990,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
         "element": Array [
@@ -2126,7 +2126,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c :utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "05c app-entity",
       "skipDeepFreeze": true,
       "style": Object {
@@ -2416,7 +2416,7 @@ Object {
 
 exports[`DOM Walker tests Simple Project with one child View 1`] = `
 Object {
-  ":utopia-storyboard-uid": Object {
+  "utopia-storyboard-uid": Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
@@ -2451,7 +2451,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid",
+      "data-paths": "utopia-storyboard-uid",
       "data-uid": "utopia-storyboard-uid",
       "skipDeepFreeze": true,
     },
@@ -2500,7 +2500,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa": Object {
+  "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
@@ -2536,9 +2536,9 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa",
+      "data-paths": "utopia-storyboard-uid/scene-aaa",
       "data-uid": "scene-aaa",
-      "data-utopia-scene-id": ":utopia-storyboard-uid/scene-aaa",
+      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
       "skipDeepFreeze": true,
       "style": Object {
         "height": 812,
@@ -2604,7 +2604,7 @@ Object {
       },
     },
   },
-  ":utopia-storyboard-uid/scene-aaa/app-entity": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
     "children": Array [],
     "componentInstance": true,
@@ -2628,7 +2628,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": ":utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
         "element": Array [
@@ -2764,7 +2764,7 @@ Object {
       "y": 0,
     },
     "props": Object {
-      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c :utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:05c utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "05c app-entity",
       "skipDeepFreeze": true,
       "style": Object {
