@@ -406,11 +406,7 @@ function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any>
   if (scope == null) {
     return undefined
   } else {
-    // TODO SCENES remove this when the Scene metadata work is finished
-    // this is now needed, otherwise the Storyboard needs to be imported to the ui js file, but the linter will show warnings
-    if (jsxElementToLookup.name.baseVariable === 'Storyboard') {
-      return Storyboard
-    } else if (jsxElementToLookup.name.baseVariable in scope) {
+    if (jsxElementToLookup.name.baseVariable in scope) {
       const fromVar = scope[jsxElementToLookup.name.baseVariable]
       const result = Utils.pathOr(
         undefined,
