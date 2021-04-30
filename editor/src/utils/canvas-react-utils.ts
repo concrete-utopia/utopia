@@ -241,7 +241,14 @@ function uidsWithoutExoticUID(uids: string | null): string | null {
 
 const mangleExoticType = Utils.memoize(
   (type: React.ComponentType): React.FunctionComponent => {
-    function updateChild(child: React.ReactElement, dataUids: string | null, paths: string | null) {
+    function updateChild(
+      child: React.ReactElement | null,
+      dataUids: string | null,
+      paths: string | null,
+    ) {
+      if (child == null) {
+        return child
+      }
       const existingChildUIDs = child.props?.[UTOPIA_UIDS_KEY]
       const existingChildPaths = child.props?.[UTOPIA_PATHS_KEY]
       const appendedUIDString = appendToUidString(existingChildUIDs, dataUids)

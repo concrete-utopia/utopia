@@ -17,7 +17,6 @@ import {
   initBrowserFS,
 } from '../../core/workers/ts/ts-worker'
 import { NO_OP, fastForEach } from '../../core/shared/utils'
-import { NodeModules, esCodeFile } from '../../core/shared/project-file-types'
 import { MapLike } from 'typescript'
 import { objectMap } from '../../core/shared/object-utils'
 import { StoryboardFilePath } from '../editor/store/editor-state'
@@ -25,7 +24,6 @@ import * as TP from '../../core/shared/template-path'
 import {
   defaultProjectContentsForNormalising,
   getTextFileByPath,
-  instancePathFromString,
   SampleNodeModules,
 } from './code-file.test-utils'
 
@@ -454,12 +452,10 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       StoryboardFilePath,
-      instancePathFromString(
-        'storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div',
-      ),
+      TP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(instancePathFromString(':same-file-app-div')),
+      TP.dynamicPathToStaticPath(TP.fromString('same-file-app-div')),
       StoryboardFilePath,
       getTextFileByPath(projectContents, StoryboardFilePath),
     )
@@ -470,12 +466,12 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       StoryboardFilePath,
-      instancePathFromString(
+      TP.fromString(
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(instancePathFromString(':card-outer-div/card-inner-div')),
+      TP.dynamicPathToStaticPath(TP.fromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
     )
@@ -486,10 +482,10 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       '/src/card.js',
-      instancePathFromString(':card-outer-div/card-inner-div'),
+      TP.fromString('card-outer-div/card-inner-div'),
     )
     const expectedResult = normalisePathSuccess(
-      TP.dynamicPathToStaticPath(instancePathFromString(':card-outer-div/card-inner-div')),
+      TP.dynamicPathToStaticPath(TP.fromString('card-outer-div/card-inner-div')),
       '/src/card.js',
       getTextFileByPath(projectContents, '/src/card.js'),
     )
@@ -500,7 +496,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       '/src/nonexistant.js',
-      instancePathFromString(':card-outer-div/card-inner-div'),
+      TP.fromString('card-outer-div/card-inner-div'),
     )
     const expectedResult = normalisePathUnableToProceed('/src/nonexistant.js')
     expect(actualResult).toEqual(expectedResult)
@@ -510,7 +506,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       '/utopia/unparsedstoryboard.js',
-      instancePathFromString(
+      TP.fromString(
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
     )
@@ -522,7 +518,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       projectContents,
       SampleNodeModules,
       StoryboardFilePath,
-      instancePathFromString(
+      TP.fromString(
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-rectangle:rectangle-inner-div',
       ),
     )

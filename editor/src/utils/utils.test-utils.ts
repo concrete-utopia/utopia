@@ -46,7 +46,6 @@ import {
   textFile,
   textFileContents,
   unparsed,
-  InstancePath,
   EmptyExportsDetail,
 } from '../core/shared/project-file-types'
 import { right } from '../core/shared/either'
@@ -167,8 +166,8 @@ export function createFakeMetadataForParseSuccess(
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
   const sceneElements = getSceneElementsFromParseSuccess(success)
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: InstancePath[] = []
-  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
+  let storyboardChildren: TemplatePath[] = []
+  const storyboardTemplatePath = TP.templatePath([[BakedInStoryboardUID]])
 
   sceneElements.forEach((scene, index) => {
     const descendantsMetadata = createFakeMetadataForJSXElement(
@@ -176,6 +175,7 @@ export function createFakeMetadataForParseSuccess(
       storyboardTemplatePath,
       {},
       utopiaComponents,
+      false,
       false,
       { x: 0, y: 0, width: 400, height: 400 },
     )
@@ -201,8 +201,8 @@ export function createFakeMetadataForComponents(
   topLevelElements: Array<TopLevelElement>,
 ): ElementInstanceMetadataMap {
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: InstancePath[] = []
-  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
+  let storyboardChildren: TemplatePath[] = []
+  const storyboardTemplatePath = TP.templatePath([[BakedInStoryboardUID]])
 
   Utils.fastForEach(topLevelElements, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
@@ -229,6 +229,7 @@ export function createFakeMetadataForComponents(
         storyboardTemplatePath,
         {},
         topLevelElements,
+        false,
         false,
         frame,
       )
@@ -257,12 +258,15 @@ function createFakeMetadataForJSXElement(
   parentScope: MapLike<any>,
   topLevelElements: Array<TopLevelElement>,
   focused: boolean,
+  rootOfInstance: boolean,
   frame: RectangleInner = Utils.zeroRectangle,
 ): Array<ElementInstanceMetadata> {
   let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {
     const elementID = getUtopiaID(element)
-    const templatePath = TP.appendToPath(rootPath, elementID)
+    const templatePath = rootOfInstance
+      ? TP.appendNewElementPath(rootPath, elementID)
+      : TP.appendToPath(rootPath, elementID)
     const definedElsewhere = getDefinedElsewhereFromAttributes(element.props)
     const inScope = {
       ...mapArrayToDictionary(
@@ -283,18 +287,19 @@ function createFakeMetadataForJSXElement(
         },
         topLevelElements,
         isSceneElementIgnoringImports(element),
+        false,
       ),
     )
     const childPaths = children.map((child) => child.templatePath)
 
-    let rootElements: Array<InstancePath> = []
+    let rootElements: Array<TemplatePath> = []
     if (focused) {
       const targetComponent = topLevelElements.find(
         (c) => isUtopiaJSXComponent(c) && c.name === element.name.baseVariable,
       )
 
       if (targetComponent != null && isUtopiaJSXComponent(targetComponent)) {
-        const elementScenePath = TP.scenePathForElementAtPath(templatePath)
+        const elementScenePath = templatePath
 
         const rootElementsMetadata = createFakeMetadataForJSXElement(
           targetComponent.rootElement,
@@ -305,6 +310,7 @@ function createFakeMetadataForJSXElement(
           },
           topLevelElements,
           false,
+          true,
         )
 
         elements.push(...rootElementsMetadata)
@@ -335,7 +341,14 @@ function createFakeMetadataForJSXElement(
     elements.push(...children)
   } else if (isJSXFragment(element)) {
     const children = element.children.flatMap((child) =>
-      createFakeMetadataForJSXElement(child, rootPath, parentScope, topLevelElements, focused),
+      createFakeMetadataForJSXElement(
+        child,
+        rootPath,
+        parentScope,
+        topLevelElements,
+        focused,
+        rootOfInstance,
+      ),
     )
     elements.push(...children)
   } else {
@@ -346,8 +359,8 @@ function createFakeMetadataForJSXElement(
 }
 
 function createFakeMetadataForStoryboard(
-  templatePath: InstancePath,
-  children: Array<InstancePath>,
+  templatePath: TemplatePath,
+  children: Array<TemplatePath>,
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),

@@ -179,8 +179,8 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]
       requireDispatch(dispatch)([
-        EditorActions.setFocusedElement(TP.scenePathForElementAtInstancePath(sv)),
-        EditorActions.scrollToElement(TP.scenePathForElementAtInstancePath(sv), true),
+        EditorActions.setFocusedElement(sv),
+        EditorActions.scrollToElement(sv, true),
       ])
     }
   },
@@ -192,9 +192,7 @@ export const scrollToElement: ContextMenuItem<CanvasData> = {
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]
-      requireDispatch(dispatch)([
-        EditorActions.scrollToElement(TP.scenePathForElementAtInstancePath(sv), false),
-      ])
+      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, false)])
     }
   },
 }

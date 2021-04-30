@@ -17,8 +17,6 @@ import {
   InstancePath,
   TemplatePath,
   isParseSuccess,
-  StaticInstancePath,
-  ParseSuccess,
   isTextFile,
 } from '../../core/shared/project-file-types'
 import {
@@ -128,7 +126,7 @@ export interface UiJsxCanvasProps {
   requireFn: UtopiaRequireFn
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: TemplatePath[]
-  editedTextElement: InstancePath | null
+  editedTextElement: TemplatePath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
   onDomReport: (
@@ -456,9 +454,9 @@ function useGetStoryboardRoot(
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
-  storyboardRootElementPath: InstancePath
-  rootValidPaths: Array<InstancePath>
-  rootInstancePath: InstancePath
+  storyboardRootElementPath: TemplatePath
+  rootValidPaths: Array<TemplatePath>
+  rootInstancePath: TemplatePath
 } {
   const StoryboardRootComponent = executionScope[BakedInStoryboardVariableName] as
     | ComponentRendererComponent
@@ -496,7 +494,7 @@ export interface CanvasContainerProps {
     cachedTreeRoots: Array<TemplatePath>,
   ) => void
   canvasRootElementTemplatePath: TemplatePath
-  validRootPaths: Array<InstancePath>
+  validRootPaths: Array<TemplatePath>
   mountCount: number
   scrollAnimation: boolean
 }

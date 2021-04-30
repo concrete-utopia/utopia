@@ -9,7 +9,7 @@ import {
   emptySpecialSizeMeasurements,
   JSXElement,
 } from '../../../core/shared/element-template'
-import { InstancePath } from '../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as TP from '../../../core/shared/template-path'
@@ -18,9 +18,9 @@ import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-
 export function buildSpyWrappedElement(
   jsx: JSXElement,
   finalProps: any,
-  templatePath: InstancePath,
+  templatePath: TemplatePath,
   metadataContext: UiJsxCanvasContextData,
-  childrenTemplatePaths: Array<InstancePath>,
+  childrenTemplatePaths: Array<TemplatePath>,
   childrenElements: Array<React.ReactNode>,
   Element: any,
   inScope: MapLike<any>,

@@ -59,7 +59,7 @@ export function collectSelfAndChildrenGuidelines(
       target,
     )
     if (!pinnedAndNotAbsolutePositioned) {
-      if (TP.isInstancePath(target) && TP.toTemplateId(target) !== insertingElementId) {
+      if (TP.isInstancePath(target) && TP.toUid(target) !== insertingElementId) {
         const frame = MetadataUtils.getFrameInCanvasCoords(target, componentMetadata)
         if (frame != null) {
           result.push(...Guidelines.guidelinesForFrame(frame, true))
@@ -70,7 +70,7 @@ export function collectSelfAndChildrenGuidelines(
         if (
           TP.isInstancePath(maybeTarget) &&
           TP.isChildOf(maybeTarget, target) &&
-          TP.toTemplateId(maybeTarget) !== insertingElementId
+          TP.toUid(maybeTarget) !== insertingElementId
         ) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
           if (frame != null) {

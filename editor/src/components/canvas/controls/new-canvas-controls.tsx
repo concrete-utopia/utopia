@@ -422,13 +422,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       : []
   }
 
-  const renderTextEditor = (target: InstancePath) => {
+  const renderTextEditor = (target: TemplatePath) => {
     const dragState = props.editor.canvas.dragState
     const selectedViews = localSelectedViews
     if (dragState != null || selectedViews.length !== 1) {
       return null
     } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
+      const element = MetadataUtils.findElementByTemplatePath(componentMetadata, target)
       const canAnimate =
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
           target,

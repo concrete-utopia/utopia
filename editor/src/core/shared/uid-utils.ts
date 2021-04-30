@@ -26,7 +26,7 @@ import { getDOMAttribute } from './dom-utils'
 import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../model/utopia-constants'
 import { optionalMap } from './optional-utils'
 import { addAllUniquely } from './array-utils'
-import { InstancePath } from './project-file-types'
+import { InstancePath, TemplatePath } from './project-file-types'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
@@ -256,15 +256,15 @@ export function appendToUidString(
   }
 }
 
-export function getPathsFromString(pathsString: string | null): Array<InstancePath> {
+export function getPathsFromString(pathsString: string | null): Array<TemplatePath> {
   if (pathsString == null) {
     return []
   } else {
-    return pathsString.split(' ').map(TP.fromString).filter(TP.isInstancePath)
+    return pathsString.split(' ').map(TP.fromString).filter(TP.isTemplatePath)
   }
 }
 
-export function getPathsOnDomElement(element: Element): Array<InstancePath> {
+export function getPathsOnDomElement(element: Element): Array<TemplatePath> {
   const pathsAttribute = getDOMAttribute(element, UTOPIA_PATHS_KEY)
   return getPathsFromString(pathsAttribute)
 }

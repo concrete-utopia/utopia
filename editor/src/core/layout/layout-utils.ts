@@ -39,7 +39,7 @@ import {
   ModifiableAttribute,
   setJSXValueAtPath,
 } from '../shared/jsx-attributes'
-import { InstancePath, PropertyPath } from '../shared/project-file-types'
+import { PropertyPath, TemplatePath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
 import {
   createLayoutPropertyPath,
@@ -58,7 +58,7 @@ interface LayoutPropChangeResult {
 }
 
 export function maybeSwitchChildrenLayoutProps(
-  target: InstancePath,
+  target: TemplatePath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -97,9 +97,9 @@ export function maybeSwitchChildrenLayoutProps(
 }
 
 export function maybeSwitchLayoutProps(
-  target: InstancePath,
-  originalPath: InstancePath,
-  newParentPath: InstancePath,
+  target: TemplatePath,
+  originalPath: TemplatePath,
+  newParentPath: TemplatePath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -107,12 +107,11 @@ export function maybeSwitchLayoutProps(
   parentLayoutSystem: SettableLayoutSystem | null,
 ): LayoutPropChangeResult {
   const originalParentPath = TP.parentPath(originalPath)
-  const originalParent = TP.isInstancePath(originalParentPath)
-    ? MetadataUtils.getElementByInstancePathMaybe(targetOriginalContextMetadata, originalParentPath)
-    : null
-  const newParent = TP.isInstancePath(newParentPath)
-    ? MetadataUtils.getElementByInstancePathMaybe(currentContextMetadata, newParentPath)
-    : null
+  const originalParent = MetadataUtils.findElementByTemplatePath(
+    targetOriginalContextMetadata,
+    originalParentPath,
+  )
+  const newParent = MetadataUtils.findElementByTemplatePath(currentContextMetadata, newParentPath)
 
   let wasFlexContainer = MetadataUtils.isFlexLayoutedContainer(originalParent)
   let isFlexContainer =
@@ -168,8 +167,8 @@ function getLayoutFunction(
   isGroup: boolean,
 ): {
   layoutFn: (
-    target: InstancePath,
-    newParentPath: InstancePath,
+    target: TemplatePath,
+    newParentPath: TemplatePath,
     targetOriginalContextMetadata: ElementInstanceMetadataMap,
     currentContextMetadata: ElementInstanceMetadataMap,
     components: UtopiaJSXComponent[],
@@ -245,8 +244,8 @@ export const PinningAndFlexPoints = [...AllFramePoints, 'flexBasis']
 export const PinningAndFlexPointsExceptSize = [...AllFramePointsExceptSize, 'flexBasis']
 
 function keepLayoutProps(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: TemplatePath,
+  newParentPath: TemplatePath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -259,7 +258,7 @@ function keepLayoutProps(
 
 export function switchLayoutMetadata(
   metadata: ElementInstanceMetadataMap,
-  target: InstancePath,
+  target: TemplatePath,
   parentLayoutSystem: DetectedLayoutSystem | undefined,
   layoutSystemForChildren: DetectedLayoutSystem | undefined,
   position: CSSPosition | undefined,
@@ -294,8 +293,8 @@ export function switchLayoutMetadata(
 }
 
 export function switchPinnedChildToFlex(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: TemplatePath,
+  newParentPath: TemplatePath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -386,8 +385,8 @@ interface SwitchLayoutTypeResult {
 }
 
 export function switchFlexChildToPinned(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: TemplatePath,
+  newParentPath: TemplatePath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -396,11 +395,8 @@ export function switchFlexChildToPinned(
     zeroLocalRect,
     MetadataUtils.getFrame(target, targetOriginalContextMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.getElementByInstancePathMaybe(targetOriginalContextMetadata, target)
-  const newParent = MetadataUtils.getElementByInstancePathMaybe(
-    currentContextMetadata,
-    newParentPath,
-  )
+  const element = MetadataUtils.findElementByTemplatePath(targetOriginalContextMetadata, target)
+  const newParent = MetadataUtils.findElementByTemplatePath(currentContextMetadata, newParentPath)
 
   // When moving flex to pinned, use fixed values or basis values to set width and height
   // FIXME Right now this isn't taking into account groups
@@ -441,8 +437,8 @@ export function switchFlexChildToPinned(
 }
 
 export function switchFlexChildToGroup(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: TemplatePath,
+  newParentPath: TemplatePath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -451,11 +447,8 @@ export function switchFlexChildToGroup(
     zeroLocalRect,
     MetadataUtils.getFrame(target, targetOriginalContextMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.getElementByInstancePathMaybe(targetOriginalContextMetadata, target)
-  const newParent = MetadataUtils.getElementByInstancePathMaybe(
-    currentContextMetadata,
-    newParentPath,
-  )
+  const element = MetadataUtils.findElementByTemplatePath(targetOriginalContextMetadata, target)
+  const newParent = MetadataUtils.findElementByTemplatePath(currentContextMetadata, newParentPath)
 
   // When moving flex to pinned, use fixed values or basis values to set width and height
   const unstretched = FlexLayoutHelpers.getUnstretchedWidthHeight(
@@ -495,8 +488,8 @@ export function switchFlexChildToGroup(
 }
 
 export function switchChildToGroupWithParentFrame(
-  target: InstancePath,
-  originalPath: InstancePath,
+  target: TemplatePath,
+  originalPath: TemplatePath,
   componentMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle,
@@ -509,7 +502,7 @@ export function switchChildToGroupWithParentFrame(
     zeroLocalRect,
     MetadataUtils.getFrame(originalPath, componentMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, originalPath)
+  const element = MetadataUtils.findElementByTemplatePath(componentMetadata, originalPath)
   const oldParentFrame = Utils.defaultIfNull(
     zeroCanvasRect,
     MetadataUtils.getFrameInCanvasCoords(TP.parentPath(originalPath), componentMetadata),
@@ -573,8 +566,8 @@ export function switchChildToGroupWithParentFrame(
 }
 
 export function switchPinnedChildToGroup(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: TemplatePath,
+  newParentPath: TemplatePath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -616,8 +609,8 @@ export function switchPinnedChildToGroup(
 }
 
 export function switchChildToPinnedWithParentFrame(
-  target: InstancePath,
-  originalPath: InstancePath,
+  target: TemplatePath,
+  originalPath: TemplatePath,
   componentMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle,
@@ -626,7 +619,7 @@ export function switchChildToPinnedWithParentFrame(
     zeroLocalRect,
     MetadataUtils.getFrame(originalPath, componentMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, originalPath)
+  const element = MetadataUtils.findElementByTemplatePath(componentMetadata, originalPath)
   const oldParentFrame =
     MetadataUtils.getFrameInCanvasCoords(TP.parentPath(originalPath), componentMetadata) ||
     zeroCanvasRect
@@ -662,7 +655,7 @@ export function switchChildToPinnedWithParentFrame(
 }
 
 function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
-  target: InstancePath,
+  target: TemplatePath,
   components: UtopiaJSXComponent[],
   top: number,
   left: number,
@@ -706,7 +699,7 @@ function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
 }
 
 function removeFlexAndAddPinnedPropsToComponent(
-  target: InstancePath,
+  target: TemplatePath,
   components: UtopiaJSXComponent[],
   top: number,
   left: number,
@@ -746,7 +739,7 @@ function removeFlexAndAddPinnedPropsToComponent(
 }
 
 function changePinsToDefaultOnComponent(
-  target: InstancePath,
+  target: TemplatePath,
   components: UtopiaJSXComponent[],
   top: number,
   left: number,
