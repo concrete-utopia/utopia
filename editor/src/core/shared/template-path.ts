@@ -145,7 +145,7 @@ export function isStoryboardDescendant(path: TemplatePath): boolean {
 }
 
 export function isStoryboardChild(path: TemplatePath): boolean {
-  return path.parts.length === 1 && path.parts[0].length === 1
+  return path.parts.length === 1 && path.parts[0].length === 2
 }
 
 export function lastElementPathForPath(path: StaticTemplatePath): StaticElementPath | null

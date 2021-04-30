@@ -30,6 +30,92 @@ describe('factory function', () => {
   })
 })
 
+describe('isStoryboardPath', () => {
+  it('returns true for the storyboard', () => {
+    expect(TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID]]))).toBeTruthy()
+  })
+  it('returns false for any other path', () => {
+    expect(TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+    ).toBeFalsy()
+
+    expect(TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID], ['app']]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+    ).toBeFalsy()
+  })
+})
+
+describe('isStoryboardChild', () => {
+  it('returns true for a child of the storyboard', () => {
+    expect(
+      TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']])),
+    ).toBeTruthy()
+  })
+  it('returns false for any other path', () => {
+    expect(TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID]]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+    ).toBeFalsy()
+
+    expect(TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID], ['app']]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+    ).toBeFalsy()
+  })
+})
+
+describe('isStoryboardDescendant', () => {
+  it('returns true for any direct descendant of the storyboard', () => {
+    expect(
+      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']])),
+    ).toBeTruthy()
+
+    expect(
+      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+    ).toBeTruthy()
+  })
+  it('returns false for any other path', () => {
+    expect(TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID]]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID], ['app']])),
+    ).toBeFalsy()
+
+    expect(
+      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+    ).toBeFalsy()
+  })
+})
+
+describe('isRootElementOfInstance', () => {
+  it('returns true for any root element of an instance', () => {
+    expect(
+      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID], ['app']])),
+    ).toBeTruthy()
+
+    expect(
+      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+    ).toBeTruthy()
+  })
+  it('returns false for any other path', () => {
+    expect(TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID]]))).toBeFalsy()
+
+    expect(
+      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']])),
+    ).toBeFalsy()
+
+    expect(
+      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+    ).toBeFalsy()
+  })
+})
+
 describe('appending to a path', () => {
   it('appendToPath appends to the last part', () => {
     const start = TP.templatePath([
