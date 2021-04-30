@@ -1321,7 +1321,7 @@ export var storyboard = (
           data-uid=\\"scene storyboard\\"
         >
           <div
-            style=\\"left: 0; top: 0; right: 0; bottom: 0; background-color: #ffffff;\\"
+            style=\\"bottom: 0; left: 0; right: 0; top: 0; background-color: #ffffff;\\"
             data-paths=\\"storyboard/scene/app-entity:aaa storyboard/scene/app-entity\\"
             data-uid=\\"aaa app-entity\\"
           >

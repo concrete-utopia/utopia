@@ -24049,11 +24049,11 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
 "<div
   id=\\"canvas-container\\"
   style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\":utopia-storyboard-uid :utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
 >
   <div
-    data-utopia-scene-id=\\":utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\":utopia-storyboard-uid/scene-aaa :utopia-storyboard-uid\\"
+    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
     style=\\"
       position: absolute;
       background-color: rgba(255, 255, 255, 1);
@@ -24067,7 +24067,7 @@ exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
   >
     <div
       data-uid=\\"d39 aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d39 utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d39 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
       class=\\"css-16au7uv\\"
     >
       Utopia
@@ -24119,7 +24119,7 @@ Object {
     "label": null,
     "localFrame": null,
     "props": Object {
-      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa :utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "aaa app-entity",
       "data-utopia-instance-path": Object {
         "element": Array [
