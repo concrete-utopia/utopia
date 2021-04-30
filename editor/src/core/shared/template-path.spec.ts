@@ -259,6 +259,78 @@ describe('replaceIfAncestor', () => {
       ]),
     )
   })
+  it('where the path is an ancestor of a longer path', () => {
+    const result = TP.replaceIfAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+        ['E', 'F'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['C', 'D'],
+      ]),
+    )
+    expect(result).toEqual(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['C', 'D'],
+        ['E', 'F'],
+      ]),
+    )
+  })
+  it('where the path is an ancestor of part of a longer path', () => {
+    const result = TP.replaceIfAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+        ['E', 'F'],
+      ]),
+      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['C', 'D'],
+      ]),
+    )
+    expect(result).toEqual(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['C', 'D', 'B'],
+        ['E', 'F'],
+      ]),
+    )
+  })
+  it('where the path is an ancestor of a longer path and the replacement is null', () => {
+    const result = TP.replaceIfAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+        ['E', 'F'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+      ]),
+      null,
+    )
+    expect(result).toEqual(TP.templatePath([['E', 'F']]))
+  })
+  it('where the path is an ancestor of part of a longer path and the replacement is null', () => {
+    const result = TP.replaceIfAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+        ['E', 'F'],
+      ]),
+      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
+      null,
+    )
+    expect(result).toEqual(TP.templatePath([['B'], ['E', 'F']]))
+  })
 })
 
 describe('fromString', () => {
@@ -269,6 +341,98 @@ describe('fromString', () => {
     ])
     const actualResult = TP.fromString(TP.toComponentId(expectedResult))
     chaiExpect(actualResult).to.deep.equal(expectedResult)
+  })
+})
+
+describe('closestSharedAncestor', () => {
+  it('returns the original path for equal paths when includePathsEqual is true', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      true,
+    )
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b', 'c'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('returns the original path parent for equal paths when includePathsEqual is false', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      false,
+    )
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('returns the common parent for simple cases', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'd'],
+      ]),
+      false,
+    )
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('returns the common ancestor for more complex cases', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b'],
+        ['x', 'y', 'z'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+      ]),
+      false,
+    )
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('returns null when there are no shared ancestors', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        ['a', 'b'],
+        ['x', 'y', 'z'],
+      ]),
+      TP.templatePath([
+        ['e', 'f'],
+        ['g', 'h'],
+      ]),
+      false,
+    )
+    expect(actualResult).toBeNull()
   })
 })
 
@@ -296,6 +460,31 @@ describe('getCommonParent', () => {
       TP.templatePath([
         [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'd'],
+      ]),
+    ])
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('for three elements with a common parent returns that', () => {
+    const actualResult = TP.getCommonParent([
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b'],
+        ['x', 'y', 'z'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+        ['h', 'i', 'j'],
       ]),
     ])
     const expectedResult = TP.templatePath([
