@@ -295,8 +295,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         store.derived,
       )
       anyComponentsInner =
-        anyComponentsInner ||
-        MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
+        anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
       const possibleElement = MetadataUtils.findElementByTemplatePath(rootMetadata, view)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
