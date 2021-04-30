@@ -1280,24 +1280,9 @@ export const MetadataUtils = {
     const jsxElement = optionalMap((p) => findJSXElementChildAtPath(rootElements, p), staticPath)
     return optionalMap((element) => (isJSXElement(element) ? element.name : null), jsxElement)
   },
-  isComponentInstance(
-    path: TemplatePath,
-    rootElements: Array<UtopiaJSXComponent>,
-    metadata: ElementInstanceMetadataMap,
-    imports: Imports,
-  ): boolean {
+  isComponentInstance(path: TemplatePath, rootElements: Array<UtopiaJSXComponent>): boolean {
     const elementName = MetadataUtils.getStaticElementName(path, rootElements)
-    const instanceMetadata = MetadataUtils.findElementByTemplatePath(metadata, path)
-    return (
-      elementName != null &&
-      instanceMetadata != null &&
-      !MetadataUtils.isGivenUtopiaAPIElementFromImports(
-        imports,
-        instanceMetadata,
-        getJSXElementNameLastPart(elementName),
-      ) &&
-      !isIntrinsicElement(elementName)
-    )
+    return elementName != null && !isIntrinsicElement(elementName)
   },
   isPinnedAndNotAbsolutePositioned(
     metadata: ElementInstanceMetadataMap,
