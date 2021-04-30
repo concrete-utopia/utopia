@@ -14,7 +14,7 @@ import {
 import { resizeDragState } from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../shared/element-path'
 
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useEditorState(
@@ -59,7 +59,7 @@ export function useTriggerResizePerformanceTest(): () => void {
     }
 
     const target = selectedViews.current[0]
-    const targetFrame = MetadataUtils.findElementByTemplatePath(metadata.current, target)
+    const targetFrame = MetadataUtils.findElementByElementPath(metadata.current, target)
       ?.globalFrame
     const targetStartPoint =
       targetFrame != null
@@ -120,7 +120,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
     }
 
     const targetPath = [...allPaths.current].sort(
-      (a, b) => TP.toString(b).length - TP.toString(a).length,
+      (a, b) => EP.toString(b).length - EP.toString(a).length,
     )[0]
     let framesPassed = 0
     async function step() {

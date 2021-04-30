@@ -9,11 +9,11 @@ import {
   withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
-import * as TP from '../core/shared/template-path'
+import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import { isParseSuccess, NodeModules, TemplatePath } from '../core/shared/project-file-types'
+import { isParseSuccess, NodeModules, ElementPath } from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
@@ -29,7 +29,7 @@ const ClipboardPolyfill = require('clipboard-polyfill') // stupid .d.ts is malfo
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
-  originalTemplatePaths: TemplatePath[]
+  originalElementPaths: ElementPath[]
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
@@ -66,15 +66,15 @@ export function getActionsForClipboardItems(
   openFile: string | null,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
-  selectedViews: Array<TemplatePath>,
-  pasteTargetsToIgnore: TemplatePath[],
+  selectedViews: Array<ElementPath>,
+  pasteTargetsToIgnore: ElementPath[],
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<EditorAction> {
   try {
     const utopiaActions = Utils.flatMapArray((data: CopyData, i: number) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(elements, data.originalTemplatePaths, metadata)]
+      return [EditorActions.pasteJSXElements(elements, data.originalElementPaths, metadata)]
     }, clipboardData)
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
@@ -119,7 +119,7 @@ export function getActionsForClipboardItems(
 export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
-  parentPath: TemplatePath | null,
+  parentPath: ElementPath | null,
   overrideDefaultMultiplier: number | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
@@ -166,7 +166,7 @@ export function createClipboardDataFromSelectionNewWorld(
   }
   const parseSuccess = openUIJSFile.fileContents.parsed
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
-    return R.none((otherView) => TP.isDescendantOf(view, otherView), editor.selectedViews)
+    return R.none((otherView) => EP.isDescendantOf(view, otherView), editor.selectedViews)
   })
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
   const jsxElements = filteredSelectedViews.map((view) => {
@@ -177,7 +177,7 @@ export function createClipboardDataFromSelectionNewWorld(
       {
         type: 'ELEMENT_COPY',
         elements: json5.stringify(jsxElements),
-        originalTemplatePaths: editor.selectedViews,
+        originalElementPaths: editor.selectedViews,
         targetOriginalContextMetadata: editor.jsxMetadata,
       },
     ],
@@ -190,17 +190,17 @@ export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-  pasteTargetsToIgnore: TemplatePath[],
-): TemplatePath | null {
+  pasteTargetsToIgnore: ElementPath[],
+): ElementPath | null {
   if (selectedViews.length > 0) {
-    const parentTarget = TP.getCommonParent(selectedViews, true)
+    const parentTarget = EP.getCommonParent(selectedViews, true)
     if (parentTarget == null) {
       return null
     } else {
       // we should not paste the source into itself
-      const insertingSourceIntoItself = TP.containsPath(parentTarget, pasteTargetsToIgnore)
+      const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
 
       return withUnderlyingTarget(
         parentTarget,
@@ -219,7 +219,7 @@ export function getTargetParentForPaste(
           ) {
             return parentTarget
           } else {
-            const parentOfSelected = TP.parentPath(parentTarget)
+            const parentOfSelected = EP.parentPath(parentTarget)
             return withUnderlyingTarget(
               parentOfSelected,
               projectContents,

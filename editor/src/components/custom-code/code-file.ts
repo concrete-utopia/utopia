@@ -18,12 +18,12 @@ import {
   esCodeFile,
   ProjectContents,
   isEsCodeFile,
-  TemplatePath,
+  ElementPath,
   TextFile,
   isTextFile,
   RevisionsState,
   isParseSuccess,
-  StaticTemplatePath,
+  StaticElementPath,
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
@@ -38,7 +38,7 @@ import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { Either, left, right } from '../../core/shared/either'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import {
   getJSXAttribute,
   isIntrinsicElement,
@@ -276,13 +276,13 @@ export function codeCacheToBuildResult(cache: {
 
 export interface NormalisePathSuccess {
   type: 'NORMALISE_PATH_SUCCESS'
-  normalisedPath: StaticTemplatePath | null
+  normalisedPath: StaticElementPath | null
   filePath: string
   textFile: TextFile
 }
 
 export function normalisePathSuccess(
-  normalisedPath: StaticTemplatePath | null,
+  normalisedPath: StaticElementPath | null,
   filePath: string,
   textFile: TextFile,
 ): NormalisePathSuccess {
@@ -373,7 +373,7 @@ export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   currentFilePath: string,
-  elementPath: TemplatePath | null,
+  elementPath: ElementPath | null,
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
   if (isTextFile(currentFile)) {
@@ -385,8 +385,8 @@ export function normalisePathToUnderlyingTarget(
       // which now doesn't exist.
       return normalisePathUnableToProceed(currentFilePath)
     } else {
-      const staticPath = elementPath == null ? null : TP.dynamicPathToStaticPath(elementPath)
-      const potentiallyDroppedFirstPathElementResult = TP.dropFirstPathElement(staticPath)
+      const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
+      const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(staticPath)
       if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
         // As the scene path is empty, there's no more traversing to do, the target is in this file.
         return normalisePathSuccess(staticPath, currentFilePath, currentFile)
@@ -394,7 +394,7 @@ export function normalisePathToUnderlyingTarget(
         const droppedPathPart = potentiallyDroppedFirstPathElementResult.droppedPathElements
         if (droppedPathPart.length === 0) {
           return normalisePathError(
-            `Unable to handle empty scene path part for ${optionalMap(TP.toString, elementPath)}`,
+            `Unable to handle empty scene path part for ${optionalMap(EP.toString, elementPath)}`,
           )
         } else {
           // Now need to identify the element relating to the last part of the dropped scene path.
@@ -434,7 +434,7 @@ export function normalisePathToUnderlyingTarget(
                   } else {
                     return normalisePathError(
                       `Unable to handle Scene component definition for ${optionalMap(
-                        TP.toString,
+                        EP.toString,
                         elementPath,
                       )}`,
                     )
@@ -484,7 +484,7 @@ export function normalisePathToUnderlyingTarget(
               return normalisePathSuccess(
                 potentiallyDroppedFirstPathElementResult.newPath == null
                   ? null
-                  : TP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
+                  : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
                 currentFilePath,
                 currentFile,
               )
@@ -504,7 +504,7 @@ export function normalisePathToUnderlyingTargetForced(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   currentFilePath: string,
-  elementPath: TemplatePath | null,
+  elementPath: ElementPath | null,
 ): NormalisePathSuccess {
   return normalisePathSuccessOrThrowError(
     normalisePathToUnderlyingTarget(projectContents, nodeModules, currentFilePath, elementPath),

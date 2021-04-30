@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
+import { Imports, ElementPath } from '../../../core/shared/project-file-types'
 import { KeysPressed } from '../../../utils/keyboard'
 import utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, WindowPoint } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { ControlFontSize } from '../canvas-controls-frame'
 import { CanvasPositions } from '../canvas-types'
 import { calculateExtraSizeForZeroSizedElement } from './outline-utils'
@@ -15,7 +15,7 @@ import { UtopiaTheme, colorTheme } from '../../../uuiui'
 
 interface ComponentAreaControlProps {
   mouseEnabled: boolean
-  target: TemplatePath
+  target: ElementPath
   frame: CanvasRectangle
   highlighted: boolean
   canvasOffset: CanvasPoint
@@ -23,20 +23,20 @@ interface ComponentAreaControlProps {
   dispatch: EditorDispatch
   hoverEffectEnabled: boolean
   doubleClickToSelect: boolean
-  selectedComponents: Array<TemplatePath>
-  selectComponent?: (target: TemplatePath, isMultiselect: boolean) => Array<TemplatePath>
+  selectedComponents: Array<ElementPath>
+  selectComponent?: (target: ElementPath, isMultiselect: boolean) => Array<ElementPath>
   onMouseDown?: (
-    views: Array<TemplatePath>,
-    target: TemplatePath,
+    views: Array<ElementPath>,
+    target: ElementPath,
     dragStart: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
   ) => void
   componentMetadata: ElementInstanceMetadataMap
-  onHover: (target: TemplatePath) => void
-  onHoverEnd: (target: TemplatePath) => void
+  onHover: (target: ElementPath) => void
+  onHoverEnd: (target: ElementPath) => void
   keysPressed: KeysPressed
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
-  selectedViews: TemplatePath[]
+  selectedViews: ElementPath[]
   showAdditionalControls: boolean
   testID?: string
 }
@@ -108,7 +108,7 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
   }
 
   handleDragStart(
-    selectedViews: Array<TemplatePath>,
+    selectedViews: Array<ElementPath>,
     event: React.MouseEvent<HTMLDivElement>,
   ): void {
     const cursorPosition = this.props.windowToCanvasPosition(event.nativeEvent)
@@ -182,8 +182,8 @@ class ComponentAreaControlInner extends React.Component<ComponentAreaControlProp
   }
 
   isTargetSelected = () => {
-    return this.props.selectedComponents.some((tp: TemplatePath) =>
-      TP.pathsEqual(this.props.target, tp),
+    return this.props.selectedComponents.some((tp: ElementPath) =>
+      EP.pathsEqual(this.props.target, tp),
     )
   }
 }

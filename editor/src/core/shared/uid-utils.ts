@@ -19,14 +19,14 @@ import {
   setJSXValueAtPath,
 } from './jsx-attributes'
 import * as PP from './property-path'
-import * as TP from './template-path'
+import * as EP from './element-path'
 import { objectMap, objectValues } from './object-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { getDOMAttribute } from './dom-utils'
 import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../model/utopia-constants'
 import { optionalMap } from './optional-utils'
 import { addAllUniquely } from './array-utils'
-import { TemplatePath } from './project-file-types'
+import { ElementPath } from './project-file-types'
 
 export const UtopiaIDPropertyPath = PP.create(['data-uid'])
 
@@ -256,15 +256,15 @@ export function appendToUidString(
   }
 }
 
-export function getPathsFromString(pathsString: string | null): Array<TemplatePath> {
+export function getPathsFromString(pathsString: string | null): Array<ElementPath> {
   if (pathsString == null) {
     return []
   } else {
-    return pathsString.split(' ').map(TP.fromString).filter(TP.isTemplatePath)
+    return pathsString.split(' ').map(EP.fromString).filter(EP.isElementPath)
   }
 }
 
-export function getPathsOnDomElement(element: Element): Array<TemplatePath> {
+export function getPathsOnDomElement(element: Element): Array<ElementPath> {
   const pathsAttribute = getDOMAttribute(element, UTOPIA_PATHS_KEY)
   return getPathsFromString(pathsAttribute)
 }

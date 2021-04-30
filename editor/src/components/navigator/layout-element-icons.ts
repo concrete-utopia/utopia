@@ -10,8 +10,8 @@ import {
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
-import * as TP from '../../core/shared/template-path'
-import { Imports, TemplatePath } from '../../core/shared/project-file-types'
+import * as EP from '../../core/shared/element-path'
+import { Imports, ElementPath } from '../../core/shared/project-file-types'
 import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { isRight } from '../../core/shared/either'
@@ -24,7 +24,7 @@ interface LayoutIconResult {
   hasWidthOrHeight: boolean
 }
 
-export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
+export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
   return useEditorState(
     (store) => {
       const metadata = store.editor.jsxMetadata
@@ -45,7 +45,7 @@ export function useLayoutOrElementIcon(path: TemplatePath): LayoutIconResult {
   )
 }
 
-export function useComponentIcon(path: TemplatePath): IcnPropsBase | null {
+export function useComponentIcon(path: ElementPath): IcnPropsBase | null {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
     const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
@@ -58,7 +58,7 @@ export function useComponentIcon(path: TemplatePath): IcnPropsBase | null {
 }
 
 export function createComponentOrElementIconProps(
-  path: TemplatePath,
+  path: ElementPath,
   components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
   imports: Imports,
@@ -70,13 +70,13 @@ export function createComponentOrElementIconProps(
 }
 
 export function createLayoutOrElementIconResult(
-  path: TemplatePath,
+  path: ElementPath,
   components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
 ): LayoutIconResult {
   let hasWidthOrHeight: boolean = false
 
-  const element = MetadataUtils.findElementByTemplatePath(metadata, path)
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
 
   if (element != null && element.props != null && element.props.style != null) {
     hasWidthOrHeight = element.props.style['width'] != null || element.props.style['height'] != null
@@ -107,10 +107,10 @@ export function createLayoutOrElementIconResult(
 }
 
 function createLayoutIconProps(
-  path: TemplatePath,
+  path: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase | null {
-  const element = MetadataUtils.findElementByTemplatePath(metadata, path)
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
 
   const isFlexLayoutedContainer = MetadataUtils.isFlexLayoutedContainer(element)
   if (isFlexLayoutedContainer) {
@@ -146,11 +146,11 @@ function createLayoutIconProps(
 }
 
 export function createElementIconProps(
-  path: TemplatePath,
+  path: ElementPath,
   components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase {
-  const element = MetadataUtils.findElementByTemplatePath(metadata, path)
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
   const isButton = MetadataUtils.isButton(path, components, metadata)
   if (isButton) {
     return {
@@ -199,13 +199,13 @@ export function createElementIconProps(
 }
 
 function createComponentIconProps(
-  path: TemplatePath,
+  path: ElementPath,
   components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
   imports: Imports,
 ): IcnPropsBase | null {
   const elementName = MetadataUtils.getJSXElementName(path, components)
-  const element = MetadataUtils.findElementByTemplatePath(metadata, path)
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (isProbablySceneFromMetadata(metadata, path)) {
     return null
   }

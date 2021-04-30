@@ -44,7 +44,7 @@ Object {
             "app",
           ],
         ],
-        "type": "templatepath",
+        "type": "elementpath",
       },
     ],
     "componentInstance": false,
@@ -128,6 +128,15 @@ Object {
         "type": "JSX_ELEMENT",
       },
     },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "sb",
+          "scene",
+        ],
+      ],
+      "type": "elementpath",
+    },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -180,15 +189,6 @@ Object {
       "providesBoundsForChildren": false,
       "usesParentBounds": false,
     },
-    "templatePath": Object {
-      "parts": Array [
-        Array [
-          "sb",
-          "scene",
-        ],
-      ],
-      "type": "templatepath",
-    },
   },
   "sb/scene/app": Object {
     "attributeMetadatada": Object {},
@@ -224,6 +224,16 @@ Object {
         ],
         "type": "JSX_ELEMENT",
       },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "sb",
+          "scene",
+          "app",
+        ],
+      ],
+      "type": "elementpath",
     },
     "globalFrame": null,
     "isEmotionOrStyledComponent": false,
@@ -294,16 +304,6 @@ Object {
       "position": "static",
       "providesBoundsForChildren": false,
       "usesParentBounds": false,
-    },
-    "templatePath": Object {
-      "parts": Array [
-        Array [
-          "sb",
-          "scene",
-          "app",
-        ],
-      ],
-      "type": "templatepath",
     },
   },
 }

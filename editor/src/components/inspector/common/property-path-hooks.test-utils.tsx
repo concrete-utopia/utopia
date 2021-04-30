@@ -6,13 +6,13 @@ import {
   JSXAttributes,
   StyleAttributeMetadata,
 } from '../../../core/shared/element-template'
-import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
+import { isParseSuccess, ElementPath } from '../../../core/shared/project-file-types'
 import { NO_OP } from '../../../core/shared/utils'
 import { testParseCode } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { InspectorCallbackContext, InspectorPropsContext } from './property-path-hooks'
 
 export const makeInspectorHookContextProvider = (
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   multiselectAttributes: JSXAttributes[],
   targetPath: string[],
   spiedProps: Array<{ [key: string]: any }>,

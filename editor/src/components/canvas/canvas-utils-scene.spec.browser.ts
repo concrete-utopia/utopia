@@ -10,7 +10,7 @@ import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as Prettier from 'prettier'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 
 import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
@@ -34,7 +34,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
       false,
     )
 
@@ -165,11 +165,11 @@ describe('moving a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    const targetPath = TP.templatePath([[BakedInStoryboardUID, TestSceneUID]])
+    const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      `label-control-${TP.toString(targetPath)}`,
+      `label-control-${EP.toString(targetPath)}`,
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -319,11 +319,11 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    const targetPath = TP.appendNewElementPath(TestScenePath, ['aaa'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      `component-resize-control-${TP.toString(targetPath)}-0-1-1`,
+      `component-resize-control-${EP.toString(targetPath)}-0-1-1`,
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -451,11 +451,11 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    const targetPath = TP.templatePath([[BakedInStoryboardUID, TestSceneUID]])
+    const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      `component-resize-control-${TP.toString(targetPath)}-0-1-1`,
+      `component-resize-control-${EP.toString(targetPath)}-0-1-1`,
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
