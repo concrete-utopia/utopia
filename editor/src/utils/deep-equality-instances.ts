@@ -12,12 +12,7 @@ import * as TP from '../core/shared/template-path'
 import * as PP from '../core/shared/property-path'
 import { HigherOrderControl } from '../components/canvas/canvas-types'
 import { JSXElementName } from '../core/shared/element-template'
-import {
-  TemplatePath,
-  PropertyPath,
-  InstancePath,
-  ScenePath,
-} from '../core/shared/project-file-types'
+import { TemplatePath, PropertyPath } from '../core/shared/project-file-types'
 import { createCallFromIntrospectiveKeepDeep } from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
 
@@ -30,16 +25,6 @@ export const TemplatePathKeepDeepEquality: KeepDeepEqualityCall<TemplatePath> = 
 export const TemplatePathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
   TemplatePath
 >> = arrayDeepEquality(TemplatePathKeepDeepEquality)
-
-export const InstancePathKeepDeepEquality: KeepDeepEqualityCall<InstancePath> = createCallFromEqualsFunction(
-  (oldPath: InstancePath, newPath: InstancePath) => {
-    return TP.pathsEqual(oldPath, newPath)
-  },
-)
-
-export const InstancePathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  InstancePath
->> = arrayDeepEquality(InstancePathKeepDeepEquality)
 
 export const PropertyPathKeepDeepEquality: KeepDeepEqualityCall<PropertyPath> = createCallFromEqualsFunction(
   (oldPath: PropertyPath, newPath: PropertyPath) => {

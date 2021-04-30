@@ -9,7 +9,7 @@ import {
   ElementInstanceMetadataMap,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
-import { Imports, InstancePath, NodeModules, PropertyPath } from '../core/shared/project-file-types'
+import { NodeModules, PropertyPath, TemplatePath } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
 import { Size } from '../core/shared/math-utils'
 import { EditorAction, EditorDispatch, TextFormattingType } from './editor/action-types'
@@ -20,7 +20,6 @@ import {
   withUnderlyingTargetFromEditorState,
 } from './editor/store/editor-state'
 import * as PP from '../core/shared/property-path'
-import { isInstancePath } from '../core/shared/template-path'
 import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 import { ProjectContentTreeRoot } from './assets'
 
@@ -31,7 +30,7 @@ export function autosizingTextResizeNew(
   nodeModules: NodeModules,
   openFile: string | null,
   metadata: ElementInstanceMetadataMap,
-  targets: Array<InstancePath>,
+  targets: Array<TemplatePath>,
   dispatch: EditorDispatch,
   property: PropertyPath,
   newValue: any,
@@ -42,7 +41,7 @@ export function autosizingTextResizeNew(
 
   let changeAttachedToPromise: boolean = false
   Utils.fastForEach(targets, (target) => {
-    const element = MetadataUtils.getElementByInstancePathMaybe(metadata, target)
+    const element = MetadataUtils.findElementByTemplatePath(metadata, target)
 
     forUnderlyingTarget(target, projectContents, nodeModules, openFile, (underlyingSuccess) => {
       if (
@@ -164,7 +163,7 @@ function valueForTextFormatting(textFormatting: TextFormattingType, toggleSettin
 
 function actionForTextFormatting(
   textFormatting: TextFormattingType,
-  targets: Array<InstancePath>,
+  targets: Array<TemplatePath>,
 ): (newValue: any) => Array<EditorAction> {
   return (newValue: any) => {
     return targets.map((target) => {
@@ -183,11 +182,10 @@ export function toggleTextFormatting(
   textFormatting: TextFormattingType,
 ): Array<EditorAction> {
   // Find all the text elements.
-  const instancePaths = editor.selectedViews.filter(isInstancePath)
   let textElements: Array<ElementInstanceMetadata> = []
-  const textElementPaths = instancePaths.filter((selectedView) => {
+  const textElementPaths = editor.selectedViews.filter((selectedView) => {
     return withUnderlyingTargetFromEditorState(selectedView, editor, false, (underlyingSuccess) => {
-      const element = MetadataUtils.getElementByInstancePathMaybe(editor.jsxMetadata, selectedView)
+      const element = MetadataUtils.findElementByTemplatePath(editor.jsxMetadata, selectedView)
       if (
         element != null &&
         MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element)

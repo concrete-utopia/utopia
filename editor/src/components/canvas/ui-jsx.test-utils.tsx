@@ -28,9 +28,7 @@ import {
   ParsedTextFile,
   ParseSuccess,
   RevisionsState,
-  ScenePath,
   textFile,
-  TextFile,
   textFileContents,
 } from '../../core/shared/project-file-types'
 import { PrettierConfig } from 'utopia-vscode-common'

@@ -31,7 +31,7 @@ export function collectParentAndSiblingGuidelines(
         const isSibling = TP.isSiblingOf(maybeTarget, target)
         const isParent = TP.pathsEqual(parent, maybeTarget)
         const notSelectedOrDescendantOfSelected = targets.every(
-          (view) => !TP.isAncestorOf(maybeTarget, view),
+          (view) => !TP.isDescendantOfOrEqualTo(maybeTarget, view),
         )
         const isGroup = MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, parent)
         if ((isSibling || (isParent && !isGroup)) && notSelectedOrDescendantOfSelected) {
@@ -59,7 +59,7 @@ export function collectSelfAndChildrenGuidelines(
       target,
     )
     if (!pinnedAndNotAbsolutePositioned) {
-      if (TP.isInstancePath(target) && TP.toUid(target) !== insertingElementId) {
+      if (TP.toUid(target) !== insertingElementId) {
         const frame = MetadataUtils.getFrameInCanvasCoords(target, componentMetadata)
         if (frame != null) {
           result.push(...Guidelines.guidelinesForFrame(frame, true))
@@ -67,11 +67,7 @@ export function collectSelfAndChildrenGuidelines(
       }
 
       Utils.fastForEach(allPaths, (maybeTarget) => {
-        if (
-          TP.isInstancePath(maybeTarget) &&
-          TP.isChildOf(maybeTarget, target) &&
-          TP.toUid(maybeTarget) !== insertingElementId
-        ) {
+        if (TP.isChildOf(maybeTarget, target) && TP.toUid(maybeTarget) !== insertingElementId) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
           if (frame != null) {
             result.push(...Guidelines.guidelinesForFrame(frame, true))

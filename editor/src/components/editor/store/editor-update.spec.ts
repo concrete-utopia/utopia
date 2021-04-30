@@ -11,10 +11,8 @@ import {
 import { findJSXElementChildAtPath, getUtopiaID } from '../../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import {
-  StaticInstancePath,
   TemplatePath,
   isTextFile,
-  TextFile,
   esCodeFile,
   importDetails,
   importAlias,

@@ -34,31 +34,21 @@ import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
   Imports,
-  InstancePath,
-  ParsedTextFile,
   ParseSuccess,
-  ProjectContents,
   ProjectFile,
   RevisionsState,
-  StaticInstancePath,
   TemplatePath,
   TextFile,
   isTextFile,
   StaticTemplatePath,
   NodeModules,
   foldParsedTextFile,
-  mapParsedTextFile,
   textFileContents,
   isParseSuccess,
   codeFile,
   isParseFailure,
   isParsedTextFile,
-  EmptyExportsDetail,
-  HighlightBounds,
   HighlightBoundsForUids,
-  StaticElementPath,
-  textFile,
-  HighlightBoundsWithFileForUids,
   HighlightBoundsWithFile,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
@@ -128,7 +118,6 @@ import {
 import { RightMenuTab } from '../../canvas/right-menu'
 
 import {
-  isInstancePath,
   toUid,
   toString,
   dynamicPathToStaticPath,
@@ -559,7 +548,7 @@ export function modifyOpenJSXElementsAndMetadata(
     utopiaComponents: Array<UtopiaJSXComponent>,
     componentMetadata: ElementInstanceMetadataMap,
   ) => { components: Array<UtopiaJSXComponent>; componentMetadata: ElementInstanceMetadataMap },
-  target: InstancePath,
+  target: TemplatePath,
   model: EditorState,
 ): EditorState {
   let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadata
@@ -687,7 +676,7 @@ export function getJSXComponentsAndImportsForPath(
     projectContents,
     nodeModules,
     currentFilePath,
-    TP.instancePathForElementAtPathDontThrowOnScene(path),
+    path,
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
@@ -895,7 +884,7 @@ export function transformElementAtPath(
   if (staticTarget == null) {
     return components
   } else {
-    return transformJSXComponentAtPath(components, staticTarget as StaticInstancePath, transform)
+    return transformJSXComponentAtPath(components, staticTarget, transform)
   }
 }
 
@@ -1745,16 +1734,15 @@ export function getHighlightBoundsForTemplatePath(
   path: TemplatePath,
   editorState: EditorState,
 ): HighlightBoundsWithFile | null {
-  if (isInstancePath(path)) {
-    const staticPath = TP.dynamicPathToStaticPath(path)
-    if (staticPath != null) {
-      const highlightBounds = getHighlightBoundsForProject(editorState.projectContents)
-      if (highlightBounds != null) {
-        const highlightedUID = toUid(staticPath)
-        return highlightBounds[highlightedUID]
-      }
+  const staticPath = TP.dynamicPathToStaticPath(path)
+  if (staticPath != null) {
+    const highlightBounds = getHighlightBoundsForProject(editorState.projectContents)
+    if (highlightBounds != null) {
+      const highlightedUID = toUid(staticPath)
+      return highlightBounds[highlightedUID]
     }
   }
+
   return null
 }
 
@@ -1775,12 +1763,10 @@ export function getTemplatePathsInBounds(
     if (highlightBounds.length > 0) {
       const target = highlightBounds[0].uid
       Utils.fastForEach(allTemplatePaths, (path) => {
-        if (isInstancePath(path)) {
-          const staticPath = dynamicPathToStaticPath(path)
-          const uid = staticPath != null ? toUid(staticPath) : null
-          if (uid === target) {
-            paths.push(path)
-          }
+        const staticPath = dynamicPathToStaticPath(path)
+        const uid = staticPath != null ? toUid(staticPath) : null
+        if (uid === target) {
+          paths.push(path)
         }
       })
     }
@@ -1933,20 +1919,11 @@ export function withUnderlyingTarget<T>(
     underlyingFilePath: string,
   ) => T,
 ): T {
-  // Support just about anything as the path.
-  let instanceTarget: InstancePath | null
-  if (target == null) {
-    instanceTarget = null
-  } else if (TP.isInstancePath(target)) {
-    instanceTarget = target
-  } else {
-    instanceTarget = TP.instancePathForElementAtPathDontThrowOnScene(target)
-  }
   const underlyingTarget = normalisePathToUnderlyingTarget(
     projectContents,
     nodeModules,
     forceNotNull('Designer file should be open.', openFile),
-    instanceTarget,
+    target ?? null,
   )
 
   if (

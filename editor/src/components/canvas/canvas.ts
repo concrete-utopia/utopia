@@ -1,57 +1,22 @@
 import * as R from 'ramda'
-import { findElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../core/shared/element-template'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
-import {
-  InstancePath,
-  TemplatePath,
-  importDetails,
-  importAlias,
-} from '../../core/shared/project-file-types'
-import { CanvasMousePositionRaw } from '../../templates/editor-canvas'
-import Keyboard, {
-  KeyCharacter,
-  KeysPressed,
-  looseCheckModifier,
-  modifiersForEvent,
-  strictCheckModifiers,
-} from '../../utils/keyboard'
-import Utils, { normalisedFrameToCanvasFrame } from '../../utils/utils'
+import { TemplatePath } from '../../core/shared/project-file-types'
+import { KeyCharacter } from '../../utils/keyboard'
+import Utils from '../../utils/utils'
 import {
   CanvasPoint,
   CanvasRectangle,
   rectangleIntersection,
   canvasRectangle,
-  CanvasVector,
 } from '../../core/shared/math-utils'
-import { EditorAction, EditorDispatch } from '../editor/action-types'
+import { EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import {
-  defaultEllipseElement,
-  defaultRectangleElement,
-  defaultTextElement,
-  defaultViewElement,
-} from '../editor/defaults'
-import { EditorModes, Mode } from '../editor/editor-modes'
 import { DerivedState, EditorState } from '../editor/store/editor-state'
-import {
-  toggleBorder,
-  toggleShadow,
-  toggleStylePropPath,
-  toggleBackgroundLayers,
-  toggleStylePropPaths,
-} from '../inspector/common/css-utils'
-import { LeftMenuTab } from '../navigator/left-pane'
-import * as PP from '../../core/shared/property-path'
 import * as TP from '../../core/shared/template-path'
-import CanvasActions from './canvas-actions'
-import { adjustAllSelectedFrames } from './controls/select-mode/move-utils'
-import { flatMapArray } from '../../core/shared/array-utils'
-import { EmptyScenePathForStoryboard } from '../../core/model/scene-utils'
 
 export const enum TargetSearchType {
   ParentsOfSelected = 'ParentsOfSelected',
@@ -216,7 +181,7 @@ const Canvas = {
         case TargetSearchType.ParentsOfSelected:
           return (path: TemplatePath) => {
             for (const selectedView of selectedViews) {
-              if (TP.isAncestorOf(selectedView, path)) {
+              if (TP.isDescendantOfOrEqualTo(selectedView, path)) {
                 return true
               }
             }
@@ -283,7 +248,7 @@ const Canvas = {
         (frameWithPath.frame.width <= 0 || frameWithPath.frame.height <= 0)
 
       return targetFilters.some((filter) => filter(frameWithPath.path)) &&
-        !hiddenInstances.some((hidden) => TP.isAncestorOf(frameWithPath.path, hidden, true)) &&
+        !hiddenInstances.some((hidden) => TP.isDescendantOfOrEqualTo(frameWithPath.path, hidden)) &&
         shouldUseLooseTargeting
         ? rectangleIntersection(
             canvasRectangle({

@@ -12,31 +12,20 @@ import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
 export type id = string
-
-export type ScenePath = {
-  type: 'scenepath'
-  sceneElementPaths: ElementPath[]
-}
-
-export type StaticScenePath = {
-  type: 'scenepath'
-  sceneElementPaths: StaticElementPath[]
-}
+enum StaticModifier {}
 
 export type StaticElementPath = StaticModifier & Array<id>
 export type ElementPath = Array<id> | StaticElementPath
-export type InstancePath = {
-  scene: ScenePath
-  element: ElementPath
-}
-enum StaticModifier {}
-export type StaticInstancePath = {
-  scene: StaticScenePath
-  element: StaticElementPath
+
+export interface StaticTemplatePath {
+  type: 'templatepath'
+  parts: Array<StaticElementPath>
 }
 
-export type StaticTemplatePath = StaticScenePath | StaticInstancePath
-export type TemplatePath = StaticTemplatePath | ScenePath | InstancePath
+export interface TemplatePath {
+  type: 'templatepath'
+  parts: Array<ElementPath>
+}
 
 export type PropertyPathPart = string | number
 
@@ -535,8 +524,6 @@ export type NodeModules = {
 export type ProjectContents = { [filepath: string]: ProjectFile }
 
 export type ElementOriginType =
-  // Mostly self explanatory, this is a scene.
-  | 'scene'
   // Completely statically defined element with a known single place in the hierarchy.
   | 'statically-defined'
   // An element generated from within some arbitrary code, but for which we have access to the definition.

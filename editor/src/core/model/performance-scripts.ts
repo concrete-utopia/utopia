@@ -13,7 +13,6 @@ import {
 } from '../shared/math-utils'
 import { resizeDragState } from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
-import { InstancePath } from '../shared/project-file-types'
 import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as TP from '../../core/shared/template-path'
 
@@ -60,10 +59,8 @@ export function useTriggerResizePerformanceTest(): () => void {
     }
 
     const target = selectedViews.current[0]
-    const targetFrame = MetadataUtils.getElementByInstancePathMaybe(
-      metadata.current,
-      target as InstancePath,
-    )?.globalFrame
+    const targetFrame = MetadataUtils.findElementByTemplatePath(metadata.current, target)
+      ?.globalFrame
     const targetStartPoint =
       targetFrame != null
         ? ({

@@ -15,12 +15,7 @@ import {
   getJSXComponentsAndImportsForPathInnerComponentFromState,
   TransientFilesState,
 } from '../../editor/store/editor-state'
-import {
-  TemplatePath,
-  InstancePath,
-  Imports,
-  NodeModules,
-} from '../../../core/shared/project-file-types'
+import { TemplatePath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'

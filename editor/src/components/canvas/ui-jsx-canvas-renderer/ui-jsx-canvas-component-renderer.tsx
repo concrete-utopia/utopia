@@ -8,7 +8,7 @@ import {
   isUtopiaJSXComponent,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import { UiJsxCanvasContext, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import {
   MutableUtopiaContextProps,
@@ -24,16 +24,10 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
-import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utopia-constants'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
-import { useEditorState } from '../../editor/store/store-hook'
-import { getFileForName } from '../../editor/store/editor-state'
-import { mapDropNulls } from '../../../core/shared/array-utils'
-import {
-  getParseSuccessOrTransientForFilePath,
-  useGetTopLevelElements,
-} from './ui-jsx-canvas-top-level-elements'
+import { useGetTopLevelElements } from './ui-jsx-canvas-top-level-elements'
 import { getPathsFromString } from '../../../core/shared/uid-utils'
 
 export type ComponentRendererComponent = React.ComponentType<{
@@ -56,12 +50,12 @@ export function isComponentRendererComponent(
 
 function tryToGetInstancePath(
   topLevelElementName: string,
-  instancePath: InstancePath | null,
+  maybePath: TemplatePath | null,
   pathsString: string | null,
 ): TemplatePath {
   const paths = getPathsFromString(pathsString)
-  if (TP.isInstancePath(instancePath)) {
-    return instancePath
+  if (TP.isTemplatePath(maybePath)) {
+    return maybePath
   } else if (paths.length > 0) {
     return paths[0]
   } else {

@@ -204,14 +204,13 @@ function useStyleFullyVisible(path: TemplatePath): boolean {
     })
 
     const isFlexAncestorDirectionChange = selectedViews.some((selected) => {
-      const selectedSizeMeasurements = TP.isInstancePath(selected)
-        ? MetadataUtils.getElementByInstancePathMaybe(metadata, selected)?.specialSizeMeasurements
-        : null
+      const selectedSizeMeasurements = MetadataUtils.findElementByTemplatePath(metadata, selected)
+        ?.specialSizeMeasurements
       const parentPath = TP.parentPath(selected)
       if (
         selectedSizeMeasurements?.parentLayoutSystem === 'flex' &&
         !isParentOfSelected &&
-        TP.isAncestorOf(selected, path) &&
+        TP.isDescendantOfOrEqualTo(selected, path) &&
         parentPath != null
       ) {
         const flexDirectionChange = MetadataUtils.findNearestAncestorFlexDirectionChange(

@@ -24,7 +24,6 @@ import {
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
-import { filterScenes } from '../core/shared/template-path'
 import { betterReactMemo } from '../uuiui-deps'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { EditorDispatch } from './editor/action-types'
@@ -192,7 +191,7 @@ export const ElementContextMenu = betterReactMemo(
       const currentEditor = editorSliceRef.current
       return {
         canvasOffset: currentEditor.canvasOffset,
-        selectedViews: filterScenes(currentEditor.selectedViews),
+        selectedViews: currentEditor.selectedViews,
         jsxMetadata: currentEditor.jsxMetadata,
         currentFilePath: currentEditor.currentFilePath,
         projectContents: currentEditor.projectContents,

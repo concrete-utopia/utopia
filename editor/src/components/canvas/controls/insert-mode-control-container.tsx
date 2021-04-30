@@ -135,10 +135,10 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   parentIsFlex = (parentPath: TemplatePath | null | undefined): boolean => {
-    const parentInstance =
-      parentPath != null && TP.isInstancePath(parentPath)
-        ? MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, parentPath)
-        : null
+    const parentInstance = MetadataUtils.findElementByTemplatePath(
+      this.props.componentMetadata,
+      parentPath ?? null,
+    )
     return MetadataUtils.isFlexLayoutedContainer(parentInstance)
   }
 

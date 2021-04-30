@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { useEditorState } from '../../editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
-import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
 import { betterReactMemo, getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
 import * as TP from '../../../core/shared/template-path'
 import * as EditorActions from '../../editor/actions/action-creators'

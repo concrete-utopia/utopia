@@ -6,7 +6,7 @@ import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isRight } from '../../../core/shared/either'
 import type {
   PropertyPath,
-  StaticInstancePath,
+  StaticTemplatePath,
   TemplatePath,
 } from '../../../core/shared/project-file-types'
 import { createEditorStates } from '../../../utils/utils.test-utils'
@@ -90,7 +90,7 @@ export function editPropOfSelectedView(
   return {
     ...store,
     editor: modifyOpenJsxElementAtStaticPath(
-      store.editor.selectedViews[0] as StaticInstancePath,
+      store.editor.selectedViews[0] as StaticTemplatePath,
       (element): JSXElement => {
         const updatedAttributes = setJSXValueAtPath(
           element.props,

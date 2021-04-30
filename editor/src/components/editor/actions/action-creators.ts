@@ -23,15 +23,12 @@ import type {
 import type {
   HighlightBoundsForUids,
   Imports,
-  InstancePath,
-  LayoutWrapper,
   NodeModules,
   ParsedTextFile,
   ProjectFile,
   PropertyPath,
   StaticElementPath,
   TemplatePath,
-  TextFile,
 } from '../../../core/shared/project-file-types'
 import type { BuildType } from '../../../core/workers/ts/ts-worker'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
@@ -231,7 +228,7 @@ export function deleteSelected(): EditorAction {
   }
 }
 
-export function unsetProperty(element: InstancePath, property: PropertyPath): UnsetProperty {
+export function unsetProperty(element: TemplatePath, property: PropertyPath): UnsetProperty {
   return {
     action: 'UNSET_PROPERTY',
     element: element,
@@ -578,7 +575,7 @@ export function saveAsset(
   }
 }
 
-export function resetPins(target: InstancePath): ResetPins {
+export function resetPins(target: TemplatePath): ResetPins {
   return {
     action: 'RESET_PINS',
     target: target,
@@ -983,7 +980,7 @@ export function setPropWithElementPath_UNSAFE(
 }
 
 export function renamePropKey(
-  target: InstancePath,
+  target: TemplatePath,
   cssTargetPath: CSSTarget,
   value: Array<string>,
 ): RenameStyleSelector {
@@ -1019,7 +1016,7 @@ export function setFilebrowserRenamingTarget(
 }
 
 export function toggleProperty(
-  target: InstancePath,
+  target: TemplatePath,
   togglePropValue: (element: JSXElement) => JSXElement,
 ): ToggleProperty {
   return {
@@ -1044,7 +1041,7 @@ export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
 }
 
 export function updateJSXElementName(
-  target: InstancePath,
+  target: TemplatePath,
   elementName: JSXElementName,
   importsToAdd: Imports,
 ): UpdateJSXElementName {
@@ -1063,7 +1060,7 @@ export function addImports(importsToAdd: Imports): AddImports {
   }
 }
 
-export function setAspectRatioLock(target: InstancePath, locked: boolean): SetAspectRatioLock {
+export function setAspectRatioLock(target: TemplatePath, locked: boolean): SetAspectRatioLock {
   return {
     action: 'SET_ASPECT_RATIO_LOCK',
     target: target,
@@ -1141,7 +1138,7 @@ export function finishCheckpointTimer(): FinishCheckpointTimer {
 }
 
 export function addMissingDimensions(
-  target: InstancePath,
+  target: TemplatePath,
   existingSize: CanvasRectangle,
 ): AddMissingDimensions {
   return {
@@ -1199,7 +1196,7 @@ export function sendLinterRequestMessage(
   }
 }
 
-export function updateChildText(target: InstancePath, text: string): UpdateChildText {
+export function updateChildText(target: TemplatePath, text: string): UpdateChildText {
   return {
     action: 'UPDATE_CHILD_TEXT',
     target: target,

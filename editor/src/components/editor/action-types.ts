@@ -14,13 +14,10 @@ import { CanvasAction, CSSCursor, PinOrFlexFrameChange } from '../canvas/canvas-
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
 import {
-  InstancePath,
-  LayoutWrapper,
   ProjectFile,
   PropertyPath,
   StaticElementPath,
   TemplatePath,
-  TextFile,
   NodeModules,
   Imports,
   ParsedTextFile,
@@ -155,7 +152,7 @@ export type ToggleHidden = {
 
 export type UnsetProperty = {
   action: 'UNSET_PROPERTY'
-  element: InstancePath
+  element: TemplatePath
   property: PropertyPath
 }
 
@@ -402,7 +399,7 @@ export type SaveAsset = {
 
 export type ResetPins = {
   action: 'RESET_PINS'
-  target: InstancePath
+  target: TemplatePath
 }
 
 export interface WrapInView {
@@ -632,14 +629,14 @@ export interface SetFilebrowserRenamingTarget {
 
 export interface ToggleProperty {
   action: 'TOGGLE_PROPERTY'
-  target: InstancePath
+  target: TemplatePath
   // FIXME: This will cause problems with multi-user editing.
   togglePropValue: (element: JSXElement) => JSXElement
 }
 
 export interface DEPRECATEDToggleEnabledProperty {
   action: 'deprecated_TOGGLE_ENABLED_PROPERTY'
-  target: InstancePath
+  target: TemplatePath
   // FIXME: This will cause problems with multi-user editing.
   togglePropValue: (element: JSXElement) => JSXElement
 }
@@ -658,7 +655,7 @@ export interface InsertImageIntoUI {
 
 export interface UpdateJSXElementName {
   action: 'UPDATE_JSX_ELEMENT_NAME'
-  target: InstancePath
+  target: TemplatePath
   elementName: JSXElementName
   importsToAdd: Imports
 }
@@ -670,13 +667,13 @@ export interface AddImports {
 
 export interface SetAspectRatioLock {
   action: 'SET_ASPECT_RATIO_LOCK'
-  target: InstancePath
+  target: TemplatePath
   locked: boolean
 }
 
 export interface RenameStyleSelector {
   action: 'RENAME_PROP_KEY'
-  target: InstancePath
+  target: TemplatePath
   cssTargetPath: CSSTarget
   value: Array<string>
 }
@@ -725,7 +722,7 @@ export interface FinishCheckpointTimer {
 export interface AddMissingDimensions {
   action: 'ADD_MISSING_DIMENSIONS'
   existingSize: CanvasRectangle
-  target: InstancePath
+  target: TemplatePath
 }
 
 export interface SetPackageStatus {
@@ -755,7 +752,7 @@ export interface AddStoryboardFile {
 
 export interface UpdateChildText {
   action: 'UPDATE_CHILD_TEXT'
-  target: InstancePath
+  target: TemplatePath
   text: string
 }
 

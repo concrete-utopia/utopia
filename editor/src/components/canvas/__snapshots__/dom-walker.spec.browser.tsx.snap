@@ -6,14 +6,13 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -77,28 +76,26 @@ Object {
       "usesParentBounds": false,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -180,14 +177,13 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
@@ -217,15 +213,14 @@ Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -257,19 +252,17 @@ Object {
     },
     "rootElements": Array [
       Object {
-        "element": Array [
-          "aaa",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "aaa",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "specialSizeMeasurements": Object {
@@ -317,67 +310,60 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
-        "app-entity",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "aaa",
-          "bbb~~~1",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "aaa",
+            "bbb~~~1",
+          ],
+        ],
+        "type": "templatepath",
       },
       Object {
-        "element": Array [
-          "aaa",
-          "bbb~~~2",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "aaa",
+            "bbb~~~2",
+          ],
+        ],
+        "type": "templatepath",
       },
       Object {
-        "element": Array [
-          "aaa",
-          "bbb~~~3",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "aaa",
+            "bbb~~~3",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "componentInstance": false,
@@ -477,19 +463,17 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "aaa",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "aaa",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1": Object {
@@ -567,20 +551,18 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "aaa",
-        "bbb~~~1",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "aaa",
+          "bbb~~~1",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2": Object {
@@ -658,20 +640,18 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "aaa",
-        "bbb~~~2",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "aaa",
+          "bbb~~~2",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3": Object {
@@ -749,20 +729,18 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "aaa",
-        "bbb~~~3",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "aaa",
+          "bbb~~~3",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
 }
@@ -774,14 +752,13 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -845,28 +822,26 @@ Object {
       "usesParentBounds": false,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -948,14 +923,13 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
@@ -985,15 +959,14 @@ Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -1025,19 +998,17 @@ Object {
     },
     "rootElements": Array [
       Object {
-        "element": Array [
-          "aaa",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "aaa",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "specialSizeMeasurements": Object {
@@ -1085,15 +1056,14 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
-        "app-entity",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
@@ -1197,19 +1167,17 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "aaa",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "aaa",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
 }
@@ -1221,14 +1189,13 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -1292,28 +1259,26 @@ Object {
       "usesParentBounds": false,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -1395,14 +1360,13 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
@@ -1432,15 +1396,14 @@ Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -1472,19 +1435,17 @@ Object {
     },
     "rootElements": Array [
       Object {
-        "element": Array [
-          "05c",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "05c",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "specialSizeMeasurements": Object {
@@ -1532,35 +1493,32 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
-        "app-entity",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "05c",
-          "ef0",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "05c",
+            "ef0",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "componentInstance": false,
@@ -1661,40 +1619,36 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "05c",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "05c",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "05c",
-          "ef0",
-          "488",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "05c",
+            "ef0",
+            "488",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "componentInstance": false,
@@ -1772,20 +1726,18 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "05c",
-        "ef0",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "05c",
+          "ef0",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488": Object {
@@ -1870,21 +1822,19 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "05c",
-        "ef0",
-        "488",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "05c",
+          "ef0",
+          "488",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
 }
@@ -1896,14 +1846,13 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -1967,28 +1916,26 @@ Object {
       "usesParentBounds": false,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -2070,14 +2017,13 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
@@ -2107,15 +2053,14 @@ Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -2147,19 +2092,17 @@ Object {
     },
     "rootElements": Array [
       Object {
-        "element": Array [
-          "05c",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "05c",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "specialSizeMeasurements": Object {
@@ -2207,35 +2150,32 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
-        "app-entity",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "05c",
-          "ef0",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "05c",
+            "ef0",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "componentInstance": false,
@@ -2337,40 +2277,36 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "05c",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "05c",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "05c",
-          "ef0",
-          "488",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "05c",
+            "ef0",
+            "488",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "componentInstance": false,
@@ -2448,20 +2384,18 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "05c",
-        "ef0",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "05c",
+          "ef0",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488": Object {
@@ -2546,21 +2480,19 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "05c",
-        "ef0",
-        "488",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "05c",
+          "ef0",
+          "488",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
 }
@@ -2572,14 +2504,13 @@ Object {
     "attributeMetadatada": Object {},
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -2643,28 +2574,26 @@ Object {
       "usesParentBounds": false,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -2746,14 +2675,13 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
@@ -2783,15 +2711,14 @@ Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
       "data-uid": "app-entity",
       "data-utopia-instance-path": Object {
-        "element": Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
         ],
-        "scene": Object {
-          "sceneElementPaths": Array [],
-          "type": "scenepath",
-        },
+        "type": "templatepath",
       },
       "skipDeepFreeze": true,
       "style": Object {
@@ -2823,19 +2750,17 @@ Object {
     },
     "rootElements": Array [
       Object {
-        "element": Array [
-          "05c",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "05c",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "specialSizeMeasurements": Object {
@@ -2883,35 +2808,32 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "utopia-storyboard-uid",
-        "scene-aaa",
-        "app-entity",
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
+        ],
       ],
-      "scene": Object {
-        "sceneElementPaths": Array [],
-        "type": "scenepath",
-      },
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "05c",
-          "ef0",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "05c",
+            "ef0",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -3012,40 +2934,36 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "05c",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "05c",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0": Object {
     "attributeMetadatada": null,
     "children": Array [
       Object {
-        "element": Array [
-          "05c",
-          "ef0",
-          "488",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
           ],
-          "type": "scenepath",
-        },
+          Array [
+            "05c",
+            "ef0",
+            "488",
+          ],
+        ],
+        "type": "templatepath",
       },
     ],
     "componentInstance": true,
@@ -3146,20 +3064,18 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "05c",
-        "ef0",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "05c",
+          "ef0",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
   "utopia-storyboard-uid/scene-aaa/app-entity:05c/ef0/488": Object {
@@ -3263,21 +3179,19 @@ Object {
       "usesParentBounds": true,
     },
     "templatePath": Object {
-      "element": Array [
-        "05c",
-        "ef0",
-        "488",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene-aaa",
+          "app-entity",
         ],
-        "type": "scenepath",
-      },
+        Array [
+          "05c",
+          "ef0",
+          "488",
+        ],
+      ],
+      "type": "templatepath",
     },
   },
 }
