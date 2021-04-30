@@ -229,7 +229,7 @@ export const MetadataUtils = {
     const parentPath = TP.parentPath(target)
     const parentMetadata = MetadataUtils.findElementByTemplatePath(metadata, parentPath)
 
-    const siblingPathsOrNull = TP.isRootElementPath(target)
+    const siblingPathsOrNull = TP.isRootElementOfInstance(target)
       ? parentMetadata?.rootElements
       : parentMetadata?.children
     const siblingPaths = siblingPathsOrNull ?? []

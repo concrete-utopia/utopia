@@ -132,7 +132,7 @@ export function isTemplatePath(path: unknown): path is TemplatePath {
   return (path as any)?.type === 'templatepath'
 }
 
-export function isRootElementPath(path: TemplatePath): boolean {
+export function isRootElementOfInstance(path: TemplatePath): boolean {
   return path.parts.length > 1 && last(path.parts)!.length === 1
 }
 

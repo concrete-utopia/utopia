@@ -408,7 +408,7 @@ function collectMetadata(
     let filteredRootElements: TemplatePath[] = []
     fastForEach(unfilteredChildrenPaths, (childPath) => {
       if (TP.isParentOf(path, childPath)) {
-        if (TP.isRootElementPath(childPath)) {
+        if (TP.isRootElementOfInstance(childPath)) {
           filteredRootElements.push(childPath)
         } else {
           filteredChildPaths.push(childPath)
