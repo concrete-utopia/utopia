@@ -517,9 +517,7 @@ export function useSelectModeSelectAndHover(
             requestAnimationFrame(() => {
               // then we set the selected views for the editor state, 1 frame later
               if (updatedSelection.length === 0) {
-                if (selectedViewsRef.current.length !== 0) {
-                  dispatch([clearSelection(), setFocusedElement(null)])
-                }
+                dispatch([clearSelection(), setFocusedElement(null)])
               } else {
                 dispatch([selectComponents(updatedSelection, event.shiftKey)])
               }

@@ -4014,6 +4014,10 @@ export const UPDATE_FNS = {
     return editor
   },
   SET_FOCUSED_ELEMENT: (action: SetFocusedElement, editor: EditorModel): EditorModel => {
+    if (TP.pathsEqual(editor.focusedElementPath, action.focusedElementPath)) {
+      return editor
+    }
+
     return {
       ...editor,
       focusedElementPath: action.focusedElementPath,
