@@ -131,18 +131,7 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -199,21 +188,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -275,7 +250,21 @@ Object {
         "width": undefined,
       },
     },
-    "rootElements": Array [],
+    "rootElements": Array [
+      Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "aaa",
+          ],
+        ],
+        "type": "templatepath",
+      },
+    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -888,18 +877,7 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -956,21 +934,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "aaa",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -1032,7 +996,21 @@ Object {
         "width": undefined,
       },
     },
-    "rootElements": Array [],
+    "rootElements": Array [
+      Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "aaa",
+          ],
+        ],
+        "type": "templatepath",
+      },
+    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -1336,18 +1314,7 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -1404,21 +1371,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -1480,7 +1433,21 @@ Object {
         "width": undefined,
       },
     },
-    "rootElements": Array [],
+    "rootElements": Array [
+      Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "05c",
+          ],
+        ],
+        "type": "templatepath",
+      },
+    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -2004,18 +1971,7 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -2072,21 +2028,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -2148,7 +2090,21 @@ Object {
         "width": undefined,
       },
     },
-    "rootElements": Array [],
+    "rootElements": Array [
+      Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "05c",
+          ],
+        ],
+        "type": "templatepath",
+      },
+    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -2673,18 +2629,7 @@ Object {
         "width": 375,
       },
     },
-    "rootElements": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "rootElements": Array [],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,
@@ -2741,21 +2686,7 @@ Object {
   },
   "utopia-storyboard-uid/scene-aaa/app-entity": Object {
     "attributeMetadatada": null,
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-          Array [
-            "05c",
-          ],
-        ],
-        "type": "templatepath",
-      },
-    ],
+    "children": Array [],
     "componentInstance": true,
     "computedStyle": null,
     "element": Object {
@@ -2817,7 +2748,21 @@ Object {
         "width": undefined,
       },
     },
-    "rootElements": Array [],
+    "rootElements": Array [
+      Object {
+        "parts": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+          Array [
+            "05c",
+          ],
+        ],
+        "type": "templatepath",
+      },
+    ],
     "specialSizeMeasurements": Object {
       "clientHeight": 812,
       "clientWidth": 375,

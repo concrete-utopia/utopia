@@ -306,18 +306,9 @@ describe('getCommonParent', () => {
   })
   it('for three elements without a common parent returns null', () => {
     const actualResult = TP.getCommonParent([
-      TP.templatePath([
-        [BakedInStoryboardUID, 'scene-aaa'],
-        ['a', 'b', 'c'],
-      ]),
-      TP.templatePath([
-        [BakedInStoryboardUID, 'scene-bbb'],
-        ['a', 'b', 'd'],
-      ]),
-      TP.templatePath([
-        [BakedInStoryboardUID, 'scene-ccc'],
-        ['x', 'b', 'd'],
-      ]),
+      TP.templatePath([['scene-aaa'], ['a', 'b', 'c']]),
+      TP.templatePath([['scene-bbb'], ['a', 'b', 'd']]),
+      TP.templatePath([['scene-ccc'], ['x', 'b', 'd']]),
     ])
     expect(actualResult).toBeNull()
   })

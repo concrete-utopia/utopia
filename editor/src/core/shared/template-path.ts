@@ -133,7 +133,7 @@ export function isTemplatePath(path: unknown): path is TemplatePath {
 }
 
 export function isRootElementPath(path: TemplatePath): boolean {
-  return path.parts.length === 1
+  return path.parts.length > 1 && last(path.parts)!.length === 1
 }
 
 export function isStoryboardPath(path: TemplatePath): boolean {
@@ -754,7 +754,8 @@ export function dropFirstPathElement(
 }
 
 export function createBackwardsCompatibleScenePath(path: TemplatePath): TemplatePath {
-  return templatePath(path.parts.slice(0, 2)) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack
+  const firstPart = path.parts[0] ?? emptyElementPath
+  return templatePath([firstPart.slice(0, 2)]) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack
 }
 
 export function isFocused(focusedElementPath: TemplatePath | null, path: TemplatePath): boolean {
