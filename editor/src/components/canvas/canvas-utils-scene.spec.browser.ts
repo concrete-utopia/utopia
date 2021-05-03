@@ -23,10 +23,9 @@ describe('moving a scene/rootview on the canvas', () => {
   it('dragging a scene child’s root view sets the root view position', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ width: '100%', height: '100%' }} layout={{ layoutSystem: 'pinSystem' }} data-testid='aaa' data-uid='aaa'>
+        <View style={{ width: '100%', height: '100%' }} data-testid='aaa' data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
             data-uid='bbb'
           />
         </View>
@@ -113,13 +112,11 @@ describe('moving a scene/rootview on the canvas', () => {
       makeTestProjectCodeWithSnippet(`
       <View
           style={{ width: '100%', height: '100%', left: 40, top: -30 }}
-          layout={{ layoutSystem: 'pinSystem' }}
           data-testid='aaa'
           data-uid='aaa'
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
             data-uid='bbb'
           />
         </View>
@@ -131,18 +128,16 @@ describe('moving a scene/rootview on the canvas', () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
+        import { Scene, Storyboard, View } from 'utopia-api'
 
         export var App = (props) => {
           return (
             <View
-              style={{ width: '100%', height: '100%' }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ position: 'relative', width: '100%', height: '100%' }}
               data-uid='aaa'
             >
               <View
-                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-                layout={{ layoutSystem: 'pinSystem' }}
+                style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
                 data-uid='bbb'
               />
             </View>
@@ -241,18 +236,16 @@ describe('moving a scene/rootview on the canvas', () => {
 
     const expectedCode = `
     import * as React from 'react'
-    import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    import { Scene, Storyboard, View } from 'utopia-api'
 
     export var App = (props) => {
       return (
         <View
-          style={{ width: '100%', height: '100%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ position: 'relative', width: '100%', height: '100%' }}
           data-uid='aaa'
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
             data-uid='bbb'
           />
         </View>
@@ -285,18 +278,16 @@ describe('resizing a scene/rootview on the canvas', () => {
     const testCode = Prettier.format(
       `
         import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
+        import { Scene, Storyboard, View } from 'utopia-api'
 
         export var App = (props) => {
           return (
             <View
-              style={{ width: '100%', height: '100%' }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ position: 'relative', width: '100%', height: '100%' }}
               data-uid='aaa'
             >
               <View
-                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-                layout={{ layoutSystem: 'pinSystem' }}
+                style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
                 data-uid='bbb'
               />
             </View>
@@ -377,18 +368,16 @@ describe('resizing a scene/rootview on the canvas', () => {
 
     const expectedCode = `
     import * as React from 'react'
-    import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    import { Scene, Storyboard, View } from 'utopia-api'
 
     export var App = (props) => {
       return (
         <View
-          style={{ width: '120%', height: '92.5%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ position: 'relative', width: '120%', height: '92.5%' }}
           data-uid='aaa'
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
             data-uid='bbb'
           />
         </View>
@@ -417,18 +406,16 @@ describe('resizing a scene/rootview on the canvas', () => {
     const testCode = Prettier.format(
       `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
 
       export var App = (props) => {
         return (
           <View
-            style={{ width: '100%', height: '100%' }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ position: 'relative', width: '100%', height: '100%' }}
             data-uid='aaa'
           >
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
               data-uid='bbb'
             />
           </View>
@@ -509,18 +496,16 @@ describe('resizing a scene/rootview on the canvas', () => {
 
     const expectedCode = `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
 
       export var App = (props) => {
         return (
           <View
-            style={{ width: '100%', height: '100%' }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ position: 'relative', width: '100%', height: '100%' }}
             data-uid='aaa'
           >
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
               data-uid='bbb'
             />
           </View>

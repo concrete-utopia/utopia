@@ -1702,7 +1702,6 @@ describe('inspector tests with real metadata', () => {
         '/src/app.js',
         `
   import * as React from 'react'
-  import { jsx } from 'utopia-api'
   export var App = (props) => {
     return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
       <div data-uid='app-inner-div' style={{padding: 8, paddingLeft: 10, width: '100%', minHeight: 25}}/>

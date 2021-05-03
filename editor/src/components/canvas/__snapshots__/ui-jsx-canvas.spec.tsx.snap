@@ -21,7 +21,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
+      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
       data-uid=\\"aaa app-entity\\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
     >
@@ -265,30 +265,11 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -702,7 +683,7 @@ exports[`UiJsxCanvas render Label carried through for normal elements 1`] = `
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
+      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
       data-uid=\\"aaa app-entity\\"
       data-label=\\"Hat\\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
@@ -842,30 +823,11 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -4816,7 +4778,7 @@ exports[`UiJsxCanvas render console logging does not do anything bizarre 1`] = `
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
+      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
       data-uid=\\"aaa app-entity\\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
     ></div>
@@ -4941,30 +4903,11 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -5430,32 +5373,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n1",
     },
     "rootElements": Array [],
@@ -5627,32 +5544,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n2",
     },
     "rootElements": Array [],
@@ -5824,32 +5715,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n3",
     },
     "rootElements": Array [],
@@ -6316,32 +6181,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n1",
     },
     "rootElements": Array [],
@@ -6513,32 +6352,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n2",
     },
     "rootElements": Array [],
@@ -6710,32 +6523,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n3",
     },
     "rootElements": Array [],
@@ -7724,8 +7511,8 @@ exports[`UiJsxCanvas render handles a component that destructures its props obje
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
@@ -8013,30 +7800,9 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -8231,31 +7997,8 @@ Object {
       },
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#000000",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
       },
       "title": "Hi there!",
     },
@@ -8349,8 +8092,8 @@ exports[`UiJsxCanvas render handles a component that renames its props object 1`
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
@@ -8637,30 +8380,9 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -8855,31 +8577,8 @@ Object {
       },
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#000000",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
       },
       "title": "Hi there!",
     },
@@ -8961,8 +8660,8 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
@@ -9298,30 +8997,9 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -9564,31 +9242,8 @@ Object {
       },
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#000000",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
       },
       "titles": Array [
         "Hi there!",
@@ -9676,8 +9331,8 @@ exports[`UiJsxCanvas render handles a component with a props object written by s
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
@@ -10013,30 +9668,9 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -10279,31 +9913,8 @@ Object {
       },
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#000000",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
       },
       "titles": Array [
         "Hi there!",
@@ -10535,15 +10146,15 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
     <div
       style=\\"
         position: absolute;
-        width: 376px;
-        height: 812px;
-        left: 0;
-        top: 0;
-        right: 0;
         bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
         font-size: 12px;
         font-family: Inter;
         color: #237aff;
+        width: 376px;
+        height: 812px;
         background-color: #171111;
       \\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
@@ -11785,30 +11396,13 @@ export var storyboard = (props) => {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#171111",
         "bottom": 0,
         "color": "#237AFF",
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "fontFamily": "Inter",
         "fontSize": "12px",
         "height": 812,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
@@ -12654,32 +12248,6 @@ export var storyboard = (props) => {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
     },
     "rootElements": Array [],
     "specialSizeMeasurements": Object {
@@ -16360,7 +15928,7 @@ exports[`UiJsxCanvas render refs are handled and triggered correctly in a functi
     data-uid=\\"scene-aaa utopia-storyboard-uid\\"
   >
     <div
-      style=\\"position: absolute; left: 0; top: 0; right: 0; bottom: 0;\\"
+      style=\\"position: absolute; bottom: 0; left: 0; right: 0; top: 0;\\"
       data-uid=\\"aaa app-entity\\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
     ></div>
@@ -16540,30 +16108,11 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
         "right": 0,
         "top": 0,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -17103,10 +16652,10 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
     >
       <div
         style=\\"
-          width: 221px;
-          height: 348px;
           left: 28px;
           top: 27px;
+          width: 221px;
+          height: 348px;
           background-color: #dddddd;
         \\"
         data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59\\"
@@ -17114,33 +16663,33 @@ exports[`UiJsxCanvas render renders a 1st party component with uids correctly, u
       >
         <div
           style=\\"
-            height: 30px;
+            background-color: #000000;
             left: 10px;
             top: 10px;
             right: 10px;
-            background-color: #000000;
+            height: 30px;
           \\"
           data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/d03\\"
           data-uid=\\"d03\\"
         ></div>
         <div
           style=\\"
-            width: 193px;
-            height: 244px;
+            background-color: #fff;
             left: 14px;
             top: 21px;
-            background-color: #fff;
+            width: 193px;
+            height: 244px;
           \\"
           data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59/dd5\\"
           data-uid=\\"dd5\\"
         ></div>
         <div
           style=\\"
-            height: 30px;
+            background-color: #000000;
             left: 10px;
             top: 100px;
             right: 10px;
-            background-color: #000000;
+            height: 30px;
           \\"
           data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d59:6be/41e\\"
           data-uid=\\"41e\\"
@@ -17532,28 +17081,8 @@ Object {
       },
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": 348,
-        "justifyContent": undefined,
         "left": 28,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
         "top": 27,
         "width": 221,
       },
@@ -17675,29 +17204,9 @@ Object {
       "data-uid": "dd5",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#fff",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": 244,
-        "justifyContent": undefined,
         "left": 14,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
         "top": 21,
         "width": 193,
       },
@@ -17781,8 +17290,8 @@ exports[`UiJsxCanvas render renders a canvas defined by a utopia storyboard comp
     <div
       style=\\"
         position: absolute;
-        width: 100%;
         height: 100%;
+        width: 100%;
         background-color: #ffffff;
       \\"
       data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
@@ -18012,30 +17521,9 @@ Object {
       "data-uid": "aaa app-entity",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
         "height": "100%",
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
         "width": "100%",
       },
     },
@@ -18157,30 +17645,7 @@ Object {
       "data-uid": "bbb",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "absolute",
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -18647,32 +18112,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n1",
     },
     "rootElements": Array [],
@@ -18844,32 +18283,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n2",
     },
     "rootElements": Array [],
@@ -19041,32 +18454,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n3",
     },
     "rootElements": Array [],
@@ -19535,32 +18922,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n1",
     },
     "rootElements": Array [],
@@ -19733,32 +19094,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n2",
     },
     "rootElements": Array [],
@@ -19931,32 +19266,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n3",
     },
     "rootElements": Array [],
@@ -20430,32 +19739,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n1",
     },
     "rootElements": Array [],
@@ -20627,32 +19910,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n2",
     },
     "rootElements": Array [],
@@ -20824,32 +20081,6 @@ Object {
         },
       },
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
       "title": "n3",
     },
     "rootElements": Array [],
@@ -22132,10 +21363,10 @@ exports[`UiJsxCanvas render renders fragments correctly 1`] = `
     <div
       style=\\"
         position: relative;
-        left: 0;
-        top: 0;
-        right: 0;
         bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
         background-color: #ffffff;
       \\"
       data-paths=\\"eee/fff/app:aaa eee/fff/app\\"
@@ -22526,31 +21757,12 @@ export var storyboard = (
       "data-uid": "aaa app",
       "skipDeepFreeze": true,
       "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
         "backgroundColor": "#FFFFFF",
         "bottom": 0,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
         "left": 0,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
         "position": "relative",
         "right": 0,
         "top": 0,
-        "width": undefined,
       },
     },
     "rootElements": Array [],
@@ -22995,32 +22207,6 @@ export var storyboard = (
       "data-paths": "eee/fff/app:aaa/ddd",
       "data-uid": "ddd",
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
     },
     "rootElements": Array [],
     "specialSizeMeasurements": Object {
@@ -23328,32 +22514,6 @@ Object {
       "data-uid": "bbb",
       "skipDeepFreeze": true,
       "src": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
     },
     "rootElements": Array [],
     "specialSizeMeasurements": Object {
@@ -24020,32 +23180,6 @@ Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~1",
       "data-uid": "bbb~~~1",
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
     },
     "rootElements": Array [],
     "specialSizeMeasurements": Object {
@@ -24375,32 +23509,6 @@ Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~2",
       "data-uid": "bbb~~~2",
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
     },
     "rootElements": Array [],
     "specialSizeMeasurements": Object {
@@ -24730,32 +23838,6 @@ Object {
       "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb~~~3",
       "data-uid": "bbb~~~3",
       "skipDeepFreeze": true,
-      "style": Object {
-        "alignContent": undefined,
-        "alignItems": undefined,
-        "alignSelf": undefined,
-        "bottom": undefined,
-        "flexBasis": undefined,
-        "flexDirection": undefined,
-        "flexGrow": undefined,
-        "flexShrink": undefined,
-        "flexWrap": undefined,
-        "height": undefined,
-        "justifyContent": undefined,
-        "left": undefined,
-        "marginBottom": undefined,
-        "marginLeft": undefined,
-        "marginRight": undefined,
-        "marginTop": undefined,
-        "maxHeight": undefined,
-        "maxWidth": undefined,
-        "minHeight": undefined,
-        "minWidth": undefined,
-        "position": undefined,
-        "right": undefined,
-        "top": undefined,
-        "width": undefined,
-      },
     },
     "rootElements": Array [],
     "specialSizeMeasurements": Object {
@@ -24947,6 +24029,153 @@ Object {
         "aaa",
         "bbb~~~3",
         "ccc",
+      ],
+      "scene": Object {
+        "sceneElementPaths": Array [
+          Array [
+            "utopia-storyboard-uid",
+            "scene-aaa",
+            "app-entity",
+          ],
+        ],
+        "type": "scenepath",
+      },
+    },
+  },
+}
+`;
+
+exports[`UiJsxCanvas render the canvas supports emotion CSS prop 1`] = `
+"<div
+  id=\\"canvas-container\\"
+  style=\\"all: initial; position: absolute;\\"
+  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+>
+  <div
+    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
+    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
+    style=\\"
+      position: absolute;
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
+      left: 0;
+      top: 0;
+      width: 400px;
+      height: 400px;
+    \\"
+    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
+  >
+    <div
+      data-uid=\\"d39 aaa app-entity\\"
+      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:d39 utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
+      class=\\"css-16au7uv\\"
+    >
+      Utopia
+    </div>
+  </div>
+</div>
+"
+`;
+
+exports[`UiJsxCanvas render the canvas supports emotion CSS prop 2`] = `
+Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
+    "attributeMetadatada": Object {},
+    "children": Array [],
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "children": Array [],
+        "name": Object {
+          "baseVariable": "MyComp",
+          "propertyPath": Object {
+            "propertyElements": Array [],
+          },
+        },
+        "props": Array [
+          Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
+            "key": "data-uid",
+            "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
+              "type": "ATTRIBUTE_VALUE",
+              "value": "aaa",
+            },
+          },
+        ],
+        "type": "JSX_ELEMENT",
+      },
+    },
+    "globalFrame": null,
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "props": Object {
+      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
+      "data-uid": "aaa app-entity",
+      "data-utopia-instance-path": Object {
+        "element": Array [
+          "aaa",
+        ],
+        "scene": Object {
+          "sceneElementPaths": Array [
+            Array [
+              "utopia-storyboard-uid",
+              "scene-aaa",
+              "app-entity",
+            ],
+          ],
+          "type": "scenepath",
+        },
+      },
+      "skipDeepFreeze": true,
+    },
+    "rootElements": Array [],
+    "specialSizeMeasurements": Object {
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "coordinateSystemBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "display": "initial",
+      "flexDirection": null,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentLayoutSystem": "flow",
+      "position": "static",
+      "providesBoundsForChildren": false,
+      "usesParentBounds": false,
+    },
+    "templatePath": Object {
+      "element": Array [
+        "aaa",
       ],
       "scene": Object {
         "sceneElementPaths": Array [
@@ -25439,301 +24668,6 @@ Object {
         "zzz",
         "cloner",
         "cloned",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "scenepath",
-      },
-    },
-  },
-}
-`;
-
-exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
->
-  <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
-  >
-    <div
-      layout=\\"[object Object]\\"
-      data-uid=\\"45b aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:45b utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-    >
-      Utopia
-    </div>
-  </div>
-</div>
-"
-`;
-
-exports[`UiJsxCanvas render the utopia jsx pragma (and layout prop) works well 2`] = `
-Object {
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
-    "attributeMetadatada": Object {},
-    "children": Array [],
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "MyComp",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "aaa",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-      },
-    },
-    "globalFrame": null,
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "props": Object {
-      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "aaa app-entity",
-      "data-utopia-instance-path": Object {
-        "element": Array [
-          "aaa",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
-          ],
-          "type": "scenepath",
-        },
-      },
-      "skipDeepFreeze": true,
-    },
-    "rootElements": Array [],
-    "specialSizeMeasurements": Object {
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "coordinateSystemBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "display": "initial",
-      "flexDirection": null,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentLayoutSystem": "flow",
-      "position": "static",
-      "providesBoundsForChildren": false,
-      "usesParentBounds": false,
-    },
-    "templatePath": Object {
-      "element": Array [
-        "aaa",
-      ],
-      "scene": Object {
-        "sceneElementPaths": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "scenepath",
-      },
-    },
-  },
-}
-`;
-
-exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 1`] = `
-"<div
-  id=\\"canvas-container\\"
-  style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
->
-  <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
-  >
-    <div
-      layout=\\"[object Object]\\"
-      css=\\"[object Object]\\"
-      data-uid=\\"a0e aaa app-entity\\"
-      data-paths=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa:a0e utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
-    >
-      Utopia
-    </div>
-  </div>
-</div>
-"
-`;
-
-exports[`UiJsxCanvas render the utopia jsx pragma supports emotion CSS prop 2`] = `
-Object {
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa": Object {
-    "attributeMetadatada": Object {},
-    "children": Array [],
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "MyComp",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "aaa",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-      },
-    },
-    "globalFrame": null,
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "props": Object {
-      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "aaa app-entity",
-      "data-utopia-instance-path": Object {
-        "element": Array [
-          "aaa",
-        ],
-        "scene": Object {
-          "sceneElementPaths": Array [
-            Array [
-              "utopia-storyboard-uid",
-              "scene-aaa",
-              "app-entity",
-            ],
-          ],
-          "type": "scenepath",
-        },
-      },
-      "skipDeepFreeze": true,
-    },
-    "rootElements": Array [],
-    "specialSizeMeasurements": Object {
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "coordinateSystemBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "display": "initial",
-      "flexDirection": null,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentLayoutSystem": "flow",
-      "position": "static",
-      "providesBoundsForChildren": false,
-      "usesParentBounds": false,
-    },
-    "templatePath": Object {
-      "element": Array [
-        "aaa",
       ],
       "scene": Object {
         "sceneElementPaths": Array [

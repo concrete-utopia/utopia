@@ -40,7 +40,7 @@ describe('maybeSwitchLayoutProps', () => {
     //await wait(20000)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
           style={{ backgroundColor: '#DDDDDD', left: 52, top: 61, width: 256, height: 202, display: 'flex' }}
           data-uid='bbb'
@@ -145,7 +145,6 @@ describe('maybeSwitchLayoutProps', () => {
       makeTestProjectCodeWithSnippet(
         `<View
           style={{ ...props.style }}
-          layout={{ layoutSystem: 'pinSystem' }}
           data-uid='aaa'
         >
           <View
