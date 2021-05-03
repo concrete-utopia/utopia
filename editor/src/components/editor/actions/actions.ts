@@ -208,6 +208,8 @@ import {
   generateCodeResultCache,
   codeCacheToBuildResult,
   PropertyControlsInfo,
+  normalisePathSuccessOrThrowError,
+  normalisePathToUnderlyingTarget,
 } from '../../custom-code/code-file'
 import { ElementContextMenuInstance } from '../../element-context-menu'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
@@ -430,6 +432,7 @@ import {
   modifyUnderlyingForOpenFile,
   forUnderlyingTargetFromEditorState,
   getHighlightBoundsForFile,
+  modifyParseSuccessAtPath,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -990,37 +993,21 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
 }
 
 function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorModel {
-  const openUIJSFile = getOpenUIJSFile(editor)
-  if (openUIJSFile == null) {
+  const openUIJSFilePath = getOpenUIJSFileKey(editor)
+  if (openUIJSFilePath == null) {
     console.error(`Attempted to delete element(s) with no UI file open.`)
     return editor
   } else {
-    const metadata = editor.jsxMetadata
+    const updatedEditor = targets.reduce((working, targetPath) => {
+      const underlyingTarget = normalisePathToUnderlyingTarget(
+        working.projectContents,
+        working.nodeModules.files,
+        openUIJSFilePath,
+        targetPath,
+      )
+      const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
-    const isElementToBeDeleted = (element: ElementInstanceMetadata) => {
-      return targets.some((target) => TP.pathsEqual(element.templatePath, target))
-    }
-
-    const isEmptyOrContainsDeleted = (element: ElementInstanceMetadata): boolean => {
-      if (!MetadataUtils.isAutoSizingViewFromComponents(metadata, element.templatePath)) {
-        return false
-      }
-
-      return element.children.every((childPath) => {
-        const child = MetadataUtils.findElementByTemplatePath(metadata, childPath)
-        return child == null || isElementToBeDeleted(child) || isEmptyOrContainsDeleted(child)
-      })
-    }
-    const emptyGroups = MetadataUtils.findElements(metadata, (element: ElementInstanceMetadata) =>
-      isEmptyOrContainsDeleted(element),
-    )
-    const emptyGroupTemplatePaths = emptyGroups.map((group) => group.templatePath)
-
-    const extendedTargets = [...targets, ...emptyGroupTemplatePaths]
-
-    const updatedEditor = extendedTargets.reduce((working, target) => {
-      const targetPath = TP.instancePathForElementAtPath(target)
-      return modifyOpenParseSuccess((parseSuccess) => {
+      function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
         const element = findElementAtPath(targetPath, utopiaComponents)
         if (element == null) {
@@ -1037,11 +1024,12 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
             }
           }, parseSuccess)
         }
-      }, working)
+      }
+      return modifyParseSuccessAtPath(targetSuccess.filePath, working, deleteElementFromParseSuccess)
     }, editor)
     return {
       ...updatedEditor,
-      selectedViews: TP.filterPaths(updatedEditor.selectedViews, extendedTargets),
+      selectedViews: TP.filterPaths(updatedEditor.selectedViews, targets),
     }
   }
 }
