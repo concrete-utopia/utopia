@@ -83,7 +83,7 @@ async function waitForPathToExist(path: string, maxWaitTime: number = 5000): Pro
   if (maxWaitTime >= 0) {
     const doesItExist: boolean = await exists(path)
     if (!doesItExist) {
-      await waitForPathToExist(path, maxWaitTime - 100)
+      return waitForPathToExist(path, maxWaitTime - 100)
     } else {
       return Promise.resolve()
     }
