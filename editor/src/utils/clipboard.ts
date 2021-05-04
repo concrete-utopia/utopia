@@ -160,7 +160,6 @@ export function createDirectInsertImageActions(
 
 export function createClipboardDataFromSelectionNewWorld(
   editor: EditorState,
-  derived: DerivedState,
 ): {
   data: Array<JSXElementCopyData>
   imageFilenames: Array<string>

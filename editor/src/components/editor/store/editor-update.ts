@@ -114,7 +114,7 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       // side effect 😟
-      setClipboardData(createClipboardDataFromSelectionNewWorld(state, derivedState))
+      setClipboardData(createClipboardDataFromSelectionNewWorld(state))
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch)
     case 'OPEN_TEXT_EDITOR':
       return UPDATE_FNS.OPEN_TEXT_EDITOR(action, state)
