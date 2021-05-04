@@ -49,11 +49,11 @@ import {
   getUtopiaVSCodeConfig,
   setFollowSelectionConfig,
 } from 'utopia-vscode-common'
-import { isTextFile, ProjectFile, TemplatePath, TextFile } from '../shared/project-file-types'
+import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
 import {
   EditorState,
-  getHighlightBoundsForTemplatePath,
+  getHighlightBoundsForElementPath,
   getOpenTextFileKey,
 } from '../../components/editor/store/editor-state'
 
@@ -312,8 +312,8 @@ export async function applyProjectContentChanges(
 
 export async function sendCodeEditorDecorations(editorState: EditorState): Promise<void> {
   let decorations: Array<DecorationRange> = []
-  function addRange(rangeType: DecorationRangeType, path: TemplatePath): void {
-    const highlightBounds = getHighlightBoundsForTemplatePath(path, editorState)
+  function addRange(rangeType: DecorationRangeType, path: ElementPath): void {
+    const highlightBounds = getHighlightBoundsForElementPath(path, editorState)
     if (highlightBounds != null) {
       decorations.push(
         decorationRange(
@@ -339,7 +339,7 @@ export async function sendCodeEditorDecorations(editorState: EditorState): Promi
 
 export async function sendSelectedElement(newEditorState: EditorState): Promise<void> {
   const selectedView = newEditorState.selectedViews[0]
-  const highlightBounds = getHighlightBoundsForTemplatePath(selectedView, newEditorState)
+  const highlightBounds = getHighlightBoundsForElementPath(selectedView, newEditorState)
   if (highlightBounds != null) {
     await sendSelectedElementChangedMessage(
       boundsInFile(

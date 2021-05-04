@@ -1,6 +1,6 @@
 import { ReactElement } from 'react'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { PropertyPath, TemplatePath } from '../../core/shared/project-file-types'
+import { PropertyPath, ElementPath } from '../../core/shared/project-file-types'
 import { KeyCharacter, KeysPressed } from '../../utils/keyboard'
 import { Modifiers } from '../../utils/modifiers'
 import { keepDeepReferenceEqualityIfPossible } from '../../utils/react-performance'
@@ -130,7 +130,7 @@ export interface SvgFragmentControlBase<T, P> {
   type: T
   className?: string
   controlid: string
-  target: TemplatePath | null
+  target: ElementPath | null
   cursor: CSSCursor | null
   scaleFn: (props: P, scale: number) => P
   props: P
@@ -178,7 +178,7 @@ export type HigherOrderControl = SvgControl | DivControl
 export type ControlOrHigherOrderControl = SvgFragmentControl | HigherOrderControl
 
 export interface FrameAndTarget<C extends CoordinateMarker> {
-  target: TemplatePath
+  target: ElementPath
   frame: Rectangle<C> | null
 }
 
@@ -196,26 +196,26 @@ export interface PinSizeChange extends CanvasFrameAndTarget {
 
 export interface PinMoveChange {
   type: 'PIN_MOVE_CHANGE'
-  target: TemplatePath
+  target: ElementPath
   delta: CanvasVector
 }
 
 export interface FlexMoveChange {
   type: 'FLEX_MOVE'
-  target: TemplatePath
+  target: ElementPath
   newIndex: number
 }
 
 export interface FlexResizeChange {
   type: 'FLEX_RESIZE'
-  target: TemplatePath
+  target: ElementPath
   newSize: Size
   edgePosition: EdgePosition | null
 }
 
 export interface SingleResizeChange {
   type: 'SINGLE_RESIZE'
-  target: TemplatePath
+  target: ElementPath
   sizeDelta: CanvasVector
   edgePosition: EdgePosition
 }
@@ -229,7 +229,7 @@ export type PinOrFlexFrameChange =
   | SingleResizeChange
 
 export function pinFrameChange(
-  target: TemplatePath,
+  target: ElementPath,
   frame: CanvasRectangle,
   edgePosition: EdgePosition | null = null,
 ): PinFrameChange {
@@ -242,7 +242,7 @@ export function pinFrameChange(
 }
 
 export function pinSizeChange(
-  target: TemplatePath,
+  target: ElementPath,
   frame: CanvasRectangle,
   edgePosition: EdgePosition | null = null,
 ): PinSizeChange {
@@ -254,7 +254,7 @@ export function pinSizeChange(
   }
 }
 
-export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMoveChange {
+export function pinMoveChange(target: ElementPath, delta: CanvasVector): PinMoveChange {
   return {
     type: 'PIN_MOVE_CHANGE',
     target: target,
@@ -262,7 +262,7 @@ export function pinMoveChange(target: TemplatePath, delta: CanvasVector): PinMov
   }
 }
 
-export function flexMoveChange(target: TemplatePath, newIndex: number): FlexMoveChange {
+export function flexMoveChange(target: ElementPath, newIndex: number): FlexMoveChange {
   return {
     type: 'FLEX_MOVE',
     target: target,
@@ -271,7 +271,7 @@ export function flexMoveChange(target: TemplatePath, newIndex: number): FlexMove
 }
 
 export function flexResizeChange(
-  target: TemplatePath,
+  target: ElementPath,
   newSize: Size,
   edgePosition: EdgePosition | null = null,
 ): FlexResizeChange {
@@ -284,7 +284,7 @@ export function flexResizeChange(
 }
 
 export function singleResizeChange(
-  target: TemplatePath,
+  target: ElementPath,
   edgePosition: EdgePosition,
   sizeDelta: CanvasVector,
 ): SingleResizeChange {
@@ -317,7 +317,7 @@ export function insertDragState(
 }
 
 export interface DuplicateNewUID {
-  originalPath: TemplatePath
+  originalPath: ElementPath
   newUID: string
 }
 
@@ -335,7 +335,7 @@ export interface MoveDragState {
   duplicateNewUIDs: Array<DuplicateNewUID> | null
   canvasPosition: CanvasPoint
   metadata: ElementInstanceMetadataMap
-  draggedElements: TemplatePath[]
+  draggedElements: ElementPath[]
 }
 
 export function moveDragState(
@@ -351,7 +351,7 @@ export function moveDragState(
   duplicateNewUIDs: Array<DuplicateNewUID> | null,
   canvasPosition: CanvasPoint,
   metadata: ElementInstanceMetadataMap,
-  draggedElements: TemplatePath[],
+  draggedElements: ElementPath[],
 ): MoveDragState {
   if (duplicate === true && duplicateNewUIDs == null) {
     throw new Error('duplicateNewUIDs cannot be null when duplicate is true')
@@ -426,7 +426,7 @@ export interface ResizeDragState {
   edgePosition: EdgePosition
   enabledDirection: EnabledDirection
   metadata: ElementInstanceMetadataMap
-  draggedElements: TemplatePath[]
+  draggedElements: ElementPath[]
   isMultiSelect: boolean
 }
 
@@ -441,7 +441,7 @@ export function resizeDragState(
   edgePosition: EdgePosition,
   enabledDirection: EnabledDirection,
   metadata: ElementInstanceMetadataMap,
-  draggedElements: TemplatePath[],
+  draggedElements: ElementPath[],
   isMultiSelect: boolean,
 ): ResizeDragState {
   return {
@@ -596,8 +596,8 @@ export type CanvasModel = {
   keysPressed: KeysPressed
   mode: Mode
   scale: number
-  highlightedviews: Array<TemplatePath>
-  selectedViews: Array<TemplatePath>
+  highlightedviews: Array<ElementPath>
+  selectedViews: Array<ElementPath>
   canvasOffset: CanvasPoint
   focusedPanel: EditorPanel | null
   editorState: EditorState

@@ -1,7 +1,7 @@
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
-import { TemplatePath } from '../../../core/shared/project-file-types'
-import * as TP from '../../../core/shared/template-path'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import * as EP from '../../../core/shared/element-path'
 import {
   ConstrainedDragAxis,
   Guideline,
@@ -15,7 +15,7 @@ import { EdgePosition } from '../canvas-types'
 
 export function collectParentAndSiblingGuidelines(
   componentMetadata: ElementInstanceMetadataMap,
-  targets: Array<TemplatePath>,
+  targets: Array<ElementPath>,
 ): Array<Guideline> {
   const allPaths = MetadataUtils.getAllPaths(componentMetadata)
   const result: Array<Guideline> = []
@@ -25,13 +25,13 @@ export function collectParentAndSiblingGuidelines(
       target,
     )
     if (!pinnedAndNotAbsolutePositioned) {
-      const parent = TP.parentPath(target)
+      const parent = EP.parentPath(target)
       Utils.fastForEach(allPaths, (maybeTarget) => {
         // for now we only snap to parents and sibligns and not us or our descendants
-        const isSibling = TP.isSiblingOf(maybeTarget, target)
-        const isParent = TP.pathsEqual(parent, maybeTarget)
+        const isSibling = EP.isSiblingOf(maybeTarget, target)
+        const isParent = EP.pathsEqual(parent, maybeTarget)
         const notSelectedOrDescendantOfSelected = targets.every(
-          (view) => !TP.isDescendantOfOrEqualTo(maybeTarget, view),
+          (view) => !EP.isDescendantOfOrEqualTo(maybeTarget, view),
         )
         const isGroup = MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, parent)
         if ((isSibling || (isParent && !isGroup)) && notSelectedOrDescendantOfSelected) {
@@ -48,7 +48,7 @@ export function collectParentAndSiblingGuidelines(
 
 export function collectSelfAndChildrenGuidelines(
   componentMetadata: ElementInstanceMetadataMap,
-  targets: Array<TemplatePath>,
+  targets: Array<ElementPath>,
   insertingElementId: string,
 ): Array<Guideline> {
   const allPaths = MetadataUtils.getAllPaths(componentMetadata)
@@ -59,7 +59,7 @@ export function collectSelfAndChildrenGuidelines(
       target,
     )
     if (!pinnedAndNotAbsolutePositioned) {
-      if (TP.toUid(target) !== insertingElementId) {
+      if (EP.toUid(target) !== insertingElementId) {
         const frame = MetadataUtils.getFrameInCanvasCoords(target, componentMetadata)
         if (frame != null) {
           result.push(...Guidelines.guidelinesForFrame(frame, true))
@@ -67,7 +67,7 @@ export function collectSelfAndChildrenGuidelines(
       }
 
       Utils.fastForEach(allPaths, (maybeTarget) => {
-        if (TP.isChildOf(maybeTarget, target) && TP.toUid(maybeTarget) !== insertingElementId) {
+        if (EP.isChildOf(maybeTarget, target) && EP.toUid(maybeTarget) !== insertingElementId) {
           const frame = MetadataUtils.getFrameInCanvasCoords(maybeTarget, componentMetadata)
           if (frame != null) {
             result.push(...Guidelines.guidelinesForFrame(frame, true))

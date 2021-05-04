@@ -8,23 +8,23 @@ import {
   keepDeepEqualityResult,
   mapKeepDeepEqualityResult,
 } from './deep-equality'
-import * as TP from '../core/shared/template-path'
+import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
 import { HigherOrderControl } from '../components/canvas/canvas-types'
 import { JSXElementName } from '../core/shared/element-template'
-import { TemplatePath, PropertyPath } from '../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../core/shared/project-file-types'
 import { createCallFromIntrospectiveKeepDeep } from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
 
-export const TemplatePathKeepDeepEquality: KeepDeepEqualityCall<TemplatePath> = createCallFromEqualsFunction(
-  (oldPath: TemplatePath, newPath: TemplatePath) => {
-    return TP.pathsEqual(oldPath, newPath)
+export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> = createCallFromEqualsFunction(
+  (oldPath: ElementPath, newPath: ElementPath) => {
+    return EP.pathsEqual(oldPath, newPath)
   },
 )
 
-export const TemplatePathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
-  TemplatePath
->> = arrayDeepEquality(TemplatePathKeepDeepEquality)
+export const ElementPathArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
+  ElementPath
+>> = arrayDeepEquality(ElementPathKeepDeepEquality)
 
 export const PropertyPathKeepDeepEquality: KeepDeepEqualityCall<PropertyPath> = createCallFromEqualsFunction(
   (oldPath: PropertyPath, newPath: PropertyPath) => {

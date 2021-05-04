@@ -1,12 +1,12 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { TemplatePath } from '../../../../core/shared/project-file-types'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import { CanvasRectangle } from '../../../../core/shared/math-utils'
 
 export function areYogaChildren(
   componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: TemplatePath[],
+  selectedViews: ElementPath[],
 ): boolean {
   if (selectedViews.length === 1) {
     return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -20,7 +20,7 @@ export function areYogaChildren(
 
 export function anyInstanceYogaLayouted(
   componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: TemplatePath[],
+  selectedViews: ElementPath[],
 ): boolean {
   return selectedViews.some((selectedView) => {
     return MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
@@ -56,8 +56,8 @@ export function isYogaReverse(flexDirection: string): boolean {
 
 export function getNewIndex(
   componentMetadata: ElementInstanceMetadataMap,
-  target: TemplatePath,
-  parent: TemplatePath | null,
+  target: ElementPath,
+  parent: ElementPath | null,
   flexDirection: string,
   draggedFrame: CanvasRectangle,
 ): number | null {
@@ -76,7 +76,7 @@ export function getNewIndex(
   // Note: includes the element we're moving.
   const siblings =
     parent == null ? [] : MetadataUtils.getImmediateChildren(componentMetadata, parent)
-  const siblingTPs = siblings.map((child) => child.templatePath)
+  const siblingTPs = siblings.map((child) => child.elementPath)
 
   const yogaDirection = getReorderDirection(flexDirection)
   let resultIndexes: Array<number> = []

@@ -28,9 +28,9 @@ import {
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
-import { LayoutWrapper, PropertyPath, TemplatePath } from '../../core/shared/project-file-types'
+import { LayoutWrapper, PropertyPath, ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
 import { isAspectRatioLockedNew } from '../aspect-ratio'
 import { setFocus } from '../common/actions'
@@ -96,7 +96,7 @@ export interface InspectorModel {
 
 export interface ElementPathElement {
   name?: string
-  path: TemplatePath
+  path: ElementPath
 }
 
 export interface InspectorPartProps<T> {
@@ -106,7 +106,7 @@ export interface InspectorPartProps<T> {
 export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
     TargetSelectorSectionProps {
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   elementPath: Array<ElementPathElement>
 }
 
@@ -296,7 +296,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       )
       anyComponentsInner =
         anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
-      const possibleElement = MetadataUtils.findElementByTemplatePath(rootMetadata, view)
+      const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
         // its own compared to the props.
@@ -413,11 +413,11 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )
-    const rootViewsForSelectedElement: Array<TemplatePath> = useEditorState(
+    const rootViewsForSelectedElement: Array<ElementPath> = useEditorState(
       (store) => MetadataUtils.getRootViewPaths(store.editor.jsxMetadata, selectedViews[0]),
       'InspectorEntryPoint',
-      (oldTemplatePaths, newTemplatePaths) => {
-        return arrayEquals(oldTemplatePaths, newTemplatePaths, TP.pathsEqual)
+      (oldElementPaths, newElementPaths) => {
+        return arrayEquals(oldElementPaths, newElementPaths, EP.pathsEqual)
       },
     )
 
@@ -438,7 +438,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
 )
 
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
   const {
@@ -480,9 +480,9 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       (underlyingSuccess, underlyingElement, underlyingTarget) => {
         const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
         // TODO multiselect
-        const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+        const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
         if (elementMetadata != null) {
-          const parentPath = TP.parentPath(underlyingTarget)
+          const parentPath = EP.parentPath(underlyingTarget)
           const parentElement = findElementAtPath(parentPath, rootComponents)
 
           const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadata, path)
@@ -584,8 +584,8 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       }
 
       let elements: Array<ElementPathElement> = []
-      Utils.fastForEach(TP.allPathsForLastPart(selectedViews[0]), (path) => {
-        const component = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+      Utils.fastForEach(EP.allPathsForLastPart(selectedViews[0]), (path) => {
+        const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
         if (component != null) {
           elements.push({
             name: MetadataUtils.getElementLabel(path, jsxMetadata),
@@ -688,7 +688,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 })
 
 export const InspectorContextProvider = betterReactMemo<{
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   targetPath: Array<string>
   children: React.ReactNode
 }>('InspectorContextProvider', (props) => {
@@ -713,7 +713,7 @@ export const InspectorContextProvider = betterReactMemo<{
   let newAttributeMetadatas: Array<StyleAttributeMetadata> = []
 
   Utils.fastForEach(selectedViews, (path) => {
-    const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     if (elementMetadata != null) {
       if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
         /**

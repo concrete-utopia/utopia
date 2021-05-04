@@ -1,10 +1,10 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { DropTargetType } from '../navigator'
 import { colorTheme, Button, Icons, SectionActionSheet } from '../../../uuiui'
 
@@ -114,7 +114,7 @@ OriginalComponentNameLabel.displayName = 'OriginalComponentNameLabel'
 interface NavigatorItemActionSheetProps {
   selected: boolean
   highlighted: boolean
-  templatePath: TemplatePath
+  elementPath: ElementPath
   isVisibleOnCanvas: boolean // TODO FIXME bad name, also, use state
   instanceOriginalComponentName: string | null
   dispatch: EditorDispatch
@@ -123,11 +123,11 @@ interface NavigatorItemActionSheetProps {
 export const NavigatorItemActionSheet: React.FunctionComponent<NavigatorItemActionSheetProps> = (
   props,
 ) => {
-  const { templatePath, dispatch } = props
+  const { elementPath, dispatch } = props
 
   const toggleHidden = React.useCallback(() => {
-    dispatch([EditorActions.toggleHidden([templatePath])], 'everyone')
-  }, [dispatch, templatePath])
+    dispatch([EditorActions.toggleHidden([elementPath])], 'everyone')
+  }, [dispatch, elementPath])
   return (
     <SectionActionSheet>
       <OriginalComponentNameLabel
@@ -135,7 +135,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<NavigatorItemActi
         instanceOriginalComponentName={props.instanceOriginalComponentName}
       />
       <VisibilityIndicator
-        key={`visibility-indicator-${TP.toVarSafeComponentId(templatePath)}`}
+        key={`visibility-indicator-${EP.toVarSafeComponentId(elementPath)}`}
         shouldShow={props.highlighted || props.selected || !props.isVisibleOnCanvas}
         visibilityEnabled={props.isVisibleOnCanvas}
         selected={props.selected}

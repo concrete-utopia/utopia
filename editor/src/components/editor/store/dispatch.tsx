@@ -7,7 +7,7 @@ import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { TemplatePath, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import { ElementPath, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -23,7 +23,7 @@ import Utils from '../../../utils/utils'
 import { CanvasAction } from '../../canvas/canvas-types'
 import { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
 import {
   isTransientAction,
@@ -69,7 +69,7 @@ import {
   sendSelectedElementChangedMessage,
 } from '../../../core/vscode/vscode-bridge'
 import { boundsInFile } from 'utopia-vscode-common'
-import { TemplatePathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
+import { ElementPathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import {
   createParseFile,
@@ -715,24 +715,24 @@ function notifyTsWorker(
 
 function removeNonExistingViewReferencesFromState(editorState: EditorState): EditorState {
   const rootComponents = editorState.jsxMetadata
-  const updatedSelectedViews = TemplatePathArrayKeepDeepEquality(
+  const updatedSelectedViews = ElementPathArrayKeepDeepEquality(
     editorState.selectedViews,
     mapDropNulls(
-      (selectedView) => templatePathStillExists(rootComponents, selectedView),
+      (selectedView) => elementPathStillExists(rootComponents, selectedView),
       editorState.selectedViews,
     ),
   ).value
-  const updatedHighlightedViews = TemplatePathArrayKeepDeepEquality(
+  const updatedHighlightedViews = ElementPathArrayKeepDeepEquality(
     editorState.highlightedViews,
     mapDropNulls(
-      (highlightedView) => templatePathStillExists(rootComponents, highlightedView),
+      (highlightedView) => elementPathStillExists(rootComponents, highlightedView),
       editorState.highlightedViews,
     ),
   ).value
-  const updatedHiddenInstances = TemplatePathArrayKeepDeepEquality(
+  const updatedHiddenInstances = ElementPathArrayKeepDeepEquality(
     editorState.hiddenInstances,
     mapDropNulls(
-      (hiddenInstance) => templatePathStillExists(rootComponents, hiddenInstance),
+      (hiddenInstance) => elementPathStillExists(rootComponents, hiddenInstance),
       editorState.hiddenInstances,
     ),
   ).value
@@ -744,12 +744,12 @@ function removeNonExistingViewReferencesFromState(editorState: EditorState): Edi
   }
 }
 
-function templatePathStillExists(
+function elementPathStillExists(
   newComponents: ElementInstanceMetadataMap,
-  pathToUpdate: TemplatePath,
-): TemplatePath | null {
+  pathToUpdate: ElementPath,
+): ElementPath | null {
   const pathStillExists =
-    MetadataUtils.findElementByTemplatePath(newComponents, pathToUpdate) != null
+    MetadataUtils.findElementByElementPath(newComponents, pathToUpdate) != null
   if (pathStillExists) {
     return pathToUpdate
   } else {

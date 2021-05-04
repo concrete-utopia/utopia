@@ -2,10 +2,10 @@
 import { jsx } from '@emotion/react'
 import * as R from 'ramda'
 import * as React from 'react'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
 import { setFocus } from '../common/actions'
-import { TemplatePath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
 import { DragSelection } from './navigator-item/navigator-item-dnd-container'
@@ -25,7 +25,7 @@ const AutoSizerComponent: typeof AutoSizer =
   (AutoSizer as any)['default'] == null ? AutoSizer : (AutoSizer as any)['default']
 
 export interface DropTargetHint {
-  target: TemplatePath | null
+  target: ElementPath | null
   type: DropTargetType
 }
 
@@ -91,10 +91,10 @@ export const NavigatorComponent = betterReactMemo(
     }, [editorSliceRef])
 
     const getSelectedViewsInRange = React.useCallback(
-      (index: number): Array<TemplatePath> => {
+      (index: number): Array<ElementPath> => {
         const selectedItemIndexes = editorSliceRef.current.selectedViews
           .map((selection) =>
-            editorSliceRef.current.navigatorTargets.findIndex((tp) => TP.pathsEqual(tp, selection)),
+            editorSliceRef.current.navigatorTargets.findIndex((tp) => EP.pathsEqual(tp, selection)),
           )
           .sort((a, b) => a - b)
         const lastSelectedItemIndex = R.last(selectedItemIndexes)
@@ -113,10 +113,10 @@ export const NavigatorComponent = betterReactMemo(
             start = index
             end = lastSelectedItemIndex
           }
-          let selectedViewTargets: Array<TemplatePath> = editorSliceRef.current.selectedViews
+          let selectedViewTargets: Array<ElementPath> = editorSliceRef.current.selectedViews
           Utils.fastForEach(editorSliceRef.current.navigatorTargets, (item, itemIndex) => {
             if (itemIndex >= start && itemIndex <= end) {
-              selectedViewTargets = TP.addPathIfMissing(item, selectedViewTargets)
+              selectedViewTargets = EP.addPathIfMissing(item, selectedViewTargets)
             }
           })
           return selectedViewTargets
@@ -131,13 +131,13 @@ export const NavigatorComponent = betterReactMemo(
 
     const Item = betterReactMemo('Item', ({ index, style }: ListChildComponentProps) => {
       const targetPath = visibleNavigatorTargets[index]
-      const componentKey = TP.toComponentId(targetPath)
+      const componentKey = EP.toComponentId(targetPath)
       return (
         <NavigatorItemWrapper
           key={componentKey}
           index={index}
           targetComponentKey={componentKey}
-          templatePath={targetPath}
+          elementPath={targetPath}
           getMaximumDistance={getDistanceFromAncestorWhereImTheLastLeaf}
           getDragSelections={getDragSelections}
           getSelectedViewsInRange={getSelectedViewsInRange}

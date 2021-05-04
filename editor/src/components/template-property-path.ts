@@ -1,31 +1,28 @@
-import { PropertyPath, TemplatePath, TemplatePropertyPath } from '../core/shared/project-file-types'
+import { PropertyPath, ElementPath, ElementPropertyPath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
-import * as TP from '../core/shared/template-path'
+import * as EP from '../core/shared/element-path'
 
-export function create(
-  templatePath: TemplatePath,
-  propertyPath: PropertyPath,
-): TemplatePropertyPath {
+export function create(elementPath: ElementPath, propertyPath: PropertyPath): ElementPropertyPath {
   return {
-    templatePath: templatePath,
+    elementPath: elementPath,
     propertyPath: propertyPath,
   }
 }
 
-export function pathsEqual(first: TemplatePropertyPath, second: TemplatePropertyPath): boolean {
+export function pathsEqual(first: ElementPropertyPath, second: ElementPropertyPath): boolean {
   return (
-    TP.pathsEqual(first.templatePath, second.templatePath) &&
+    EP.pathsEqual(first.elementPath, second.elementPath) &&
     PP.pathsEqual(first.propertyPath, second.propertyPath)
   )
 }
 
 export function replaceOrDefault(
-  path: TemplatePropertyPath,
-  replaceSearch: TemplatePath,
-  replaceWith: TemplatePath,
-): TemplatePropertyPath {
+  path: ElementPropertyPath,
+  replaceSearch: ElementPath,
+  replaceWith: ElementPath,
+): ElementPropertyPath {
   return {
     ...path,
-    templatePath: TP.replaceOrDefault(path.templatePath, replaceSearch, replaceWith),
+    elementPath: EP.replaceOrDefault(path.elementPath, replaceSearch, replaceWith),
   }
 }

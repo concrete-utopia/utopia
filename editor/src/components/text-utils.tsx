@@ -9,7 +9,7 @@ import {
   ElementInstanceMetadataMap,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
-import { NodeModules, PropertyPath, TemplatePath } from '../core/shared/project-file-types'
+import { NodeModules, PropertyPath, ElementPath } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
 import { Size } from '../core/shared/math-utils'
 import { EditorAction, EditorDispatch, TextFormattingType } from './editor/action-types'
@@ -30,7 +30,7 @@ export function autosizingTextResizeNew(
   nodeModules: NodeModules,
   openFile: string | null,
   metadata: ElementInstanceMetadataMap,
-  targets: Array<TemplatePath>,
+  targets: Array<ElementPath>,
   dispatch: EditorDispatch,
   property: PropertyPath,
   newValue: any,
@@ -41,7 +41,7 @@ export function autosizingTextResizeNew(
 
   let changeAttachedToPromise: boolean = false
   Utils.fastForEach(targets, (target) => {
-    const element = MetadataUtils.findElementByTemplatePath(metadata, target)
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
 
     forUnderlyingTarget(target, projectContents, nodeModules, openFile, (underlyingSuccess) => {
       if (
@@ -163,7 +163,7 @@ function valueForTextFormatting(textFormatting: TextFormattingType, toggleSettin
 
 function actionForTextFormatting(
   textFormatting: TextFormattingType,
-  targets: Array<TemplatePath>,
+  targets: Array<ElementPath>,
 ): (newValue: any) => Array<EditorAction> {
   return (newValue: any) => {
     return targets.map((target) => {
@@ -185,7 +185,7 @@ export function toggleTextFormatting(
   let textElements: Array<ElementInstanceMetadata> = []
   const textElementPaths = editor.selectedViews.filter((selectedView) => {
     return withUnderlyingTargetFromEditorState(selectedView, editor, false, (underlyingSuccess) => {
-      const element = MetadataUtils.findElementByTemplatePath(editor.jsxMetadata, selectedView)
+      const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, selectedView)
       if (
         element != null &&
         MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element)

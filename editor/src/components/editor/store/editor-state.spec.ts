@@ -23,7 +23,7 @@ import {
   parseSuccess,
 } from '../../../core/workers/common/project-file-utils'
 import { omit } from '../../../core/shared/object-utils'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 
 function getCodeForFile(actualResult: EditorState, filename: string): string {
   const codeFile = getTextFileByPath(actualResult.projectContents, filename)
@@ -47,7 +47,7 @@ describe('modifyUnderlyingTarget', () => {
     projectContents: defaultProjectContentsForNormalising(),
   }
   it('changes something in the same file', () => {
-    const pathToElement = TP.fromString('app-outer-div/card-instance')
+    const pathToElement = EP.fromString('app-outer-div/card-instance')
     const actualResult = modifyUnderlyingTarget(
       pathToElement,
       '/src/app.js',
@@ -81,7 +81,7 @@ describe('modifyUnderlyingTarget', () => {
     `)
   })
   it('changes something in the imports of the same file', () => {
-    const pathToElement = TP.fromString('card-outer-div/card-inner-div')
+    const pathToElement = EP.fromString('card-outer-div/card-inner-div')
     const actualResult = modifyUnderlyingTarget(
       pathToElement,
       '/src/card.js',
@@ -107,7 +107,7 @@ describe('modifyUnderlyingTarget', () => {
     }
   })
   it('changes something in an underlying file', () => {
-    const pathToElement = TP.fromString(
+    const pathToElement = EP.fromString(
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
     )
     const actualResult = modifyUnderlyingTarget(
@@ -158,7 +158,7 @@ describe('modifyUnderlyingTarget', () => {
     `)
   })
   it('tries to change something in a nonsense template path', () => {
-    const pathToElement = TP.fromString('moon-palace/living-room')
+    const pathToElement = EP.fromString('moon-palace/living-room')
     const modifyCall = () =>
       modifyUnderlyingTarget(
         pathToElement,
@@ -176,7 +176,7 @@ describe('modifyUnderlyingTarget', () => {
     expect(modifyCall).toThrowError(`Did not find element to transform moon-palace/living-room`)
   })
   it('tries to change something in a nonsense file path', () => {
-    const pathToElement = TP.fromString('app-outer-div/card-instance')
+    const pathToElement = EP.fromString('app-outer-div/card-instance')
     const modifyCall = () =>
       modifyUnderlyingTarget(
         pathToElement,

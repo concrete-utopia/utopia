@@ -21,8 +21,8 @@ import { findElementAtPath, MetadataUtils } from '../../../core/model/element-me
 import { isLeft, right } from '../../../core/shared/either'
 import { isJSXElement, jsxAttributeValue } from '../../../core/shared/element-template'
 import { LocalRectangle } from '../../../core/shared/math-utils'
-import { TemplatePath } from '../../../core/shared/project-file-types'
-import * as TP from '../../../core/shared/template-path'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import * as EP from '../../../core/shared/element-path'
 import Utils from '../../../utils/utils'
 import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -71,13 +71,13 @@ function allPinsMatch(point: FramePoint, framesToCheck: readonly Frame[]): boole
 }
 
 interface PinToSet {
-  path: TemplatePath
+  path: ElementPath
   pin: FramePoint
   value: FramePin
 }
 
 interface PinToUnset {
-  path: TemplatePath
+  path: ElementPath
   pin: FramePoint
 }
 
@@ -88,7 +88,7 @@ interface ChangePinResult {
 }
 
 export interface ElementFrameInfo {
-  path: TemplatePath
+  path: ElementPath
   frame: Frame
   localFrame: LocalRectangle | null
   parentFrame: LocalRectangle | null
@@ -284,7 +284,7 @@ export function usePinToggling(): UsePinTogglingResult {
 
   const elementsRef = useRefEditorState((store) =>
     selectedViewsRef.current.map((e) =>
-      MetadataUtils.findElementByTemplatePath(store.editor.jsxMetadata, e),
+      MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, e),
     ),
   )
 
@@ -357,7 +357,7 @@ export function usePinToggling(): UsePinTogglingResult {
     (newFrameProp: LayoutPinnedProp) => {
       const frameInfo: ReadonlyArray<ElementFrameInfo> = elementFrames.map((frame, index) => {
         const path = selectedViewsRef.current[index]
-        const parentPath = TP.parentPath(path)
+        const parentPath = EP.parentPath(path)
         const parentFrame = MetadataUtils.getFrame(parentPath, jsxMetadataRef.current)
         return {
           path: path,
