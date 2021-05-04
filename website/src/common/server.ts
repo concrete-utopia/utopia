@@ -1,6 +1,6 @@
 import { UTOPIA_BACKEND, THUMBNAIL_ENDPOINT, ASSET_ENDPOINT, BASE_URL } from './env-vars'
 import { ProjectListing } from './persistence'
-import { isLoggedIn, isNotLoggedIn, loginLost, LoginState, notLoggedIn } from './user'
+import { isLoggedIn, isLoginLost, isNotLoggedIn, loginLost, LoginState, notLoggedIn } from './user'
 // Stupid style of import because the website and editor are different
 // and so there's no style of import which works with both projects.
 const urljoin = require('url-join')
@@ -101,7 +101,10 @@ function getLoginStateFromResponse(
   response: any,
   previousLoginState: LoginState | null,
 ): LoginState {
-  if (isNotLoggedIn(response) && isLoggedIn(previousLoginState)) {
+  if (
+    !isLoggedIn(response) &&
+    (isLoggedIn(previousLoginState) || isLoginLost(previousLoginState))
+  ) {
     // if we used to be logged in but we are not anymore, return a LoginLost
     return loginLost
   } else {
