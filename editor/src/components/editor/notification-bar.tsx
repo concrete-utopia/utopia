@@ -50,7 +50,7 @@ export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
       return (
         <NotificationBar
           level='ERROR'
-          message={'You were logged out. Click here to log in again.'}
+          message={'You have been logged out. Click here to log in again and save your changes.'}
           onClick={onClickLoginNewTab}
           style={{ cursor: 'pointer' }}
         />
