@@ -9,7 +9,10 @@ import {
   jsxElementName,
 } from '../../../core/shared/element-template'
 import { findJSXElementChildAtPath, getUtopiaID } from '../../../core/model/element-template-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import {
+  directory,
+  getUtopiaJSXComponentsFromSuccess,
+} from '../../../core/model/project-file-utils'
 import {
   ElementPath,
   isTextFile,
@@ -17,6 +20,11 @@ import {
   importDetails,
   importAlias,
   isParseSuccess,
+  RevisionsState,
+  unparsed,
+  textFile,
+  textFileContents,
+  ProjectContents,
   StaticElementPath,
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
@@ -53,6 +61,7 @@ import {
   defaultUserState,
   StoryboardFilePath,
   getJSXComponentsAndImportsForPathFromState,
+  DefaultPackageJson,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
@@ -62,10 +71,21 @@ import {
 } from '../../../core/model/test-ui-js-file.test-utils'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
-import { getContentsTreeFileFromString } from '../../assets'
+import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
 import { forceParseSuccessFromFileOrFail } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { notice } from '../../common/notice'
+import {
+  getPrintedUiJsCode,
+  renderTestEditorWithProjectContent,
+  TestAppUID,
+  TestScenePath,
+  TestSceneUID,
+} from '../../canvas/ui-jsx.test-utils'
+import { PrettierConfig } from 'utopia-vscode-common'
+import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import { createCodeFile } from '../../custom-code/code-file.test-utils'
+import * as Prettier from 'prettier'
 
 const chaiExpect = Chai.expect
 
@@ -504,6 +524,76 @@ describe('action DELETE_SELECTED', () => {
     } else {
       chaiExpect.fail('src/app.js file was the wrong type.')
     }
+  })
+  it('deletes selected element multifile', async () => {
+    const appFilePath = '/src/app.js'
+    let projectContents: ProjectContents = {
+      '/package.json': textFile(
+        textFileContents(
+          JSON.stringify(DefaultPackageJson, null, 2),
+          unparsed,
+          RevisionsState.BothMatch,
+        ),
+        null,
+        0,
+      ),
+      '/src': directory(),
+      '/utopia': directory(),
+      [StoryboardFilePath]: createCodeFile(
+        StoryboardFilePath,
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  import { App } from '/src/app.js'
+
+  export var storyboard = (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        data-uid='${TestSceneUID}'
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      >
+        <App data-uid='${TestAppUID}' />
+      </Scene>
+    </Storyboard>
+  )`,
+      ),
+      [appFilePath]: createCodeFile(
+        appFilePath,
+        `
+  import * as React from 'react'
+  export var App = (props) => {
+    return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
+      <div data-uid='app-inner-div' />
+      <div data-uid='app-inner-div-to-delete' style={{width: 10}}><span>hello</span></div>
+    </div>
+  }`,
+      ),
+    }
+    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const targetPath = EP.appendNewElementPath(TestScenePath, [
+      'app-outer-div',
+      'app-inner-div-to-delete',
+    ])
+
+    await renderResult.dispatch([selectComponents([targetPath], false)], false)
+    await renderResult.dispatch([deleteSelected()], true)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState(), appFilePath)).toEqual(
+      Prettier.format(
+        `import * as React from 'react'
+      export var App = (props) => {
+        return (
+          <div
+            data-uid='app-outer-div'
+            style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+          >
+            <div data-uid='app-inner-div' />
+          </div>
+        )
+      }`,
+        PrettierConfig,
+      ),
+    )
   })
 })
 
