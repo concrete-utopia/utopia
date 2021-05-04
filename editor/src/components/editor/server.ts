@@ -16,7 +16,9 @@ import urljoin = require('url-join')
 import * as JSZip from 'jszip'
 import { addFileToProjectContents, walkContentsTree } from '../assets'
 import type { EditorDispatch } from './action-types'
-import { setLoginState } from './actions/action-creators'
+import { setLoginState, showToast } from './actions/action-creators'
+import { isLoginLost } from '../../common/user'
+import { notice } from '../common/notice'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -400,6 +402,9 @@ export function startPollingLoginState(
     const loginState = await getLoginState('no-cache')
     if (previousLoginState.type !== loginState.type) {
       dispatch([setLoginState(loginState)])
+      if (isLoginLost(loginState)) {
+        dispatch([showToast(notice(`You have been logged out.`, 'ERROR', true))])
+      }
     }
     previousLoginState = loginState
   }, 5000)

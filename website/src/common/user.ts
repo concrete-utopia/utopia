@@ -42,3 +42,7 @@ export function isLoggedIn(loginState: unknown): loginState is LoggedInUser {
 export const loginLost: LoginLost = {
   type: 'LOGIN_LOST',
 }
+
+export function isLoginLost(loginState: unknown): loginState is LoginLost {
+  return (loginState as Partial<LoginState>)?.type === 'LOGIN_LOST'
+}
