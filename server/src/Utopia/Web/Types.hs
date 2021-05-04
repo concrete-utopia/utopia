@@ -65,7 +65,7 @@ type AuthenticateAPI = "authenticate" :> QueryParam "code" Text :> Get '[HTML] (
 
 type LogoutAPI = "logout" :> Get '[HTML] (SetSessionCookies H.Html)
 
-type GetUserAPI = "v1" :> "user" :> Get '[JSON] UserResponse
+type GetUserAPI = "v1" :> "user" :> Get '[JSON] User Response
 
 type EmptyProjectPageAPI = "p" :> BranchNameParam :> Get '[HTML] H.Html
 

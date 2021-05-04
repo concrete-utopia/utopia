@@ -344,6 +344,7 @@ export async function getUserConfiguration(loginState: LoginState): Promise<User
         throw new Error(`server responded with ${response.status} ${response.statusText}`)
       }
     case 'NOT_LOGGED_IN':
+    case 'LOGIN_LOST':
       return emptyUserConfiguration()
     default:
       const _exhaustiveCheck: never = loginState

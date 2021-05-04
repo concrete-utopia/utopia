@@ -30,17 +30,30 @@ export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
     setRedirectUrl(window.top.location.pathname).then(() => window.top.location.replace(auth0Url))
   }, [])
 
-  if (isLoggedIn(loginState)) {
-    return null
-  } else {
-    return (
-      <NotificationBar
-        level='PRIMARY'
-        message={'Welcome to Utopia. Click here to sign in and save your projects.'}
-        onClick={onClickCallback}
-        style={{ cursor: 'pointer' }}
-      />
-    )
+  switch (loginState.type) {
+    case 'LOGGED_IN':
+      return null
+    case 'NOT_LOGGED_IN':
+      return (
+        <NotificationBar
+          level='PRIMARY'
+          message={'Welcome to Utopia. Click here to sign in and save your projects.'}
+          onClick={onClickCallback}
+          style={{ cursor: 'pointer' }}
+        />
+      )
+    case 'LOGIN_LOST':
+      return (
+        <NotificationBar
+          level='ERROR'
+          message={'You were logged out. Click here to log in again.'}
+          onClick={onClickCallback}
+          style={{ cursor: 'pointer' }}
+        />
+      )
+    default:
+      const _exhaustiveCheck: never = loginState
+      throw new Error(`Unhandled login state ${loginState}`)
   }
 })
 LoginStatusBar.displayName = 'LoginStatusBar'
