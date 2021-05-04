@@ -1,6 +1,7 @@
 import { UTOPIA_BACKEND } from '../../common/env-vars'
 import {
   assetURL,
+  getLoginState,
   HEADERS,
   MODE,
   projectURL,
@@ -14,6 +15,8 @@ import { LoginState } from '../../uuiui-deps'
 import urljoin = require('url-join')
 import * as JSZip from 'jszip'
 import { addFileToProjectContents, walkContentsTree } from '../assets'
+import type { EditorDispatch } from './action-types'
+import { setLoginState } from './actions/action-creators'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -385,4 +388,18 @@ export async function downloadGithubRepo(
       `Download github repo request failed: ${response.statusText}`,
     )
   }
+}
+
+export function startPollingLoginState(
+  dispatch: EditorDispatch,
+  initialLoginState: LoginState,
+): void {
+  let previousLoginState: LoginState = initialLoginState
+  setInterval(async () => {
+    const loginState = await getLoginState('no-cache')
+    if (previousLoginState.type !== loginState.type) {
+      dispatch([setLoginState(loginState)])
+    }
+    previousLoginState = loginState
+  }, 5000)
 }

@@ -348,6 +348,7 @@ import {
   SetScrollAnimation,
   SetFollowSelectionEnabled,
   UpdateConfigFromVSCode,
+  SetLoginState,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -421,6 +422,7 @@ import {
   modifyUnderlyingForOpenFile,
   forUnderlyingTargetFromEditorState,
   getHighlightBoundsForFile,
+  EditorStore,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -4056,6 +4058,12 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       config: action.config,
+    }
+  },
+  SET_LOGIN_STATE: (action: SetLoginState, userState: UserState): UserState => {
+    return {
+      ...userState,
+      loginState: action.loginState,
     }
   },
 }

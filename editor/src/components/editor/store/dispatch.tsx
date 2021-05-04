@@ -129,6 +129,11 @@ function processAction(
       ...working,
       userState: UPDATE_FNS.SET_SHORTCUT(action, working.userState),
     }
+  } else if (action.action === 'SET_LOGIN_STATE') {
+    return {
+      ...working,
+      userState: UPDATE_FNS.SET_LOGIN_STATE(action, working.userState),
+    }
   } else {
     // Process action on the JS side.
     const editorAfterUpdateFunction = runLocalEditorAction(

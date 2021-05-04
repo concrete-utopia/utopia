@@ -62,8 +62,8 @@ export function userConfigURL(): string {
 
 let CachedLoginStatePromise: Promise<LoginState> | null = null
 
-export async function getLoginState(): Promise<LoginState> {
-  if (CachedLoginStatePromise != null) {
+export async function getLoginState(useCache: 'cache' | 'no-cache'): Promise<LoginState> {
+  if (useCache === 'cache' && CachedLoginStatePromise != null) {
     return CachedLoginStatePromise
   } else {
     const promise = createGetLoginStatePromise()
@@ -73,19 +73,24 @@ export async function getLoginState(): Promise<LoginState> {
 }
 
 async function createGetLoginStatePromise(): Promise<LoginState> {
-  const url = UTOPIA_BACKEND + 'user'
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
-  if (response.ok) {
-    const result = await response.json()
-    return result
-  } else {
-    // FIXME Client should show an error if server requests fail
-    console.error(`Fetch user details failed (${response.status}): ${response.statusText}`)
+  try {
+    const url = UTOPIA_BACKEND + 'user'
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
+    if (response.ok) {
+      const result = await response.json()
+      return result
+    } else {
+      // FIXME Client should show an error if server requests fail
+      console.error(`Fetch user details failed (${response.status}): ${response.statusText}`)
+      return notLoggedIn
+    }
+  } catch (e) {
+    console.error(`Fetch user details failed: ${e}`)
     return notLoggedIn
   }
 }
