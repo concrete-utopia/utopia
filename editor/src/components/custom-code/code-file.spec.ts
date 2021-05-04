@@ -1,5 +1,6 @@
 import {
   generateCodeResultCache,
+  incorporateBuildResult,
   normalisePathEndsAtDependency,
   normalisePathSuccess,
   normalisePathToUnderlyingTarget,
@@ -26,6 +27,7 @@ import {
   getTextFileByPath,
   SampleNodeModules,
 } from './code-file.test-utils'
+import { NodeModules } from '../../core/shared/project-file-types'
 
 function transpileCode(
   rootFilenames: Array<string>,
@@ -442,6 +444,17 @@ describe('Creating require function', () => {
     )
 
     expect(() => codeResultCache.requireFn('/', 'foo', false)).toThrowErrorMatchingSnapshot()
+  })
+})
+
+describe('incorporateBuildResult', () => {
+  it('should remove a value if there is no transpiled code', () => {
+    let nodeModules: NodeModules = {}
+    incorporateBuildResult(nodeModules, SampleSingleFileBuildResult)
+    incorporateBuildResult(nodeModules, {
+      ['/app.js']: { errors: [], transpiledCode: null, sourceMap: null },
+    })
+    expect(nodeModules).toMatchInlineSnapshot(`Object {}`)
   })
 })
 

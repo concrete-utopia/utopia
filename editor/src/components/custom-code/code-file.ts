@@ -181,7 +181,9 @@ export function incorporateBuildResult(
   // Mutates nodeModules.
   fastForEach(Object.keys(buildResult), (moduleKey) => {
     const modulesFile = buildResult[moduleKey]
-    if (modulesFile.transpiledCode != null) {
+    if (modulesFile.transpiledCode == null) {
+      delete nodeModules[moduleKey]
+    } else {
       nodeModules[moduleKey] = esCodeFile(modulesFile.transpiledCode, 'NODE_MODULES', moduleKey)
     }
   })
