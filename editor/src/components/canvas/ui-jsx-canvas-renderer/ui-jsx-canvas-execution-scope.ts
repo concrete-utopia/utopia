@@ -25,9 +25,9 @@ import {
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-top-level-elements'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
 
@@ -44,7 +44,7 @@ export function createExecutionScope(
   openStoryboardFileNameKILLME: string | null,
   transientFilesStateKILLME: TransientFilesState | null,
   fileBlobs: CanvasBase64Blobs,
-  hiddenInstances: TemplatePath[],
+  hiddenInstances: ElementPath[],
   metadataContext: UiJsxCanvasContextData,
   shouldIncludeCanvasRootInTheSpy: boolean,
 ): {
@@ -100,7 +100,7 @@ export function createExecutionScope(
   // First make sure everything is in scope
   if (combinedTopLevelArbitraryBlock != null && openStoryboardFileNameKILLME != null) {
     const lookupRenderer = createLookupRender(
-      TP.emptyInstancePath,
+      EP.emptyElementPath,
       executionScope,
       {},
       requireResult,

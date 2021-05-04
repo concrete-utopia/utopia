@@ -1,42 +1,24 @@
 import * as TS from 'typescript'
 import { NormalisedFrame } from 'utopia-api'
-import { ParsedComments } from '../workers/parser-printer/parser-printer-comments'
-import {
-  ArbitraryJSBlock,
-  Comment,
-  TopLevelElement,
-  UtopiaJSXComponent,
-  WithComments,
-} from './element-template'
+import { ArbitraryJSBlock, TopLevelElement } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
 export type id = string
-
-export type ScenePath = {
-  type: 'scenepath'
-  sceneElementPaths: ElementPath[]
-}
-
-export type StaticScenePath = {
-  type: 'scenepath'
-  sceneElementPaths: StaticElementPath[]
-}
-
-export type StaticElementPath = StaticModifier & Array<id>
-export type ElementPath = Array<id> | StaticElementPath
-export type InstancePath = {
-  scene: ScenePath
-  element: ElementPath
-}
 enum StaticModifier {}
-export type StaticInstancePath = {
-  scene: StaticScenePath
-  element: StaticElementPath
+
+export type StaticElementPathPart = StaticModifier & Array<id>
+export type ElementPathPart = Array<id> | StaticElementPathPart
+
+export interface StaticElementPath {
+  type: 'elementpath'
+  parts: Array<StaticElementPathPart>
 }
 
-export type StaticTemplatePath = StaticScenePath | StaticInstancePath
-export type TemplatePath = StaticTemplatePath | ScenePath | InstancePath
+export interface ElementPath {
+  type: 'elementpath'
+  parts: Array<ElementPathPart>
+}
 
 export type PropertyPathPart = string | number
 
@@ -58,12 +40,12 @@ export type BaseTemplateName =
   | 'code-component'
 export type SvgTemplateName = 'arc' | 'circle' | 'ellipse' | 'path' | 'polygon' | 'rect'
 
-export type TemplatePropertyPath = {
-  templatePath: TemplatePath
+export type ElementPropertyPath = {
+  elementPath: ElementPath
   propertyPath: PropertyPath
 }
 
-export type Dependencies = { [key: string]: TemplatePropertyPath }
+export type Dependencies = { [key: string]: ElementPropertyPath }
 
 export const enum PinType {
   Absolute = 'absolute',
@@ -535,8 +517,6 @@ export type NodeModules = {
 export type ProjectContents = { [filepath: string]: ProjectFile }
 
 export type ElementOriginType =
-  // Mostly self explanatory, this is a scene.
-  | 'scene'
   // Completely statically defined element with a known single place in the hierarchy.
   | 'statically-defined'
   // An element generated from within some arbitrary code, but for which we have access to the definition.

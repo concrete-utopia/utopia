@@ -1,16 +1,16 @@
 import * as React from 'react'
 import { Component, CSSProperties } from 'react'
-import { TemplatePath, ElementOriginType } from '../../../core/shared/project-file-types'
+import { ElementPath, ElementOriginType } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { renameComponent } from '../actions'
 import { StringInput, flexRowStyle } from '../../../uuiui'
 
 interface ItemLabelProps {
   testId: string
   dispatch: EditorDispatch
-  target: TemplatePath
+  target: ElementPath
   isDynamic: boolean
   canRename: boolean
   name: string
@@ -22,7 +22,7 @@ interface ItemLabelProps {
 
 interface ItemLabelState {
   name: string
-  target: TemplatePath
+  target: ElementPath
 }
 
 export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
@@ -39,7 +39,7 @@ export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
     props: ItemLabelProps,
     state: ItemLabelState,
   ): ItemLabelState | null {
-    if (props.target === state.target || TP.pathsEqual(props.target, state.target)) {
+    if (props.target === state.target || EP.pathsEqual(props.target, state.target)) {
       return null
     } else {
       return {

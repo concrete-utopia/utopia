@@ -11,7 +11,7 @@ import { ElementInstanceMetadata } from '../../core/shared/element-template'
 import { ConsoleLog } from '../editor/store/editor-state'
 import { UtopiaRequireFn } from '../custom-code/code-file'
 import { betterReactMemo } from '../../uuiui-deps'
-import { TemplatePath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import {
   useWriteOnlyConsoleLogs,
   useWriteOnlyRuntimeErrors,
@@ -25,7 +25,7 @@ export const CanvasComponentEntry = betterReactMemo(
     const onDomReport = React.useCallback(
       (
         elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-        cachedTreeRoots: Array<TemplatePath>,
+        cachedTreeRoots: Array<ElementPath>,
       ) => {
         dispatch([saveDOMReport(elementMetadata, cachedTreeRoots)])
       },

@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { MapLike } from 'typescript'
-import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { right } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
@@ -9,18 +8,18 @@ import {
   emptySpecialSizeMeasurements,
   JSXElement,
 } from '../../../core/shared/element-template'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
 
 export function buildSpyWrappedElement(
   jsx: JSXElement,
   finalProps: any,
-  templatePath: TemplatePath,
+  elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
-  childrenTemplatePaths: Array<TemplatePath>,
+  childrenElementPaths: Array<ElementPath>,
   childrenElements: Array<React.ReactNode>,
   Element: any,
   inScope: MapLike<any>,
@@ -29,7 +28,7 @@ export function buildSpyWrappedElement(
 ): React.ReactElement {
   const props = {
     ...finalProps,
-    key: TP.toComponentId(templatePath),
+    key: EP.toComponentId(elementPath),
   }
   const childrenElementsOrNull = childrenElements.length > 0 ? childrenElements : null
   const spyCallback = (reportedProps: any) => {
@@ -41,11 +40,11 @@ export function buildSpyWrappedElement(
     const isStyledComponent = Element['styledComponentId'] != null
     const instanceMetadata: ElementInstanceMetadata = {
       element: right(jsx),
-      templatePath: templatePath,
+      elementPath: elementPath,
       props: makeCanvasElementPropsSafe(reportedProps),
       globalFrame: null,
       localFrame: null,
-      children: childrenTemplatePaths,
+      children: childrenElementPaths,
       rootElements: [],
       componentInstance: false,
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
@@ -54,12 +53,8 @@ export function buildSpyWrappedElement(
       attributeMetadatada: emptyAttributeMetadatada,
       label: null,
     }
-    const isChildOfRootScene = TP.pathsEqual(
-      TP.scenePathPartOfTemplatePath(templatePath),
-      EmptyScenePathForStoryboard,
-    )
-    if (!isChildOfRootScene || shouldIncludeCanvasRootInTheSpy) {
-      metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = instanceMetadata
+    if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
+      metadataContext.current.spyValues.metadata[EP.toComponentId(elementPath)] = instanceMetadata
     }
   }
   const spyWrapperProps: SpyWrapperProps = {

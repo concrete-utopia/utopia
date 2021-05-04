@@ -1,14 +1,9 @@
 import { findElementAtPath } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
-import {
-  importAlias,
-  importDetails,
-  InstancePath,
-  TemplatePath,
-} from '../../core/shared/project-file-types'
+import { importAlias, importDetails, ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
@@ -161,7 +156,7 @@ function editorIsTarget(event: KeyboardEvent, editor: EditorState): boolean {
   return !isEventFromInput(event.target) && editor.modal == null
 }
 
-function jumpToParentActions(selectedViews: Array<TemplatePath>): Array<EditorAction> {
+function jumpToParentActions(selectedViews: Array<ElementPath>): Array<EditorAction> {
   const jumpResult = Canvas.jumpToParent(selectedViews)
   switch (jumpResult) {
     case null:
@@ -173,7 +168,7 @@ function jumpToParentActions(selectedViews: Array<TemplatePath>): Array<EditorAc
   }
 }
 
-function getTextEditorTarget(editor: EditorState, derived: DerivedState): TemplatePath | null {
+function getTextEditorTarget(editor: EditorState, derived: DerivedState): ElementPath | null {
   if (editor.canvas.dragState != null || editor.selectedViews.length !== 1) {
     return null
   } else {
@@ -411,7 +406,7 @@ export function handleKeyDown(
         if (modeType === 'select') {
           const textTarget = getTextEditorTarget(editor, derived)
           if (textTarget != null) {
-            return [EditorActions.openTextEditor(TP.instancePathForElementAtPath(textTarget), null)]
+            return [EditorActions.openTextEditor(textTarget, null)]
           } else {
             const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
             if (childToSelect != null) {
@@ -533,7 +528,7 @@ export function handleKeyDown(
         return toggleTextFormatting(editor, dispatch, 'bold')
       },
       [TOGGLE_BORDER_SHORTCUT]: () => {
-        return TP.filterScenes(editor.selectedViews).map((target) =>
+        return editor.selectedViews.map((target) =>
           EditorActions.toggleProperty(
             target,
             toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
@@ -547,7 +542,7 @@ export function handleKeyDown(
         return [EditorActions.duplicateSelected()]
       },
       [TOGGLE_BACKGROUND_SHORTCUT]: () => {
-        return TP.filterScenes(editor.selectedViews).map((target) =>
+        return editor.selectedViews.map((target) =>
           EditorActions.toggleProperty(target, toggleStylePropPaths(toggleBackgroundLayers)),
         )
       },
@@ -625,7 +620,7 @@ export function handleKeyDown(
         return [EditorActions.saveCurrentFile()]
       },
       [TOGGLE_SHADOW_SHORTCUT]: () => {
-        return TP.filterScenes(editor.selectedViews).map((target) =>
+        return editor.selectedViews.map((target) =>
           EditorActions.toggleProperty(
             target,
             toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),

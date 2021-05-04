@@ -24,13 +24,12 @@ import {
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState } from './editor/store/store-hook'
-import { filterScenes } from '../core/shared/template-path'
 import { betterReactMemo } from '../uuiui-deps'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
 import { EditorDispatch } from './editor/action-types'
 import { selectComponents, setHighlightedView } from './editor/actions/action-creators'
-import * as TP from '../core/shared/template-path'
-import { TemplatePath } from '../core/shared/project-file-types'
+import * as EP from '../core/shared/element-path'
+import { ElementPath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 import { FlexRow, Icn, IcnProps } from '../uuiui'
 import { getOpenUIJSFileKey } from './editor/store/editor-state'
@@ -106,8 +105,8 @@ function useCanvasContextMenuItems(
               data.canvasOffset,
             )
             if (elementsUnderCursor != null) {
-              return !elementsUnderCursor.some((underCursor: TemplatePath) =>
-                TP.pathsEqual(underCursor, path),
+              return !elementsUnderCursor.some((underCursor: ElementPath) =>
+                EP.pathsEqual(underCursor, path),
               )
             } else {
               return true
@@ -124,7 +123,7 @@ function useCanvasContextMenuItems(
 
 interface SelectableElementItemProps {
   dispatch: EditorDispatch
-  path: TemplatePath
+  path: ElementPath
   iconProps: IcnProps
   label: string
 }
@@ -133,7 +132,7 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
   const rawRef = React.useRef<HTMLDivElement>(null)
   const { dispatch, path, iconProps, label } = props
   const isHighlighted = useEditorState(
-    (store) => store.editor.highlightedViews.some((view) => TP.pathsEqual(path, view)),
+    (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(path, view)),
     'SelectableElementItem isHighlighted',
   )
   const highlightElement = React.useCallback(() => dispatch([setHighlightedView(path)]), [
@@ -192,7 +191,7 @@ export const ElementContextMenu = betterReactMemo(
       const currentEditor = editorSliceRef.current
       return {
         canvasOffset: currentEditor.canvasOffset,
-        selectedViews: filterScenes(currentEditor.selectedViews),
+        selectedViews: currentEditor.selectedViews,
         jsxMetadata: currentEditor.jsxMetadata,
         currentFilePath: currentEditor.currentFilePath,
         projectContents: currentEditor.projectContents,

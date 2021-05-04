@@ -3,8 +3,7 @@ import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { objectMap } from '../../../core/shared/object-utils'
-import { TemplatePath } from '../../../core/shared/project-file-types'
-import { isInstancePath } from '../../../core/shared/template-path'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { arrayEquals, NO_OP } from '../../../core/shared/utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
@@ -189,16 +188,12 @@ export function useInspectorInfoLonghandShorthand<
         const shorthandPropertyPath = pathMappingFn(shorthand, inspectorTargetPath)
         const printedValue = printCSSValue(shorthand, updatedValue)
         const actionsToDispatch = flatMapArray((selectedView) => {
-          if (isInstancePath(selectedView)) {
-            return [
-              ...(doWeHaveToRemoveAShadowedLonghand
-                ? [unsetProperty(selectedView, longhandPropertyPath)]
-                : []),
-              setProp_UNSAFE(selectedView, shorthandPropertyPath, printedValue),
-            ]
-          } else {
-            return []
-          }
+          return [
+            ...(doWeHaveToRemoveAShadowedLonghand
+              ? [unsetProperty(selectedView, longhandPropertyPath)]
+              : []),
+            setProp_UNSAFE(selectedView, shorthandPropertyPath, printedValue),
+          ]
         }, selectedViewsRef.current)
         dispatch(transient ? [transientActions(actionsToDispatch)] : actionsToDispatch)
       } else {
@@ -206,16 +201,12 @@ export function useInspectorInfoLonghandShorthand<
         const propertyPath = pathMappingFn(longhand, inspectorTargetPath)
         const printedValue = printCSSValue(longhand, newTransformedValues)
         const actionsToDispatch = flatMapArray((selectedView) => {
-          if (isInstancePath(selectedView)) {
-            return [
-              ...(doWeHaveToRemoveAShadowedLonghand
-                ? [unsetProperty(selectedView, propertyPath)]
-                : []),
-              setProp_UNSAFE(selectedView, propertyPath, printedValue),
-            ]
-          } else {
-            return []
-          }
+          return [
+            ...(doWeHaveToRemoveAShadowedLonghand
+              ? [unsetProperty(selectedView, propertyPath)]
+              : []),
+            setProp_UNSAFE(selectedView, propertyPath, printedValue),
+          ]
         }, selectedViewsRef.current)
         dispatch(transient ? [transientActions(actionsToDispatch)] : actionsToDispatch)
       }
@@ -284,7 +275,7 @@ function createUnsetActions<
 >(
   pathMappingFn: PathMappingFn<LonghandKey | ShorthandKey>,
   inspectorTargetPath: readonly string[],
-  selectedViewsRef: ReadonlyRef<TemplatePath[]>,
+  selectedViewsRef: ReadonlyRef<ElementPath[]>,
   propkeysToUse: (LonghandKey | ShorthandKey)[],
   shorthand: ShorthandKey,
   longhands: LonghandKey[],
@@ -303,51 +294,39 @@ function createUnsetActions<
     if (shorthandControlled) {
       // we want to remove existing uses of the longhand, and append a `{[longhand]: undefined}` at the end of the object
       return flatMapArray((selectedView) => {
-        if (isInstancePath(selectedView)) {
-          return [
-            unsetProperty(selectedView, longhandPropertyPath),
-            setProp_UNSAFE(
-              selectedView,
-              longhandPropertyPath,
-              jsxAttributeValue(undefined, emptyComments),
-            ),
-          ]
-        } else {
-          return []
-        }
+        return [
+          unsetProperty(selectedView, longhandPropertyPath),
+          setProp_UNSAFE(
+            selectedView,
+            longhandPropertyPath,
+            jsxAttributeValue(undefined, emptyComments),
+          ),
+        ]
       }, selectedViewsRef.current)
     } else {
       // we have to split the shorthand into longhands 😭
       return flatMapArray((selectedView) => {
-        if (isInstancePath(selectedView)) {
-          const setPropsForLonghandstoKeep = longhands
-            .filter((lh) => lh !== longhandToUnset)
-            .map((longhandToKeep) => {
-              // for every longhand, we figure out their current value
-              const currentValue = longhandInfoDictionary[longhandToKeep].value
-              const printedValue = printCSSValue(longhandToKeep, currentValue)
-              const pathTouse = pathMappingFn(longhandToKeep, inspectorTargetPath)
-              // we emit a setProperty for all of them. for some this will make a new prop, for others this will leave them in place
-              return setProp_UNSAFE(selectedView, pathTouse, printedValue)
-            })
+        const setPropsForLonghandstoKeep = longhands
+          .filter((lh) => lh !== longhandToUnset)
+          .map((longhandToKeep) => {
+            // for every longhand, we figure out their current value
+            const currentValue = longhandInfoDictionary[longhandToKeep].value
+            const printedValue = printCSSValue(longhandToKeep, currentValue)
+            const pathTouse = pathMappingFn(longhandToKeep, inspectorTargetPath)
+            // we emit a setProperty for all of them. for some this will make a new prop, for others this will leave them in place
+            return setProp_UNSAFE(selectedView, pathTouse, printedValue)
+          })
 
-          return [
-            unsetProperty(selectedView, longhandPropertyPath),
-            unsetProperty(selectedView, shorthandPropertyPath),
-            ...setPropsForLonghandstoKeep,
-          ]
-        } else {
-          return []
-        }
+        return [
+          unsetProperty(selectedView, longhandPropertyPath),
+          unsetProperty(selectedView, shorthandPropertyPath),
+          ...setPropsForLonghandstoKeep,
+        ]
       }, selectedViewsRef.current)
     }
   } else {
-    return flatMapArray((selectedView) => {
-      if (isInstancePath(selectedView)) {
-        return [unsetProperty(selectedView, longhandPropertyPath)]
-      } else {
-        return []
-      }
-    }, selectedViewsRef.current)
+    return selectedViewsRef.current.map((selectedView) =>
+      unsetProperty(selectedView, longhandPropertyPath),
+    )
   }
 }

@@ -2,7 +2,7 @@ import * as React from 'react'
 import type { MapLike } from 'typescript'
 import { createContext } from 'use-context-selector'
 import { Either, left } from '../../../core/shared/either'
-import type { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
 import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
 
@@ -30,7 +30,7 @@ export function updateMutableUtopiaContextWithNewProps(
 }
 
 interface RerenderUtopiaContextProps {
-  hiddenInstances: Array<TemplatePath>
+  hiddenInstances: Array<ElementPath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
 }
@@ -60,7 +60,7 @@ export const UtopiaProjectContext = createContext<UtopiaProjectContextProps>({
 })
 
 interface SceneLevelContextProps {
-  validPaths: Array<TemplatePath>
+  validPaths: Array<ElementPath>
 }
 
 export const SceneLevelUtopiaContext = React.createContext<SceneLevelContextProps>({
@@ -69,9 +69,9 @@ export const SceneLevelUtopiaContext = React.createContext<SceneLevelContextProp
 SceneLevelUtopiaContext.displayName = 'SceneLevelUtopiaContext'
 
 interface ParentLevelUtopiaContextProps {
-  templatePath: TemplatePath | null
+  elementPath: ElementPath | null
 }
 
 export const ParentLevelUtopiaContext = createContext<ParentLevelUtopiaContextProps>({
-  templatePath: null,
+  elementPath: null,
 })

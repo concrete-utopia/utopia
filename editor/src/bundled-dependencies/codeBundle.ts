@@ -13,9 +13,9 @@ export const SampleFileBuildResult = JSON.parse(`{
         "../../src/app.js"
       ],
       "names": [],
-      "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AAEW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAE;AAAE,MAAA,KAAK,EAAE,MAAT;AAAiB,MAAA,MAAM,EAAE,MAAzB;AAAiC,MAAA,eAAe,EAAE,SAAlD;AAA6D,MAAA,QAAQ,EAAE;AAAvE;AADT,GAAA,CADF;AAKD,CANU,C",
+      "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;AACA,IAAA,KAAA,GAAA,YAAA,CAAA,OAAA,CAAA,OAAA,CAAA,CAAA;;AACW,OAAA,CAAA,GAAA,GAAM,UAAC,KAAD,EAAU;AACzB,SACE,KAAA,CAAA,aAAA,CAAA,KAAA,EAAA;AACE,IAAA,KAAK,EAAE;AAAE,MAAA,KAAK,EAAE,MAAT;AAAiB,MAAA,MAAM,EAAE,MAAzB;AAAiC,MAAA,eAAe,EAAE,SAAlD;AAA6D,MAAA,QAAQ,EAAE;AAAvE;AADT,GAAA,CADF;AAKD,CANU,C",
       "sourcesContent": [
-        "\\nimport * as React from 'react'\\nimport { jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <div\\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\\n    />\\n  )\\n}"
+        "\\nimport * as React from 'react'\\nexport var App = (props) => {\\n  return (\\n    <div\\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\\n    />\\n  )\\n}"
       ],
       "sourceRoot": "",
       "file": "app.js"
@@ -60,7 +60,7 @@ export const SampleFileBuildResult = JSON.parse(`{
 export const SampleFileBundledExportsInfo: Array<ExportsInfo> = JSON.parse(`[
   {
     "filename": "/src/app.js",
-    "code": "\\nimport * as React from 'react'\\nimport { jsx } from 'utopia-api'\\nexport var App = (props) => {\\n  return (\\n    <div\\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\\n    />\\n  )\\n}",
+    "code": "\\nimport * as React from 'react'\\nexport var App = (props) => {\\n  return (\\n    <div\\n      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF', position: 'relative' }}\\n    />\\n  )\\n}",
     "exportTypes": {
       "App": {
         "type": "(props: any) => Element",

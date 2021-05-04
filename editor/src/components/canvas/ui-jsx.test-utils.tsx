@@ -28,9 +28,7 @@ import {
   ParsedTextFile,
   ParseSuccess,
   RevisionsState,
-  ScenePath,
   textFile,
-  TextFile,
   textFileContents,
 } from '../../core/shared/project-file-types'
 import { PrettierConfig } from 'utopia-vscode-common'
@@ -58,13 +56,13 @@ import {
 } from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { templatePath } from '../../core/shared/template-path'
+import { elementPath } from '../../core/shared/element-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
 import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
-import { testStaticTemplatePath } from '../../core/shared/template-path.test-utils'
+import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -257,10 +255,10 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
 
 export const TestSceneUID = 'scene-aaa'
 export const TestAppUID = 'app-entity'
-export const TestStoryboardPath = templatePath([[BakedInStoryboardUID]])
+export const TestStoryboardPath = elementPath([[BakedInStoryboardUID]])
 export const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
-export const TestScenePath = templatePath(TestSceneElementPaths)
-export const TestStaticScenePath = testStaticTemplatePath(TestSceneElementPaths)
+export const TestScenePath = elementPath(TestSceneElementPaths)
+export const TestStaticScenePath = testStaticElementPath(TestSceneElementPaths)
 
 export function makeTestProjectCodeWithSnippet(snippet: string): string {
   const code = `
