@@ -1,7 +1,6 @@
 import * as Chai from 'chai'
 import * as TP from './template-path'
 import { BakedInStoryboardUID } from '../model/scene-utils'
-import { testStaticInstancePath, testStaticScenePath } from './template-path.test-utils'
 const chaiExpect = Chai.expect
 
 describe('serialization', () => {
@@ -28,6 +27,92 @@ describe('factory function', () => {
     const first = TP.templatePath([['A', '1'], ['B', '2'], ['C']])
     const second = TP.templatePath([['A', '1'], ['B', '2'], ['C']])
     expect(first === second).toBeTruthy()
+  })
+})
+
+describe('isStoryboardPath', () => {
+  it('returns true for the storyboard', () => {
+    expect(TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID]]))).toBeTruthy()
+  })
+  it('returns false for any other path', () => {
+    expect(TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+    ).toBeFalsy()
+
+    expect(TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID], ['app']]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardPath(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+    ).toBeFalsy()
+  })
+})
+
+describe('isStoryboardChild', () => {
+  it('returns true for a child of the storyboard', () => {
+    expect(
+      TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']])),
+    ).toBeTruthy()
+  })
+  it('returns false for any other path', () => {
+    expect(TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID]]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+    ).toBeFalsy()
+
+    expect(TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID], ['app']]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardChild(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+    ).toBeFalsy()
+  })
+})
+
+describe('isStoryboardDescendant', () => {
+  it('returns true for any direct descendant of the storyboard', () => {
+    expect(
+      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']])),
+    ).toBeTruthy()
+
+    expect(
+      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+    ).toBeTruthy()
+  })
+  it('returns false for any other path', () => {
+    expect(TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID]]))).toBeFalsy()
+
+    expect(
+      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID], ['app']])),
+    ).toBeFalsy()
+
+    expect(
+      TP.isStoryboardDescendant(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+    ).toBeFalsy()
+  })
+})
+
+describe('isRootElementOfInstance', () => {
+  it('returns true for any root element of an instance', () => {
+    expect(
+      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID], ['app']])),
+    ).toBeTruthy()
+
+    expect(
+      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['app']])),
+    ).toBeTruthy()
+  })
+  it('returns false for any other path', () => {
+    expect(TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID]]))).toBeFalsy()
+
+    expect(
+      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa']])),
+    ).toBeFalsy()
+
+    expect(
+      TP.isRootElementOfInstance(TP.templatePath([[BakedInStoryboardUID, 'scene-aaa', 'app']])),
+    ).toBeFalsy()
   })
 })
 
@@ -207,55 +292,6 @@ describe('isDescendantOf', () => {
   })
 })
 
-describe('isAncestorOf', () => {
-  it('is not an ancestor', () => {
-    const result = TP.isAncestorOf(
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['Y']]),
-    )
-    chaiExpect(result).to.be.false
-  })
-
-  it('is an ancestor', () => {
-    const result = TP.isAncestorOf(
-      TP.templatePath([
-        [BakedInStoryboardUID, 'scene-aaa'],
-        ['X', 'Y'],
-      ]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-    )
-    chaiExpect(result).to.be.true
-  })
-
-  it('the two paths are the same', () => {
-    const result = TP.isAncestorOf(
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-    )
-    chaiExpect(result).to.be.true
-  })
-
-  it('does not match same paths with flag set to false', () => {
-    const result = TP.isAncestorOf(
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-      false,
-    )
-    chaiExpect(result).to.be.false
-  })
-
-  it('target ancestor is children of path', () => {
-    const result = TP.isAncestorOf(
-      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['X']]),
-      TP.templatePath([
-        [BakedInStoryboardUID, 'scene-aaa'],
-        ['X', 'Y'],
-      ]),
-    )
-    chaiExpect(result).to.be.false
-  })
-})
-
 describe('replaceIfAncestor', () => {
   it('where the path does not match', () => {
     const result = TP.replaceIfAncestor(
@@ -309,6 +345,78 @@ describe('replaceIfAncestor', () => {
       ]),
     )
   })
+  it('where the path is an ancestor of a longer path', () => {
+    const result = TP.replaceIfAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+        ['E', 'F'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['C', 'D'],
+      ]),
+    )
+    expect(result).toEqual(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['C', 'D'],
+        ['E', 'F'],
+      ]),
+    )
+  })
+  it('where the path is an ancestor of part of a longer path', () => {
+    const result = TP.replaceIfAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+        ['E', 'F'],
+      ]),
+      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['C', 'D'],
+      ]),
+    )
+    expect(result).toEqual(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['C', 'D', 'B'],
+        ['E', 'F'],
+      ]),
+    )
+  })
+  it('where the path is an ancestor of a longer path and the replacement is null', () => {
+    const result = TP.replaceIfAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+        ['E', 'F'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+      ]),
+      null,
+    )
+    expect(result).toEqual(TP.templatePath([['E', 'F']]))
+  })
+  it('where the path is an ancestor of part of a longer path and the replacement is null', () => {
+    const result = TP.replaceIfAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['A', 'B'],
+        ['E', 'F'],
+      ]),
+      TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['A']]),
+      null,
+    )
+    expect(result).toEqual(TP.templatePath([['B'], ['E', 'F']]))
+  })
 })
 
 describe('fromString', () => {
@@ -319,6 +427,98 @@ describe('fromString', () => {
     ])
     const actualResult = TP.fromString(TP.toComponentId(expectedResult))
     chaiExpect(actualResult).to.deep.equal(expectedResult)
+  })
+})
+
+describe('closestSharedAncestor', () => {
+  it('returns the original path for equal paths when includePathsEqual is true', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      true,
+    )
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b', 'c'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('returns the original path parent for equal paths when includePathsEqual is false', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      false,
+    )
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('returns the common parent for simple cases', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'd'],
+      ]),
+      false,
+    )
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('returns the common ancestor for more complex cases', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b'],
+        ['x', 'y', 'z'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+      ]),
+      false,
+    )
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('returns null when there are no shared ancestors', () => {
+    const actualResult = TP.closestSharedAncestor(
+      TP.templatePath([
+        ['a', 'b'],
+        ['x', 'y', 'z'],
+      ]),
+      TP.templatePath([
+        ['e', 'f'],
+        ['g', 'h'],
+      ]),
+      false,
+    )
+    expect(actualResult).toBeNull()
   })
 })
 
@@ -354,20 +554,36 @@ describe('getCommonParent', () => {
     ])
     expect(actualResult).toEqual(expectedResult)
   })
-  it('for three elements without a common parent returns null', () => {
+  it('for three elements with a common parent returns that', () => {
     const actualResult = TP.getCommonParent([
       TP.templatePath([
         [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b'],
+        ['x', 'y', 'z'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['a', 'b', 'c', 'd'],
+        ['e', 'f'],
+        ['g', 'h'],
+      ]),
+      TP.templatePath([
+        [BakedInStoryboardUID, 'scene-aaa'],
         ['a', 'b', 'c'],
+        ['h', 'i', 'j'],
       ]),
-      TP.templatePath([
-        [BakedInStoryboardUID, 'scene-bbb'],
-        ['a', 'b', 'd'],
-      ]),
-      TP.templatePath([
-        [BakedInStoryboardUID, 'scene-ccc'],
-        ['x', 'b', 'd'],
-      ]),
+    ])
+    const expectedResult = TP.templatePath([
+      [BakedInStoryboardUID, 'scene-aaa'],
+      ['a', 'b'],
+    ])
+    expect(actualResult).toEqual(expectedResult)
+  })
+  it('for three elements without a common parent returns null', () => {
+    const actualResult = TP.getCommonParent([
+      TP.templatePath([['scene-aaa'], ['a', 'b', 'c']]),
+      TP.templatePath([['scene-bbb'], ['a', 'b', 'd']]),
+      TP.templatePath([['scene-ccc'], ['x', 'b', 'd']]),
     ])
     expect(actualResult).toBeNull()
   })
@@ -404,44 +620,5 @@ describe('getCommonParent', () => {
     ])
     const expectedResult = TP.templatePath([[BakedInStoryboardUID, 'scene-aaa'], ['a']])
     expect(actualResult).toEqual(expectedResult)
-  })
-})
-
-describe('Scenes, Instances and Element Paths', () => {
-  const appInstanceElementPath = ['storyboard', 'app-instance']
-  const cardInstanceElementPath = ['app-root', 'card-instance']
-  const cardRootElementPath = ['card-root']
-
-  const appScenePath = testStaticScenePath([appInstanceElementPath])
-  const cardScenePath = testStaticScenePath([appInstanceElementPath, cardInstanceElementPath])
-  const cardRootScenePath = testStaticScenePath([
-    appInstanceElementPath,
-    cardInstanceElementPath,
-    cardRootElementPath,
-  ])
-
-  const appInstancePath = testStaticInstancePath(TP.emptyScenePath, appInstanceElementPath)
-  const cardInstancePath = testStaticInstancePath(appScenePath, cardInstanceElementPath)
-  const cardRootInstancePath = testStaticInstancePath(cardScenePath, cardRootElementPath)
-
-  it('scenePathPartOfTemplatePath returns the scene path part of a given instance path', () => {
-    expect(TP.scenePathPartOfTemplatePath(TP.emptyInstancePath)).toEqual(TP.emptyScenePath)
-    expect(TP.scenePathPartOfTemplatePath(appInstancePath)).toEqual(TP.emptyScenePath)
-    expect(TP.scenePathPartOfTemplatePath(cardInstancePath)).toEqual(appScenePath)
-    expect(TP.scenePathPartOfTemplatePath(cardRootInstancePath)).toEqual(cardScenePath)
-  })
-
-  it('calling scenePathPartOfTemplatePath with a scene path returns that same scene path', () => {
-    expect(TP.scenePathPartOfTemplatePath(TP.emptyScenePath)).toEqual(TP.emptyScenePath)
-    expect(TP.scenePathPartOfTemplatePath(appScenePath)).toEqual(appScenePath)
-    expect(TP.scenePathPartOfTemplatePath(cardScenePath)).toEqual(cardScenePath)
-    expect(TP.scenePathPartOfTemplatePath(cardRootScenePath)).toEqual(cardRootScenePath)
-  })
-
-  it('instancePathForElementAtScenePath creates a new instance path pointing to last element path of a scene', () => {
-    expect(TP.instancePathForElementAtScenePath(TP.emptyScenePath)).toEqual(TP.emptyInstancePath)
-    expect(TP.instancePathForElementAtScenePath(appScenePath)).toEqual(appInstancePath)
-    expect(TP.instancePathForElementAtScenePath(cardScenePath)).toEqual(cardInstancePath)
-    expect(TP.instancePathForElementAtScenePath(cardRootScenePath)).toEqual(cardRootInstancePath)
   })
 })

@@ -110,9 +110,7 @@ function createLayoutIconProps(
   path: TemplatePath,
   metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase | null {
-  const element = TP.isInstancePath(path)
-    ? MetadataUtils.getElementByInstancePathMaybe(metadata, path)
-    : null
+  const element = MetadataUtils.findElementByTemplatePath(metadata, path)
 
   const isFlexLayoutedContainer = MetadataUtils.isFlexLayoutedContainer(element)
   if (isFlexLayoutedContainer) {
@@ -152,9 +150,7 @@ export function createElementIconProps(
   components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase {
-  const element = TP.isInstancePath(path)
-    ? MetadataUtils.getElementByInstancePathMaybe(metadata, path)
-    : null
+  const element = MetadataUtils.findElementByTemplatePath(metadata, path)
   const isButton = MetadataUtils.isButton(path, components, metadata)
   if (isButton) {
     return {

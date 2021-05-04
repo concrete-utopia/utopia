@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { MapLike } from 'typescript'
-import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { right } from '../../../core/shared/either'
 import {
   ElementInstanceMetadata,
@@ -54,11 +53,7 @@ export function buildSpyWrappedElement(
       attributeMetadatada: emptyAttributeMetadatada,
       label: null,
     }
-    const isChildOfRootScene = TP.pathsEqual(
-      TP.scenePathPartOfTemplatePath(templatePath),
-      EmptyScenePathForStoryboard,
-    )
-    if (!isChildOfRootScene || shouldIncludeCanvasRootInTheSpy) {
+    if (!TP.isStoryboardPath(templatePath) || shouldIncludeCanvasRootInTheSpy) {
       metadataContext.current.spyValues.metadata[TP.toComponentId(templatePath)] = instanceMetadata
     }
   }

@@ -1,5 +1,5 @@
 import { JSXElementName } from '../core/shared/element-template'
-import { InstancePath, PropertyPath, TemplatePath } from '../core/shared/project-file-types'
+import { PropertyPath } from '../core/shared/project-file-types'
 import * as TP from '../core/shared/template-path'
 import {
   JSXElementNameKeepDeepEqualityCall,
@@ -23,12 +23,12 @@ describe('TemplatePathKeepDeepEquality', () => {
   })
   xit('different but similar value handled appropriately', () => {
     // FIXME Do we still want or care about this?
-    const oldPath = TP.templatePath([['scene'], ['aaa', 'bbb']]) as InstancePath
-    const newPath = TP.templatePath([['scene'], ['aaa', 'ccc']]) as InstancePath
+    const oldPath = TP.templatePath([['scene'], ['aaa', 'bbb']])
+    const newPath = TP.templatePath([['scene'], ['aaa', 'ccc']])
     const result = TemplatePathKeepDeepEquality(oldPath, newPath)
     expect(result.value).toEqual(newPath)
-    expect((result.value as InstancePath).scene).toBe(oldPath.scene)
-    expect((result.value as InstancePath).element).toEqual(newPath.element)
+    expect(result.value.parts[0]).toBe(oldPath.parts[0])
+    expect(result.value.parts[1]).toEqual(newPath.parts[1])
     expect(result.areEqual).toEqual(false)
   })
 })

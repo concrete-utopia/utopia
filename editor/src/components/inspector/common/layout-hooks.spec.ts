@@ -1,4 +1,4 @@
-import { changePin, ElementFrameInfo, PinsInfo } from './layout-property-path-hooks'
+import { changePin, ElementFrameInfo } from './layout-property-path-hooks'
 import {
   SimplePinsInfo,
   SimpleRect,
@@ -8,10 +8,9 @@ import {
   TLBRSimplePins,
   CxCyWHSimplePins,
 } from './inspector.test-utils'
-import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
+import { LocalRectangle } from '../../../core/shared/math-utils'
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file.test-utils'
 import * as TP from '../../../core/shared/template-path'
-import { InstancePath } from '../../../core/shared/project-file-types'
 
 function frameInfoForPins(
   pins: SimplePinsInfo,
@@ -19,7 +18,7 @@ function frameInfoForPins(
   parentFrame: LocalRectangle = SimpleRect,
 ): ElementFrameInfo {
   return {
-    path: TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']) as InstancePath,
+    path: TP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
     frame: frameForPins(pins),
     localFrame,
     parentFrame,

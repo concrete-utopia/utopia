@@ -41,9 +41,7 @@ export function findFirstParentWithValidTemplatePath(
     validDynamicTemplatePathsForLookup === 'no-filter'
       ? validStaticTemplatePathsForScene
       : R.intersection(
-          validDynamicTemplatePathsForLookup
-            .filter(TP.isInstancePath)
-            .map(TP.makeLastPartOfPathStatic),
+          validDynamicTemplatePathsForLookup.map(TP.makeLastPartOfPathStatic),
           validStaticTemplatePathsForScene,
         )
 

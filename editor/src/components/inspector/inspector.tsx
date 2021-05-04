@@ -334,9 +334,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       aspectRatioLocked: aspectRatioLockedInner,
     }
   }, 'Inspector')
-  const instancePaths = useKeepReferenceEqualityIfPossible(
-    selectedViews.map(TP.instancePathForElementAtPath),
-  )
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -348,11 +345,11 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
   )
 
   const toggleAspectRatioLock = React.useCallback(() => {
-    const actions = instancePaths.map((path) => {
+    const actions = selectedViews.map((path) => {
       return setAspectRatioLock(path, !aspectRatioLocked)
     })
     dispatch(actions, 'everyone')
-  }, [dispatch, instancePaths, aspectRatioLocked])
+  }, [dispatch, selectedViews, aspectRatioLocked])
 
   function renderInspectorContents() {
     if (props.elementPath.length == 0 || anyUnknownElements) {
@@ -360,7 +357,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     } else {
       return (
         <React.Fragment>
-          <AlignmentButtons numberOfTargets={instancePaths.length} />
+          <AlignmentButtons numberOfTargets={selectedViews.length} />
           {anyComponents ? <ComponentSection isScene={false} /> : null}
           <RenderedLayoutSection
             anyHTMLElements={anyHTMLElements}
@@ -474,7 +471,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
   let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
-  Utils.fastForEach(TP.filterScenes(selectedViews), (path) => {
+  Utils.fastForEach(selectedViews, (path) => {
     forUnderlyingTarget(
       path,
       projectContents,
@@ -483,13 +480,10 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       (underlyingSuccess, underlyingElement, underlyingTarget) => {
         const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
         // TODO multiselect
-        const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
+        const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
         if (elementMetadata != null) {
           const parentPath = TP.parentPath(underlyingTarget)
-          const parentElement =
-            parentPath != null && TP.isInstancePath(parentPath)
-              ? findElementAtPath(parentPath, rootComponents)
-              : null
+          const parentElement = findElementAtPath(parentPath, rootComponents)
 
           const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadata, path)
           const nonGroupAncestorFrame =
@@ -590,7 +584,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       }
 
       let elements: Array<ElementPathElement> = []
-      Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
+      Utils.fastForEach(TP.allPathsForLastPart(selectedViews[0]), (path) => {
         const component = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
         if (component != null) {
           elements.push({

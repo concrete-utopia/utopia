@@ -166,7 +166,7 @@ export function createClipboardDataFromSelectionNewWorld(
   }
   const parseSuccess = openUIJSFile.fileContents.parsed
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
-    return R.none((otherView) => TP.isAncestorOf(view, otherView, false), editor.selectedViews)
+    return R.none((otherView) => TP.isDescendantOf(view, otherView), editor.selectedViews)
   })
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
   const jsxElements = filteredSelectedViews.map((view) => {
@@ -202,51 +202,47 @@ export function getTargetParentForPaste(
       // we should not paste the source into itself
       const insertingSourceIntoItself = TP.containsPath(parentTarget, pasteTargetsToIgnore)
 
-      if (TP.isScenePath(parentTarget)) {
-        return insertingSourceIntoItself ? null : parentTarget
-      } else {
-        return withUnderlyingTarget(
-          parentTarget,
-          projectContents,
-          nodeModules,
-          openFile,
-          null,
-          (parentTargetSuccess) => {
-            if (
-              MetadataUtils.targetSupportsChildren(
-                parentTargetSuccess.imports,
-                metadata,
-                parentTarget,
-              ) &&
-              !insertingSourceIntoItself
-            ) {
-              return parentTarget
-            } else {
-              const parentOfSelected = TP.parentPath(parentTarget)
-              return withUnderlyingTarget(
-                parentOfSelected,
-                projectContents,
-                nodeModules,
-                openFile,
-                null,
-                (parentOfSelectedSuccess) => {
-                  if (
-                    MetadataUtils.targetSupportsChildren(
-                      parentOfSelectedSuccess.imports,
-                      metadata,
-                      parentOfSelected,
-                    )
-                  ) {
-                    return parentOfSelected
-                  } else {
-                    return null
-                  }
-                },
-              )
-            }
-          },
-        )
-      }
+      return withUnderlyingTarget(
+        parentTarget,
+        projectContents,
+        nodeModules,
+        openFile,
+        null,
+        (parentTargetSuccess) => {
+          if (
+            MetadataUtils.targetSupportsChildren(
+              parentTargetSuccess.imports,
+              metadata,
+              parentTarget,
+            ) &&
+            !insertingSourceIntoItself
+          ) {
+            return parentTarget
+          } else {
+            const parentOfSelected = TP.parentPath(parentTarget)
+            return withUnderlyingTarget(
+              parentOfSelected,
+              projectContents,
+              nodeModules,
+              openFile,
+              null,
+              (parentOfSelectedSuccess) => {
+                if (
+                  MetadataUtils.targetSupportsChildren(
+                    parentOfSelectedSuccess.imports,
+                    metadata,
+                    parentOfSelected,
+                  )
+                ) {
+                  return parentOfSelected
+                } else {
+                  return null
+                }
+              },
+            )
+          }
+        },
+      )
     }
   } else {
     return null

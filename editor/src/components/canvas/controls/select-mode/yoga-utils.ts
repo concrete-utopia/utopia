@@ -1,11 +1,8 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { InstancePath, TemplatePath } from '../../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import { CanvasRectangle } from '../../../../core/shared/math-utils'
-import { EditorAction } from '../../../editor/action-types'
-import * as EditorActions from '../../../editor/actions/action-creators'
-import * as TP from '../../../../core/shared/template-path'
 
 export function areYogaChildren(
   componentMetadata: ElementInstanceMetadataMap,

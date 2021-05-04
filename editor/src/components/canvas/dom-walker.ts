@@ -399,16 +399,16 @@ function collectMetadata(
   )
 
   return pathsForElement.map((path) => {
-    const rootsOrChildrenToAdd = pathsForElement
-      .filter((otherPath) => TP.isParentOf(path, otherPath))
-      .map(TP.instancePathForElementAtPath)
+    const rootsOrChildrenToAdd = pathsForElement.filter((otherPath) =>
+      TP.isParentOf(path, otherPath),
+    )
     const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
 
     let filteredChildPaths: TemplatePath[] = []
     let filteredRootElements: TemplatePath[] = []
     fastForEach(unfilteredChildrenPaths, (childPath) => {
       if (TP.isParentOf(path, childPath)) {
-        if (TP.isTopLevelInstancePath(childPath)) {
+        if (TP.isRootElementOfInstance(childPath)) {
           filteredRootElements.push(childPath)
         } else {
           filteredChildPaths.push(childPath)

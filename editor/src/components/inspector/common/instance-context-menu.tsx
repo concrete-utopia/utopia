@@ -65,7 +65,6 @@ const InstanceContextMenuItems = (propNames: string[]): Array<ContextMenuItem<Co
   ]
 }
 
-// TODO Scene Implementation - seems we should have a different context menu for scenes
 export const InstanceContextMenu = betterReactMemo(
   'InstanceContextMenu',
   ({ contextMenuInstance, propNames }: InstanceContextMenuProps) => {

@@ -143,8 +143,8 @@ export function getSelectableViews(
     let siblings: Array<TemplatePath> = []
     Utils.fastForEach(selectedViews, (view) => {
       const allPaths = childrenSelectable
-        ? TP.allPaths(view)
-        : TP.allPaths(TP.parentTemplatePath(view))
+        ? TP.allPathsForLastPart(view)
+        : TP.allPathsForLastPart(TP.parentPath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
         const {
           children,
@@ -165,7 +165,7 @@ export function getSelectableViews(
       // I kept the group-like behavior here that the user can't single-click select the parent group, even though it is a view now
       const isGroup = MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, view)
       const isAncestorOfSelected = selectedViews.some((selectedView) =>
-        TP.isAncestorOf(selectedView, view, false),
+        TP.isDescendantOf(selectedView, view),
       )
       if (isGroup && isAncestorOfSelected) {
         return false
@@ -265,7 +265,9 @@ function useStartDragState(): (
       const isTargetSelected = selectedViews.some((sv) => TP.pathsEqual(sv, target))
 
       const selection =
-        isTargetSelected && TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
+        isTargetSelected && TP.areAllElementsInSameInstance(selectedViews)
+          ? selectedViews
+          : [target]
 
       const moveTargets = selection.filter((view) =>
         elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
@@ -491,7 +493,7 @@ export function useSelectModeSelectAndHover(
           updatedSelection = foundTarget != null ? [foundTarget.templatePath] : []
         }
 
-        if (foundTarget != null && TP.isInstancePath(foundTarget.templatePath) && doubleClick) {
+        if (foundTarget != null && doubleClick) {
           // for components without passed children doubleclicking enters focus mode
           const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
             foundTarget.templatePath,

@@ -22,7 +22,7 @@ import {
   getJSXAttribute,
 } from '../../../core/shared/element-template'
 import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
@@ -406,11 +406,7 @@ function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any>
   if (scope == null) {
     return undefined
   } else {
-    // TODO SCENES remove this when the Scene metadata work is finished
-    // this is now needed, otherwise the Storyboard needs to be imported to the ui js file, but the linter will show warnings
-    if (jsxElementToLookup.name.baseVariable === 'Storyboard') {
-      return Storyboard
-    } else if (jsxElementToLookup.name.baseVariable in scope) {
+    if (jsxElementToLookup.name.baseVariable in scope) {
       const fromVar = scope[jsxElementToLookup.name.baseVariable]
       const result = Utils.pathOr(
         undefined,

@@ -930,9 +930,6 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
 
   return useEditorState((store) => {
     const types = selectedViews.current.map((view) => {
-      if (TP.isScenePath(view)) {
-        return 'scene'
-      }
       return withUnderlyingTarget(
         view,
         store.editor.projectContents,
@@ -1097,7 +1094,7 @@ export function useInspectorWarningStatus(): boolean {
   return useEditorState((store) => {
     let hasLayoutInCSSProp = false
     Utils.fastForEach(selectedViews, (view) => {
-      if (TP.isScenePath(view) || hasLayoutInCSSProp) {
+      if (hasLayoutInCSSProp) {
         return
       }
 

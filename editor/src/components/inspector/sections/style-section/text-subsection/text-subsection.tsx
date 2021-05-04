@@ -8,7 +8,6 @@ import {
 } from '../../../../../core/shared/element-template'
 import { PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
-import { filterScenes } from '../../../../../core/shared/template-path'
 import {
   betterReactMemo,
   useKeepShallowReferenceEquality,
@@ -466,7 +465,7 @@ export const TextSubsection = betterReactMemo('TextSubsection', () => {
 TextSubsection.displayName = 'TextSubsection'
 
 export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsection', () => {
-  const selectedViewsRef = usePropControlledRef_DANGEROUS(filterScenes(useSelectedViews()))
+  const selectedViewsRef = usePropControlledRef_DANGEROUS(useSelectedViews())
 
   const stateRef = useRefEditorState((store) => {
     return {
@@ -483,7 +482,7 @@ export const AutosizingTextSubsection = betterReactMemo('AutosizingTextSubsectio
 
       let actions: Array<EditorAction> = []
       for (let path of selectedPaths) {
-        const element = MetadataUtils.getElementByInstancePathMaybe(
+        const element = MetadataUtils.findElementByTemplatePath(
           stateRef.current.componentMetadata,
           path,
         )

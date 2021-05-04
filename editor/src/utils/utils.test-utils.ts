@@ -316,7 +316,7 @@ function createFakeMetadataForJSXElement(
         elements.push(...rootElementsMetadata)
         rootElements = mapDropNulls((individualElementMetadata) => {
           const path = individualElementMetadata.templatePath
-          return TP.isTopLevelInstancePath(path) && TP.isParentOf(elementScenePath, path)
+          return TP.isRootElementOfInstance(path) && TP.isParentOf(elementScenePath, path)
             ? path
             : null
         }, rootElementsMetadata)

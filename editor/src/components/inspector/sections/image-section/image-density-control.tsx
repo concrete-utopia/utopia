@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { InstancePath } from '../../../../core/shared/project-file-types'
+import { TemplatePath } from '../../../../core/shared/project-file-types'
 import { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import { showToast, updateFrameDimensions } from '../../../editor/actions/action-creators'
 import { OptionChainControl } from '../../controls/option-chain-control'
@@ -9,7 +9,7 @@ import { notice } from '../../../common/notice'
 
 interface ImageDensityControl {
   dispatch: EditorDispatch
-  selectedViews: Array<InstancePath>
+  selectedViews: Array<TemplatePath>
   naturalWidth: number | null
   naturalHeight: number | null
   clientWidth: number

@@ -63,7 +63,7 @@ export interface NavigatorItemDragAndDropWrapperProps {
 function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: TemplatePath): boolean {
   return (
     TP.pathsEqual(props.templatePath, dropSource) ||
-    !TP.isAncestorOf(props.templatePath, dropSource)
+    !TP.isDescendantOfOrEqualTo(props.templatePath, dropSource)
   )
 }
 
