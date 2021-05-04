@@ -15,7 +15,7 @@ import { addImport, emptyImports, mergeImports } from '../workers/common/project
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from './scene-utils'
 import { defaultSceneElement } from '../../components/editor/defaults'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { testStaticTemplatePath } from '../shared/template-path.test-utils'
+import { testStaticElementPath } from '../shared/element-path.test-utils'
 
 const sampleIncludedElementTypes: Array<string> = [
   'Ellipse',
@@ -322,11 +322,11 @@ const scene = utopiaJSXComponent(
 export const TestScene0UID = 'scene-0'
 export const TestMainComponentUID = 'main-component-0'
 const ElementPathForTestUiJsFile = [BakedInStoryboardUID, TestScene0UID, TestMainComponentUID]
-export const ScenePathForTestUiJsFile = testStaticTemplatePath([ElementPathForTestUiJsFile])
+export const ScenePathForTestUiJsFile = testStaticElementPath([ElementPathForTestUiJsFile])
 const Scene1UID = 'scene-1'
 const TestMainComponent1UID = 'main-component-1'
 const ElementPath1ForTestUiJsFile = [BakedInStoryboardUID, Scene1UID, TestMainComponent1UID]
-export const ScenePath1ForTestUiJsFile = testStaticTemplatePath([ElementPath1ForTestUiJsFile])
+export const ScenePath1ForTestUiJsFile = testStaticElementPath([ElementPath1ForTestUiJsFile])
 
 const Scene1 = defaultSceneElement(
   TestScene0UID,

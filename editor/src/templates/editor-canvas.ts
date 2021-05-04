@@ -48,10 +48,10 @@ import {
   mouseWheelHandled,
   resetMouseStatus,
 } from '../components/mouse-move'
-import * as TP from '../core/shared/template-path'
+import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
-import { TemplatePath } from '../core/shared/project-file-types'
+import { ElementPath } from '../core/shared/project-file-types'
 import {
   getActionsForClipboardItems,
   parseClipboardData,
@@ -340,10 +340,10 @@ export interface ControlDependencies {
   scale: number
   snappingThreshold: number
   componentMetadata: ElementInstanceMetadataMap
-  highlightedviews: Array<TemplatePath>
-  selectedViews: Array<TemplatePath>
-  topLevelHiddenInstances: Array<TemplatePath>
-  descendantsOfHiddenInstances: Array<TemplatePath>
+  highlightedviews: Array<ElementPath>
+  selectedViews: Array<ElementPath>
+  topLevelHiddenInstances: Array<ElementPath>
+  descendantsOfHiddenInstances: Array<ElementPath>
   editorState: EditorState
   derivedState: DerivedState
 }
@@ -794,7 +794,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 
   getElementAspectRatioLocked(): boolean {
     return this.props.editor.selectedViews.every((target) => {
-      const possibleElement = MetadataUtils.findElementByTemplatePath(
+      const possibleElement = MetadataUtils.findElementByElementPath(
         this.props.editor.jsxMetadata,
         target,
       )

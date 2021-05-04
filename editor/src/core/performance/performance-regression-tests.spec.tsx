@@ -5,11 +5,10 @@ import {
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/action-creators'
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { InstancePath } from '../shared/project-file-types'
 
 describe('React Render Count Tests - ', () => {
   it('Clicking on opacity slider', async () => {
@@ -24,13 +23,13 @@ describe('React Render Count Tests - ', () => {
       `),
     )
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -39,7 +38,7 @@ describe('React Render Count Tests - ', () => {
     await renderResult.dispatch(
       [
         setProp_UNSAFE(
-          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']) as InstancePath,
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           PP.create(['style', 'opacity']),
           jsxAttributeValue(0.3, emptyComments),
         ),
@@ -79,20 +78,20 @@ describe('React Render Count Tests - ', () => {
       `),
     )
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
     const renderCountBefore = renderResult.getNumberOfRenders()
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
       false,
     )
 

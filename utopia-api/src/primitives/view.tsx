@@ -1,9 +1,6 @@
 import { Interpolation, Theme } from '@emotion/react'
 import * as React from 'react'
-import {
-  UtopiaComponentProps,
-  addEventHandlersToDivProps,
-} from './common'
+import { UtopiaComponentProps, addEventHandlersToDivProps } from './common'
 
 export interface ViewProps
   extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>,
@@ -16,11 +13,7 @@ export const View: React.FunctionComponent<ViewProps> = (props: ViewProps) => {
   const propsWithEventHandlers = addEventHandlersToDivProps(divProps)
 
   return (
-    <div
-      {...propsWithEventHandlers}
-      data-uid={dataUid}
-      data-label={dataLabel}
-    >
+    <div {...propsWithEventHandlers} data-uid={dataUid} data-label={dataLabel}>
       {props.children}
     </div>
   )

@@ -14,7 +14,7 @@ import {
   JSXElementChild,
 } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { PropertyPath, TemplatePath, Imports } from '../../../core/shared/project-file-types'
+import { PropertyPath, ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { Either, eitherToMaybe, isLeft, isRight, right } from '../../../core/shared/either'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
@@ -34,7 +34,7 @@ import {
 } from '../../editor/editor-modes'
 import { LeftMenuTab } from '../../navigator/left-pane'
 import * as PP from '../../../core/shared/property-path'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import CanvasActions from '../canvas-actions'
 import { CanvasContainerID, InsertDragState, insertDragState } from '../canvas-types'
 import { GuidelineWithSnappingVector } from '../guideline'
@@ -51,7 +51,7 @@ import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import { RightMenuTab } from '../right-menu'
 import { mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
-import { getStoryboardTemplatePath } from '../../../core/model/scene-utils'
+import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { isSceneAgainstImports } from '../../../core/model/project-file-utils'
 import { withUnderlyingTarget } from '../../editor/store/editor-state'
@@ -125,7 +125,7 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   getParentAttributes = (
-    parentPath: TemplatePath | null | undefined,
+    parentPath: ElementPath | null | undefined,
   ): Either<any, JSXAttributes> | null => {
     if (parentPath == null) {
       return null
@@ -134,15 +134,15 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  parentIsFlex = (parentPath: TemplatePath | null | undefined): boolean => {
-    const parentInstance =
-      parentPath != null && TP.isInstancePath(parentPath)
-        ? MetadataUtils.getElementByInstancePathMaybe(this.props.componentMetadata, parentPath)
-        : null
+  parentIsFlex = (parentPath: ElementPath | null | undefined): boolean => {
+    const parentInstance = MetadataUtils.findElementByElementPath(
+      this.props.componentMetadata,
+      parentPath ?? null,
+    )
     return MetadataUtils.isFlexLayoutedContainer(parentInstance)
   }
 
-  onHover = (target: TemplatePath) => {
+  onHover = (target: ElementPath) => {
     // The goal of highlight in insert mode is to show which component will be the parent of the
     // newly inserted component. If the user already started to draw the new component, then we should
     // not change the highlights at all, because the parent will remain the same regardless of the
@@ -152,15 +152,15 @@ export class InsertModeControlContainer extends React.Component<
     }
   }
 
-  onHoverEnd = (target: TemplatePath) => {
+  onHoverEnd = (target: ElementPath) => {
     // See comment in the `onHover` function: we should not change the highlight during insertion
     if (!this.props.mode.insertionStarted) {
       this.props.dispatch([EditorActions.clearHighlightedViews()], 'canvas')
     }
   }
 
-  isHighlighted = (path: TemplatePath) => {
-    return this.props.highlightedViews.some((highlighted) => TP.pathsEqual(path, highlighted))
+  isHighlighted = (path: ElementPath) => {
+    return this.props.highlightedViews.some((highlighted) => EP.pathsEqual(path, highlighted))
   }
 
   isUtopiaAPIInsertion(
@@ -195,7 +195,7 @@ export class InsertModeControlContainer extends React.Component<
     return this.isUtopiaAPIInsertion(element, importsToAdd, 'View')
   }
 
-  renderLabel = (target: TemplatePath): JSX.Element | null => {
+  renderLabel = (target: ElementPath): JSX.Element | null => {
     const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
 
     if (frame == null) {
@@ -204,7 +204,7 @@ export class InsertModeControlContainer extends React.Component<
 
     return (
       <ComponentLabelControl
-        key={TP.toComponentId(target)}
+        key={EP.toComponentId(target)}
         mouseEnabled={true}
         componentMetadata={this.props.componentMetadata}
         target={target}
@@ -238,7 +238,7 @@ export class InsertModeControlContainer extends React.Component<
   }
 
   getInsertedElementFrameProps(
-    parentPath: TemplatePath | null,
+    parentPath: ElementPath | null,
     dragFrame: CanvasRectangle,
   ): TopLeftWidthHeight {
     const parentFrame =
@@ -400,7 +400,7 @@ export class InsertModeControlContainer extends React.Component<
     ) {
       const insertionSubject = this.props.mode.subject
       const parent = safeIndex(this.props.highlightedViews, 0) ?? null
-      const staticParent = parent == null ? null : TP.dynamicPathToStaticPath(parent)
+      const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
 
       let { element } = this.props.mode.subject
       if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
@@ -470,7 +470,7 @@ export class InsertModeControlContainer extends React.Component<
       let element = null
       const parentPath =
         safeIndex(this.props.highlightedViews, 0) ??
-        getStoryboardTemplatePath(this.props.projectContents, this.props.openFile)
+        getStoryboardElementPath(this.props.projectContents, this.props.openFile)
       let extraActions: EditorAction[] = []
 
       if (
@@ -494,7 +494,7 @@ export class InsertModeControlContainer extends React.Component<
 
       if (this.isTextInsertion(insertionElement, insertionSubject.importsToAdd)) {
         if (parentPath != null) {
-          const path = TP.appendToPath(parentPath, insertionSubject.uid)
+          const path = EP.appendToPath(parentPath, insertionSubject.uid)
           extraActions.push(EditorActions.openTextEditor(path, null))
         }
       }
@@ -551,7 +551,7 @@ export class InsertModeControlContainer extends React.Component<
         this.props.dragState.start != null
       ) {
         const parent = this.props.highlightedViews[0]
-        const staticParent = parent == null ? null : TP.dynamicPathToStaticPath(parent)
+        const staticParent = parent == null ? null : EP.dynamicPathToStaticPath(parent)
         let element = this.elementWithDragFrame(insertionSubject.element)
         if (this.isTextInsertion(element, insertionSubject.importsToAdd)) {
           element = this.setTextElementFixedSize(element)
@@ -663,7 +663,7 @@ export class InsertModeControlContainer extends React.Component<
       if (isRight(child.element)) {
         const childElement = child.element.value
         const isScene = withUnderlyingTarget(
-          child.templatePath,
+          child.elementPath,
           this.props.projectContents,
           this.props.nodeModules,
           this.props.openFile,
@@ -673,7 +673,7 @@ export class InsertModeControlContainer extends React.Component<
           },
         )
         if (isScene) {
-          return child.templatePath
+          return child.elementPath
         } else {
           return null
         }

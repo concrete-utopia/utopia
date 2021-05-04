@@ -1,4 +1,4 @@
-import { LayoutSystem, sides } from 'utopia-api'
+import { sides } from 'utopia-api'
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -6,7 +6,7 @@ import {
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { pasteJSXElements, selectComponents } from '../../components/editor/actions/action-creators'
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import {
   jsxAttributeNestedObjectSimple,
   jsxAttributeValue,
@@ -21,9 +21,7 @@ import {
 import { generateUidWithExistingComponents } from '../model/element-template-utils'
 import { left, right } from '../shared/either'
 import { CanvasRectangle, LocalRectangle } from '../shared/math-utils'
-import { BakedInStoryboardUID } from '../model/scene-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { InstancePath } from '../shared/project-file-types'
 
 const NewUID = 'catdog'
 
@@ -50,7 +48,7 @@ describe('maybeSwitchLayoutProps', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
@@ -70,13 +68,11 @@ describe('maybeSwitchLayoutProps', () => {
       }),
       [],
     )
-    const elementPath = TP.appendNewElementPath(TestScenePath, [NewUID]) as InstancePath
-
-    const sceneElementPath = TP.instancePathForElementAtPathDontThrowOnScene(TestScenePath)
+    const elementPath = EP.appendNewElementPath(TestScenePath, [NewUID])
 
     const metadata: ElementInstanceMetadataMap = {
-      [TP.toString(sceneElementPath)]: {
-        templatePath: sceneElementPath,
+      [EP.toString(TestScenePath)]: {
+        elementPath: TestScenePath,
         element: left('Scene'),
         props: {
           style: {
@@ -95,8 +91,8 @@ describe('maybeSwitchLayoutProps', () => {
         attributeMetadatada: emptyAttributeMetadatada,
         label: null,
       },
-      [TP.toString(elementPath)]: {
-        templatePath: elementPath,
+      [EP.toString(elementPath)]: {
+        elementPath: elementPath,
         element: right(elementToPaste),
         props: {
           'data-uid': NewUID,
@@ -136,7 +132,7 @@ describe('maybeSwitchLayoutProps', () => {
 
     const pasteElements = pasteJSXElements(
       [elementToPaste],
-      [TP.appendNewElementPath(TestScenePath, [NewUID])],
+      [EP.appendNewElementPath(TestScenePath, [NewUID])],
       metadata,
     )
     await renderResult.dispatch([pasteElements], true)

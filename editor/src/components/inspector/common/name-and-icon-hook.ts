@@ -4,9 +4,9 @@ import {
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
-import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
+import { Imports, ElementPath } from '../../../core/shared/project-file-types'
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
 import { shallowEqual } from '../../../core/shared/equality-utils'
@@ -14,13 +14,13 @@ import { createComponentOrElementIconProps } from '../../navigator/layout-elemen
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 
 export interface NameAndIconResult {
-  path: TemplatePath
+  path: ElementPath
   name: JSXElementName | null
   label: string
   iconProps: IcnProps
 }
 
-export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
+export function useNameAndIcon(path: ElementPath): NameAndIconResult {
   return useEditorState(
     (store) => {
       const metadata = store.editor.jsxMetadata
@@ -33,7 +33,7 @@ export function useNameAndIcon(path: TemplatePath): NameAndIconResult {
     },
     'useNameAndIcon',
     (oldResult, newResult) => {
-      const pathEquals = TP.pathsEqual(oldResult.path, newResult.path)
+      const pathEquals = EP.pathsEqual(oldResult.path, newResult.path)
       const labelEquals = oldResult.label === newResult.label
       const iconPropsEqual = shallowEqual(oldResult.iconProps, newResult.iconProps)
       const oldNamePath = oldResult.name?.propertyPath != null ? oldResult.name?.propertyPath : null
@@ -64,7 +64,7 @@ export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
 }
 
 function getNameAndIconResult(
-  path: TemplatePath,
+  path: ElementPath,
   components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
   imports: Imports,

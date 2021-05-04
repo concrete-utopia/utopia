@@ -1,12 +1,9 @@
-import * as R from 'ramda'
-import { TriggerEvent } from 'react-contexify'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { Either } from '../core/shared/either'
 import { ElementInstanceMetadataMap, isIntrinsicHTMLElement } from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
-import { InstancePath, NodeModules, TemplatePath } from '../core/shared/project-file-types'
+import { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
-import * as TP from '../core/shared/template-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import { ProjectContentTreeRoot } from './assets'
@@ -42,14 +39,14 @@ export interface ContextMenuItem<T> {
 
 export interface CanvasData {
   canvasOffset: CanvasPoint
-  selectedViews: Array<InstancePath>
+  selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
   currentFilePath: string | null
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
   transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
-  hiddenInstances: TemplatePath[]
+  hiddenInstances: ElementPath[]
   scale: number
 }
 

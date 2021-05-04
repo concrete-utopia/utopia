@@ -4,9 +4,9 @@ import {
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import { Imports, TemplatePath } from '../../../core/shared/project-file-types'
+import { Imports, ElementPath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { ControlProps } from './new-canvas-controls'
 import { Outline } from './outline'
 import { anyInstanceYogaLayouted } from './select-mode/yoga-utils'
@@ -21,19 +21,19 @@ import { useEditorState } from '../../editor/store/store-hook'
 import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../../editor/store/editor-state'
 
 export function getSelectionColor(
-  path: TemplatePath,
+  path: ElementPath,
   rootElements: Array<UtopiaJSXComponent>,
   metadata: ElementInstanceMetadataMap,
   imports: Imports,
-  focusedElementPath: TemplatePath | null,
+  focusedElementPath: ElementPath | null,
 ): string {
-  if (TP.isInsideFocusedComponent(path)) {
+  if (EP.isInsideFocusedComponent(path)) {
     if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {
       return colorTheme.canvasSelectionFocusableChild.value
     } else {
       return colorTheme.canvasSelectionNotFocusableChild.value
     }
-  } else if (TP.isFocused(focusedElementPath, path)) {
+  } else if (EP.isFocused(focusedElementPath, path)) {
     return colorTheme.canvasSelectionIsolatedComponent.value
   } else if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {
     return colorTheme.canvasSelectionFocusable.value
@@ -48,20 +48,20 @@ export interface OutlineControlsProps extends ControlProps {
 
 function isDraggingToMove(
   dragState: MoveDragState | ResizeDragState | null,
-  target: TemplatePath,
+  target: ElementPath,
 ): dragState is MoveDragState {
   // This is a bit of a cheeky cast because we only cast if the thing is target is one of the dragged elements
-  const targetIsDragged = TP.containsPath(target, dragState?.draggedElements ?? [])
+  const targetIsDragged = EP.containsPath(target, dragState?.draggedElements ?? [])
   return dragState != null && dragState?.type === 'MOVE_DRAG_STATE' && targetIsDragged
 }
 
 export const OutlineControls = (props: OutlineControlsProps) => {
   const { dragState } = props
   const getDragStateFrame = React.useCallback(
-    (target: TemplatePath): CanvasRectangle | null => {
+    (target: ElementPath): CanvasRectangle | null => {
       if (isDraggingToMove(dragState, target)) {
         const startingFrameAndTarget = dragState.originalFrames.find((frameAndTarget) =>
-          TP.pathsEqual(frameAndTarget.target, target),
+          EP.pathsEqual(frameAndTarget.target, target),
         )
         if (
           startingFrameAndTarget == null ||
@@ -80,7 +80,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
   )
 
   const getTargetFrame = React.useCallback(
-    (target: TemplatePath): CanvasRectangle | null => {
+    (target: ElementPath): CanvasRectangle | null => {
       const dragRect = getDragStateFrame(target)
       return dragRect ?? MetadataUtils.getFrameInCanvasCoords(target, props.componentMetadata)
     },
@@ -88,7 +88,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
   )
 
   const getOverlayControls = React.useCallback(
-    (targets: TemplatePath[]): Array<JSX.Element> => {
+    (targets: ElementPath[]): Array<JSX.Element> => {
       if (
         isFeatureEnabled('Dragging Shows Overlay') &&
         props.dragState != null &&
@@ -101,7 +101,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
           if (rect != null) {
             result.push(
               <div
-                key={`${TP.toComponentId(target)}-overlay`}
+                key={`${EP.toComponentId(target)}-overlay`}
                 style={{
                   position: 'absolute',
                   boxSizing: 'border-box',
@@ -158,8 +158,8 @@ export const OutlineControls = (props: OutlineControlsProps) => {
       return
     }
 
-    const keyPrefix = TP.toComponentId(selectedView)
-    const instance = MetadataUtils.findElementByTemplatePath(props.componentMetadata, selectedView)
+    const keyPrefix = EP.toComponentId(selectedView)
+    const instance = MetadataUtils.findElementByElementPath(props.componentMetadata, selectedView)
     const createsYogaLayout = MetadataUtils.isFlexLayoutedContainer(instance)
     const selectionColor = selectionColors[index]
 
@@ -200,7 +200,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
     )
   })
   let multiSelectOutline: JSX.Element | undefined
-  if (targetPaths.length > 1 && TP.areAllElementsInSameScene(targetPaths)) {
+  if (targetPaths.length > 1 && EP.areAllElementsInSameInstance(targetPaths)) {
     const globalFrames = targetPaths.map((selectedView) => getTargetFrame(selectedView))
     const boundingBox = Utils.boundingRectangleArray(globalFrames)
     if (boundingBox != null) {

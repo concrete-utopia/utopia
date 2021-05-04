@@ -10,7 +10,7 @@ import {
 import { ContextMenuItem } from './context-menu-items'
 import { EditorDispatch } from './editor/action-types'
 import * as fastDeepEquals from 'fast-deep-equal'
-import { TemplatePath } from '../core/shared/project-file-types'
+import { ElementPath } from '../core/shared/project-file-types'
 import { Icons } from '../uuiui'
 
 export interface ContextMenuWrapperProps<T> {

@@ -18,7 +18,7 @@ import {
   DirectionAll,
 } from '../canvas-types'
 import { ResizeStatus } from './new-canvas-controls'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import CanvasActions from '../canvas-actions'
 import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -31,7 +31,7 @@ interface ResizeControlProps extends ResizeRectangleProps {
   cursor: CSSCursor
   position: EdgePosition
   enabledDirection: EnabledDirection
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   dragState: ResizeDragState | null
 }
 
@@ -387,7 +387,7 @@ interface ResizeRectangleProps {
   measureSize: CanvasRectangle // this is the size we want to adjust when the user drags
   visualSize: CanvasRectangle // this is the canvas size of the selection (might not be the same as measureSize in case of Yoga)
   resizeStatus: ResizeStatus
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   elementAspectRatioLocked: boolean
   imageMultiplier: number | null
   sideResizer: boolean

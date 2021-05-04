@@ -1,4 +1,4 @@
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -33,7 +33,7 @@ describe('updating style properties keeps the original order', () => {
     )
 
     const changePinProps = setProp_UNSAFE(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       PP.create(['style', 'paddingRight']),
       jsxAttributeValue(30, emptyComments),
     )

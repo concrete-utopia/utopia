@@ -1,7 +1,7 @@
 import type {
-  TemplatePath,
+  ElementPath,
   id,
-  StaticTemplatePath,
+  StaticElementPath,
   Imports,
 } from '../../core/shared/project-file-types'
 import type { JSXElement, JSXElementName } from '../../core/shared/element-template'
@@ -81,13 +81,13 @@ export function insertionSubjectIsDragAndDrop(
 }
 
 type InsertionParent = null | {
-  target: TemplatePath
-  staticTarget: StaticTemplatePath
+  target: ElementPath
+  staticTarget: StaticElementPath
 }
 
 export function insertionParent(
-  target: TemplatePath | null,
-  staticTarget: StaticTemplatePath | null,
+  target: ElementPath | null,
+  staticTarget: StaticElementPath | null,
 ): InsertionParent {
   if (target == null || staticTarget == null) {
     return null

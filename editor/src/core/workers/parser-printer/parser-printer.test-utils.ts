@@ -79,7 +79,7 @@ import {
   exportDetailModifier,
   ExportDetail,
   EmptyExportsDetail,
-  StaticElementPath,
+  StaticElementPathPart,
   isParseSuccess,
   isTextFile,
   ProjectFile,
@@ -895,7 +895,7 @@ export function elementsStructure(topLevelElements: Array<TopLevelElement>): str
     }
     structureResults.push(elementResult)
     if (isUtopiaJSXComponent(topLevelElement)) {
-      const emptyPath = ([] as any) as StaticElementPath
+      const emptyPath = ([] as any) as StaticElementPathPart
       walkElement(topLevelElement.rootElement, emptyPath, 1, (innerElement, path, depth) => {
         let innerElementResult: string = ''
         for (let index = 0; index < depth; index++) {
