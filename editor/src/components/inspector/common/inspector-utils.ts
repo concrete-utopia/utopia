@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { TemplatePath } from 'src/core/shared/project-file-types'
+import { ElementPath } from 'src/core/shared/project-file-types'
 import { Utils } from '../../../uuiui-deps'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { colorTheme } from '../../../uuiui'
 import { useForceUpdate } from '../../editor/hook-utils'
 import { OnSubmitValue } from '../controls/control'
@@ -185,10 +185,10 @@ export function clampString(value: string, maxLength: number) {
   return value.length > maxLength ? `${value.substring(0, maxLength)}…` : value
 }
 
-export function getElementsToTarget(paths: Array<TemplatePath>): Array<TemplatePath> {
-  let result: Array<TemplatePath> = []
+export function getElementsToTarget(paths: Array<ElementPath>): Array<ElementPath> {
+  let result: Array<ElementPath> = []
   Utils.fastForEach(paths, (path) => {
-    if (!TP.containsPath(path, result)) {
+    if (!EP.containsPath(path, result)) {
       result.push(path)
     }
   })

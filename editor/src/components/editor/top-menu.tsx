@@ -3,7 +3,7 @@ import { MenuIcons, SimpleFlexRow, SquareButton, Tooltip, UNSAFE_getIconURL } fr
 import { useEditorState } from './store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
 import { betterReactMemo } from '../../uuiui-deps'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import { FormulaBar } from '../canvas/controls/formula-bar'
 import { getNavigatorPositionNextState } from './actions/actions'
 import { LeftPaneDefaultWidth } from '../navigator/left-pane'
@@ -44,7 +44,7 @@ export const TopMenu = betterReactMemo('TopMenu', () => {
     (store) => store.editor.selectedViews,
     'TopMenu selectedViews',
   )
-  const formulaBarKey = selectedViews.map(TP.toString).join(',')
+  const formulaBarKey = selectedViews.map(EP.toString).join(',')
 
   const followSelection = useEditorState(
     (store) => store.editor.config.followSelection,

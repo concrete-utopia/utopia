@@ -14,7 +14,7 @@ import {
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
-  TemplatePath,
+  ElementPath,
   isTextFile,
   importDetails,
   importAlias,
@@ -86,7 +86,7 @@ import { generateUidWithExistingComponents } from '../../core/model/element-temp
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
   editorDispatch: EditorDispatch
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   mode: Mode
   currentlyOpenFilename: string | null
   dependencies: Array<PossiblyUnversionedNpmDependency>

@@ -5,7 +5,7 @@ import { renderHook } from '@testing-library/react-hooks'
 import { EditorStateContext, useSelectorWithCallback } from './store-hook'
 import { createEditorState, EditorState, EditorStore } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 
 function createEmptyEditorStoreHook() {
@@ -89,7 +89,7 @@ describe('useSelectorWithCallback', () => {
     )
 
     storeHook.setState({
-      editor: { selectedViews: [TP.fromString('sb/scene:aaa')] } as EditorState,
+      editor: { selectedViews: [EP.fromString('sb/scene:aaa')] } as EditorState,
     })
 
     expect(hookRenders).toEqual(1)
@@ -141,7 +141,7 @@ describe('useSelectorWithCallback', () => {
     }
 
     storeHook.setState({
-      editor: { selectedViews: [TP.fromString('sb/scene:aaa')] } as EditorState,
+      editor: { selectedViews: [EP.fromString('sb/scene:aaa')] } as EditorState,
     })
 
     storeHook.destroy()
