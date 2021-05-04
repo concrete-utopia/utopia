@@ -5,33 +5,31 @@ import {
   TestScenePath,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { selectComponents, setProp_UNSAFE } from '../../components/editor/actions/action-creators'
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import { jsxAttributeValue } from '../shared/element-template'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { InstancePath } from '../shared/project-file-types'
 
 describe('React Render Count Tests - ', () => {
   it('Clicking on opacity slider', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
       </View>
       `),
     )
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -40,7 +38,7 @@ describe('React Render Count Tests - ', () => {
     await renderResult.dispatch(
       [
         setProp_UNSAFE(
-          TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']) as InstancePath,
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           PP.create(['style', 'opacity']),
           jsxAttributeValue(0.3, emptyComments),
         ),
@@ -50,10 +48,9 @@ describe('React Render Count Tests - ', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 0.3 }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 0.3, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
       </View>`,
@@ -61,56 +58,52 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(340) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(360)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(705) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(715)
   })
 
   it('Changing the selected view', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 152, top: 161, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 152, top: 161, width: 256, height: 202 }}
           data-uid='ccc'
         />
       </View>
       `),
     )
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
       false,
     )
     expect(renderResult.renderedDOM.getByText('Opacity')).toBeDefined()
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
     const renderCountBefore = renderResult.getNumberOfRenders()
 
     await renderResult.dispatch(
-      [selectComponents([TP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc'])], false)],
       false,
     )
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 152, top: 161, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 152, top: 161, width: 256, height: 202 }}
           data-uid='ccc'
         />
       </View>`,

@@ -82,12 +82,10 @@ import {
   combine1EqualityCall,
 } from '../../../utils/deep-equality'
 import {
-  TemplatePathArrayKeepDeepEquality,
+  ElementPathArrayKeepDeepEquality,
   HigherOrderControlArrayKeepDeepEquality,
-  TemplatePathKeepDeepEquality,
+  ElementPathKeepDeepEquality,
   EitherKeepDeepEquality,
-  InstancePathKeepDeepEquality,
-  InstancePathArrayKeepDeepEquality,
   JSXElementNameKeepDeepEqualityCall,
 } from '../../../utils/deep-equality-instances'
 import { createCallFromIntrospectiveKeepDeep } from '../../../utils/react-performance'
@@ -101,9 +99,9 @@ import {
 export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<TransientCanvasState> {
   return combine3EqualityCalls(
     (state) => state.selectedViews,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.highlightedViews,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.filesState,
     createCallFromIntrospectiveKeepDeep<TransientFilesState | null>(),
     transientCanvasState,
@@ -113,11 +111,11 @@ export function TransientCanvasStateKeepDeepEquality(): KeepDeepEqualityCall<Tra
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
   return combine6EqualityCalls(
     (state) => state.navigatorTargets,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.visibleNavigatorTargets,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.canvas.descendantsOfHiddenInstances,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (state) => state.canvas.controls,
     HigherOrderControlArrayKeepDeepEquality,
     (state) => state.canvas.transientState,
@@ -642,8 +640,8 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
   ElementInstanceMetadata
 > {
   return combine13EqualityCalls(
-    (metadata) => metadata.templatePath,
-    TemplatePathKeepDeepEquality,
+    (metadata) => metadata.elementPath,
+    ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
     EitherKeepDeepEquality(createCallWithTripleEquals(), JSXElementChildKeepDeepEquality()),
     (metadata) => metadata.props,
@@ -653,9 +651,9 @@ export function ElementInstanceMetadataKeepDeepEquality(): KeepDeepEqualityCall<
     (metadata) => metadata.localFrame,
     nullableDeepEquality(LocalRectangleKeepDeepEquality),
     (metadata) => metadata.children,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (metadata) => metadata.rootElements,
-    TemplatePathArrayKeepDeepEquality,
+    ElementPathArrayKeepDeepEquality,
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),
     (metadata) => metadata.isEmotionOrStyledComponent,

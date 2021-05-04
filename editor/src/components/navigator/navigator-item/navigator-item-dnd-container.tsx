@@ -4,10 +4,10 @@ import * as React from 'react'
 import { PureComponent } from 'react'
 import { DragSource, DropTarget, DropTargetMonitor } from 'react-dnd'
 import * as ReactDOM from 'react-dom'
-import { TemplatePath, ElementOriginType, Imports } from '../../../core/shared/project-file-types'
+import { ElementPath, ElementOriginType, Imports } from '../../../core/shared/project-file-types'
 import { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   placeComponentsAfter,
   placeComponentsBefore,
@@ -34,13 +34,13 @@ const BaseRowHeight = 35
 const PreviewIconSize = BaseRowHeight
 
 export interface DragSelection {
-  templatePath: TemplatePath
+  elementPath: ElementPath
   index: number
 }
 
 export interface NavigatorItemDragAndDropWrapperProps {
   index: number
-  templatePath: TemplatePath
+  elementPath: ElementPath
   dropTargetHint: DropTargetHint
   editorDispatch: EditorDispatch
   selected: boolean
@@ -48,22 +48,22 @@ export interface NavigatorItemDragAndDropWrapperProps {
   collapsed: boolean // TODO are we sure about this?
   getDragSelections: () => Array<DragSelection>
   getMaximumDistance: (componentId: string, initialDistance: number) => number
-  getSelectedViewsInRange: (index: number) => Array<TemplatePath> // TODO remove me
+  getSelectedViewsInRange: (index: number) => Array<ElementPath> // TODO remove me
   supportsChildren: boolean
   noOfChildren: number
   staticElementName: JSXElementName | null
   label: string
   elementOriginType: ElementOriginType
   isElementVisible: boolean
-  renamingTarget: TemplatePath | null
+  renamingTarget: ElementPath | null
   elementWarnings: ElementWarnings
   windowStyle: React.CSSProperties
 }
 
-function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: TemplatePath): boolean {
+function canDrop(props: NavigatorItemDragAndDropWrapperProps, dropSource: ElementPath): boolean {
   return (
-    TP.pathsEqual(props.templatePath, dropSource) ||
-    !TP.isAncestorOf(props.templatePath, dropSource)
+    EP.pathsEqual(props.elementPath, dropSource) ||
+    !EP.isDescendantOfOrEqualTo(props.elementPath, dropSource)
   )
 }
 
@@ -75,12 +75,12 @@ function onDrop(
   if (monitor != null && component != null) {
     const dragSelections = props.getDragSelections()
     const filteredSelections = dragSelections.filter((selection) =>
-      canDrop(props, selection.templatePath),
+      canDrop(props, selection.elementPath),
     )
-    const draggedElements = filteredSelections.map((selection) => selection.templatePath)
+    const draggedElements = filteredSelections.map((selection) => selection.elementPath)
     const clearHintAction = showNavigatorDropTargetHint(null, null)
     const target =
-      props.dropTargetHint.target != null ? props.dropTargetHint.target : props.templatePath
+      props.dropTargetHint.target != null ? props.dropTargetHint.target : props.elementPath
 
     switch (props.dropTargetHint.type) {
       case 'before':
@@ -104,16 +104,16 @@ function onDrop(
   }
 }
 
-function getHintPadding(templatePath: TemplatePath): number {
-  return getElementPadding(templatePath) + ExpansionArrowWidth + PreviewIconSize / 2
+function getHintPadding(elementPath: ElementPath): number {
+  return getElementPadding(elementPath) + ExpansionArrowWidth + PreviewIconSize / 2
 }
 
-function isCursorInLeftAreaOfItem(x: number, templatePath: TemplatePath) {
-  return x < getHintPadding(templatePath)
+function isCursorInLeftAreaOfItem(x: number, elementPath: ElementPath) {
+  return x < getHintPadding(elementPath)
 }
 
-function getTargetDepthFromMousePosition(x: number, templatePath: TemplatePath) {
-  return Math.floor((getHintPadding(templatePath) - x) / BasePaddingUnit)
+function getTargetDepthFromMousePosition(x: number, elementPath: ElementPath) {
+  return Math.floor((getHintPadding(elementPath) - x) / BasePaddingUnit)
 }
 
 function onHover(
@@ -124,7 +124,7 @@ function onHover(
   if (
     monitor != null &&
     component != null &&
-    props.getDragSelections().some((selection) => canDrop(props, selection.templatePath))
+    props.getDragSelections().some((selection) => canDrop(props, selection.elementPath))
   ) {
     const domNode = ReactDOM.findDOMNode(component)
     if (domNode == null || typeof domNode === 'string') {
@@ -134,13 +134,12 @@ function onHover(
     const cursor = monitor.getClientOffset()
     const targetAction = props.highlighted
       ? []
-      : [EditorActions.setHighlightedView(props.templatePath)]
+      : [EditorActions.setHighlightedView(props.elementPath)]
     const canReparent = props
       .getDragSelections()
       .every(
         (dragSelectedItem: DragSelection) =>
-          !TP.pathsEqual(props.templatePath, dragSelectedItem.templatePath) &&
-          props.supportsChildren,
+          !EP.pathsEqual(props.elementPath, dragSelectedItem.elementPath) && props.supportsChildren,
       )
     const numberOfAreasToCut = canReparent ? 3 : 2
 
@@ -151,7 +150,7 @@ function onHover(
     if (isCursorInTopArea(dropTargetRectangle, cursor.y, numberOfAreasToCut)) {
       if (props.dropTargetHint.type !== 'after') {
         props.editorDispatch(
-          [...targetAction, showNavigatorDropTargetHint('after', component.props.templatePath)],
+          [...targetAction, showNavigatorDropTargetHint('after', component.props.elementPath)],
           'leftpane',
         )
       }
@@ -160,16 +159,16 @@ function onHover(
       (props.noOfChildren === 0 || props.collapsed)
     ) {
       if (
-        isCursorInLeftAreaOfItem(cursor.x, props.templatePath) &&
-        TP.parentPath(props.templatePath) != null
+        isCursorInLeftAreaOfItem(cursor.x, props.elementPath) &&
+        EP.parentPath(props.elementPath) != null
       ) {
-        const maximumTargetDepth = props.getMaximumDistance(TP.toComponentId(props.templatePath), 0)
-        const cursorTargetDepth = getTargetDepthFromMousePosition(cursor.x, props.templatePath)
+        const maximumTargetDepth = props.getMaximumDistance(EP.toComponentId(props.elementPath), 0)
+        const cursorTargetDepth = getTargetDepthFromMousePosition(cursor.x, props.elementPath)
         const targetDistance = Math.min(cursorTargetDepth, maximumTargetDepth)
-        const targetTP = TP.getNthParent(props.templatePath, targetDistance)
+        const targetTP = EP.getNthParent(props.elementPath, targetDistance)
         if (
           props.dropTargetHint.type !== 'before' ||
-          !TP.pathsEqual(props.dropTargetHint.target, targetTP)
+          !EP.pathsEqual(props.dropTargetHint.target, targetTP)
         ) {
           props.editorDispatch(
             [...targetAction, showNavigatorDropTargetHint('before', targetTP)],
@@ -178,17 +177,17 @@ function onHover(
         }
       } else if (
         props.dropTargetHint.type !== 'before' ||
-        !TP.pathsEqual(props.dropTargetHint.target, component.props.templatePath)
+        !EP.pathsEqual(props.dropTargetHint.target, component.props.elementPath)
       ) {
         props.editorDispatch(
-          [...targetAction, showNavigatorDropTargetHint('before', component.props.templatePath)],
+          [...targetAction, showNavigatorDropTargetHint('before', component.props.elementPath)],
           'leftpane',
         )
       }
     } else if (canReparent) {
       if (props.dropTargetHint.type !== 'reparent') {
         props.editorDispatch(
-          [...targetAction, showNavigatorDropTargetHint('reparent', component.props.templatePath)],
+          [...targetAction, showNavigatorDropTargetHint('reparent', component.props.elementPath)],
           'leftpane',
         )
       }
@@ -206,7 +205,7 @@ function beginDrag(
   props: NavigatorItemDragAndDropWrapperProps,
 ): NavigatorItemDragAndDropWrapperProps {
   if (!props.selected) {
-    props.editorDispatch([EditorActions.selectComponents([props.templatePath], false)], 'leftpane')
+    props.editorDispatch([EditorActions.selectComponents([props.elementPath], false)], 'leftpane')
   }
   return props
 }
@@ -236,13 +235,13 @@ export class NavigatorItemDndWrapper extends PureComponent<
     const navigatorItemContainer = (
       <div
         key='navigatorItem'
-        id={`navigator-item-${TP.toVarSafeComponentId(this.props.templatePath)}`}
+        id={`navigator-item-${EP.toVarSafeComponentId(this.props.elementPath)}`}
         style={{
           ...props.windowStyle,
         }}
       >
         <NavigatorItem
-          templatePath={this.props.templatePath}
+          elementPath={this.props.elementPath}
           index={this.props.index}
           getSelectedViewsInRange={this.props.getSelectedViewsInRange}
           noOfChildren={this.props.noOfChildren}

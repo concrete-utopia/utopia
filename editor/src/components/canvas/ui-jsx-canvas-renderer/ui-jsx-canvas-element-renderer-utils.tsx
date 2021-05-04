@@ -22,7 +22,7 @@ import {
   getJSXAttribute,
 } from '../../../core/shared/element-template'
 import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { InstancePath, TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
@@ -30,7 +30,7 @@ import { UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { Storyboard } from 'utopia-api'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 import { objectMap } from '../../../core/shared/object-utils'
@@ -43,13 +43,13 @@ import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer
 import { optionalMap } from '../../../core/shared/optional-utils'
 
 export function createLookupRender(
-  templatePath: TemplatePath,
+  elementPath: ElementPath,
   rootScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
-  hiddenInstances: Array<TemplatePath>,
+  hiddenInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Array<TemplatePath>,
+  validPaths: Array<ElementPath>,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   jsxFactoryFunctionName: string | null,
@@ -69,12 +69,12 @@ export function createLookupRender(
     )
 
     // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-    const templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = TP.parentPath(
-      templatePath,
+    const elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = EP.parentPath(
+      elementPath,
     )
 
-    const innerPath = TP.appendToPath(
-      templatePathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
+    const innerPath = EP.appendToPath(
+      elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
       generatedUID,
     )
 
@@ -120,14 +120,14 @@ function monkeyUidProp(uid: string | undefined, propsToUpdate: MapLike<any>): Ma
 
 export function renderCoreElement(
   element: JSXElementChild,
-  templatePath: TemplatePath,
+  elementPath: ElementPath,
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
-  hiddenInstances: Array<TemplatePath>,
+  hiddenInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Array<TemplatePath>,
+  validPaths: Array<ElementPath>,
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
@@ -145,12 +145,12 @@ export function renderCoreElement(
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
 
-      const key = optionalMap(TP.toString, templatePath) ?? passthroughProps[UTOPIA_UIDS_KEY]
+      const key = optionalMap(EP.toString, elementPath) ?? passthroughProps[UTOPIA_UIDS_KEY]
 
       return renderJSXElement(
         key,
         element,
-        templatePath,
+        elementPath,
         parentComponentInputProps,
         requireResult,
         rootScope,
@@ -168,7 +168,7 @@ export function renderCoreElement(
     }
     case 'JSX_ARBITRARY_BLOCK': {
       const innerRender = createLookupRender(
-        templatePath,
+        elementPath,
         rootScope,
         parentComponentInputProps,
         requireResult,
@@ -195,7 +195,7 @@ export function renderCoreElement(
     case 'JSX_FRAGMENT': {
       let renderedChildren: Array<React.ReactElement> = []
       fastForEach(element.children, (child) => {
-        const childPath = TP.appendToPath(TP.parentPath(templatePath), getUtopiaID(child))
+        const childPath = EP.appendToPath(EP.parentPath(elementPath), getUtopiaID(child))
         const renderResult = renderCoreElement(
           child,
           childPath,
@@ -224,7 +224,7 @@ export function renderCoreElement(
         inScope,
         jsxFactoryFunctionName,
         React.Fragment,
-        { key: templatePath == null ? uid : TP.toString(templatePath) },
+        { key: elementPath == null ? uid : EP.toString(elementPath) },
         element.text,
       )
     }
@@ -237,14 +237,14 @@ export function renderCoreElement(
 function renderJSXElement(
   key: string,
   jsx: JSXElement,
-  templatePath: TemplatePath,
+  elementPath: ElementPath,
   parentComponentInputProps: MapLike<any>,
   requireResult: MapLike<any>,
   rootScope: MapLike<any>,
   inScope: MapLike<any>,
-  hiddenInstances: Array<TemplatePath>,
+  hiddenInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Array<TemplatePath>,
+  validPaths: Array<ElementPath>,
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   jsxFactoryFunctionName: string | null,
@@ -252,13 +252,11 @@ function renderJSXElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
 ): React.ReactElement {
-  if (templatePath == null) {
-    throw new Error(
-      `Utopia Error: the element renderer did not receive a TemplatePath, key: ${key}`,
-    )
+  if (elementPath == null) {
+    throw new Error(`Utopia Error: the element renderer did not receive a ElementPath, key: ${key}`)
   }
   let elementProps = { key: key, ...passthroughProps }
-  if (isHidden(hiddenInstances, templatePath)) {
+  if (isHidden(hiddenInstances, elementPath)) {
     elementProps = hideElement(elementProps)
   }
   elementProps = streamlineInFileBlobs(elementProps, fileBlobs)
@@ -266,7 +264,7 @@ function renderJSXElement(
   const createChildrenElement = (
     child: JSXElementChild,
   ): React.ReactElement | Array<React.ReactElement> => {
-    const childPath = TP.appendToPath(templatePath, getUtopiaID(child))
+    const childPath = EP.appendToPath(elementPath, getUtopiaID(child))
     return renderCoreElement(
       child,
       childPath,
@@ -299,11 +297,11 @@ function renderJSXElement(
   const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
 
   const elementPropsWithScenePath = isComponentRendererComponent(FinalElement)
-    ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: templatePath }
+    ? { ...elementProps, [UTOPIA_INSTANCE_PATH]: elementPath }
     : elementProps
 
   const elementPropsWithSceneID = elementIsScene
-    ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: TP.toString(templatePath) }
+    ? { ...elementPropsWithScenePath, [UTOPIA_SCENE_ID_KEY]: EP.toString(elementPath) }
     : elementPropsWithScenePath
 
   const finalProps =
@@ -311,40 +309,37 @@ function renderJSXElement(
       ? filterDataProps(elementPropsWithSceneID)
       : elementPropsWithSceneID
 
-  const finalPropsIcludingTemplatePath = {
+  const finalPropsIcludingElementPath = {
     ...finalProps,
-    [UTOPIA_PATHS_KEY]: optionalMap(TP.toString, templatePath),
+    [UTOPIA_PATHS_KEY]: optionalMap(EP.toString, elementPath),
   }
 
-  const staticTemplatePathForGeneratedElement = optionalMap(
-    TP.dynamicPathToStaticPath,
-    templatePath,
-  )
+  const staticElementPathForGeneratedElement = optionalMap(EP.dynamicPathToStaticPath, elementPath)
 
-  const staticValidPaths = validPaths.map(TP.dynamicPathToStaticPath)
+  const staticValidPaths = validPaths.map(EP.dynamicPathToStaticPath)
 
   if (
     FinalElement != null &&
-    templatePath != null &&
-    TP.containsPath(staticTemplatePathForGeneratedElement, staticValidPaths)
+    elementPath != null &&
+    EP.containsPath(staticElementPathForGeneratedElement, staticValidPaths)
   ) {
-    let childrenTemplatePaths: TemplatePath[] = []
+    let childrenElementPaths: ElementPath[] = []
 
     Utils.fastForEach(jsx.children, (child) => {
       if (isJSXElement(child)) {
-        const childPath = optionalMap((p) => TP.appendToPath(p, getUtopiaID(child)), templatePath)
-        if (childPath != null && TP.containsPath(childPath, validPaths)) {
-          childrenTemplatePaths.push(childPath)
+        const childPath = optionalMap((p) => EP.appendToPath(p, getUtopiaID(child)), elementPath)
+        if (childPath != null && EP.containsPath(childPath, validPaths)) {
+          childrenElementPaths.push(childPath)
         }
       }
     })
 
     return buildSpyWrappedElement(
       jsx,
-      finalPropsIcludingTemplatePath,
-      templatePath,
+      finalPropsIcludingElementPath,
+      elementPath,
       metadataContext,
-      childrenTemplatePaths,
+      childrenElementPaths,
       childrenElements,
       FinalElement,
       inScope,
@@ -357,14 +352,14 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       FinalElement,
-      finalPropsIcludingTemplatePath,
+      finalPropsIcludingElementPath,
       childrenOrNull,
     )
   }
 }
 
-function isHidden(hiddenInstances: TemplatePath[], templatePath: TemplatePath | null): boolean {
-  return templatePath != null && hiddenInstances.some((path) => TP.pathsEqual(path, templatePath))
+function isHidden(hiddenInstances: ElementPath[], elementPath: ElementPath | null): boolean {
+  return elementPath != null && hiddenInstances.some((path) => EP.pathsEqual(path, elementPath))
 }
 
 function hideElement(props: any): any {
@@ -406,11 +401,7 @@ function getElementFromScope(jsxElementToLookup: JSXElement, scope: MapLike<any>
   if (scope == null) {
     return undefined
   } else {
-    // TODO SCENES remove this when the Scene metadata work is finished
-    // this is now needed, otherwise the Storyboard needs to be imported to the ui js file, but the linter will show warnings
-    if (jsxElementToLookup.name.baseVariable === 'Storyboard') {
-      return Storyboard
-    } else if (jsxElementToLookup.name.baseVariable in scope) {
+    if (jsxElementToLookup.name.baseVariable in scope) {
       const fromVar = scope[jsxElementToLookup.name.baseVariable]
       const result = Utils.pathOr(
         undefined,

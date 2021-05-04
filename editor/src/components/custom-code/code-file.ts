@@ -18,14 +18,12 @@ import {
   esCodeFile,
   ProjectContents,
   isEsCodeFile,
-  TemplatePath,
+  ElementPath,
   TextFile,
   isTextFile,
   RevisionsState,
-  InstancePath,
-  StaticInstancePath,
   isParseSuccess,
-  StaticTemplatePath,
+  StaticElementPath,
 } from '../../core/shared/project-file-types'
 
 import { EditorDispatch } from '../editor/action-types'
@@ -40,7 +38,7 @@ import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
 import { Either, left, right } from '../../core/shared/either'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import {
   getJSXAttribute,
   isIntrinsicElement,
@@ -183,7 +181,9 @@ export function incorporateBuildResult(
   // Mutates nodeModules.
   fastForEach(Object.keys(buildResult), (moduleKey) => {
     const modulesFile = buildResult[moduleKey]
-    if (modulesFile.transpiledCode != null) {
+    if (modulesFile.transpiledCode == null) {
+      delete nodeModules[moduleKey]
+    } else {
       nodeModules[moduleKey] = esCodeFile(modulesFile.transpiledCode, 'NODE_MODULES', moduleKey)
     }
   })
@@ -278,13 +278,13 @@ export function codeCacheToBuildResult(cache: {
 
 export interface NormalisePathSuccess {
   type: 'NORMALISE_PATH_SUCCESS'
-  normalisedPath: StaticTemplatePath | null
+  normalisedPath: StaticElementPath | null
   filePath: string
   textFile: TextFile
 }
 
 export function normalisePathSuccess(
-  normalisedPath: StaticTemplatePath | null,
+  normalisedPath: StaticElementPath | null,
   filePath: string,
   textFile: TextFile,
 ): NormalisePathSuccess {
@@ -375,7 +375,7 @@ export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   currentFilePath: string,
-  elementPath: TemplatePath | null,
+  elementPath: ElementPath | null,
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
   if (isTextFile(currentFile)) {
@@ -387,27 +387,26 @@ export function normalisePathToUnderlyingTarget(
       // which now doesn't exist.
       return normalisePathUnableToProceed(currentFilePath)
     } else {
-      const staticPath =
-        elementPath == null ? null : (TP.dynamicPathToStaticPath(elementPath) as StaticInstancePath)
-      const potentiallyDroppedFirstSceneElementResult = TP.dropFirstScenePathElement(staticPath)
-      if (potentiallyDroppedFirstSceneElementResult.droppedScenePathElements == null) {
+      const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
+      const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(staticPath)
+      if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
         // As the scene path is empty, there's no more traversing to do, the target is in this file.
         return normalisePathSuccess(staticPath, currentFilePath, currentFile)
       } else {
-        const droppedPathPart = potentiallyDroppedFirstSceneElementResult.droppedScenePathElements
+        const droppedPathPart = potentiallyDroppedFirstPathElementResult.droppedPathElements
         if (droppedPathPart.length === 0) {
           return normalisePathError(
-            `Unable to handle empty scene path part for ${optionalMap(TP.toString, elementPath)}`,
+            `Unable to handle empty scene path part for ${optionalMap(EP.toString, elementPath)}`,
           )
         } else {
           // Now need to identify the element relating to the last part of the dropped scene path.
-          const lastScenePathPart = droppedPathPart[droppedPathPart.length - 1]
+          const lastDroppedPathPart = droppedPathPart[droppedPathPart.length - 1]
 
           // Walk the parsed representation to find the element with the given uid.
           const parsedContent = currentFile.fileContents.parsed
           let targetElement: JSXElement | null = null
           for (const topLevelElement of parsedContent.topLevelElements) {
-            const possibleTarget = findElementWithUID(topLevelElement, lastScenePathPart)
+            const possibleTarget = findElementWithUID(topLevelElement, lastDroppedPathPart)
             if (possibleTarget != null) {
               targetElement = possibleTarget
               break
@@ -416,7 +415,7 @@ export function normalisePathToUnderlyingTarget(
 
           // Identify where the component is imported from or if it's in the same file.
           if (targetElement == null) {
-            return normalisePathImportNotFound(lastScenePathPart)
+            return normalisePathImportNotFound(lastDroppedPathPart)
           } else {
             const nonNullTargetElement: JSXElement = targetElement
             function lookupElementImport(elementBaseVariable: string): NormalisePathResult {
@@ -437,7 +436,7 @@ export function normalisePathToUnderlyingTarget(
                   } else {
                     return normalisePathError(
                       `Unable to handle Scene component definition for ${optionalMap(
-                        TP.toString,
+                        EP.toString,
                         elementPath,
                       )}`,
                     )
@@ -464,7 +463,7 @@ export function normalisePathToUnderlyingTarget(
                               projectContents,
                               nodeModules,
                               successResult.path,
-                              potentiallyDroppedFirstSceneElementResult.newPath,
+                              potentiallyDroppedFirstPathElementResult.newPath,
                             )
                           case 'ES_REMOTE_DEPENDENCY_PLACEHOLDER':
                             return normalisePathUnableToProceed(successResult.path)
@@ -485,9 +484,9 @@ export function normalisePathToUnderlyingTarget(
             // Handle things like divs.
             if (isIntrinsicElement(targetElement.name)) {
               return normalisePathSuccess(
-                potentiallyDroppedFirstSceneElementResult.newPath == null
+                potentiallyDroppedFirstPathElementResult.newPath == null
                   ? null
-                  : TP.dynamicPathToStaticPath(potentiallyDroppedFirstSceneElementResult.newPath),
+                  : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
                 currentFilePath,
                 currentFile,
               )
@@ -507,7 +506,7 @@ export function normalisePathToUnderlyingTargetForced(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   currentFilePath: string,
-  elementPath: InstancePath | null,
+  elementPath: ElementPath | null,
 ): NormalisePathSuccess {
   return normalisePathSuccessOrThrowError(
     normalisePathToUnderlyingTarget(projectContents, nodeModules, currentFilePath, elementPath),

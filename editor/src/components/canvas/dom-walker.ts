@@ -3,7 +3,7 @@ import { sides } from 'utopia-api'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import {
   DetectedLayoutSystem,
   ElementInstanceMetadata,
@@ -16,7 +16,7 @@ import {
   StyleAttributeMetadata,
   emptyAttributeMetadatada,
 } from '../../core/shared/element-template'
-import { TemplatePath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import { applicative4Either, isRight, left } from '../../core/shared/either'
 import Utils from '../../utils/utils'
@@ -164,10 +164,10 @@ let AttributesFromStyleSheetsCache: Map<HTMLElement, Set<string>> = new Map()
 
 function getCachedAttributesComingFromStyleSheets(
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  templatePath: TemplatePath,
+  elementPath: ElementPath,
   element: HTMLElement,
 ): Set<string> {
-  const pathAsString = TP.toString(templatePath)
+  const pathAsString = EP.toString(elementPath)
   const invalidated = invalidatedPathsForStylesheetCacheRef.current.has(pathAsString)
   const inCache = AttributesFromStyleSheetsCache.has(element)
   if (inCache && !invalidated) {
@@ -247,11 +247,11 @@ function useInvalidateScenesWhenSelectedViewChanges(
     (store) => store.editor.selectedViews,
     (newSelectedViews) => {
       newSelectedViews.forEach((sv) => {
-        const scenePath = TP.createBackwardsCompatibleScenePath(sv)
+        const scenePath = EP.createBackwardsCompatibleScenePath(sv)
         if (scenePath != null) {
-          const sceneID = TP.toString(scenePath)
+          const sceneID = EP.toString(scenePath)
           invalidatedSceneIDsRef.current.add(sceneID)
-          invalidatedPathsForStylesheetCacheRef.current.add(TP.toString(sv))
+          invalidatedPathsForStylesheetCacheRef.current.add(EP.toString(sv))
         }
       })
     },
@@ -276,14 +276,14 @@ function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, ()
 }
 
 interface DomWalkerProps {
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   scale: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<TemplatePath>,
+    cachedTreeRoots: Array<ElementPath>,
   ) => void
-  canvasRootElementTemplatePath: TemplatePath
-  validRootPaths: Array<TemplatePath>
+  canvasRootElementElementPath: ElementPath
+  validRootPaths: Array<ElementPath>
   mountCount: number
 }
 
@@ -327,7 +327,7 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
       const { metadata, cachedTreeRoots } = walkCanvasRootFragment(
         refOfContainer,
         0,
-        props.canvasRootElementTemplatePath,
+        props.canvasRootElementElementPath,
         props.validRootPaths,
         rootMetadataInStateRef,
         invalidatedSceneIDsRef,
@@ -376,13 +376,13 @@ function collectMetadataForElement(
 
 function collectMetadata(
   element: HTMLElement,
-  pathsForElement: Array<TemplatePath>,
+  pathsForElement: Array<ElementPath>,
   parentPoint: CanvasPoint,
-  allUnfilteredChildrenPaths: Array<TemplatePath>,
+  allUnfilteredChildrenPaths: Array<ElementPath>,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
 ): Array<ElementInstanceMetadata> {
   const {
     tagName,
@@ -399,16 +399,16 @@ function collectMetadata(
   )
 
   return pathsForElement.map((path) => {
-    const rootsOrChildrenToAdd = pathsForElement
-      .filter((otherPath) => TP.isParentOf(path, otherPath))
-      .map(TP.instancePathForElementAtPath)
+    const rootsOrChildrenToAdd = pathsForElement.filter((otherPath) =>
+      EP.isParentOf(path, otherPath),
+    )
     const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
 
-    let filteredChildPaths: TemplatePath[] = []
-    let filteredRootElements: TemplatePath[] = []
+    let filteredChildPaths: ElementPath[] = []
+    let filteredRootElements: ElementPath[] = []
     fastForEach(unfilteredChildrenPaths, (childPath) => {
-      if (TP.isParentOf(path, childPath)) {
-        if (TP.isTopLevelInstancePath(childPath)) {
+      if (EP.isParentOf(path, childPath)) {
+        if (EP.isRootElementOfInstance(childPath)) {
           filteredRootElements.push(childPath)
         } else {
           filteredChildPaths.push(childPath)
@@ -436,12 +436,12 @@ function collectMetadata(
 
 function getComputedStyle(
   element: HTMLElement,
-  paths: Array<TemplatePath>,
+  paths: Array<ElementPath>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
 ): { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null } {
   const isSelectedOnAnyPaths = selectedViews.some((sv) =>
-    paths.some((path) => TP.pathsEqual(sv, path)),
+    paths.some((path) => EP.pathsEqual(sv, path)),
   )
   if (!isSelectedOnAnyPaths) {
     // the element is not among the selected views, skip computing the style
@@ -576,16 +576,19 @@ function globalFrameForElement(
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   index: number,
-  canvasRootPath: TemplatePath,
-  validPaths: Array<TemplatePath>,
+  canvasRootPath: ElementPath,
+  validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-): { metadata: ReadonlyArray<ElementInstanceMetadata>; cachedTreeRoots: Array<TemplatePath> } {
+): {
+  metadata: ReadonlyArray<ElementInstanceMetadata>
+  cachedTreeRoots: Array<ElementPath>
+} {
   if (
     ObserversAvailable &&
     invalidatedSceneIDsRef.current.size === 0 &&
@@ -632,23 +635,26 @@ function walkCanvasRootFragment(
 function walkScene(
   scene: HTMLElement,
   index: number,
-  validPaths: Array<TemplatePath>,
+  validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
-): { metadata: ReadonlyArray<ElementInstanceMetadata>; cachedTreeRoots: Array<TemplatePath> } {
+): {
+  metadata: ReadonlyArray<ElementInstanceMetadata>
+  cachedTreeRoots: Array<ElementPath>
+} {
   if (scene instanceof HTMLElement) {
     // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
     // and that they can only have a single root element
     const sceneIndexAttr = scene.attributes.getNamedItemNS(null, UTOPIA_SCENE_ID_KEY)
     const sceneID = sceneIndexAttr?.value ?? null
-    const instancePath = sceneID == null ? null : TP.fromString(sceneID)
+    const instancePath = sceneID == null ? null : EP.fromString(sceneID)
 
-    if (sceneID != null && instancePath != null && TP.isTemplatePath(instancePath)) {
+    if (sceneID != null && instancePath != null && EP.isElementPath(instancePath)) {
       let cachedMetadata: ElementInstanceMetadata | null = null
       if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
         if (!invalidatedSceneIDsRef.current.has(sceneID)) {
@@ -695,7 +701,7 @@ function walkScene(
         let rootMetadataAccumulator = [cachedMetadata]
         // Push the cached metadata for everything from this scene downwards
         Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
-          if (TP.isDescendantOf(elem.templatePath, instancePath)) {
+          if (EP.isDescendantOf(elem.elementPath, instancePath)) {
             rootMetadataAccumulator.push(elem)
           }
         })
@@ -709,24 +715,24 @@ function walkScene(
 function walkSceneInner(
   scene: HTMLElement,
   index: number,
-  validPaths: Array<TemplatePath>,
+  validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
-  childPaths: Array<TemplatePath>
+  childPaths: Array<ElementPath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
-  cachedTreeRoots: Array<TemplatePath>
+  cachedTreeRoots: Array<ElementPath>
 } {
   const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
 
-  let childPaths: Array<TemplatePath> = []
+  let childPaths: Array<ElementPath> = []
   let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
-  let cachedTreeRootsAccumulator: Array<TemplatePath> = []
+  let cachedTreeRootsAccumulator: Array<ElementPath> = []
 
   scene.childNodes.forEach((childNode) => {
     const { childPaths: childNodePaths, rootMetadata, cachedTreeRoots } = walkElements(
@@ -762,18 +768,18 @@ function walkElements(
   index: number,
   depth: number,
   parentPoint: CanvasPoint,
-  validPaths: Array<TemplatePath>,
+  validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
   invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   initComplete: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
-  childPaths: ReadonlyArray<TemplatePath>
+  childPaths: ReadonlyArray<ElementPath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
-  cachedTreeRoots: Array<TemplatePath>
+  cachedTreeRoots: Array<ElementPath>
 } {
   if (isScene(element)) {
     // we found a nested scene, restart the walk
@@ -808,16 +814,16 @@ function walkElements(
 
     // Check this is a path we're interested in, otherwise skip straight to the children
     const foundValidPaths = paths.filter((path) => {
-      const staticPath = TP.makeLastPartOfPathStatic(path)
+      const staticPath = EP.makeLastPartOfPathStatic(path)
       return validPaths.some((validPath) => {
-        return TP.pathsEqual(staticPath, validPath)
+        return EP.pathsEqual(staticPath, validPath)
       })
     })
 
     // Build the metadata for the children of this DOM node.
-    let childPaths: Array<TemplatePath> = []
+    let childPaths: Array<ElementPath> = []
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
-    let cachedTreeRootsAccumulator: Array<TemplatePath> = []
+    let cachedTreeRootsAccumulator: Array<ElementPath> = []
     if (traverseChildren) {
       element.childNodes.forEach((child, childIndex) => {
         const {
@@ -858,7 +864,7 @@ function walkElements(
     rootMetadataAccumulator = [...rootMetadataAccumulator, ...collectedMetadata]
     return {
       rootMetadata: rootMetadataAccumulator,
-      childPaths: collectedMetadata.map((metadata) => metadata.templatePath), // TODO why not extract childPaths from the metadata?
+      childPaths: collectedMetadata.map((metadata) => metadata.elementPath), // TODO why not extract childPaths from the metadata?
       cachedTreeRoots: cachedTreeRootsAccumulator,
     }
   } else {

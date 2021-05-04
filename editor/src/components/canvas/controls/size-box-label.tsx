@@ -3,7 +3,7 @@ import { ControlFontSize } from '../canvas-controls-frame'
 import { Size } from '../../../core/shared/math-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { ResizeDragState } from '../canvas-types'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -78,7 +78,7 @@ const ResizeLabel = (props: SizeBoxLabelProps) => {
       true,
     )
     Utils.fastForEach(targets, (target) => {
-      const element = MetadataUtils.findElementByTemplatePath(metadata, target)
+      const element = MetadataUtils.findElementByElementPath(metadata, target)
       if (element != null) {
         const jsxElement = eitherToMaybe(element.element)
         if (jsxElement != null && isJSXElement(jsxElement)) {

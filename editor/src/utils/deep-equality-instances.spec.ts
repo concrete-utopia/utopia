@@ -1,34 +1,34 @@
 import { JSXElementName } from '../core/shared/element-template'
-import { InstancePath, PropertyPath, TemplatePath } from '../core/shared/project-file-types'
-import * as TP from '../core/shared/template-path'
+import { PropertyPath } from '../core/shared/project-file-types'
+import * as EP from '../core/shared/element-path'
 import {
   JSXElementNameKeepDeepEqualityCall,
   PropertyPathKeepDeepEquality,
-  TemplatePathKeepDeepEquality,
+  ElementPathKeepDeepEquality,
 } from './deep-equality-instances'
 
-describe('TemplatePathKeepDeepEquality', () => {
+describe('ElementPathKeepDeepEquality', () => {
   it('same reference returns the same reference', () => {
-    const path = TP.templatePath([['scene'], ['aaa', 'bbb']])
-    const result = TemplatePathKeepDeepEquality(path, path)
+    const path = EP.elementPath([['scene'], ['aaa', 'bbb']])
+    const result = ElementPathKeepDeepEquality(path, path)
     expect(result.value).toBe(path)
     expect(result.areEqual).toEqual(true)
   })
   it('same value returns the same reference', () => {
-    const oldPath = TP.templatePath([['scene'], ['aaa', 'bbb']])
-    const newPath = TP.templatePath([['scene'], ['aaa', 'bbb']])
-    const result = TemplatePathKeepDeepEquality(oldPath, newPath)
+    const oldPath = EP.elementPath([['scene'], ['aaa', 'bbb']])
+    const newPath = EP.elementPath([['scene'], ['aaa', 'bbb']])
+    const result = ElementPathKeepDeepEquality(oldPath, newPath)
     expect(result.value).toBe(oldPath)
     expect(result.areEqual).toEqual(true)
   })
   xit('different but similar value handled appropriately', () => {
     // FIXME Do we still want or care about this?
-    const oldPath = TP.templatePath([['scene'], ['aaa', 'bbb']]) as InstancePath
-    const newPath = TP.templatePath([['scene'], ['aaa', 'ccc']]) as InstancePath
-    const result = TemplatePathKeepDeepEquality(oldPath, newPath)
+    const oldPath = EP.elementPath([['scene'], ['aaa', 'bbb']])
+    const newPath = EP.elementPath([['scene'], ['aaa', 'ccc']])
+    const result = ElementPathKeepDeepEquality(oldPath, newPath)
     expect(result.value).toEqual(newPath)
-    expect((result.value as InstancePath).scene).toBe(oldPath.scene)
-    expect((result.value as InstancePath).element).toEqual(newPath.element)
+    expect(result.value.parts[0]).toBe(oldPath.parts[0])
+    expect(result.value.parts[1]).toEqual(newPath.parts[1])
     expect(result.areEqual).toEqual(false)
   })
 })

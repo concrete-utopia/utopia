@@ -21,8 +21,8 @@ import { findElementAtPath, MetadataUtils } from '../../../core/model/element-me
 import { isLeft, right } from '../../../core/shared/either'
 import { isJSXElement, jsxAttributeValue } from '../../../core/shared/element-template'
 import { LocalRectangle } from '../../../core/shared/math-utils'
-import { InstancePath } from '../../../core/shared/project-file-types'
-import * as TP from '../../../core/shared/template-path'
+import { ElementPath } from '../../../core/shared/project-file-types'
+import * as EP from '../../../core/shared/element-path'
 import Utils from '../../../utils/utils'
 import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
@@ -71,13 +71,13 @@ function allPinsMatch(point: FramePoint, framesToCheck: readonly Frame[]): boole
 }
 
 interface PinToSet {
-  path: InstancePath
+  path: ElementPath
   pin: FramePoint
   value: FramePin
 }
 
 interface PinToUnset {
-  path: InstancePath
+  path: ElementPath
   pin: FramePoint
 }
 
@@ -88,7 +88,7 @@ interface ChangePinResult {
 }
 
 export interface ElementFrameInfo {
-  path: InstancePath
+  path: ElementPath
   frame: Frame
   localFrame: LocalRectangle | null
   parentFrame: LocalRectangle | null
@@ -282,19 +282,15 @@ export function usePinToggling(): UsePinTogglingResult {
     return store.editor.jsxMetadata
   })
 
-  const filteredSelectedViews = usePropControlledRef_DANGEROUS(
-    TP.filterScenes(selectedViewsRef.current),
-  )
-
   const elementsRef = useRefEditorState((store) =>
-    TP.filterScenes(selectedViewsRef.current).map((e) =>
-      MetadataUtils.getElementByInstancePathMaybe(store.editor.jsxMetadata, e),
+    selectedViewsRef.current.map((e) =>
+      MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, e),
     ),
   )
 
   const elementFrames = useEditorState(
     (store): ReadonlyArray<Frame> => {
-      const jsxElements = TP.filterScenes(selectedViewsRef.current).map((path) => {
+      const jsxElements = selectedViewsRef.current.map((path) => {
         const rootComponents = getJSXComponentsAndImportsForPathFromState(
           path,
           store.editor,
@@ -360,8 +356,8 @@ export function usePinToggling(): UsePinTogglingResult {
   const togglePin = React.useCallback(
     (newFrameProp: LayoutPinnedProp) => {
       const frameInfo: ReadonlyArray<ElementFrameInfo> = elementFrames.map((frame, index) => {
-        const path = filteredSelectedViews.current[index]
-        const parentPath = TP.parentPath(path)
+        const path = selectedViewsRef.current[index]
+        const parentPath = EP.parentPath(path)
         const parentFrame = MetadataUtils.getFrame(parentPath, jsxMetadataRef.current)
         return {
           path: path,
@@ -411,7 +407,7 @@ export function usePinToggling(): UsePinTogglingResult {
     },
     [
       elementFrames,
-      filteredSelectedViews,
+      selectedViewsRef,
       elementsRef,
       Width,
       Height,
@@ -429,9 +425,9 @@ export function usePinToggling(): UsePinTogglingResult {
   )
 
   const resetAllPins = React.useCallback(() => {
-    const actions = filteredSelectedViews.current.map(resetPins)
+    const actions = selectedViewsRef.current.map(resetPins)
     dispatch(actions, 'everyone')
-  }, [filteredSelectedViews, dispatch])
+  }, [selectedViewsRef, dispatch])
 
   return {
     framePins: framePins,

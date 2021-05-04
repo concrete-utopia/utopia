@@ -7,7 +7,7 @@ import { colorTheme, SimpleFlexRow, UtopiaTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { isRight } from '../../../core/shared/either'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   isJSXArbitraryBlock,
   isJSXElement,
@@ -20,11 +20,8 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
 
   const selectedElement = useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
-    if (
-      store.editor.selectedViews.length === 1 &&
-      TP.isInstancePath(store.editor.selectedViews[0])
-    ) {
-      return MetadataUtils.getElementByInstancePathMaybe(metadata, store.editor.selectedViews[0])
+    if (store.editor.selectedViews.length === 1) {
+      return MetadataUtils.findElementByElementPath(metadata, store.editor.selectedViews[0])
     } else {
       return null
     }
@@ -71,10 +68,10 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
 
   const onInputChange = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (selectedElement != null && TP.isInstancePath(selectedElement.templatePath)) {
+      if (selectedElement != null) {
         clearTimeout(saveTimerRef.current)
         saveTimerRef.current = setTimeout(dispatchUpdate, 300, {
-          path: selectedElement.templatePath,
+          path: selectedElement.elementPath,
           text: event.target.value,
         })
         setSimpleText(event.target.value)

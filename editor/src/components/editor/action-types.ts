@@ -14,13 +14,10 @@ import { CanvasAction, CSSCursor, PinOrFlexFrameChange } from '../canvas/canvas-
 import { CursorPosition } from '../code-editor/code-editor-utils'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
 import {
-  InstancePath,
-  LayoutWrapper,
   ProjectFile,
   PropertyPath,
-  StaticElementPath,
-  TemplatePath,
-  TextFile,
+  StaticElementPathPart,
+  ElementPath,
   NodeModules,
   Imports,
   ParsedTextFile,
@@ -70,22 +67,22 @@ export type EditorModel = EditorState
 
 export type MoveRowBefore = {
   type: 'MOVE_ROW_BEFORE'
-  target: TemplatePath
+  target: ElementPath
 }
 
 export type MoveRowAfter = {
   type: 'MOVE_ROW_AFTER'
-  target: TemplatePath
+  target: ElementPath
 }
 
 export type ReparentRow = {
   type: 'REPARENT_ROW'
-  target: TemplatePath
+  target: ElementPath
 }
 
 export type ReparentToIndex = {
   type: 'REPARENT_TO_INDEX'
-  target: TemplatePath
+  target: ElementPath
   index: number
 }
 
@@ -93,13 +90,13 @@ export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow | ReparentTo
 
 export type NavigatorReorder = {
   action: 'NAVIGATOR_REORDER'
-  dragSources: Array<TemplatePath>
+  dragSources: Array<ElementPath>
   dropTarget: DropTarget
 }
 
 export type RenameComponent = {
   action: 'RENAME_COMPONENT'
-  target: TemplatePath
+  target: ElementPath
   name: string | null
 }
 
@@ -115,7 +112,7 @@ export interface InsertScene {
 export interface InsertJSXElement {
   action: 'INSERT_JSX_ELEMENT'
   jsxElement: JSXElement
-  parent: TemplatePath | null
+  parent: ElementPath | null
   importsToAdd: Imports
 }
 
@@ -125,12 +122,12 @@ export type DeleteSelected = {
 
 export type DeleteView = {
   action: 'DELETE_VIEW'
-  target: TemplatePath
+  target: ElementPath
 }
 
 export type SelectComponents = {
   action: 'SELECT_COMPONENTS'
-  target: Array<TemplatePath>
+  target: Array<ElementPath>
   addToSelection: boolean
 }
 
@@ -150,12 +147,12 @@ export interface ToggleCanvasIsLive {
 
 export type ToggleHidden = {
   action: 'TOGGLE_HIDDEN'
-  targets: Array<TemplatePath>
+  targets: Array<ElementPath>
 }
 
 export type UnsetProperty = {
   action: 'UNSET_PROPERTY'
-  element: InstancePath
+  element: ElementPath
   property: PropertyPath
 }
 
@@ -178,7 +175,7 @@ export type DuplicateSelected = {
 
 export interface DuplicateSpecificElements {
   action: 'DUPLICATE_SPECIFIC_ELEMENTS'
-  paths: Array<TemplatePath>
+  paths: Array<ElementPath>
 }
 
 export interface UpdateDuplicationState {
@@ -204,7 +201,7 @@ export type MoveSelectedForward = {
 
 export type SetZIndex = {
   action: 'SET_Z_INDEX'
-  target: TemplatePath
+  target: ElementPath
   indexPosition: IndexPosition
 }
 
@@ -282,7 +279,7 @@ export interface ClosePopup {
 export interface PasteJSXElements {
   action: 'PASTE_JSX_ELEMENTS'
   elements: JSXElement[]
-  originalTemplatePaths: TemplatePath[]
+  originalElementPaths: ElementPath[]
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
@@ -297,7 +294,7 @@ export interface SetProjectID {
 
 export interface OpenTextEditor {
   action: 'OPEN_TEXT_EDITOR'
-  target: TemplatePath
+  target: ElementPath
   mousePosition: WindowPoint | null
 }
 
@@ -327,7 +324,7 @@ export interface SetRightMenuExpanded {
 
 export interface ToggleCollapse {
   action: 'TOGGLE_COLLAPSE'
-  target: TemplatePath
+  target: ElementPath
 }
 
 export interface AddToast {
@@ -342,7 +339,7 @@ export interface RemoveToast {
 
 export interface SetHighlightedView {
   action: 'SET_HIGHLIGHTED_VIEW'
-  target: TemplatePath
+  target: ElementPath
 }
 
 export interface ClearHighlightedViews {
@@ -373,7 +370,7 @@ export interface SaveImageDoNothing {
 
 export interface SaveImageInsertWith {
   type: 'SAVE_IMAGE_INSERT_WITH'
-  parentPath: TemplatePath | null
+  parentPath: ElementPath | null
   frame: CanvasRectangle
   multiplier: number
 }
@@ -402,18 +399,18 @@ export type SaveAsset = {
 
 export type ResetPins = {
   action: 'RESET_PINS'
-  target: InstancePath
+  target: ElementPath
 }
 
 export interface WrapInView {
   action: 'WRAP_IN_VIEW'
-  targets: TemplatePath[]
+  targets: ElementPath[]
   layoutSystem: LayoutSystem
 }
 
 export interface UnwrapGroupOrView {
   action: 'UNWRAP_GROUP_OR_VIEW'
-  target: TemplatePath
+  target: ElementPath
   onlyForGroups: boolean
 }
 
@@ -424,14 +421,14 @@ export interface SetCanvasAnimationsEnabled {
 
 export interface UpdateFrameDimensions {
   action: 'UPDATE_FRAME_DIMENSIONS'
-  element: TemplatePath
+  element: ElementPath
   width: number
   height: number
 }
 
 export interface SetNavigatorRenamingTarget {
   action: 'SET_NAVIGATOR_RENAMING_TARGET'
-  target: TemplatePath | null
+  target: ElementPath | null
 }
 
 export interface RedrawOldCanvasControls {
@@ -608,19 +605,19 @@ export interface SendLinterRequestMessage {
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ReadonlyArray<ElementInstanceMetadata>
-  cachedTreeRoots: Array<TemplatePath>
+  cachedTreeRoots: Array<ElementPath>
 }
 
 export interface SetProp {
   action: 'SET_PROP'
-  target: TemplatePath
+  target: ElementPath
   propertyPath: PropertyPath
   value: JSXAttribute
 }
 
 export interface SetPropWithElementPath {
   action: 'SET_PROP_WITH_ELEMENT_PATH'
-  target: StaticElementPath
+  target: StaticElementPathPart
   propertyPath: PropertyPath
   value: JSXAttribute
 }
@@ -632,14 +629,14 @@ export interface SetFilebrowserRenamingTarget {
 
 export interface ToggleProperty {
   action: 'TOGGLE_PROPERTY'
-  target: InstancePath
+  target: ElementPath
   // FIXME: This will cause problems with multi-user editing.
   togglePropValue: (element: JSXElement) => JSXElement
 }
 
 export interface DEPRECATEDToggleEnabledProperty {
   action: 'deprecated_TOGGLE_ENABLED_PROPERTY'
-  target: InstancePath
+  target: ElementPath
   // FIXME: This will cause problems with multi-user editing.
   togglePropValue: (element: JSXElement) => JSXElement
 }
@@ -658,7 +655,7 @@ export interface InsertImageIntoUI {
 
 export interface UpdateJSXElementName {
   action: 'UPDATE_JSX_ELEMENT_NAME'
-  target: InstancePath
+  target: ElementPath
   elementName: JSXElementName
   importsToAdd: Imports
 }
@@ -670,13 +667,13 @@ export interface AddImports {
 
 export interface SetAspectRatioLock {
   action: 'SET_ASPECT_RATIO_LOCK'
-  target: InstancePath
+  target: ElementPath
   locked: boolean
 }
 
 export interface RenameStyleSelector {
   action: 'RENAME_PROP_KEY'
-  target: InstancePath
+  target: ElementPath
   cssTargetPath: CSSTarget
   value: Array<string>
 }
@@ -699,7 +696,7 @@ export interface InsertDroppedImage {
 
 export interface ResetPropToDefault {
   action: 'RESET_PROP_TO_DEFAULT'
-  target: TemplatePath
+  target: ElementPath
   path: PropertyPath | null
 }
 
@@ -725,7 +722,7 @@ export interface FinishCheckpointTimer {
 export interface AddMissingDimensions {
   action: 'ADD_MISSING_DIMENSIONS'
   existingSize: CanvasRectangle
-  target: InstancePath
+  target: ElementPath
 }
 
 export interface SetPackageStatus {
@@ -755,7 +752,7 @@ export interface AddStoryboardFile {
 
 export interface UpdateChildText {
   action: 'UPDATE_CHILD_TEXT'
-  target: InstancePath
+  target: ElementPath
   text: string
 }
 
@@ -777,12 +774,12 @@ export interface SendCodeEditorInitialisation {
 
 export interface SetFocusedElement {
   action: 'SET_FOCUSED_ELEMENT'
-  focusedElementPath: TemplatePath | null
+  focusedElementPath: ElementPath | null
 }
 
 export interface ScrollToElement {
   action: 'SCROLL_TO_ELEMENT'
-  target: TemplatePath
+  target: ElementPath
   keepScrollPositionIfVisible: boolean
 }
 

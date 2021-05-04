@@ -5,15 +5,15 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
 import { Utils } from '../../../uuiui-deps'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { Icons, UIRow, UtopiaTheme } from '../../../uuiui'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 
 interface ElementPathElement {
   name?: string
-  path: TemplatePath
+  path: ElementPath
 }
 
 export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
@@ -36,8 +36,8 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
         return []
       }
       let elements: Array<ElementPathElement> = []
-      Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-        const component = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+      Utils.fastForEach(EP.allPathsForLastPart(selectedViews[0]), (path) => {
+        const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
         if (component != null) {
           elements.push({
             name: MetadataUtils.getElementLabel(path, jsxMetadata),
@@ -53,7 +53,7 @@ export const BreadcrumbTrail = betterReactMemo('BreadcrumbTrail', () => {
   const elements = elementPath.map((elem, index) => {
     const isSelected = index === lastElemIndex
     return (
-      <React.Fragment key={`elem-path-${TP.toComponentId(elem.path)}`}>
+      <React.Fragment key={`elem-path-${EP.toComponentId(elem.path)}`}>
         <div onMouseDown={() => onSelect(elem.path)} style={{ fontWeight: isSelected ? 500 : 400 }}>
           {elem.name}
         </div>

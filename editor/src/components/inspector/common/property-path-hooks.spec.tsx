@@ -47,7 +47,7 @@ import {
   useInspectorInfo,
   useInspectorStyleInfo,
 } from './property-path-hooks'
-import { isParseSuccess, TemplatePath } from '../../../core/shared/project-file-types'
+import { isParseSuccess, ElementPath } from '../../../core/shared/project-file-types'
 import { betterReactMemo } from '../../../utils/react-performance'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import {

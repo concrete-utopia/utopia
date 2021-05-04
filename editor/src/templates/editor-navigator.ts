@@ -1,20 +1,20 @@
 import * as update from 'immutability-helper'
-import { TemplatePath } from '../core/shared/project-file-types'
+import { ElementPath } from '../core/shared/project-file-types'
 import { DerivedState, EditorState } from '../components/editor/store/editor-state'
 import { LocalNavigatorAction } from '../components/navigator/actions'
 import { DragSelection } from '../components/navigator/navigator-item/navigator-item-dnd-container'
-import * as TP from '../core/shared/template-path'
+import * as EP from '../core/shared/element-path'
 import Utils from '../utils/utils'
 
 export function createDragSelections(
-  templatePaths: TemplatePath[],
-  selectedViews: TemplatePath[],
+  elementPaths: ElementPath[],
+  selectedViews: ElementPath[],
 ): Array<DragSelection> {
   let selections: Array<DragSelection> = []
   Utils.fastForEach(selectedViews, (selectedView) => {
     selections.push({
-      templatePath: selectedView,
-      index: templatePaths.findIndex((tp) => TP.pathsEqual(tp, selectedView)),
+      elementPath: selectedView,
+      index: elementPaths.findIndex((tp) => EP.pathsEqual(tp, selectedView)),
     })
   })
   selections.sort((a, b) => b.index - a.index)
