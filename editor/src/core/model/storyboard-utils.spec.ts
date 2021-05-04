@@ -29,7 +29,6 @@ import { addStoryboardFileToProject } from './storyboard-utils'
 function createTestProjectLackingStoryboardFile(): EditorState {
   const appFile = `
 import * as React from 'react'
-import { jsx } from 'utopia-api'
 export var App = (props) => {
   return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
 }`

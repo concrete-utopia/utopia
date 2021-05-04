@@ -6,7 +6,7 @@ export interface EllipseProps
     UtopiaComponentProps {}
 
 export const Ellipse: React.FunctionComponent<EllipseProps> = (props: EllipseProps) => {
-  let { layout: passedLayout, 'data-uid': dataUid, 'data-label': dataLabel, ...divProps } = props
+  let { 'data-uid': dataUid, 'data-label': dataLabel, ...divProps } = props
   const propsWithEventHandlers = addEventHandlersToDivProps(divProps)
 
   return (

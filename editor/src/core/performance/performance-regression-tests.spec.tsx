@@ -14,10 +14,9 @@ describe('React Render Count Tests - ', () => {
   it('Clicking on opacity slider', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
       </View>
@@ -49,10 +48,9 @@ describe('React Render Count Tests - ', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 0.3 }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 0.3, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
       </View>`,
@@ -60,22 +58,20 @@ describe('React Render Count Tests - ', () => {
     )
 
     const renderCountAfter = renderResult.getNumberOfRenders()
-    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(340) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(360)
+    expect(renderCountAfter - renderCountBefore).toBeGreaterThan(705) // if this breaks, GREAT NEWS but update the test please :)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(715)
   })
 
   it('Changing the selected view', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 152, top: 161, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 152, top: 161, width: 256, height: 202 }}
           data-uid='ccc'
         />
       </View>
@@ -101,15 +97,13 @@ describe('React Render Count Tests - ', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
         <View
-          style={{ backgroundColor: '#DDDDDD', opacity: 1 }}
-          layout={{ layoutSystem: 'pinSystem', left: 152, top: 161, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', position: 'absolute', opacity: 1, left: 152, top: 161, width: 256, height: 202 }}
           data-uid='ccc'
         />
       </View>`,

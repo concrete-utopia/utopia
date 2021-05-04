@@ -34,10 +34,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('a simple TLWH pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
       </View>
@@ -53,10 +52,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
           data-uid='bbb'
         />
       </View>`,
@@ -67,10 +65,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('a simple TLWH pin change works with old CanvasMetadata format as well', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
       </View>
@@ -86,10 +83,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
           data-uid='bbb'
         />
       </View>`,
@@ -100,10 +96,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('TLWH, but W and H are percentage works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: '50%', height: '20%'  }}
-          layout={{ layoutSystem: 'pinSystem'}}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: '50%', height: '20%'  }}
           data-uid='bbb'
         />
       </View>
@@ -119,10 +114,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: '25%', height: '25%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: '25%', height: '25%' }}
           data-uid='bbb'
         />
       </View>`,
@@ -133,10 +127,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('TLW, missing H pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256 }}
           data-uid='bbb'
         />
       </View>
@@ -152,10 +145,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
           data-uid='bbb'
         />
       </View>`,
@@ -166,10 +158,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('TLWHBR, too many frame points work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
           data-uid='bbb'
         />
       </View>
@@ -185,11 +176,10 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
           ${/** notice how the extraneous pins were removed automatically */ ''}
-          layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
       </View>`,
@@ -200,10 +190,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('TLRB pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, right: 50, bottom: 20 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
           data-uid='bbb'
         />
       </View>`,
@@ -219,43 +208,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 280, bottom: 280 }}
-          layout={{ layoutSystem: 'pinSystem' }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
-  })
-
-  it('TLCxCy pin change works', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: 100, centerY: 100 }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
-
-    const pinChange = pinFrameChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
-    )
-
-    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: -130, centerY: -130 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, right: 280, bottom: 280 }}
           data-uid='bbb'
         />
       </View>`,
@@ -266,7 +221,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
   it('no layout prop on child', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
           style={{ backgroundColor: '#0091FFAA' }}
           data-uid='bbb'
@@ -284,7 +239,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
           ${/** pins are magically created */ ''}
           style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
@@ -301,10 +256,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61 }}
             data-uid='bbb'
           />
         </View>`,
@@ -320,10 +274,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 20, top: 20 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20 }}
             data-uid='bbb'
           />
         </View>`,
@@ -334,10 +287,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('only TL pins work with old CanvasMetadata as well', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61 }}
             data-uid='bbb'
           />
         </View>`,
@@ -353,10 +305,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 20, top: 20 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20 }}
             data-uid='bbb'
           />
         </View>`,
@@ -367,10 +318,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('only RB pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', right: 50, bottom: 50 }}
-            layout={{ layoutSystem: 'pinSystem'  }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 50, bottom: 50 }}
             data-uid='bbb'
           />
         </View>`,
@@ -386,10 +336,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', right: 30, bottom: 30 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 30, bottom: 30 }}
             data-uid='bbb'
           />
         </View>`,
@@ -400,10 +349,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('just R pin gets turned into T,R', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', right: 50 }}
-            layout={{ layoutSystem: 'pinSystem'  }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 50 }}
             data-uid='bbb'
           />
         </View>`,
@@ -419,10 +367,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', right: 30, top: 20 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', right: 30, top: 20 }}
             data-uid='bbb'
           />
         </View>`,
@@ -433,10 +380,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('just B pin gets turned into L,B', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', bottom: 50 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', bottom: 50 }}
             data-uid='bbb'
           />
         </View>`,
@@ -452,10 +398,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', bottom: 30, left: 20 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', bottom: 30, left: 20 }}
             data-uid='bbb'
           />
         </View>`,
@@ -466,10 +411,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('just B pin doesn`t turn into L,B with deltaX=0', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', bottom: 50 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', bottom: 50 }}
             data-uid='bbb'
           />
         </View>`,
@@ -485,10 +429,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', bottom: 30 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', bottom: 30 }}
             data-uid='bbb'
           />
         </View>`,
@@ -499,10 +442,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('TLWH, but W and H are left alone', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: '50%', height: 25, left: 52, top: 61 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: '50%', height: 25, left: 52, top: 61 }}
           data-uid='bbb'
         />
       </View>
@@ -518,10 +460,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: '50%', height: 25, left: 20, top: 20  }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: '50%', height: 25, left: 20, top: 20  }}
           data-uid='bbb'
         />
       </View>`,
@@ -532,10 +473,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('TLWH, but W and H are left alone, T, L are % values', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: '50%', height: 25, left: '10%', top: '5%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: '50%', height: 25, left: '10%', top: '5%' }}
           data-uid='bbb'
         />
       </View>
@@ -551,10 +491,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', width: '50%', height: 25, left: '2%', top: '16.3%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', width: '50%', height: 25, left: '2%', top: '16.3%' }}
           data-uid='bbb'
         />
       </View>`,
@@ -565,10 +504,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('TLRB pin change works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, right: 50, bottom: 20 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
           data-uid='bbb'
         />
       </View>`,
@@ -584,10 +522,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 82, bottom: 61 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, right: 82, bottom: 61 }}
           data-uid='bbb'
         />
       </View>`,
@@ -598,10 +535,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('TLRB pin change works, with % values', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: '10%', top: '15%', right: '10%', bottom: '25%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: '10%', top: '15%', right: '10%', bottom: '25%' }}
           data-uid='bbb'
         />
       </View>`,
@@ -617,82 +553,16 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
           style={{
             backgroundColor: '#0091FFAA',
+            position: 'absolute',
             left: '15%',
             top: '31.3%',
             right: '5%',
             bottom: '8.8%',
           }}
-          layout={{ layoutSystem: 'pinSystem' }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
-  })
-
-  it('TLCxCy pin change works', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: 100, centerY: 100 }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
-
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
-      x: -32,
-      y: -41,
-    } as CanvasVector)
-
-    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: 68, centerY: 59 }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
-  })
-
-  it('RBCxCy pin change works', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', right: 52, bottom: 61 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: 100, centerY: 100 }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
-
-    const pinChange = pinMoveChange(TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']), {
-      x: -32,
-      y: -41,
-    } as CanvasVector)
-
-    await renderResult.dispatch([setCanvasFrames([pinChange], false)], true)
-
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', right: 84, bottom: 102 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: 68, centerY: 59 }}
           data-uid='bbb'
         />
       </View>`,
@@ -703,10 +573,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('TLWHBR, too many frame points work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
           data-uid='bbb'
         />
       </View>
@@ -722,7 +591,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
             ${
               /**
@@ -732,6 +601,7 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
             }
             style={{
               backgroundColor: '#0091FFAA',
+              position: 'absolute',
               left: 20,
               top: 20,
               width: 256,
@@ -739,7 +609,6 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
               bottom: 178,
               right: 125,
             }}
-            layout={{ layoutSystem: 'pinSystem' }}
             data-uid='bbb'
           />
       </View>`,
@@ -750,10 +619,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
   it('TLR, no B pin change?', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, right: 50 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50 }}
           data-uid='bbb'
         />
       </View>`,
@@ -769,10 +637,9 @@ describe('updateFramesOfScenesAndComponents - pinMoveChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 82 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, right: 82 }}
           data-uid='bbb'
         />
       </View>`,
@@ -786,10 +653,9 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
   it('only TL pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61 }}
             data-uid='bbb'
           />
         </View>`,
@@ -806,10 +672,9 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, width: 100, height: 100 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, width: 100, height: 100 }}
             data-uid='bbb'
           />
         </View>`,
@@ -820,10 +685,9 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
   it('only TW pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 52, width: 100 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, width: 100 }}
             data-uid='bbb'
           />
         </View>`,
@@ -842,10 +706,9 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 20, width: 100, height: 100 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, width: 100, height: 100 }}
             data-uid='bbb'
           />
         </View>`,
@@ -856,10 +719,9 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
   it('TLRB pins work', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, right: 150, bottom: 150 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 150, bottom: 150 }}
             data-uid='bbb'
           />
         </View>`,
@@ -876,10 +738,9 @@ describe('updateFramesOfScenesAndComponents - pinSizeChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 20, top: 20, right: 280, bottom: 280 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 20, top: 20, right: 280, bottom: 280 }}
             data-uid='bbb'
           />
         </View>`,
@@ -893,10 +754,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('TLWH, but W and H are percentage works', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 40, top: 40, width: '50%', height: '20%'  }}
-          layout={{ layoutSystem: 'pinSystem'}}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 40, width: '50%', height: '20%'  }}
           data-uid='bbb'
         />
       </View>
@@ -913,10 +773,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 40, top: 40, width: '45%', height: '17.5%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 40, top: 40, width: '45%', height: '17.5%' }}
           data-uid='bbb'
         />
       </View>`,
@@ -926,7 +785,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('no layout prop on child', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
           style={{ backgroundColor: '#0091FFAA' }}
           data-uid='bbb'
@@ -945,7 +804,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
           ${/** pins are magically created */ ''}
           style={{ backgroundColor: '#0091FFAA', top: -60, height: 60, left: -50, width: 50 }}
@@ -1113,8 +972,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-            layout={{ layoutSystem: 'pinSystem'}}
+            style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           >
             <View data-uid='ccc'>
@@ -1146,8 +1004,7 @@ describe('moveTemplate', () => {
         <View style={{ ...props.style }} data-uid='aaa'>
           <View data-uid='eee'>
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 52, top: -141, width: 256, height: 202 }}
-              layout={{ layoutSystem: 'pinSystem'  }}
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: -141, width: 256, height: 202 }}
               data-uid='bbb'
             >
               <View data-uid='ccc'>
@@ -1167,8 +1024,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           >
             <View data-uid='ccc'>
@@ -1195,8 +1051,7 @@ describe('moveTemplate', () => {
         <View style={{ ...props.style }} data-uid='aaa'>
           <View data-uid='eee'>
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 52, top: -141, width: 256, height: 202}}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: -141, width: 256, height: 202}}
               data-uid='bbb'
             >
               <View data-uid='ccc'>
@@ -1213,8 +1068,7 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           >
             <View data-uid='ccc'>
@@ -1242,8 +1096,7 @@ describe('moveTemplate', () => {
           <View data-uid='eee'>
             <View data-uid='ddd' style={{ left: 52, top: -141 }} />
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 52, top: -141, width: 256, height: 202 }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ backgroundColor: '#0091FFAA', position: 'relative', left: 52, top: -141, width: 256, height: 202 }}
               data-uid='bbb'
             >
               <View data-uid='ccc' />
@@ -1263,7 +1116,7 @@ describe('moveTemplate', () => {
             style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid='bbb'
           >
-            <View data-uid='ccc' layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
+            <View data-uid='ccc' style={{ flexBasis: 70, height: 50 }} />
           </View>
           <View data-uid='eee' style={{ position: 'absolute', left: 50, top: 175, width: 80, height: 80 }}/>
         </View>
@@ -1287,7 +1140,7 @@ describe('moveTemplate', () => {
             style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid='bbb'
           >
-            <View data-uid='ccc' layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
+            <View data-uid='ccc' style={{ flexBasis: 70, height: 50 }} />
             <View data-uid='eee' style={{ position: 'relative', flexBasis: 80, height: 80 }} />
           </View>
         </View>
@@ -1306,14 +1159,14 @@ describe('moveTemplate', () => {
     //await wait(10000)
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid='bbb'
           >
-            <View data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
+            <View data-uid='ccc' style={{ backgroundColor: '#ff00ff', flexBasis: 70, height: 50 }} />
           </View>
-          <View data-testid='eee' data-uid='eee' style={{ position: 'absolute', backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }}/>
+          <View data-testid='eee' data-uid='eee' style={{ position: 'relative', backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }}/>
         </View>
       `),
     )
@@ -1396,12 +1249,12 @@ describe('moveTemplate', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200, display: 'flex' }}
             data-uid='bbb'
           >
-            <View data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', flexBasis: 70, crossBasis: 50 }} />
+            <View data-uid='ccc' style={{ backgroundColor: '#ff00ff', flexBasis: 70, height: 50 }} />
             <View data-testid='eee'  data-uid='eee' style={{ backgroundColor: '#00ff00', position: 'relative', flexBasis: 80, height: 80 }} />
           </View>
         </View>
@@ -1736,7 +1589,7 @@ describe('moveTemplate', () => {
             data-uid='bbb'
             data-testid='bbb'
           >
-            <div data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
+            <div data-uid='ccc' style={{ backgroundColor: '#ff00ff', flexBasis: 20, height: 20 }} />
           </div>
         </div>
       `),
@@ -1824,7 +1677,7 @@ describe('moveTemplate', () => {
             data-uid='bbb'
             data-testid='bbb'
           >
-            <div data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ flexBasis: 20, crossBasis: 20 }} />
+            <div data-uid='ccc' style={{ backgroundColor: '#ff00ff', flexBasis: 20, height: 20 }} />
             <View
               style={{ backgroundColor: '#0091FFAA', position: 'relative', height: 74, flexBasis: 74 }}
               data-uid='${NewUID}'
@@ -1975,15 +1828,14 @@ describe('moveTemplate', () => {
   it('reparents an element while dragging', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
             data-uid='bbb'
           >
-            <View data-uid='ccc' style={{ backgroundColor: '#ff00ff' }} layout={{ layoutSystem: 'pinSystem', top: 10, left: 15, width: 50, height: 60 }} />
+            <View data-uid='ccc' style={{ backgroundColor: '#ff00ff', position: 'absolute', top: 10, left: 15, width: 50, height: 60 }} />
           </View>
-          <View data-testid='eee' data-uid='eee' style={{ backgroundColor: '#00ff00', left: 150, top: 250, width: 80, height: 80 }} layout={{ layoutSystem: 'pinSystem' }}/>
+          <View data-testid='eee' data-uid='eee' style={{ backgroundColor: '#00ff00', position: 'absolute', left: 150, top: 250, width: 80, height: 80 }}/>
         </View>
       `),
     )
@@ -2067,22 +1919,19 @@ describe('moveTemplate', () => {
     //await wait(600000)
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+      <View style={{ ...props.style }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-        layout={{ layoutSystem: 'pinSystem' }}
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
         data-uid='bbb'
       >
         <View
           data-uid='ccc'
-          style={{ backgroundColor: '#ff00ff' }}
-          layout={{ layoutSystem: 'pinSystem', top: 10, left: 15, width: 50, height: 60 }}
+          style={{ backgroundColor: '#ff00ff', position: 'absolute', top: 10, left: 15, width: 50, height: 60 }}
         />
         <View
           data-testid='eee'
           data-uid='eee'
-          style={{ backgroundColor: '#00ff00', left: 100, top: 170, width: 80, height: 80 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#00ff00',  position: 'absolute', left: 100, top: 170, width: 80, height: 80 }}
         />
       </View>
     </View>
@@ -2092,7 +1941,7 @@ describe('moveTemplate', () => {
   it('canvas select a sibling and drag immediately', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ width: '100%', height: '100%' }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        <View style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <View
             style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200, }}
             data-uid='bbb'
@@ -2186,7 +2035,6 @@ describe('moveTemplate', () => {
       makeTestProjectCodeWithSnippet(`
       <View
           style={{ width: '100%', height: '100%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
           data-uid='aaa'
         >
           <View

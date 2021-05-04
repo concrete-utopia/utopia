@@ -116,10 +116,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('a simple TLWH pin change works', async () => {
     const testProject = getEditorState(
       makeTestProjectCodeWithSnippet(`
-    <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 250, height: 300 }}
-        layout={{ layoutSystem: 'pinSystem' }}
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -140,10 +139,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 310, height: 340 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 310, height: 340 }}
           data-uid='bbb'
         />
       </View>`,
@@ -153,10 +151,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('TLW, missing H resizing from bottom right edge adds height', async () => {
     const testProject = getEditorState(
       makeTestProjectCodeWithSnippet(`
-    <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256 }}
-        layout={{ layoutSystem: 'pinSystem' }}
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256 }}
         data-uid='bbb'
       />
     </View>
@@ -177,10 +174,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 296, height: 30 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 296, height: 30 }}
           data-uid='bbb'
         />
       </View>`,
@@ -190,10 +186,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('TLWHBR, too many frame points work', async () => {
     const testProject = getEditorState(
       makeTestProjectCodeWithSnippet(`
-    <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
-        layout={{ layoutSystem: 'pinSystem' }}
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, width: 256, height: 202, bottom: 137, right: 93 }}
         data-uid='bbb'
       />
     </View>
@@ -214,10 +209,11 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
           style={{
             backgroundColor: '#0091FFAA',
+            position: 'absolute',
             left: 52,
             top: 61,
             width: 306,
@@ -225,7 +221,6 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
             bottom: 87,
             right: 43,
           }}
-          layout={{ layoutSystem: 'pinSystem' }}
           data-uid='bbb'
         />
       </View>`,
@@ -236,10 +231,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('TLRB pin change works, dragged from topleft point', async () => {
     const testProject = getEditorState(
       makeTestProjectCodeWithSnippet(`
-    <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, right: 50, bottom: 20 }}
-        layout={{ layoutSystem: 'pinSystem' }}
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
         data-uid='bbb'
       />
     </View>
@@ -260,10 +254,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 2, top: 41, right: 50, bottom: 20 }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 2, top: 41, right: 50, bottom: 20 }}
           data-uid='bbb'
         />
       </View>`,
@@ -273,10 +266,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
   it('TLRB pin change works, dragged from bottom right point', async () => {
     const testProject = getEditorState(
       makeTestProjectCodeWithSnippet(`
-    <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+    <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, right: 50, bottom: 20 }}
-        layout={{ layoutSystem: 'pinSystem' }}
+        style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: 50, bottom: 20 }}
         data-uid='bbb'
       />
     </View>
@@ -297,85 +289,9 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
+        `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61, right: -30, bottom: 30 }}
-          layout={{ layoutSystem: 'pinSystem' }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
-  })
-
-  it('TLCxCy pin change works, dragged from topleft point', async () => {
-    const testProject = getEditorState(
-      makeTestProjectCodeWithSnippet(`
-    <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-      <View
-        style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
-        layout={{ layoutSystem: 'pinSystem', centerX: 100, centerY: 100 }}
-        data-uid='bbb'
-      />
-    </View>
-    `),
-    )
-
-    const pinChange = singleResizeChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      { x: 0, y: 0 } as EdgePosition,
-      { x: 40, y: 30 } as CanvasVector,
-    )
-
-    const updatedProject = updateFramesOfScenesAndComponents(
-      testProject,
-      [pinChange],
-      canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-    )
-
-    expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', left: 12, top: 31 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: 80, centerY: 85 }}
-          data-uid='bbb'
-        />
-      </View>`,
-      ),
-    )
-  })
-  it('TLCxCy pin change works, dragged from bottomright point', async () => {
-    const testProject = getEditorState(
-      makeTestProjectCodeWithSnippet(`
-    <View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-      <View
-        style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
-        layout={{ layoutSystem: 'pinSystem', centerX: 100, centerY: 100 }}
-        data-uid='bbb'
-      />
-    </View>
-    `),
-    )
-
-    const pinChange = singleResizeChange(
-      TP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
-      { x: 1, y: 1 } as EdgePosition,
-      { x: 40, y: 30 } as CanvasVector,
-    )
-
-    const updatedProject = updateFramesOfScenesAndComponents(
-      testProject,
-      [pinChange],
-      canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
-    )
-
-    expect(testPrintCodeFromEditorState(updatedProject)).toEqual(
-      makeTestProjectCodeWithSnippet(
-        `<View style={{ ...(props.style || {}) }} layout={{ layoutSystem: 'pinSystem' }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#0091FFAA', left: 52, top: 61 }}
-          layout={{ layoutSystem: 'pinSystem', centerX: 120, centerY: 115 }}
+          style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 52, top: 61, right: -30, bottom: 30 }}
           data-uid='bbb'
         />
       </View>`,
