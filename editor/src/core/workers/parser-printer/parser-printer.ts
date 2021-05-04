@@ -1052,6 +1052,7 @@ export function parseCode(
   filename: string,
   sourceText: string,
   oldParseResultForUIDComparison: ParsedTextFile | null,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParsedTextFile {
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
 
@@ -1064,7 +1065,6 @@ export function parseCode(
     let imports: Imports = emptyImports()
     // Find the already existing UIDs so that when we generate one it doesn't duplicate one
     // existing further ahead.
-    const alreadyExistingUIDs: Set<string> = emptySet() // collatedUIDs(sourceFile)
     let highlightBounds: HighlightBoundsForUids = {}
 
     let allArbitraryNodes: Array<TS.Node> = []
@@ -1083,7 +1083,7 @@ export function parseCode(
           topLevelNames,
           null,
           highlightBounds,
-          alreadyExistingUIDs,
+          alreadyExistingUIDs_MUTABLE,
           true,
           '',
           false,
@@ -1231,7 +1231,7 @@ export function parseCode(
               imports,
               topLevelNames,
               highlightBounds,
-              alreadyExistingUIDs,
+              alreadyExistingUIDs_MUTABLE,
             )
             parsedFunctionParam = flatMapEither((parsedParams) => {
               const paramsValue = parsedParams.value
@@ -1263,7 +1263,7 @@ export function parseCode(
                 propsObjectName,
                 body,
                 param?.highlightBounds ?? {},
-                alreadyExistingUIDs,
+                alreadyExistingUIDs_MUTABLE,
               )
             })
           } else {
@@ -1279,7 +1279,7 @@ export function parseCode(
                 topLevelNames,
                 null,
                 highlightBounds,
-                alreadyExistingUIDs,
+                alreadyExistingUIDs_MUTABLE,
               ),
             )
           }
@@ -1361,7 +1361,7 @@ export function parseCode(
         topLevelNames,
         null,
         highlightBounds,
-        alreadyExistingUIDs,
+        alreadyExistingUIDs_MUTABLE,
         true,
         '',
         true,
@@ -1738,11 +1738,18 @@ export function lintAndParse(
   filename: string,
   content: string,
   oldParseResultForUIDComparison: ParsedTextFile | null,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
   if (lintResult.filter(messageisFatal).length === 0) {
-    return parseCode(filename, content, oldParseResultForUIDComparison)
+    const result = parseCode(
+      filename,
+      content,
+      oldParseResultForUIDComparison,
+      alreadyExistingUIDs_MUTABLE,
+    )
+    return result
   } else {
     return parseFailure(null, null, null, lintResult)
   }

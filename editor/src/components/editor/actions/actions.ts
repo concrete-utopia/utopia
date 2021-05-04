@@ -487,6 +487,7 @@ import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'
+import { emptySet } from '../../../core/shared/set-utils'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1321,12 +1322,23 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
+    const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
-        const parseResult = lintAndParse(filename, file.fileContents.code, null)
+        const parseResult = lintAndParse(
+          filename,
+          file.fileContents.code,
+          null,
+          alreadyExistingUIDs_MUTABLE,
+        )
         const lastSavedFileContents = optionalMap((lastSaved) => {
-          const lastSavedParseResult = lintAndParse(filename, lastSaved.code, null)
+          const lastSavedParseResult = lintAndParse(
+            filename,
+            lastSaved.code,
+            null,
+            alreadyExistingUIDs_MUTABLE,
+          )
           return textFileContents(lastSaved.code, lastSavedParseResult, RevisionsState.BothMatch)
         }, file.lastSavedContents)
         return textFile(

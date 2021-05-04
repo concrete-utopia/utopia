@@ -24,6 +24,7 @@ import { testParseCode } from './parser-printer.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
 import { addFileToProjectContents } from '../../../components/assets'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
+import { emptySet } from '../../shared/set-utils'
 
 describe('parseCode', () => {
   it('produces unique IDs for every element', () => {
@@ -76,7 +77,7 @@ export var app = (props) => {
   )
 }
     `
-    const parsedCode = parseCode('test.js', startingCode, null)
+    const parsedCode = parseCode('test.js', startingCode, null, emptySet())
     const actualResult = foldParsedTextFile(
       (_) => 'FAILURE',
       (success) => {

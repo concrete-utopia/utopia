@@ -181,6 +181,7 @@ import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
 import { addToMapOfArraysUnique } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
+import { emptySet } from '../../core/shared/set-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<TemplatePath>,
@@ -2381,7 +2382,12 @@ export function reorderComponent(
 
 export function createTestProjectWithCode(appUiJsFile: string): PersistentModel {
   const baseModel = defaultProject()
-  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null) as ParsedTextFile
+  const parsedFile = lintAndParse(
+    StoryboardFilePath,
+    appUiJsFile,
+    null,
+    emptySet(),
+  ) as ParsedTextFile
 
   if (isParseFailure(parsedFile)) {
     fail('The test file parse failed')
