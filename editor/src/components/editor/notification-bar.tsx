@@ -26,8 +26,12 @@ export const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
 export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
   const loginState = useEditorState((store) => store.userState.loginState, 'LoginStatusBar')
 
-  const onClickCallback = React.useCallback(() => {
+  const onClickLoginSameTab = React.useCallback(() => {
     setRedirectUrl(window.top.location.pathname).then(() => window.top.location.replace(auth0Url))
+  }, [])
+
+  const onClickLoginNewTab = React.useCallback(() => {
+    window.open(auth0Url, '_blank')
   }, [])
 
   switch (loginState.type) {
@@ -38,7 +42,7 @@ export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
         <NotificationBar
           level='PRIMARY'
           message={'Welcome to Utopia. Click here to sign in and save your projects.'}
-          onClick={onClickCallback}
+          onClick={onClickLoginSameTab}
           style={{ cursor: 'pointer' }}
         />
       )
@@ -47,7 +51,7 @@ export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
         <NotificationBar
           level='ERROR'
           message={'You were logged out. Click here to log in again.'}
-          onClick={onClickCallback}
+          onClick={onClickLoginNewTab}
           style={{ cursor: 'pointer' }}
         />
       )
