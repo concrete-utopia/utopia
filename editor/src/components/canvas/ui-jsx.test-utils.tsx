@@ -229,8 +229,11 @@ export async function renderTestEditorWithModel(
   }
 }
 
-export function getPrintedUiJsCode(store: EditorStore): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
+export function getPrintedUiJsCode(
+  store: EditorStore,
+  filePath: string = StoryboardFilePath,
+): string {
+  const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
   if (isTextFile(file)) {
     return file.fileContents.code
   } else {
