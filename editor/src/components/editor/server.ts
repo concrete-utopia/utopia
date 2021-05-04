@@ -403,7 +403,7 @@ export function startPollingLoginState(
     if (previousLoginState.type !== loginState.type) {
       dispatch([setLoginState(loginState)])
       if (isLoginLost(loginState)) {
-        dispatch([showToast(notice(`You have been logged out.`, 'ERROR', true))])
+        dispatch([showToast(notice(`You have been logged out. You can continue working, but your work won't be saved until you log in again.`, 'ERROR', true))])
       }
     }
     previousLoginState = loginState
