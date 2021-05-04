@@ -1025,7 +1025,11 @@ function deleteElements(targets: TemplatePath[], editor: EditorModel): EditorMod
           }, parseSuccess)
         }
       }
-      return modifyParseSuccessAtPath(targetSuccess.filePath, working, deleteElementFromParseSuccess)
+      return modifyParseSuccessAtPath(
+        targetSuccess.filePath,
+        working,
+        deleteElementFromParseSuccess,
+      )
     }, editor)
     return {
       ...updatedEditor,
