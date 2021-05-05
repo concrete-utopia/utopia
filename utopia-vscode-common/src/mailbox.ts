@@ -70,26 +70,45 @@ async function initOutbox(outboxToUse: Mailbox): Promise<void> {
   }
 }
 
-async function receiveMessage<T>(messageName: string, parseMessage: (msg: string) => T): Promise<T> {
+async function receiveMessage<T>(
+  messageName: string,
+  parseMessage: (msg: string) => T,
+): Promise<T> {
   const messagePath = pathForInboxMessage(messageName)
   const content = await readFileSavedContentAsUTF8(messagePath)
   return parseMessage(content)
 }
 
+async function waitForPathToExist(path: string, maxWaitTime: number = 5000): Promise<void> {
+  if (maxWaitTime >= 0) {
+    const doesItExist: boolean = await exists(path)
+    if (!doesItExist) {
+      return waitForPathToExist(path, maxWaitTime - 100)
+    } else {
+      return Promise.resolve()
+    }
+  } else {
+    return Promise.reject(`Waited too long for ${path} to exist.`)
+  }
+}
+
 async function pollInbox<T>(parseMessage: (msg: string) => T): Promise<void> {
-  const allMessages = await readDirectory(pathForMailbox(inbox))
+  const mailboxPath = pathForMailbox(inbox)
+  waitForPathToExist(mailboxPath)
+  const allMessages = await readDirectory(mailboxPath)
   const messagesToProcess = allMessages.filter(
     (messageName) => Number.parseInt(messageName) > lastConsumedMessage,
   )
   if (messagesToProcess.length > 0) {
-    const messages = await Promise.all(messagesToProcess.map(m => receiveMessage(m, parseMessage)))
+    const messages = await Promise.all(
+      messagesToProcess.map((m) => receiveMessage(m, parseMessage)),
+    )
     lastConsumedMessage = maxMessageNumber(messagesToProcess, lastConsumedMessage)
     await updateLastConsumedMessageFile(inbox, lastConsumedMessage)
     messages.forEach(onMessageCallback)
   }
   pollTimeout = setTimeout(() => pollInbox(parseMessage), POLLING_TIMEOUT)
 }
-
 
 async function initInbox<T>(
   inboxToUse: Mailbox,
@@ -123,7 +142,9 @@ async function updateLastConsumedMessageFile(mailbox: Mailbox, value: number): P
 async function getLastConsumedMessageNumber(mailbox: Mailbox): Promise<number> {
   const lastConsumedMessageValueExists = await exists(lastConsumedMessageKey(mailbox))
   if (lastConsumedMessageValueExists) {
-    const lastConsumedMessageName = await readFileSavedContentAsUTF8(lastConsumedMessageKey(mailbox))
+    const lastConsumedMessageName = await readFileSavedContentAsUTF8(
+      lastConsumedMessageKey(mailbox),
+    )
     return Number.parseInt(lastConsumedMessageName)
   } else {
     return -1
