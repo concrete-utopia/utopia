@@ -1,6 +1,7 @@
 import { UTOPIA_BACKEND } from '../../common/env-vars'
 import {
   assetURL,
+  getLoginState,
   HEADERS,
   MODE,
   projectURL,
@@ -14,6 +15,10 @@ import { LoginState } from '../../uuiui-deps'
 import urljoin = require('url-join')
 import * as JSZip from 'jszip'
 import { addFileToProjectContents, walkContentsTree } from '../assets'
+import type { EditorDispatch } from './action-types'
+import { setLoginState, showToast } from './actions/action-creators'
+import { isLoginLost } from '../../common/user'
+import { notice } from '../common/notice'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -341,6 +346,7 @@ export async function getUserConfiguration(loginState: LoginState): Promise<User
         throw new Error(`server responded with ${response.status} ${response.statusText}`)
       }
     case 'NOT_LOGGED_IN':
+    case 'LOGIN_LOST':
       return emptyUserConfiguration()
     default:
       const _exhaustiveCheck: never = loginState
@@ -385,4 +391,29 @@ export async function downloadGithubRepo(
       `Download github repo request failed: ${response.statusText}`,
     )
   }
+}
+
+export function startPollingLoginState(
+  dispatch: EditorDispatch,
+  initialLoginState: LoginState,
+): void {
+  let previousLoginState: LoginState = initialLoginState
+  setInterval(async () => {
+    const loginState = await getLoginState('no-cache')
+    if (previousLoginState.type !== loginState.type) {
+      dispatch([setLoginState(loginState)])
+      if (isLoginLost(loginState)) {
+        dispatch([
+          showToast(
+            notice(
+              `You have been logged out. You can continue working, but your work won't be saved until you log in again.`,
+              'ERROR',
+              true,
+            ),
+          ),
+        ])
+      }
+    }
+    previousLoginState = loginState
+  }, 5000)
 }

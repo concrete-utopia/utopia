@@ -1,5 +1,6 @@
 import { LayoutSystem } from 'utopia-api' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import type { LoginState } from '../../../common/user'
 import type { revertFile, saveFile } from '../../../core/model/project-file-utils'
 import type { foldEither } from '../../../core/shared/either'
 import type {
@@ -180,6 +181,7 @@ import type {
   SetScrollAnimation,
   UpdateConfigFromVSCode,
   SetFollowSelectionEnabled,
+  SetLoginState,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1266,5 +1268,12 @@ export function updateConfigFromVSCode(config: UtopiaVSCodeConfig): UpdateConfig
   return {
     action: 'UPDATE_CONFIG_FROM_VSCODE',
     config: config,
+  }
+}
+
+export function setLoginState(loginState: LoginState): SetLoginState {
+  return {
+    action: 'SET_LOGIN_STATE',
+    loginState: loginState,
   }
 }

@@ -522,14 +522,41 @@ const backgroundURLs = {
 
 // see type AlertLevel in editor-state.ts
 
-const noticeStyles = {
-  success: { background: backgroundURLs.green, color: 'white' },
-  info: { background: '#f1f1f1', color: colorTheme.darkPrimary.value },
-  primary: { background: backgroundURLs.blue, color: 'white' },
-  notice: { background: backgroundURLs.paleblue, color: 'white' },
-  warning: { background: backgroundURLs.red, color: 'white' },
-  error: { background: backgroundURLs.almostBlack, color: 'white' },
-  disconnected: { background: backgroundURLs.noise, color: 'white' },
+const noticeStyles: { [styleName: string]: React.CSSProperties } = {
+  success: {
+    backgroundColor: base.neongreen.value,
+    backgroundImage: backgroundURLs.green,
+    color: 'white',
+  },
+  info: {
+    backgroundColor: '#f1f1f1',
+    color: colorTheme.darkPrimary.value,
+  },
+  primary: {
+    backgroundColor: base.blue.value,
+    backgroundImage: backgroundURLs.blue,
+    color: 'white',
+  },
+  notice: {
+    backgroundColor: base.blue.value,
+    backgroundImage: backgroundURLs.paleblue,
+    color: 'white',
+  },
+  warning: {
+    backgroundColor: base.red.value,
+    backgroundImage: backgroundURLs.red,
+    color: 'white',
+  },
+  error: {
+    backgroundColor: base.almostBlack.value,
+    backgroundImage: backgroundURLs.almostBlack,
+    color: 'white',
+  },
+  disconnected: {
+    backgroundColor: base.almostBlack.value,
+    backgroundImage: backgroundURLs.noise,
+    color: 'white',
+  },
 }
 
 const textNoticeStyles = {

@@ -49,6 +49,7 @@ import { Notice } from '../common/notice'
 import { BuildType } from '../../core/workers/ts/ts-worker'
 import { ParseResult } from '../../utils/value-parser-utils'
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import type { LoginState } from '../../common/user'
 export { isLoggedIn, loggedInUser, LoginState, notLoggedIn, UserDetails } from '../../common/user'
 
 export interface PropertyTarget {
@@ -798,6 +799,11 @@ export interface UpdateConfigFromVSCode {
   config: UtopiaVSCodeConfig
 }
 
+export interface SetLoginState {
+  action: 'SET_LOGIN_STATE'
+  loginState: LoginState
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -929,6 +935,7 @@ export type EditorAction =
   | SetScrollAnimation
   | SetFollowSelectionEnabled
   | UpdateConfigFromVSCode
+  | SetLoginState
 
 export type DispatchPriority =
   | 'everyone'

@@ -1,6 +1,6 @@
 import { UTOPIA_BACKEND, THUMBNAIL_ENDPOINT, ASSET_ENDPOINT, BASE_URL } from './env-vars'
 import { ProjectListing } from './persistence'
-import { LoginState, notLoggedIn } from './user'
+import { isLoggedIn, isLoginLost, isNotLoggedIn, loginLost, LoginState, notLoggedIn } from './user'
 // Stupid style of import because the website and editor are different
 // and so there's no style of import which works with both projects.
 const urljoin = require('url-join')
@@ -62,31 +62,53 @@ export function userConfigURL(): string {
 
 let CachedLoginStatePromise: Promise<LoginState> | null = null
 
-export async function getLoginState(): Promise<LoginState> {
-  if (CachedLoginStatePromise != null) {
+export async function getLoginState(useCache: 'cache' | 'no-cache'): Promise<LoginState> {
+  if (useCache === 'cache' && CachedLoginStatePromise != null) {
     return CachedLoginStatePromise
   } else {
-    const promise = createGetLoginStatePromise()
+    const promise = createGetLoginStatePromise(CachedLoginStatePromise)
     CachedLoginStatePromise = promise
     return promise
   }
 }
 
-async function createGetLoginStatePromise(): Promise<LoginState> {
-  const url = UTOPIA_BACKEND + 'user'
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
-  if (response.ok) {
-    const result = await response.json()
-    return result
+async function createGetLoginStatePromise(
+  previousLogin: Promise<LoginState> | null,
+): Promise<LoginState> {
+  try {
+    const url = UTOPIA_BACKEND + 'user'
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
+    if (response.ok) {
+      const result = await response.json()
+      const previousLoginState = previousLogin == null ? null : await previousLogin
+      return getLoginStateFromResponse(result, previousLoginState)
+    } else {
+      console.error(`Fetch user details failed (${response.status}): ${response.statusText}`)
+      return loginLost
+    }
+  } catch (e) {
+    console.error(`Fetch user details failed: ${e}`)
+    return loginLost
+  }
+}
+
+function getLoginStateFromResponse(
+  response: any,
+  previousLoginState: LoginState | null,
+): LoginState {
+  if (
+    !isLoggedIn(response) &&
+    (isLoggedIn(previousLoginState) || isLoginLost(previousLoginState))
+  ) {
+    // if we used to be logged in but we are not anymore, return a LoginLost
+    return loginLost
   } else {
-    // FIXME Client should show an error if server requests fail
-    console.error(`Fetch user details failed (${response.status}): ${response.statusText}`)
-    return notLoggedIn
+    return response
   }
 }
 
