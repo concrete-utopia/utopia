@@ -188,17 +188,19 @@ const PutAForkInIt = betterReactMemo('ForkPain', () => {
           <div>
             <span
               style={{
-                paddingLeft: 2,
-                paddingRight: 2,
-                paddingTop: 1,
-                paddingBottom: 1,
+                paddingLeft: 4,
+                paddingRight: 4,
+                paddingTop: 2,
+                paddingBottom: 2,
                 background: '#007AFF',
                 color: 'white',
+                borderRadius: 2,
               }}
             >
               <b>{projectName}</b>&nbsp;
-              <Subdued>{id}</Subdued>
             </span>
+            &nbsp;
+            <Subdued>{id}</Subdued>
           </div>
           <p>
             TODO Using react-spring, react-enterprise, act-react and dozens of other fancy libraries
@@ -208,13 +210,13 @@ const PutAForkInIt = betterReactMemo('ForkPain', () => {
         <UIGridRow
           padded
           variant='|--32px--|<--------auto-------->'
-          style={{ gap: 12, marginTop: 16 }}
+          style={{ gap: 12, marginTop: 8 }}
         >
           <div
             role='avatar'
             style={{
-              width: 32,
-              height: 32,
+              width: 28,
+              height: 28,
               borderRadius: '50%',
               boxShadow: `inset 0px 0px 0px 1px ${
                 UtopiaTheme.color.verySubduedForeground.o(50).value
@@ -225,10 +227,12 @@ const PutAForkInIt = betterReactMemo('ForkPain', () => {
           />
           <div style={{ whiteSpace: 'normal' }}>
             Created by&nbsp; <Link href=''>Malte Nuhn</Link>
+            <br />
+            Forked from here
           </div>
         </UIGridRow>
 
-        <UIGridRow style={{ gap: 8, marginTop: 16 }} padded variant='<--1fr--><--1fr-->'>
+        <UIGridRow style={{ gap: 8, marginTop: 8 }} padded variant='<--1fr--><--1fr-->'>
           <Button
             primary
             highlight
