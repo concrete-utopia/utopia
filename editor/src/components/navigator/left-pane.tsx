@@ -234,8 +234,9 @@ const PutAForkInIt = betterReactMemo('ForkPain', () => {
             highlight
             style={{
               height: 24,
-              backgroundImage:
-                'linear-gradient(204deg, #ffdb00 0%, #1bff00 26%, #66a1ff 53%, rgba(255, 0, 0, 0.5) 81%,rgba(170, 255, 0, 0.5) 100%)',
+              backgroundImage: 'linear-gradient(3deg, #92ABFF 0%, #1FCCB7 99%)',
+              boxShadow: 'inset 0 0 0 1px rgba(94,94,94,0.20)',
+              borderRadius: 2,
             }}
           >
             <b>Fork</b>&nbsp;this project
