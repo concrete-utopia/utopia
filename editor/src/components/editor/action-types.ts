@@ -461,6 +461,11 @@ export interface SetProjectName {
   name: string
 }
 
+export interface SetProjectDescription {
+  action: 'SET_PROJECT_DESCRIPTION'
+  description: string
+}
+
 export interface RegenerateThumbnail {
   action: 'REGENERATE_THUMBNAIL'
 }
@@ -872,6 +877,7 @@ export type EditorAction =
   | UpdateCodeResultCache
   | SetCodeEditorVisibility
   | SetProjectName
+  | SetProjectDescription
   | RegenerateThumbnail
   | UpdateThumbnailGenerated
   | UpdatePreviewConnected

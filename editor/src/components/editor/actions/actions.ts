@@ -291,6 +291,7 @@ import {
   SetPanelVisibility,
   SetProjectID,
   SetProjectName,
+  SetProjectDescription,
   SetProp,
   SetPropWithElementPath,
   SetStoredFontSettings,
@@ -853,6 +854,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     id: currentEditor.id,
     appID: currentEditor.appID,
     projectName: currentEditor.projectName,
+    projectDescription: currentEditor.projectDescription,
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
     spyMetadata: poppedEditor.spyMetadata,
@@ -2977,6 +2979,13 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       projectName: action.name,
+    }
+  },
+
+  SET_PROJECT_DESCRIPTION: (action: SetProjectDescription, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      projectDescription: action.description,
     }
   },
 
