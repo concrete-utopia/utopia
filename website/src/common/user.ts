@@ -14,7 +14,11 @@ interface NotLoggedIn {
   type: 'NOT_LOGGED_IN'
 }
 
-export type LoginState = LoggedInUser | NotLoggedIn
+interface LoginLost {
+  type: 'LOGIN_LOST'
+}
+
+export type LoginState = LoggedInUser | NotLoggedIn | LoginLost
 
 export function loggedInUser(user: UserDetails): LoggedInUser {
   return {
@@ -27,6 +31,18 @@ export const notLoggedIn: NotLoggedIn = {
   type: 'NOT_LOGGED_IN',
 }
 
-export function isLoggedIn(loginState: LoginState): loginState is LoggedInUser {
-  return loginState.type === 'LOGGED_IN'
+export function isNotLoggedIn(loginState: unknown): loginState is NotLoggedIn {
+  return (loginState as Partial<LoginState>)?.type === 'NOT_LOGGED_IN'
+}
+
+export function isLoggedIn(loginState: unknown): loginState is LoggedInUser {
+  return (loginState as Partial<LoginState>)?.type === 'LOGGED_IN'
+}
+
+export const loginLost: LoginLost = {
+  type: 'LOGIN_LOST',
+}
+
+export function isLoginLost(loginState: unknown): loginState is LoginLost {
+  return (loginState as Partial<LoginState>)?.type === 'LOGIN_LOST'
 }

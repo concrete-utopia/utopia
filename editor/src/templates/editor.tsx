@@ -41,6 +41,7 @@ import {
   getLoginState,
   getUserConfiguration,
   isRequestFailure,
+  startPollingLoginState,
 } from '../components/editor/server'
 import {
   DispatchResult,
@@ -211,7 +212,8 @@ export class Editor {
       handleHeartbeatRequestMessage(e.data),
     )
 
-    getLoginState().then((loginState) => {
+    getLoginState('cache').then((loginState) => {
+      startPollingLoginState(this.boundDispatch, loginState)
       this.storedState.userState.loginState = loginState
       getUserConfiguration(loginState).then((shortcutConfiguration) => {
         this.storedState.userState = {

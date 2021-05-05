@@ -9,7 +9,7 @@
 import { getLoginState } from '../common/server'
 import { triggerHashedAssetsUpdate, preloadPrioritizedAssets } from '../utils/hashed-assets'
 
-getLoginState()
+getLoginState('no-cache')
 triggerHashedAssetsUpdate().then(() => preloadPrioritizedAssets())
 
 import { addStyleSheetToPage } from '../core/shared/dom-utils'
