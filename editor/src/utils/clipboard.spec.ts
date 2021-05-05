@@ -18,7 +18,7 @@ import {
   unparsed,
 } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
-import { createClipboardDataFromSelectionNewWorld } from './clipboard'
+import { createClipboardDataFromSelection } from './clipboard'
 
 describe('copy to clipboard', () => {
   it('creates copy data multifile elements', async () => {
@@ -70,7 +70,7 @@ export var App = (props) => {
     ])
 
     await renderResult.dispatch([selectComponents([targetPath1], false)], false)
-    const clipboardData = createClipboardDataFromSelectionNewWorld(
+    const clipboardData = createClipboardDataFromSelection(
       renderResult.getEditorState().editor,
     )
 

@@ -32,7 +32,7 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../components/custom-code/code-file'
-import { stripNulls } from '../core/shared/array-utils'
+import { mapDropNulls } from '../core/shared/array-utils'
 // tslint:disable-next-line:no-var-requires
 const ClipboardPolyfill = require('clipboard-polyfill') // stupid .d.ts is malformatted
 
@@ -158,7 +158,7 @@ export function createDirectInsertImageActions(
   }
 }
 
-export function createClipboardDataFromSelectionNewWorld(
+export function createClipboardDataFromSelection(
   editor: EditorState,
 ): {
   data: Array<JSXElementCopyData>
@@ -172,27 +172,25 @@ export function createClipboardDataFromSelectionNewWorld(
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
     return R.none((otherView) => EP.isDescendantOf(view, otherView), editor.selectedViews)
   })
-  const jsxElements = stripNulls(
-    filteredSelectedViews.map((target) => {
-      const underlyingTarget = normalisePathToUnderlyingTarget(
-        editor.projectContents,
-        editor.nodeModules.files,
-        openUIJSFileKey,
-        target,
-      )
-      const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
-      const projectFile = getContentsTreeFileFromString(
-        editor.projectContents,
-        targetPathSuccess.filePath,
-      )
-      if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-        const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
-        return findElementAtPath(target, components)
-      } else {
-        return null
-      }
-    }),
-  )
+  const jsxElements = mapDropNulls((target) => {
+    const underlyingTarget = normalisePathToUnderlyingTarget(
+      editor.projectContents,
+      editor.nodeModules.files,
+      openUIJSFileKey,
+      target,
+    )
+    const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+    const projectFile = getContentsTreeFileFromString(
+      editor.projectContents,
+      targetPathSuccess.filePath,
+    )
+    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+      const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
+      return findElementAtPath(target, components)
+    } else {
+      return null
+    }
+  }, filteredSelectedViews)
   return {
     data: [
       {
