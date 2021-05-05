@@ -143,8 +143,10 @@ import {
   codeFile,
   unparsed,
   ParseSuccess,
+  importAlias,
 } from '../../../core/shared/project-file-types'
 import {
+  addImport,
   codeNeedsParsing,
   codeNeedsPrinting,
   mergeImports,
@@ -1931,6 +1933,13 @@ export const UPDATE_FNS = {
                 return {
                   ...success,
                   utopiaComponents: withTargetAdded,
+                  imports: addImport(
+                    'utopia-api',
+                    null,
+                    [importAlias('View')],
+                    null,
+                    success.imports,
+                  ),
                 }
               }, parseSuccess)
             },

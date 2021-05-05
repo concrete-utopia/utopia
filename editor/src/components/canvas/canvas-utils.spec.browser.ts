@@ -2,6 +2,7 @@ import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  renderTestEditorWithProjectContent,
   TestAppUID,
   TestScenePath,
   TestSceneUID,
@@ -26,6 +27,17 @@ import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as Prettier from 'prettier'
 import { setElectronWindow } from '../../core/shared/test-setup.test-utils'
+import { contentsToTree } from '../assets'
+import { createCodeFile } from '../custom-code/code-file.test-utils'
+import { DefaultPackageJson, StoryboardFilePath } from '../editor/store/editor-state'
+import { directory } from '../../core/model/project-file-utils'
+import {
+  ProjectContents,
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../core/shared/project-file-types'
 
 const NewUID = 'catdog'
 
@@ -965,6 +977,84 @@ describe('moveTemplate', () => {
         </View>
       </View>
       `),
+    )
+  })
+  it('wraps in 1 non-storyboard element', async () => {
+    const appFilePath = '/src/app.js'
+    let projectContents: ProjectContents = {
+      '/package.json': textFile(
+        textFileContents(
+          JSON.stringify(DefaultPackageJson, null, 2),
+          unparsed,
+          RevisionsState.BothMatch,
+        ),
+        null,
+        0,
+      ),
+      '/src': directory(),
+      '/utopia': directory(),
+      [StoryboardFilePath]: createCodeFile(
+        StoryboardFilePath,
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  import { App } from '/src/app.js'
+
+  export var storyboard = (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        data-uid='${TestSceneUID}'
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      >
+        <App data-uid='${TestAppUID}' />
+      </Scene>
+    </Storyboard>
+  )`,
+      ),
+      [appFilePath]: createCodeFile(
+        appFilePath,
+        `
+  import * as React from 'react'
+  export var App = (props) => {
+    return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
+      <div data-uid='app-inner-div' style={{ width: 50, height: 100 }}><span data-uid='app-inner-span'>hello</span></div>
+    </div>
+  }`,
+      ),
+    }
+    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-inner-div'])
+
+    ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
+
+    await renderResult.dispatch([wrapInView([targetPath])], true)
+    expect(getPrintedUiJsCode(renderResult.getEditorState(), appFilePath)).toEqual(
+      Prettier.format(
+        `
+    import * as React from 'react'
+    import { View } from 'utopia-api'
+    export var App = (props) => {
+      return (
+        <div
+          data-uid='app-outer-div'
+          style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+        >
+          <View
+            style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 100 }}
+            data-uid='${NewUID}'
+          >
+            <div
+              data-uid='app-inner-div'
+              style={{ width: 50, height: 100, left: 0, top: 0, position: 'absolute' }}
+            >
+              <span data-uid='app-inner-span'>hello</span>
+            </div>
+          </View>
+        </div>
+      )
+    }`,
+        PrettierConfig,
+      ),
     )
   })
   it('reparents multiselected elements', async () => {
