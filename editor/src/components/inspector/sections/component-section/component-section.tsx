@@ -18,8 +18,9 @@ import {
 import { joinSpecial } from '../../../../core/shared/array-utils'
 import { eitherToMaybe, foldEither } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
-import { PropertyPath, TemplatePath } from '../../../../core/shared/project-file-types'
+import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import * as EP from '../../../../core/shared/element-path'
 import {
   betterReactMemo,
   useKeepReferenceEqualityIfPossible,
@@ -79,7 +80,6 @@ import {
   ControlForStringProp,
 } from './property-control-controls'
 import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
-import * as TP from '../../../../core/shared/template-path'
 import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getJSXElementNameAsString, isJSXElement } from '../../../../core/shared/element-template'
@@ -92,7 +92,6 @@ import {
   isAnimatedElementAgainstImports,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
-import { theme } from 'react-contexify'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -509,7 +508,7 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
   }
 })
 
-function useComponentType(path: TemplatePath): string | null {
+function useComponentType(path: ElementPath): string | null {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
     const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
@@ -578,16 +577,16 @@ export const ComponentSectionInner = betterReactMemo(
     }, 'Focusable values')
 
     const target = selectedViews[0]
-    const pathAsScenePath = TP.isScenePath(target)
-      ? target
-      : TP.scenePathForElementAtInstancePath(target)
+    // const pathAsScenePath = EP.isScenePath(target)
+    //   ? target
+    //   : EP.scenePathForElementAtInstancePath(target)
 
-    const isFocused = TP.isFocused(editor.focusedElementPath, target)
-    const isNotFocused = TP.isFocused(editor.focusedElementPath, target)
+    const isFocused = EP.isFocused(editor.focusedElementPath, target)
+    const isNotFocused = EP.isFocused(editor.focusedElementPath, target)
 
     const toggleFocusMode = React.useCallback(() => {
-      dispatch([setFocusedElement(isFocused ? null : pathAsScenePath)])
-    }, [dispatch, isFocused, pathAsScenePath])
+      dispatch([setFocusedElement(isFocused ? null : target)])
+    }, [dispatch, isFocused, target])
 
     const metadata = useEditorState(
       (state) => state.editor.jsxMetadata,
@@ -595,8 +594,9 @@ export const ComponentSectionInner = betterReactMemo(
     )
 
     let elementName: string
-    const targetName = TP.instancePathForElementAtPath(target)
-    const element = MetadataUtils.getElementByInstancePathMaybe(metadata, targetName)
+    const targetName = target
+
+    const element = MetadataUtils.findElementByElementPath(metadata, targetName)
     if (element != null) {
       const jsxElement = eitherToMaybe(element.element)
       if (jsxElement != null && isJSXElement(jsxElement)) {
@@ -614,7 +614,7 @@ export const ComponentSectionInner = betterReactMemo(
       editor.projectContents,
       editor.nodeModules.files,
       editor.canvas.openFile?.filename ?? '',
-      TP.instancePathForElementAtPath(selectedViews[0]),
+      selectedViews[0],
     )
     const locationOfComponentInstance =
       underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : ''
