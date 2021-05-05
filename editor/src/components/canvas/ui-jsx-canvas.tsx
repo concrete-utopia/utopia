@@ -299,8 +299,6 @@ export const UiJsxCanvas = betterReactMemo(
                   const { scope } = createExecutionScope(
                     resolvedFilePath,
                     customRequire,
-                    // (innerImportOrigin: string, innerToImport: string) =>
-                    //   requireFn(innerImportOrigin, innerToImport, false),
                     mutableContextRef,
                     topLevelComponentRendererComponents,
                     projectContents,
