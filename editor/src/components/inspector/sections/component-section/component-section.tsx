@@ -39,6 +39,10 @@ import {
   FunctionIcons,
   Icons,
   LargerIcons,
+  Section,
+  SectionBodyArea,
+  FlexColumn,
+  paddingTop,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -660,7 +664,7 @@ export const ComponentSectionInner = betterReactMemo(
               <InspectorSectionHeader>
                 <UIGridRow
                   padded
-                  variant='<-------------1fr------------->'
+                  variant='|--32px--|<--------auto-------->'
                   style={{ flexGrow: 1, color: colorTheme.primary.value }}
                 >
                   Component
@@ -673,7 +677,6 @@ export const ComponentSectionInner = betterReactMemo(
                   <FunctionIcons.Reset />
                 </SquareButton> */}
               </InspectorSectionHeader>
-
               {missingControlsWarning == null ? null : (
                 <InfoBox message={'Missing Property Controls'}>{missingControlsWarning}</InfoBox>
               )}
@@ -699,14 +702,20 @@ export const ComponentSectionInner = betterReactMemo(
                     },
                     (controlDescription) => {
                       return (
-                        <>
+                        <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
                           {isImportedComponentNPM(componentNameJsx!, imports) ? (
                             <UIGridRow
                               padded
                               tall={false}
                               variant={'|--32px--|<--------auto-------->'}
                             >
-                              <span>
+                              <span
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
                                 <LargerIcons.NpmLogo />
                               </span>
                               <p>
@@ -723,12 +732,20 @@ export const ComponentSectionInner = betterReactMemo(
                               tall={false}
                               variant={'|--32px--|<--------auto-------->'}
                             >
-                              <IconToggleButton
-                                value={false}
-                                srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
-                                srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
-                                onToggle={toggleFocusMode}
-                              />
+                              <span
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <IconToggleButton
+                                  value={false}
+                                  srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
+                                  srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
+                                  onToggle={toggleFocusMode}
+                                />
+                              </span>
                               <p>
                                 {`This ${componentType} is imported from `}
                                 <InlineLink onClick={OpenFile}>
@@ -743,12 +760,20 @@ export const ComponentSectionInner = betterReactMemo(
                               tall={false}
                               variant={'|--32px--|<--------auto-------->'}
                             >
-                              <IconToggleButton
-                                value={true}
-                                srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
-                                srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
-                                onToggle={toggleFocusMode}
-                              />
+                              <span
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <IconToggleButton
+                                  value={true}
+                                  srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
+                                  srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
+                                  onToggle={toggleFocusMode}
+                                />
+                              </span>
                               <p>
                                 {`This ${componentType} is imported from `}
                                 <InlineLink onClick={OpenFile}>
@@ -764,7 +789,15 @@ export const ComponentSectionInner = betterReactMemo(
                             controlDescription={controlDescription}
                             isScene={props.isScene}
                           />
-                        </>
+                          <UIGridRow
+                            padded
+                            tall={false}
+                            variant={'<-------------1fr------------->'}
+                            style={{ paddingTop: 8 }}
+                          >
+                            <span>{`Additional props used in code: ${propNames.join(', ')}`}</span>
+                          </UIGridRow>
+                        </UIGridRow>
                       )
                     },
                     propertyControl,
@@ -788,7 +821,7 @@ export const ComponentSectionInner = betterReactMemo(
 
               {isImportedComponentNPM(componentNameJsx!, imports) ? (
                 <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-                  <span>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <LargerIcons.NpmLogo />
                   </span>
                   <p>
@@ -801,12 +834,14 @@ export const ComponentSectionInner = betterReactMemo(
                 </UIGridRow>
               ) : isFocusable && !isNotFocused ? (
                 <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-                  <IconToggleButton
-                    value={false}
-                    srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
-                    srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
-                    onToggle={toggleFocusMode}
-                  />
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <IconToggleButton
+                      value={false}
+                      srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
+                      srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
+                      onToggle={toggleFocusMode}
+                    />
+                  </span>
                   <p>
                     {`This ${componentType} is imported from `}
                     <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>{' '}
@@ -815,12 +850,14 @@ export const ComponentSectionInner = betterReactMemo(
                 </UIGridRow>
               ) : isFocusable && isFocused ? (
                 <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-                  <IconToggleButton
-                    value={true}
-                    srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
-                    srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
-                    onToggle={toggleFocusMode}
-                  />
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <IconToggleButton
+                      value={true}
+                      srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
+                      srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
+                      onToggle={toggleFocusMode}
+                    />
+                  </span>
                   <p>
                     {`This ${componentType} is imported from `}
                     <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>
@@ -828,50 +865,6 @@ export const ComponentSectionInner = betterReactMemo(
                   </p>
                 </UIGridRow>
               ) : null}
-              {/* <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-                <span>
-                  <LargerIcons.NpmLogo />
-                </span>
-                <p>
-                  {`This ${componentType} is imported from `}
-                  <InlineLink href={componentPackageMgrLink}>
-                    {`${componentPackageName}`}
-                  </InlineLink>{' '}
-                  via NPM.
-                </p>
-              </UIGridRow>
-
-              <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-                <IconToggleButton
-                  value={false}
-                  srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
-                  srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
-                  onToggle={toggleFocusMode}
-                />
-                <p>
-                  {`This ${componentType} is imported from `}
-                  <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>{' '}
-                  {isFocusable && !isNotFocused ? (
-                    <InlineButton onClick={toggleFocusMode}>Edit it</InlineButton>
-                  ) : isFocusable && isFocused ? (
-                    <InlineButton onClick={toggleFocusMode}>Exit Editing</InlineButton>
-                  ) : null}
-                </p>
-              </UIGridRow>
-
-              <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-                <IconToggleButton
-                  value={true}
-                  srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
-                  srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
-                  onToggle={toggleFocusMode}
-                />
-                <p>
-                  {`This ${componentType} is imported from `}
-                  <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>
-                  <InlineButton onClick={toggleFocusMode}>Back</InlineButton>
-                </p>
-              </UIGridRow> */}
               <InfoBox message={'No properties available to configure.'} />
             </>
           )
