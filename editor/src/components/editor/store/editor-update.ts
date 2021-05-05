@@ -3,10 +3,7 @@ import { EditorAction, EditorDispatch } from '../action-types'
 import { UPDATE_FNS } from '../actions/actions'
 
 import { StateHistory } from '../history'
-import {
-  setClipboardData,
-  createClipboardDataFromSelection,
-} from '../../../utils/clipboard'
+import { setClipboardData, createClipboardDataFromSelection } from '../../../utils/clipboard'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 
