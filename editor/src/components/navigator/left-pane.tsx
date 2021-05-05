@@ -24,6 +24,8 @@ import {
   StringInput,
   Subdued,
   UIRow,
+  H2,
+  Icons,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
@@ -45,6 +47,7 @@ import { GenericExternalResourcesList } from './external-resources/generic-exter
 import { GoogleFontsResourcesList } from './external-resources/google-fonts-resources-list'
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { getContentsTreeFileFromString } from '../assets'
+import { Link } from '../../uuiui/link'
 export interface LeftPaneProps {
   editorState: EditorState
   derivedState: DerivedState
@@ -143,8 +146,142 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
         {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
         {selectedTab === LeftMenuTab.Sharing ? <SharingPane /> : null}
         {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
+        <LoggedOutPane />
+        <PutAForkInIt />
       </div>
     </div>
+  )
+})
+
+const PutAForkInIt = betterReactMemo('ForkPain', () => {
+  return (
+    <Section data-name='Fork' tabIndex={-1}>
+      <SectionTitleRow minimised={false}>
+        <FlexRow flexGrow={1} style={{ position: 'relative' }}>
+          <Title>Project</Title>
+        </FlexRow>
+      </SectionTitleRow>
+      <SectionBodyArea minimised={false}>
+        <UIGridRow
+          padded
+          variant='<-------------1fr------------->'
+          style={{
+            height: 'inherit',
+            wordWrap: 'normal',
+            whiteSpace: 'normal',
+            alignItems: 'flex-start',
+            minHeight: 34,
+            paddingTop: 8,
+            paddingLeft: 8,
+            paddingRight: 8,
+            paddingBottom: 8,
+            letterSpacing: 0.1,
+            lineHeight: '17px',
+            fontSize: '11px',
+          }}
+        >
+          <p>
+            <b>Anonymous Aardvark</b>&nbsp;
+            <Subdued>357c01bb</Subdued>
+          </p>
+          <p>
+            TODO Using react-spring, react-enterprise, act-react and dozens of other fancy libraries
+            you haven't ever heard of. However, this text will get cropped.
+          </p>
+        </UIGridRow>
+        <UIGridRow
+          padded
+          variant='|--32px--|<--------auto-------->'
+          style={{ gap: 12, marginTop: 16 }}
+        >
+          <div
+            role='avatar'
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              boxShadow: `inset 0px 0px 0px 1px ${
+                UtopiaTheme.color.verySubduedForeground.o(50).value
+              }`,
+              background: UtopiaTheme.color.subtleBackground.value,
+              // TODO make this use the avatar URL and size / position it correctly
+            }}
+          />
+          <div style={{ whiteSpace: 'normal' }}>
+            Created by&nbsp; <Link href=''>Malte Nuhn</Link>
+          </div>
+        </UIGridRow>
+
+        <UIGridRow style={{ gap: 8, marginTop: 16 }} padded variant='<--1fr--><--1fr-->'>
+          <Button
+            primary
+            highlight
+            style={{
+              height: 24,
+              backgroundImage:
+                'linear-gradient(204deg, #ffdb00 0%, #1bff00 26%, #66a1ff 53%, rgba(255, 0, 0, 0.5) 81%,rgba(170, 255, 0, 0.5) 100%)',
+            }}
+          >
+            <b>Fork</b>&nbsp;this project
+          </Button>
+          <Button
+            outline
+            highlight
+            style={{
+              height: 24,
+            }}
+          >
+            <b>Sign in</b>&nbsp;to edit&nbsp;
+            <Icons.ExternalLinkSmaller />
+          </Button>
+        </UIGridRow>
+      </SectionBodyArea>
+    </Section>
+  )
+})
+
+const LoggedOutPane = betterReactMemo('LogInPane', () => {
+  return (
+    <Section data-name='Storyboards' tabIndex={-1}>
+      <SectionTitleRow minimised={false}>
+        <FlexRow flexGrow={1} style={{ position: 'relative' }}>
+          <Title>Sign in to</Title>
+        </FlexRow>
+      </SectionTitleRow>
+      <SectionBodyArea minimised={false}>
+        <UIGridRow
+          padded
+          variant='<-------------1fr------------->'
+          style={{
+            height: 'inherit',
+            wordWrap: 'normal',
+            whiteSpace: 'normal',
+            alignItems: 'flex-start',
+            minHeight: 34,
+            paddingTop: 8,
+            paddingLeft: 8,
+            paddingRight: 8,
+            paddingBottom: 8,
+            letterSpacing: 0.1,
+            lineHeight: '17px',
+            fontSize: '11px',
+          }}
+        >
+          <ul style={{ paddingLeft: 16 }}>
+            <li>Design and code from anywhere</li>
+            <li>Save and preview your projects</li>
+            <li>Use custom assets, fonts, and more</li>
+          </ul>
+        </UIGridRow>
+        <UIGridRow style={{ gap: 8 }} padded variant='<--1fr--><--1fr-->'>
+          <Button primary highlight>
+            <b>Sign In</b>&nbsp;
+            <Icons.ExternalLinkSmaller color='white' />
+          </Button>
+          <Subdued>Free and Open Source</Subdued>
+        </UIGridRow>
+      </SectionBodyArea>
+    </Section>
   )
 })
 
@@ -669,100 +806,132 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
             </SectionTitleRow>
             <SectionBodyArea minimised={minimised}>
               {userState.loginState.type === 'NOT_LOGGED_IN' ? (
-                <span>Log in or sign up to see settings</span>
+                <React.Fragment>
+                  <UIGridRow
+                    padded
+                    variant='<-------------1fr------------->'
+                    style={{
+                      height: 'inherit',
+                      wordWrap: 'normal',
+                      whiteSpace: 'normal',
+                      alignItems: 'flex-start',
+                      minHeight: 34,
+                      paddingTop: 8,
+                      paddingLeft: 8,
+                      paddingRight: 8,
+                      paddingBottom: 8,
+                      letterSpacing: 0.1,
+                      lineHeight: '17px',
+                      fontSize: '11px',
+                    }}
+                  >
+                    You are not logged in. Log in to
+                    <ul style={{ paddingLeft: 16 }}>
+                      <li>Work from anywhere</li>
+                      <li>Save and preview your projects</li>
+                      <li>Share them with others</li>
+                    </ul>
+                  </UIGridRow>
+                  <UIGridRow style={{ gap: 8 }} padded variant='<--1fr--><--1fr-->'>
+                    <Button primary highlight>
+                      Sign me up!
+                    </Button>
+                    <Button outline highlight>
+                      Don't Sign Me Up
+                    </Button>
+                  </UIGridRow>
+                </React.Fragment>
               ) : (
                 <FlexColumn>
-                  <SectionBodyArea minimised={false}>
-                    <UIGridRow
-                      padded
-                      variant='<-------------1fr------------->'
-                      style={{
-                        height: 'inherit',
-                        wordWrap: 'normal',
-                        whiteSpace: 'normal',
-                        alignItems: 'flex-start',
-                        minHeight: 34,
-                        paddingTop: 8,
-                        paddingLeft: 8,
-                        paddingRight: 8,
-                        paddingBottom: 8,
-                        letterSpacing: 0.1,
-                        lineHeight: '17px',
-                        fontSize: '11px',
-                      }}
-                    >
-                      <Subdued>
-                        These help you organise your projects. We also use them when you embed or
-                        share your project on social media and chat apps.
-                      </Subdued>
-                    </UIGridRow>
-                    <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-                      <span>Name</span>
-                      <StringInput
-                        testId='projectName'
-                        value={name}
-                        onChange={onChangeProjectName}
-                        onKeyDown={handleKeyPress}
-                        style={{ width: 150 }}
-                        onBlur={handleBlur}
+                  <UIGridRow
+                    padded
+                    variant='<-------------1fr------------->'
+                    style={{
+                      height: 'inherit',
+                      wordWrap: 'normal',
+                      whiteSpace: 'normal',
+                      alignItems: 'flex-start',
+                      minHeight: 34,
+                      paddingTop: 8,
+                      paddingLeft: 8,
+                      paddingRight: 8,
+                      paddingBottom: 8,
+                      letterSpacing: 0.1,
+                      lineHeight: '17px',
+                      fontSize: '11px',
+                    }}
+                  >
+                    <Subdued>
+                      These help you organise your projects. We also use them when you embed or
+                      share your project on social media and chat apps.
+                    </Subdued>
+                  </UIGridRow>
+                  <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+                    <span>Name</span>
+                    <StringInput
+                      testId='projectName'
+                      value={name}
+                      onChange={onChangeProjectName}
+                      onKeyDown={handleKeyPress}
+                      style={{ width: 150 }}
+                      onBlur={handleBlur}
+                    />
+                  </UIGridRow>
+                  <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+                    <span> Description </span>
+                    <StringInput
+                      testId='projectDescription'
+                      value={projectName}
+                      style={{ width: 150 }}
+                    />
+                  </UIGridRow>
+                  <UIGridRow
+                    padded
+                    variant='<---1fr--->|------172px-------|'
+                    style={{ alignItems: 'start', height: 'initial', paddingTop: 8 }}
+                  >
+                    <span> Preview </span>
+                    <FlexColumn style={{ gap: 8 }}>
+                      <div
+                        css={{
+                          boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
+                          borderRadius: 1,
+                          display: 'block',
+                          justifySelf: 'stretch',
+                          aspectRatio: '16 / 9',
+                          backgroundImage: `url('${urlToRequest}')`,
+                          backgroundSize: 'cover',
+                          backgroundColor: colorTheme.canvasBackground.value,
+                        }}
                       />
-                    </UIGridRow>
-                    <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-                      <span> Description </span>
-                      <StringInput
-                        testId='projectDescription'
-                        value={projectName}
-                        style={{ width: 150 }}
-                      />
-                    </UIGridRow>
-                    <UIGridRow
-                      padded
-                      variant='<---1fr--->|------172px-------|'
-                      style={{ alignItems: 'start', height: 'initial', paddingTop: 8 }}
-                    >
-                      <span> Preview </span>
-                      <FlexColumn style={{ gap: 8 }}>
-                        <div
-                          css={{
-                            boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
-                            borderRadius: 1,
-                            display: 'block',
-                            justifySelf: 'stretch',
-                            aspectRatio: '16 / 9',
-                            backgroundImage: `url('${urlToRequest}')`,
-                            backgroundSize: 'cover',
-                            backgroundColor: colorTheme.canvasBackground.value,
-                          }}
-                        />
-                        <Button
-                          disabled={requestingPreviewImage}
-                          spotlight
-                          highlight
-                          onClick={triggerRegenerateThumbnail}
-                          css={{
-                            position: 'relative',
-                            textAlign: 'center',
-                            '&:before': {
-                              transition: requestingPreviewImage
-                                ? 'right 2.5s ease-in-out'
-                                : 'inherit',
-                              position: 'absolute',
-                              left: 0,
-                              top: 0,
-                              bottom: 0,
-                              right: requestingPreviewImage ? 0 : '100%',
-                              background: requestingPreviewImage
-                                ? UtopiaTheme.color.primary.value
-                                : 'transparent',
-                              content: '""',
-                            },
-                          }}
-                        >
-                          {requestingPreviewImage ? 'Refreshing' : 'Refresh'}
-                        </Button>
-                      </FlexColumn>
-                    </UIGridRow>
-                  </SectionBodyArea>
+                      <Button
+                        disabled={requestingPreviewImage}
+                        spotlight
+                        highlight
+                        onClick={triggerRegenerateThumbnail}
+                        css={{
+                          position: 'relative',
+                          textAlign: 'center',
+                          '&:before': {
+                            transition: requestingPreviewImage
+                              ? 'right 2.5s ease-in-out'
+                              : 'inherit',
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            right: requestingPreviewImage ? 0 : '100%',
+                            background: requestingPreviewImage
+                              ? UtopiaTheme.color.primary.value
+                              : 'transparent',
+                            content: '""',
+                          },
+                        }}
+                      >
+                        {requestingPreviewImage ? 'Refreshing' : 'Refresh'}
+                      </Button>
+                    </FlexColumn>
+                  </UIGridRow>
                 </FlexColumn>
               )}
             </SectionBodyArea>
