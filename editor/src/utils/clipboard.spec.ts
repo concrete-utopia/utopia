@@ -70,9 +70,7 @@ export var App = (props) => {
     ])
 
     await renderResult.dispatch([selectComponents([targetPath1], false)], false)
-    const clipboardData = createClipboardDataFromSelection(
-      renderResult.getEditorState().editor,
-    )
+    const clipboardData = createClipboardDataFromSelection(renderResult.getEditorState().editor)
 
     expect(clipboardData?.data.length).toEqual(1)
     expect(clipboardData?.data[0].type).toEqual('ELEMENT_COPY')
