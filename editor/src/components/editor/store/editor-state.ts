@@ -609,6 +609,7 @@ export function modifyOpenJsxElementAtStaticPath(
 function getImportedUtopiaJSXComponents(
   filePath: string,
   model: EditorState,
+  pathsToFilter: string[],
 ): Array<UtopiaJSXComponent> {
   const file = getContentsTreeFileFromString(model.projectContents, filePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
@@ -616,10 +617,13 @@ function getImportedUtopiaJSXComponents(
       .map((toImport) => model.codeResultCache.resolve(filePath, toImport))
       .filter(isRight)
       .map((r) => r.value)
+      .filter((v) => !pathsToFilter.includes(v))
 
     return [
       ...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed),
-      ...resolvedFilePaths.flatMap((path) => getImportedUtopiaJSXComponents(path, model)),
+      ...resolvedFilePaths.flatMap((path) =>
+        getImportedUtopiaJSXComponents(path, model, [...pathsToFilter, ...resolvedFilePaths]),
+      ),
     ]
   } else {
     return []
@@ -633,7 +637,7 @@ export function getOpenUtopiaJSXComponentsFromStateMultifile(
   if (openUIJSFilePath == null) {
     return []
   } else {
-    return getImportedUtopiaJSXComponents(openUIJSFilePath, model)
+    return getImportedUtopiaJSXComponents(openUIJSFilePath, model, [])
   }
 }
 
