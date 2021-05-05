@@ -59,7 +59,7 @@ describe('React Render Count Tests - ', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     expect(renderCountAfter - renderCountBefore).toBeGreaterThan(720) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(715)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(730)
   })
 
   it('Changing the selected view', async () => {
@@ -112,6 +112,6 @@ describe('React Render Count Tests - ', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     expect(renderCountAfter - renderCountBefore).toBeGreaterThanOrEqual(450) // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toBeLessThan(450)
+    expect(renderCountAfter - renderCountBefore).toBeLessThan(460)
   })
 })

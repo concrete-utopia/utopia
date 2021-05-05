@@ -760,20 +760,12 @@ export const ComponentSectionInner = betterReactMemo(
                               tall={false}
                               variant={'|--32px--|<--------auto-------->'}
                             >
-                              <span
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              >
-                                <IconToggleButton
-                                  value={true}
-                                  srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
-                                  srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
-                                  onToggle={toggleFocusMode}
-                                />
-                              </span>
+                              <IconToggleButton
+                                value={true}
+                                srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
+                                srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
+                                onToggle={toggleFocusMode}
+                              />
                               <p>
                                 {`This ${componentType} is imported from `}
                                 <InlineLink onClick={OpenFile}>
