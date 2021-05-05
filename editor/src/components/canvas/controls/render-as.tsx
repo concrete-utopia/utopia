@@ -81,8 +81,10 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
       const nameToSearchFor: JSXElementName = hookResult[0].name
       for (const selectOption of insertableComponents) {
         const insertableComponent: InsertableComponent = selectOption.value
-        if (jsxElementNameEquals(insertableComponent.element.name, nameToSearchFor)) {
-          return selectOption
+        if (insertableComponent != null) {
+          if (jsxElementNameEquals(insertableComponent.element.name, nameToSearchFor)) {
+            return selectOption
+          }
         }
       }
     }
