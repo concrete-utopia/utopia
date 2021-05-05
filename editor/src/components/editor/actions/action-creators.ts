@@ -127,6 +127,7 @@ import type {
   SetPanelVisibility,
   SetProjectID,
   SetProjectName,
+  SetProjectDescription,
   SetProp,
   SetPropWithElementPath,
   SetRightMenuExpanded,
@@ -747,6 +748,13 @@ export function setProjectName(projectName: string): SetProjectName {
   return {
     action: 'SET_PROJECT_NAME',
     name: projectName,
+  }
+}
+
+export function setProjectDescription(projectDescription: string): SetProjectDescription {
+  return {
+    action: 'SET_PROJECT_DESCRIPTION',
+    description: projectDescription,
   }
 }
 

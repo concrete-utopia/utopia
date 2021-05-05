@@ -33,6 +33,7 @@ import {
   clearSelection,
   regenerateThumbnail,
   setProjectName,
+  setProjectDescription,
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
 import { DerivedState, EditorState } from '../editor/store/editor-state'
@@ -574,6 +575,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
   const {
     dispatch,
     projectName,
+    projectDescription,
     projectId,
     thumbnailLastGenerated,
     userState,
@@ -583,6 +585,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
     return {
       dispatch: store.dispatch,
       projectName: store.editor.projectName,
+      projectDescription: store.editor.projectDescription,
       projectId: store.editor.id,
       thumbnailLastGenerated: store.editor.thumbnailLastGenerated,
       userState: store.userState,
@@ -592,6 +595,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
   }, 'ProjectSettingsPanel')
 
   const [name, changeProjectName] = React.useState(projectName)
+  const [description, changeProjectDescription] = React.useState(projectDescription)
   const [requestingPreviewImage, setRequestingPreviewImage] = React.useState(false)
 
   const toggleMinimised = React.useCallback(() => {
@@ -601,6 +605,13 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
   const updateProjectName = React.useCallback(
     (newProjectName: string) => {
       dispatch([setProjectName(newProjectName)])
+    },
+    [dispatch],
+  )
+
+  const updateProjectDescription = React.useCallback(
+    (newProjectDescription: string) => {
+      dispatch([setProjectDescription(newProjectDescription)])
     },
     [dispatch],
   )
@@ -620,11 +631,18 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
     [dispatch, focusedPanel],
   )
 
-  const handleBlur = React.useCallback(
+  const handleBlurProjectName = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       updateProjectName(e.target.value)
     },
     [updateProjectName],
+  )
+
+  const handleBlurProjecDescription = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      updateProjectDescription(e.target.value)
+    },
+    [updateProjectDescription],
   )
 
   const handleKeyPress = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -637,6 +655,13 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
   const onChangeProjectName = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     changeProjectName(event.target.value)
   }, [])
+
+  const onChangeProjectDescription = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      changeProjectDescription(event.target.value)
+    },
+    [],
+  )
 
   const urlToRequest = `${thumbnailURL(projectId!)}?lastUpdated=${thumbnailLastGenerated}`
 
@@ -668,103 +693,110 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
               </FlexRow>
             </SectionTitleRow>
             <SectionBodyArea minimised={minimised}>
-              {userState.loginState.type === 'NOT_LOGGED_IN' ? (
-                <span>Log in or sign up to see settings</span>
-              ) : (
-                <FlexColumn>
-                  <SectionBodyArea minimised={false}>
-                    <UIGridRow
-                      padded
-                      variant='<-------------1fr------------->'
-                      style={{
-                        height: 'inherit',
-                        wordWrap: 'normal',
-                        whiteSpace: 'normal',
-                        alignItems: 'flex-start',
-                        minHeight: 34,
-                        paddingTop: 8,
-                        paddingLeft: 8,
-                        paddingRight: 8,
-                        paddingBottom: 8,
-                        letterSpacing: 0.1,
-                        lineHeight: '17px',
-                        fontSize: '11px',
-                      }}
-                    >
-                      <Subdued>
-                        These help you organise your projects. We also use them when you embed or
-                        share your project on social media and chat apps.
-                      </Subdued>
-                    </UIGridRow>
-                    <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-                      <span>Name</span>
+              <FlexColumn>
+                <SectionBodyArea minimised={false}>
+                  <UIGridRow
+                    padded
+                    variant='<-------------1fr------------->'
+                    style={{
+                      height: 'inherit',
+                      wordWrap: 'normal',
+                      whiteSpace: 'normal',
+                      alignItems: 'flex-start',
+                      minHeight: 34,
+                      paddingTop: 8,
+                      paddingLeft: 8,
+                      paddingRight: 8,
+                      paddingBottom: 8,
+                      letterSpacing: 0.1,
+                      lineHeight: '17px',
+                      fontSize: '11px',
+                    }}
+                  >
+                    <Subdued>
+                      These help you organise your projects. We also use them when you embed or
+                      share your project on social media and chat apps.
+                    </Subdued>
+                  </UIGridRow>
+                  <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+                    <span>Name</span>
+                    {userState.loginState.type === 'NOT_LOGGED_IN' ? (
+                      <span>{name}</span>
+                    ) : (
                       <StringInput
                         testId='projectName'
                         value={name}
                         onChange={onChangeProjectName}
                         onKeyDown={handleKeyPress}
                         style={{ width: 150 }}
-                        onBlur={handleBlur}
+                        onBlur={handleBlurProjectName}
                       />
-                    </UIGridRow>
-                    <UIGridRow padded variant='<---1fr--->|------172px-------|'>
-                      <span> Description </span>
+                    )}
+                  </UIGridRow>
+                  <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+                    <span> Description </span>
+                    {userState.loginState.type === 'NOT_LOGGED_IN' ? (
+                      <span>{description}</span>
+                    ) : (
                       <StringInput
                         testId='projectDescription'
-                        value={projectName}
+                        value={description}
+                        onChange={onChangeProjectDescription}
+                        onKeyDown={handleKeyPress}
+                        onBlur={handleBlurProjecDescription}
                         style={{ width: 150 }}
                       />
-                    </UIGridRow>
-                    <UIGridRow
-                      padded
-                      variant='<---1fr--->|------172px-------|'
-                      style={{ alignItems: 'start', height: 'initial', paddingTop: 8 }}
-                    >
-                      <span> Preview </span>
-                      <FlexColumn style={{ gap: 8 }}>
-                        <div
-                          css={{
-                            boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
-                            borderRadius: 1,
-                            display: 'block',
-                            justifySelf: 'stretch',
-                            aspectRatio: '16 / 9',
-                            backgroundImage: `url('${urlToRequest}')`,
-                            backgroundSize: 'cover',
-                            backgroundColor: colorTheme.canvasBackground.value,
-                          }}
-                        />
-                        <Button
-                          disabled={requestingPreviewImage}
-                          spotlight
-                          highlight
-                          onClick={triggerRegenerateThumbnail}
-                          css={{
-                            position: 'relative',
-                            textAlign: 'center',
-                            '&:before': {
-                              transition: requestingPreviewImage
-                                ? 'right 2.5s ease-in-out'
-                                : 'inherit',
-                              position: 'absolute',
-                              left: 0,
-                              top: 0,
-                              bottom: 0,
-                              right: requestingPreviewImage ? 0 : '100%',
-                              background: requestingPreviewImage
-                                ? UtopiaTheme.color.primary.value
-                                : 'transparent',
-                              content: '""',
-                            },
-                          }}
-                        >
-                          {requestingPreviewImage ? 'Refreshing' : 'Refresh'}
-                        </Button>
-                      </FlexColumn>
-                    </UIGridRow>
-                  </SectionBodyArea>
-                </FlexColumn>
-              )}
+                    )}
+                  </UIGridRow>
+                  <UIGridRow
+                    padded
+                    variant='<---1fr--->|------172px-------|'
+                    style={{ alignItems: 'start', height: 'initial', paddingTop: 8 }}
+                  >
+                    <span> Preview </span>
+                    <FlexColumn style={{ gap: 8 }}>
+                      <div
+                        css={{
+                          boxShadow: `inset 0 0 0 1px ${colorTheme.secondaryBorder.value}`,
+                          borderRadius: 1,
+                          display: 'block',
+                          justifySelf: 'stretch',
+                          aspectRatio: '16 / 9',
+                          backgroundImage: `url('${urlToRequest}')`,
+                          backgroundSize: 'cover',
+                          backgroundColor: colorTheme.canvasBackground.value,
+                        }}
+                      />
+                      <Button
+                        disabled={requestingPreviewImage}
+                        spotlight
+                        highlight
+                        onClick={triggerRegenerateThumbnail}
+                        css={{
+                          position: 'relative',
+                          textAlign: 'center',
+                          '&:before': {
+                            transition: requestingPreviewImage
+                              ? 'right 2.5s ease-in-out'
+                              : 'inherit',
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            right: requestingPreviewImage ? 0 : '100%',
+                            background: requestingPreviewImage
+                              ? UtopiaTheme.color.primary.value
+                              : 'transparent',
+                            content: '""',
+                          },
+                        }}
+                      >
+                        {requestingPreviewImage ? 'Refreshing' : 'Refresh'}
+                      </Button>
+                    </FlexColumn>
+                  </UIGridRow>
+                </SectionBodyArea>
+              </FlexColumn>
             </SectionBodyArea>
           </Section>
         )}
