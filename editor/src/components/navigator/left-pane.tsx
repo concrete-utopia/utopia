@@ -141,6 +141,7 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
           }
         }}
       >
+        <PutAForkInIt />
         {selectedTab === LeftMenuTab.Project ? <ProjectPane /> : null}
         {selectedTab === LeftMenuTab.Storyboards ? <StoryboardsPane /> : null}
         {selectedTab === LeftMenuTab.Contents ? <ContentsPane /> : null}
@@ -148,13 +149,16 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
         {selectedTab === LeftMenuTab.Sharing ? <SharingPane /> : null}
         {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
         <LoggedOutPane />
-        <PutAForkInIt />
       </div>
     </div>
   )
 })
 
 const PutAForkInIt = betterReactMemo('ForkPain', () => {
+  const { id, projectName } = useEditorState((store) => {
+    return { id: store.editor.id, projectName: store.editor.projectName }
+  }, 'ForkPanel')
+
   return (
     <Section data-name='Fork' tabIndex={-1}>
       <SectionTitleRow minimised={false}>
@@ -181,13 +185,24 @@ const PutAForkInIt = betterReactMemo('ForkPain', () => {
             fontSize: '11px',
           }}
         >
-          <p>
-            <b>Anonymous Aardvark</b>&nbsp;
-            <Subdued>357c01bb</Subdued>
-          </p>
+          <div>
+            <span
+              style={{
+                paddingLeft: 2,
+                paddingRight: 2,
+                paddingTop: 1,
+                paddingBottom: 1,
+                background: '#007AFF',
+                color: 'white',
+              }}
+            >
+              <b>{projectName}</b>&nbsp;
+              <Subdued>{id}</Subdued>
+            </span>
+          </div>
           <p>
             TODO Using react-spring, react-enterprise, act-react and dozens of other fancy libraries
-            you haven't ever heard of. However, this text will get cropped.
+            you haven't ever heard of.
           </p>
         </UIGridRow>
         <UIGridRow
