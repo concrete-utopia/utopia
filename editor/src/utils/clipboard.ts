@@ -5,7 +5,7 @@ import { EditorModes } from '../components/editor/editor-modes'
 import {
   DerivedState,
   EditorState,
-  getOpenUIJSFile,
+  getOpenUIJSFileKey,
   withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
@@ -13,7 +13,12 @@ import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import { isParseSuccess, NodeModules, ElementPath } from '../core/shared/project-file-types'
+import {
+  isParseSuccess,
+  NodeModules,
+  ElementPath,
+  isTextFile,
+} from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
@@ -22,7 +27,12 @@ import { CanvasPoint } from '../core/shared/math-utils'
 import json5 = require('json5')
 import { fastForEach } from '../core/shared/utils'
 import urljoin = require('url-join')
-import { ProjectContentTreeRoot } from '../components/assets'
+import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../components/assets'
+import {
+  normalisePathSuccessOrThrowError,
+  normalisePathToUnderlyingTarget,
+} from '../components/custom-code/code-file'
+import { mapDropNulls } from '../core/shared/array-utils'
 // tslint:disable-next-line:no-var-requires
 const ClipboardPolyfill = require('clipboard-polyfill') // stupid .d.ts is malformatted
 
@@ -148,30 +158,39 @@ export function createDirectInsertImageActions(
   }
 }
 
-export function createClipboardDataFromSelectionNewWorld(
+export function createClipboardDataFromSelection(
   editor: EditorState,
-  derived: DerivedState,
 ): {
   data: Array<JSXElementCopyData>
   imageFilenames: Array<string>
   plaintext: string
 } | null {
-  const openUIJSFile = getOpenUIJSFile(editor)
-  if (
-    openUIJSFile == null ||
-    !isParseSuccess(openUIJSFile.fileContents.parsed) ||
-    editor.selectedViews.length === 0
-  ) {
+  const openUIJSFileKey = getOpenUIJSFileKey(editor)
+  if (openUIJSFileKey == null || editor.selectedViews.length === 0) {
     return null
   }
-  const parseSuccess = openUIJSFile.fileContents.parsed
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
     return R.none((otherView) => EP.isDescendantOf(view, otherView), editor.selectedViews)
   })
-  const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-  const jsxElements = filteredSelectedViews.map((view) => {
-    return findElementAtPath(view, utopiaComponents)
-  })
+  const jsxElements = mapDropNulls((target) => {
+    const underlyingTarget = normalisePathToUnderlyingTarget(
+      editor.projectContents,
+      editor.nodeModules.files,
+      openUIJSFileKey,
+      target,
+    )
+    const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
+    const projectFile = getContentsTreeFileFromString(
+      editor.projectContents,
+      targetPathSuccess.filePath,
+    )
+    if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+      const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
+      return findElementAtPath(target, components)
+    } else {
+      return null
+    }
+  }, filteredSelectedViews)
   return {
     data: [
       {
