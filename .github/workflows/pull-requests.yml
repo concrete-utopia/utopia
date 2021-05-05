@@ -1,4 +1,4 @@
-name: Run Tests On PR Pushes, Deploy Staging Editor
+name: Pull Request
 on: [pull_request]
 
 jobs:
@@ -137,4 +137,5 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
+            Staging deploy success. Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }}
             Performance: ${{ steps.run-performance-test.outputs.perf-result }}

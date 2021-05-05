@@ -38,7 +38,7 @@ import {
   unsetJSXValuesAtPaths,
   ValueAtPath,
 } from '../shared/jsx-attributes'
-import { Imports, NodeModules, PropertyPath, TemplatePath } from '../shared/project-file-types'
+import { Imports, NodeModules, PropertyPath, ElementPath } from '../shared/project-file-types'
 import { createLayoutPropertyPath, pinnedPropForFramePoint } from './layout-helpers-new'
 import { getLayoutProperty, getLayoutPropertyOr } from './getLayoutProperty'
 import { PropsOrJSXAttributes, getSimpleAttributeAtPath } from '../model/element-metadata-utils'
@@ -49,7 +49,7 @@ import { emptyComments } from '../workers/parser-printer/parser-printer-comments
 import { ProjectContentTreeRoot } from '../../components/assets'
 
 export function targetRespectsLayout(
-  target: TemplatePath,
+  target: ElementPath,
   propertyControlsInfo: PropertyControlsInfo,
   openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
@@ -256,7 +256,7 @@ export const FlexLayoutHelpers = {
     props: UtopiaComponentProps,
     parentProps: UtopiaComponentProps,
   ): { width: FlexLength; height: FlexLength } => {
-    return getUnstretchedWidthHeight(props.layout || {}, parentProps.layout || {})
+    return getUnstretchedWidthHeight((props.style as any) || {}, (parentProps.style as any) || {})
   },
 }
 

@@ -8,29 +8,20 @@ import {
   getOpenUIJSFile,
   withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
-import { scaleImageDimensions, getFrameAndMultiplier } from '../components/images'
-import * as TP from '../core/shared/template-path'
+import { getFrameAndMultiplier } from '../components/images'
+import * as EP from '../core/shared/element-path'
 import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import {
-  Imports,
-  InstancePath,
-  isParseSuccess,
-  NodeModules,
-  TemplatePath,
-} from '../core/shared/project-file-types'
+import { isParseSuccess, NodeModules, ElementPath } from '../core/shared/project-file-types'
 import { encodeUtopiaDataToHtml, parsePasteEvent, PasteResult } from './clipboard-utils'
-import { isLeft } from '../core/shared/either'
 import { setLocalClipboardData } from './local-clipboard'
 import Utils from './utils'
 import { FileResult, ImageResult } from '../core/shared/file-utils'
-import { CanvasPoint, CanvasRectangle } from '../core/shared/math-utils'
+import { CanvasPoint } from '../core/shared/math-utils'
 import json5 = require('json5')
 import { fastForEach } from '../core/shared/utils'
 import urljoin = require('url-join')
-import { findJSXElementChildAtPath } from '../core/model/element-template-utils'
-import { createSceneTemplatePath } from '../core/model/scene-utils'
 import { ProjectContentTreeRoot } from '../components/assets'
 // tslint:disable-next-line:no-var-requires
 const ClipboardPolyfill = require('clipboard-polyfill') // stupid .d.ts is malformatted
@@ -38,7 +29,7 @@ const ClipboardPolyfill = require('clipboard-polyfill') // stupid .d.ts is malfo
 interface JSXElementCopyData {
   type: 'ELEMENT_COPY'
   elements: JSXElementsJson
-  originalTemplatePaths: TemplatePath[]
+  originalElementPaths: ElementPath[]
   targetOriginalContextMetadata: ElementInstanceMetadataMap
 }
 
@@ -75,15 +66,15 @@ export function getActionsForClipboardItems(
   openFile: string | null,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
-  selectedViews: Array<TemplatePath>,
-  pasteTargetsToIgnore: TemplatePath[],
+  selectedViews: Array<ElementPath>,
+  pasteTargetsToIgnore: ElementPath[],
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<EditorAction> {
   try {
     const utopiaActions = Utils.flatMapArray((data: CopyData, i: number) => {
       const elements = json5.parse(data.elements)
       const metadata = data.targetOriginalContextMetadata
-      return [EditorActions.pasteJSXElements(elements, data.originalTemplatePaths, metadata)]
+      return [EditorActions.pasteJSXElements(elements, data.originalElementPaths, metadata)]
     }, clipboardData)
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
@@ -128,7 +119,7 @@ export function getActionsForClipboardItems(
 export function createDirectInsertImageActions(
   images: Array<ImageResult>,
   centerPoint: CanvasPoint,
-  parentPath: TemplatePath | null,
+  parentPath: ElementPath | null,
   overrideDefaultMultiplier: number | null,
 ): Array<EditorAction> {
   if (images.length === 0) {
@@ -175,7 +166,7 @@ export function createClipboardDataFromSelectionNewWorld(
   }
   const parseSuccess = openUIJSFile.fileContents.parsed
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
-    return R.none((otherView) => TP.isAncestorOf(view, otherView, false), editor.selectedViews)
+    return R.none((otherView) => EP.isDescendantOf(view, otherView), editor.selectedViews)
   })
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
   const jsxElements = filteredSelectedViews.map((view) => {
@@ -186,7 +177,7 @@ export function createClipboardDataFromSelectionNewWorld(
       {
         type: 'ELEMENT_COPY',
         elements: json5.stringify(jsxElements),
-        originalTemplatePaths: editor.selectedViews,
+        originalElementPaths: editor.selectedViews,
         targetOriginalContextMetadata: editor.jsxMetadata,
       },
     ],
@@ -199,67 +190,59 @@ export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-  pasteTargetsToIgnore: TemplatePath[],
-): TemplatePath | null {
+  pasteTargetsToIgnore: ElementPath[],
+): ElementPath | null {
   if (selectedViews.length > 0) {
-    const parentTarget = TP.getCommonParent(selectedViews, true)
+    const parentTarget = EP.getCommonParent(selectedViews, true)
     if (parentTarget == null) {
       return null
     } else {
       // we should not paste the source into itself
-      const insertingSourceIntoItself = TP.containsPath(parentTarget, pasteTargetsToIgnore)
+      const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
 
-      if (TP.isScenePath(parentTarget)) {
-        return insertingSourceIntoItself ? null : parentTarget
-      } else {
-        return withUnderlyingTarget(
-          parentTarget,
-          projectContents,
-          nodeModules,
-          openFile,
-          null,
-          (parentTargetSuccess) => {
-            if (
-              MetadataUtils.targetSupportsChildren(
-                parentTargetSuccess.imports,
-                metadata,
-                parentTarget,
-              ) &&
-              !insertingSourceIntoItself
-            ) {
-              return parentTarget
-            } else {
-              const parentOfSelected = TP.instancePathParent(parentTarget)
-              if (TP.isScenePath(parentOfSelected)) {
-                return parentOfSelected
-              } else {
-                return withUnderlyingTarget(
-                  parentOfSelected,
-                  projectContents,
-                  nodeModules,
-                  openFile,
-                  null,
-                  (parentOfSelectedSuccess) => {
-                    if (
-                      MetadataUtils.targetSupportsChildren(
-                        parentOfSelectedSuccess.imports,
-                        metadata,
-                        parentOfSelected,
-                      )
-                    ) {
-                      return parentOfSelected
-                    } else {
-                      return null
-                    }
-                  },
-                )
-              }
-            }
-          },
-        )
-      }
+      return withUnderlyingTarget(
+        parentTarget,
+        projectContents,
+        nodeModules,
+        openFile,
+        null,
+        (parentTargetSuccess) => {
+          if (
+            MetadataUtils.targetSupportsChildren(
+              parentTargetSuccess.imports,
+              metadata,
+              parentTarget,
+            ) &&
+            !insertingSourceIntoItself
+          ) {
+            return parentTarget
+          } else {
+            const parentOfSelected = EP.parentPath(parentTarget)
+            return withUnderlyingTarget(
+              parentOfSelected,
+              projectContents,
+              nodeModules,
+              openFile,
+              null,
+              (parentOfSelectedSuccess) => {
+                if (
+                  MetadataUtils.targetSupportsChildren(
+                    parentOfSelectedSuccess.imports,
+                    metadata,
+                    parentOfSelected,
+                  )
+                ) {
+                  return parentOfSelected
+                } else {
+                  return null
+                }
+              },
+            )
+          }
+        },
+      )
     }
   } else {
     return null

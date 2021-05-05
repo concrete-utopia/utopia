@@ -7,6 +7,7 @@ import * as ReactDOMServer from 'react-dom/server'
 import * as UtopiaAPI from 'utopia-api'
 import * as UUIUI from '../../uuiui'
 import * as ANTD from 'antd'
+import * as EmotionReact from '@emotion/react'
 
 import { FancyError } from '../../core/shared/code-exec-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'
@@ -80,6 +81,8 @@ function requireTestFiles(filenames: Array<string>, importOrigin: string, toImpo
       return UUIUI
     case 'antd':
       return ANTD
+    case '@emotion/react':
+      return EmotionReact
     default:
       throw new Error(`Unhandled values of ${importOrigin} and ${toImport}.`)
   }

@@ -10,7 +10,7 @@ import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import * as Prettier from 'prettier'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 
 import { PrettierConfig } from 'utopia-vscode-common'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
@@ -23,10 +23,9 @@ describe('moving a scene/rootview on the canvas', () => {
   it('dragging a scene child’s root view sets the root view position', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
-        <View style={{ width: '100%', height: '100%' }} layout={{ layoutSystem: 'pinSystem' }} data-testid='aaa' data-uid='aaa'>
+        <View style={{ width: '100%', height: '100%' }} data-testid='aaa' data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
             data-uid='bbb'
           />
         </View>
@@ -34,7 +33,7 @@ describe('moving a scene/rootview on the canvas', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa'])], false)],
       false,
     )
 
@@ -113,13 +112,11 @@ describe('moving a scene/rootview on the canvas', () => {
       makeTestProjectCodeWithSnippet(`
       <View
           style={{ width: '100%', height: '100%', left: 40, top: -30 }}
-          layout={{ layoutSystem: 'pinSystem' }}
           data-testid='aaa'
           data-uid='aaa'
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
             data-uid='bbb'
           />
         </View>
@@ -129,20 +126,18 @@ describe('moving a scene/rootview on the canvas', () => {
 
   it('dragging a scene sets the scene position', async () => {
     const testCode = Prettier.format(
-      `/** @jsx jsx */
+      `
         import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
+        import { Scene, Storyboard, View } from 'utopia-api'
 
         export var App = (props) => {
           return (
             <View
-              style={{ width: '100%', height: '100%' }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ position: 'relative', width: '100%', height: '100%' }}
               data-uid='aaa'
             >
               <View
-                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-                layout={{ layoutSystem: 'pinSystem' }}
+                style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
                 data-uid='bbb'
               />
             </View>
@@ -165,11 +160,11 @@ describe('moving a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    const targetPath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID])
+    const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      `label-control-${TP.toString(targetPath)}`,
+      `label-control-${EP.toString(targetPath)}`,
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -239,20 +234,18 @@ describe('moving a scene/rootview on the canvas', () => {
       await dispatchDone
     })
 
-    const expectedCode = `/** @jsx jsx */
+    const expectedCode = `
     import * as React from 'react'
-    import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    import { Scene, Storyboard, View } from 'utopia-api'
 
     export var App = (props) => {
       return (
         <View
-          style={{ width: '100%', height: '100%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ position: 'relative', width: '100%', height: '100%' }}
           data-uid='aaa'
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
             data-uid='bbb'
           />
         </View>
@@ -283,20 +276,18 @@ describe('resizing a scene/rootview on the canvas', () => {
 
   it('resizing a scene child’s root view sets the root view size', async () => {
     const testCode = Prettier.format(
-      `/** @jsx jsx */
+      `
         import * as React from 'react'
-        import { Scene, Storyboard, View, jsx } from 'utopia-api'
+        import { Scene, Storyboard, View } from 'utopia-api'
 
         export var App = (props) => {
           return (
             <View
-              style={{ width: '100%', height: '100%' }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ position: 'relative', width: '100%', height: '100%' }}
               data-uid='aaa'
             >
               <View
-                style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-                layout={{ layoutSystem: 'pinSystem' }}
+                style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
                 data-uid='bbb'
               />
             </View>
@@ -319,11 +310,11 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa'])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      `component-resize-control-${TP.toString(targetPath)}-0-1-1`,
+      `component-resize-control-${EP.toString(targetPath)}-0-1-1`,
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -375,20 +366,18 @@ describe('resizing a scene/rootview on the canvas', () => {
       await dispatchDone
     })
 
-    const expectedCode = `/** @jsx jsx */
+    const expectedCode = `
     import * as React from 'react'
-    import { Scene, Storyboard, View, jsx } from 'utopia-api'
+    import { Scene, Storyboard, View } from 'utopia-api'
 
     export var App = (props) => {
       return (
         <View
-          style={{ width: '120%', height: '92.5%' }}
-          layout={{ layoutSystem: 'pinSystem' }}
+          style={{ position: 'relative', width: '120%', height: '92.5%' }}
           data-uid='aaa'
         >
           <View
-            style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
             data-uid='bbb'
           />
         </View>
@@ -415,20 +404,18 @@ describe('resizing a scene/rootview on the canvas', () => {
 
   it('resizing a scene sets the scene size', async () => {
     const testCode = Prettier.format(
-      `/** @jsx jsx */
+      `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
 
       export var App = (props) => {
         return (
           <View
-            style={{ width: '100%', height: '100%' }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ position: 'relative', width: '100%', height: '100%' }}
             data-uid='aaa'
           >
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
               data-uid='bbb'
             />
           </View>
@@ -451,11 +438,11 @@ describe('resizing a scene/rootview on the canvas', () => {
     )
     const renderResult = await renderTestEditorWithCode(testCode)
 
-    const targetPath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID])
+    const targetPath = EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
     const areaControl = renderResult.renderedDOM.getByTestId(
-      `component-resize-control-${TP.toString(targetPath)}-0-1-1`,
+      `component-resize-control-${EP.toString(targetPath)}-0-1-1`,
     )
 
     const areaControlBounds = areaControl.getBoundingClientRect()
@@ -507,20 +494,18 @@ describe('resizing a scene/rootview on the canvas', () => {
       await dispatchDone
     })
 
-    const expectedCode = `/** @jsx jsx */
+    const expectedCode = `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
 
       export var App = (props) => {
         return (
           <View
-            style={{ width: '100%', height: '100%' }}
-            layout={{ layoutSystem: 'pinSystem' }}
+            style={{ position: 'relative', width: '100%', height: '100%' }}
             data-uid='aaa'
           >
             <View
-              style={{ backgroundColor: '#0091FFAA', left: 50, top: 50, width: 200, height: 200 }}
-              layout={{ layoutSystem: 'pinSystem' }}
+              style={{ backgroundColor: '#0091FFAA', position: 'absolute', left: 50, top: 50, width: 200, height: 200 }}
               data-uid='bbb'
             />
           </View>

@@ -34,33 +34,21 @@ import { ErrorMessage } from '../../../core/shared/error-messages'
 import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
   Imports,
-  InstancePath,
-  ParsedTextFile,
   ParseSuccess,
-  ProjectContents,
   ProjectFile,
   RevisionsState,
-  SceneMetadata,
-  ScenePath,
-  StaticInstancePath,
-  TemplatePath,
+  ElementPath,
   TextFile,
   isTextFile,
-  StaticTemplatePath,
+  StaticElementPath,
   NodeModules,
   foldParsedTextFile,
-  mapParsedTextFile,
   textFileContents,
   isParseSuccess,
   codeFile,
   isParseFailure,
   isParsedTextFile,
-  EmptyExportsDetail,
-  HighlightBounds,
   HighlightBoundsForUids,
-  StaticElementPath,
-  textFile,
-  HighlightBoundsWithFileForUids,
   HighlightBoundsWithFile,
 } from '../../../core/shared/project-file-types'
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
@@ -121,28 +109,20 @@ import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../ac
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
 import { StateHistory } from '../history'
 import {
-  createSceneTemplatePath,
   isSceneElementIgnoringImports,
   BakedInStoryboardVariableName,
-  EmptyScenePathForStoryboard,
   isDynamicSceneChildWidthHeightPercentage,
-  getStoryboardTemplatePath,
+  getStoryboardElementPath,
 } from '../../../core/model/scene-utils'
 
 import { RightMenuTab } from '../../canvas/right-menu'
 
 import {
-  staticInstancePath,
-  instancePath,
-  isInstancePath,
   toUid,
   toString,
   dynamicPathToStaticPath,
-  scenePath,
-  staticScenePath,
   staticElementPath,
-  scenePathForElementAtPath,
-} from '../../../core/shared/template-path'
+} from '../../../core/shared/element-path'
 
 import { Notice } from '../../common/notice'
 import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
@@ -161,7 +141,7 @@ import {
   ElementInstanceMetadataMapKeepDeepEquality,
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { getParseSuccessOrTransientForFilePath } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
@@ -169,8 +149,8 @@ import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
 export interface OriginalPath {
-  originalTP: TemplatePath
-  currentTP: TemplatePath
+  originalTP: ElementPath
+  currentTP: ElementPath
 }
 
 export interface UserConfiguration {
@@ -262,10 +242,10 @@ export interface EditorState {
     projectFilesBuildResults: MultiFileBuildResult
     packageStatus: PackageStatusMap
   }
-  selectedViews: Array<TemplatePath>
-  highlightedViews: Array<TemplatePath>
-  hiddenInstances: Array<TemplatePath>
-  warnedInstances: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
+  highlightedViews: Array<ElementPath>
+  hiddenInstances: Array<ElementPath>
+  warnedInstances: Array<ElementPath>
   mode: Mode
   focusedPanel: EditorPanel | null
   keysPressed: KeysPressed
@@ -295,7 +275,7 @@ export interface EditorState {
     realCanvasOffset: CanvasVector
     roundedCanvasOffset: CanvasVector
     textEditor: {
-      templatePath: InstancePath
+      elementPath: ElementPath
       triggerMousePosition: WindowPoint | null
     } | null
     selectionControlsVisible: boolean
@@ -330,8 +310,8 @@ export interface EditorState {
   navigator: {
     minimised: boolean
     dropTargetHint: DropTargetHint
-    collapsedViews: TemplatePath[]
-    renamingTarget: TemplatePath | null
+    collapsedViews: ElementPath[]
+    renamingTarget: ElementPath | null
     position: 'hidden' | 'left' | 'right'
   }
   preview: {
@@ -352,17 +332,17 @@ export interface EditorState {
     lintErrors: ErrorMessages
   }
   thumbnailLastGenerated: number
-  pasteTargetsToIgnore: TemplatePath[]
+  pasteTargetsToIgnore: ElementPath[]
   parseOrPrintInFlight: boolean
   safeMode: boolean
   saveError: boolean
   vscodeBridgeReady: boolean
-  focusedElementPath: ScenePath | null
+  focusedElementPath: ElementPath | null
   config: UtopiaVSCodeConfig
 }
 
 export interface StoredEditorState {
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
 }
 
 export function storedEditorStateFromEditorState(editorState: EditorState): StoredEditorState {
@@ -568,7 +548,7 @@ export function modifyOpenJSXElementsAndMetadata(
     utopiaComponents: Array<UtopiaJSXComponent>,
     componentMetadata: ElementInstanceMetadataMap,
   ) => { components: Array<UtopiaJSXComponent>; componentMetadata: ElementInstanceMetadataMap },
-  target: InstancePath,
+  target: ElementPath,
   model: EditorState,
 ): EditorState {
   let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadata
@@ -601,7 +581,7 @@ export function modifyOpenJSXElementsAndMetadata(
 }
 
 export function modifyOpenJsxElementAtPath(
-  path: InstancePath,
+  path: ElementPath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
@@ -614,7 +594,7 @@ export function modifyOpenJsxElementAtPath(
 }
 
 export function modifyOpenJsxElementAtStaticPath(
-  path: StaticInstancePath,
+  path: StaticElementPath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
 ): EditorState {
@@ -658,7 +638,7 @@ export function getOpenUtopiaJSXComponentsFromStateMultifile(
 }
 
 export function getJSXComponentsAndImportsForPathFromState(
-  path: TemplatePath,
+  path: ElementPath,
   model: EditorState,
   derived: DerivedState,
 ): {
@@ -682,7 +662,7 @@ export function getJSXComponentsAndImportsForPathFromState(
 }
 
 export function getJSXComponentsAndImportsForPath(
-  path: TemplatePath,
+  path: ElementPath,
   currentFilePath: string,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -696,7 +676,7 @@ export function getJSXComponentsAndImportsForPath(
     projectContents,
     nodeModules,
     currentFilePath,
-    TP.instancePathForElementAtPathDontThrowOnScene(path),
+    path,
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
@@ -713,7 +693,7 @@ export function getJSXComponentsAndImportsForPath(
 }
 
 export function getJSXComponentsAndImportsForPathInnerComponentFromState(
-  path: TemplatePath,
+  path: ElementPath,
   model: EditorState,
   derived: DerivedState,
 ): {
@@ -732,7 +712,7 @@ export function getJSXComponentsAndImportsForPathInnerComponentFromState(
 }
 
 export function getJSXComponentsAndImportsForPathInnerComponent(
-  path: TemplatePath,
+  path: ElementPath,
   currentFilePath: string | null | undefined,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -798,19 +778,6 @@ function modifyOpenScenes_INTERNAL(
   }, model)
 }
 
-export function modifyOpenSceneAtPath(
-  path: ScenePath,
-  transform: (scene: JSXElement) => JSXElement,
-  model: EditorState,
-): EditorState {
-  return modifyUnderlyingTarget(
-    path,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
-    model,
-    transform,
-  )
-}
-
 export function getNumberOfScenes(model: EditorState): number {
   return getSceneElements(model).length
 }
@@ -859,14 +826,13 @@ export function addSceneToJSXComponents(
   const storyboardComponentUID =
     storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
   if (storyboardComponentUID != null) {
-    const storyboardComponentTemplatePath = staticInstancePath(
-      staticScenePath([staticElementPath([storyboardComponentUID])]),
+    const storyboardComponentElementPath = EP.elementPath([
       staticElementPath([storyboardComponentUID]),
-    )
+    ])
     return insertJSXElementChild(
       projectContents,
       openFile,
-      storyboardComponentTemplatePath,
+      storyboardComponentElementPath,
       newSceneElement,
       components,
       null,
@@ -876,19 +842,13 @@ export function addSceneToJSXComponents(
   }
 }
 
-export function removeScene(model: EditorState, path: ScenePath): EditorState {
-  return modifyOpenScenes_INTERNAL((components) => {
-    return removeJSXElementChild(createSceneTemplatePath(path), components)
-  }, model)
-}
-
 const emptyImports: Imports = {}
 
 export function removeElementAtPath(
-  target: InstancePath,
+  target: ElementPath,
   components: Array<UtopiaJSXComponent>,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+  const staticTarget = EP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
@@ -899,12 +859,12 @@ export function removeElementAtPath(
 export function insertElementAtPath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-  targetParent: TemplatePath | null,
+  targetParent: ElementPath | null,
   elementToInsert: JSXElementChild,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.templatePathToStaticTemplatePath(targetParent)
+  const staticTarget = targetParent == null ? null : EP.dynamicPathToStaticPath(targetParent)
   return insertJSXElementChild(
     projectContents,
     openFile,
@@ -917,10 +877,10 @@ export function insertElementAtPath(
 
 export function transformElementAtPath(
   components: Array<UtopiaJSXComponent>,
-  target: InstancePath,
+  target: ElementPath,
   transform: (elem: JSXElement) => JSXElement,
 ): Array<UtopiaJSXComponent> {
-  const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+  const staticTarget = EP.dynamicPathToStaticPath(target)
   if (staticTarget == null) {
     return components
   } else {
@@ -946,14 +906,14 @@ export function transientFileState(
 export type TransientFilesState = { [filepath: string]: TransientFileState }
 
 export interface TransientCanvasState {
-  selectedViews: Array<TemplatePath>
-  highlightedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
+  highlightedViews: Array<ElementPath>
   filesState: TransientFilesState | null
 }
 
 export function transientCanvasState(
-  selectedViews: Array<TemplatePath>,
-  highlightedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
+  highlightedViews: Array<ElementPath>,
   fileState: TransientFilesState | null,
 ): TransientCanvasState {
   return {
@@ -984,14 +944,14 @@ export const defaultElementWarnings: ElementWarnings = {
 }
 
 export interface DerivedState {
-  navigatorTargets: Array<TemplatePath>
-  visibleNavigatorTargets: Array<TemplatePath>
+  navigatorTargets: Array<ElementPath>
+  visibleNavigatorTargets: Array<ElementPath>
   canvas: {
-    descendantsOfHiddenInstances: Array<TemplatePath>
+    descendantsOfHiddenInstances: Array<ElementPath>
     controls: Array<HigherOrderControl>
     transientState: TransientCanvasState
   }
-  elementWarnings: ComplexMap<TemplatePath, ElementWarnings>
+  elementWarnings: ComplexMap<ElementPath, ElementWarnings>
 }
 
 function emptyDerivedState(editorState: EditorState): DerivedState {
@@ -1013,7 +973,7 @@ export interface PersistentModel {
   projectContents: ProjectContentTreeRoot
   exportsInfo: ReadonlyArray<ExportsInfo>
   lastUsedFont: FontSettings | null
-  hiddenInstances: Array<TemplatePath>
+  hiddenInstances: Array<ElementPath>
   codeEditorErrors: {
     buildErrors: ErrorMessages
     lintErrors: ErrorMessages
@@ -1211,15 +1171,15 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
 export type OriginalFrame = FrameAndTarget<LocalRectangle>
 
 export interface OriginalCanvasAndLocalFrame {
-  target: TemplatePath
+  target: ElementPath
   frame?: LocalRectangle
   canvasFrame?: CanvasRectangle
 }
 
 export function getElementWarnings(
   rootMetadata: ElementInstanceMetadataMap,
-): ComplexMap<TemplatePath, ElementWarnings> {
-  let result: ComplexMap<TemplatePath, ElementWarnings> = emptyComplexMap()
+): ComplexMap<ElementPath, ElementWarnings> {
+  let result: ComplexMap<ElementPath, ElementWarnings> = emptyComplexMap()
   MetadataUtils.walkMetadata(
     rootMetadata,
     (elementMetadata: ElementInstanceMetadata, parentMetadata: ElementInstanceMetadata | null) => {
@@ -1246,24 +1206,7 @@ export function getElementWarnings(
         absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
         dynamicSceneChildWidthHeightPercentage: false,
       }
-      result = addToComplexMap(toString, result, elementMetadata.templatePath, elementWarnings)
-
-      if (MetadataUtils.elementIsOldStyleScene(elementMetadata)) {
-        const sceneWarnings: ElementWarnings = {
-          widthOrHeightZero: widthOrHeightZero,
-          absoluteWithUnpositionedParent: false,
-          dynamicSceneChildWidthHeightPercentage: isDynamicSceneChildWidthHeightPercentage(
-            elementMetadata,
-            rootMetadata,
-          ),
-        }
-        result = addToComplexMap(
-          toString,
-          result,
-          scenePathForElementAtPath(elementMetadata.templatePath),
-          sceneWarnings,
-        )
-      }
+      result = addToComplexMap(toString, result, elementMetadata.elementPath, elementWarnings)
     },
   )
   return result
@@ -1278,10 +1221,9 @@ export function deriveState(
   const {
     navigatorTargets,
     visibleNavigatorTargets,
-  } = MetadataUtils.createOrderedTemplatePathsFromElements(
+  } = MetadataUtils.createOrderedElementPathsFromElements(
     editor.jsxMetadata,
     editor.navigator.collapsedViews,
-    editor.focusedElementPath,
   )
 
   const derived: DerivedState = {
@@ -1639,7 +1581,7 @@ export function areGeneratedElementsSelected(editor: EditorState): boolean {
 }
 
 export function areGeneratedElementsTargeted(
-  targets: Array<TemplatePath>,
+  targets: Array<ElementPath>,
   editor: EditorState,
 ): boolean {
   return targets.some((target) => {
@@ -1759,10 +1701,10 @@ export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMeta
   }
 }
 
-export function getStoryboardTemplatePathFromEditorState(
+export function getStoryboardElementPathFromEditorState(
   editorState: EditorState,
-): StaticTemplatePath | null {
-  return getStoryboardTemplatePath(
+): StaticElementPath | null {
+  return getStoryboardElementPath(
     editorState.projectContents,
     editorState.canvas.openFile?.filename ?? null,
   )
@@ -1777,28 +1719,38 @@ export function getHighlightBoundsForUids(editorState: EditorState): HighlightBo
   return null
 }
 
-export function getHighlightBoundsForTemplatePath(
-  path: TemplatePath,
+export function getHighlightBoundsForFile(
   editorState: EditorState,
-): HighlightBoundsWithFile | null {
-  if (isInstancePath(path)) {
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(path)
-    if (staticPath != null) {
-      const highlightBounds = getHighlightBoundsForProject(editorState.projectContents)
-      if (highlightBounds != null) {
-        const highlightedUID = toUid(staticPath)
-        return highlightBounds[highlightedUID]
-      }
-    }
+  fullPath: string,
+): HighlightBoundsForUids | null {
+  const file = getContentsTreeFileFromString(editorState.projectContents, fullPath)
+  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    return getHighlightBoundsFromParseResult(file.fileContents.parsed)
   }
   return null
 }
 
-export function getTemplatePathsInBounds(
+export function getHighlightBoundsForElementPath(
+  path: ElementPath,
+  editorState: EditorState,
+): HighlightBoundsWithFile | null {
+  const staticPath = EP.dynamicPathToStaticPath(path)
+  if (staticPath != null) {
+    const highlightBounds = getHighlightBoundsForProject(editorState.projectContents)
+    if (highlightBounds != null) {
+      const highlightedUID = toUid(staticPath)
+      return highlightBounds[highlightedUID]
+    }
+  }
+
+  return null
+}
+
+export function getElementPathsInBounds(
   line: number,
   parsedHighlightBounds: HighlightBoundsForUids | null,
-  allTemplatePaths: Array<TemplatePath>,
-): Array<TemplatePath> {
+  allElementPaths: Array<ElementPath>,
+): Array<ElementPath> {
   if (parsedHighlightBounds == null) {
     return []
   } else {
@@ -1807,16 +1759,14 @@ export function getTemplatePathsInBounds(
     })
     // Put the lowest possible start line first.
     highlightBounds.sort((a, b) => b.startLine - a.startLine)
-    let paths: Array<TemplatePath> = []
+    let paths: Array<ElementPath> = []
     if (highlightBounds.length > 0) {
       const target = highlightBounds[0].uid
-      Utils.fastForEach(allTemplatePaths, (path) => {
-        if (isInstancePath(path)) {
-          const staticPath = dynamicPathToStaticPath(path)
-          const uid = staticPath != null ? toUid(staticPath) : null
-          if (uid === target) {
-            paths.push(path)
-          }
+      Utils.fastForEach(allElementPaths, (path) => {
+        const staticPath = dynamicPathToStaticPath(path)
+        const uid = staticPath != null ? toUid(staticPath) : null
+        if (uid === target) {
+          paths.push(path)
         }
       })
     }
@@ -1865,34 +1815,25 @@ export function modifyParseSuccessAtPath(
 }
 
 export function modifyUnderlyingTarget(
-  target: TemplatePath | null,
+  target: ElementPath | null,
   currentFilePath: string,
   editorState: EditorState,
   modifyElement: (
     element: JSXElement,
-    underlying: InstancePath,
+    underlying: ElementPath,
     underlyingFilePath: string,
   ) => JSXElement = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
-    underlying: StaticInstancePath | null,
+    underlying: StaticElementPath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = (success) => success,
 ): EditorState {
-  // Support just about anything as the path.
-  let instanceTarget: InstancePath | null
-  if (target == null) {
-    instanceTarget = null
-  } else if (TP.isInstancePath(target)) {
-    instanceTarget = target
-  } else {
-    instanceTarget = TP.instancePathForElementAtPathDontThrowOnScene(target)
-  }
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editorState.projectContents,
     editorState.nodeModules.files,
     currentFilePath,
-    instanceTarget,
+    target,
   )
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -1943,16 +1884,16 @@ export function modifyUnderlyingTarget(
 }
 
 export function modifyUnderlyingForOpenFile(
-  target: TemplatePath | null,
+  target: ElementPath | null,
   editorState: EditorState,
   modifyElement: (
     element: JSXElement,
-    underlying: InstancePath,
+    underlying: ElementPath,
     underlyingFilePath: string,
   ) => JSXElement = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
-    underlying: StaticInstancePath | null,
+    underlying: StaticElementPath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = (success) => success,
 ): EditorState {
@@ -1966,7 +1907,7 @@ export function modifyUnderlyingForOpenFile(
 }
 
 export function withUnderlyingTarget<T>(
-  target: TemplatePath | null | undefined,
+  target: ElementPath | null | undefined,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
@@ -1974,24 +1915,15 @@ export function withUnderlyingTarget<T>(
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => T,
 ): T {
-  // Support just about anything as the path.
-  let instanceTarget: InstancePath | null
-  if (target == null) {
-    instanceTarget = null
-  } else if (TP.isInstancePath(target)) {
-    instanceTarget = target
-  } else {
-    instanceTarget = TP.instancePathForElementAtPathDontThrowOnScene(target)
-  }
   const underlyingTarget = normalisePathToUnderlyingTarget(
     projectContents,
     nodeModules,
     forceNotNull('Designer file should be open.', openFile),
-    instanceTarget,
+    target ?? null,
   )
 
   if (
@@ -2019,13 +1951,13 @@ export function withUnderlyingTarget<T>(
 }
 
 export function withUnderlyingTargetFromEditorState<T>(
-  target: TemplatePath | null,
+  target: ElementPath | null,
   editorState: EditorState,
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => T,
 ): T {
@@ -2040,12 +1972,12 @@ export function withUnderlyingTargetFromEditorState<T>(
 }
 
 export function forUnderlyingTargetFromEditorState(
-  target: TemplatePath | null,
+  target: ElementPath | null,
   editorState: EditorState,
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => void,
 ): void {
@@ -2053,14 +1985,14 @@ export function forUnderlyingTargetFromEditorState(
 }
 
 export function forUnderlyingTarget(
-  target: TemplatePath | null,
+  target: ElementPath | null,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   withTarget: (
     success: ParseSuccess,
     element: JSXElement,
-    underlyingTarget: StaticInstancePath,
+    underlyingTarget: StaticElementPath,
     underlyingFilePath: string,
   ) => void,
 ): void {

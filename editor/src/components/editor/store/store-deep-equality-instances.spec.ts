@@ -1,5 +1,5 @@
 import { jsxElement, utopiaJSXComponent } from '../../../core/shared/element-template'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { addToComplexMap, emptyComplexMap } from '../../../utils/map'
@@ -18,8 +18,8 @@ import {
 describe('TransientCanvasStateKeepDeepEquality', () => {
   it('same reference returns the same reference', () => {
     const state: TransientCanvasState = transientCanvasState(
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+      [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
       {
         ['/utopia/app.js']: transientFileState(
           [
@@ -47,8 +47,8 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
   })
   it('same value returns the same reference', () => {
     const oldState: TransientCanvasState = transientCanvasState(
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+      [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
       {
         ['/utopia/app.js']: transientFileState(
           [
@@ -70,8 +70,8 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
       },
     )
     const newState: TransientCanvasState = transientCanvasState(
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+      [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
       {
         ['/utopia/app.js']: transientFileState(
           [
@@ -99,8 +99,8 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const oldState: TransientCanvasState = transientCanvasState(
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+      [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
       {
         ['/utopia/app.js']: transientFileState(
           [
@@ -122,8 +122,8 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
       },
     )
     const newState: TransientCanvasState = transientCanvasState(
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ddd'])],
-      [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+      [EP.elementPath([['scene'], ['aaa', 'ddd']])],
+      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
       {
         ['/utopia/app.js']: transientFileState(
           [
@@ -157,14 +157,14 @@ describe('TransientCanvasStateKeepDeepEquality', () => {
 describe('DerivedStateKeepDeepEquality', () => {
   it('same reference returns the same reference', () => {
     const state: DerivedState = {
-      navigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-      visibleNavigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
+      navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
       canvas: {
         descendantsOfHiddenInstances: [],
         controls: [],
         transientState: transientCanvasState(
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+          [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+          [EP.elementPath([['scene'], ['aaa', 'ccc']])],
           {
             ['/utopia/app.js']: transientFileState(
               [
@@ -187,9 +187,9 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
       elementWarnings: addToComplexMap(
-        TP.toString,
+        EP.toString,
         emptyComplexMap(),
-        TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb']),
+        EP.elementPath([['scene'], ['aaa', 'bbb']]),
         defaultElementWarnings,
       ),
     }
@@ -199,14 +199,14 @@ describe('DerivedStateKeepDeepEquality', () => {
   })
   it('same value returns the same reference', () => {
     const oldState: DerivedState = {
-      navigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-      visibleNavigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
+      navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
       canvas: {
         descendantsOfHiddenInstances: [],
         controls: [],
         transientState: transientCanvasState(
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+          [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+          [EP.elementPath([['scene'], ['aaa', 'ccc']])],
           {
             ['/utopia/app.js']: transientFileState(
               [
@@ -229,21 +229,21 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
       elementWarnings: addToComplexMap(
-        TP.toString,
+        EP.toString,
         emptyComplexMap(),
-        TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb']),
+        EP.elementPath([['scene'], ['aaa', 'bbb']]),
         defaultElementWarnings,
       ),
     }
     const newState: DerivedState = {
-      navigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-      visibleNavigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
+      navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
       canvas: {
         descendantsOfHiddenInstances: [],
         controls: [],
         transientState: transientCanvasState(
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+          [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+          [EP.elementPath([['scene'], ['aaa', 'ccc']])],
           {
             ['/utopia/app.js']: transientFileState(
               [
@@ -266,9 +266,9 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
       elementWarnings: addToComplexMap(
-        TP.toString,
+        EP.toString,
         emptyComplexMap(),
-        TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb']),
+        EP.elementPath([['scene'], ['aaa', 'bbb']]),
         defaultElementWarnings,
       ),
     }
@@ -278,14 +278,14 @@ describe('DerivedStateKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const oldState: DerivedState = {
-      navigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-      visibleNavigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
+      navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
       canvas: {
         descendantsOfHiddenInstances: [],
         controls: [],
         transientState: transientCanvasState(
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+          [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+          [EP.elementPath([['scene'], ['aaa', 'ccc']])],
           {
             ['/utopia/app.js']: transientFileState(
               [
@@ -308,21 +308,21 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
       elementWarnings: addToComplexMap(
-        TP.toString,
+        EP.toString,
         emptyComplexMap(),
-        TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb']),
+        EP.elementPath([['scene'], ['aaa', 'bbb']]),
         defaultElementWarnings,
       ),
     }
     const newState: DerivedState = {
-      navigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
-      visibleNavigatorTargets: [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb'])],
+      navigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
+      visibleNavigatorTargets: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
       canvas: {
         descendantsOfHiddenInstances: [],
         controls: [],
         transientState: transientCanvasState(
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ddd'])],
-          [TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'ccc'])],
+          [EP.elementPath([['scene'], ['aaa', 'ddd']])],
+          [EP.elementPath([['scene'], ['aaa', 'ccc']])],
           {
             ['/utopia/app.js']: transientFileState(
               [
@@ -345,9 +345,9 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
       elementWarnings: addToComplexMap(
-        TP.toString,
+        EP.toString,
         emptyComplexMap(),
-        TP.instancePath(TP.scenePath([['scene']]), ['aaa', 'bbb']),
+        EP.elementPath([['scene'], ['aaa', 'bbb']]),
         defaultElementWarnings,
       ),
     }

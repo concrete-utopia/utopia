@@ -1,4 +1,4 @@
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import {
   canvasRectangle,
   localRectangle,
@@ -6,7 +6,7 @@ import {
   LocalRectangle,
   CanvasRectangle,
 } from '../shared/math-utils'
-import { left, right } from '../shared/either'
+import { right } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
 import {
   ElementInstanceMetadata,
@@ -25,23 +25,17 @@ import {
 } from '../shared/element-template'
 import { sampleImportsForTests } from './test-ui-js-file.test-utils'
 import { BakedInStoryboardUID } from './scene-utils'
-import { InstancePath, ScenePath, TemplatePath } from '../shared/project-file-types'
-import {
-  TestScenePath as TestScenePathForTestProject,
-  TestStaticScenePath as TestStaticScenePathForTestProject,
-} from '../../components/canvas/ui-jsx.test-utils'
-import { createIndexedUid } from '../shared/uid-utils'
+import { ElementPath } from '../shared/project-file-types'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { testStaticInstancePath } from '../shared/template-path.test-utils'
 
 const TestScenePath = 'scene-aaa'
 
 const testComponentMetadataChild1: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), [
-    'View',
-    'View0',
+  elementPath: EP.elementPath([
+    [BakedInStoryboardUID, TestScenePath],
+    ['View', 'View0'],
   ]),
   props: {},
   element: right(jsxTestElement('View', [], [])),
@@ -57,9 +51,9 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), [
-    'View',
-    'View1',
+  elementPath: EP.elementPath([
+    [BakedInStoryboardUID, TestScenePath],
+    ['View', 'View1'],
   ]),
   props: {},
   element: right(jsxTestElement('View', [], [])),
@@ -76,10 +70,9 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), [
-    'View',
-    'View2',
-    'View0',
+  elementPath: EP.elementPath([
+    [BakedInStoryboardUID, TestScenePath],
+    ['View', 'View2', 'View0'],
   ]),
   props: {
     cica: 'hello',
@@ -98,13 +91,13 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
 const testComponentMetadataChild3: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), [
-    'View',
-    'View2',
+  elementPath: EP.elementPath([
+    [BakedInStoryboardUID, TestScenePath],
+    ['View', 'View2'],
   ]),
   props: {},
   element: right(jsxTestElement('View', [], [])),
-  children: [testComponentMetadataGrandchild.templatePath],
+  children: [testComponentMetadataGrandchild.elementPath],
   rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -117,13 +110,13 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
 const testComponentRoot1: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
+  elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [
-    testComponentMetadataChild1.templatePath,
-    testComponentMetadataChild2.templatePath,
-    testComponentMetadataChild3.templatePath,
+    testComponentMetadataChild1.elementPath,
+    testComponentMetadataChild2.elementPath,
+    testComponentMetadataChild3.elementPath,
   ],
   rootElements: [],
   componentInstance: false,
@@ -137,10 +130,10 @@ const testComponentRoot1: ElementInstanceMetadata = {
 const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(
-    TP.scenePath([[BakedInStoryboardUID, TestScenePath, 'Scene-Child']]),
+  elementPath: EP.elementPath([
+    [BakedInStoryboardUID, TestScenePath, 'Scene-Child'],
     ['Scene-Child-Root', 'Child'],
-  ),
+  ]),
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
@@ -156,13 +149,13 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
 const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(
-    TP.scenePath([[BakedInStoryboardUID, TestScenePath, 'Scene-Child']]),
+  elementPath: EP.elementPath([
+    [BakedInStoryboardUID, TestScenePath, 'Scene-Child'],
     ['Scene-Child-Root'],
-  ),
+  ]),
   props: {},
   element: right(jsxTestElement('View', [], [])),
-  children: [testComponentSceneChildElementRootChild.templatePath],
+  children: [testComponentSceneChildElementRootChild.elementPath],
   rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -175,15 +168,11 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
 const testComponentSceneChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(TP.emptyScenePath, [
-    BakedInStoryboardUID,
-    TestScenePath,
-    'Scene-Child',
-  ]),
+  elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath, 'Scene-Child']]),
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
-  rootElements: [testComponentSceneChildElementRoot.templatePath],
+  rootElements: [testComponentSceneChildElementRoot.elementPath],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -195,16 +184,16 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
 const testComponentSceneElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestScenePath]),
+  elementPath: EP.elementPath([[BakedInStoryboardUID, TestScenePath]]),
   props: {
     style: {
       width: 100,
       height: 100,
     },
   },
-  element: left('Scene'),
-  children: [testComponentSceneChildElement.templatePath],
-  rootElements: [testComponentRoot1.templatePath],
+  element: right(jsxTestElement('Scene', [], [])),
+  children: [testComponentSceneChildElement.elementPath],
+  rootElements: [testComponentRoot1.elementPath],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
   specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -216,7 +205,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
 const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'Child', 'GrandChild']),
+  elementPath: EP.elementPath([[BakedInStoryboardUID, 'Child', 'GrandChild']]),
   props: {},
   element: right(jsxTestElement('View', [], [])),
   children: [],
@@ -232,10 +221,10 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
 const testStoryboardChildElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'Child']),
+  elementPath: EP.elementPath([[BakedInStoryboardUID, 'Child']]),
   props: {},
   element: right(jsxTestElement('View', [], [])),
-  children: [testStoryboardGrandChildElement.templatePath],
+  children: [testStoryboardGrandChildElement.elementPath],
   rootElements: [],
   componentInstance: false,
   isEmotionOrStyledComponent: false,
@@ -248,10 +237,10 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
 const testStoryboardElement: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
   localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-  templatePath: TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID]),
+  elementPath: EP.elementPath([[BakedInStoryboardUID]]),
   props: {},
   element: right(jsxTestElement('Storyboard', [], [])),
-  children: [testComponentSceneElement.templatePath, testStoryboardChildElement.templatePath],
+  children: [testComponentSceneElement.elementPath, testStoryboardChildElement.elementPath],
   rootElements: [],
   componentInstance: true,
   isEmotionOrStyledComponent: false,
@@ -262,22 +251,20 @@ const testStoryboardElement: ElementInstanceMetadata = {
 }
 
 const testElementMetadataMap: ElementInstanceMetadataMap = {
-  [TP.toString(testComponentMetadataChild1.templatePath)]: testComponentMetadataChild1,
-  [TP.toString(testComponentMetadataChild2.templatePath)]: testComponentMetadataChild2,
-  [TP.toString(testComponentMetadataChild3.templatePath)]: testComponentMetadataChild3,
-  [TP.toString(testComponentMetadataGrandchild.templatePath)]: testComponentMetadataGrandchild,
-  [TP.toString(testComponentRoot1.templatePath)]: testComponentRoot1,
-  [TP.toString(
-    testComponentSceneChildElementRootChild.templatePath,
+  [EP.toString(testComponentMetadataChild1.elementPath)]: testComponentMetadataChild1,
+  [EP.toString(testComponentMetadataChild2.elementPath)]: testComponentMetadataChild2,
+  [EP.toString(testComponentMetadataChild3.elementPath)]: testComponentMetadataChild3,
+  [EP.toString(testComponentMetadataGrandchild.elementPath)]: testComponentMetadataGrandchild,
+  [EP.toString(testComponentRoot1.elementPath)]: testComponentRoot1,
+  [EP.toString(
+    testComponentSceneChildElementRootChild.elementPath,
   )]: testComponentSceneChildElementRootChild,
-  [TP.toString(
-    testComponentSceneChildElementRoot.templatePath,
-  )]: testComponentSceneChildElementRoot,
-  [TP.toString(testComponentSceneChildElement.templatePath)]: testComponentSceneChildElement,
-  [TP.toString(testComponentSceneElement.templatePath)]: testComponentSceneElement,
-  [TP.toString(testStoryboardGrandChildElement.templatePath)]: testStoryboardGrandChildElement,
-  [TP.toString(testStoryboardChildElement.templatePath)]: testStoryboardChildElement,
-  [TP.toString(testStoryboardElement.templatePath)]: testStoryboardElement,
+  [EP.toString(testComponentSceneChildElementRoot.elementPath)]: testComponentSceneChildElementRoot,
+  [EP.toString(testComponentSceneChildElement.elementPath)]: testComponentSceneChildElement,
+  [EP.toString(testComponentSceneElement.elementPath)]: testComponentSceneElement,
+  [EP.toString(testStoryboardGrandChildElement.elementPath)]: testStoryboardGrandChildElement,
+  [EP.toString(testStoryboardChildElement.elementPath)]: testStoryboardChildElement,
+  [EP.toString(testStoryboardElement.elementPath)]: testStoryboardElement,
 }
 
 const testJsxMetadata = testElementMetadataMap
@@ -302,39 +289,51 @@ describe('findElements', () => {
   })
 })
 
-describe('getElementByInstancePathMaybe', () => {
+describe('findElementByElementPath', () => {
   it('works with an empty object', () => {
-    const actualResult = MetadataUtils.getElementByInstancePathMaybe(
+    const actualResult = MetadataUtils.findElementByElementPath(
       {},
-      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View', 'View0']),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['View', 'View0'],
+      ]),
     )
     expect(actualResult).toBeNull()
   })
   it('returns null for a nonsense path', () => {
-    const actualResult = MetadataUtils.getElementByInstancePathMaybe(
+    const actualResult = MetadataUtils.findElementByElementPath(
       {},
-      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['Hats', 'Cats']),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Hats', 'Cats'],
+      ]),
     )
     expect(actualResult).toBeNull()
   })
   it('returns null for a partially nonsense path', () => {
-    const actualResult = MetadataUtils.getElementByInstancePathMaybe(
+    const actualResult = MetadataUtils.findElementByElementPath(
       {},
-      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View', 'Cats']),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['View', 'Cats'],
+      ]),
     )
     expect(actualResult).toBeNull()
   })
   it('returns the element from the map', () => {
-    const actualResult = MetadataUtils.getElementByInstancePathMaybe(
+    const actualResult = MetadataUtils.findElementByElementPath(
       testElementMetadataMap,
-      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
+      EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
     )
     expect(actualResult).toBe(testComponentRoot1)
   })
   it('returns the element for a child of the root', () => {
-    const actualResult = MetadataUtils.getElementByInstancePathMaybe(
+    const actualResult = MetadataUtils.findElementByElementPath(
       testElementMetadataMap,
-      TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View', 'View1']),
+      EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['View', 'View1'],
+      ]),
     )
     expect(actualResult).toBe(testComponentMetadataChild2)
   })
@@ -347,9 +346,9 @@ describe('targetElementSupportsChildren', () => {
     return {
       globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
       localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-      templatePath: TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), [
-        'Dummy',
-        'Element',
+      elementPath: EP.elementPath([
+        [BakedInStoryboardUID, TestScenePath],
+        ['Dummy', 'Element'],
       ]),
       props: {},
       element: right(jsxTestElement(elementName, [], [])),
@@ -394,7 +393,7 @@ describe('targetElementSupportsChildren', () => {
 describe('isPinnedAndNotAbsolutePositioned', () => {
   it('returns true for a pinned element that is not absolute positioned', () => {
     const elementMapForTest: ElementInstanceMetadataMap = {
-      [TP.toString(testComponentRoot1.templatePath)]: {
+      [EP.toString(testComponentRoot1.elementPath)]: {
         ...testComponentRoot1,
         specialSizeMeasurements: {
           ...testComponentRoot1.specialSizeMeasurements,
@@ -406,13 +405,13 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
         elementMapForTest,
-        TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
+        EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
       ),
     ).toEqual(true)
   })
   it('returns false for a flex element that is not absolute positioned', () => {
     const elementMapForTest: ElementInstanceMetadataMap = {
-      [TP.toString(testComponentRoot1.templatePath)]: {
+      [EP.toString(testComponentRoot1.elementPath)]: {
         ...testComponentRoot1,
         specialSizeMeasurements: {
           ...testComponentRoot1.specialSizeMeasurements,
@@ -424,13 +423,13 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
         elementMapForTest,
-        TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
+        EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
       ),
     ).toEqual(false)
   })
   it('returns false for a pinned element that is absolute positioned', () => {
     const elementMapForTest: ElementInstanceMetadataMap = {
-      [TP.toString(testComponentRoot1.templatePath)]: {
+      [EP.toString(testComponentRoot1.elementPath)]: {
         ...testComponentRoot1,
         specialSizeMeasurements: {
           ...testComponentRoot1.specialSizeMeasurements,
@@ -442,13 +441,13 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
         elementMapForTest,
-        TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
+        EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
       ),
     ).toEqual(false)
   })
   it('returns false for a flex element that is absolute positioned', () => {
     const elementMapForTest: ElementInstanceMetadataMap = {
-      [TP.toString(testComponentRoot1.templatePath)]: {
+      [EP.toString(testComponentRoot1.elementPath)]: {
         ...testComponentRoot1,
         specialSizeMeasurements: {
           ...testComponentRoot1.specialSizeMeasurements,
@@ -460,17 +459,15 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
     expect(
       MetadataUtils.isPinnedAndNotAbsolutePositioned(
         elementMapForTest,
-        TP.instancePath(TP.scenePath([[BakedInStoryboardUID, TestScenePath]]), ['View']),
+        EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
       ),
     ).toEqual(false)
   })
 })
 
 describe('getElementLabel', () => {
-  const scenePath = TP.scenePath([[BakedInStoryboardUID, 'scene-0']])
-  const instancePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, `scene-0`])
-  const divPath = TP.appendToPath(scenePath, 'div-1')
-  const spanPath = TP.appendToPath(divPath, 'span-1')
+  const divPath = EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['div-1']])
+  const spanPath = EP.appendToPath(divPath, 'span-1')
   const textBlock = jsxTextBlock('test text')
   const spanElement = jsxElement(
     'span',
@@ -507,7 +504,7 @@ describe('getElementLabel', () => {
     },
     zeroRectangle as CanvasRectangle,
     zeroRectangle as LocalRectangle,
-    [spanElementMetadata.templatePath],
+    [spanElementMetadata.elementPath],
     [],
     false,
     false,
@@ -517,8 +514,8 @@ describe('getElementLabel', () => {
     null,
   )
   const metadata: ElementInstanceMetadataMap = {
-    [TP.toString(spanElementMetadata.templatePath)]: spanElementMetadata,
-    [TP.toString(divElementMetadata.templatePath)]: divElementMetadata,
+    [EP.toString(spanElementMetadata.elementPath)]: spanElementMetadata,
+    [EP.toString(divElementMetadata.elementPath)]: divElementMetadata,
   }
   it('the label of a spin containing text is that text', () => {
     const actualResult = MetadataUtils.getElementLabel(spanPath, metadata)
@@ -545,122 +542,89 @@ describe('getting the root paths', () => {
 
   it('getAllStoryboardChildrenPaths returns paths of all children of the storyboard', () => {
     const actualResult = MetadataUtils.getAllStoryboardChildrenPaths(testJsxMetadata)
-    const expectedResult: Array<InstancePath> = [
-      testComponentSceneElement.templatePath,
-      testStoryboardChildElement.templatePath,
+    const expectedResult: Array<ElementPath> = [
+      testComponentSceneElement.elementPath,
+      testStoryboardChildElement.elementPath,
     ]
-    expect(actualResult).toEqual(expectedResult)
-  })
-
-  it('getAllStoryboardChildrenPathsScenesOnly returns paths of only the scene children of the storyboard', () => {
-    const actualResult = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(testJsxMetadata)
-    const expectedResult: Array<InstancePath> = [testComponentSceneElement.templatePath]
     expect(actualResult).toEqual(expectedResult)
   })
 
   it('getAllCanvasRootPaths returns paths of the top level children of the storyboard, replacing scenes with their root views', () => {
     const actualResult = MetadataUtils.getAllCanvasRootPaths(testJsxMetadata)
-    const expectedResult: Array<InstancePath> = [
-      testComponentRoot1.templatePath,
-      testStoryboardChildElement.templatePath,
+    const expectedResult: Array<ElementPath> = [
+      testComponentRoot1.elementPath,
+      testStoryboardChildElement.elementPath,
     ]
     expect(actualResult).toEqual(expectedResult)
   })
 
   it('getAllPaths returns the instance paths in a depth first manner', () => {
     const actualResult = MetadataUtils.getAllPaths(testJsxMetadata)
-    const expectedResult: Array<InstancePath> = [
-      testComponentSceneElement.templatePath,
-      testComponentRoot1.templatePath,
-      testComponentMetadataChild1.templatePath,
-      testComponentMetadataChild2.templatePath,
-      testComponentMetadataChild3.templatePath,
-      testComponentMetadataGrandchild.templatePath,
-      testComponentSceneChildElement.templatePath,
-      testComponentSceneChildElementRoot.templatePath,
-      testComponentSceneChildElementRootChild.templatePath,
-      testStoryboardChildElement.templatePath,
-      testStoryboardGrandChildElement.templatePath,
+    const expectedResult: Array<ElementPath> = [
+      testComponentSceneElement.elementPath,
+      testComponentRoot1.elementPath,
+      testComponentMetadataChild1.elementPath,
+      testComponentMetadataChild2.elementPath,
+      testComponentMetadataChild3.elementPath,
+      testComponentMetadataGrandchild.elementPath,
+      testComponentSceneChildElement.elementPath,
+      testComponentSceneChildElementRoot.elementPath,
+      testComponentSceneChildElementRootChild.elementPath,
+      testStoryboardChildElement.elementPath,
+      testStoryboardGrandChildElement.elementPath,
     ]
     expect(actualResult).toEqual(expectedResult)
   })
 })
 
-describe('createOrderedTemplatePathsFromElements returns all of the ordered navigator targets, visible and not', () => {
-  const expectedNavigatorTargets: Array<TemplatePath> = [
-    testStoryboardChildElement.templatePath,
-    testStoryboardGrandChildElement.templatePath,
-    testComponentSceneElement.templatePath,
-    testComponentRoot1.templatePath,
-    testComponentMetadataChild3.templatePath,
-    testComponentMetadataGrandchild.templatePath,
-    testComponentMetadataChild2.templatePath,
-    testComponentMetadataChild1.templatePath,
-    testComponentSceneChildElement.templatePath,
-    testComponentSceneChildElementRoot.templatePath,
-    testComponentSceneChildElementRootChild.templatePath,
+describe('createOrderedElementPathsFromElements returns all of the ordered navigator targets, visible and not', () => {
+  const expectedNavigatorTargets: Array<ElementPath> = [
+    testStoryboardChildElement.elementPath,
+    testStoryboardGrandChildElement.elementPath,
+    testComponentSceneElement.elementPath,
+    testComponentRoot1.elementPath,
+    testComponentMetadataChild3.elementPath,
+    testComponentMetadataGrandchild.elementPath,
+    testComponentMetadataChild2.elementPath,
+    testComponentMetadataChild1.elementPath,
+    testComponentSceneChildElement.elementPath,
+    testComponentSceneChildElementRoot.elementPath,
+    testComponentSceneChildElementRootChild.elementPath,
   ]
 
   it('with no collapsed paths', () => {
-    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
-      testJsxMetadata,
-      [],
-      null,
-    )
+    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(testJsxMetadata, [])
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual(expectedNavigatorTargets)
   })
 
   it('with the scene collapsed', () => {
-    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
-      testJsxMetadata,
-      [testComponentSceneElement.templatePath],
-      null,
-    )
+    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(testJsxMetadata, [
+      testComponentSceneElement.elementPath,
+    ])
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
-      testStoryboardChildElement.templatePath,
-      testStoryboardGrandChildElement.templatePath,
-      testComponentSceneElement.templatePath,
+      testStoryboardChildElement.elementPath,
+      testStoryboardGrandChildElement.elementPath,
+      testComponentSceneElement.elementPath,
     ])
   })
 
   it('with collapsed roots', () => {
-    const actualResult = MetadataUtils.createOrderedTemplatePathsFromElements(
-      testJsxMetadata,
-      [testComponentRoot1.templatePath, testComponentSceneChildElement.templatePath],
-      null,
-    )
+    const actualResult = MetadataUtils.createOrderedElementPathsFromElements(testJsxMetadata, [
+      testComponentRoot1.elementPath,
+      testComponentSceneChildElement.elementPath,
+    ])
 
     expect(actualResult.navigatorTargets).toEqual(expectedNavigatorTargets)
     expect(actualResult.visibleNavigatorTargets).toEqual([
-      testStoryboardChildElement.templatePath,
-      testStoryboardGrandChildElement.templatePath,
-      testComponentSceneElement.templatePath,
-      testComponentRoot1.templatePath,
-      testComponentSceneChildElement.templatePath,
+      testStoryboardChildElement.elementPath,
+      testStoryboardGrandChildElement.elementPath,
+      testComponentSceneElement.elementPath,
+      testComponentRoot1.elementPath,
+      testComponentSceneChildElement.elementPath,
     ])
-  })
-})
-
-describe('dynamicPathToStaticPath', () => {
-  it('converts a dynamic path to static', async () => {
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(
-      TP.instancePath(TestScenePathForTestProject, ['aaa', createIndexedUid('bbb', 1)]),
-    )
-    expect(staticPath).toEqual(
-      testStaticInstancePath(TestStaticScenePathForTestProject, ['aaa', 'bbb']),
-    )
-  })
-
-  it('finds an already static path all right', async () => {
-    const staticPath = MetadataUtils.dynamicPathToStaticPath(
-      TP.instancePath(TestScenePathForTestProject, ['aaa', 'ccc']),
-    )
-    expect(staticPath).toEqual(
-      testStaticInstancePath(TestStaticScenePathForTestProject, ['aaa', 'ccc']),
-    )
   })
 })

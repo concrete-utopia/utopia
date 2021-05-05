@@ -7,18 +7,16 @@ import {
   JSXElement,
   jsxElement,
   utopiaJSXComponent,
-  JSXAttribute,
   JSXElementChild,
   defaultPropsParam,
   jsxAttributesFromMap,
   getJSXAttribute,
 } from '../shared/element-template'
 import { getUtopiaID, guaranteeUniqueUids, removeJSXElementChild } from './element-template-utils'
-import * as TP from '../shared/template-path'
 import Utils from '../../utils/utils'
 import { BakedInStoryboardUID } from './scene-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { testStaticInstancePath, testStaticScenePath } from '../shared/template-path.test-utils'
+import { testStaticElementPath } from '../shared/element-path.test-utils'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -179,7 +177,7 @@ describe('removeJSXElementChild', () => {
   xit('removes a root element', () => {
     // TODO Scene Implementation
     const updatedElements = removeJSXElementChild(
-      testStaticInstancePath(testStaticScenePath([[BakedInStoryboardUID, 'scene-aaa']]), ['aaa']),
+      testStaticElementPath([[BakedInStoryboardUID, 'scene-aaa'], ['aaa']]),
       utopiaComponents,
     )
     expect(updatedElements.length).toEqual(1)
@@ -187,9 +185,9 @@ describe('removeJSXElementChild', () => {
   })
   it('removes a non-root element', () => {
     const updatedElements = removeJSXElementChild(
-      testStaticInstancePath(testStaticScenePath([[BakedInStoryboardUID, 'scene-aaa']]), [
-        'aab',
-        'aac',
+      testStaticElementPath([
+        [BakedInStoryboardUID, 'scene-aaa'],
+        ['aab', 'aac'],
       ]),
       utopiaComponents,
     )

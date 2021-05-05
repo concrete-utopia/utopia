@@ -1,5 +1,5 @@
 import * as PP from '../../../core/shared/property-path'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -15,8 +15,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-          style={{ backgroundColor: '#DDDDDD', border: '1px solid #000' }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', border: '1px solid #000', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           />
         </View>
@@ -26,7 +25,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
@@ -37,8 +36,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-          style={{ backgroundColor: '#DDDDDD', border: '1px #000' }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', border: '1px #000', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           />
         </View>
@@ -51,8 +49,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-          style={{ backgroundColor: '#DDDDDD', border: '1px #000' }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', border: '1px #000', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           />
         </View>
@@ -62,7 +59,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
@@ -73,8 +70,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-          style={{ backgroundColor: '#DDDDDD', border: '1px solid #000' }}
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ backgroundColor: '#DDDDDD', border: '1px solid #000', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           />
         </View>
@@ -86,7 +82,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
         <View
-          layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+          style={{ position: 'absolute',left: 52, top: 61, width: 256, height: 202 }}
           data-uid='bbb'
         />
       </View>
@@ -96,7 +92,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           toggleStylePropPath(PP.create(['style', 'border']), toggleBorder),
         ),
       ],
@@ -107,9 +103,15 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+            style={{
+              position: 'absolute',
+              left: 52,
+              top: 61,
+              width: 256,
+              height: 202,
+              border: '1px solid #000',
+            }}
             data-uid='bbb'
-            style={{ border: '1px solid #000' }}
           />
         </View>
       `),
@@ -121,8 +123,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#DDDDDD', boxShadow: '0px 0px #000, 0px 0px #000' }}
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+            style={{ backgroundColor: '#DDDDDD', boxShadow: '0px 0px #000, 0px 0px #000', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           />
         </View>
@@ -132,7 +133,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
         ),
       ],
@@ -143,8 +144,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#DDDDDD', boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/' }}
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+            style={{ backgroundColor: '#DDDDDD', boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           />
         </View>
@@ -156,8 +156,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
       <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#DDDDDD', boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/' }}
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+            style={{ backgroundColor: '#DDDDDD', boxShadow: '/*0px 0px #000*/ /*0px 0px #000*/', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           />
         </View>
@@ -167,7 +166,7 @@ describe('toggle style prop', () => {
     await renderResult.dispatch(
       [
         toggleProperty(
-          TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+          EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
           toggleStylePropPath(PP.create(['style', 'boxShadow']), toggleShadow),
         ),
       ],
@@ -178,8 +177,7 @@ describe('toggle style prop', () => {
       makeTestProjectCodeWithSnippet(`
         <View style={{ ...props.style }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#DDDDDD', boxShadow: '0px 0px #000, 0px 0px #000' }}
-            layout={{ layoutSystem: 'pinSystem', left: 52, top: 61, width: 256, height: 202 }}
+            style={{ backgroundColor: '#DDDDDD', boxShadow: '0px 0px #000, 0px 0px #000', position: 'absolute', left: 52, top: 61, width: 256, height: 202 }}
             data-uid='bbb'
           />
         </View>

@@ -3,15 +3,13 @@ import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../model
 
 describe('Storyboard project files', () => {
   it('are parsed and printed correctly', () => {
-    const originalCode = `/** @jsx jsx */
-import * as React from 'react'
-import { Canvas, Scene, View, jsx } from 'utopia-api'
+    const originalCode = `import * as React from 'react'
+import { Canvas, Scene, View } from 'utopia-api'
 
 export var App = (props) => {
   return (
     <View
-      style={{ ...props.style, backgroundColor: '#FFFFFF' }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      style={{ ...props.style, position: 'relative', backgroundColor: '#FFFFFF' }}
       data-uid='aaa'
     >
       <View data-uid='9ec'>hi</View>

@@ -1,22 +1,16 @@
-import { directory } from '../../core/model/project-file-utils'
-import { objectMap } from '../../core/shared/object-utils'
 import {
   esCodeFile,
-  InstancePath,
   isTextFile,
   NodeModules,
   ProjectContents,
-  ProjectFile,
   RevisionsState,
   TextFile,
   textFile,
   textFileContents,
-  unparsed,
 } from '../../core/shared/project-file-types'
-import { lintAndParse, parseCode } from '../../core/workers/parser-printer/parser-printer'
+import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
 import { ProjectContentTreeRoot, contentsToTree, getContentsTreeFileFromString } from '../assets'
-import { DefaultPackageJson, StoryboardFilePath } from '../editor/store/editor-state'
-import * as TP from '../../core/shared/template-path'
+import { StoryboardFilePath } from '../editor/store/editor-state'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
 import { replaceAll } from '../../core/shared/string-utils'
 
@@ -91,14 +85,5 @@ export function getTextFileByPath(projectContents: ProjectContentTreeRoot, path:
     return possibleResult
   } else {
     throw new Error(`Unable to find a text file at path ${path}.`)
-  }
-}
-
-export function instancePathFromString(path: string): InstancePath {
-  const fromStringResult = TP.fromString(path)
-  if (TP.isScenePath(fromStringResult)) {
-    throw new Error(`${path} represents a scene path.`)
-  } else {
-    return TP.dynamicPathToStaticPath(fromStringResult)
   }
 }

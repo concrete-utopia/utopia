@@ -30,7 +30,7 @@ export function getUiBuilderUIJSFile(): TextFile {
   return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, 0)
 }
 
-export const sampleCode = `/** @jsx jsx */
+export const sampleCode = `
 import * as React from 'react'
 import {
   Ellipse,
@@ -39,7 +39,6 @@ import {
   Text,
   UtopiaUtils,
   View,
-  jsx,
 } from 'utopia-api'
 import {
   colorTheme,
@@ -81,8 +80,7 @@ import {
 export var App = (props) => {
   return (
     <View
-      style={{ ...props.style, backgroundColor: colorTheme.white.value }}
-      layout={{ layoutSystem: 'pinSystem' }}
+      style={{ ...props.style, position: 'relative', backgroundColor: colorTheme.white.value }}
     ></View>
   )
 }
@@ -104,14 +102,15 @@ import { Text, View } from 'utopia-api'
 export default (props) => (
   <View layout={props.layout} style={props.style} onMouseDown={props.onMouseDown}>
     <Text
-      style={{ fontSize: 16, textAlign: 'center' }}
-      text={props.text}
-      layout={{
+      style={{
+        fontSize: 16,
+        textAlign: 'center', 
         left: 0,
         top: 10,
         width: '100%',
         height: '100%',
       }}
+      text={props.text}
       textSizing={'fixed'}
     />
   </View>

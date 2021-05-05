@@ -2,7 +2,7 @@ import * as React from 'react'
 import { MapLike } from 'typescript'
 // Inject the babel helpers into the global scope
 import '../../bundled-dependencies/babelHelpers'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import {
   ArbitraryJSBlock,
   ElementInstanceMetadata,
@@ -11,15 +11,11 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
-import { getValidTemplatePaths } from '../../core/model/element-template-utils'
+import { getValidElementPaths } from '../../core/model/element-template-utils'
 import {
   Imports,
-  InstancePath,
-  ScenePath,
-  TemplatePath,
+  ElementPath,
   isParseSuccess,
-  StaticInstancePath,
-  ParseSuccess,
   isTextFile,
 } from '../../core/shared/project-file-types'
 import {
@@ -49,14 +45,7 @@ import {
 import { proxyConsole } from './console-proxy'
 import { useDomWalker } from './dom-walker'
 import { isLiveMode } from '../editor/editor-modes'
-import {
-  BakedInStoryboardVariableName,
-  EmptyScenePathForStoryboard,
-} from '../../core/model/scene-utils'
-import { EditorDispatch } from '../editor/action-types'
-import { usePrevious } from '../editor/hook-utils'
-import { arrayEquals, fastForEach } from '../../core/shared/utils'
-import { removeAll } from '../../core/shared/array-utils'
+import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
@@ -79,7 +68,7 @@ import { CanvasContainerID } from './canvas-types'
 import { betterReactMemo, useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { useSelectAndHover } from './controls/select-mode/select-mode-hooks'
-import { UTOPIA_SCENE_PATH } from '../../core/model/utopia-constants'
+import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../core/model/utopia-constants'
 import {
   createLookupRender,
   utopiaCanvasJSXLookup,
@@ -124,16 +113,16 @@ export interface UiJsxCanvasProps {
   scale: number
   uiFileCode: string
   uiFilePath: string
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   requireFn: UtopiaRequireFn
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
-  hiddenInstances: TemplatePath[]
-  editedTextElement: InstancePath | null
+  hiddenInstances: ElementPath[]
+  editedTextElement: ElementPath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<TemplatePath>,
+    cachedTreeRoots: Array<ElementPath>,
   ) => void
   walkDOM: boolean
   imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
@@ -142,7 +131,7 @@ export interface UiJsxCanvasProps {
   clearConsoleLogs: () => void
   addToConsoleLogs: (log: ConsoleLog) => void
   linkTags: string
-  focusedElementPath: ScenePath | null
+  focusedElementPath: ElementPath | null
   projectContents: ProjectContentTreeRoot
   transientFilesState: TransientFilesState | null
   scrollAnimation: boolean
@@ -167,7 +156,7 @@ export function pickUiJsxCanvasProps(
   walkDOM: boolean,
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<TemplatePath>,
+    cachedTreeRoots: Array<ElementPath>,
   ) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
@@ -195,7 +184,7 @@ export function pickUiJsxCanvasProps(
     }
 
     const editedTextElement = Utils.optionalMap(
-      (textEd) => textEd.templatePath,
+      (textEd) => textEd.elementPath,
       editor.canvas.textEditor,
     )
 
@@ -378,7 +367,7 @@ export const UiJsxCanvas = betterReactMemo(
         StoryboardRootComponent,
         rootValidPaths,
         storyboardRootElementPath,
-        rootScenePath,
+        rootInstancePath,
       } = useGetStoryboardRoot(
         props.focusedElementPath,
         topLevelElementsMap,
@@ -401,7 +390,6 @@ export const UiJsxCanvas = betterReactMemo(
                 hiddenInstances: hiddenInstances,
                 canvasIsLive: canvasIsLive,
                 shouldIncludeCanvasRootInTheSpy: props.shouldIncludeCanvasRootInTheSpy,
-                focusedElementPath: props.focusedElementPath,
               }}
             >
               <UtopiaProjectContext.Provider
@@ -420,17 +408,19 @@ export const UiJsxCanvas = betterReactMemo(
                   offset={offset}
                   onDomReport={onDomReport}
                   validRootPaths={rootValidPaths}
-                  canvasRootElementTemplatePath={storyboardRootElementPath}
+                  canvasRootElementElementPath={storyboardRootElementPath}
                   scrollAnimation={props.scrollAnimation}
                 >
                   <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
                     <ParentLevelUtopiaContext.Provider
                       value={{
-                        templatePath: storyboardRootElementPath,
+                        elementPath: storyboardRootElementPath,
                       }}
                     >
                       {StoryboardRootComponent == null ? null : (
-                        <StoryboardRootComponent {...{ [UTOPIA_SCENE_PATH]: rootScenePath }} />
+                        <StoryboardRootComponent
+                          {...{ [UTOPIA_INSTANCE_PATH]: rootInstancePath }}
+                        />
                       )}
                     </ParentLevelUtopiaContext.Provider>
                   </SceneLevelUtopiaContext.Provider>
@@ -447,7 +437,7 @@ export const UiJsxCanvas = betterReactMemo(
 )
 
 function useGetStoryboardRoot(
-  focusedElementPath: ScenePath | null,
+  focusedElementPath: ElementPath | null,
   topLevelElementsMap: Map<string, UtopiaJSXComponent>,
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
@@ -455,9 +445,9 @@ function useGetStoryboardRoot(
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
-  storyboardRootElementPath: InstancePath
-  rootValidPaths: Array<InstancePath>
-  rootScenePath: ScenePath
+  storyboardRootElementPath: ElementPath
+  rootValidPaths: Array<ElementPath>
+  rootInstancePath: ElementPath
 } {
   const StoryboardRootComponent = executionScope[BakedInStoryboardVariableName] as
     | ComponentRendererComponent
@@ -467,10 +457,10 @@ function useGetStoryboardRoot(
   const validPaths =
     storyboardRootJsxComponent == null
       ? []
-      : getValidTemplatePaths(
+      : getValidElementPaths(
           focusedElementPath,
           BakedInStoryboardVariableName,
-          EmptyScenePathForStoryboard,
+          EP.emptyElementPath,
           projectContents,
           uiFilePath,
           resolve,
@@ -481,21 +471,21 @@ function useGetStoryboardRoot(
     StoryboardRootComponent: StoryboardRootComponent,
     storyboardRootElementPath: storyboardRootElementPath,
     rootValidPaths: validPaths,
-    rootScenePath: EmptyScenePathForStoryboard,
+    rootInstancePath: EP.emptyElementPath,
   }
 }
 
 export interface CanvasContainerProps {
   walkDOM: boolean
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   scale: number
   offset: CanvasVector
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<TemplatePath>,
+    cachedTreeRoots: Array<ElementPath>,
   ) => void
-  canvasRootElementTemplatePath: TemplatePath
-  validRootPaths: Array<InstancePath>
+  canvasRootElementElementPath: ElementPath
+  validRootPaths: Array<ElementPath>
   mountCount: number
   scrollAnimation: boolean
 }
@@ -515,7 +505,7 @@ const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasCon
         all: 'initial',
         position: 'absolute',
       }}
-      data-utopia-valid-paths={props.validRootPaths.map(TP.toString).join(' ')}
+      data-utopia-valid-paths={props.validRootPaths.map(EP.toString).join(' ')}
     >
       {props.children}
     </div>

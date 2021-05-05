@@ -1,16 +1,16 @@
 import Utils from '../../../../utils/utils'
-import { TemplatePath } from '../../../../core/shared/project-file-types'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import { OriginalPath } from '../../../editor/store/editor-state'
-import * as TP from '../../../../core/shared/template-path'
+import * as EP from '../../../../core/shared/element-path'
 
-export function getOriginalTemplatePath(
-  originalTemplatePaths: Array<OriginalPath>,
-  currentTemplatePath: TemplatePath,
-): TemplatePath {
+export function getOriginalElementPath(
+  originalElementPaths: Array<OriginalPath>,
+  currentElementPath: ElementPath,
+): ElementPath {
   return Utils.forceNotNull(
-    `couldn't find original template path for ${TP.toComponentId(currentTemplatePath)}`,
-    originalTemplatePaths.find((tpMapping) =>
-      TP.pathsEqual(tpMapping.currentTP, currentTemplatePath),
+    `couldn't find original template path for ${EP.toComponentId(currentElementPath)}`,
+    originalElementPaths.find((tpMapping) =>
+      EP.pathsEqual(tpMapping.currentTP, currentElementPath),
     ),
   ).originalTP
 }

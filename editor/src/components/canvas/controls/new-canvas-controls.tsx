@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import * as React from 'react'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import Utils from '../../../utils/utils'
 import { CanvasPoint } from '../../../core/shared/math-utils'
 import { EditorDispatch } from '../../editor/action-types'
@@ -15,13 +15,7 @@ import {
   getJSXComponentsAndImportsForPathInnerComponentFromState,
   TransientFilesState,
 } from '../../editor/store/editor-state'
-import {
-  TemplatePath,
-  InstancePath,
-  Imports,
-  ScenePath,
-  NodeModules,
-} from '../../../core/shared/project-file-types'
+import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { CanvasPositions, CSSCursor } from '../canvas-types'
 import { SelectModeControlContainer } from './select-mode-control-container'
 import { InsertModeControlContainer } from './insert-mode-control-container'
@@ -64,9 +58,9 @@ export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 function useLocalSelectedHighlightedViews(
   transientCanvasState: TransientCanvasState,
 ): {
-  localSelectedViews: TemplatePath[]
-  localHighlightedViews: TemplatePath[]
-  setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
+  localSelectedViews: ElementPath[]
+  localHighlightedViews: ElementPath[]
+  setSelectedViewsLocally: (newSelectedViews: Array<ElementPath>) => void
 } {
   const [localSelectedViews, setLocalSelectedViews] = usePropControlledStateV2(
     transientCanvasState.selectedViews,
@@ -76,7 +70,7 @@ function useLocalSelectedHighlightedViews(
   )
 
   const setSelectedViewsLocally = React.useCallback(
-    (newSelectedViews: Array<TemplatePath>) => {
+    (newSelectedViews: Array<ElementPath>) => {
       setLocalSelectedViews(newSelectedViews)
       setLocalHighlightedViews([])
     },
@@ -86,14 +80,14 @@ function useLocalSelectedHighlightedViews(
 }
 
 export interface ControlProps {
-  selectedViews: Array<TemplatePath>
-  highlightedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
+  highlightedViews: Array<ElementPath>
   componentMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
   openFile: string | null
-  hiddenInstances: Array<TemplatePath>
-  focusedElementPath: ScenePath | null
+  hiddenInstances: Array<ElementPath>
+  focusedElementPath: ElementPath | null
   highlightsEnabled: boolean
   canvasOffset: CanvasPoint
   scale: number
@@ -104,7 +98,7 @@ export interface ControlProps {
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   cmdKeyPressed: boolean
   showAdditionalControls: boolean
-  elementsThatRespectLayout: Array<TemplatePath>
+  elementsThatRespectLayout: Array<ElementPath>
   maybeClearHighlightsOnHoverEnd: () => void
   transientState: TransientCanvasState
   resolve: ResolveFn
@@ -223,9 +217,9 @@ interface NewCanvasControlsInnerProps {
   canvasOffset: CanvasPoint
   animationEnabled: boolean
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
-  localSelectedViews: Array<TemplatePath>
-  localHighlightedViews: Array<TemplatePath>
-  setLocalSelectedViews: (newSelectedViews: TemplatePath[]) => void
+  localSelectedViews: Array<ElementPath>
+  localHighlightedViews: Array<ElementPath>
+  setLocalSelectedViews: (newSelectedViews: ElementPath[]) => void
 }
 
 export const selectElementsThatRespectLayout = createSelector(
@@ -236,7 +230,7 @@ export const selectElementsThatRespectLayout = createSelector(
   (store: EditorStore) => store.editor.nodeModules.files,
   (store: EditorStore) => store.editor.jsxMetadata,
   (
-    navigatorTargets: TemplatePath[],
+    navigatorTargets: ElementPath[],
     propertyControlsInfo: PropertyControlsInfo,
     openFilePath: string | null,
     projectContents: ProjectContentTreeRoot,
@@ -284,7 +278,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       return 'noninteractive'
     }
     const anyIncomprehensibleElementsSelected = selectedViews.some((selectedView) => {
-      const possibleMetadata = MetadataUtils.findElementByTemplatePath(
+      const possibleMetadata = MetadataUtils.findElementByElementPath(
         componentMetadata,
         selectedView,
       )
@@ -303,7 +297,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const renderModeControlContainer = () => {
     const elementAspectRatioLocked = localSelectedViews.every((target) => {
-      const possibleElement = MetadataUtils.findElementByTemplatePath(componentMetadata, target)
+      const possibleElement = MetadataUtils.findElementByElementPath(componentMetadata, target)
       if (possibleElement == null) {
         return false
       } else {
@@ -405,14 +399,14 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             componentMetadata,
             imports,
           )
-          const isFocusedComponent = TP.isFocused(props.editor.focusedElementPath, path)
+          const isFocusedComponent = EP.isFocused(props.editor.focusedElementPath, path)
           const color =
             isFocusableComponent || isFocusedComponent
               ? colorTheme.canvasSelectionIsolatedComponent.value
               : colorTheme.canvasSelectionPrimaryOutline.value
           return (
             <HighlightControl
-              key={`highlight-control-${TP.toComponentId(path)}`}
+              key={`highlight-control-${EP.toComponentId(path)}`}
               color={color}
               frame={frame}
               scale={props.editor.canvas.scale}
@@ -423,13 +417,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
       : []
   }
 
-  const renderTextEditor = (target: InstancePath) => {
+  const renderTextEditor = (target: ElementPath) => {
     const dragState = props.editor.canvas.dragState
     const selectedViews = localSelectedViews
     if (dragState != null || selectedViews.length !== 1) {
       return null
     } else {
-      const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, target)
+      const element = MetadataUtils.findElementByElementPath(componentMetadata, target)
       const canAnimate =
         MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
           target,
@@ -490,7 +484,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
 
   const textEditor =
     props.editor.canvas.textEditor != null
-      ? renderTextEditor(props.editor.canvas.textEditor.templatePath)
+      ? renderTextEditor(props.editor.canvas.textEditor.elementPath)
       : null
 
   return (

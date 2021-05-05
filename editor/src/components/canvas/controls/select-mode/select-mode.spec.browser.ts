@@ -1,7 +1,7 @@
 import { act, fireEvent } from '@testing-library/react'
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
-import * as TP from '../../../../core/shared/template-path'
+import * as EP from '../../../../core/shared/element-path'
 import { setElectronWindow } from '../../../../core/shared/test-setup.test-utils'
 import {
   makeTestProjectCodeWithSnippet,
@@ -128,48 +128,48 @@ describe('Select Mode Selection', () => {
     await doubleClick()
 
     const selectedViews1 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews1).toEqual([
-      TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID]),
-    ])
+    expect(selectedViews1).toEqual([EP.elementPath([[BakedInStoryboardUID, TestSceneUID]])])
 
     await doubleClick()
 
     const selectedViews2 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews2).toEqual([
-      TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, TestSceneUID, TestAppUID]),
+      EP.elementPath([[BakedInStoryboardUID, TestSceneUID, TestAppUID]]),
     ])
 
     await doubleClick()
 
     const selectedViews3 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews3).toEqual([TP.instancePath(TestScenePath, ['a'])])
+    expect(selectedViews3).toEqual([EP.appendNewElementPath(TestScenePath, ['a'])])
 
     await doubleClick()
 
     const selectedViews4 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews4).toEqual([TP.instancePath(TestScenePath, ['a', 'b'])])
+    expect(selectedViews4).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b'])])
 
     await doubleClick()
 
     const selectedViews5 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews5).toEqual([TP.instancePath(TestScenePath, ['a', 'b', 'c'])])
+    expect(selectedViews5).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c'])])
 
     await doubleClick()
 
     const selectedViews6 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews6).toEqual([TP.instancePath(TestScenePath, ['a', 'b', 'c', 'd'])])
+    expect(selectedViews6).toEqual([EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd'])])
 
     await doubleClick()
 
     const selectedViews7 = renderResult.getEditorState().editor.selectedViews
-    expect(selectedViews7).toEqual([TP.instancePath(TestScenePath, ['a', 'b', 'c', 'd', 'e'])])
+    expect(selectedViews7).toEqual([
+      EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd', 'e']),
+    ])
 
     await doubleClick()
 
     // after 8 "double clicks", the `targetdiv` div should be selected
     const selectedViews8 = renderResult.getEditorState().editor.selectedViews
     expect(selectedViews8).toEqual([
-      TP.instancePath(TestScenePath, ['a', 'b', 'c', 'd', 'e', 'targetdiv']),
+      EP.appendNewElementPath(TestScenePath, ['a', 'b', 'c', 'd', 'e', 'targetdiv']),
     ])
   })
 })
@@ -206,7 +206,7 @@ describe('Select Mode Advanced Cases', () => {
     await waitForAnimationFrame()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-      TP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
+      EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
     ])
   })
 
@@ -259,7 +259,7 @@ describe('Select Mode Advanced Cases', () => {
     await doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-      TP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
+      EP.fromString('sb/scene-2/Card-instance:Card-Root/Card-Row-Buttons/Card-Button-3'),
     ])
   })
 
@@ -272,7 +272,7 @@ describe('Select Mode Advanced Cases', () => {
       await renderResult.dispatch(
         [
           setFocusedElement(
-            TP.scenePath([
+            EP.elementPath([
               ['sb', 'scene-CardList', 'CardList-instance'],
               ['CardList-Root', 'CardList-Col', 'CardList-Card~~~1'],
             ]),
@@ -330,7 +330,7 @@ describe('Select Mode Advanced Cases', () => {
     await doubleClick()
 
     expect(renderResult.getEditorState().editor.selectedViews).toEqual([
-      TP.fromString(
+      EP.fromString(
         'sb/scene-CardList/CardList-instance:CardList-Root/CardList-Col/CardList-Card~~~1:Card-Root/Card-Row-Buttons/Card-Button-3',
       ),
     ])
@@ -350,9 +350,8 @@ function waitForAnimationFrame(): Promise<void> {
 }
 
 const TestProjectAlpineClimb = `
-/** @jsx jsx */
 import * as React from "react";
-import { Scene, Storyboard, jsx } from "utopia-api";
+import { Scene, Storyboard } from "utopia-api";
 import styled from "@emotion/styled";
 
 export const Col = (props) => (

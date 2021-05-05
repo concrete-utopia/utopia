@@ -1,17 +1,12 @@
 import { canvasPoint, canvasRectangle } from '../../core/shared/math-utils'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
 import { contentsToTree } from '../assets'
 import { SaveDOMReport } from '../editor/action-types'
 import { setCanvasFrames } from '../editor/actions/action-creators'
 import CanvasActions from './canvas-actions'
 import { pinFrameChange } from './canvas-types'
-import {
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
-  renderTestEditorWithProjectContent,
-  TestScenePath,
-} from './ui-jsx.test-utils'
+import { renderTestEditorWithProjectContent } from './ui-jsx.test-utils'
 
 describe('Dom-walker Caching', () => {
   async function prepareTestProject() {
@@ -49,7 +44,7 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(1)
-    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([EP.fromString(':storyboard-entity')])
   })
 
   it('resizing an out-of-file element invalidates the cache', async () => {
@@ -58,7 +53,7 @@ describe('Dom-walker Caching', () => {
     renderResult.clearRecordedActions()
 
     const pinChange = pinFrameChange(
-      TP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
+      EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -72,9 +67,9 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(2)
-    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([EP.fromString(':storyboard-entity')])
     expect(saveDomReportActions[1].cachedTreeRoots).toEqual([
-      TP.fromString('storyboard-entity/scene-2-entity'),
+      EP.fromString(':storyboard-entity/scene-2-entity'),
     ]) // This is correct, the SameFileApp scene is still cached
   })
 
@@ -84,7 +79,7 @@ describe('Dom-walker Caching', () => {
     renderResult.clearRecordedActions()
 
     const pinChange = pinFrameChange(
-      TP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
       canvasRectangle({ x: 20, y: 20, width: 100, height: 100 }),
     )
 
@@ -98,9 +93,9 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(2)
-    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([TP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([EP.fromString(':storyboard-entity')])
     expect(saveDomReportActions[1].cachedTreeRoots).toEqual([
-      TP.fromString('storyboard-entity/scene-1-entity'),
+      EP.fromString(':storyboard-entity/scene-1-entity'),
     ]) // This is correct, the Imported App scene is still cached
   })
 })

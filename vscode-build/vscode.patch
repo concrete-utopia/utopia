@@ -1,5 +1,5 @@
 diff --git a/build/gulpfile.vscode.js b/build/gulpfile.vscode.js
-index 6d3a369082..7ad3222305 100644
+index 6d3a369082a..7ad32223052 100644
 --- a/build/gulpfile.vscode.js
 +++ b/build/gulpfile.vscode.js
 @@ -35,11 +35,12 @@ const { compileExtensionsBuildTask } = require('./gulpfile.extensions');
@@ -30,14 +30,14 @@ index 6d3a369082..7ad3222305 100644
  			'vs/code/electron-browser/workbench/workbench.js'
 diff --git a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json b/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
 deleted file mode 100644
-index 9e26dfeeb6..0000000000
+index 9e26dfeeb6e..00000000000
 --- a/extensions/css-language-features/server/test/linksTestFixtures/node_modules/foo/package.json
 +++ /dev/null
 @@ -1 +0,0 @@
 -{}
 \ No newline at end of file
 diff --git a/extensions/simple-browser/src/simpleBrowserView.ts b/extensions/simple-browser/src/simpleBrowserView.ts
-index 104acfe955..123e8e79f5 100644
+index 104acfe9559..123e8e79f58 100644
 --- a/extensions/simple-browser/src/simpleBrowserView.ts
 +++ b/extensions/simple-browser/src/simpleBrowserView.ts
 @@ -136,7 +136,7 @@ export class SimpleBrowserView extends Disposable {
@@ -50,7 +50,7 @@ index 104acfe955..123e8e79f5 100644
  
  				<script src="${mainJs}" nonce="${nonce}"></script>
 diff --git a/product.json b/product.json
-index 9cddae242a..35400d5d59 100644
+index 9cddae242a6..35400d5d59b 100644
 --- a/product.json
 +++ b/product.json
 @@ -1,140 +1,9 @@
@@ -201,8 +201,25 @@ index 9cddae242a..35400d5d59 100644
 +    "version": "1.53.0"
 +  }
  }
+diff --git a/src/vs/base/browser/dom.ts b/src/vs/base/browser/dom.ts
+index a9bbd661562..2c702a4ebbb 100644
+--- a/src/vs/base/browser/dom.ts
++++ b/src/vs/base/browser/dom.ts
+@@ -374,7 +374,11 @@ export function getClientArea(element: HTMLElement): Dimension {
+ 		return new Dimension(document.documentElement.clientWidth, document.documentElement.clientHeight);
+ 	}
+ 
+-	throw new Error('Unable to figure out browser width and height');
++	// this Error would prevent VSCode from loading inside Utopia if the browser tab is not in the foreground
++	// throw new Error('Unable to figure out browser width and height');
++
++	// Instead, we just return 0 x 0, it seems to be fine
++	return new Dimension(0, 0);
+ }
+ 
+ class SizeUtils {
 diff --git a/src/vs/code/browser/workbench/workbench.ts b/src/vs/code/browser/workbench/workbench.ts
-index 1ed7feec97..573adf16ba 100644
+index 1ed7feec97b..573adf16ba8 100644
 --- a/src/vs/code/browser/workbench/workbench.ts
 +++ b/src/vs/code/browser/workbench/workbench.ts
 @@ -1,532 +1,99 @@
@@ -838,7 +855,7 @@ index 1ed7feec97..573adf16ba 100644
 +  create(document.body, config)
 +})()
 diff --git a/src/vs/workbench/browser/layout.ts b/src/vs/workbench/browser/layout.ts
-index 1fe5aa621c..18d257fab3 100644
+index 1fe5aa621c5..18d257fab34 100644
 --- a/src/vs/workbench/browser/layout.ts
 +++ b/src/vs/workbench/browser/layout.ts
 @@ -51,6 +51,7 @@ import { ILogService } from 'vs/platform/log/common/log';
@@ -982,7 +999,7 @@ index 1fe5aa621c..18d257fab3 100644
  
 diff --git a/src/vs/workbench/browser/parts/dummies/activitybarPart.ts b/src/vs/workbench/browser/parts/dummies/activitybarPart.ts
 new file mode 100644
-index 0000000000..455a50bb45
+index 00000000000..455a50bb453
 --- /dev/null
 +++ b/src/vs/workbench/browser/parts/dummies/activitybarPart.ts
 @@ -0,0 +1,25 @@
@@ -1013,7 +1030,7 @@ index 0000000000..455a50bb45
 +}
 diff --git a/src/vs/workbench/browser/parts/dummies/dummyPart.ts b/src/vs/workbench/browser/parts/dummies/dummyPart.ts
 new file mode 100644
-index 0000000000..8bc3a355ed
+index 00000000000..8bc3a355ed2
 --- /dev/null
 +++ b/src/vs/workbench/browser/parts/dummies/dummyPart.ts
 @@ -0,0 +1,39 @@
@@ -1058,7 +1075,7 @@ index 0000000000..8bc3a355ed
 +}
 diff --git a/src/vs/workbench/browser/parts/dummies/panelPart.ts b/src/vs/workbench/browser/parts/dummies/panelPart.ts
 new file mode 100644
-index 0000000000..7615e89b43
+index 00000000000..7615e89b437
 --- /dev/null
 +++ b/src/vs/workbench/browser/parts/dummies/panelPart.ts
 @@ -0,0 +1,45 @@
@@ -1109,7 +1126,7 @@ index 0000000000..7615e89b43
 +}
 diff --git a/src/vs/workbench/browser/parts/dummies/sidebarPart.ts b/src/vs/workbench/browser/parts/dummies/sidebarPart.ts
 new file mode 100644
-index 0000000000..6bb6143484
+index 00000000000..6bb61434848
 --- /dev/null
 +++ b/src/vs/workbench/browser/parts/dummies/sidebarPart.ts
 @@ -0,0 +1,43 @@
@@ -1158,7 +1175,7 @@ index 0000000000..6bb6143484
 +}
 diff --git a/src/vs/workbench/browser/parts/dummies/statusbarPart.ts b/src/vs/workbench/browser/parts/dummies/statusbarPart.ts
 new file mode 100644
-index 0000000000..225cfe59c9
+index 00000000000..225cfe59c90
 --- /dev/null
 +++ b/src/vs/workbench/browser/parts/dummies/statusbarPart.ts
 @@ -0,0 +1,35 @@
@@ -1199,7 +1216,7 @@ index 0000000000..225cfe59c9
 +}
 diff --git a/src/vs/workbench/browser/parts/dummies/titlebarPart.ts b/src/vs/workbench/browser/parts/dummies/titlebarPart.ts
 new file mode 100644
-index 0000000000..4466b0a054
+index 00000000000..4466b0a0545
 --- /dev/null
 +++ b/src/vs/workbench/browser/parts/dummies/titlebarPart.ts
 @@ -0,0 +1,25 @@
@@ -1229,7 +1246,7 @@ index 0000000000..4466b0a054
 +	updateProperties(properties: ITitleProperties): void { }
 +}
 diff --git a/src/vs/workbench/browser/workbench.contribution.ts b/src/vs/workbench/browser/workbench.contribution.ts
-index 03297afe7f..dcf30dd1ef 100644
+index 03297afe7fa..dcf30dd1ef1 100644
 --- a/src/vs/workbench/browser/workbench.contribution.ts
 +++ b/src/vs/workbench/browser/workbench.contribution.ts
 @@ -6,7 +6,7 @@
@@ -1306,7 +1323,7 @@ index 03297afe7f..dcf30dd1ef 100644
  			'window.openFilesInNewWindow': {
  				'type': 'string',
 diff --git a/src/vs/workbench/contrib/files/browser/fileCommands.ts b/src/vs/workbench/contrib/files/browser/fileCommands.ts
-index ef6eb4dd9b..1ec36e7137 100644
+index ef6eb4dd9b4..1ec36e71373 100644
 --- a/src/vs/workbench/contrib/files/browser/fileCommands.ts
 +++ b/src/vs/workbench/contrib/files/browser/fileCommands.ts
 @@ -546,6 +546,38 @@ CommandsRegistry.registerCommand({
@@ -1349,7 +1366,7 @@ index ef6eb4dd9b..1ec36e7137 100644
  	id: REMOVE_ROOT_FOLDER_COMMAND_ID,
  	handler: (accessor, resource: URI | object) => {
 diff --git a/src/vs/workbench/contrib/files/browser/files.contribution.ts b/src/vs/workbench/contrib/files/browser/files.contribution.ts
-index f4b223bf4c..4556923fe2 100644
+index f4b223bf4cd..4556923fe25 100644
 --- a/src/vs/workbench/contrib/files/browser/files.contribution.ts
 +++ b/src/vs/workbench/contrib/files/browser/files.contribution.ts
 @@ -315,12 +315,12 @@ configurationRegistry.registerConfiguration({
@@ -1368,7 +1385,7 @@ index f4b223bf4c..4556923fe2 100644
  		},
  		'files.watcherExclude': {
 diff --git a/src/vs/workbench/contrib/search/browser/search.contribution.ts b/src/vs/workbench/contrib/search/browser/search.contribution.ts
-index cfbbb00c6e..e7486279ab 100644
+index cfbbb00c6e9..e7486279aba 100644
 --- a/src/vs/workbench/contrib/search/browser/search.contribution.ts
 +++ b/src/vs/workbench/contrib/search/browser/search.contribution.ts
 @@ -879,7 +879,7 @@ configurationRegistry.registerConfiguration({
@@ -1381,7 +1398,7 @@ index cfbbb00c6e..e7486279ab 100644
  		'search.quickOpen.history.filterSortOrder': {
  			'type': 'string',
 diff --git a/src/vs/workbench/contrib/url/browser/trustedDomains.ts b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
-index 145afdf032..bedd34dbbd 100644
+index 145afdf032c..bedd34dbbd2 100644
 --- a/src/vs/workbench/contrib/url/browser/trustedDomains.ts
 +++ b/src/vs/workbench/contrib/url/browser/trustedDomains.ts
 @@ -215,10 +215,19 @@ export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTru
@@ -1406,7 +1423,7 @@ index 145afdf032..bedd34dbbd 100644
  	try {
  		const trustedDomainsSrc = storageService.get(TRUSTED_DOMAINS_STORAGE_KEY, StorageScope.GLOBAL);
 diff --git a/src/vs/workbench/contrib/webview/browser/pre/main.js b/src/vs/workbench/contrib/webview/browser/pre/main.js
-index b2f093ee19..6624b75df0 100644
+index b2f093ee195..6624b75df02 100644
 --- a/src/vs/workbench/contrib/webview/browser/pre/main.js
 +++ b/src/vs/workbench/contrib/webview/browser/pre/main.js
 @@ -505,7 +505,7 @@
@@ -1419,7 +1436,7 @@ index b2f093ee19..6624b75df0 100644
  					// We should just be able to use srcdoc, but I wasn't
  					// seeing the service worker applying properly.
 diff --git a/src/vs/workbench/contrib/webview/browser/webviewElement.ts b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
-index 4403a2ac4b..3ca8554cfc 100644
+index 4403a2ac4b4..3ca8554cfcf 100644
 --- a/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 +++ b/src/vs/workbench/contrib/webview/browser/webviewElement.ts
 @@ -90,7 +90,7 @@ export class IFrameWebview extends BaseWebview<HTMLIFrameElement> implements Web
@@ -1432,7 +1449,7 @@ index 4403a2ac4b..3ca8554cfc 100644
  		element.style.width = '100%';
  		element.style.height = '100%';
 diff --git a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
-index 380122d251..f979c43887 100644
+index 380122d2514..f979c438874 100644
 --- a/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
 +++ b/src/vs/workbench/contrib/welcome/page/browser/welcomePage.contribution.ts
 @@ -38,7 +38,7 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
@@ -1445,7 +1462,7 @@ index 380122d251..f979c43887 100644
  			},
  		}
 diff --git a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
-index c3aab1b7d0..0a524d6cb7 100644
+index c3aab1b7d03..0a524d6cb79 100644
 --- a/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 +++ b/src/vs/workbench/services/extensions/common/abstractExtensionService.ts
 @@ -116,6 +116,7 @@ export abstract class AbstractExtensionService extends Disposable implements IEx
@@ -1457,7 +1474,7 @@ index c3aab1b7d0..0a524d6cb7 100644
  
  		this._registry = new ExtensionDescriptionRegistry([]);
 diff --git a/src/vs/workbench/services/workspaces/browser/workspaces.ts b/src/vs/workbench/services/workspaces/browser/workspaces.ts
-index 3b90080dc3..a2228f49e9 100644
+index 3b90080dc3d..a2228f49e9e 100644
 --- a/src/vs/workbench/services/workspaces/browser/workspaces.ts
 +++ b/src/vs/workbench/services/workspaces/browser/workspaces.ts
 @@ -5,7 +5,6 @@

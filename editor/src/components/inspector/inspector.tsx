@@ -7,12 +7,10 @@ import {
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
 import {
   getUtopiaJSXComponentsFromSuccess,
   isHTMLComponent,
 } from '../../core/model/project-file-utils'
-import { createSceneTemplatePath } from '../../core/model/scene-utils'
 import { forEachRight, isRight, right } from '../../core/shared/either'
 import {
   isJSXAttributeOtherJavaScript,
@@ -30,16 +28,9 @@ import {
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
-import {
-  Imports,
-  InstancePath,
-  LayoutWrapper,
-  PropertyPath,
-  ScenePath,
-  TemplatePath,
-} from '../../core/shared/project-file-types'
+import { LayoutWrapper, PropertyPath, ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
 import { isAspectRatioLockedNew } from '../aspect-ratio'
 import { setFocus } from '../common/actions'
@@ -51,12 +42,8 @@ import {
   selectComponents,
   setAspectRatioLock,
   setProp_UNSAFE,
-  setSceneProp,
   transientActions,
   unsetProperty,
-  unsetSceneProp,
-  unwrapLayoutable,
-  wrapInLayoutable,
 } from '../editor/actions/action-creators'
 import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
@@ -109,7 +96,7 @@ export interface InspectorModel {
 
 export interface ElementPathElement {
   name?: string
-  path: TemplatePath
+  path: ElementPath
 }
 
 export interface InspectorPartProps<T> {
@@ -119,7 +106,7 @@ export interface InspectorPartProps<T> {
 export interface InspectorProps
   extends InspectorPartProps<InspectorModel>,
     TargetSelectorSectionProps {
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   elementPath: Array<ElementPathElement>
 }
 
@@ -308,9 +295,8 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         store.derived,
       )
       anyComponentsInner =
-        anyComponentsInner ||
-        MetadataUtils.isComponentInstance(view, rootComponents, rootMetadata, imports)
-      const possibleElement = MetadataUtils.findElementByTemplatePath(rootMetadata, view)
+        anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
+      const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
       if (possibleElement != null) {
         // Slightly coarse in definition, but element metadata is in a weird little world of
         // its own compared to the props.
@@ -348,9 +334,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       aspectRatioLocked: aspectRatioLockedInner,
     }
   }, 'Inspector')
-  const instancePaths = useKeepReferenceEqualityIfPossible(
-    selectedViews.map(TP.instancePathForElementAtPath),
-  )
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -362,11 +345,11 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
   )
 
   const toggleAspectRatioLock = React.useCallback(() => {
-    const actions = instancePaths.map((path) => {
+    const actions = selectedViews.map((path) => {
       return setAspectRatioLock(path, !aspectRatioLocked)
     })
     dispatch(actions, 'everyone')
-  }, [dispatch, instancePaths, aspectRatioLocked])
+  }, [dispatch, selectedViews, aspectRatioLocked])
 
   function renderInspectorContents() {
     if (props.elementPath.length == 0 || anyUnknownElements) {
@@ -374,7 +357,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     } else {
       return (
         <React.Fragment>
-          <AlignmentButtons numberOfTargets={instancePaths.length} />
+          <AlignmentButtons numberOfTargets={selectedViews.length} />
           {anyComponents ? <ComponentSection isScene={false} /> : null}
           <RenderedLayoutSection
             anyHTMLElements={anyHTMLElements}
@@ -430,11 +413,11 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
       (store) => store.editor.selectedViews,
       'InspectorEntryPoint selectedViews',
     )
-    const rootViewsForSelectedElement: Array<TemplatePath> = useEditorState(
+    const rootViewsForSelectedElement: Array<ElementPath> = useEditorState(
       (store) => MetadataUtils.getRootViewPaths(store.editor.jsxMetadata, selectedViews[0]),
       'InspectorEntryPoint',
-      (oldTemplatePaths, newTemplatePaths) => {
-        return arrayEquals(oldTemplatePaths, newTemplatePaths, TP.pathsEqual)
+      (oldElementPaths, newElementPaths) => {
+        return arrayEquals(oldElementPaths, newElementPaths, EP.pathsEqual)
       },
     )
 
@@ -455,7 +438,7 @@ export const InspectorEntryPoint: React.FunctionComponent = betterReactMemo(
 )
 
 export const SingleInspectorEntryPoint: React.FunctionComponent<{
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
   const {
@@ -488,7 +471,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
   let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
-  Utils.fastForEach(TP.filterScenes(selectedViews), (path) => {
+  Utils.fastForEach(selectedViews, (path) => {
     forUnderlyingTarget(
       path,
       projectContents,
@@ -497,13 +480,10 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       (underlyingSuccess, underlyingElement, underlyingTarget) => {
         const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
         // TODO multiselect
-        const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(jsxMetadata, path)
+        const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
         if (elementMetadata != null) {
-          const parentPath = TP.parentPath(underlyingTarget)
-          const parentElement =
-            parentPath != null && TP.isInstancePath(parentPath)
-              ? findElementAtPath(parentPath, rootComponents)
-              : null
+          const parentPath = EP.parentPath(underlyingTarget)
+          const parentElement = findElementAtPath(parentPath, rootComponents)
 
           const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadata, path)
           const nonGroupAncestorFrame =
@@ -580,21 +560,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 
             inspectorModel.specialSizeMeasurements = elementMetadata.specialSizeMeasurements
             inspectorModel.position = elementMetadata.specialSizeMeasurements.position
-
-            if (underlyingElement.props != null) {
-              if (
-                MetadataUtils.isLayoutWrapperAgainstImports(
-                  underlyingSuccess.imports,
-                  elementMetadata,
-                )
-              ) {
-                inspectorModel.layoutWrapper = elementName as any
-              }
-              const wrappedComponent = getJSXAttribute(underlyingElement.props, 'wrappedComponent')
-              if (wrappedComponent != null && isJSXAttributeOtherJavaScript(wrappedComponent)) {
-                inspectorModel.type = wrappedComponent.javascript
-              }
-            }
           }
           inspectorModel.label = MetadataUtils.getElementLabel(path, jsxMetadata)
         }
@@ -619,11 +584,8 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
       }
 
       let elements: Array<ElementPathElement> = []
-      Utils.fastForEach(TP.allPaths(selectedViews[0]), (path) => {
-        const component = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
-          jsxMetadata,
-          path,
-        )
+      Utils.fastForEach(EP.allPathsForLastPart(selectedViews[0]), (path) => {
+        const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
         if (component != null) {
           elements.push({
             name: MetadataUtils.getElementLabel(path, jsxMetadata),
@@ -705,22 +667,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     [refElementsToTargetForUpdates, dispatch],
   )
 
-  const onWrap = React.useCallback(
-    (value: string) => {
-      const actions = refElementsToTargetForUpdates.current.map((path) => {
-        return wrapInLayoutable(path, value as any)
-      })
-      dispatch(actions, 'everyone')
-    },
-    [dispatch, refElementsToTargetForUpdates],
-  )
-  const onUnwrap = React.useCallback(() => {
-    const actions = refElementsToTargetForUpdates.current.map((path) => {
-      return unwrapLayoutable(path)
-    })
-    dispatch(actions, 'everyone')
-  }, [dispatch, refElementsToTargetForUpdates])
-
   const inspector = isUIJSFile ? (
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
@@ -742,7 +688,7 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
 })
 
 export const InspectorContextProvider = betterReactMemo<{
-  selectedViews: Array<TemplatePath>
+  selectedViews: Array<ElementPath>
   targetPath: Array<string>
   children: React.ReactNode
 }>('InspectorContextProvider', (props) => {
@@ -767,7 +713,7 @@ export const InspectorContextProvider = betterReactMemo<{
   let newAttributeMetadatas: Array<StyleAttributeMetadata> = []
 
   Utils.fastForEach(selectedViews, (path) => {
-    const elementMetadata = MetadataUtils.findElementByTemplatePath(jsxMetadata, path)
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     if (elementMetadata != null) {
       if (elementMetadata.computedStyle == null || elementMetadata.attributeMetadatada == null) {
         /**

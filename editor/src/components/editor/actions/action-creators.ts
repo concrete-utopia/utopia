@@ -23,16 +23,12 @@ import type {
 import type {
   HighlightBoundsForUids,
   Imports,
-  InstancePath,
-  LayoutWrapper,
   NodeModules,
   ParsedTextFile,
   ProjectFile,
   PropertyPath,
-  ScenePath,
-  StaticElementPath,
-  TemplatePath,
-  TextFile,
+  StaticElementPathPart,
+  ElementPath,
 } from '../../../core/shared/project-file-types'
 import type { BuildType } from '../../../core/workers/ts/ts-worker'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
@@ -70,7 +66,6 @@ import type {
   CopySelectionToClipboard,
   DeleteFile,
   DeleteView,
-  DeleteViews,
   DistributeSelectedViews,
   Distribution,
   DuplicateSelected,
@@ -137,7 +132,6 @@ import type {
   SetRightMenuTab,
   SetSafeMode,
   SetSaveError,
-  SetSceneProp,
   SetShortcut,
   SetStoredFontSettings,
   SetZIndex,
@@ -156,9 +150,7 @@ import type {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnsetSceneProp,
   UnwrapGroupOrView,
-  UnwrapLayoutable,
   UpdateChildText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -174,7 +166,6 @@ import type {
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
-  WrapInLayoutable,
   WrapInView,
   UpdateFromCodeEditor,
   MarkVSCodeBridgeReady,
@@ -213,7 +204,7 @@ export function insertScene(frame: CanvasRectangle): InsertScene {
 
 export function insertJSXElement(
   element: JSXElement,
-  parent: TemplatePath | null,
+  parent: ElementPath | null,
   importsToAdd: Imports,
 ): InsertJSXElement {
   return {
@@ -224,17 +215,10 @@ export function insertJSXElement(
   }
 }
 
-export function deleteView(target: TemplatePath): DeleteView {
+export function deleteView(target: ElementPath): DeleteView {
   return {
     action: 'DELETE_VIEW',
     target: target,
-  }
-}
-
-export function deleteViews(targets: Array<TemplatePath>): DeleteViews {
-  return {
-    action: 'DELETE_VIEWS',
-    targets: targets,
   }
 }
 
@@ -244,7 +228,7 @@ export function deleteSelected(): EditorAction {
   }
 }
 
-export function unsetProperty(element: InstancePath, property: PropertyPath): UnsetProperty {
+export function unsetProperty(element: ElementPath, property: PropertyPath): UnsetProperty {
   return {
     action: 'UNSET_PROPERTY',
     element: element,
@@ -252,7 +236,7 @@ export function unsetProperty(element: InstancePath, property: PropertyPath): Un
   }
 }
 
-export function toggleHidden(targets: Array<TemplatePath> = []): ToggleHidden {
+export function toggleHidden(targets: Array<ElementPath> = []): ToggleHidden {
   return {
     action: 'TOGGLE_HIDDEN',
     targets: targets,
@@ -267,7 +251,7 @@ export function transientActions(actions: Array<EditorAction>): TransientActions
 }
 
 export function selectComponents(
-  target: Array<TemplatePath>,
+  target: Array<ElementPath>,
   addToSelection: boolean,
 ): SelectComponents {
   return {
@@ -297,7 +281,7 @@ export function duplicateSelected(): DuplicateSelected {
   }
 }
 
-export function duplicateSpecificElements(paths: Array<TemplatePath>): DuplicateSpecificElements {
+export function duplicateSpecificElements(paths: Array<ElementPath>): DuplicateSpecificElements {
   return {
     action: 'DUPLICATE_SPECIFIC_ELEMENTS',
     paths: paths,
@@ -359,13 +343,13 @@ export function closePopup(): ClosePopup {
 
 export function pasteJSXElements(
   elements: Array<JSXElement>,
-  originalTemplatePaths: Array<TemplatePath>,
+  originalElementPaths: Array<ElementPath>,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
 ): PasteJSXElements {
   return {
     action: 'PASTE_JSX_ELEMENTS',
     elements: elements,
-    originalTemplatePaths: originalTemplatePaths,
+    originalElementPaths: originalElementPaths,
     targetOriginalContextMetadata: targetOriginalContextMetadata,
   }
 }
@@ -377,7 +361,7 @@ export function copySelectionToClipboard(): CopySelectionToClipboard {
 }
 
 export function openTextEditor(
-  target: InstancePath,
+  target: ElementPath,
   mousePosition: WindowPoint | null, // if mousePosition is zero, the whole text will be selected
 ): OpenTextEditor {
   return {
@@ -393,7 +377,7 @@ export function closeTextEditor(): CloseTextEditor {
   }
 }
 
-export function toggleCollapse(target: TemplatePath): ToggleCollapse {
+export function toggleCollapse(target: ElementPath): ToggleCollapse {
   return {
     action: 'TOGGLE_COLLAPSE',
     target: target,
@@ -473,7 +457,7 @@ export function setRightMenuExpanded(expanded: boolean): SetRightMenuExpanded {
   }
 }
 
-export function setHighlightedView(target: TemplatePath): SetHighlightedView {
+export function setHighlightedView(target: ElementPath): SetHighlightedView {
   return {
     action: 'SET_HIGHLIGHTED_VIEW',
     target: target,
@@ -546,7 +530,7 @@ export function saveImageReplace(): SaveImageReplace {
 }
 
 export function saveImageInsertWith(
-  parentPath: TemplatePath | null,
+  parentPath: ElementPath | null,
   frame: CanvasRectangle,
   multiplier: number,
 ): SaveImageInsertWith {
@@ -591,14 +575,14 @@ export function saveAsset(
   }
 }
 
-export function resetPins(target: InstancePath): ResetPins {
+export function resetPins(target: ElementPath): ResetPins {
   return {
     action: 'RESET_PINS',
     target: target,
   }
 }
 
-export function wrapInGroup(targets: Array<TemplatePath>): WrapInView {
+export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
   return wrapInView(targets)
   // FIXME: Make Groups Great Again.
   //return {
@@ -608,7 +592,7 @@ export function wrapInGroup(targets: Array<TemplatePath>): WrapInView {
   //}
 }
 
-export function unwrapGroupOrView(target: TemplatePath): UnwrapGroupOrView {
+export function unwrapGroupOrView(target: ElementPath): UnwrapGroupOrView {
   return {
     // TODO make it only run when the target is a group
     action: 'UNWRAP_GROUP_OR_VIEW',
@@ -617,7 +601,7 @@ export function unwrapGroupOrView(target: TemplatePath): UnwrapGroupOrView {
   }
 }
 
-export function wrapInView(targets: Array<TemplatePath>): WrapInView {
+export function wrapInView(targets: Array<ElementPath>): WrapInView {
   return {
     action: 'WRAP_IN_VIEW',
     targets: targets,
@@ -639,7 +623,7 @@ export function setCanvasAnimationsEnabled(value: boolean): SetCanvasAnimationsE
   }
 }
 
-export function setZIndex(target: TemplatePath, index: number): SetZIndex {
+export function setZIndex(target: ElementPath, index: number): SetZIndex {
   return {
     action: 'SET_Z_INDEX',
     target: target,
@@ -675,7 +659,7 @@ export function moveSelectedToFront(): MoveSelectedToFront {
 }
 
 export function updateFrameDimensions(
-  element: TemplatePath,
+  element: ElementPath,
   width: number,
   height: number,
 ): UpdateFrameDimensions {
@@ -687,9 +671,7 @@ export function updateFrameDimensions(
   }
 }
 
-export function setNavigatorRenamingTarget(
-  target: TemplatePath | null,
-): SetNavigatorRenamingTarget {
+export function setNavigatorRenamingTarget(target: ElementPath | null): SetNavigatorRenamingTarget {
   return {
     action: 'SET_NAVIGATOR_RENAMING_TARGET',
     target: target,
@@ -958,7 +940,7 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
 
 export function saveDOMReport(
   elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-  cachedTreeRoots: Array<TemplatePath>,
+  cachedTreeRoots: Array<ElementPath>,
 ): SaveDOMReport {
   return {
     action: 'SAVE_DOM_REPORT',
@@ -969,7 +951,7 @@ export function saveDOMReport(
 
 /** WARNING: you probably don't want to use setProp, instead you should use a domain-specific action! */
 export function setProp_UNSAFE(
-  target: InstancePath,
+  target: ElementPath,
   propertyPath: PropertyPath,
   value: JSXAttribute,
 ): SetProp {
@@ -983,7 +965,7 @@ export function setProp_UNSAFE(
 
 /** WARNING: you probably don't want to use setProp, instead you should use a domain-specific action! */
 export function setPropWithElementPath_UNSAFE(
-  target: StaticElementPath,
+  target: StaticElementPathPart,
   propertyPath: PropertyPath,
   value: JSXAttribute,
 ): SetPropWithElementPath {
@@ -996,7 +978,7 @@ export function setPropWithElementPath_UNSAFE(
 }
 
 export function renamePropKey(
-  target: InstancePath,
+  target: ElementPath,
   cssTargetPath: CSSTarget,
   value: Array<string>,
 ): RenameStyleSelector {
@@ -1032,7 +1014,7 @@ export function setFilebrowserRenamingTarget(
 }
 
 export function toggleProperty(
-  target: InstancePath,
+  target: ElementPath,
   togglePropValue: (element: JSXElement) => JSXElement,
 ): ToggleProperty {
   return {
@@ -1056,44 +1038,8 @@ export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
   }
 }
 
-export function setSceneProp(
-  scenePath: ScenePath,
-  propertyPath: PropertyPath,
-  value: JSXAttribute,
-): SetSceneProp {
-  return {
-    action: 'SET_SCENE_PROP',
-    scenePath: scenePath,
-    propertyPath: propertyPath,
-    value: value,
-  }
-}
-
-export function unsetSceneProp(scenePath: ScenePath, propertyPath: PropertyPath): UnsetSceneProp {
-  return {
-    action: 'UNSET_SCENE_PROP',
-    scenePath: scenePath,
-    propertyPath: propertyPath,
-  }
-}
-
-export function wrapInLayoutable(target: InstancePath, wrapper: LayoutWrapper): WrapInLayoutable {
-  return {
-    action: 'WRAP_IN_LAYOUTABLE',
-    target: target,
-    wrapper: wrapper,
-  }
-}
-
-export function unwrapLayoutable(target: InstancePath): UnwrapLayoutable {
-  return {
-    action: 'UNWRAP_LAYOUTABLE',
-    target: target,
-  }
-}
-
 export function updateJSXElementName(
-  target: InstancePath,
+  target: ElementPath,
   elementName: JSXElementName,
   importsToAdd: Imports,
 ): UpdateJSXElementName {
@@ -1112,7 +1058,7 @@ export function addImports(importsToAdd: Imports): AddImports {
   }
 }
 
-export function setAspectRatioLock(target: InstancePath, locked: boolean): SetAspectRatioLock {
+export function setAspectRatioLock(target: ElementPath, locked: boolean): SetAspectRatioLock {
   return {
     action: 'SET_ASPECT_RATIO_LOCK',
     target: target,
@@ -1149,7 +1095,7 @@ export function insertDroppedImage(imagePath: string, position: CanvasPoint): In
 }
 
 export function resetPropToDefault(
-  target: TemplatePath,
+  target: ElementPath,
   path: PropertyPath | null,
 ): ResetPropToDefault {
   return {
@@ -1190,7 +1136,7 @@ export function finishCheckpointTimer(): FinishCheckpointTimer {
 }
 
 export function addMissingDimensions(
-  target: InstancePath,
+  target: ElementPath,
   existingSize: CanvasRectangle,
 ): AddMissingDimensions {
   return {
@@ -1248,7 +1194,7 @@ export function sendLinterRequestMessage(
   }
 }
 
-export function updateChildText(target: InstancePath, text: string): UpdateChildText {
+export function updateChildText(target: ElementPath, text: string): UpdateChildText {
   return {
     action: 'UPDATE_CHILD_TEXT',
     target: target,
@@ -1282,20 +1228,22 @@ export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
   }
 }
 
-export function setFocusedElement(focusedElementTemplatePath: ScenePath | null): SetFocusedElement {
+export function setFocusedElement(
+  focusedElementElementPath: ElementPath | null,
+): SetFocusedElement {
   return {
     action: 'SET_FOCUSED_ELEMENT',
-    focusedElementPath: focusedElementTemplatePath,
+    focusedElementPath: focusedElementElementPath,
   }
 }
 
 export function scrollToElement(
-  focusedElementTemplatePath: TemplatePath,
+  focusedElementElementPath: ElementPath,
   keepScrollPositionIfVisible: boolean,
 ): ScrollToElement {
   return {
     action: 'SCROLL_TO_ELEMENT',
-    target: focusedElementTemplatePath,
+    target: focusedElementElementPath,
     keepScrollPositionIfVisible: keepScrollPositionIfVisible,
   }
 }

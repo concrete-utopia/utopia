@@ -4,9 +4,10 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   makeTestProjectCodeWithSnippet,
+  makeTestProjectCodeWithSnippetStyledComponents,
   renderTestEditorWithCode,
   renderTestEditorWithProjectContent,
   TestAppUID,
@@ -55,11 +56,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const flexPaddingTopControl = (await renderResult.renderedDOM.findByTestId(
       'flexPadding-T',
@@ -104,11 +105,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -185,11 +186,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -266,11 +267,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -348,7 +349,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -408,11 +409,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -485,10 +486,10 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -599,7 +600,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -686,7 +687,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -773,7 +774,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -860,7 +861,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -924,9 +925,9 @@ describe('inspector tests with real metadata', () => {
   it('Style using react props', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -977,11 +978,11 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -1052,7 +1053,7 @@ describe('inspector tests with real metadata', () => {
   })
   it('CSS props using numbers', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
+      makeTestProjectCodeWithSnippetStyledComponents(`
         <div
           style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
           data-uid={'aaa'}
@@ -1073,7 +1074,7 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1085,7 +1086,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('target-selector-css')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -1132,7 +1133,7 @@ describe('inspector tests with real metadata', () => {
   })
   it('CSS using default values set inline', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
+      makeTestProjectCodeWithSnippetStyledComponents(`
         <div
           style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
           data-uid={'aaa'}
@@ -1157,7 +1158,7 @@ describe('inspector tests with real metadata', () => {
     )
 
     await renderResult.dispatch(
-      [selectComponents([TP.instancePath(TestScenePath, ['aaa', 'bbb'])], false)],
+      [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
       false,
     )
 
@@ -1221,9 +1222,9 @@ describe('inspector tests with real metadata', () => {
   it('Style is using css className', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1268,11 +1269,11 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
       'position-Width-number-input',
@@ -1323,9 +1324,9 @@ describe('inspector tests with real metadata', () => {
   it('Style is using css className, with default values', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1371,7 +1372,7 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1384,7 +1385,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('flexPadding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -1436,9 +1437,9 @@ describe('inspector tests with real metadata', () => {
   it('Empty style with lots of trivial defaults', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (
@@ -1472,7 +1473,7 @@ describe('inspector tests with real metadata', () => {
       ),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
@@ -1485,7 +1486,7 @@ describe('inspector tests with real metadata', () => {
       await screen.findByTestId('flexPadding-L')
     })
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const minWidthControl = (await renderResult.renderedDOM.findByTestId(
       'position-minWidth-number-input',
@@ -1551,11 +1552,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const fontSizeControl = (await renderResult.renderedDOM.findByTestId(
       'fontSize',
@@ -1581,11 +1582,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const flexBasis = (await renderResult.renderedDOM.findByTestId(
       'position-flexBasis-number-input',
@@ -1634,11 +1635,11 @@ describe('inspector tests with real metadata', () => {
       `),
     )
 
-    const targetPath = TP.instancePath(TestScenePath, ['aaa', 'bbb'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const flexBasis = (await renderResult.renderedDOM.findByTestId(
       'position-flexBasis-number-input',
@@ -1681,9 +1682,9 @@ describe('inspector tests with real metadata', () => {
       '/utopia': directory(),
       [StoryboardFilePath]: createCodeFile(
         StoryboardFilePath,
-        `/** @jsx jsx */
+        `
   import * as React from 'react'
-  import { Scene, Storyboard, jsx } from 'utopia-api'
+  import { Scene, Storyboard } from 'utopia-api'
   import { App } from '/src/app.js'
 
   export var storyboard = (
@@ -1699,9 +1700,8 @@ describe('inspector tests with real metadata', () => {
       ),
       '/src/app.js': createCodeFile(
         '/src/app.js',
-        `/** @jsx jsx */
+        `
   import * as React from 'react'
-  import { jsx } from 'utopia-api'
   export var App = (props) => {
     return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
       <div data-uid='app-inner-div' style={{padding: 8, paddingLeft: 10, width: '100%', minHeight: 25}}/>
@@ -1712,11 +1712,11 @@ describe('inspector tests with real metadata', () => {
 
     const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
 
-    const targetPath = TP.instancePath(TestScenePath, ['app-outer-div', 'app-inner-div'])
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-inner-div'])
 
     await renderResult.dispatch([selectComponents([targetPath], false)], false)
 
-    const metadata = renderResult.getEditorState().editor.jsxMetadata[TP.toString(targetPath)]
+    const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const flexPaddingTopControl = (await renderResult.renderedDOM.findByTestId(
       'flexPadding-T',

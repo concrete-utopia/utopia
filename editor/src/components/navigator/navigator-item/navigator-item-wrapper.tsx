@@ -5,10 +5,10 @@ import {
   isParseSuccess,
   isTextFile,
   ParseSuccess,
-  TemplatePath,
+  ElementPath,
 } from '../../../core/shared/project-file-types'
 import { useEditorState } from '../../editor/store/store-hook'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   DragSelection,
   NavigatorItemContainer,
@@ -37,14 +37,14 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 interface NavigatorItemWrapperProps {
   index: number
   targetComponentKey: string
-  templatePath: TemplatePath
+  elementPath: ElementPath
   getDragSelections: () => Array<DragSelection>
   getMaximumDistance: (componentId: string, initialDistance: number) => number
-  getSelectedViewsInRange: (index: number) => Array<TemplatePath>
+  getSelectedViewsInRange: (index: number) => Array<ElementPath>
   windowStyle: React.CSSProperties
 }
 
-const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
+const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
   createSelector(
     (store: EditorStore) => store.editor.jsxMetadata,
     (store: EditorStore) => store.derived.canvas.transientState,
@@ -66,7 +66,7 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
         projectContents,
         nodeModules,
         forceNotNull('Should be a file path.', currentFilePath),
-        TP.instancePathForElementAtPathDontThrowOnScene(templatePath),
+        elementPath,
       )
       const elementFilePath =
         underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
@@ -88,31 +88,27 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
 
       const elementOriginType = MetadataUtils.getElementOriginType(
         componentsIncludingScenes,
-        templatePath,
+        elementPath,
       )
-      const staticName = MetadataUtils.getStaticElementName(templatePath, componentsIncludingScenes)
-      const labelInner = MetadataUtils.getElementLabel(templatePath, jsxMetadata, staticName)
+      const staticName = MetadataUtils.getStaticElementName(elementPath, componentsIncludingScenes)
+      const labelInner = MetadataUtils.getElementLabel(elementPath, jsxMetadata, staticName)
       // FIXME: This is a mitigation for a situation where somehow this component re-renders
       // when the navigatorTargets indicate it shouldn't exist...
-      const isInNavigatorTargets = TP.containsPath(templatePath, navigatorTargets)
+      const isInNavigatorTargets = EP.containsPath(elementPath, navigatorTargets)
       let noOfChildrenInner: number = 0
       let supportsChildren: boolean = false
       if (isInNavigatorTargets) {
-        noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, templatePath).length
-        supportsChildren = MetadataUtils.targetSupportsChildren(imports, jsxMetadata, templatePath)
+        noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, elementPath).length
+        supportsChildren = MetadataUtils.targetSupportsChildren(imports, jsxMetadata, elementPath)
       }
 
-      const elementWarningsInner = getValueFromComplexMap(
-        TP.toString,
-        elementWarnings,
-        templatePath,
-      )
+      const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)
 
       return {
         staticElementName: staticName,
         label: labelInner,
-        isSelected: TP.containsPath(templatePath, transientState.selectedViews),
-        isHighlighted: TP.containsPath(templatePath, transientState.highlightedViews),
+        isSelected: EP.containsPath(elementPath, transientState.selectedViews),
+        isHighlighted: EP.containsPath(elementPath, transientState.highlightedViews),
         noOfChildren: noOfChildrenInner,
         supportsChildren: supportsChildren,
         elementOriginType: elementOriginType,
@@ -124,8 +120,8 @@ const navigatorItemWrapperSelectorFactory = (templatePath: TemplatePath) =>
 export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperProps> = betterReactMemo(
   'NavigatorItemWrapper',
   (props) => {
-    const selector = React.useMemo(() => navigatorItemWrapperSelectorFactory(props.templatePath), [
-      props.templatePath,
+    const selector = React.useMemo(() => navigatorItemWrapperSelectorFactory(props.elementPath), [
+      props.elementPath,
     ])
     const {
       isSelected,
@@ -151,12 +147,12 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
         collapsedViews: store.editor.navigator.collapsedViews,
         dropTargetHint: store.editor.navigator.dropTargetHint,
         renamingTarget: store.editor.navigator.renamingTarget,
-        isElementVisible: !TP.containsPath(props.templatePath, store.editor.hiddenInstances),
+        isElementVisible: !EP.containsPath(props.elementPath, store.editor.hiddenInstances),
       }),
       'NavigatorItemWrapper',
     )
 
-    const isCollapsed = TP.containsPath(props.templatePath, collapsedViews)
+    const isCollapsed = EP.containsPath(props.elementPath, collapsedViews)
 
     const deepReferenceStaticElementName = useKeepDeepEqualityCall(
       staticElementName,
@@ -166,7 +162,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<NavigatorItemWrapperP
     const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
       index: props.index,
       editorDispatch: dispatch,
-      templatePath: props.templatePath,
+      elementPath: props.elementPath,
       selected: isSelected,
       highlighted: isHighlighted,
       collapsed: isCollapsed,

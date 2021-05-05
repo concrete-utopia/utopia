@@ -10,8 +10,8 @@ import {
   WindowPoint,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { ScenePath, TemplatePath } from '../../../../core/shared/project-file-types'
-import * as TP from '../../../../core/shared/template-path'
+import { ElementPath } from '../../../../core/shared/project-file-types'
+import * as EP from '../../../../core/shared/element-path'
 import { fastForEach, NO_OP } from '../../../../core/shared/utils'
 import { WindowMousePositionRaw } from '../../../../templates/editor-canvas'
 import { KeysPressed } from '../../../../utils/keyboard'
@@ -34,7 +34,7 @@ import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
 import { createDuplicationNewUIDs, getOriginalCanvasFrames } from '../../canvas-utils'
 import {
-  findFirstParentWithValidTemplatePath,
+  findFirstParentWithValidElementPath,
   getAllTargetsAtPoint,
   getValidTargetAtPoint,
 } from '../../dom-lookup'
@@ -67,7 +67,7 @@ export function pickSelectionEnabled(
  * maybeHighlightOnHover and maybeClearHighlightsOnHoverEnd are moved here from new-canvas-controls, kept as-is for continuity
  */
 export function useMaybeHighlightElement(): {
-  maybeHighlightOnHover: (target: TemplatePath) => void
+  maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
 } {
   const stateRef = useRefEditorState((store) => {
@@ -81,7 +81,7 @@ export function useMaybeHighlightElement(): {
   })
 
   const maybeHighlightOnHover = React.useCallback(
-    (target: TemplatePath): void => {
+    (target: ElementPath): void => {
       const { dispatch, dragging, resizing, selectionEnabled, inserting } = stateRef.current
       if (selectionEnabled && !dragging && !resizing && !inserting) {
         dispatch([setHighlightedView(target)], 'canvas')
@@ -104,33 +104,29 @@ export function useMaybeHighlightElement(): {
 }
 
 function filterHiddenInstances(
-  hiddenInstances: Array<TemplatePath>,
-  paths: Array<TemplatePath>,
-): Array<TemplatePath> {
-  return paths.filter((path) => hiddenInstances.every((hidden) => !TP.pathsEqual(path, hidden)))
+  hiddenInstances: Array<ElementPath>,
+  paths: Array<ElementPath>,
+): Array<ElementPath> {
+  return paths.filter((path) => hiddenInstances.every((hidden) => !EP.pathsEqual(path, hidden)))
 }
 
 export function getSelectableViews(
   componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
-  hiddenInstances: Array<TemplatePath>,
-  focusedElementPath: ScenePath | null,
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
-): TemplatePath[] {
-  let candidateViews: Array<TemplatePath>
+): ElementPath[] {
+  let candidateViews: Array<ElementPath>
 
   if (allElementsDirectlySelectable) {
-    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
-      componentMetadata,
-      focusedElementPath,
-    )
+    candidateViews = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(componentMetadata)
   } else {
-    const scenes = MetadataUtils.getAllStoryboardChildrenPathsScenesOnly(componentMetadata)
-    let rootElementsToFilter: TemplatePath[] = []
-    let dynamicScenesWithFragmentRootViews: TemplatePath[] = []
+    const scenes = MetadataUtils.getAllStoryboardChildrenPaths(componentMetadata)
+    let rootElementsToFilter: ElementPath[] = []
+    let dynamicScenesWithFragmentRootViews: ElementPath[] = []
     Utils.fastForEach(scenes, (path) => {
-      const scene = MetadataUtils.findElementByTemplatePath(componentMetadata, path)
+      const scene = MetadataUtils.findElementByElementPath(componentMetadata, path)
       const rootElements = scene?.rootElements
       if (
         MetadataUtils.isSceneTreatedAsGroup(scene) &&
@@ -142,11 +138,13 @@ export function getSelectableViews(
       }
     })
     const allRoots = MetadataUtils.getAllCanvasRootPaths(componentMetadata).filter((rootPath) => {
-      return !rootElementsToFilter.some((path) => TP.pathsEqual(rootPath, path))
+      return !rootElementsToFilter.some((path) => EP.pathsEqual(rootPath, path))
     })
-    let siblings: Array<TemplatePath> = []
+    let siblings: Array<ElementPath> = []
     Utils.fastForEach(selectedViews, (view) => {
-      const allPaths = childrenSelectable ? TP.allPaths(view) : TP.allPaths(TP.parentPath(view))
+      const allPaths = childrenSelectable
+        ? EP.allPathsForLastPart(view)
+        : EP.allPathsForLastPart(EP.parentPath(view))
       Utils.fastForEach(allPaths, (ancestor) => {
         const {
           children,
@@ -154,7 +152,6 @@ export function getSelectableViews(
         } = MetadataUtils.getAllChildrenIncludingUnfurledFocusedComponents(
           ancestor,
           componentMetadata,
-          focusedElementPath,
         )
         const ancestorChildren = [...children, ...unfurledComponents]
         fastForEach(ancestorChildren, (child) => siblings.push(child))
@@ -162,13 +159,13 @@ export function getSelectableViews(
     })
 
     const selectableViews = [...dynamicScenesWithFragmentRootViews, ...allRoots, ...siblings]
-    const uniqueSelectableViews = uniqBy<TemplatePath>(selectableViews, TP.pathsEqual)
+    const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
 
     const selectableViewsFiltered = uniqueSelectableViews.filter((view) => {
       // I kept the group-like behavior here that the user can't single-click select the parent group, even though it is a view now
       const isGroup = MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, view)
       const isAncestorOfSelected = selectedViews.some((selectedView) =>
-        TP.isAncestorOf(selectedView, view, false),
+        EP.isDescendantOf(selectedView, view),
       )
       if (isGroup && isAncestorOfSelected) {
         return false
@@ -183,10 +180,10 @@ export function getSelectableViews(
 }
 
 function useFindValidTarget(): (
-  selectableViews: Array<TemplatePath>,
+  selectableViews: Array<ElementPath>,
   mousePoint: WindowPoint | null,
 ) => {
-  templatePath: TemplatePath
+  elementPath: ElementPath
   isSelected: boolean
 } | null {
   const storeRef = useRefEditorState((store) => {
@@ -201,33 +198,31 @@ function useFindValidTarget(): (
   })
 
   return React.useCallback(
-    (selectableViews: Array<TemplatePath>, mousePoint: WindowPoint | null) => {
+    (selectableViews: Array<ElementPath>, mousePoint: WindowPoint | null) => {
       const {
         selectedViews,
         componentMetadata,
         hiddenInstances,
-        focusedElementPath,
         canvasScale,
         canvasOffset,
       } = storeRef.current
-      const validElementMouseOver: TemplatePath | null = getValidTargetAtPoint(
+      const validElementMouseOver: ElementPath | null = getValidTargetAtPoint(
         componentMetadata,
         selectedViews,
         hiddenInstances,
-        focusedElementPath,
         selectableViews,
         mousePoint,
         canvasScale,
         canvasOffset,
       )
-      const validTemplatePath: TemplatePath | null =
+      const validElementPath: ElementPath | null =
         validElementMouseOver != null ? validElementMouseOver : null
-      if (validTemplatePath != null) {
+      if (validElementPath != null) {
         const isSelected = selectedViews.some((selectedView) =>
-          TP.pathsEqual(validTemplatePath, selectedView),
+          EP.pathsEqual(validElementPath, selectedView),
         )
         return {
-          templatePath: validTemplatePath,
+          elementPath: validElementPath,
           isSelected: isSelected,
         }
       } else {
@@ -239,14 +234,14 @@ function useFindValidTarget(): (
 }
 
 function useStartDragState(): (
-  target: TemplatePath,
+  target: ElementPath,
   start: CanvasPoint | null,
 ) => (event: MouseEvent) => void {
   const dispatch = useEditorState((store) => store.dispatch, 'useStartDragState dispatch')
   const entireEditorStoreRef = useRefEditorState((store) => store)
 
   return React.useCallback(
-    (target: TemplatePath, start: CanvasPoint | null) => (event: MouseEvent) => {
+    (target: ElementPath, start: CanvasPoint | null) => (event: MouseEvent) => {
       if (start == null) {
         return
       }
@@ -267,13 +262,15 @@ function useStartDragState(): (
           )
         : null
 
-      const isTargetSelected = selectedViews.some((sv) => TP.pathsEqual(sv, target))
+      const isTargetSelected = selectedViews.some((sv) => EP.pathsEqual(sv, target))
 
       const selection =
-        isTargetSelected && TP.areAllElementsInSameScene(selectedViews) ? selectedViews : [target]
+        isTargetSelected && EP.areAllElementsInSameInstance(selectedViews)
+          ? selectedViews
+          : [target]
 
       const moveTargets = selection.filter((view) =>
-        elementsThatRespectLayout.some((path) => TP.pathsEqual(path, view)),
+        elementsThatRespectLayout.some((path) => EP.pathsEqual(path, view)),
       )
 
       let originalFrames = getOriginalCanvasFrames(moveTargets, componentMetadata)
@@ -337,13 +334,13 @@ function callbackAfterDragExceedsThreshold(
 
 export function useStartDragStateAfterDragExceedsThreshold(): (
   nativeEvent: MouseEvent,
-  foundTarget: TemplatePath,
+  foundTarget: ElementPath,
 ) => void {
   const startDragState = useStartDragState()
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
 
   const startDragStateAfterDragExceedsThreshold = React.useCallback(
-    (nativeEvent: MouseEvent, foundTarget: TemplatePath) => {
+    (nativeEvent: MouseEvent, foundTarget: ElementPath) => {
       callbackAfterDragExceedsThreshold(
         nativeEvent,
         DRAG_START_TRESHOLD,
@@ -372,17 +369,11 @@ function useGetSelectableViewsForSelectMode() {
 
   return React.useCallback(
     (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
-      const {
-        componentMetadata,
-        selectedViews,
-        hiddenInstances,
-        focusedElementPath,
-      } = storeRef.current
+      const { componentMetadata, selectedViews, hiddenInstances } = storeRef.current
       const selectableViews = getSelectableViews(
         componentMetadata,
         selectedViews,
         hiddenInstances,
-        focusedElementPath,
         allElementsDirectlySelectable,
         childrenSelectable,
       )
@@ -399,7 +390,7 @@ export function useHighlightCallbacks(
   getHighlightableViews: (
     allElementsDirectlySelectable: boolean,
     childrenSelectable: boolean,
-  ) => TemplatePath[],
+  ) => ElementPath[],
 ): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
 } {
@@ -408,15 +399,15 @@ export function useHighlightCallbacks(
 
   const calculateHighlightedViews = React.useCallback(
     (targetPoint: WindowPoint, eventCmdPressed: boolean) => {
-      const selectableViews: Array<TemplatePath> = getHighlightableViews(eventCmdPressed, false)
-      const validTemplatePath = findValidTarget(selectableViews, targetPoint)
+      const selectableViews: Array<ElementPath> = getHighlightableViews(eventCmdPressed, false)
+      const validElementPath = findValidTarget(selectableViews, targetPoint)
       if (
-        validTemplatePath == null ||
-        (!allowHoverOnSelectedView && validTemplatePath.isSelected) // we remove highlights if the hovered element is selected
+        validElementPath == null ||
+        (!allowHoverOnSelectedView && validElementPath.isSelected) // we remove highlights if the hovered element is selected
       ) {
         maybeClearHighlightsOnHoverEnd()
       } else {
-        maybeHighlightOnHover(validTemplatePath.templatePath)
+        maybeHighlightOnHover(validElementPath.elementPath)
       }
     },
     [
@@ -452,7 +443,7 @@ export function useHighlightCallbacks(
 export function useSelectModeSelectAndHover(
   active: boolean,
   cmdPressed: boolean,
-  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
+  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: ElementPath[]) => void,
 ): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
@@ -489,36 +480,31 @@ export function useSelectModeSelectAndHover(
 
       if (foundTarget != null || isDeselect) {
         if (foundTarget != null) {
-          startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.templatePath)
+          startDragStateAfterDragExceedsThreshold(event.nativeEvent, foundTarget.elementPath)
         }
 
-        let updatedSelection: Array<TemplatePath>
+        let updatedSelection: Array<ElementPath>
         if (isMultiselect) {
-          updatedSelection = TP.addPathIfMissing(
-            foundTarget!.templatePath,
-            selectedViewsRef.current,
-          )
+          updatedSelection = EP.addPathIfMissing(foundTarget!.elementPath, selectedViewsRef.current)
         } else {
-          updatedSelection = foundTarget != null ? [foundTarget.templatePath] : []
+          updatedSelection = foundTarget != null ? [foundTarget.elementPath] : []
         }
 
-        if (foundTarget != null && TP.isInstancePath(foundTarget.templatePath) && doubleClick) {
+        if (foundTarget != null && doubleClick) {
           // for components without passed children doubleclicking enters focus mode
           const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-            foundTarget.templatePath,
+            foundTarget.elementPath,
             editorStoreRef.current.editor,
             editorStoreRef.current.derived,
           )
           const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
-            foundTarget.templatePath,
+            foundTarget.elementPath,
             components,
             editorStoreRef.current.editor.jsxMetadata,
             imports,
           )
           if (isFocusableLeaf) {
-            dispatch([
-              setFocusedElement(TP.scenePathForElementAtInstancePath(foundTarget.templatePath)),
-            ])
+            dispatch([setFocusedElement(foundTarget.elementPath)])
           }
         }
 
@@ -555,7 +541,7 @@ export function useSelectModeSelectAndHover(
 
 export function useSelectAndHover(
   cmdPressed: boolean,
-  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: TemplatePath[]) => void,
+  setSelectedViewsForCanvasControlsOnly: (newSelectedViews: ElementPath[]) => void,
 ): {
   onMouseMove: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   onMouseDown: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void

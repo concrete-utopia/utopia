@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import { CanvasRectangle } from '../../../core/shared/math-utils'
 import { OriginalCanvasAndLocalFrame } from '../../editor/store/editor-state'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   EdgePosition,
   oppositeEdgePosition,
@@ -57,7 +57,7 @@ export class MultiselectResizeControl extends React.Component<
     hideGuidelines: boolean,
     boundingBox: CanvasRectangle,
     resizingFromPosition: EdgePosition | null,
-    draggedElements: TemplatePath[],
+    draggedElements: ElementPath[],
   ) => {
     if (hideGuidelines || this.state.guidelineStartPoint == null) {
       return []
@@ -146,7 +146,7 @@ export class MultiselectResizeControl extends React.Component<
 
       if (
         this.props.selectedViews.length > 1 &&
-        TP.areAllElementsInSameScene(this.props.selectedViews)
+        EP.areAllElementsInSameInstance(this.props.selectedViews)
       ) {
         return (
           <>
@@ -226,7 +226,7 @@ export class SingleSelectResizeControls extends React.Component<SingleselectResi
             getOriginalFrames={this.props.obtainOriginalFrames}
             metadata={this.props.componentMetadata}
             onResizeStart={this.props.onResizeStart}
-            testID={`component-resize-control-${TP.toComponentId(view)}-${index}`}
+            testID={`component-resize-control-${EP.toComponentId(view)}-${index}`}
             maybeClearHighlightsOnHoverEnd={this.props.maybeClearHighlightsOnHoverEnd}
           />
         )

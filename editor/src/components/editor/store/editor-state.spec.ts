@@ -7,7 +7,6 @@ import {
 import {
   defaultProjectContentsForNormalising,
   getTextFileByPath,
-  instancePathFromString,
 } from '../../custom-code/code-file.test-utils'
 import {
   jsxAttributeValue,
@@ -24,6 +23,7 @@ import {
   parseSuccess,
 } from '../../../core/workers/common/project-file-utils'
 import { omit } from '../../../core/shared/object-utils'
+import * as EP from '../../../core/shared/element-path'
 
 function getCodeForFile(actualResult: EditorState, filename: string): string {
   const codeFile = getTextFileByPath(actualResult.projectContents, filename)
@@ -47,7 +47,7 @@ describe('modifyUnderlyingTarget', () => {
     projectContents: defaultProjectContentsForNormalising(),
   }
   it('changes something in the same file', () => {
-    const pathToElement = instancePathFromString(':app-outer-div/card-instance')
+    const pathToElement = EP.fromString('app-outer-div/card-instance')
     const actualResult = modifyUnderlyingTarget(
       pathToElement,
       '/src/app.js',
@@ -63,9 +63,7 @@ describe('modifyUnderlyingTarget', () => {
     )
     const resultingCode = getCodeForFile(actualResult, '/src/app.js')
     expect(resultingCode).toMatchInlineSnapshot(`
-      "/** @jsx jsx */
-      import * as React from 'react'
-      import { jsx } from 'utopia-api'
+      "import * as React from 'react'
       import { Card } from '/src/card.js'
       export var App = (props) => {
         return (
@@ -83,7 +81,7 @@ describe('modifyUnderlyingTarget', () => {
     `)
   })
   it('changes something in the imports of the same file', () => {
-    const pathToElement = instancePathFromString(':card-outer-div/card-inner-div')
+    const pathToElement = EP.fromString('card-outer-div/card-inner-div')
     const actualResult = modifyUnderlyingTarget(
       pathToElement,
       '/src/card.js',
@@ -109,7 +107,7 @@ describe('modifyUnderlyingTarget', () => {
     }
   })
   it('changes something in an underlying file', () => {
-    const pathToElement = instancePathFromString(
+    const pathToElement = EP.fromString(
       'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
     )
     const actualResult = modifyUnderlyingTarget(
@@ -127,9 +125,8 @@ describe('modifyUnderlyingTarget', () => {
     )
     const resultingCode = getCodeForFile(actualResult, '/src/card.js')
     expect(resultingCode).toMatchInlineSnapshot(`
-      "/** @jsx jsx */
-      import * as React from 'react'
-      import { jsx, Rectangle } from 'utopia-api'
+      "import * as React from 'react'
+      import { Rectangle } from 'utopia-api'
       export var Card = (props) => {
         return (
           <div style={{ ...props.style }}>
@@ -161,7 +158,7 @@ describe('modifyUnderlyingTarget', () => {
     `)
   })
   it('tries to change something in a nonsense template path', () => {
-    const pathToElement = instancePathFromString(':moon-palace/living-room')
+    const pathToElement = EP.fromString('moon-palace/living-room')
     const modifyCall = () =>
       modifyUnderlyingTarget(
         pathToElement,
@@ -179,7 +176,7 @@ describe('modifyUnderlyingTarget', () => {
     expect(modifyCall).toThrowError(`Did not find element to transform moon-palace/living-room`)
   })
   it('tries to change something in a nonsense file path', () => {
-    const pathToElement = instancePathFromString(':app-outer-div/card-instance')
+    const pathToElement = EP.fromString('app-outer-div/card-instance')
     const modifyCall = () =>
       modifyUnderlyingTarget(
         pathToElement,

@@ -66,18 +66,16 @@ import {
 } from '../../core/shared/jsx-attributes'
 import {
   Imports,
-  InstancePath,
   isParseFailure,
   ParsedTextFile,
   ParseSuccess,
   RevisionsState,
-  TemplatePath,
+  ElementPath,
   importAlias,
   PropertyPath,
   foldParsedTextFile,
   textFile,
   textFileContents,
-  ScenePath,
   isParseSuccess,
 } from '../../core/shared/project-file-types'
 import {
@@ -119,7 +117,7 @@ import {
   TransientCanvasState,
   transientCanvasState,
   transientFileState,
-  getStoryboardTemplatePathFromEditorState,
+  getStoryboardElementPathFromEditorState,
   addSceneToJSXComponents,
   getNumberOfScenes,
   StoryboardFilePath,
@@ -135,7 +133,7 @@ import {
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
-import * as TP from '../../core/shared/template-path'
+import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
 import Canvas, { TargetSearchType } from './canvas'
 import {
@@ -171,11 +169,7 @@ import {
 } from './guideline'
 import { addImport, mergeImports } from '../../core/workers/common/project-file-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import {
-  createSceneTemplatePath,
-  getStoryboardUID,
-  PathForSceneStyle,
-} from '../../core/model/scene-utils'
+import { getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
@@ -189,26 +183,26 @@ import { addToMapOfArraysUnique } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 
 export function getOriginalFrames(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<OriginalCanvasAndLocalFrame> {
   let originalFrames: Array<OriginalCanvasAndLocalFrame> = []
-  function includeChildren(view: TemplatePath): Array<TemplatePath> {
+  function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
       ...MetadataUtils.getChildrenHandlingGroups(componentMetadata, view, true).map(
-        (child) => child.templatePath,
+        (child) => child.elementPath,
       ),
     ]
   }
   Utils.fastForEach(
     extendSelectedViewsForInteraction(selectedViews, componentMetadata),
     (selectedView) => {
-      const allPaths = Utils.flatMapArray(includeChildren, TP.allPaths(selectedView))
+      const allPaths = Utils.flatMapArray(includeChildren, EP.allPathsForLastPart(selectedView))
       Utils.fastForEach(allPaths, (path) => {
         let alreadyAdded = false
         Utils.fastForEach(originalFrames, (originalFrame) => {
-          if (TP.pathsEqual(originalFrame.target, path)) {
+          if (EP.pathsEqual(originalFrame.target, path)) {
             alreadyAdded = true
           }
         })
@@ -241,26 +235,29 @@ export function getOriginalFrames(
 }
 
 export function getOriginalCanvasFrames(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<CanvasFrameAndTarget> {
   const originalFrames: Array<CanvasFrameAndTarget> = []
-  function includeChildren(view: TemplatePath): Array<TemplatePath> {
+  function includeChildren(view: ElementPath): Array<ElementPath> {
     return [
       view,
       ...MetadataUtils.getChildrenHandlingGroups(componentMetadata, view, true).map(
-        (child) => child.templatePath,
+        (child) => child.elementPath,
       ),
     ]
   }
   Utils.fastForEach(selectedViews, (selectedView) => {
-    const selectedAndChildren = Utils.flatMapArray(includeChildren, TP.allPaths(selectedView))
-    const includingParents = [...selectedAndChildren, ...selectedAndChildren.map(TP.parentPath)]
-    const allPaths = R.uniqBy(TP.toComponentId, Utils.stripNulls(includingParents))
+    const selectedAndChildren = Utils.flatMapArray(
+      includeChildren,
+      EP.allPathsForLastPart(selectedView),
+    )
+    const includingParents = [...selectedAndChildren, ...selectedAndChildren.map(EP.parentPath)]
+    const allPaths = R.uniqBy(EP.toComponentId, Utils.stripNulls(includingParents))
     Utils.fastForEach(allPaths, (path) => {
       let alreadyAdded = false
       Utils.fastForEach(originalFrames, (originalFrame) => {
-        if (TP.pathsEqual(originalFrame.target, path)) {
+        if (EP.pathsEqual(originalFrame.target, path)) {
           alreadyAdded = true
         }
       })
@@ -337,11 +334,10 @@ export function updateFramesOfScenesAndComponents(
 ): EditorState {
   let workingEditorState: EditorState = editorState
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
-    const target = TP.instancePathForElementAtPath(frameAndTarget.target)
-
+    const target = frameAndTarget.target
     // Realign to aim at the static version, not the dynamic one.
     const originalTarget = target
-    const staticTarget = MetadataUtils.dynamicPathToStaticPath(target)
+    const staticTarget = EP.dynamicPathToStaticPath(target)
     if (staticTarget == null) {
       return
     }
@@ -356,7 +352,7 @@ export function updateFramesOfScenesAndComponents(
       throw new Error(`Unexpected result when looking for element: ${element}`)
     }
 
-    const staticParentPath = TP.parentPath(staticTarget)
+    const staticParentPath = EP.parentPath(staticTarget)
     const parentElement = withUnderlyingTargetFromEditorState(
       staticParentPath,
       workingEditorState,
@@ -373,94 +369,85 @@ export function updateFramesOfScenesAndComponents(
     let propsToSet: Array<ValueAtPath> = []
     let propsToSkip: Array<PropertyPath> = []
     if (isFlexContainer) {
-      if (TP.isInstancePath(staticParentPath)) {
-        switch (frameAndTarget.type) {
-          case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-          case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-          case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-          case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
-            throw new Error(
-              `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
-                staticParentPath,
-              )}.`,
-            )
-          case 'FLEX_MOVE':
-            workingEditorState = modifyUnderlyingForOpenFile(
-              originalTarget,
-              workingEditorState,
-              (elem) => elem,
-              (success, underlyingTarget) => {
-                const components = getUtopiaJSXComponentsFromSuccess(success)
-                if (underlyingTarget == null) {
-                  return success
-                } else {
-                  const updatedComponents = reorderComponent(
-                    workingEditorState.projectContents,
-                    workingEditorState.canvas.openFile?.filename ?? null,
-                    components,
-                    underlyingTarget,
-                    frameAndTarget.newIndex,
-                  )
-                  return {
-                    ...success,
-                    topLevelElements: applyUtopiaJSXComponentsChanges(
-                      success.topLevelElements,
-                      updatedComponents,
-                    ),
-                  }
+      switch (frameAndTarget.type) {
+        case 'PIN_FRAME_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+        case 'PIN_SIZE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+        case 'PIN_MOVE_CHANGE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+        case 'SINGLE_RESIZE': // this can never run now since frameAndTarget.type cannot be both PIN_FRAME_CHANGE and not PIN_FRAME_CHANGE
+          throw new Error(
+            `Attempted to make a pin change against an element in a flex container ${JSON.stringify(
+              staticParentPath,
+            )}.`,
+          )
+        case 'FLEX_MOVE':
+          workingEditorState = modifyUnderlyingForOpenFile(
+            originalTarget,
+            workingEditorState,
+            (elem) => elem,
+            (success, underlyingTarget) => {
+              const components = getUtopiaJSXComponentsFromSuccess(success)
+              if (underlyingTarget == null) {
+                return success
+              } else {
+                const updatedComponents = reorderComponent(
+                  workingEditorState.projectContents,
+                  workingEditorState.canvas.openFile?.filename ?? null,
+                  components,
+                  underlyingTarget,
+                  frameAndTarget.newIndex,
+                )
+                return {
+                  ...success,
+                  topLevelElements: applyUtopiaJSXComponentsChanges(
+                    success.topLevelElements,
+                    updatedComponents,
+                  ),
                 }
-              },
-            )
-            break
-          case 'FLEX_RESIZE':
-            if (staticParentPath == null) {
-              throw new Error(`No parent available for ${JSON.stringify(staticParentPath)}`)
-            } else {
-              if (parentElement == null) {
-                throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
               }
-              // Flex based layout.
-              const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
-                frameAndTarget.newSize.width,
-                frameAndTarget.newSize.height,
-                element.props,
-                right(parentElement.props),
-                frameAndTarget.edgePosition,
-              )
-              forEachRight(possibleFlexProps, (flexProps) => {
-                const { flexBasis, width, height } = flexProps
-                if (flexBasis != null) {
-                  propsToSet.push({
-                    path: createLayoutPropertyPath('flexBasis'),
-                    value: jsxAttributeValue(flexBasis, emptyComments),
-                  })
-                }
-                if (width != null) {
-                  propsToSet.push({
-                    path: createLayoutPropertyPath('Width'),
-                    value: jsxAttributeValue(width, emptyComments),
-                  })
-                }
-                if (height != null) {
-                  propsToSet.push({
-                    path: createLayoutPropertyPath('Height'),
-                    value: jsxAttributeValue(height, emptyComments),
-                  })
-                }
-              })
+            },
+          )
+          break
+        case 'FLEX_RESIZE':
+          if (staticParentPath == null) {
+            throw new Error(`No parent available for ${JSON.stringify(staticParentPath)}`)
+          } else {
+            if (parentElement == null) {
+              throw new Error(`Unexpected result when looking for parent: ${parentElement}`)
             }
-            break
-          default:
-            const _exhaustiveCheck: never = frameAndTarget
-            throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
-        }
-      } else {
-        // Shouldn't happen, but the types force our hand here.
-        throw new Error(
-          `Attempted to use non-instance path ${JSON.stringify(
-            staticParentPath,
-          )} as a flex parent.`,
-        )
+            // Flex based layout.
+            const possibleFlexProps = FlexLayoutHelpers.convertWidthHeightToFlex(
+              frameAndTarget.newSize.width,
+              frameAndTarget.newSize.height,
+              element.props,
+              right(parentElement.props),
+              frameAndTarget.edgePosition,
+            )
+            forEachRight(possibleFlexProps, (flexProps) => {
+              const { flexBasis, width, height } = flexProps
+              if (flexBasis != null) {
+                propsToSet.push({
+                  path: createLayoutPropertyPath('flexBasis'),
+                  value: jsxAttributeValue(flexBasis, emptyComments),
+                })
+              }
+              if (width != null) {
+                propsToSet.push({
+                  path: createLayoutPropertyPath('Width'),
+                  value: jsxAttributeValue(width, emptyComments),
+                })
+              }
+              if (height != null) {
+                propsToSet.push({
+                  path: createLayoutPropertyPath('Height'),
+                  value: jsxAttributeValue(height, emptyComments),
+                })
+              }
+            })
+          }
+          break
+        default:
+          const _exhaustiveCheck: never = frameAndTarget
+          throw new Error(`Unhandled type ${JSON.stringify(frameAndTarget)}`)
       }
     } else {
       let parentFrame: CanvasRectangle | null = null
@@ -920,10 +907,10 @@ function extendPartialFramePointsForResize(frameProps: FramePoint[], edgePositio
 
 export function getOriginalFrameInCanvasCoords(
   originalFrames: Array<OriginalCanvasAndLocalFrame>,
-  target: TemplatePath,
+  target: ElementPath,
 ): CanvasRectangle | null {
   for (const originalFrame of originalFrames || []) {
-    if (TP.pathsEqual(target, originalFrame.target)) {
+    if (EP.pathsEqual(target, originalFrame.target)) {
       if (originalFrame.canvasFrame != null) {
         return originalFrame.canvasFrame
       }
@@ -970,7 +957,7 @@ export const SnappingThreshold = 5
 
 export function collectGuidelines(
   metadata: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   scale: number,
   draggedPoint: CanvasPoint | null,
   resizingFromPosition: EdgePosition | null,
@@ -983,15 +970,11 @@ export function collectGuidelines(
   // For any images create guidelines at the current multiplier setting.
   if (resizingFromPosition != null) {
     Utils.fastForEach(selectedViews, (selectedView) => {
-      if (TP.isScenePath(selectedView)) {
-        return
-      }
-
       if (MetadataUtils.isPinnedAndNotAbsolutePositioned(metadata, selectedView)) {
         return
       }
 
-      const instance = MetadataUtils.getElementByInstancePathMaybe(metadata, selectedView)
+      const instance = MetadataUtils.findElementByElementPath(metadata, selectedView)
       if (instance != null && MetadataUtils.isImg(instance) && instance.localFrame != null) {
         const frame = instance.localFrame
         const imageSize = getImageSizeFromMetadata(instance)
@@ -1337,7 +1320,7 @@ function getTransientCanvasStateFromFrameChanges(
   editorState: EditorState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   preventAnimations: boolean,
-  elementsToTarget: Array<TemplatePath>,
+  elementsToTarget: Array<ElementPath>,
 ): TransientCanvasState {
   let workingEditorState: EditorState = editorState
   let successByFilename: { [filename: string]: ParseSuccess } = {}
@@ -1508,7 +1491,7 @@ export function produceResizeSingleSelectCanvasTransientState(
 }
 
 export function produceCanvasTransientState(
-  previousCanvasTransientSelectedViews: Array<TemplatePath>,
+  previousCanvasTransientSelectedViews: Array<ElementPath>,
   editorState: EditorState,
   preventAnimations: boolean,
 ): TransientCanvasState {
@@ -1522,13 +1505,10 @@ export function produceCanvasTransientState(
           const insertionElement = editorMode.subject.element
           const importsToAdd = editorMode.subject.importsToAdd
           const insertionParent = editorMode.subject.parent?.target ?? null
-          const insertionParentAsInstancePath = TP.isScenePath(insertionParent)
-            ? TP.instancePathForElementAtScenePath(insertionParent)
-            : insertionParent
 
           // Not actually modifying the underlying target, but we'll exploit the functionality.
           modifyUnderlyingTarget(
-            insertionParentAsInstancePath,
+            insertionParent,
             currentOpenFile,
             editorState,
             (element) => element,
@@ -1625,7 +1605,7 @@ export function createDuplicationNewUIDsFromEditorState(
 }
 
 export function createDuplicationNewUIDs(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
 ): Array<DuplicateNewUID> {
@@ -1653,30 +1633,17 @@ export function createDuplicationNewUIDs(
 
 export const SkipFrameChange = 'skipFrameChange'
 
-export function filterMultiSelectScenes(targets: Array<TemplatePath>): Array<TemplatePath> {
-  // TODO Scene Implementation - KILLME
-  const scenesSelected = targets.some(TP.isScenePath)
-  if (scenesSelected && targets.length > 1) {
-    // Prevent multiselection of scenes - if more than one are selected, only take the last one
-    return [R.findLast(TP.isScenePath, targets)!]
-  } else {
-    return targets
-  }
-}
-
 function getReparentTargetAtPosition(
   componentMeta: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
-  hiddenInstances: Array<TemplatePath>,
-  focusedElementPath: ScenePath | null,
+  selectedViews: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
   canvasScale: number,
   canvasOffset: CanvasVector,
-): TemplatePath | undefined {
+): ElementPath | undefined {
   const allTargets = getAllTargetsAtPoint(
     componentMeta,
     selectedViews,
     hiddenInstances,
-    focusedElementPath,
     'no-filter',
     WindowMousePositionRaw,
     canvasScale,
@@ -1684,24 +1651,23 @@ function getReparentTargetAtPosition(
   )
   // filtering for non-selected views from alltargets
   return R.head(
-    allTargets.filter((target) => selectedViews.every((view) => !TP.pathsEqual(view, target))),
+    allTargets.filter((target) => selectedViews.every((view) => !EP.pathsEqual(view, target))),
   )
 }
 
 export function getReparentTarget(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   editorState: EditorState,
-  toReparent: Array<TemplatePath>,
+  toReparent: Array<ElementPath>,
   position: CanvasPoint,
 ): {
   shouldReparent: boolean
-  newParent: TemplatePath | null
+  newParent: ElementPath | null
 } {
   const result = getReparentTargetAtPosition(
     editorState.jsxMetadata,
     selectedViews,
     editorState.hiddenInstances,
-    editorState.focusedElementPath,
     editorState.canvas.scale,
     editorState.canvas.realCanvasOffset,
   )
@@ -1727,7 +1693,7 @@ export function getReparentTarget(
     )
   } else {
     // a null template path means Canvas, let's translate that to the storyboard component
-    const storyboardComponent = getStoryboardTemplatePathFromEditorState(editorState)
+    const storyboardComponent = getStoryboardElementPathFromEditorState(editorState)
     return {
       shouldReparent: storyboardComponent != null,
       newParent: storyboardComponent,
@@ -1737,7 +1703,7 @@ export function getReparentTarget(
     parentSupportsChild &&
     ((currentParents.length === 0 && possibleNewParent != null) ||
       (currentParents.length > 0 &&
-        currentParents.every((parent) => !TP.pathsEqual(possibleNewParent, parent.templatePath))))
+        currentParents.every((parent) => !EP.pathsEqual(possibleNewParent, parent.elementPath))))
   ) {
     return {
       shouldReparent: true,
@@ -1753,11 +1719,11 @@ export function getReparentTarget(
 
 export interface MoveTemplateResult {
   updatedEditorState: EditorState
-  newPath: TemplatePath | null
+  newPath: ElementPath | null
 }
 
 export function getFrameChange(
-  target: TemplatePath,
+  target: ElementPath,
   newFrame: CanvasRectangle,
   isParentFlex: boolean,
 ): PinOrFlexFrameChange {
@@ -1769,16 +1735,16 @@ export function getFrameChange(
 }
 
 export function moveTemplate(
-  target: TemplatePath,
-  originalPath: TemplatePath,
+  target: ElementPath,
+  originalPath: ElementPath,
   newFrame: CanvasRectangle | typeof SkipFrameChange | null,
   indexPosition: IndexPosition,
-  newParentPath: TemplatePath | null,
+  newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editorState: EditorState,
   componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
-  highlightedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
+  highlightedViews: Array<ElementPath>,
   newParentLayoutSystem: LayoutSystem | null,
 ): MoveTemplateResult {
   function noChanges(): MoveTemplateResult {
@@ -1787,234 +1753,197 @@ export function moveTemplate(
       newPath: target,
     }
   }
-  if (TP.isScenePath(target)) {
-    // We don't support scene re-parenting, so just update the frame
-    if (newFrame === SkipFrameChange || newFrame == null) {
-      return noChanges()
-    } else {
-      const updatedEditorState = modifyUnderlyingForOpenFile(
-        createSceneTemplatePath(target),
-        editorState,
-        (element, underlyingTarget, underlyingFilePath) => {
-          const updatedPropsResult = setJSXValueAtPath(
-            element.props,
-            PathForSceneStyle,
-            jsxAttributeValue(canvasFrameToNormalisedFrame(newFrame), emptyComments),
-          )
-          return foldEither(
-            () => element,
-            (updatedProps) => {
-              return { ...element, props: updatedProps }
-            },
-            updatedPropsResult,
-          )
-        },
-      )
-      return {
-        updatedEditorState: updatedEditorState,
-        newPath: target,
-      }
-    }
+  let newIndex: number = 0
+  let newPath: ElementPath | null = null
+  let flexContextChanged: boolean = false
+
+  const targetID = EP.toUid(target)
+  if (newParentPath == null) {
+    // TODO Scene Implementation
+    return noChanges()
   } else {
-    let newIndex: number = 0
-    let newInstancePath: InstancePath | null = null
-    let flexContextChanged: boolean = false
-
-    const targetID = TP.toTemplateId(target)
-    if (newParentPath == null || TP.isScenePath(newParentPath) || TP.isScenePath(originalPath)) {
-      // TODO Scene Implementation
-      return noChanges()
-    } else {
-      return withUnderlyingTargetFromEditorState(
-        target,
-        editorState,
-        noChanges(),
-        (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
-          return withUnderlyingTargetFromEditorState(
-            newParentPath,
-            editorState,
-            noChanges(),
-            (
+    return withUnderlyingTargetFromEditorState(
+      target,
+      editorState,
+      noChanges(),
+      (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
+        return withUnderlyingTargetFromEditorState(
+          newParentPath,
+          editorState,
+          noChanges(),
+          (
+            newParentSuccess,
+            underlyingNewParentElement,
+            underlyingNewParentPath,
+            underlyingNewParentFilePath,
+          ) => {
+            const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
               newParentSuccess,
-              underlyingNewParentElement,
-              underlyingNewParentPath,
-              underlyingNewParentFilePath,
-            ) => {
-              const utopiaComponentsIncludingScenes = getUtopiaJSXComponentsFromSuccess(
-                newParentSuccess,
-              )
-              const {
-                components: withLayoutUpdatedForNewContext,
-                componentMetadata: withMetadataUpdatedForNewContext,
-                didSwitch,
-              } = maybeSwitchLayoutProps(
-                target,
-                originalPath,
-                newParentPath,
-                componentMetadata,
-                componentMetadata,
-                utopiaComponentsIncludingScenes,
-                parentFrame,
-                newParentLayoutSystem,
-              )
-              const updatedUnderlyingElement = findElementAtPath(
-                underlyingTarget,
-                withLayoutUpdatedForNewContext,
-              )
-              if (updatedUnderlyingElement == null) {
-                return noChanges()
-              } else {
-                let workingEditorState: EditorState = editorState
+            )
+            const {
+              components: withLayoutUpdatedForNewContext,
+              componentMetadata: withMetadataUpdatedForNewContext,
+              didSwitch,
+            } = maybeSwitchLayoutProps(
+              target,
+              originalPath,
+              newParentPath,
+              componentMetadata,
+              componentMetadata,
+              utopiaComponentsIncludingScenes,
+              parentFrame,
+              newParentLayoutSystem,
+            )
+            const updatedUnderlyingElement = findElementAtPath(
+              underlyingTarget,
+              withLayoutUpdatedForNewContext,
+            )
+            if (updatedUnderlyingElement == null) {
+              return noChanges()
+            } else {
+              let workingEditorState: EditorState = editorState
 
-                let updatedUtopiaComponents: Array<UtopiaJSXComponent> = withLayoutUpdatedForNewContext
-                let newPath: TemplatePath | null = null
+              let updatedUtopiaComponents: Array<UtopiaJSXComponent> = withLayoutUpdatedForNewContext
 
-                flexContextChanged = flexContextChanged || didSwitch
+              flexContextChanged = flexContextChanged || didSwitch
 
-                // Remove and then insert again at the new location.
-                workingEditorState = modifyParseSuccessAtPath(
-                  underlyingNewParentFilePath,
-                  workingEditorState,
-                  (workingSuccess) => {
-                    updatedUtopiaComponents = removeElementAtPath(
-                      underlyingTarget,
-                      updatedUtopiaComponents,
-                    )
-
-                    updatedUtopiaComponents = insertElementAtPath(
-                      workingEditorState.projectContents,
-                      workingEditorState.canvas.openFile?.filename ?? null,
-                      underlyingNewParentPath,
-                      updatedUnderlyingElement,
-                      updatedUtopiaComponents,
-                      indexPosition,
-                    )
-
-                    return {
-                      ...workingSuccess,
-                      topLevelElements: applyUtopiaJSXComponentsChanges(
-                        workingSuccess.topLevelElements,
-                        updatedUtopiaComponents,
-                      ),
-                    }
-                  },
-                )
-
-                // Validate the result of the re-insertion.
-                if (newParentPath == null) {
-                  newIndex = updatedUtopiaComponents.findIndex(
-                    (exported) => exported.rootElement === updatedUnderlyingElement,
+              // Remove and then insert again at the new location.
+              workingEditorState = modifyParseSuccessAtPath(
+                underlyingNewParentFilePath,
+                workingEditorState,
+                (workingSuccess) => {
+                  updatedUtopiaComponents = removeElementAtPath(
+                    underlyingTarget,
+                    updatedUtopiaComponents,
                   )
-                  if (newIndex === -1) {
-                    throw new Error('Invalid root element index.')
-                  }
-                } else {
-                  // Can't rely on underlyingNewParentElement as that will now be out of date.
-                  const updatedUnderlyingNewParentElement = forceNotNull(
-                    'Element should exist',
-                    findJSXElementAtPath(underlyingNewParentPath, updatedUtopiaComponents),
-                  )
-                  newIndex = updatedUnderlyingNewParentElement.children.indexOf(
+
+                  updatedUtopiaComponents = insertElementAtPath(
+                    workingEditorState.projectContents,
+                    workingEditorState.canvas.openFile?.filename ?? null,
+                    underlyingNewParentPath,
                     updatedUnderlyingElement,
-                  )
-                  if (newIndex === -1) {
-                    throw new Error('Invalid child element index.')
-                  }
-                }
-
-                newPath = TP.appendToPath(newParentPath, targetID)
-                newInstancePath = newPath
-
-                let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
-                // Need to make these changes ahead of updating the frame.
-                const elementMetadata = MetadataUtils.getElementByInstancePathMaybe(
-                  updatedComponentMetadata,
-                  target,
-                )
-
-                if (elementMetadata != null) {
-                  updatedComponentMetadata = MetadataUtils.removeElementMetadataChild(
-                    target,
-                    updatedComponentMetadata,
-                  )
-
-                  updatedComponentMetadata = MetadataUtils.insertElementMetadataChild(
-                    newParentPath,
-                    elementMetadata,
-                    updatedComponentMetadata,
+                    updatedUtopiaComponents,
                     indexPosition,
                   )
 
-                  updatedComponentMetadata = MetadataUtils.transformAllPathsInMetadata(
-                    updatedComponentMetadata,
-                    target,
-                    newInstancePath,
-                  )
-                }
-                workingEditorState.jsxMetadata = updatedComponentMetadata
-
-                if (
-                  newFrame !== SkipFrameChange &&
-                  newFrame != null &&
-                  newInstancePath != null &&
-                  !flexContextChanged
-                ) {
-                  const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-                    originalPath,
-                    componentMetadata,
-                  )
-                  const frameChanges: Array<PinOrFlexFrameChange> = [
-                    getFrameChange(newInstancePath, newFrame, isParentFlex),
-                  ]
-
-                  workingEditorState = updateFramesOfScenesAndComponents(
-                    workingEditorState,
-                    frameChanges,
-                    parentFrame,
-                  )
-                }
-
-                const newSelectedViews = selectedViews.map((v) => {
-                  if (TP.pathsEqual(v, target)) {
-                    return newInstancePath
-                  } else {
-                    return v
+                  return {
+                    ...workingSuccess,
+                    topLevelElements: applyUtopiaJSXComponentsChanges(
+                      workingSuccess.topLevelElements,
+                      updatedUtopiaComponents,
+                    ),
                   }
-                })
+                },
+              )
 
-                const newHighlightedViews =
-                  newParentPath == null
-                    ? highlightedViews.map((t) => (TP.pathsEqual(t, target) ? newInstancePath : t))
-                    : [newParentPath]
-
-                const updatedEditorState: EditorState = {
-                  ...workingEditorState,
-                  selectedViews: filterMultiSelectScenes(Utils.stripNulls(newSelectedViews)),
-                  highlightedViews: Utils.stripNulls(newHighlightedViews),
+              // Validate the result of the re-insertion.
+              if (newParentPath == null) {
+                newIndex = updatedUtopiaComponents.findIndex(
+                  (exported) => exported.rootElement === updatedUnderlyingElement,
+                )
+                if (newIndex === -1) {
+                  throw new Error('Invalid root element index.')
                 }
-
-                return {
-                  updatedEditorState: updatedEditorState,
-                  newPath: newInstancePath,
+              } else {
+                // Can't rely on underlyingNewParentElement as that will now be out of date.
+                const updatedUnderlyingNewParentElement = forceNotNull(
+                  'Element should exist',
+                  findJSXElementAtPath(underlyingNewParentPath, updatedUtopiaComponents),
+                )
+                newIndex = updatedUnderlyingNewParentElement.children.indexOf(
+                  updatedUnderlyingElement,
+                )
+                if (newIndex === -1) {
+                  throw new Error('Invalid child element index.')
                 }
               }
-            },
-          )
-        },
-      )
-    }
+
+              newPath = EP.appendToPath(newParentPath, targetID)
+
+              let updatedComponentMetadata: ElementInstanceMetadataMap = withMetadataUpdatedForNewContext
+              // Need to make these changes ahead of updating the frame.
+              const elementMetadata = MetadataUtils.findElementByElementPath(
+                updatedComponentMetadata,
+                target,
+              )
+
+              if (elementMetadata != null) {
+                updatedComponentMetadata = MetadataUtils.removeElementMetadataChild(
+                  target,
+                  updatedComponentMetadata,
+                )
+
+                updatedComponentMetadata = MetadataUtils.insertElementMetadataChild(
+                  newParentPath,
+                  elementMetadata,
+                  updatedComponentMetadata,
+                  indexPosition,
+                )
+
+                updatedComponentMetadata = MetadataUtils.transformAllPathsInMetadata(
+                  updatedComponentMetadata,
+                  target,
+                  newPath,
+                )
+              }
+              workingEditorState.jsxMetadata = updatedComponentMetadata
+
+              if (
+                newFrame !== SkipFrameChange &&
+                newFrame != null &&
+                newPath != null &&
+                !flexContextChanged
+              ) {
+                const isParentFlex = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
+                  originalPath,
+                  componentMetadata,
+                )
+                const frameChanges: Array<PinOrFlexFrameChange> = [
+                  getFrameChange(newPath, newFrame, isParentFlex),
+                ]
+
+                workingEditorState = updateFramesOfScenesAndComponents(
+                  workingEditorState,
+                  frameChanges,
+                  parentFrame,
+                )
+              }
+
+              const newSelectedViews = selectedViews.map((v) => {
+                if (EP.pathsEqual(v, target)) {
+                  return newPath
+                } else {
+                  return v
+                }
+              })
+
+              const newHighlightedViews =
+                newParentPath == null
+                  ? highlightedViews.map((t) => (EP.pathsEqual(t, target) ? newPath : t))
+                  : [newParentPath]
+
+              const updatedEditorState: EditorState = {
+                ...workingEditorState,
+                selectedViews: Utils.stripNulls(newSelectedViews),
+                highlightedViews: Utils.stripNulls(newHighlightedViews),
+              }
+
+              return {
+                updatedEditorState: updatedEditorState,
+                newPath: newPath,
+              }
+            }
+          },
+        )
+      },
+    )
   }
 }
 
-function preventAnimationsOnTargets(
-  editorState: EditorState,
-  targets: TemplatePath[],
-): EditorState {
+function preventAnimationsOnTargets(editorState: EditorState, targets: ElementPath[]): EditorState {
   let workingEditorState = editorState
   Utils.fastForEach(targets, (target) => {
-    const staticPath = TP.isScenePath(target)
-      ? createSceneTemplatePath(target)
-      : MetadataUtils.dynamicPathToStaticPath(target)
+    const staticPath = EP.dynamicPathToStaticPath(target)
     if (staticPath != null) {
       workingEditorState = modifyUnderlyingForOpenFile(
         staticPath,
@@ -2044,12 +1973,12 @@ function preventAnimationsOnTargets(
 }
 
 function produceMoveTransientCanvasState(
-  previousCanvasTransientSelectedViews: Array<TemplatePath>,
+  previousCanvasTransientSelectedViews: Array<ElementPath>,
   editorState: EditorState,
   dragState: MoveDragState,
   preventAnimations: boolean,
 ): TransientCanvasState {
-  let selectedViews: Array<TemplatePath> = dragState.draggedElements
+  let selectedViews: Array<ElementPath> = dragState.draggedElements
   let originalFrames: Array<CanvasFrameAndTarget> = dragState.originalFrames
 
   let elementsToTarget = determineElementsToOperateOnForDragging(
@@ -2076,7 +2005,7 @@ function produceMoveTransientCanvasState(
     if (reparentTarget.shouldReparent) {
       elementsToTarget = elementsToTarget.map((target) => {
         const frame = originalFrames.find((originalFrameAndTarget) => {
-          return TP.pathsEqual(originalFrameAndTarget.target, target)
+          return EP.pathsEqual(originalFrameAndTarget.target, target)
         })?.frame
         const reparentResult = moveTemplate(
           target,
@@ -2094,7 +2023,7 @@ function produceMoveTransientCanvasState(
         selectedViews = reparentResult.updatedEditorState.selectedViews
         // As it has moved, we need to synchronise the paths.
         originalFrames = originalFrames.map((originalFrame) => {
-          if (reparentResult.newPath != null && TP.pathsEqual(originalFrame.target, target)) {
+          if (reparentResult.newPath != null && EP.pathsEqual(originalFrame.target, target)) {
             return {
               ...originalFrame,
               target: reparentResult.newPath,
@@ -2165,7 +2094,7 @@ export function getCanvasOffset(
   previousScale: number,
   scale: number,
   componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: TemplatePath[],
+  selectedViews: ElementPath[],
   focusPoint: CanvasPoint | null,
   isFirstLoad: boolean,
 ): CanvasPoint {
@@ -2242,7 +2171,7 @@ export function getCanvasOffset(
 }
 
 export function focusPointForZoom(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   scale: number,
   previousScale: number,
   componentMetadata: ElementInstanceMetadataMap,
@@ -2280,8 +2209,8 @@ export interface DuplicateResult {
 }
 
 export function duplicate(
-  paths: Array<TemplatePath>,
-  newParentPath: TemplatePath | null,
+  paths: Array<ElementPath>,
+  newParentPath: ElementPath | null,
   editor: EditorState,
 ): DuplicateResult | null {
   let duplicateNewUIDs: Array<DuplicateNewUID> = []
@@ -2295,7 +2224,7 @@ export function duplicate(
     newOriginalFrames = editor.canvas.dragState.originalFrames
   }
 
-  let newSelectedViews: Array<TemplatePath> = []
+  let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
   const existingIDs = getAllUniqueUids(editor.projectContents)
   for (const path of paths) {
@@ -2309,20 +2238,17 @@ export function duplicate(
       (success, underlyingInstancePath, underlyingFilePath) => {
         let utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
         let newElement: JSXElementChild | null = null
-        let jsxElement: JSXElementChild | null = null
-        if (TP.isScenePath(path)) {
-          const scenepath = createSceneTemplatePath(path)
-          jsxElement = findJSXElementChildAtPath(utopiaComponents, scenepath)
-        } else {
-          jsxElement = findElementAtPath(underlyingInstancePath, utopiaComponents)
-        }
+        let jsxElement: JSXElementChild | null = findElementAtPath(
+          underlyingInstancePath,
+          utopiaComponents,
+        )
         let uid: string
         if (jsxElement == null) {
-          console.warn(`Could not find element ${TP.toVarSafeComponentId(path)}`)
+          console.warn(`Could not find element ${EP.toVarSafeComponentId(path)}`)
           return success
         } else {
           const duplicateNewUID: DuplicateNewUID | undefined = duplicateNewUIDs.find((entry) =>
-            TP.pathsEqual(entry.originalPath, path),
+            EP.pathsEqual(entry.originalPath, path),
           )
           if (duplicateNewUID === undefined) {
             newElement = guaranteeUniqueUids([jsxElement], existingIDs)[0]
@@ -2342,66 +2268,41 @@ export function duplicate(
             }
             uid = duplicateNewUID.newUID
           }
-          let newPath: TemplatePath
+          let newPath: ElementPath
           if (newParentPath == null) {
             const storyboardUID = Utils.forceNotNull(
               'Could not find storyboard element',
               getStoryboardUID(utopiaComponents),
             )
-            newPath = TP.scenePath([[storyboardUID, uid]])
+            newPath = EP.elementPath([[storyboardUID, uid]])
           } else {
-            newPath = TP.appendToPath(newParentPath, uid)
+            newPath = EP.appendToPath(newParentPath, uid)
           }
           // Update the original frames to be the duplicate ones.
           if (newOriginalFrames != null && newPath != null) {
             newOriginalFrames = newOriginalFrames.map((originalFrame) => {
-              if (TP.pathsEqual(originalFrame.target, path)) {
+              if (EP.pathsEqual(originalFrame.target, path)) {
                 return {
                   frame: originalFrame.frame,
-                  target: newPath as TemplatePath,
+                  target: newPath as ElementPath,
                 }
               } else {
                 return originalFrame
               }
             })
           }
-          if (TP.isScenePath(path) && isJSXElement(jsxElement)) {
-            const numberOfScenes = getNumberOfScenes(editor)
-            const newSceneLabel = `Scene ${numberOfScenes}`
-            let props = setJSXAttributesAttribute(
-              jsxElement.props,
-              'data-label',
-              jsxAttributeValue(newSceneLabel, emptyComments),
-            )
-            props = setJSXAttributesAttribute(
-              props,
-              'data-uid',
-              jsxAttributeValue(getUtopiaID(newElement), emptyComments),
-            )
 
-            const newSceneElement = {
-              ...jsxElement,
-              props: props,
-            }
-            utopiaComponents = addSceneToJSXComponents(
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename ?? null,
-              utopiaComponents,
-              newSceneElement,
-            )
-          } else {
-            utopiaComponents = insertElementAtPath(
-              workingEditorState.projectContents,
-              workingEditorState.canvas.openFile?.filename ?? null,
-              newParentPath,
-              newElement,
-              utopiaComponents,
-              null,
-            )
-          }
+          utopiaComponents = insertElementAtPath(
+            workingEditorState.projectContents,
+            workingEditorState.canvas.openFile?.filename ?? null,
+            newParentPath,
+            newElement,
+            utopiaComponents,
+            null,
+          )
 
           if (newElement == null) {
-            console.warn(`Could not duplicate ${TP.toVarSafeComponentId(path)}`)
+            console.warn(`Could not duplicate ${EP.toVarSafeComponentId(path)}`)
             return success
           } else {
             newSelectedViews.push(newPath)
@@ -2446,12 +2347,12 @@ export function reorderComponent(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
   components: Array<UtopiaJSXComponent>,
-  target: InstancePath,
+  target: ElementPath,
   newIndex: number,
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
-  const parentPath = TP.parentPath(target)
+  const parentPath = EP.parentPath(target)
   const jsxElement = findElementAtPath(target, workingComponents)
 
   if (jsxElement != null) {
@@ -2504,18 +2405,12 @@ export function cullSpyCollector(
   // Note: Mutates `spyCollector`.
   // Collate all the valid paths.
   let elementPaths: Set<string> = Utils.emptySet()
-  let scenePaths: Set<string> = Utils.emptySet()
   fastForEach(domMetadata, (element) => {
-    let workingPath: TemplatePath | null = element.templatePath
-    while (workingPath != null && !TP.isEmptyPath(workingPath)) {
-      const pathAsString = TP.toString(workingPath)
-      if (TP.isScenePath(workingPath)) {
-        elementPaths.add(TP.toString(TP.instancePathForElementAtScenePath(workingPath)))
-        scenePaths.add(pathAsString)
-      } else {
-        elementPaths.add(pathAsString)
-      }
-      workingPath = TP.parentPath(workingPath)
+    let workingPath: ElementPath | null = element.elementPath
+    while (workingPath != null && !EP.isEmptyPath(workingPath)) {
+      const pathAsString = EP.toString(workingPath)
+      elementPaths.add(pathAsString)
+      workingPath = EP.parentPath(workingPath)
     }
   })
   // Eliminate the element paths which are invalid.

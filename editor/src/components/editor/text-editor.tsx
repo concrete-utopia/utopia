@@ -16,7 +16,7 @@ import {
   DraftHandleValue,
 } from 'draft-js'
 import Keyboard from '../../utils/keyboard'
-import { InstancePath } from '../../core/shared/project-file-types'
+import { ElementPath } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
 import { WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
 import {
@@ -32,7 +32,7 @@ import { TextSizing } from 'utopia-api'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 
 export interface TextEditorProps {
-  target: InstancePath
+  target: ElementPath
   dispatch: EditorDispatch
   triggerMousePosition: WindowPoint | null // stores the original mouse event which triggered the selection/editing of this text (if there is one)
   text: RawDraftContentState | string

@@ -94,7 +94,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'ATOMIC':
     case 'DELETE_SELECTED':
     case 'DELETE_VIEW':
-    case 'DELETE_VIEWS':
     case 'UNSET_PROPERTY':
     case 'INSERT_SCENE':
     case 'INSERT_JSX_ELEMENT':
@@ -128,14 +127,10 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
-    case 'SET_SCENE_PROP':
-    case 'UNSET_SCENE_PROP':
     case 'SET_PROP_WITH_ELEMENT_PATH':
     case 'OPEN_CODE_EDITOR_FILE':
     case 'SWITCH_LAYOUT_SYSTEM':
     case 'SAVE_CURRENT_FILE':
-    case 'WRAP_IN_LAYOUTABLE':
-    case 'UNWRAP_LAYOUTABLE':
     case 'UPDATE_JSX_ELEMENT_NAME':
     case 'ADD_IMPORTS':
     case 'SET_ASPECT_RATIO_LOCK':

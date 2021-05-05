@@ -1,8 +1,7 @@
 import * as R from 'ramda'
 import {
   SceneMetadata,
-  StaticInstancePath,
-  ScenePath,
+  StaticElementPath,
   PropertyPath,
   isTextFile,
   isParseSuccess,
@@ -24,7 +23,7 @@ import {
   jsxAttributesFromMap,
   ElementInstanceMetadata,
 } from '../shared/element-template'
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import {
   eitherToMaybe,
@@ -48,8 +47,6 @@ import { emptyComments } from '../workers/parser-printer/parser-printer-comments
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 
-export const EmptyScenePathForStoryboard = TP.emptyScenePath
-
 export const PathForSceneComponent = PP.create(['component'])
 export const PathForSceneDataUid = PP.create(['data-uid'])
 export const PathForSceneDataLabel = PP.create(['data-label'])
@@ -68,10 +65,6 @@ export const PathForResizeContent = PP.create([ResizesContentProp])
 
 export function createSceneUidFromIndex(sceneIndex: number): string {
   return `scene-${sceneIndex}`
-}
-
-export function createSceneTemplatePath(scenePath: ScenePath): StaticInstancePath {
-  return TP.instancePathForElementAtScenePath(scenePath)
 }
 
 export function mapScene(scene: SceneMetadata): JSXElement {
@@ -296,7 +289,7 @@ export function isSceneChildWidthHeightPercentage(
 ): boolean {
   // FIXME ASAP This is reproducing logic that should stay in MetadataUtils, but importing that
   // imports the entire editor into the worker threads, including modules that require window and document
-  const rootElements = scene.rootElements.map((path) => metadata[TP.toString(path)])
+  const rootElements = scene.rootElements.map((path) => metadata[EP.toString(path)])
   const rootElementSizes = rootElements.map((element) => {
     return {
       width: element.props?.style?.width,
@@ -326,10 +319,10 @@ export function getStoryboardUID(openComponents: UtopiaJSXComponent[]): string |
   return null
 }
 
-export function getStoryboardTemplatePath(
+export function getStoryboardElementPath(
   projectContents: ProjectContentTreeRoot,
   openFile: string | null,
-): StaticInstancePath | null {
+): StaticElementPath | null {
   if (openFile != null) {
     const file = getContentsTreeFileFromString(projectContents, openFile)
     if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
@@ -338,7 +331,7 @@ export function getStoryboardTemplatePath(
       )
       if (possiblyStoryboard != null) {
         const uid = getUtopiaID(possiblyStoryboard.rootElement)
-        return TP.staticInstancePath(EmptyScenePathForStoryboard, TP.staticElementPath([uid]))
+        return EP.elementPath([EP.staticElementPath([uid])])
       }
     }
   }

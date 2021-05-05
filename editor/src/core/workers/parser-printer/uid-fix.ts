@@ -7,8 +7,12 @@ import {
   UtopiaJSXComponent,
 } from '../../shared/element-template'
 import { optionalMap } from '../../shared/optional-utils'
-import { isParseSuccess, ParsedTextFile, StaticElementPath } from '../../shared/project-file-types'
-import * as TP from '../../shared/template-path'
+import {
+  isParseSuccess,
+  ParsedTextFile,
+  StaticElementPathPart,
+} from '../../shared/project-file-types'
+import * as EP from '../../shared/element-path'
 import { setUtopiaIDOnJSXElement } from '../../shared/uid-utils'
 import {
   findJSXElementChildAtPath,
@@ -36,8 +40,8 @@ export function fixParseSuccessUIDs(
     [newUID: string]: {
       oldUID: string
       newUID: string
-      pathToModify: StaticElementPath
-      oldPathToRestore: StaticElementPath
+      pathToModify: StaticElementPathPart
+      oldPathToRestore: StaticElementPathPart
     }
   } = {}
 
@@ -47,8 +51,8 @@ export function fixParseSuccessUIDs(
     (
       oldUID: string,
       newUID: string,
-      oldPathToRestore: StaticElementPath,
-      newPath: StaticElementPath,
+      oldPathToRestore: StaticElementPathPart,
+      newPath: StaticElementPathPart,
     ) => {
       if (oldUID !== newUID) {
         // we have a UID mismatch
@@ -74,7 +78,7 @@ export function fixParseSuccessUIDs(
     newToOldUidMappingArray.forEach((mapping) => {
       const oldPathAlreadyExistingElement = findJSXElementChildAtPath(
         workingComponents,
-        TP.staticInstancePath(TP.emptyScenePath, mapping.oldPathToRestore),
+        EP.elementPath([mapping.oldPathToRestore]),
       )
 
       if (oldPathAlreadyExistingElement == null) {
@@ -133,8 +137,8 @@ function zipTopLevelElements(
   onElement: (
     oldUID: string,
     newUID: string,
-    oldPathToRestore: StaticElementPath,
-    newTemplatePath: StaticElementPath,
+    oldPathToRestore: StaticElementPathPart,
+    newElementPath: StaticElementPathPart,
   ) => void,
 ): void {
   secondTopLevelElements.forEach((newTopLevelElement, index) => {
@@ -147,7 +151,7 @@ function zipTopLevelElements(
 
       if (oldTopLevelElement != null) {
         walkElementChildren(
-          TP.emptyElementPath,
+          EP.emptyElementPathPart,
           [oldTopLevelElement.rootElement],
           [newTopLevelElement.rootElement],
           onElement,
@@ -158,14 +162,14 @@ function zipTopLevelElements(
 }
 
 function walkElementChildren(
-  pathSoFar: StaticElementPath,
+  pathSoFar: StaticElementPathPart,
   oldElements: Array<JSXElementChild>,
   newElements: Array<JSXElementChild>,
   onElement: (
     oldUID: string,
     newUID: string,
-    oldPathToRestore: StaticElementPath,
-    newTemplatePath: StaticElementPath,
+    oldPathToRestore: StaticElementPathPart,
+    newElementPath: StaticElementPathPart,
   ) => void,
 ): void {
   /**
@@ -186,8 +190,8 @@ function walkElementChildren(
     ) {
       const oldUID = getUtopiaID(oldElement)
       const newUid = getUtopiaID(newElement)
-      const path = TP.appendToElementPath(pathSoFar, newUid)
-      const oldPathToRestore = TP.appendToElementPath(pathSoFar, oldUID)
+      const path = EP.appendToElementPath(pathSoFar, newUid)
+      const oldPathToRestore = EP.appendToElementPath(pathSoFar, oldUID)
       onElement(oldUID, newUid, oldPathToRestore, path)
       walkElementChildren(path, oldElement.children, newElement.children, onElement)
     }

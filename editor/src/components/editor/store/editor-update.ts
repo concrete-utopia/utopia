@@ -226,8 +226,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SAVE_CURRENT_FILE(action, state)
     case 'DELETE_VIEW':
       return UPDATE_FNS.DELETE_VIEW(action, state, dispatch)
-    case 'DELETE_VIEWS':
-      return UPDATE_FNS.DELETE_VIEWS(action, state, dispatch)
     case 'DELETE_SELECTED':
       return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
     case 'WRAP_IN_VIEW':
@@ -236,16 +234,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UNWRAP_GROUP_OR_VIEW(action, state, derivedState, dispatch)
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
-    case 'SET_SCENE_PROP':
-      return UPDATE_FNS.SET_SCENE_PROP(action, state)
-    case 'UNSET_SCENE_PROP':
-      return UPDATE_FNS.UNSET_SCENE_PROP(action, state)
-    case 'WRAP_IN_LAYOUTABLE':
-      return UPDATE_FNS.WRAP_IN_LAYOUTABLE(action, state)
-    case 'UNWRAP_LAYOUTABLE':
-      return UPDATE_FNS.UNWRAP_LAYOUTABLE(action, state, derivedState)
     case 'UPDATE_JSX_ELEMENT_NAME':
-      return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state, derivedState)
+      return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state)
     case 'ADD_IMPORTS':
       return UPDATE_FNS.ADD_IMPORTS(action, state)
     case 'SET_ASPECT_RATIO_LOCK':

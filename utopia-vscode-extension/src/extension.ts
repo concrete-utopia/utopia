@@ -125,15 +125,17 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
   )
 }
 
+const baseDecorationTypeColor = '#007aff'
+
 const selectionDecorationType = vscode.window.createTextEditorDecorationType({
-  borderColor: '#007aff',
+  borderColor: baseDecorationTypeColor,
   borderStyle: 'solid',
   borderWidth: '0 0 0 3px',
   isWholeLine: true,
 })
 
 const highlightDecorationType = vscode.window.createTextEditorDecorationType({
-  borderColor: '#007aff11',
+  borderColor: `${baseDecorationTypeColor}11`,
   borderStyle: 'solid',
   borderWidth: '0 0 0 3px',
   isWholeLine: true,

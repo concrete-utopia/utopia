@@ -1,17 +1,9 @@
-import * as R from 'ramda'
-import { TriggerEvent } from 'react-contexify'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { Either } from '../core/shared/either'
 import { ElementInstanceMetadataMap, isIntrinsicHTMLElement } from '../core/shared/element-template'
 import { CanvasPoint } from '../core/shared/math-utils'
-import {
-  InstancePath,
-  NodeModules,
-  ScenePath,
-  TemplatePath,
-} from '../core/shared/project-file-types'
+import { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
-import * as TP from '../core/shared/template-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import { ProjectContentTreeRoot } from './assets'
@@ -47,15 +39,14 @@ export interface ContextMenuItem<T> {
 
 export interface CanvasData {
   canvasOffset: CanvasPoint
-  selectedViews: Array<InstancePath>
+  selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
   currentFilePath: string | null
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
   transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
-  focusedElementPath: ScenePath | null
-  hiddenInstances: TemplatePath[]
+  hiddenInstances: ElementPath[]
   scale: number
 }
 
@@ -185,8 +176,8 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]
       requireDispatch(dispatch)([
-        EditorActions.setFocusedElement(TP.scenePathForElementAtInstancePath(sv)),
-        EditorActions.scrollToElement(TP.scenePathForElementAtInstancePath(sv), true),
+        EditorActions.setFocusedElement(sv),
+        EditorActions.scrollToElement(sv, true),
       ])
     }
   },
@@ -198,9 +189,7 @@ export const scrollToElement: ContextMenuItem<CanvasData> = {
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]
-      requireDispatch(dispatch)([
-        EditorActions.scrollToElement(TP.scenePathForElementAtInstancePath(sv), false),
-      ])
+      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, false)])
     }
   },
 }

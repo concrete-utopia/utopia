@@ -29,7 +29,6 @@ import {
   ParseSuccess,
   RevisionsState,
   textFile,
-  TextFile,
   textFileContents,
 } from '../../core/shared/project-file-types'
 import { PrettierConfig } from 'utopia-vscode-common'
@@ -41,7 +40,6 @@ import {
 } from '../../core/workers/test-workers'
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { HotRoot } from '../../templates/editor'
-import { left, Right, isLeft } from '../../core/shared/either'
 import Utils from '../../utils/utils'
 import { DispatchPriority, EditorAction, notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
@@ -58,21 +56,13 @@ import {
 } from '../editor/store/editor-state'
 import { createTestProjectWithCode } from './canvas-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import {
-  emptyScenePath,
-  instancePath,
-  scenePath,
-  staticElementPath,
-  staticInstancePath,
-  staticScenePath,
-} from '../../core/shared/template-path'
+import { elementPath } from '../../core/shared/element-path'
 import { NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
-import { setPropertyControlsIFrameAvailable } from '../../core/property-controls/property-controls-utils'
 import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
-import { testStaticScenePath } from '../../core/shared/template-path.test-utils'
+import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -239,8 +229,11 @@ export async function renderTestEditorWithModel(
   }
 }
 
-export function getPrintedUiJsCode(store: EditorStore): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
+export function getPrintedUiJsCode(
+  store: EditorStore,
+  filePath: string = StoryboardFilePath,
+): string {
+  const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
   if (isTextFile(file)) {
     return file.fileContents.code
   } else {
@@ -265,15 +258,47 @@ export function getPrintedUiJsCodeWithoutUIDs(store: EditorStore): string {
 
 export const TestSceneUID = 'scene-aaa'
 export const TestAppUID = 'app-entity'
-export const TestStoryboardPath = instancePath(emptyScenePath, [BakedInStoryboardUID])
-const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
-export const TestScenePath = scenePath(TestSceneElementPaths)
-export const TestStaticScenePath = testStaticScenePath(TestSceneElementPaths)
+export const TestStoryboardPath = elementPath([[BakedInStoryboardUID]])
+export const TestSceneElementPaths = [[BakedInStoryboardUID, TestSceneUID, TestAppUID]]
+export const TestScenePath = elementPath(TestSceneElementPaths)
+export const TestStaticScenePath = testStaticElementPath(TestSceneElementPaths)
 
 export function makeTestProjectCodeWithSnippet(snippet: string): string {
-  const code = `/** @jsx jsx */
+  const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View, jsx } from 'utopia-api'
+  import { Scene, Storyboard, View } from 'utopia-api'
+
+  export var App = (props) => {
+    return (
+${snippet}
+    )
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+      </Storyboard>
+    )
+  }
+`
+  return Prettier.format(code, PrettierConfig)
+}
+
+export function makeTestProjectCodeWithSnippetStyledComponents(snippet: string): string {
+  const code = `
+  /** @jsx jsx */
+  import * as React from 'react'
+  import { css, jsx } from '@emotion/react'
+  import { Scene, Storyboard, View } from 'utopia-api'
 
   export var App = (props) => {
     return (

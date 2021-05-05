@@ -2,7 +2,6 @@ import { KrazyGeorgeTestUrl } from 'utopia-api'
 import { createLayoutPropertyPathString } from '../layout/layout-helpers-new'
 import { Imports, importAlias } from '../shared/project-file-types'
 import {
-  jsxAttributeFunctionCall,
   jsxAttributeNestedObjectSimple,
   jsxAttributeOtherJavaScript,
   jsxAttributeValue,
@@ -13,15 +12,10 @@ import {
   jsxAttributesFromMap,
 } from '../shared/element-template'
 import { addImport, emptyImports, mergeImports } from '../workers/common/project-file-utils'
-import {
-  convertScenesToUtopiaCanvasComponent,
-  BakedInStoryboardUID,
-  BakedInStoryboardVariableName,
-} from './scene-utils'
-import { scenePath } from '../shared/template-path'
+import { BakedInStoryboardUID, BakedInStoryboardVariableName } from './scene-utils'
 import { defaultSceneElement } from '../../components/editor/defaults'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
-import { testStaticScenePath } from '../shared/template-path.test-utils'
+import { testStaticElementPath } from '../shared/element-path.test-utils'
 
 const sampleIncludedElementTypes: Array<string> = [
   'Ellipse',
@@ -327,14 +321,12 @@ const scene = utopiaJSXComponent(
 
 export const TestScene0UID = 'scene-0'
 export const TestMainComponentUID = 'main-component-0'
-export const ScenePathForTestUiJsFile = testStaticScenePath([
-  [BakedInStoryboardUID, TestScene0UID, TestMainComponentUID],
-])
+const ElementPathForTestUiJsFile = [BakedInStoryboardUID, TestScene0UID, TestMainComponentUID]
+export const ScenePathForTestUiJsFile = testStaticElementPath([ElementPathForTestUiJsFile])
 const Scene1UID = 'scene-1'
 const TestMainComponent1UID = 'main-component-1'
-export const ScenePath1ForTestUiJsFile = testStaticScenePath([
-  [BakedInStoryboardUID, Scene1UID, TestMainComponent1UID],
-])
+const ElementPath1ForTestUiJsFile = [BakedInStoryboardUID, Scene1UID, TestMainComponent1UID]
+export const ScenePath1ForTestUiJsFile = testStaticElementPath([ElementPath1ForTestUiJsFile])
 
 const Scene1 = defaultSceneElement(
   TestScene0UID,

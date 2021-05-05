@@ -2,14 +2,14 @@ import * as React from 'react'
 import { KeysPressed } from '../../../utils/keyboard'
 import Utils from '../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared/math-utils'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import {
   DuplicationState,
   getJSXComponentsAndImportsForPathInnerComponent,
 } from '../../editor/store/editor-state'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import { CanvasPositions, MoveDragState, ResizeDragState } from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'
 import { ConstraintsControls } from './constraints-control'
@@ -36,7 +36,7 @@ import { foldEither, isRight } from '../../../core/shared/either'
 export const SnappingThreshold = 5
 
 function getDistanceGuidelines(
-  highlightedView: TemplatePath,
+  highlightedView: ElementPath,
   componentMetadata: ElementInstanceMetadataMap,
 ): Array<Guideline> {
   const frame = MetadataUtils.getFrameInCanvasCoords(highlightedView, componentMetadata)
@@ -50,15 +50,15 @@ function getDistanceGuidelines(
 interface SelectModeControlContainerProps extends ControlProps {
   startDragStateAfterDragExceedsThreshold: (
     nativeEvent: MouseEvent,
-    foundTarget: TemplatePath,
+    foundTarget: ElementPath,
   ) => void
-  setSelectedViewsLocally: (newSelectedViews: Array<TemplatePath>) => void
+  setSelectedViewsLocally: (newSelectedViews: Array<ElementPath>) => void
   keysPressed: KeysPressed
   windowToCanvasPosition: (event: MouseEvent) => CanvasPositions
   isDragging: boolean // set only when user already moves a cursor a little after a mousedown
   isResizing: boolean
   selectionEnabled: boolean
-  maybeHighlightOnHover: (target: TemplatePath) => void
+  maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
   duplicationState: DuplicationState | null
   dragState: MoveDragState | ResizeDragState | null
@@ -66,7 +66,7 @@ interface SelectModeControlContainerProps extends ControlProps {
 
 interface SelectModeControlContainerState {
   moveGuidelines: Array<Guideline>
-  lastHovered: TemplatePath | null
+  lastHovered: ElementPath | null
 }
 
 // SelectModeControlContainer is a single React component containing all the individual
@@ -104,14 +104,14 @@ export class SelectModeControlContainer extends React.Component<
     }
   }
 
-  selectComponent = (target: TemplatePath, isMultiselect: boolean): Array<TemplatePath> => {
+  selectComponent = (target: ElementPath, isMultiselect: boolean): Array<ElementPath> => {
     // TODO BALAZS Remove this and unify with select-mode-hooks
-    if (this.props.selectedViews.some((view) => TP.pathsEqual(target, view))) {
+    if (this.props.selectedViews.some((view) => EP.pathsEqual(target, view))) {
       return this.props.selectedViews
     } else {
       let updatedSelection = [target]
       if (isMultiselect) {
-        updatedSelection = TP.addPathIfMissing(target, this.props.selectedViews)
+        updatedSelection = EP.addPathIfMissing(target, this.props.selectedViews)
       }
 
       this.props.setSelectedViewsLocally(updatedSelection)
@@ -137,8 +137,8 @@ export class SelectModeControlContainer extends React.Component<
   }
 
   onControlMouseDown = (
-    _selectedViews: Array<TemplatePath>,
-    target: TemplatePath,
+    _selectedViews: Array<ElementPath>,
+    target: ElementPath,
     _start: CanvasPoint,
     originalEvent: React.MouseEvent<HTMLDivElement>,
   ): void => {
@@ -156,7 +156,7 @@ export class SelectModeControlContainer extends React.Component<
     }
   }
 
-  getTargetViews(): Array<TemplatePath> {
+  getTargetViews(): Array<ElementPath> {
     return this.props.duplicationState == null
       ? this.props.selectedViews
       : this.props.duplicationState.duplicateRoots.map((r) => r.currentTP)
@@ -166,10 +166,10 @@ export class SelectModeControlContainer extends React.Component<
   // components in the selection have the same parent.
   highlightSelectionParent(): EditorAction[] {
     if (this.props.selectedViews.length > 0) {
-      const firstParent = TP.parentPath(this.props.selectedViews[0])
+      const firstParent = EP.parentPath(this.props.selectedViews[0])
       if (firstParent != null) {
         const allSelectedViewsHasSameParent = this.props.selectedViews.every((et) =>
-          TP.pathsEqual(TP.parentPath(et), firstParent),
+          EP.pathsEqual(EP.parentPath(et), firstParent),
         )
         if (allSelectedViewsHasSameParent) {
           return [EditorActions.setHighlightedView(firstParent)]
@@ -186,16 +186,16 @@ export class SelectModeControlContainer extends React.Component<
     this.currentlyReparenting = false
   }
 
-  isHighlighted = (path: TemplatePath): boolean => {
-    return this.props.highlightedViews.some((highlighted) => TP.pathsEqual(path, highlighted))
+  isHighlighted = (path: ElementPath): boolean => {
+    return this.props.highlightedViews.some((highlighted) => EP.pathsEqual(path, highlighted))
   }
 
-  getClippedArea = (target: TemplatePath): CanvasRectangle | null => {
+  getClippedArea = (target: ElementPath): CanvasRectangle | null => {
     const targetFrame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
 
-    return TP.getAncestors(target).reduce(
-      (frameIntersect: CanvasRectangle | null, current: TemplatePath) => {
-        const currentInstance = MetadataUtils.findElementByTemplatePath(
+    return EP.getAncestorsForLastPart(target).reduce(
+      (frameIntersect: CanvasRectangle | null, current: ElementPath) => {
+        const currentInstance = MetadataUtils.findElementByElementPath(
           this.props.componentMetadata,
           current,
         )
@@ -218,15 +218,15 @@ export class SelectModeControlContainer extends React.Component<
     )
   }
 
-  renderLabel = (target: TemplatePath, hoverEnabled: boolean): JSX.Element | null => {
+  renderLabel = (target: ElementPath, hoverEnabled: boolean): JSX.Element | null => {
     const frame = MetadataUtils.getFrameInCanvasCoords(target, this.props.componentMetadata)
     if (frame == null) {
       return null
     }
     return (
       <ComponentLabelControl
-        key={`${TP.toComponentId(target)}-label`}
-        testID={`label-control-${TP.toComponentId(target)}`}
+        key={`${EP.toComponentId(target)}-label`}
+        testID={`label-control-${EP.toComponentId(target)}`}
         mouseEnabled={true}
         componentMetadata={this.props.componentMetadata}
         target={target}
@@ -256,7 +256,7 @@ export class SelectModeControlContainer extends React.Component<
     }
   }
 
-  getSelectedBoundingBox = (views: TemplatePath[]): CanvasRectangle | null => {
+  getSelectedBoundingBox = (views: ElementPath[]): CanvasRectangle | null => {
     let boundingRectangles: Array<CanvasRectangle> = []
     Utils.fastForEach(views, (view) => {
       const frame = MetadataUtils.getFrameInCanvasCoords(view, this.props.componentMetadata)
@@ -307,7 +307,7 @@ export class SelectModeControlContainer extends React.Component<
     }
   }
 
-  onHover = (target: TemplatePath): void => {
+  onHover = (target: ElementPath): void => {
     if (this.inSelection(target)) {
       this.props.maybeClearHighlightsOnHoverEnd()
     } else {
@@ -318,7 +318,7 @@ export class SelectModeControlContainer extends React.Component<
     })
   }
 
-  onHoverEnd = (_target: TemplatePath): void => {
+  onHoverEnd = (_target: ElementPath): void => {
     if (this.props.selectionEnabled && !this.props.isDragging) {
       this.props.dispatch([EditorActions.clearHighlightedViews()], 'canvas')
     }
@@ -334,7 +334,7 @@ export class SelectModeControlContainer extends React.Component<
       this.props.keysPressed['alt']
     ) {
       let boundingBoxes: (CanvasRectangle | null)[] = []
-      if (TP.areAllElementsInSameScene(this.props.selectedViews)) {
+      if (EP.areAllElementsInSameInstance(this.props.selectedViews)) {
         boundingBoxes = [this.getSelectedBoundingBox(this.props.selectedViews)]
       } else {
         boundingBoxes = this.props.selectedViews.map((view) => this.getSelectedBoundingBox([view]))
@@ -343,12 +343,12 @@ export class SelectModeControlContainer extends React.Component<
       if (boundingBoxes.length < 1) {
         return []
       }
-      let hoveredSelectedItem: TemplatePath | null = null
+      let hoveredSelectedItem: ElementPath | null = null
       Utils.fastForEach(this.props.selectedViews, (selectedView) => {
-        if (TP.pathsEqual(selectedView, this.state.lastHovered)) {
+        if (EP.pathsEqual(selectedView, this.state.lastHovered)) {
           if (
             hoveredSelectedItem == null ||
-            TP.depth(hoveredSelectedItem) < TP.depth(selectedView)
+            EP.depth(hoveredSelectedItem) < EP.depth(selectedView)
           ) {
             hoveredSelectedItem = selectedView
           }
@@ -362,12 +362,12 @@ export class SelectModeControlContainer extends React.Component<
           if (hoveredSelectedItem == null) {
             distanceGuidelines = Utils.flatMapArray((highlightedView) => {
               const highlightedViewIsSelected = this.props.selectedViews.some((selectedView) =>
-                TP.pathsEqual(selectedView, highlightedView),
+                EP.pathsEqual(selectedView, highlightedView),
               )
               if (highlightedViewIsSelected) {
                 return []
               } else {
-                if (TP.isFromSameSceneAs(highlightedView, this.props.selectedViews[index])) {
+                if (EP.isFromSameInstanceAs(highlightedView, this.props.selectedViews[index])) {
                   return getDistanceGuidelines(highlightedView, this.props.componentMetadata)
                 } else {
                   return []
@@ -375,16 +375,16 @@ export class SelectModeControlContainer extends React.Component<
               }
             }, this.props.highlightedViews)
           } else {
-            const parentPath = TP.parentPath(hoveredSelectedItem)
+            const parentPath = EP.parentPath(hoveredSelectedItem)
             if (parentPath != null) {
-              if (TP.isFromSameSceneAs(parentPath, this.props.selectedViews[index])) {
+              if (EP.isFromSameInstanceAs(parentPath, this.props.selectedViews[index])) {
                 distanceGuidelines = getDistanceGuidelines(parentPath, this.props.componentMetadata)
               }
             }
           }
           guideLineElements.push(
             <DistanceGuideline
-              key={`${TP.toComponentId(this.props.selectedViews[index])}-distance-guidelines`}
+              key={`${EP.toComponentId(this.props.selectedViews[index])}-distance-guidelines`}
               canvasOffset={this.props.canvasOffset}
               scale={this.props.scale}
               guidelines={distanceGuidelines}
@@ -405,9 +405,9 @@ export class SelectModeControlContainer extends React.Component<
   getBoundingMarks = (): Array<JSX.Element> => {
     let boundingMarks: Array<JSX.Element> = []
     if (this.props.isDragging || this.props.keysPressed['alt']) {
-      const targets = TP.filterScenes(this.props.selectedViews)
+      const targets = this.props.selectedViews
       if (targets.length > 0) {
-        const targetInstance = MetadataUtils.getElementByInstancePathMaybe(
+        const targetInstance = MetadataUtils.findElementByElementPath(
           this.props.componentMetadata,
           targets[0],
         )
@@ -421,7 +421,7 @@ export class SelectModeControlContainer extends React.Component<
           ) {
             boundingMarks.push(
               <BoundingMarks
-                key={`${TP.toComponentId(targets[0])}-bounding-marks-immediate-parent`}
+                key={`${EP.toComponentId(targets[0])}-bounding-marks-immediate-parent`}
                 canvasOffset={this.props.canvasOffset}
                 scale={this.props.scale}
                 rect={immediateParentBounds}
@@ -436,7 +436,7 @@ export class SelectModeControlContainer extends React.Component<
           if (coordinateSystemBounds != null) {
             boundingMarks.push(
               <BoundingMarks
-                key={`${TP.toComponentId(targets[0])}-bounding-marks-coordinate-system`}
+                key={`${EP.toComponentId(targets[0])}-bounding-marks-coordinate-system`}
                 canvasOffset={this.props.canvasOffset}
                 scale={this.props.scale}
                 rect={coordinateSystemBounds}
@@ -450,13 +450,13 @@ export class SelectModeControlContainer extends React.Component<
     return boundingMarks
   }
 
-  inSelection(tp: TemplatePath): boolean {
-    return this.props.selectedViews.some((et) => TP.pathsEqual(et, tp))
+  inSelection(tp: ElementPath): boolean {
+    return this.props.selectedViews.some((et) => EP.pathsEqual(et, tp))
   }
 
   canResizeElements(): boolean {
     return this.props.selectedViews.every((target) => {
-      return this.props.elementsThatRespectLayout.some((path) => TP.pathsEqual(path, target))
+      return this.props.elementsThatRespectLayout.some((path) => EP.pathsEqual(path, target))
     })
   }
 
@@ -465,29 +465,25 @@ export class SelectModeControlContainer extends React.Component<
     const allElementsDirectlySelectable = cmdPressed && !this.props.isDragging
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
     const roots = mapDropNulls((child) => {
-      if (MetadataUtils.elementIsOldStyleScene(child)) {
-        return child.templatePath
-      } else {
-        return foldEither(
-          () => null,
-          (elemValue) => {
-            const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
-              child.templatePath,
-              this.props.openFile,
-              this.props.projectContents,
-              this.props.nodeModules,
-              this.props.transientState.filesState,
-              this.props.resolve,
-            )
-            if (isSceneAgainstImports(elemValue, imports)) {
-              return child.templatePath
-            } else {
-              return null
-            }
-          },
-          child.element,
-        )
-      }
+      return foldEither(
+        () => null,
+        (elemValue) => {
+          const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
+            child.elementPath,
+            this.props.openFile,
+            this.props.projectContents,
+            this.props.nodeModules,
+            this.props.transientState.filesState,
+            this.props.resolve,
+          )
+          if (isSceneAgainstImports(elemValue, imports)) {
+            return child.elementPath
+          } else {
+            return null
+          }
+        },
+        child.element,
+      )
     }, storyboardChildren)
     let labelDirectlySelectable = this.props.highlightsEnabled
 
@@ -495,7 +491,7 @@ export class SelectModeControlContainer extends React.Component<
     let repositionOnly = false
     if (this.props.selectedViews.length === 1) {
       const path = this.props.selectedViews[0]
-      const element = MetadataUtils.findElementByTemplatePath(this.props.componentMetadata, path)
+      const element = MetadataUtils.findElementByElementPath(this.props.componentMetadata, path)
       const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
         path,
         this.props.openFile,
@@ -522,7 +518,7 @@ export class SelectModeControlContainer extends React.Component<
       >
         {roots.map((root) => {
           return (
-            <React.Fragment key={`${TP.toComponentId(root)}}-root-controls`}>
+            <React.Fragment key={`${EP.toComponentId(root)}}-root-controls`}>
               {this.renderLabel(root, allElementsDirectlySelectable || labelDirectlySelectable)}
             </React.Fragment>
           )

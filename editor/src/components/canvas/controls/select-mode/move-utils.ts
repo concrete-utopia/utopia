@@ -1,14 +1,14 @@
 import * as R from 'ramda'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { TemplatePath } from '../../../../core/shared/project-file-types'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { setCanvasFrames } from '../../../editor/actions/action-creators'
 import { EditorState } from '../../../editor/store/editor-state'
-import * as TP from '../../../../core/shared/template-path'
+import * as EP from '../../../../core/shared/element-path'
 import {
   CanvasFrameAndTarget,
   flexMoveChange,
@@ -32,9 +32,9 @@ function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
 }
 
 export function extendSelectedViewsForInteraction(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
-): Array<TemplatePath> {
+): Array<ElementPath> {
   return Utils.flatMapArray((view) => {
     const frame = MetadataUtils.getFrameInCanvasCoords(view, componentMetadata)
     if (frame == null) {
@@ -44,7 +44,7 @@ export function extendSelectedViewsForInteraction(
       // autoSizing views are the new groups
       if (MetadataUtils.isAutoSizingViewFromComponents(componentMetadata, view)) {
         return MetadataUtils.getChildrenHandlingGroups(componentMetadata, view, false).map(
-          (component) => component.templatePath,
+          (component) => component.elementPath,
         )
       } else {
         return [view]
@@ -54,59 +54,30 @@ export function extendSelectedViewsForInteraction(
 }
 
 export function determineElementsToOperateOnForDragging(
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
   isMoving: boolean,
   isAnchor: boolean,
-): Array<TemplatePath> {
+): Array<ElementPath> {
   if (isMoving) {
     // Moving.
     return extendSelectedViewsForInteraction(
       selectedViews.filter((view) =>
         R.none((otherView) => {
-          return !TP.pathsEqual(view, otherView) && TP.isAncestorOf(view, otherView)
+          return !EP.pathsEqual(view, otherView) && EP.isDescendantOfOrEqualTo(view, otherView)
         }, selectedViews),
       ),
       componentMetadata,
-    ).map((view) => {
-      const parentPath = TP.parentPath(view)
-      if (parentPath != null && TP.isScenePath(parentPath)) {
-        const scene = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
-          componentMetadata,
-          parentPath,
-        )
-        if (MetadataUtils.isSceneTreatedAsGroup(scene)) {
-          return parentPath
-        } else {
-          return view
-        }
-      } else {
-        return view
-      }
-    })
+    )
   } else {
     // Resizing.
-    return flatMapArray<TemplatePath, TemplatePath>((view) => {
-      if (TP.isScenePath(view)) {
-        const scene = MetadataUtils.findElementByTemplatePathDontThrowOnScenes(
-          componentMetadata,
-          view,
-        )
-        if (scene != null && MetadataUtils.isSceneTreatedAsGroup(scene)) {
-          return scene.rootElements
-        } else {
-          return [view]
-        }
-      } else {
-        return [view]
-      }
-    }, extendSelectedViewsForInteraction(selectedViews, componentMetadata))
+    return extendSelectedViewsForInteraction(selectedViews, componentMetadata)
   }
 }
 
 export function dragComponent(
   componentsMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
   dragSelectionBoundingBox: CanvasRectangle | null,
@@ -126,12 +97,12 @@ export function dragComponent(
   )
   let dragChanges: Array<PinMoveChange | FlexMoveChange> = []
   Utils.fastForEach(viewsToOperateOn, (view) => {
-    const parentPath = TP.parentPath(view)
+    const parentPath = EP.parentPath(view)
     const isFlexContainer = MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       view,
       componentsMetadata,
     )
-    const originalFrame = originalFrames.find((frame) => TP.pathsEqual(frame.target, view))
+    const originalFrame = originalFrames.find((frame) => EP.pathsEqual(frame.target, view))
     if (originalFrame == null) {
       // found a target with no original frame
       return
@@ -186,7 +157,7 @@ export function dragComponent(
 
 export function dragComponentForActions(
   componentsMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<TemplatePath>,
+  selectedViews: Array<ElementPath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
   dragSelectionBoundingBox: CanvasRectangle,

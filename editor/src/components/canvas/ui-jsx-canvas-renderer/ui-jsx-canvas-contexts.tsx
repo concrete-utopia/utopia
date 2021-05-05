@@ -1,16 +1,10 @@
 import * as React from 'react'
 import type { MapLike } from 'typescript'
 import { createContext } from 'use-context-selector'
-import { EmptyScenePathForStoryboard } from '../../../core/model/scene-utils'
 import { Either, left } from '../../../core/shared/either'
-import type { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
-import type { InstancePath, ScenePath, TemplatePath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { ProjectContentTreeRoot } from '../../assets'
-import type {
-  TransientFilesState,
-  TransientFileState,
-  UIFileBase64Blobs,
-} from '../../editor/store/editor-state'
+import type { TransientFilesState, UIFileBase64Blobs } from '../../editor/store/editor-state'
 
 export interface MutableUtopiaContextProps {
   [filePath: string]: {
@@ -36,17 +30,15 @@ export function updateMutableUtopiaContextWithNewProps(
 }
 
 interface RerenderUtopiaContextProps {
-  hiddenInstances: Array<TemplatePath>
+  hiddenInstances: Array<ElementPath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
-  focusedElementPath: ScenePath | null
 }
 
 export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
   hiddenInstances: [],
   canvasIsLive: false,
   shouldIncludeCanvasRootInTheSpy: false,
-  focusedElementPath: null,
 })
 RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 
@@ -68,7 +60,7 @@ export const UtopiaProjectContext = createContext<UtopiaProjectContextProps>({
 })
 
 interface SceneLevelContextProps {
-  validPaths: Array<InstancePath>
+  validPaths: Array<ElementPath>
 }
 
 export const SceneLevelUtopiaContext = React.createContext<SceneLevelContextProps>({
@@ -77,9 +69,9 @@ export const SceneLevelUtopiaContext = React.createContext<SceneLevelContextProp
 SceneLevelUtopiaContext.displayName = 'SceneLevelUtopiaContext'
 
 interface ParentLevelUtopiaContextProps {
-  templatePath: TemplatePath | null
+  elementPath: ElementPath | null
 }
 
 export const ParentLevelUtopiaContext = createContext<ParentLevelUtopiaContextProps>({
-  templatePath: null,
+  elementPath: null,
 })

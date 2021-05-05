@@ -1,6 +1,6 @@
 import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api'
 import { transformElementAtPath } from '../../components/editor/store/editor-state'
-import * as TP from '../shared/template-path'
+import * as EP from '../shared/element-path'
 import {
   flatMapEither,
   forEachRight,
@@ -39,7 +39,7 @@ import {
   ModifiableAttribute,
   setJSXValueAtPath,
 } from '../shared/jsx-attributes'
-import { InstancePath, PropertyPath } from '../shared/project-file-types'
+import { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
 import {
   createLayoutPropertyPath,
@@ -58,7 +58,7 @@ interface LayoutPropChangeResult {
 }
 
 export function maybeSwitchChildrenLayoutProps(
-  target: InstancePath,
+  target: ElementPath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -76,8 +76,8 @@ export function maybeSwitchChildrenLayoutProps(
         componentMetadata: nextMetadata,
         didSwitch: nextDidSwitch,
       } = maybeSwitchLayoutProps(
-        next.templatePath,
-        next.templatePath,
+        next.elementPath,
+        next.elementPath,
         target,
         targetOriginalContextMetadata,
         currentContextMetadata,
@@ -97,22 +97,21 @@ export function maybeSwitchChildrenLayoutProps(
 }
 
 export function maybeSwitchLayoutProps(
-  target: InstancePath,
-  originalPath: InstancePath,
-  newParentPath: InstancePath,
+  target: ElementPath,
+  originalPath: ElementPath,
+  newParentPath: ElementPath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle | null,
   parentLayoutSystem: SettableLayoutSystem | null,
 ): LayoutPropChangeResult {
-  const originalParentPath = TP.parentPath(originalPath)
-  const originalParent = TP.isInstancePath(originalParentPath)
-    ? MetadataUtils.getElementByInstancePathMaybe(targetOriginalContextMetadata, originalParentPath)
-    : null
-  const newParent = TP.isInstancePath(newParentPath)
-    ? MetadataUtils.getElementByInstancePathMaybe(currentContextMetadata, newParentPath)
-    : null
+  const originalParentPath = EP.parentPath(originalPath)
+  const originalParent = MetadataUtils.findElementByElementPath(
+    targetOriginalContextMetadata,
+    originalParentPath,
+  )
+  const newParent = MetadataUtils.findElementByElementPath(currentContextMetadata, newParentPath)
 
   let wasFlexContainer = MetadataUtils.isFlexLayoutedContainer(originalParent)
   let isFlexContainer =
@@ -168,8 +167,8 @@ function getLayoutFunction(
   isGroup: boolean,
 ): {
   layoutFn: (
-    target: InstancePath,
-    newParentPath: InstancePath,
+    target: ElementPath,
+    newParentPath: ElementPath,
     targetOriginalContextMetadata: ElementInstanceMetadataMap,
     currentContextMetadata: ElementInstanceMetadataMap,
     components: UtopiaJSXComponent[],
@@ -245,8 +244,8 @@ export const PinningAndFlexPoints = [...AllFramePoints, 'flexBasis']
 export const PinningAndFlexPointsExceptSize = [...AllFramePointsExceptSize, 'flexBasis']
 
 function keepLayoutProps(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: ElementPath,
+  newParentPath: ElementPath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -259,7 +258,7 @@ function keepLayoutProps(
 
 export function switchLayoutMetadata(
   metadata: ElementInstanceMetadataMap,
-  target: InstancePath,
+  target: ElementPath,
   parentLayoutSystem: DetectedLayoutSystem | undefined,
   layoutSystemForChildren: DetectedLayoutSystem | undefined,
   position: CSSPosition | undefined,
@@ -294,8 +293,8 @@ export function switchLayoutMetadata(
 }
 
 export function switchPinnedChildToFlex(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: ElementPath,
+  newParentPath: ElementPath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -386,8 +385,8 @@ interface SwitchLayoutTypeResult {
 }
 
 export function switchFlexChildToPinned(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: ElementPath,
+  newParentPath: ElementPath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -396,11 +395,8 @@ export function switchFlexChildToPinned(
     zeroLocalRect,
     MetadataUtils.getFrame(target, targetOriginalContextMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.getElementByInstancePathMaybe(targetOriginalContextMetadata, target)
-  const newParent = MetadataUtils.getElementByInstancePathMaybe(
-    currentContextMetadata,
-    newParentPath,
-  )
+  const element = MetadataUtils.findElementByElementPath(targetOriginalContextMetadata, target)
+  const newParent = MetadataUtils.findElementByElementPath(currentContextMetadata, newParentPath)
 
   // When moving flex to pinned, use fixed values or basis values to set width and height
   // FIXME Right now this isn't taking into account groups
@@ -411,7 +407,7 @@ export function switchFlexChildToPinned(
   const width = Utils.defaultIfNull(currentFrame.width, unstretched.width)
   const height = Utils.defaultIfNull(currentFrame.height, unstretched.height)
   const oldParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(TP.parentPath(target), targetOriginalContextMetadata) ||
+    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(target), targetOriginalContextMetadata) ||
     zeroCanvasRect
   const newParentFrame =
     MetadataUtils.getFrameInCanvasCoords(newParentPath, currentContextMetadata) || zeroCanvasRect
@@ -441,8 +437,8 @@ export function switchFlexChildToPinned(
 }
 
 export function switchFlexChildToGroup(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: ElementPath,
+  newParentPath: ElementPath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -451,11 +447,8 @@ export function switchFlexChildToGroup(
     zeroLocalRect,
     MetadataUtils.getFrame(target, targetOriginalContextMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.getElementByInstancePathMaybe(targetOriginalContextMetadata, target)
-  const newParent = MetadataUtils.getElementByInstancePathMaybe(
-    currentContextMetadata,
-    newParentPath,
-  )
+  const element = MetadataUtils.findElementByElementPath(targetOriginalContextMetadata, target)
+  const newParent = MetadataUtils.findElementByElementPath(currentContextMetadata, newParentPath)
 
   // When moving flex to pinned, use fixed values or basis values to set width and height
   const unstretched = FlexLayoutHelpers.getUnstretchedWidthHeight(
@@ -465,7 +458,7 @@ export function switchFlexChildToGroup(
   const width = Utils.defaultIfNull(currentFrame.width, unstretched.width)
   const height = Utils.defaultIfNull(currentFrame.height, unstretched.height)
   const oldParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(TP.parentPath(target), targetOriginalContextMetadata) ||
+    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(target), targetOriginalContextMetadata) ||
     zeroCanvasRect
   const newParentFrame =
     MetadataUtils.getFrameInCanvasCoords(newParentPath, currentContextMetadata) || zeroCanvasRect
@@ -495,8 +488,8 @@ export function switchFlexChildToGroup(
 }
 
 export function switchChildToGroupWithParentFrame(
-  target: InstancePath,
-  originalPath: InstancePath,
+  target: ElementPath,
+  originalPath: ElementPath,
   componentMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle,
@@ -509,10 +502,10 @@ export function switchChildToGroupWithParentFrame(
     zeroLocalRect,
     MetadataUtils.getFrame(originalPath, componentMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, originalPath)
+  const element = MetadataUtils.findElementByElementPath(componentMetadata, originalPath)
   const oldParentFrame = Utils.defaultIfNull(
     zeroCanvasRect,
-    MetadataUtils.getFrameInCanvasCoords(TP.parentPath(originalPath), componentMetadata),
+    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(originalPath), componentMetadata),
   )
   const newOffset = Utils.pointDifference(parentFrame, oldParentFrame)
 
@@ -573,8 +566,8 @@ export function switchChildToGroupWithParentFrame(
 }
 
 export function switchPinnedChildToGroup(
-  target: InstancePath,
-  newParentPath: InstancePath,
+  target: ElementPath,
+  newParentPath: ElementPath,
   targetOriginalContextMetadata: ElementInstanceMetadataMap,
   currentContextMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
@@ -584,7 +577,7 @@ export function switchPinnedChildToGroup(
     MetadataUtils.getFrame(target, targetOriginalContextMetadata),
   ) // TODO How should this behave if there is no rendered frame?
   const oldParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(TP.parentPath(target), currentContextMetadata) ||
+    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(target), currentContextMetadata) ||
     zeroCanvasRect
   const newParentFrame =
     MetadataUtils.getFrameInCanvasCoords(newParentPath, currentContextMetadata) || zeroCanvasRect
@@ -616,8 +609,8 @@ export function switchPinnedChildToGroup(
 }
 
 export function switchChildToPinnedWithParentFrame(
-  target: InstancePath,
-  originalPath: InstancePath,
+  target: ElementPath,
+  originalPath: ElementPath,
   componentMetadata: ElementInstanceMetadataMap,
   components: UtopiaJSXComponent[],
   parentFrame: CanvasRectangle,
@@ -626,9 +619,9 @@ export function switchChildToPinnedWithParentFrame(
     zeroLocalRect,
     MetadataUtils.getFrame(originalPath, componentMetadata),
   ) // TODO How should this behave if there is no rendered frame?
-  const element = MetadataUtils.getElementByInstancePathMaybe(componentMetadata, originalPath)
+  const element = MetadataUtils.findElementByElementPath(componentMetadata, originalPath)
   const oldParentFrame =
-    MetadataUtils.getFrameInCanvasCoords(TP.parentPath(originalPath), componentMetadata) ||
+    MetadataUtils.getFrameInCanvasCoords(EP.parentPath(originalPath), componentMetadata) ||
     zeroCanvasRect
   const newOffset = Utils.pointDifference(parentFrame, oldParentFrame)
 
@@ -662,7 +655,7 @@ export function switchChildToPinnedWithParentFrame(
 }
 
 function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
-  target: InstancePath,
+  target: ElementPath,
   components: UtopiaJSXComponent[],
   top: number,
   left: number,
@@ -706,7 +699,7 @@ function removeFlexAndNonDefaultPinsAddPinnedPropsToComponent(
 }
 
 function removeFlexAndAddPinnedPropsToComponent(
-  target: InstancePath,
+  target: ElementPath,
   components: UtopiaJSXComponent[],
   top: number,
   left: number,
@@ -746,7 +739,7 @@ function removeFlexAndAddPinnedPropsToComponent(
 }
 
 function changePinsToDefaultOnComponent(
-  target: InstancePath,
+  target: ElementPath,
   components: UtopiaJSXComponent[],
   top: number,
   left: number,

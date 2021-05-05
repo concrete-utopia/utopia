@@ -6,12 +6,8 @@ import {
   renderTestEditorWithCode,
   TestScenePath,
 } from './ui-jsx.test-utils'
-import * as TP from '../../core/shared/template-path'
-import {
-  createDuplicationNewUIDsFromEditorState,
-  getOriginalCanvasFrames,
-  getOriginalFrames,
-} from './canvas-utils'
+import * as EP from '../../core/shared/element-path'
+import { createDuplicationNewUIDsFromEditorState, getOriginalCanvasFrames } from './canvas-utils'
 import { moveDragState } from './canvas-types'
 import { canvasPoint, canvasRectangle } from '../../core/shared/math-utils'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
@@ -36,7 +32,7 @@ describe('createDragState', () => {
       `),
     )
 
-    const selectedViews = [TP.instancePath(TestScenePath, ['aaa', 'bbb'])]
+    const selectedViews = [EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])]
     await renderResult.dispatch([selectComponents(selectedViews, false)], true)
 
     const editorState = renderResult.getEditorState().editor
@@ -65,9 +61,9 @@ describe('createDragState', () => {
 
     expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
       Prettier.format(
-        `/** @jsx jsx */
+        `
       import * as React from 'react'
-      import { Scene, Storyboard, View, jsx } from 'utopia-api'
+      import { Scene, Storyboard, View } from 'utopia-api'
     
       export var App = (props) => {
         return (

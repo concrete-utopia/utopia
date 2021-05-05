@@ -11,7 +11,7 @@ import {
   DefaultPackageJson,
   StoryboardFilePath,
 } from '../components/editor/store/editor-state'
-import * as TP from '../core/shared/template-path'
+import * as EP from '../core/shared/element-path'
 import {
   ElementInstanceMetadata,
   emptySpecialSizeMeasurements,
@@ -40,13 +40,12 @@ import {
 } from '../core/model/test-ui-js-file.test-utils'
 import {
   RevisionsState,
-  TemplatePath,
+  ElementPath,
   ParseSuccess,
   foldParsedTextFile,
   textFile,
   textFileContents,
   unparsed,
-  InstancePath,
   EmptyExportsDetail,
 } from '../core/shared/project-file-types'
 import { right } from '../core/shared/either'
@@ -97,7 +96,7 @@ export function createPersistentModel(): PersistentModel {
 }
 
 export function createEditorStates(
-  selectedViews: TemplatePath[] = [],
+  selectedViews: ElementPath[] = [],
 ): {
   editor: EditorState
   derivedState: DerivedState
@@ -167,30 +166,31 @@ export function createFakeMetadataForParseSuccess(
   const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
   const sceneElements = getSceneElementsFromParseSuccess(success)
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: InstancePath[] = []
-  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
+  let storyboardChildren: ElementPath[] = []
+  const storyboardElementPath = EP.elementPath([[BakedInStoryboardUID]])
 
   sceneElements.forEach((scene, index) => {
     const descendantsMetadata = createFakeMetadataForJSXElement(
       scene,
-      storyboardTemplatePath,
+      storyboardElementPath,
       {},
       utopiaComponents,
+      false,
       false,
       { x: 0, y: 0, width: 400, height: 400 },
     )
 
     descendantsMetadata.forEach((individualMetadata) => {
-      const descendantPath = individualMetadata.templatePath
-      elements[TP.toString(descendantPath)] = individualMetadata
-      if (TP.isParentOf(storyboardTemplatePath, descendantPath)) {
+      const descendantPath = individualMetadata.elementPath
+      elements[EP.toString(descendantPath)] = individualMetadata
+      if (EP.isParentOf(storyboardElementPath, descendantPath)) {
         storyboardChildren.push(descendantPath)
       }
     })
   })
 
-  elements[TP.toString(storyboardTemplatePath)] = createFakeMetadataForStoryboard(
-    storyboardTemplatePath,
+  elements[EP.toString(storyboardElementPath)] = createFakeMetadataForStoryboard(
+    storyboardElementPath,
     storyboardChildren,
   )
 
@@ -201,8 +201,8 @@ export function createFakeMetadataForComponents(
   topLevelElements: Array<TopLevelElement>,
 ): ElementInstanceMetadataMap {
   let elements: ElementInstanceMetadataMap = {}
-  let storyboardChildren: InstancePath[] = []
-  const storyboardTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID])
+  let storyboardChildren: ElementPath[] = []
+  const storyboardElementPath = EP.elementPath([[BakedInStoryboardUID]])
 
   Utils.fastForEach(topLevelElements, (component, index) => {
     if (isUtopiaJSXComponent(component)) {
@@ -226,25 +226,26 @@ export function createFakeMetadataForComponents(
 
       const descendantsMetadata = createFakeMetadataForJSXElement(
         fakeScene,
-        storyboardTemplatePath,
+        storyboardElementPath,
         {},
         topLevelElements,
+        false,
         false,
         frame,
       )
 
       descendantsMetadata.forEach((individualMetadata) => {
-        const descendantPath = individualMetadata.templatePath
-        elements[TP.toString(descendantPath)] = individualMetadata
-        if (TP.isParentOf(storyboardTemplatePath, descendantPath)) {
+        const descendantPath = individualMetadata.elementPath
+        elements[EP.toString(descendantPath)] = individualMetadata
+        if (EP.isParentOf(storyboardElementPath, descendantPath)) {
           storyboardChildren.push(descendantPath)
         }
       })
     }
   })
 
-  elements[TP.toString(storyboardTemplatePath)] = createFakeMetadataForStoryboard(
-    storyboardTemplatePath,
+  elements[EP.toString(storyboardElementPath)] = createFakeMetadataForStoryboard(
+    storyboardElementPath,
     storyboardChildren,
   )
 
@@ -253,16 +254,19 @@ export function createFakeMetadataForComponents(
 
 function createFakeMetadataForJSXElement(
   element: JSXElementChild,
-  rootPath: TemplatePath,
+  rootPath: ElementPath,
   parentScope: MapLike<any>,
   topLevelElements: Array<TopLevelElement>,
   focused: boolean,
+  rootOfInstance: boolean,
   frame: RectangleInner = Utils.zeroRectangle,
 ): Array<ElementInstanceMetadata> {
   let elements: Array<ElementInstanceMetadata> = []
   if (isJSXElement(element)) {
     const elementID = getUtopiaID(element)
-    const templatePath = TP.appendToPath(rootPath, elementID)
+    const elementPath = rootOfInstance
+      ? EP.appendNewElementPath(rootPath, elementID)
+      : EP.appendToPath(rootPath, elementID)
     const definedElsewhere = getDefinedElsewhereFromAttributes(element.props)
     const inScope = {
       ...mapArrayToDictionary(
@@ -276,25 +280,26 @@ function createFakeMetadataForJSXElement(
     const children = element.children.flatMap((child) =>
       createFakeMetadataForJSXElement(
         child,
-        templatePath,
+        elementPath,
         {
           ...inScope,
           ...props,
         },
         topLevelElements,
         isSceneElementIgnoringImports(element),
+        false,
       ),
     )
-    const childPaths = children.map((child) => child.templatePath)
+    const childPaths = children.map((child) => child.elementPath)
 
-    let rootElements: Array<InstancePath> = []
+    let rootElements: Array<ElementPath> = []
     if (focused) {
       const targetComponent = topLevelElements.find(
         (c) => isUtopiaJSXComponent(c) && c.name === element.name.baseVariable,
       )
 
       if (targetComponent != null && isUtopiaJSXComponent(targetComponent)) {
-        const elementScenePath = TP.scenePathForElementAtPath(templatePath)
+        const elementScenePath = elementPath
 
         const rootElementsMetadata = createFakeMetadataForJSXElement(
           targetComponent.rootElement,
@@ -305,12 +310,13 @@ function createFakeMetadataForJSXElement(
           },
           topLevelElements,
           false,
+          true,
         )
 
         elements.push(...rootElementsMetadata)
         rootElements = mapDropNulls((individualElementMetadata) => {
-          const path = individualElementMetadata.templatePath
-          return TP.isTopLevelInstancePath(path) && TP.isParentOf(elementScenePath, path)
+          const path = individualElementMetadata.elementPath
+          return EP.isRootElementOfInstance(path) && EP.isParentOf(elementScenePath, path)
             ? path
             : null
         }, rootElementsMetadata)
@@ -318,7 +324,7 @@ function createFakeMetadataForJSXElement(
     }
 
     elements.push({
-      templatePath: templatePath,
+      elementPath: elementPath,
       element: right(element),
       props: props,
       globalFrame: canvasRectangle(frame),
@@ -335,7 +341,14 @@ function createFakeMetadataForJSXElement(
     elements.push(...children)
   } else if (isJSXFragment(element)) {
     const children = element.children.flatMap((child) =>
-      createFakeMetadataForJSXElement(child, rootPath, parentScope, topLevelElements, focused),
+      createFakeMetadataForJSXElement(
+        child,
+        rootPath,
+        parentScope,
+        topLevelElements,
+        focused,
+        rootOfInstance,
+      ),
     )
     elements.push(...children)
   } else {
@@ -346,13 +359,13 @@ function createFakeMetadataForJSXElement(
 }
 
 function createFakeMetadataForStoryboard(
-  templatePath: InstancePath,
-  children: Array<InstancePath>,
+  elementPath: ElementPath,
+  children: Array<ElementPath>,
 ): ElementInstanceMetadata {
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-    templatePath: templatePath,
+    elementPath: elementPath,
     props: {},
     element: right(jsxTestElement('Storyboard', [], [])),
     children: children,

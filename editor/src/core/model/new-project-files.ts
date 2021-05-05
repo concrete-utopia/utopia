@@ -7,9 +7,8 @@ import {
 } from '../shared/project-file-types'
 import { lintAndParse } from '../workers/parser-printer/parser-printer'
 
-export const sampleAppJSCode = `/** @jsx jsx */
+export const sampleAppJSCode = `
 import * as React from 'react'
-import { jsx } from 'utopia-api'
 export var App = (props) => {
   return (
     <div
@@ -32,9 +31,9 @@ export function getDefaultUIJsFile(): TextFile {
   return textFile(textFileContents(sampleCode, result, RevisionsState.BothMatch), null, Date.now())
 }
 
-export const sampleCode = `/** @jsx jsx */
+export const sampleCode = `
 import * as React from 'react'
-import { Scene, Storyboard, jsx } from 'utopia-api'
+import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
 export var storyboard = (
   <Storyboard>

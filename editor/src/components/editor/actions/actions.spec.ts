@@ -54,7 +54,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { createTestProjectWithCode, getFrameChange } from '../../canvas/canvas-utils'
 import * as PP from '../../../core/shared/property-path'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   createEditorState,
   deriveState,
@@ -202,7 +202,7 @@ const testEditor: EditorState = deepFreeze({
 describe('SET_PROP', () => {
   it('updates a simple value property', () => {
     const action = setProp_UNSAFE(
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       PP.create(['test', 'prop']),
       jsxAttributeValue(100, emptyComments),
     )
@@ -236,7 +236,7 @@ describe('SET_CANVAS_FRAMES', () => {
     const action = setCanvasFrames(
       [
         getFrameChange(
-          TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+          EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
           canvasRectangle({ x: 20, y: 20, width: 50, height: 50 }),
           false,
         ),
@@ -379,11 +379,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
       'skipFrameChange',
       { type: 'front' },
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       null,
       editor,
       null,
@@ -413,8 +413,8 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
       {
         x: 25,
         y: 25,
@@ -422,7 +422,7 @@ describe('moveTemplate', () => {
         height: 100,
       } as CanvasRectangle,
       { type: 'front' },
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       {
         x: 15,
         y: 15,
@@ -461,8 +461,8 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'ccc']),
       {
         x: 25,
         y: 25,
@@ -470,7 +470,7 @@ describe('moveTemplate', () => {
         height: 100,
       } as CanvasRectangle,
       { type: 'front' },
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       {
         x: 15,
         y: 15,
@@ -505,11 +505,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
       'skipFrameChange',
       { type: 'front' },
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -538,11 +538,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
       'skipFrameChange',
       { type: 'back' },
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -572,11 +572,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root]))
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb', 'ccc']),
       'skipFrameChange',
       { type: 'absolute', index: 1 },
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -605,11 +605,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root1, root2]))
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       'skipFrameChange',
       { type: 'front' },
-      TP.instancePath(ScenePath1ForTestUiJsFile, ['ccc']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ccc']),
       null,
       editor,
       null,
@@ -656,11 +656,11 @@ describe('moveTemplate', () => {
     const groupFrame = canvasRectangle({ x: -10, y: -10, width: 100, height: 100 })
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       canvasRectangle({ x: 10, y: 10, width: 100, height: 100 }),
       { type: 'front' },
-      TP.instancePath(ScenePath1ForTestUiJsFile, ['ddd']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd']),
       groupFrame,
       editor,
       LayoutSystem.Group,
@@ -715,11 +715,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([flexView, group1]))
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
-      TP.instancePath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
       canvasRectangle({ x: 50, y: 50, width: 100, height: 100 }),
       { type: 'front' },
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -766,11 +766,11 @@ describe('moveTemplate', () => {
     const editor = testEditorFromParseSuccess(fileModel([root1, group1]))
 
     const newEditor = editorMoveTemplate(
-      TP.instancePath(ScenePathForTestUiJsFile, ['ddd', 'bbb']),
-      TP.instancePath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['ddd', 'bbb']),
+      EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd', 'bbb']),
       canvasRectangle({ x: 50, y: 50, width: 100, height: 100 }),
       { type: 'front' },
-      TP.instancePath(ScenePathForTestUiJsFile, ['aaa']),
+      EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
       null,
@@ -886,18 +886,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     null,
     0,
   )
-  const scenePath = TP.scenePath([[BakedInStoryboardUID, 'scene-0']])
-  const sceneTemplatePath = TP.instancePath(TP.emptyScenePath, [BakedInStoryboardUID, 'scene-0'])
-  const rootElementPath = TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), [
-    'aaa',
-  ])
-  const childElementPath = TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), [
-    'aaa',
-    'bbb',
+  const rootElementPath = EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])
+  const childElementPath = EP.elementPath([
+    [BakedInStoryboardUID, 'scene-0'],
+    ['aaa', 'bbb'],
   ])
 
   const rootElementMetadata: ElementInstanceMetadata = {
-    templatePath: rootElementPath,
+    elementPath: rootElementPath,
     element: right(firstTopLevelElement.rootElement),
     props: {
       'data-uid': 'aaa',
@@ -915,7 +911,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   }
 
   const childElementMetadata: ElementInstanceMetadata = {
-    templatePath: childElementPath,
+    elementPath: childElementPath,
     element: right(childElement),
     props: {
       'data-uid': 'bbb',
@@ -939,8 +935,8 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {
-    [TP.toString(rootElementPath)]: rootElementMetadata,
-    [TP.toString(childElementPath)]: childElementMetadata,
+    [EP.toString(rootElementPath)]: rootElementMetadata,
+    [EP.toString(childElementPath)]: childElementMetadata,
   }
 
   const testEditorWithPins: EditorState = deepFreeze({
@@ -949,7 +945,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
       [StoryboardFilePath]: fileForUI,
     }),
     jsxMetadata: elementMetadataMap,
-    selectedViews: [TP.instancePath(TP.scenePath([[BakedInStoryboardUID, 'scene-0']]), ['aaa'])],
+    selectedViews: [EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])],
   })
   it('switches from pins to flex correctly', () => {
     const switchActionToFlex = switchLayoutSystem('flex')

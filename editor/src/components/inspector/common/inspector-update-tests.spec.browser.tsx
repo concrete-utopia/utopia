@@ -1,12 +1,10 @@
-import * as React from 'react'
-import * as TP from '../../../core/shared/template-path'
+import * as EP from '../../../core/shared/element-path'
 import {
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestScenePath,
 } from '../../canvas/ui-jsx.test-utils'
-import { act } from 'react-test-renderer'
 import { setElectronWindow } from '../../../core/shared/test-setup.test-utils'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import * as PP from '../../../core/shared/property-path'
@@ -35,7 +33,7 @@ describe('updating style properties keeps the original order', () => {
     )
 
     const changePinProps = setProp_UNSAFE(
-      TP.instancePath(TestScenePath, ['aaa', 'bbb']),
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
       PP.create(['style', 'paddingRight']),
       jsxAttributeValue(30, emptyComments),
     )

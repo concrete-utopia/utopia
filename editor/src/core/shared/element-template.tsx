@@ -1,9 +1,8 @@
 import {
   PropertyPath,
-  InstancePath,
   PropertyPathPart,
-  ScenePath,
-  StaticElementPath,
+  StaticElementPathPart,
+  ElementPath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
 import { Either, isLeft } from './either'
@@ -17,7 +16,7 @@ import { objectMap } from './object-utils'
 import { parseUID } from './uid-utils'
 import { CSSPosition } from '../../components/inspector/common/css-utils'
 import { ModifiableAttribute } from './jsx-attributes'
-import * as TP from './template-path'
+import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
 import {
@@ -1269,13 +1268,13 @@ export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadat
 export const emptyJsxMetadata: ElementInstanceMetadataMap = {}
 
 export interface ElementInstanceMetadata {
-  templatePath: InstancePath
+  elementPath: ElementPath
   element: Either<string, JSXElementChild>
   props: { [key: string]: any } // the final, resolved, static props value
   globalFrame: CanvasRectangle | null
   localFrame: LocalRectangle | null
-  children: Array<InstancePath>
-  rootElements: Array<InstancePath>
+  children: Array<ElementPath>
+  rootElements: Array<ElementPath>
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -1285,13 +1284,13 @@ export interface ElementInstanceMetadata {
 }
 
 export function elementInstanceMetadata(
-  templatePath: InstancePath,
+  elementPath: ElementPath,
   element: Either<string, JSXElementChild>,
   props: { [key: string]: any },
   globalFrame: CanvasRectangle | null,
   localFrame: LocalRectangle | null,
-  children: Array<InstancePath>,
-  rootElements: Array<InstancePath>,
+  children: Array<ElementPath>,
+  rootElements: Array<ElementPath>,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
@@ -1300,7 +1299,7 @@ export function elementInstanceMetadata(
   label: string | null,
 ): ElementInstanceMetadata {
   return {
-    templatePath: templatePath,
+    elementPath: elementPath,
     element: element,
     props: props,
     globalFrame: globalFrame,
@@ -1414,23 +1413,20 @@ export const emptyComputedStyle: ComputedStyle = {}
 export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
 
 type Omit<T, K> = Pick<T, Exclude<keyof T, K>> // TODO update typescript!!
-export type MetadataWithoutChildren = Omit<ElementInstanceMetadata, 'children'> & {
-  childrenTemplatePaths: Array<InstancePath>
-}
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 
 export function walkElement(
   element: JSXElementChild,
-  parentPath: StaticElementPath,
+  parentPath: StaticElementPathPart,
   depth: number,
-  forEach: (e: JSXElementChild, path: StaticElementPath, depth: number) => void,
+  forEach: (e: JSXElementChild, path: StaticElementPathPart, depth: number) => void,
 ): void {
   switch (element.type) {
     case 'JSX_ELEMENT':
       const uidAttr = getJSXAttribute(element.props, 'data-uid')
       if (uidAttr != null && isJSXAttributeValue(uidAttr) && typeof uidAttr.value === 'string') {
-        const path = TP.appendToElementPath(parentPath, uidAttr.value)
+        const path = EP.appendToElementPath(parentPath, uidAttr.value)
         forEach(element, path, depth)
         fastForEach(element.children, (child) => walkElement(child, path, depth + 1, forEach))
       }
@@ -1456,9 +1452,9 @@ export function walkElement(
 
 export function walkElements(
   topLevelElements: Array<TopLevelElement>,
-  forEach: (element: JSXElementChild, path: StaticElementPath) => void,
+  forEach: (element: JSXElementChild, path: StaticElementPathPart) => void,
 ): void {
-  const emptyPath = ([] as any) as StaticElementPath // Oh my word
+  const emptyPath = ([] as any) as StaticElementPathPart // Oh my word
   fastForEach(topLevelElements, (rootComponent) => {
     if (isUtopiaJSXComponent(rootComponent)) {
       walkElement(rootComponent.rootElement, emptyPath, 0, forEach)

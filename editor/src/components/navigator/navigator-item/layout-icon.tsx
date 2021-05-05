@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { TemplatePath } from '../../../core/shared/project-file-types'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { IcnProps, Icn, colorTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { WarningIcon } from '../../../uuiui/warning-icon'
 import { useLayoutOrElementIcon } from '../layout-element-icons'
 
 interface LayoutIconProps {
-  path: TemplatePath
+  path: ElementPath
   color: IcnProps['color']
   warningText: string | null
 }
