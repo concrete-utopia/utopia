@@ -1062,7 +1062,7 @@ describe('moveTemplate', () => {
       ),
     )
   })
-  it('unwraps in 1 non-storyboard element', async () => {
+  it('unwraps 1 non-storyboard element', async () => {
     const appFilePath = '/src/app.js'
     let projectContents: ProjectContents = {
       '/package.json': textFile(
