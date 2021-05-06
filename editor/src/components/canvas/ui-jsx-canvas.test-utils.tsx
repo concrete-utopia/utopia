@@ -49,6 +49,8 @@ import { NO_OP } from '../../core/shared/utils'
 import { directory } from '../../core/model/project-file-utils'
 import { contentsToTree } from '../assets'
 import { MapLike } from 'typescript'
+import { generateCodeResultCache } from '../custom-code/code-file'
+import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -56,36 +58,6 @@ export interface PartialCanvasProps {
   hiddenInstances: UiJsxCanvasProps['hiddenInstances']
   editedTextElement: UiJsxCanvasProps['editedTextElement']
   mountCount: UiJsxCanvasProps['mountCount']
-}
-
-export const dumbRequireFn = (filenames: Array<string>) => (
-  importOrigin: string,
-  toImport: string,
-): RequireFn => {
-  return requireTestFiles(filenames, importOrigin, toImport)
-}
-
-function requireTestFiles(filenames: Array<string>, importOrigin: string, toImport: string): any {
-  const normalizedName = normalizeName(importOrigin, toImport)
-  if (filenames.includes(normalizedName)) {
-    return right(normalizedName)
-  }
-  switch (normalizedName) {
-    case 'utopia-api':
-      return UtopiaAPI
-    case 'react':
-      return React
-    case 'react-dom':
-      return ReactDOM
-    case 'uuiui':
-      return UUIUI
-    case 'antd':
-      return ANTD
-    case '@emotion/react':
-      return EmotionReact
-    default:
-      throw new Error(`Unhandled values of ${importOrigin} and ${toImport}.`)
-  }
 }
 
 export const dumbResolveFn = (filenames: Array<string>) => (
@@ -143,7 +115,6 @@ export function renderCanvasReturnResultAndError(
     error: FancyError
     errorInfo?: React.ErrorInfo
   }> = []
-  const requireFn: UiJsxCanvasProps['requireFn'] = dumbRequireFn(Object.keys(codeFilesString))
   const reportError: CanvasReactErrorCallback['reportError'] = (
     editedFile: string,
     error: FancyError,
@@ -177,6 +148,17 @@ export function renderCanvasReturnResultAndError(
       1000,
     )
   }
+  const updatedContents = contentsToTree(projectContents)
+
+  const baseRequireFn = getRequireFn(NO_OP, updatedContents, {}, {}, 'canvas')
+  const requireFn: UiJsxCanvasProps['requireFn'] = (importOrigin: string, toImport: string) => {
+    switch (toImport) {
+      case 'antd':
+        return ANTD
+      default:
+        return baseRequireFn(importOrigin, toImport)
+    }
+  }
   storeHookForTest.updateStore((store) => {
     const updatedEditor = {
       ...store.editor,
@@ -186,7 +168,7 @@ export function renderCanvasReturnResultAndError(
           filename: UiFilePath,
         },
       },
-      projectContents: contentsToTree(projectContents),
+      projectContents: updatedContents,
     }
     return {
       ...store,
