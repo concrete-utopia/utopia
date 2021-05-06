@@ -29,6 +29,7 @@ import {
   jsxElement,
   jsxAttributesFromMap,
   jsxAttributeValue,
+  getJSXElementNameAsString,
 } from '../core/shared/element-template'
 import { getUtopiaID } from '../core/model/element-template-utils'
 import { jsxAttributesToProps } from '../core/shared/jsx-attributes'
@@ -48,7 +49,7 @@ import {
   unparsed,
   EmptyExportsDetail,
 } from '../core/shared/project-file-types'
-import { right } from '../core/shared/either'
+import { foldEither, right } from '../core/shared/either'
 import Utils from './utils'
 import { canvasRectangle, localRectangle, RectangleInner } from '../core/shared/math-utils'
 import {
@@ -64,6 +65,7 @@ import { MapLike } from 'typescript'
 import { contentsToTree } from '../components/assets'
 import { defaultSceneElement } from '../components/editor/defaults'
 import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
+import { objectMap } from '../core/shared/object-utils'
 
 export function delay<T>(time: number): Promise<T> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -383,4 +385,47 @@ export function wait(timeout: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout)
   })
+}
+
+interface SimplifiedMetadata {
+  children: string[]
+  name: string
+  rootElements: string[]
+}
+
+type SimplifiedMetadataMap = { [key: string]: SimplifiedMetadata }
+
+export function simplifiedMetadata(elementMetadata: ElementInstanceMetadata): SimplifiedMetadata {
+  return {
+    name: foldEither(
+      (name) => name,
+      (element) =>
+        isJSXElement(element) ? getJSXElementNameAsString(element.name) : 'not-jsx-element',
+      elementMetadata.element,
+    ),
+    children: elementMetadata.children.map(EP.toString),
+    rootElements: elementMetadata.rootElements.map(EP.toString),
+  }
+}
+
+export function simplifiedMetadataMap(metadata: ElementInstanceMetadataMap): SimplifiedMetadataMap {
+  const sanitizedSpyData = objectMap((elementMetadata, key) => {
+    const elementPathAsReportedBySpy = EP.toString(elementMetadata.elementPath)
+    if (elementPathAsReportedBySpy !== key) {
+      fail(`The reported template path should match what was used as key`)
+    }
+
+    return simplifiedMetadata(elementMetadata)
+  }, metadata)
+  return sanitizedSpyData
+}
+
+export function domWalkerMetadataToSimplifiedMetadataMap(
+  metadata: Array<ElementInstanceMetadata>,
+): SimplifiedMetadataMap {
+  return mapArrayToDictionary(
+    metadata,
+    (elementMetadata: ElementInstanceMetadata) => EP.toString(elementMetadata.elementPath),
+    simplifiedMetadata,
+  )
 }
