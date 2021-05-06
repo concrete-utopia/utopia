@@ -143,8 +143,10 @@ import {
   codeFile,
   unparsed,
   ParseSuccess,
+  importAlias,
 } from '../../../core/shared/project-file-types'
 import {
+  addImport,
   codeNeedsParsing,
   codeNeedsPrinting,
   mergeImports,
@@ -427,6 +429,7 @@ import {
   forUnderlyingTargetFromEditorState,
   getHighlightBoundsForFile,
   modifyParseSuccessAtPath,
+  withUnderlyingTarget,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -1051,11 +1054,17 @@ function indexPositionForAdjustment(
       return { type: 'front' }
     case 'backward':
     case 'forward':
-      const openUIJSFile = getOpenUIJSFile(editor)
-      if (openUIJSFile != null && isParseSuccess(openUIJSFile.fileContents.parsed)) {
-        const current = getZIndexOfElement(
-          openUIJSFile.fileContents.parsed.topLevelElements,
-          EP.asStatic(target),
+      const openUIJSFileKey = getOpenUIJSFileKey(editor)
+      if (openUIJSFileKey != null) {
+        const current = withUnderlyingTarget(
+          target,
+          editor.projectContents,
+          editor.nodeModules.files,
+          openUIJSFileKey,
+          0,
+          (success) => {
+            return getZIndexOfElement(success.topLevelElements, EP.asStatic(target))
+          },
         )
         return {
           type: 'absolute',
@@ -1868,8 +1877,8 @@ export const UPDATE_FNS = {
       editorForAction,
       false,
       (editor) => {
-        const uiFile = getOpenUIJSFile(editor)
-        if (uiFile == null || !isParseSuccess(uiFile.fileContents.parsed)) {
+        const uiFileKey = getOpenUIJSFileKey(editor)
+        if (uiFileKey == null) {
           return editor
         }
 
@@ -1896,27 +1905,47 @@ export const UPDATE_FNS = {
           }
 
           let viewPath: ElementPath | null = null
-          const withWrapperViewAddedNoFrame = modifyOpenParseSuccess((parseSuccess) => {
-            const elementToInsert: JSXElement = defaultTransparentViewElement(newUID)
-            const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
-            const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
-              editor.projectContents,
-              editor.canvas.openFile?.filename ?? null,
-              parentPath,
-              elementToInsert,
-              utopiaJSXComponents,
-              null,
-            )
 
-            viewPath = EP.appendToPath(parentPath, newUID)
+          const underlyingTarget = normalisePathToUnderlyingTarget(
+            editor.projectContents,
+            editor.nodeModules.files,
+            uiFileKey,
+            parentPath,
+          )
+          const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
-            return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
-              return {
-                ...success,
-                utopiaComponents: withTargetAdded,
-              }
-            }, parseSuccess)
-          }, editor)
+          const withWrapperViewAddedNoFrame = modifyParseSuccessAtPath(
+            targetSuccess.filePath,
+            editor,
+            (parseSuccess) => {
+              const elementToInsert: JSXElement = defaultTransparentViewElement(newUID)
+              const utopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(parseSuccess)
+              const withTargetAdded: Array<UtopiaJSXComponent> = insertElementAtPath(
+                editor.projectContents,
+                editor.canvas.openFile?.filename ?? null,
+                parentPath,
+                elementToInsert,
+                utopiaJSXComponents,
+                null,
+              )
+
+              viewPath = EP.appendToPath(parentPath, newUID)
+
+              return modifyParseSuccessWithSimple((success: SimpleParseSuccess) => {
+                return {
+                  ...success,
+                  utopiaComponents: withTargetAdded,
+                  imports: addImport(
+                    'utopia-api',
+                    null,
+                    [importAlias('View')],
+                    null,
+                    success.imports,
+                  ),
+                }
+              }, parseSuccess)
+            },
+          )
 
           if (viewPath == null) {
             return editor
