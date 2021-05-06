@@ -141,20 +141,23 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
           }
         }}
       >
-        <PutAForkInIt />
+        {/* TODO CONDITION */}
+        <ForksGiven />
         {selectedTab === LeftMenuTab.Project ? <ProjectPane /> : null}
         {selectedTab === LeftMenuTab.Storyboards ? <StoryboardsPane /> : null}
         {selectedTab === LeftMenuTab.Contents ? <ContentsPane /> : null}
         {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
         {selectedTab === LeftMenuTab.Sharing ? <SharingPane /> : null}
         {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
+
+        {/* TODO CONDITION */}
         <LoggedOutPane />
       </div>
     </div>
   )
 })
 
-const PutAForkInIt = betterReactMemo('ForkPain', () => {
+const ForksGiven = betterReactMemo('ForkPanel', () => {
   const { id, projectName } = useEditorState((store) => {
     return { id: store.editor.id, projectName: store.editor.projectName }
   }, 'ForkPanel')
@@ -203,6 +206,7 @@ const PutAForkInIt = betterReactMemo('ForkPain', () => {
             <Subdued>{id}</Subdued>
           </div>
           <p>
+            {/* TODO POPULATE WITH PROJECT DESCRIPTION */}
             TODO Using react-spring, react-enterprise, act-react and dozens of other fancy libraries
             you haven't ever heard of.
           </p>
@@ -226,13 +230,16 @@ const PutAForkInIt = betterReactMemo('ForkPain', () => {
             }}
           />
           <div style={{ whiteSpace: 'normal' }}>
-            Created by&nbsp; <Link href=''>Malte Nuhn</Link>
+            {/* TODO POPULATE */}
+            Created by <b>Tommy Lee Jones</b>
             <br />
-            Forked from here
+            {/* TODO POPULATE */}
+            Forked from <Link href=''>Cantankerous Pheasant</Link>
           </div>
         </UIGridRow>
 
         <UIGridRow style={{ gap: 8, marginTop: 8 }} padded variant='<--1fr--><--1fr-->'>
+          {/* TODO HOOK ME UP */}
           <Button
             primary
             highlight
@@ -245,6 +252,7 @@ const PutAForkInIt = betterReactMemo('ForkPain', () => {
           >
             <b>Fork</b>&nbsp;this project
           </Button>
+          {/* TODO HOOK ME UP */}
           <Button
             outline
             highlight
