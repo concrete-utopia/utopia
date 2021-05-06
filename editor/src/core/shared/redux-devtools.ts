@@ -60,9 +60,10 @@ function sanitizeLoggedState(store: EditorStore) {
 export function updateReduxDevtools(actions: Array<EditorAction>, newStore: EditorStore): void {
   if (maybeDevTools != null) {
     // filter out the actions we are not interested in
-    if (!actions.some((a) => ActionsToOmit.includes(a.action))) {
+    const filteredActions = actions.filter((action) => !ActionsToOmit.includes(action.action))
+    if (filteredActions.length > 0) {
       const sanitizedStore = sanitizeLoggedState(newStore)
-      const actionNames = pluck(actions, 'action').join(' ')
+      const actionNames = pluck(filteredActions, 'action').join(' ')
       maybeDevTools.send(`⚫️ ${actionNames}`, sanitizedStore)
       lastDispatchedStore = sanitizedStore
     }
