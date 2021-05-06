@@ -81,7 +81,7 @@ import {
   identifyFilesThatHaveChanged,
 } from '../../../core/shared/project-contents-dependencies'
 import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code-file'
-import { updateReduxDevtools } from '../../../core/shared/redux-devtools'
+import { reduxDevtoolsLogMessage, updateReduxDevtools } from '../../../core/shared/redux-devtools'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -672,6 +672,7 @@ async function save(
   saveType: SaveType,
   forceServerSave: boolean,
 ) {
+  reduxDevtoolsLogMessage('Save Editor') // I'd like to leave this log line here for a day or so, so I can debug what action triggers the save
   const modelChange =
     saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
   const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
