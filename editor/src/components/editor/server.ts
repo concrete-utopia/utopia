@@ -19,7 +19,7 @@ import { isLoginLost, isNotLoggedIn } from '../../common/user'
 import { notice } from '../common/notice'
 import { EditorDispatch, isLoggedIn } from './action-types'
 import { setLoginState, showToast, removeToast } from './actions/action-creators'
-import { isLocal } from './persistence'
+import { isLocal, isSafeToClose } from './persistence'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -424,7 +424,7 @@ export function startPollingLoginState(
           dispatch([removeToast(loginLostNoticeID)])
         }
         if (isNotLoggedIn(previousLoginState)) {
-          if (isLocal()) {
+          if (isLocal() && isSafeToClose()) {
             // The handling of local file uploading is done on load currently.
             // Since there's implications around the project ID from that, it's
             // likely vastly easier to just reload the page here.
