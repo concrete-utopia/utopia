@@ -183,7 +183,7 @@
     "tippy.js": "6.2.6",
     "typescript": "4.0.5",
     "url-join": "4.0.1",
-    "use-context-selector": "git://github.com/dai-shi/use-context-selector.git#3f1df8f",
+    "use-context-selector": "1.3.7",
     "use-optimized-selector": "1.0.0-beta3",
     "utopia-api": "file:../utopia-api",
     "utopia-vscode-common": "file:../utopia-vscode-common",
