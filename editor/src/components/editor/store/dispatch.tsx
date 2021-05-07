@@ -372,9 +372,6 @@ export function editorDispatch(
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
   })
-  const updateCodeResultCache = dispatchedActions.some(
-    (action) => action.action === 'UPDATE_CODE_RESULT_CACHE',
-  )
 
   const allBuildErrorsInState = getAllBuildErrors(storedState.editor)
 
@@ -477,7 +474,7 @@ export function editorDispatch(
   const shouldSave =
     isLoaded &&
     !isLoadAction &&
-    (!transientOrNoChange || anyUndoOrRedo || updateCodeResultCache || updateCodeEditorErrors) &&
+    (!transientOrNoChange || anyUndoOrRedo || updateCodeEditorErrors) &&
     isBrowserEnvironment
   if (shouldSave) {
     save(frozenEditorState, boundDispatch, storedState.userState.loginState, saveType, forceSave)
