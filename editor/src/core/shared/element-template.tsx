@@ -328,6 +328,12 @@ export function clearJSXAttributeOtherJavaScriptUniqueIDs(
   }
 }
 
+export function simplifyAttributesIfPossible(attributes: JSXAttributes): JSXAttributes {
+  return attributes.map(({ key, value, comments }) =>
+    jsxAttributesEntry(key, simplifyAttributeIfPossible(value), comments),
+  )
+}
+
 export function simplifyAttributeIfPossible(attribute: JSXAttribute): JSXAttribute {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
@@ -628,16 +634,17 @@ export function setJSXAttributesAttribute(
   value: JSXAttribute,
 ): JSXAttributes {
   let updatedExistingField: boolean = false
+  const simplifiedValue = simplifyAttributeIfPossible(value)
   let result: JSXAttributes = attributes.map((attr) => {
     if (attr.key === key) {
       updatedExistingField = true
-      return jsxAttributesEntry(key, value, attr.comments)
+      return jsxAttributesEntry(key, simplifiedValue, attr.comments)
     } else {
       return attr
     }
   })
   if (!updatedExistingField) {
-    result.push(jsxAttributesEntry(key, value, emptyComments))
+    result.push(jsxAttributesEntry(key, simplifiedValue, emptyComments))
   }
   return result
 }
