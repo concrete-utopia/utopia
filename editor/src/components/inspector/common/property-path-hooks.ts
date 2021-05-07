@@ -1,7 +1,7 @@
 import * as deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import * as React from 'react'
-import { createContext, useContextSelector } from 'use-context-selector'
+import { createContext } from 'use-context-selector'
 import { PropertyControls } from 'utopia-api'
 import {
   forUnderlyingTargetFromEditorState,
@@ -96,6 +96,7 @@ import { fastForEach } from '../../../core/shared/utils'
 import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import {
   keepDeepReferenceEqualityIfPossible,
+  useContextSelector,
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../../utils/react-performance'
@@ -133,6 +134,8 @@ export const InspectorCallbackContext = React.createContext<InspectorCallbackCon
   onUnsetValue: Utils.NO_OP,
 })
 InspectorCallbackContext.displayName = 'InspectorCallbackContext'
+
+export const selectTargetPath = (contextData: InspectorPropsContextData) => contextData.targetPath
 
 function extractSimpleValueFromMultiSelectAttribute(
   attrs: GetModifiableAttributeResult | undefined,
@@ -190,6 +193,10 @@ function getAttributeMetadatas(
   return selectedAttributeMetadatas[key] ?? []
 }
 
+const selectMultiSelectedPropsLength = (c: InspectorPropsContextData) => {
+  return c.editedMultiSelectedProps.length
+}
+
 // TODO also memoize me!
 export function useInspectorInfoFromMultiselectMultiStyleAttribute<
   PropertiesToControl extends ParsedPropertiesKeys
@@ -209,9 +216,10 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
     attributeMetadatas: ReadonlyArray<StyleAttributeMetadataEntry>
   }
 } {
-  const multiselectLength = useContextSelector(InspectorPropsContext, (c) => {
-    return c.editedMultiSelectedProps.length
-  })
+  const multiselectLength = useContextSelector(
+    InspectorPropsContext,
+    selectMultiSelectedPropsLength,
+  )
 
   return React.useMemo(() => {
     const multiselectAtPropsKeys = Object.keys(multiselectAtProps)
@@ -262,9 +270,10 @@ export function useInspectorInfoFromMultiselectMultiPropAttribute(
     spiedValues: ReadonlyArray<any>
   }
 } {
-  const multiselectLength = useContextSelector(InspectorPropsContext, (c) => {
-    return c.editedMultiSelectedProps.length
-  })
+  const multiselectLength = useContextSelector(
+    InspectorPropsContext,
+    selectMultiSelectedPropsLength,
+  )
 
   return React.useMemo(() => {
     const multiselectAtPropsKeys = Object.keys(multiselectAtProps)
@@ -500,7 +509,7 @@ export function useInspectorInfo<P extends ParsedPropertiesKeys, T = ParsedPrope
   } = useInspectorContext()
 
   const target = useKeepReferenceEqualityIfPossible(
-    useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
+    useContextSelector(InspectorPropsContext, selectTargetPath, deepEqual),
   )
   const onUnsetValues = React.useCallback(() => {
     onUnsetValue(propKeys.map((propKey) => pathMappingFn(propKey, target)))
@@ -590,21 +599,25 @@ function useGetSelectedAttributeMetadatas<P extends ParsedPropertiesKeys>(
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P): StyleAttributeMetadataEntry[] => {
-          const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
-          const isStylePath = path[0] === 'style' || path[0] === 'css'
-          if (isStylePath && path.length === 2) {
-            return contextData.selectedAttributeMetadatas.map((attributeMetadata) => {
-              return ObjectPath.get(attributeMetadata, path[1])
-            })
-          } else {
-            return []
+      React.useMemo(
+        () => (contextData) => {
+          const keyFn = (propKey: P) => propKey
+          const mapFn = (propKey: P): StyleAttributeMetadataEntry[] => {
+            const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
+            const isStylePath = path[0] === 'style' || path[0] === 'css'
+            if (isStylePath && path.length === 2) {
+              return contextData.selectedAttributeMetadatas.map((attributeMetadata) => {
+                return ObjectPath.get(attributeMetadata, path[1])
+              })
+            } else {
+              return []
+            }
           }
-        }
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
+          return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [propKeys, pathMappingFn],
+      ),
       deepEqual,
     ),
   )
@@ -617,21 +630,25 @@ function useGetSelectedComputedStyles<P extends ParsedPropertiesKeys>(
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P): string[] => {
-          const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
-          const isStylePath = path[0] === 'style' || path[0] === 'css'
-          if (isStylePath && path.length === 2) {
-            return contextData.computedStyles.map((computedStyle) => {
-              return ObjectPath.get(computedStyle, path[1])
-            })
-          } else {
-            return []
+      React.useMemo(
+        () => (contextData) => {
+          const keyFn = (propKey: P) => propKey
+          const mapFn = (propKey: P): string[] => {
+            const path = PP.getElements(pathMappingFn(propKey, contextData.targetPath))
+            const isStylePath = path[0] === 'style' || path[0] === 'css'
+            if (isStylePath && path.length === 2) {
+              return contextData.computedStyles.map((computedStyle) => {
+                return ObjectPath.get(computedStyle, path[1])
+              })
+            } else {
+              return []
+            }
           }
-        }
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
+          return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [propKeys, pathMappingFn],
+      ),
       deepEqual,
     ),
   )
@@ -644,18 +661,22 @@ function useGetSpiedProps<P extends ParsedPropertiesKeys>(
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P) => {
-          return contextData.spiedProps.map((props) => {
-            return ObjectPath.get(
-              props,
-              PP.getElements(pathMappingFn(propKey, contextData.targetPath)),
-            )
-          })
-        }
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
+      React.useMemo(
+        () => (contextData) => {
+          const keyFn = (propKey: P) => propKey
+          const mapFn = (propKey: P) => {
+            return contextData.spiedProps.map((props) => {
+              return ObjectPath.get(
+                props,
+                PP.getElements(pathMappingFn(propKey, contextData.targetPath)),
+              )
+            })
+          }
+          return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [propKeys, pathMappingFn],
+      ),
       deepEqual,
     ),
   )
@@ -668,17 +689,21 @@ function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propKey: P) => propKey
-        const mapFn = (propKey: P) =>
-          contextData.editedMultiSelectedProps.map((props) => {
-            return getModifiableJSXAttributeAtPath(
-              props,
-              pathMappingFn(propKey, contextData.targetPath),
-            )
-          })
-        return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
-      },
+      React.useMemo(
+        () => (contextData) => {
+          const keyFn = (propKey: P) => propKey
+          const mapFn = (propKey: P) =>
+            contextData.editedMultiSelectedProps.map((props) => {
+              return getModifiableJSXAttributeAtPath(
+                props,
+                pathMappingFn(propKey, contextData.targetPath),
+              )
+            })
+          return Utils.mapArrayToDictionary(propKeys, keyFn, mapFn)
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [propKeys, pathMappingFn],
+      ),
       deepEqual,
     ),
   )
@@ -795,15 +820,18 @@ export function useInspectorInfoSimpleUntyped(
   const multiselectAtProps: MultiselectAtStringProps = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        const pathArray = (propertyPath: PropertyPath) =>
-          propertyPath.propertyElements[propertyPath.propertyElements.length - 1]
-        const keyFn = (propertyPath: PropertyPath) =>
-          contextData.editedMultiSelectedProps.map((props) => {
-            return getModifiableJSXAttributeAtPath(props, propertyPath)
-          })
-        return Utils.mapArrayToDictionary(propertyPaths, pathArray, keyFn)
-      },
+      React.useMemo(
+        () => (contextData) => {
+          const pathArray = (propertyPath: PropertyPath) =>
+            propertyPath.propertyElements[propertyPath.propertyElements.length - 1]
+          const keyFn = (propertyPath: PropertyPath) =>
+            contextData.editedMultiSelectedProps.map((props) => {
+              return getModifiableJSXAttributeAtPath(props, propertyPath)
+            })
+          return Utils.mapArrayToDictionary(propertyPaths, pathArray, keyFn)
+        },
+        [propertyPaths],
+      ),
       deepEqual,
     ),
   )
@@ -811,15 +839,18 @@ export function useInspectorInfoSimpleUntyped(
   const selectedProps = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        const keyFn = (propPath: PropertyPath) => PP.lastPart(propPath)
-        const mapFn = (propPath: PropertyPath) => {
-          return contextData.spiedProps.map((props) => {
-            return ObjectPath.get(props, PP.getElements(propPath))
-          })
-        }
-        return Utils.mapArrayToDictionary(propertyPaths, keyFn, mapFn)
-      },
+      React.useMemo(
+        () => (contextData) => {
+          const keyFn = (propPath: PropertyPath) => PP.lastPart(propPath)
+          const mapFn = (propPath: PropertyPath) => {
+            return contextData.spiedProps.map((props) => {
+              return ObjectPath.get(props, PP.getElements(propPath))
+            })
+          }
+          return Utils.mapArrayToDictionary(propertyPaths, keyFn, mapFn)
+        },
+        [propertyPaths],
+      ),
       deepEqual,
     ),
   )
@@ -1119,11 +1150,10 @@ export function useInspectorWarningStatus(): boolean {
   }, 'useInspectorWarningStatus')
 }
 
+const selectSelectedViews = (context: InspectorPropsContextData) => context.selectedViews
+
 export function useSelectedViews() {
-  const selectedViews = useContextSelector(
-    InspectorPropsContext,
-    (context) => context.selectedViews,
-  )
+  const selectedViews = useContextSelector(InspectorPropsContext, selectSelectedViews)
   return selectedViews
 }
 
@@ -1139,17 +1169,20 @@ export function useGetOrderedPropertyKeys<P>(
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        return contextData.editedMultiSelectedProps.map((props) =>
-          stripNulls(
-            getAllPathsFromAttributes(props).map((path) =>
-              propKeys.find((propKey) =>
-                PP.pathsEqual(path, pathMappingFn(propKey, contextData.targetPath)),
+      React.useMemo(
+        () => (contextData) => {
+          return contextData.editedMultiSelectedProps.map((props) =>
+            stripNulls(
+              getAllPathsFromAttributes(props).map((path) =>
+                propKeys.find((propKey) =>
+                  PP.pathsEqual(path, pathMappingFn(propKey, contextData.targetPath)),
+                ),
               ),
             ),
-          ),
-        )
-      },
+          )
+        },
+        [propKeys, pathMappingFn],
+      ),
       deepEqual,
     ),
   )

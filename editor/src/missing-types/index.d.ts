@@ -51,26 +51,6 @@ declare module 'eslint4b'
 declare module 'babel-eslint'
 declare module 'strip-ansi'
 
-declare module 'use-context-selector' {
-  import * as React from 'react'
-
-  const CONTEXT_LISTENERS = Symbol('C_L')
-
-  type ContextWithListeners<T> = React.Context<T> & {
-    [CONTEXT_LISTENERS]: Set<(nextValue: T) => void>
-  }
-
-  export const createContext: <T>(defaultValue: T) => ContextWithListeners<T>
-
-  export const useContextSelector: <T, S>(
-    context: ContextWithListeners<T>,
-    selector: (value: T) => S,
-    equalityCheck: (a: S, b: S) => boolean = Object.is,
-  ) => S
-
-  export const useContext: <T>(context: ContextWithListeners<T>) => T
-}
-
 declare module 'console-feed'
 declare module 'console-feed/lib/Hook/parse'
 

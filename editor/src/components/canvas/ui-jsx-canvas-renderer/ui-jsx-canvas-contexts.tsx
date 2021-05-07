@@ -29,7 +29,7 @@ export function updateMutableUtopiaContextWithNewProps(
   ref.current = newProps
 }
 
-interface RerenderUtopiaContextProps {
+export interface RerenderUtopiaContextProps {
   hiddenInstances: Array<ElementPath>
   canvasIsLive: boolean
   shouldIncludeCanvasRootInTheSpy: boolean
@@ -42,7 +42,7 @@ export const RerenderUtopiaContext = createContext<RerenderUtopiaContextProps>({
 })
 RerenderUtopiaContext.displayName = 'RerenderUtopiaContext'
 
-interface UtopiaProjectContextProps {
+export interface UtopiaProjectContextProps {
   projectContents: ProjectContentTreeRoot
   openStoryboardFilePathKILLME: string | null
   transientFilesState: TransientFilesState | null

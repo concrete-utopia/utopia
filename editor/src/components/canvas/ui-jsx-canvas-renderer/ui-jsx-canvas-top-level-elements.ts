@@ -1,9 +1,11 @@
-import { useContextSelector } from 'use-context-selector'
 import { ArbitraryJSBlock, TopLevelElement } from '../../../core/shared/element-template'
 import { Imports, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import { useContextSelector } from '../../../utils/react-performance'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../assets'
 import { TransientFilesState, TransientFileState } from '../../editor/store/editor-state'
 import { UtopiaProjectContext } from './ui-jsx-canvas-contexts'
+import { useMemo } from 'react'
+import * as deepEqual from 'fast-deep-equal'
 
 interface GetParseSuccessOrTransientResult {
   topLevelElements: TopLevelElement[]
@@ -50,15 +52,22 @@ export function getParseSuccessOrTransientForFilePath(
 }
 
 export function useGetTopLevelElements(filePath: string | null): TopLevelElement[] {
-  return useContextSelector(UtopiaProjectContext, (c) => {
-    if (filePath == null) {
-      return EmptyResult.topLevelElements
-    } else {
-      return getParseSuccessOrTransientForFilePath(
-        filePath,
-        c.projectContents,
-        c.transientFilesState,
-      ).topLevelElements
-    }
-  })
+  return useContextSelector(
+    UtopiaProjectContext,
+    useMemo(
+      () => (c) => {
+        if (filePath == null) {
+          return EmptyResult.topLevelElements
+        } else {
+          return getParseSuccessOrTransientForFilePath(
+            filePath,
+            c.projectContents,
+            c.transientFilesState,
+          ).topLevelElements
+        }
+      },
+      [filePath],
+    ),
+    deepEqual,
+  )
 }

@@ -1,7 +1,6 @@
 import * as deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import * as React from 'react'
-import { useContextSelector } from 'use-context-selector'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import {
   printerForPropertyControl,
@@ -17,6 +16,7 @@ import {
 import {
   InspectorInfo,
   InspectorPropsContext,
+  InspectorPropsContextData,
   useCallbackFactory,
   useInspectorContext,
 } from './property-path-hooks'
@@ -32,7 +32,10 @@ import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
 } from './control-status'
-import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import {
+  useContextSelector,
+  useKeepReferenceEqualityIfPossible,
+} from '../../../utils/react-performance'
 
 type RawValues = Either<string, ModifiableAttribute>[]
 type RealValues = unknown[]
@@ -44,11 +47,14 @@ export function useInspectorInfoForPropertyControl(
   const rawValues: RawValues = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        return contextData.editedMultiSelectedProps.map((props) => {
-          return getModifiableJSXAttributeAtPath(props, propertyPath)
-        })
-      },
+      React.useMemo(
+        () => (contextData) => {
+          return contextData.editedMultiSelectedProps.map((props) => {
+            return getModifiableJSXAttributeAtPath(props, propertyPath)
+          })
+        },
+        [propertyPath],
+      ),
       deepEqual,
     ),
   )
@@ -56,11 +62,14 @@ export function useInspectorInfoForPropertyControl(
   const realValues: RealValues = useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        return contextData.spiedProps.map((props) => {
-          return ObjectPath.get(props, PP.getElements(propertyPath))
-        })
-      },
+      React.useMemo(
+        () => (contextData) => {
+          return contextData.spiedProps.map((props) => {
+            return ObjectPath.get(props, PP.getElements(propertyPath))
+          })
+        },
+        [propertyPath],
+      ),
       deepEqual,
     ),
   )
@@ -120,10 +129,13 @@ function useFirstRawValue(propertyPath: PropertyPath): Either<string, Modifiable
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        const firstElemProps = contextData.editedMultiSelectedProps[0] ?? {}
-        return getModifiableJSXAttributeAtPath(firstElemProps, propertyPath)
-      },
+      React.useMemo(
+        () => (contextData) => {
+          const firstElemProps = contextData.editedMultiSelectedProps[0] ?? {}
+          return getModifiableJSXAttributeAtPath(firstElemProps, propertyPath)
+        },
+        [propertyPath],
+      ),
       deepEqual,
     ),
   )
@@ -133,10 +145,13 @@ function useFirstRealValue(propertyPath: PropertyPath): unknown {
   return useKeepReferenceEqualityIfPossible(
     useContextSelector(
       InspectorPropsContext,
-      (contextData) => {
-        const firstElemProps = contextData.spiedProps[0] ?? {}
-        return ObjectPath.get(firstElemProps, PP.getElements(propertyPath))
-      },
+      React.useMemo(
+        () => (contextData) => {
+          const firstElemProps = contextData.spiedProps[0] ?? {}
+          return ObjectPath.get(firstElemProps, PP.getElements(propertyPath))
+        },
+        [propertyPath],
+      ),
       deepEqual,
     ),
   )

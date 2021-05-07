@@ -3,6 +3,8 @@ import * as fastDeepEqual from 'fast-deep-equal'
 import { PRODUCTION_ENV } from '../common/env-vars'
 import { KeepDeepEqualityCall, keepDeepEqualityResult } from './deep-equality'
 import { shallowEqual } from '../core/shared/equality-utils'
+import { useContextSelector as useContextSelectorDaiShi } from 'use-context-selector'
+import { useOptimizedSelector } from 'use-optimized-selector'
 
 export function useHookUpdateAnalysisStrictEquals<P>(name: string, newValue: P) {
   const previousValue = React.useRef(newValue)
@@ -474,4 +476,13 @@ export function useKeepDeepEqualityCall<T>(newValue: T, keepDeepCall: KeepDeepEq
   const oldValue = React.useRef<T>(newValue)
   oldValue.current = keepDeepCall(oldValue.current, newValue).value
   return oldValue.current
+}
+
+export function useContextSelector<T, S>(
+  context: React.Context<T>,
+  selector: (value: T) => S,
+  isEqual: (l: S, r: S) => boolean = Object.is,
+): S {
+  const optimizedSelector = useOptimizedSelector(selector, isEqual)
+  return useContextSelectorDaiShi(context, optimizedSelector)
 }
