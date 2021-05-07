@@ -409,7 +409,14 @@ export function editorDispatch(
         allTransient,
         spyCollector,
       )
-      reduxDevtoolsSendActions(actions, newStore)
+      if (!newStore.nothingChanged) {
+        /**
+         * Heads up: we do not log dispatches that resulted in a NO_OP. This is to avoid clogging up the
+         * history with a million CLEAR_HIGHLIGHTED_VIEWS and other such actions.
+         *  */
+
+        reduxDevtoolsSendActions(actions, newStore)
+      }
       return newStore
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
