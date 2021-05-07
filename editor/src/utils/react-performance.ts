@@ -3,7 +3,7 @@ import * as fastDeepEqual from 'fast-deep-equal'
 import { PRODUCTION_ENV } from '../common/env-vars'
 import { KeepDeepEqualityCall, keepDeepEqualityResult } from './deep-equality'
 import { shallowEqual } from '../core/shared/equality-utils'
-import { useContextSelector as useContextSelectorDaiShi, Context } from 'use-context-selector'
+import { useContext, Context } from 'use-context-selector'
 import { useOptimizedSelector } from 'use-optimized-selector'
 
 export function useHookUpdateAnalysisStrictEquals<P>(name: string, newValue: P) {
@@ -484,5 +484,5 @@ export function useContextSelector<T, S>(
   isEqual: (l: S, r: S) => boolean = Object.is,
 ): S {
   const optimizedSelector = useOptimizedSelector(selector, isEqual)
-  return useContextSelectorDaiShi(context, optimizedSelector)
+  return useContext(context, optimizedSelector)
 }
