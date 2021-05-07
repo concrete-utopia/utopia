@@ -372,27 +372,6 @@ export function editorDispatch(
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
   })
-
-  const allBuildErrorsInState = getAllBuildErrors(storedState.editor)
-
-  const allLintErrorsInState = getAllLintErrors(storedState.editor)
-
-  const updateCodeEditorErrors = dispatchedActions.some(
-    (action) =>
-      (action.action === 'SET_CODE_EDITOR_BUILD_ERRORS' &&
-        !arrayEquals(
-          allBuildErrorsInState,
-          getAllErrorsFromFiles(action.buildErrors),
-          (a, b) => a.message !== b.message,
-        )) ||
-      (action.action === 'SET_CODE_EDITOR_LINT_ERRORS' &&
-        !arrayEquals(
-          allLintErrorsInState,
-          getAllErrorsFromFiles(action.lintErrors),
-          (a, b) => a.message !== b.message,
-        )),
-  )
-
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
   const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
@@ -472,10 +451,7 @@ export function editorDispatch(
 
   const isLoaded = frozenEditorState.isLoaded
   const shouldSave =
-    isLoaded &&
-    !isLoadAction &&
-    (!transientOrNoChange || anyUndoOrRedo || updateCodeEditorErrors) &&
-    isBrowserEnvironment
+    isLoaded && !isLoadAction && (!transientOrNoChange || anyUndoOrRedo) && isBrowserEnvironment
   if (shouldSave) {
     save(frozenEditorState, boundDispatch, storedState.userState.loginState, saveType, forceSave)
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
