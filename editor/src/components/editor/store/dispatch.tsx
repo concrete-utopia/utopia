@@ -81,7 +81,10 @@ import {
   identifyFilesThatHaveChanged,
 } from '../../../core/shared/project-contents-dependencies'
 import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code-file'
-import { reduxDevtoolsLogMessage, updateReduxDevtools } from '../../../core/shared/redux-devtools'
+import {
+  reduxDevtoolsLogMessage,
+  reduxDevtoolsSendActions,
+} from '../../../core/shared/redux-devtools'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -430,7 +433,7 @@ export function editorDispatch(
         allTransient,
         spyCollector,
       )
-      updateReduxDevtools(actions, newStore)
+      reduxDevtoolsSendActions(actions, newStore)
       return newStore
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
