@@ -57,7 +57,10 @@ function sanitizeLoggedState(store: EditorStore) {
   }
 }
 
-export function updateReduxDevtools(actions: Array<EditorAction>, newStore: EditorStore): void {
+export function reduxDevtoolsSendActions(
+  actions: Array<EditorAction>,
+  newStore: EditorStore,
+): void {
   if (maybeDevTools != null) {
     // filter out the actions we are not interested in
     const filteredActions = actions.filter((action) => !ActionsToOmit.includes(action.action))
@@ -82,5 +85,13 @@ export function reduxDevtoolsLogMessage(message: string, optionalPayload?: any):
       ...lastDispatchedStore,
       logMessagePayload: optionalPayload,
     })
+  }
+}
+
+export function reduxDevtoolsUpdateState(message: string, newStore: EditorStore): void {
+  if (maybeDevTools != null) {
+    const sanitizedStore = sanitizeLoggedState(newStore)
+    maybeDevTools.send(`🟣 ${message}`, sanitizedStore)
+    lastDispatchedStore = sanitizedStore
   }
 }
