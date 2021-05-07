@@ -123,10 +123,10 @@ describe('toggleStyleProp', () => {
     const expectedElement = jsxTestElement(
       'View',
       jsxAttributesFromMap({
-        style: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({
-            backgroundColor: jsxAttributeValue('red', emptyComments),
-          }),
+        style: jsxAttributeValue(
+          {
+            backgroundColor: 'red',
+          },
           emptyComments,
         ),
       }),
