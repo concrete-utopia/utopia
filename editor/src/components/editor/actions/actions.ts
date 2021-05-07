@@ -1736,9 +1736,10 @@ export const UPDATE_FNS = {
       setTimeout(() => dispatch([removeToast(action.toast.id)], 'everyone'), 5500)
     }
 
+    const withOldToastRemoved = UPDATE_FNS.REMOVE_TOAST(removeToast(action.toast.id), editor)
     return {
-      ...editor,
-      toasts: [...editor.toasts, action.toast],
+      ...withOldToastRemoved,
+      toasts: [...withOldToastRemoved.toasts, action.toast],
     }
   },
   REMOVE_TOAST: (action: RemoveToast, editor: EditorModel): EditorModel => {
