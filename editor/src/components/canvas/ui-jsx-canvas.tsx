@@ -283,38 +283,45 @@ export const UiJsxCanvas = betterReactMemo(
 
     // TODO after merge requireFn can never be null
     if (requireFn != null) {
+      let resolvedFiles: string[] = []
       const customRequire = React.useCallback(
         (importOrigin: string, toImport: string) => {
           const filePathResolveResult = resolve(importOrigin, toImport)
           const resolvedParseSuccess: Either<string, MapLike<any>> = flatMapEither(
             (resolvedFilePath) => {
-              const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
-              if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
-                const { scope } = createExecutionScope(
-                  resolvedFilePath,
-                  customRequire,
-                  mutableContextRef,
-                  topLevelComponentRendererComponents,
-                  projectContents,
-                  uiFilePath,
-                  transientFilesState,
-                  base64FileBlobs,
-                  hiddenInstances,
-                  metadataContext,
-                  shouldIncludeCanvasRootInTheSpy,
-                )
-                const exportsDetail = projectFile.fileContents.parsed.exportsDetail
-                let filteredScope: MapLike<any> = {}
-                for (const s of Object.keys(scope)) {
-                  if (s in exportsDetail.namedExports) {
-                    filteredScope[s] = scope[s]
-                  } else if (s === exportsDetail.defaultExport?.name) {
-                    filteredScope[s] = scope[s]
-                  }
-                }
-                return right(filteredScope)
+              if (resolvedFiles.includes(resolvedFilePath)) {
+                // We're inside a cyclic dependency, so bail and the outer call will create the execution scope
+                return left('Ignoring inner cyclic dependency')
               } else {
-                return left(`File ${resolvedFilePath} is not a ParseSuccess`)
+                resolvedFiles.push(resolvedFilePath)
+                const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
+                if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+                  const { scope } = createExecutionScope(
+                    resolvedFilePath,
+                    customRequire,
+                    mutableContextRef,
+                    topLevelComponentRendererComponents,
+                    projectContents,
+                    uiFilePath,
+                    transientFilesState,
+                    base64FileBlobs,
+                    hiddenInstances,
+                    metadataContext,
+                    shouldIncludeCanvasRootInTheSpy,
+                  )
+                  const exportsDetail = projectFile.fileContents.parsed.exportsDetail
+                  let filteredScope: MapLike<any> = {}
+                  for (const s of Object.keys(scope)) {
+                    if (s in exportsDetail.namedExports) {
+                      filteredScope[s] = scope[s]
+                    } else if (s === exportsDetail.defaultExport?.name) {
+                      filteredScope[s] = scope[s]
+                    }
+                  }
+                  return right(filteredScope)
+                } else {
+                  return left(`File ${resolvedFilePath} is not a ParseSuccess`)
+                }
               }
             },
             filePathResolveResult,
@@ -335,6 +342,7 @@ export const UiJsxCanvas = betterReactMemo(
         [
           requireFn,
           resolve,
+          resolvedFiles,
           projectContents,
           transientFilesState,
           uiFilePath,

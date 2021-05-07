@@ -17,10 +17,15 @@ export function handlePreviewDisconnected() {
 }
 
 export function startPreviewConnectedMonitoring(dispatch: EditorDispatch) {
+  let previousPreviewConnected: boolean
+
   window.clearInterval(intervalId)
   intervalId = window.setInterval(() => {
     const stillConnected =
       lastReportFromPreviewTS > 0 && Date.now() - lastReportFromPreviewTS < timeout
-    dispatch([updatePreviewConnected(stillConnected)], 'everyone')
+    if (stillConnected !== previousPreviewConnected) {
+      dispatch([updatePreviewConnected(stillConnected)], 'everyone')
+    }
+    previousPreviewConnected = stillConnected
   }, 200)
 }
