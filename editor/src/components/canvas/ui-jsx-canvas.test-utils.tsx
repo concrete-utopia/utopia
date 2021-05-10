@@ -49,7 +49,6 @@ import { NO_OP } from '../../core/shared/utils'
 import { directory } from '../../core/model/project-file-utils'
 import { contentsToTree } from '../assets'
 import { MapLike } from 'typescript'
-import { generateCodeResultCache } from '../custom-code/code-file'
 import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
 
 export interface PartialCanvasProps {
