@@ -99,7 +99,7 @@ export const setupBrowser = async (): Promise<{
 }
 
 function consoleMessageForResult(result: FrameResult): string {
-  return `*${result.title}*: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
+  return `${result.title}: **${result.analytics.percentile50}**ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }
 
 export const testPerformance = async function () {
@@ -125,7 +125,7 @@ export const testPerformance = async function () {
       scrollResult,
     )} | ${consoleMessageForResult(resizeResult)} | ${consoleMessageForResult(
       selectionResult,
-    )} ![](${summaryImage})`,
+    )} ![chart](${summaryImage})`,
   )
 }
 
