@@ -38,7 +38,7 @@ import {
   Button,
 } from '../../uuiui'
 import { notice } from '../common/notice'
-import { getNearestAncestorDirectory } from '../../utils/path-utils'
+import { getParentDirectory } from '../../utils/path-utils'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -770,10 +770,8 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
     canDrop: () => true,
     drop: () => props,
     hover: (item: FilebrowserDragItem) => {
-      const targetDirectory = getNearestAncestorDirectory(
-        props.path,
-        props.fileType === 'DIRECTORY',
-      )
+      const targetDirectory =
+        props.fileType === 'DIRECTORY' ? props.path : getParentDirectory(props.path)
       // do not trigger highlight when it tries to move to it's descendant directories
       if (targetDirectory.includes(item.props.path)) {
         if (props.dropTarget != null) {

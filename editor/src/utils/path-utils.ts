@@ -27,12 +27,8 @@ export function appendToPath(firstPart: string, secondPart: string): string {
   return `${left}/${right}`
 }
 
-export function getNearestAncestorDirectory(filepath: string, isDirectory: boolean): string {
-  if (isDirectory) {
-    return filepath
-  } else {
-    return makePathFromParts(getPartsFromPath(filepath).slice(0, -1))
-  }
+export function getParentDirectory(filepath: string): string {
+  return makePathFromParts(getPartsFromPath(filepath).slice(0, -1))
 }
 
 export function makePathFromParts(parts: Array<string>): string {
