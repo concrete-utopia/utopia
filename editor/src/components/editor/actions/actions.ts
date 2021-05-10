@@ -2034,12 +2034,13 @@ export const UPDATE_FNS = {
           editor,
           'forward',
         )
+        let newSelection: ElementPath[] = []
         const withChildrenMoved = children.reduce((working, child) => {
           const childFrame = MetadataUtils.getFrameInCanvasCoords(
             child.elementPath,
             editor.jsxMetadata,
           )
-          return editorMoveTemplate(
+          const result = editorMoveTemplate(
             child.elementPath,
             child.elementPath,
             childFrame,
@@ -2048,11 +2049,22 @@ export const UPDATE_FNS = {
             parentFrame,
             working,
             null,
-          ).editor
+          )
+          if (result.newPath != null) {
+            newSelection.push(result.newPath)
+          }
+          return result.editor
         }, editor)
         const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
-        return withViewDeleted
+        return {
+          ...withViewDeleted,
+          selectedViews: newSelection,
+          canvas: {
+            ...withViewDeleted.canvas,
+            mountCount: editor.canvas.mountCount + 1,
+          },
+        }
       },
       dispatch,
     )
