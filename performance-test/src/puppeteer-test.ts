@@ -86,6 +86,7 @@ export const setupBrowser = async (): Promise<{
     executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
+  await page.setDefaultNavigationTimeout(120000)
   await page.setViewport({ width: 1500, height: 768 })
   // page.on('console', (message) =>
   //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
@@ -98,6 +99,31 @@ export const setupBrowser = async (): Promise<{
   }
 }
 
+const ResizeButtonExpression = "//a[contains(., 'P R')]"
+
+async function initialiseProject(page: puppeteer.Page): Promise<void> {
+  console.log('Initialising the project')
+  await page.$('[class^="monaco-editor"]')
+
+  // Select something a resize it to trigger a fork
+  const navigatorElement = await page.$('[class^="item-label-container"]')
+  await navigatorElement!.click()
+
+  // First selection will open the file in VS Code, triggering a bunch of downloads, so we pause briefly
+  await page.waitForTimeout(15000)
+
+  const [button] = await page.$x(ResizeButtonExpression)
+  await button!.click()
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+
+  // This change should have triggered a fork, so pause again
+  await page.waitForTimeout(15000)
+
+  // Ensure VS Code is ready
+  await page.$('[class^="monaco-editor"]')
+  console.log('Finished initialising')
+}
+
 function consoleMessageForResult(result: FrameResult): string {
   return `${result.title}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
 }
@@ -108,10 +134,9 @@ export const testPerformance = async function () {
   let selectionResult = EmptyResult
   const { page, browser } = await setupBrowser()
   try {
+    await initialiseProject(page)
     selectionResult = await testSelectionPerformance(page)
-    await page.reload()
     resizeResult = await testResizePerformance(page)
-    await page.reload()
     scrollResult = await testScrollingPerformance(page)
   } catch (e) {
     throw new Error(`Error during measurements ${e}`)
@@ -154,24 +179,24 @@ export const testScrollingPerformance = async function (
 
 export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
   console.log('Test Resize Performance')
-  await page.waitForXPath("//a[contains(., 'P R')]")
+  await page.waitForXPath(ResizeButtonExpression)
 
   // select element using the navigator
   const navigatorElement = await page.$('[class^="item-label-container"]')
   await navigatorElement!.click()
 
   // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P R')]")
+  const [button] = await page.$x(ResizeButtonExpression)
   await button!.click()
   await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
 
-  const [button2] = await page.$x("//a[contains(., 'P R')]")
+  const [button2] = await page.$x(ResizeButtonExpression)
   await button2!.click()
   await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
 
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
-  const [button3] = await page.$x("//a[contains(., 'P R')]")
+  const [button3] = await page.$x(ResizeButtonExpression)
   await button3!.click()
   await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
   await page.tracing.stop()
