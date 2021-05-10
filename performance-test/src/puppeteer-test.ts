@@ -99,7 +99,7 @@ export const setupBrowser = async (): Promise<{
   }
 }
 
-const ResizeButtonExpression = "//a[contains(., 'P R')]"
+const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
 async function initialiseProject(page: puppeteer.Page): Promise<void> {
   console.log('Initialising the project')
@@ -112,7 +112,7 @@ async function initialiseProject(page: puppeteer.Page): Promise<void> {
   // First selection will open the file in VS Code, triggering a bunch of downloads, so we pause briefly
   await page.waitForTimeout(15000)
 
-  const [button] = await page.$x(ResizeButtonExpression)
+  const [button] = await page.$x(ResizeButtonXPath)
   await button!.click()
   await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
 
@@ -152,23 +152,29 @@ export const testPerformance = async function () {
   )
 }
 
+async function clickOnce(
+  page: puppeteer.Page,
+  xpath: string,
+  expectedConsoleMessage: string,
+  errorMessage?: string,
+): Promise<void> {
+  const [button] = await page.$x(xpath)
+  await button!.click()
+  await consoleDoneMessage(page, expectedConsoleMessage, errorMessage)
+}
+
 export const testScrollingPerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
   console.log('Test Scrolling Performance')
   await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P S')]")
-  await button!.click()
-  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
-  const [button2] = await page.$x("//a[contains(., 'P S')]")
-  await button2!.click()
-  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
+  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
+
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
-  const [button3] = await page.$x("//a[contains(., 'P S')]")
-  await button3!.click()
-  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
@@ -177,26 +183,34 @@ export const testScrollingPerformance = async function (
 
 export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
   console.log('Test Resize Performance')
-  await page.waitForXPath(ResizeButtonExpression)
+  await page.waitForXPath(ResizeButtonXPath)
 
   // select element using the navigator
   const navigatorElement = await page.$('[class^="item-label-container"]')
   await navigatorElement!.click()
 
   // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x(ResizeButtonExpression)
-  await button!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
-
-  const [button2] = await page.$x(ResizeButtonExpression)
-  await button2!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+  await clickOnce(
+    page,
+    ResizeButtonXPath,
+    'RESIZE_TEST_FINISHED',
+    'RESIZE_TEST_MISSING_SELECTEDVIEW',
+  )
+  await clickOnce(
+    page,
+    ResizeButtonXPath,
+    'RESIZE_TEST_FINISHED',
+    'RESIZE_TEST_MISSING_SELECTEDVIEW',
+  )
 
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
-  const [button3] = await page.$x(ResizeButtonExpression)
-  await button3!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+  await clickOnce(
+    page,
+    ResizeButtonXPath,
+    'RESIZE_TEST_FINISHED',
+    'RESIZE_TEST_MISSING_SELECTEDVIEW',
+  )
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
@@ -210,14 +224,12 @@ export const testSelectionPerformance = async function (
   await page.waitForTimeout(20000)
   await page.waitForXPath("//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P E')]")
-  await button!.click()
-  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
-  const [button2] = await page.$x("//a[contains(., 'P E')]")
-  await button2!.click()
-  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
