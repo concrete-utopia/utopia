@@ -2065,7 +2065,7 @@ export const UPDATE_FNS = {
           selectedViews: newSelection,
           canvas: {
             ...withViewDeleted.canvas,
-            mountCount: editor.canvas.mountCount + 1,
+            domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
           },
         }
       },
