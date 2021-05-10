@@ -18,6 +18,7 @@ type FrameResult = {
   timeSeries: Array<number>
   analytics: {
     frameMin: number
+    frameMax: number
     frameAvg: number
     percentile25: number | undefined
     percentile50: number | undefined
@@ -30,6 +31,7 @@ const EmptyResult: FrameResult = {
   timeSeries: [],
   analytics: {
     frameMin: 0,
+    frameMax: 0,
     frameAvg: 0,
     percentile25: undefined,
     percentile50: undefined,
@@ -96,6 +98,10 @@ export const setupBrowser = async (): Promise<{
   }
 }
 
+function consoleMessageForResult(result: FrameResult): string {
+  return `*${result.title}*: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
+}
+
 export const testPerformance = async function () {
   let scrollResult = EmptyResult
   let resizeResult = EmptyResult
@@ -115,7 +121,11 @@ export const testPerformance = async function () {
   const summaryImage = await uploadSummaryImage([selectionResult, scrollResult, resizeResult])
 
   console.info(
-    `::set-output name=perf-result:: ${scrollResult.title}:  ${scrollResult.analytics.percentile50}ms | ${resizeResult.title}: ${resizeResult.analytics.percentile50}ms | ${selectionResult.title}: ${selectionResult.analytics.percentile50}ms ![SummaryChart](${summaryImage})`,
+    `::set-output name=perf-result:: ${consoleMessageForResult(
+      scrollResult,
+    )} | ${consoleMessageForResult(resizeResult)} | ${consoleMessageForResult(
+      selectionResult,
+    )} ![](${summaryImage})`,
   )
 }
 
@@ -206,18 +216,20 @@ const getFrameData = (traceJson: any, markNamePrefix: string, title: string): Fr
   })
 
   let frameTimesFixed = frameTimes.map((x) => Number(x.toFixed(1)))
+  const sortedFrameTimes = frameTimesFixed.sort((a, b) => a - b)
 
   const analytics = {
-    frameMin: Math.min(...frameTimesFixed),
-    frameAvg: Number((totalFrameTimes / frameTimesFixed.length).toFixed()),
-    percentile25: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.25)],
-    percentile50: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.5)],
-    percentile75: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
+    frameMin: sortedFrameTimes[0],
+    frameMax: sortedFrameTimes[sortedFrameTimes.length - 1],
+    frameAvg: Number((totalFrameTimes / sortedFrameTimes.length).toFixed()),
+    percentile25: sortedFrameTimes[Math.floor(sortedFrameTimes.length * 0.25)],
+    percentile50: sortedFrameTimes[Math.floor(sortedFrameTimes.length * 0.5)],
+    percentile75: sortedFrameTimes[Math.floor(sortedFrameTimes.length * 0.75)],
   }
   return {
     title: title,
     analytics: analytics,
-    timeSeries: frameTimesFixed,
+    timeSeries: sortedFrameTimes,
   }
 }
 
