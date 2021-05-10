@@ -289,6 +289,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONFIG_FROM_VSCODE(action, state)
     case 'SET_FOLLOW_SELECTION_ENABLED':
       return UPDATE_FNS.SET_FOLLOW_SELECTION_ENABLED(action, state)
+    case 'RESET_CANVAS':
+      return UPDATE_FNS.RESET_CANVAS(action, state)
     default:
       return state
   }

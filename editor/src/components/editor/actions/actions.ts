@@ -355,6 +355,7 @@ import {
   SetFollowSelectionEnabled,
   UpdateConfigFromVSCode,
   SetLoginState,
+  ResetCanvas,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -909,7 +910,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       cursor: null,
       duplicationState: null,
       base64Blobs: {},
-      mountCount: currentEditor.canvas.mountCount + 1,
+      mountCount: currentEditor.canvas.mountCount, // QUESTION should undo-redo forcibly remount the canvas?
+      canvasContentInvalidateCount: currentEditor.canvas.canvasContentInvalidateCount + 1,
+      domWalkerInvalidateCount: currentEditor.canvas.domWalkerInvalidateCount + 1,
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
     },
@@ -3220,7 +3223,10 @@ export const UPDATE_FNS = {
       projectContents: updatedProjectContents,
       canvas: {
         ...editor.canvas,
-        mountCount: editor.canvas.mountCount + (isTextFile(file) ? 0 : 1),
+        canvasContentInvalidateCount:
+          editor.canvas.canvasContentInvalidateCount + (isTextFile(file) ? 0 : 1),
+        domWalkerInvalidateCount:
+          editor.canvas.domWalkerInvalidateCount + (isTextFile(file) ? 0 : 1),
       },
       nodeModules: {
         ...editor.nodeModules,
@@ -3320,7 +3326,12 @@ export const UPDATE_FNS = {
         projectContents: workingProjectContents,
         canvas: {
           ...editor.canvas,
-          mountCount: anyParsedUpdates ? editor.canvas.mountCount + 1 : editor.canvas.mountCount,
+          canvasContentInvalidateCount: anyParsedUpdates
+            ? editor.canvas.canvasContentInvalidateCount + 1
+            : editor.canvas.canvasContentInvalidateCount,
+          domWalkerInvalidateCount: anyParsedUpdates
+            ? editor.canvas.domWalkerInvalidateCount + 1
+            : editor.canvas.domWalkerInvalidateCount,
         },
         parseOrPrintInFlight: false, // only ever clear it here
       }
@@ -3994,7 +4005,7 @@ export const UPDATE_FNS = {
       focusedElementPath: action.focusedElementPath,
       canvas: {
         ...editor.canvas,
-        mountCount: editor.canvas.mountCount + 1,
+        domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
       },
     }
   },
@@ -4096,6 +4107,16 @@ export const UPDATE_FNS = {
     return {
       ...userState,
       loginState: action.loginState,
+    }
+  },
+  RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        mountCount: editor.canvas.mountCount + 1,
+        domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+      },
     }
   },
 }

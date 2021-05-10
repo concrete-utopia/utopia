@@ -134,6 +134,8 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
     dispatch,
   ])
 
+  const resetCanvas = React.useCallback(() => dispatch([EditorActions.resetCanvas()]), [dispatch])
+
   const isPreviewPaneVisible = useEditorState(
     (store) => store.editor.preview.visible,
     'RightMenu isPreviewPaneVisible',
@@ -237,6 +239,7 @@ export const RightMenu = betterReactMemo('RightMenu', (props: RightMenuProps) =>
               selected={false}
               menuExpanded={false}
               icon={<LargerIcons.Refresh />}
+              onClick={resetCanvas}
               size='large'
             />
           </span>

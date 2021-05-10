@@ -810,6 +810,10 @@ export interface SetLoginState {
   loginState: LoginState
 }
 
+export interface ResetCanvas {
+  action: 'RESET_CANVAS'
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -943,6 +947,7 @@ export type EditorAction =
   | SetFollowSelectionEnabled
   | UpdateConfigFromVSCode
   | SetLoginState
+  | ResetCanvas
 
 export type DispatchPriority =
   | 'everyone'

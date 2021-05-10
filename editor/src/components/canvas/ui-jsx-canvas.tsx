@@ -120,6 +120,7 @@ export interface UiJsxCanvasProps {
   editedTextElement: ElementPath | null
   base64FileBlobs: CanvasBase64Blobs
   mountCount: number
+  domWalkerInvalidateCount: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
     cachedTreeRoots: Array<ElementPath>,
@@ -204,6 +205,7 @@ export function pickUiJsxCanvasProps(
       editedTextElement: editedTextElement,
       base64FileBlobs: editor.canvas.base64Blobs,
       mountCount: editor.canvas.mountCount,
+      domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount,
       onDomReport: onDomReport,
       walkDOM: walkDOM,
       imports_KILLME: imports_KILLME,
@@ -410,6 +412,7 @@ export const UiJsxCanvas = betterReactMemo(
               >
                 <CanvasContainer
                   mountCount={props.mountCount}
+                  domWalkerInvalidateCount={props.domWalkerInvalidateCount}
                   walkDOM={walkDOM}
                   selectedViews={props.selectedViews}
                   scale={scale}
@@ -495,6 +498,7 @@ export interface CanvasContainerProps {
   canvasRootElementElementPath: ElementPath
   validRootPaths: Array<ElementPath>
   mountCount: number
+  domWalkerInvalidateCount: number
   scrollAnimation: boolean
 }
 
