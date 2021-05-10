@@ -163,6 +163,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_VISIBILITY(action, state)
     case 'SET_PROJECT_NAME':
       return UPDATE_FNS.SET_PROJECT_NAME(action, state)
+    case 'SET_PROJECT_DESCRIPTION':
+      return UPDATE_FNS.SET_PROJECT_DESCRIPTION(action, state)
     case 'REGENERATE_THUMBNAIL':
       return UPDATE_FNS.REGENERATE_THUMBNAIL(action, state, dispatch)
     case 'UPDATE_THUMBNAIL_GENERATED':

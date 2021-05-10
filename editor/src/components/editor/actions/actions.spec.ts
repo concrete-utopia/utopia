@@ -973,6 +973,7 @@ describe('LOAD', () => {
     const loadedModel: PersistentModel = {
       appID: null,
       projectVersion: CURRENT_PROJECT_VERSION,
+      projectDescription: '',
       projectContents: contentsToTree({
         [firstUIJSFile]: textFile(initialFileContents, null, 0),
         [secondUIJSFile]: textFile(initialFileContents, null, 0),

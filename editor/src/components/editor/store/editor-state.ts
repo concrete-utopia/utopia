@@ -228,6 +228,7 @@ export interface EditorState {
   id: string | null
   appID: string | null
   projectName: string
+  projectDescription: string
   projectVersion: number
   isLoaded: boolean
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
@@ -609,6 +610,7 @@ export function modifyOpenJsxElementAtStaticPath(
 function getImportedUtopiaJSXComponents(
   filePath: string,
   model: EditorState,
+  pathsToFilter: string[],
 ): Array<UtopiaJSXComponent> {
   const file = getContentsTreeFileFromString(model.projectContents, filePath)
   if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
@@ -616,10 +618,13 @@ function getImportedUtopiaJSXComponents(
       .map((toImport) => model.codeResultCache.resolve(filePath, toImport))
       .filter(isRight)
       .map((r) => r.value)
+      .filter((v) => !pathsToFilter.includes(v))
 
     return [
       ...getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed),
-      ...resolvedFilePaths.flatMap((path) => getImportedUtopiaJSXComponents(path, model)),
+      ...resolvedFilePaths.flatMap((path) =>
+        getImportedUtopiaJSXComponents(path, model, [...pathsToFilter, ...resolvedFilePaths]),
+      ),
     ]
   } else {
     return []
@@ -633,7 +638,7 @@ export function getOpenUtopiaJSXComponentsFromStateMultifile(
   if (openUIJSFilePath == null) {
     return []
   } else {
-    return getImportedUtopiaJSXComponents(openUIJSFilePath, model)
+    return getImportedUtopiaJSXComponents(openUIJSFilePath, model, [])
   }
 }
 
@@ -970,6 +975,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
 export interface PersistentModel {
   appID?: string | null
   projectVersion: number
+  projectDescription: string
   projectContents: ProjectContentTreeRoot
   exportsInfo: ReadonlyArray<ExportsInfo>
   lastUsedFont: FontSettings | null
@@ -1007,6 +1013,7 @@ export function mergePersistentModel(
   return {
     appID: second.appID,
     projectVersion: second.projectVersion,
+    projectDescription: second.projectDescription,
     projectContents: {
       ...first.projectContents,
       ...second.projectContents,
@@ -1049,6 +1056,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     id: null,
     appID: null,
     projectName: createNewProjectName(),
+    projectDescription: 'Made with Utopia',
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
     spyMetadata: emptyJsxMetadata,
@@ -1275,6 +1283,7 @@ export function editorModelFromPersistentModel(
     id: null,
     appID: persistentModel.appID ?? null,
     projectName: createNewProjectName(),
+    projectDescription: persistentModel.projectDescription,
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
     spyMetadata: emptyJsxMetadata,
@@ -1402,6 +1411,7 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
   return {
     appID: editor.appID,
     projectVersion: editor.projectVersion,
+    projectDescription: editor.projectDescription,
     projectContents: editor.projectContents,
     exportsInfo: editor.codeResultCache.exportsInfo,
     lastUsedFont: editor.lastUsedFont,
@@ -1428,6 +1438,7 @@ export function persistentModelForProjectContents(
   return {
     appID: null,
     projectVersion: CURRENT_PROJECT_VERSION,
+    projectDescription: '',
     projectContents: projectContents,
     exportsInfo: [],
     codeEditorErrors: {

@@ -330,6 +330,7 @@ export interface ToggleCollapse {
 
 export interface AddToast {
   action: 'ADD_TOAST'
+  // FIXME: This contains React.ReactChild and is likely not serializable.
   toast: Notice
 }
 
@@ -459,6 +460,11 @@ export interface SetCodeEditorVisibility {
 export interface SetProjectName {
   action: 'SET_PROJECT_NAME'
   name: string
+}
+
+export interface SetProjectDescription {
+  action: 'SET_PROJECT_DESCRIPTION'
+  description: string
 }
 
 export interface RegenerateThumbnail {
@@ -872,6 +878,7 @@ export type EditorAction =
   | UpdateCodeResultCache
   | SetCodeEditorVisibility
   | SetProjectName
+  | SetProjectDescription
   | RegenerateThumbnail
   | UpdateThumbnailGenerated
   | UpdatePreviewConnected

@@ -34,7 +34,7 @@ var PlaceholderScreen = () => {
 
 class App extends Component {
   loginRender = () => {
-    window.location.replace(auth0Url)
+    window.location.replace(auth0Url('redirect'))
     return null
   }
 

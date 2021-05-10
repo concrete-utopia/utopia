@@ -92,6 +92,7 @@ import {
   isUpdatePropertyControlsInfo,
 } from '../components/editor/actions/actions'
 import { updateCssVars, UtopiaStyles } from '../uuiui'
+import { reduxDevtoolsSendInitialState } from '../core/shared/redux-devtools'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -148,6 +149,8 @@ export class Editor {
     this.utopiaStoreHook = storeHook
     this.updateStore = storeHook.setState
     this.utopiaStoreApi = storeHook
+
+    reduxDevtoolsSendInitialState(this.storedState)
 
     const handleWorkerMessage = (msg: OutgoingWorkerMessage) => {
       switch (msg.type) {

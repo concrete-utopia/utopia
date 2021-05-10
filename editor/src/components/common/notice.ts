@@ -23,6 +23,7 @@ export function notice(
   message: React.ReactChild,
   level: NoticeLevel = 'INFO',
   persistent: boolean = false,
+  id: string = UUID(),
 ): Notice {
-  return { message: message, persistent: persistent, level: level, id: UUID() }
+  return { message: message, persistent: persistent, level: level, id: id }
 }

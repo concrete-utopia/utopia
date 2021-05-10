@@ -115,6 +115,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UNWRAP_GROUP_OR_VIEW':
     case 'SET_CANVAS_FRAMES':
     case 'SET_PROJECT_NAME':
+    case 'SET_PROJECT_DESCRIPTION':
     case 'REGENERATE_THUMBNAIL':
     case 'UPDATE_THUMBNAIL_GENERATED':
     case 'ALIGN_SELECTED_VIEWS':
