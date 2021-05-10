@@ -155,16 +155,20 @@ export const testScrollingPerformance = async function (
 export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
   console.log('Test Resize Performance')
   await page.waitForXPath("//a[contains(., 'P R')]")
-  // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P R')]")
-  await button!.click()
 
   // select element using the navigator
   const navigatorElement = await page.$('[class^="item-label-container"]')
   await navigatorElement!.click()
+
+  // we run it twice without measurements to warm up the environment
+  const [button] = await page.$x("//a[contains(., 'P R')]")
+  await button!.click()
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+
   const [button2] = await page.$x("//a[contains(., 'P R')]")
   await button2!.click()
   await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
   const [button3] = await page.$x("//a[contains(., 'P R')]")
