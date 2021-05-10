@@ -21,6 +21,7 @@ import {
   emptyAttributeMetadatada,
   jsxAttributeOtherJavaScript,
   JSXElementChild,
+  partOfJsxAttributeValue,
 } from '../../../core/shared/element-template'
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -226,7 +227,7 @@ describe('SET_PROP', () => {
       updatedViewProps,
       PP.create(['test', 'prop']),
     )
-    chaiExpect(updatedTestProp).to.deep.equal(right(jsxAttributeValue(100, emptyComments)))
+    chaiExpect(updatedTestProp).to.deep.equal(right(partOfJsxAttributeValue(100)))
   })
 })
 

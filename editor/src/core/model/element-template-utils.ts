@@ -223,6 +223,21 @@ export function getValidElementPathsFromElement(
 
     return paths
   } else if (isJSXArbitraryBlock(element)) {
+    // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
+    // The paths this will generate will only be correct if the elements from `elementsWithin`
+    // are used at the same level at which they're defined.
+    // This will work fine:
+    // export var SameFileApp = (props) => {
+    //   const AppAsVariable = App
+    //   return <AppAsVariable />
+    // }
+    // This will not:
+    // export var SameFileApp = (props) => {
+    //   const AppAsVariable = App
+    //   return <div data-uid='same-file-app-div' style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}>
+    //     <AppAsVariable />
+    //   </div>
+    // }
     let paths: Array<ElementPath> = []
     fastForEach(Object.values(element.elementsWithin), (e) =>
       paths.push(
