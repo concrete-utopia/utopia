@@ -1,12 +1,14 @@
 import * as deepEqual from 'fast-deep-equal'
-import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { jsxAttributeValue } from '../../../core/shared/element-template'
 import { objectMap } from '../../../core/shared/object-utils'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { arrayEquals, NO_OP } from '../../../core/shared/utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
+import {
+  useContextSelector,
+  useKeepReferenceEqualityIfPossible,
+} from '../../../utils/react-performance'
 import {
   getControlStatusFromPropertyStatus,
   getControlStyles,
@@ -25,6 +27,7 @@ import {
   InspectorPropsContext,
   ParsedValues,
   PathMappingFn,
+  selectTargetPath,
   useGetOrderedPropertyKeys,
   useInspectorContext,
   useInspectorInfo,
@@ -114,7 +117,7 @@ export function useInspectorInfoLonghandShorthand<
     'useInspectorInfoLonghandShorthand dispatch',
   )
   const inspectorTargetPath = useKeepReferenceEqualityIfPossible(
-    useContextSelector(InspectorPropsContext, (contextData) => contextData.targetPath, deepEqual),
+    useContextSelector(InspectorPropsContext, selectTargetPath, deepEqual),
   )
   const { selectedViewsRef } = useInspectorContext()
 

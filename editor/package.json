@@ -184,6 +184,7 @@
     "typescript": "4.0.5",
     "url-join": "4.0.1",
     "use-context-selector": "git://github.com/dai-shi/use-context-selector.git#3f1df8f",
+    "use-optimized-selector": "1.0.0-beta3",
     "utopia-api": "file:../utopia-api",
     "utopia-vscode-common": "file:../utopia-vscode-common",
     "uuid": "3.0.1",

@@ -13,6 +13,7 @@ import { UiJsxCanvasContext, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import {
   MutableUtopiaContextProps,
   RerenderUtopiaContext,
+  RerenderUtopiaContextProps,
   SceneLevelUtopiaContext,
 } from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
@@ -23,7 +24,7 @@ import {
   renderCoreElement,
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
-import { useContextSelector } from 'use-context-selector'
+import { useContextSelector } from '../../../utils/react-performance'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utopia-constants'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
@@ -63,6 +64,11 @@ function tryToGetInstancePath(
   }
 }
 
+const selectShouldIncludeCanvasRootInTheSpy = (c: RerenderUtopiaContextProps) =>
+  c.shouldIncludeCanvasRootInTheSpy
+
+const selectHiddenInstances = (c: RerenderUtopiaContextProps) => c.hiddenInstances
+
 export function createComponentRendererComponent(params: {
   topLevelElementName: string
   filePath: string
@@ -92,9 +98,9 @@ export function createComponentRendererComponent(params: {
 
     const shouldIncludeCanvasRootInTheSpy = useContextSelector(
       RerenderUtopiaContext,
-      (c) => c.shouldIncludeCanvasRootInTheSpy,
+      selectShouldIncludeCanvasRootInTheSpy,
     )
-    const hiddenInstances = useContextSelector(RerenderUtopiaContext, (c) => c.hiddenInstances)
+    const hiddenInstances = useContextSelector(RerenderUtopiaContext, selectHiddenInstances)
     const sceneContext = React.useContext(SceneLevelUtopiaContext)
 
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
