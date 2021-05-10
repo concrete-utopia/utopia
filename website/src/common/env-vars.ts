@@ -65,9 +65,27 @@ export const GOOGLE_WEB_FONTS_KEY =
     ? process.env.GOOGLE_WEB_FONTS_KEY
     : 'AIzaSyBffJtCo2vL68hdQKH3IYjo0ELFAAGYNW4'
 
-export const auth0Url = USE_AUTH0
-  ? `https://${AUTH0_HOST}/authorize?scope=openid%20profile%20email&response_type=code&client_id=${AUTH0_CLIENT_ID}&redirect_uri=${AUTH0_REDIRECT_URI}`
-  : `${BASE_URL}authenticate?code=logmein`
+export type AuthRedirectBehaviour = 'redirect' | 'auto-close'
+
+export function auth0Url(behaviour: AuthRedirectBehaviour): string {
+  let url: URL
+  if (USE_AUTH0) {
+    url = new URL(`https://${AUTH0_HOST}/authorize`)
+    url.searchParams.set('scope', 'openid profile email')
+    url.searchParams.set('response_type', 'code')
+    url.searchParams.set('client_id', AUTH0_CLIENT_ID)
+
+    const redirectURL = new URL(AUTH0_REDIRECT_URI)
+    redirectURL.searchParams.set('onto', behaviour)
+
+    url.searchParams.set('redirect_uri', redirectURL.href)
+  } else {
+    url = new URL(`${BASE_URL}authenticate`)
+    url.searchParams.set('code', 'logmein')
+    url.searchParams.set('onto', behaviour)
+  }
+  return url.href
+}
 
 const COMMIT_HASH = process.env.REACT_APP_COMMIT_HASH || ''
 export const URL_HASH = COMMIT_HASH === '' ? 'nocommit' : COMMIT_HASH

@@ -19,7 +19,6 @@ import           Protolude
 import           Servant
 import           Servant.Client
 import           Servant.Client.Core
-import           Servant.HTML.Blaze
 import           System.Timeout
 import           Test.Hspec
 import           Test.Utopia.Web.Executors.Test
@@ -34,8 +33,6 @@ timeLimited :: Text -> IO a -> IO a
 timeLimited message action = do
   possibleResult <- timeout (10 * 1000 * 1000) action
   maybe (panic message) return possibleResult
-
-type ClientAuthenticateAPI = "authenticate" :> QueryParam "code" Text :> QueryParam "state" Text :> Get '[HTML] (SetSessionCookies Text)
 
 withServer :: IO () -> IO ()
 withServer action = do
@@ -85,7 +82,7 @@ withClientEnv :: ClientEnv -> ClientM a -> IO (Either ServantError a)
 withClientEnv = flip runClientM
 
 authenticateClient :: Maybe Text -> Maybe Text -> ClientM (Headers '[Header "Set-Cookie" SetCookie] Text)
-authenticateClient = client (Proxy :: Proxy ClientAuthenticateAPI)
+authenticateClient = client (Proxy :: Proxy (AuthenticateAPI Text))
 
 createProjectClient :: ClientM CreateProjectResponse
 createProjectClient = client (Proxy :: Proxy CreateProjectAPI)
@@ -141,6 +138,9 @@ jpgBytes = "totally a jpg"
 setBodyAsJPG :: Request -> Request
 setBodyAsJPG = setRequestBody (RequestBodyBS jpgBytes) jpgMediaType
 
+validAuthenticate :: ClientM (Headers '[Header "Set-Cookie" SetCookie] Text)
+validAuthenticate = authenticateClient (Just "logmein") (Just "auto-close")
+
 updateAssetPathSpec :: Spec
 updateAssetPathSpec =
   describe "PUT v1/asset/{project_id}/{asset_path}?old_file_name={old_asset_path}" $ do
@@ -148,7 +148,7 @@ updateAssetPathSpec =
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       -- Create a project, save an asset, rename it and try to load it from the new path.
       assetFromNewPathResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -176,7 +176,7 @@ deleteAssetSpec =
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       -- Create a project, save an asset, rename it and try to load it from the new path.
       loadedFromPath <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -195,14 +195,14 @@ saveUserConfigurationSpec =
   describe "GET v1/user/config" $ do
     it "should return an empty result when nothing has been set" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       userConfig <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         getUserConfigurationClient cookieHeader
       (userConfig ^? _Right) `shouldBe` (Just $ UserConfigurationResponse Nothing)
     it "should return the previously set config" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       let shortcutConf = Just $ object ["ctrl+m" .= ("do something" :: Text), "ctrl+n" .= ("do something else" :: Text)]
       userConfig <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         _ <- saveUserConfigurationClient cookieHeader (UserConfigurationRequest shortcutConf)
         getUserConfigurationClient cookieHeader
@@ -212,7 +212,7 @@ routingSpec :: Spec
 routingSpec = around_ withServer $ do
   describe "GET /authenticate" $ do
     it "should set a cookie for valid login" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
-      result <- runClientM (authenticateClient (Just "logmein") (Just "")) clientEnv
+      result <- runClientM validAuthenticate clientEnv
       traverse_ (\l -> putText $ show l) $ lefts [result]
       isRight result `shouldBe` True
       httpCookieJar <- readTVarIO cookieJarTVar
@@ -222,7 +222,7 @@ routingSpec = around_ withServer $ do
     it "return the owner of the project" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       projectOwnerResponse <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -232,14 +232,14 @@ routingSpec = around_ withServer $ do
   describe "GET /projects" $ do
     it "return an empty list of projects when nothing has been added" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectListingResponse <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         projectsClient cookieHeader
       projectListingResponse `shouldBe` (Right $ ProjectListResponse [])
     it "return a list of the user's projects when a project has been created" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       projectIdAndListingResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -256,7 +256,7 @@ routingSpec = around_ withServer $ do
     it "return a list containing whatever project that has been added" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       projectIdAndListingResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -271,7 +271,7 @@ routingSpec = around_ withServer $ do
       earlyTime <- getCurrentTime
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -288,7 +288,7 @@ routingSpec = around_ withServer $ do
     it "should return the contents of the file if it is a text file" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       fileFromPathResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -298,7 +298,7 @@ routingSpec = around_ withServer $ do
     it "should return 404 for a non existent file (using the sample project)" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       fileFromPathResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -311,7 +311,7 @@ routingSpec = around_ withServer $ do
     it "should fallback to using the asset load logic" $ withClientAndCookieJar $ \(clientEnv, cookieJarTVar) -> do
       projectContents <- getSampleProject
       fileFromPathResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -325,7 +325,7 @@ routingSpec = around_ withServer $ do
       earlyTime <- getCurrentTime
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -337,7 +337,7 @@ routingSpec = around_ withServer $ do
       earlyTime <- getCurrentTime
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -353,7 +353,7 @@ routingSpec = around_ withServer $ do
       let firstProjectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       let secondProjectContents = object ["firstThing" .= (5 :: Int), "secondThing" .= False]
       loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -366,7 +366,7 @@ routingSpec = around_ withServer $ do
       earlyTime <- getCurrentTime
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -380,7 +380,7 @@ routingSpec = around_ withServer $ do
       earlyTime <- getCurrentTime
       let projectContents = object ["firstThing" .= (1 :: Int), "secondThing" .= True]
       loadedProjectResult <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         createProjectResult <- createProjectClient
         let projectId = ProjectIdWithSuffix (view id createProjectResult) ""
@@ -388,7 +388,7 @@ routingSpec = around_ withServer $ do
         _ <- deleteProjectClient cookieHeader projectId
         loadProjectClient cookieHeader projectId (Just earlyTime)
       projectListingResponse <- withClientEnv clientEnv $ do
-        _ <- authenticateClient (Just "logmein") (Just "")
+        _ <- validAuthenticate
         cookieHeader <- getCookieHeader cookieJarTVar
         projectsClient cookieHeader
       projectListingResponse `shouldBe` (Right $ ProjectListResponse [])

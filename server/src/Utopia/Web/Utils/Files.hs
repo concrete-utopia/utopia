@@ -166,7 +166,7 @@ normalizePath :: [Text] -> [Text]
 normalizePath path = normalizePath' path []
 
 projectContentsPathForFilePath :: [Text] -> [Text]
-projectContentsPathForFilePath filePath = 
+projectContentsPathForFilePath filePath =
   let withChildrenInserted = intersperse "children" filePath
       withContentsKeyPrepended = "projectContents" : withChildrenInserted
   in withContentsKeyPrepended ++ ["content", "fileContents", "code"]
