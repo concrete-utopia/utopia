@@ -14,7 +14,7 @@ export const BrowserInfoBar = betterReactMemo('EditorOfflineBar', () => {
   )
 })
 
-export const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
+const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
   return (
     <NotificationBar
       level='ERROR'
@@ -25,14 +25,24 @@ export const EditorOfflineBar = betterReactMemo('EditorOfflineBar', () => {
 
 export const LoginStatusBar = betterReactMemo('LoginStatusBar', () => {
   const loginState = useEditorState((store) => store.userState.loginState, 'LoginStatusBar')
+  const saveError = useEditorState(
+    (store) => store.editor.saveError,
+    'EditorComponentInner saveError',
+  )
 
   const onClickLoginNewTab = React.useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
 
+  if (saveError) {
+    return <EditorOfflineBar />
+  }
+
   switch (loginState.type) {
     case 'LOGGED_IN':
       return null
+    case 'OFFLINE_STATE':
+      return <EditorOfflineBar />
     case 'NOT_LOGGED_IN':
       return (
         <NotificationBar
