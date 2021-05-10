@@ -81,7 +81,7 @@ export const setupBrowser = async (): Promise<{
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS),
-    executablePath: process.env.BROWSER
+    executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
   await page.setViewport({ width: 1500, height: 768 })
@@ -115,7 +115,7 @@ export const testPerformance = async function () {
   const summaryImage = await uploadSummaryImage([selectionResult, scrollResult, resizeResult])
 
   console.info(
-    `::set-output name=perf-result:: ${scrollResult.title}:  ${scrollResult.analytics.frameMin}ms | ${resizeResult.title}: ${resizeResult.analytics.frameMin}ms | ${selectionResult.title}: ${selectionResult.analytics.frameMin}ms ![SummaryChart](${summaryImage})`,
+    `::set-output name=perf-result:: ${scrollResult.title}:  ${scrollResult.analytics.percentile50}ms | ${resizeResult.title}: ${resizeResult.analytics.percentile50}ms | ${selectionResult.title}: ${selectionResult.analytics.percentile50}ms ![SummaryChart](${summaryImage})`,
   )
 }
 
