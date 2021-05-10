@@ -75,7 +75,7 @@ export function useTriggerResizePerformanceTest(): () => void {
       performance.mark(`resize_step_${framesPassed}`)
       const dragState = resizeDragState(
         targetStartPoint,
-        { x: framesPassed, y: framesPassed } as CanvasVector,
+        { x: framesPassed % 100, y: framesPassed % 100 } as CanvasVector,
         true,
         false,
         false,
