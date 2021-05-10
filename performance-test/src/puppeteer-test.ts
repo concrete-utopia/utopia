@@ -103,8 +103,7 @@ const ResizeButtonExpression = "//a[contains(., 'P R')]"
 
 async function initialiseProject(page: puppeteer.Page): Promise<void> {
   console.log('Initialising the project')
-  await page.waitForXPath('[class^="monaco-editor"]')
-  await page.waitForXPath('[class^="item-label-container"]')
+  await page.waitForXPath('//div[contains(@class, "item-label-container")]')
 
   // Select something a resize it to trigger a fork
   const navigatorElement = await page.$('[class^="item-label-container"]')
@@ -120,8 +119,6 @@ async function initialiseProject(page: puppeteer.Page): Promise<void> {
   // This change should have triggered a fork, so pause again
   await page.waitForTimeout(15000)
 
-  // Ensure VS Code is ready
-  await page.waitForXPath('[class^="monaco-editor"]')
   console.log('Finished initialising')
 }
 
