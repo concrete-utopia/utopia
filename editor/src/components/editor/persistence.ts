@@ -592,7 +592,7 @@ async function generateThumbnail(force: boolean): Promise<Buffer | null> {
   }
 }
 
-function isSafeToClose(): boolean {
+export function isSafeToClose(): boolean {
   return (
     _saveState.type === 'never-saved' ||
     (_saveState.type === 'saved' && _saveState.setTimeoutId == null)

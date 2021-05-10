@@ -61,7 +61,7 @@ type AuthCookie = Header "Cookie" Text
 
 type BranchNameParam = QueryParam' '[Optional] "branch_name" Text
 
-type AuthenticateAPI = "authenticate" :> QueryParam "code" Text :> Get '[HTML] (SetSessionCookies H.Html)
+type AuthenticateAPI a = "authenticate" :> QueryParam "code" Text :> QueryParam "onto" Text :> Get '[HTML] (SetSessionCookies a)
 
 type LogoutAPI = "logout" :> Get '[HTML] (SetSessionCookies H.Html)
 
@@ -169,7 +169,7 @@ type Protected = LogoutAPI
             :<|> SaveProjectThumbnailAPI
             :<|> DownloadGithubProjectAPI
 
-type Unprotected = AuthenticateAPI
+type Unprotected = AuthenticateAPI H.Html
               :<|> EmptyProjectPageAPI
               :<|> ProjectPageAPI
               :<|> EmptyPreviewPageAPI

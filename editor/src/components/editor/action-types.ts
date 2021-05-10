@@ -330,6 +330,7 @@ export interface ToggleCollapse {
 
 export interface AddToast {
   action: 'ADD_TOAST'
+  // FIXME: This contains React.ReactChild and is likely not serializable.
   toast: Notice
 }
 
