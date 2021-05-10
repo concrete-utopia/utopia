@@ -81,7 +81,10 @@ import {
   identifyFilesThatHaveChanged,
 } from '../../../core/shared/project-contents-dependencies'
 import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code-file'
-import { updateReduxDevtools } from '../../../core/shared/redux-devtools'
+import {
+  reduxDevtoolsLogMessage,
+  reduxDevtoolsSendActions,
+} from '../../../core/shared/redux-devtools'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -369,30 +372,6 @@ export function editorDispatch(
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
   })
-  const updateCodeResultCache = dispatchedActions.some(
-    (action) => action.action === 'UPDATE_CODE_RESULT_CACHE',
-  )
-
-  const allBuildErrorsInState = getAllBuildErrors(storedState.editor)
-
-  const allLintErrorsInState = getAllLintErrors(storedState.editor)
-
-  const updateCodeEditorErrors = dispatchedActions.some(
-    (action) =>
-      (action.action === 'SET_CODE_EDITOR_BUILD_ERRORS' &&
-        !arrayEquals(
-          allBuildErrorsInState,
-          getAllErrorsFromFiles(action.buildErrors),
-          (a, b) => a.message !== b.message,
-        )) ||
-      (action.action === 'SET_CODE_EDITOR_LINT_ERRORS' &&
-        !arrayEquals(
-          allLintErrorsInState,
-          getAllErrorsFromFiles(action.lintErrors),
-          (a, b) => a.message !== b.message,
-        )),
-  )
-
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
   const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
@@ -430,7 +409,14 @@ export function editorDispatch(
         allTransient,
         spyCollector,
       )
-      updateReduxDevtools(actions, newStore)
+      if (!newStore.nothingChanged) {
+        /**
+         * Heads up: we do not log dispatches that resulted in a NO_OP. This is to avoid clogging up the
+         * history with a million CLEAR_HIGHLIGHTED_VIEWS and other such actions.
+         *  */
+
+        reduxDevtoolsSendActions(actions, newStore)
+      }
       return newStore
     },
     { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
@@ -472,10 +458,7 @@ export function editorDispatch(
 
   const isLoaded = frozenEditorState.isLoaded
   const shouldSave =
-    isLoaded &&
-    !isLoadAction &&
-    (!transientOrNoChange || anyUndoOrRedo || updateCodeResultCache || updateCodeEditorErrors) &&
-    isBrowserEnvironment
+    isLoaded && !isLoadAction && (!transientOrNoChange || anyUndoOrRedo) && isBrowserEnvironment
   if (shouldSave) {
     save(frozenEditorState, boundDispatch, storedState.userState.loginState, saveType, forceSave)
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
@@ -672,6 +655,7 @@ async function save(
   saveType: SaveType,
   forceServerSave: boolean,
 ) {
+  reduxDevtoolsLogMessage('Save Editor') // I'd like to leave this log line here for a day or so, so I can debug what action triggers the save
   const modelChange =
     saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
   const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null

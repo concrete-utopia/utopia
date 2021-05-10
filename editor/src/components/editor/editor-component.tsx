@@ -19,7 +19,7 @@ import { EditorDispatch, LoginState } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import { handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { StateHistory } from './history'
-import { LoginStatusBar, EditorOfflineBar, BrowserInfoBar } from './notification-bar'
+import { LoginStatusBar, BrowserInfoBar } from './notification-bar'
 import {
   ConsoleLog,
   getOpenFile,
@@ -180,11 +180,6 @@ export const EditorComponentInner = betterReactMemo(
 
     const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
 
-    const saveError = useEditorState(
-      (store) => store.editor.saveError,
-      'EditorComponentInner saveError',
-    )
-
     React.useEffect(() => {
       document.title = projectName + ' - Utopia'
     }, [projectName])
@@ -245,7 +240,6 @@ export const EditorComponentInner = betterReactMemo(
         >
           {isChrome ? null : <BrowserInfoBar />}
           <LoginStatusBar />
-          {saveError ? <EditorOfflineBar /> : null}
 
           <SimpleFlexRow
             className='editor-main-horizontal'

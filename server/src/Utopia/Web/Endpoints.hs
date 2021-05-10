@@ -27,7 +27,7 @@ import           Network.Wai
 import           Network.Wai.Middleware.Gzip
 import           Protolude
 import           Servant                         hiding
-                                                  (serveDirectoryFileServer,
+                                                 (serveDirectoryFileServer,
                                                   serveDirectoryWith)
 import           Servant.RawM
 import           Text.Blaze.Html.Renderer.Text
@@ -68,15 +68,25 @@ failedLoginPage :: ServerMonad (SetSessionCookies H.Html)
 failedLoginPage = do
   return $ noHeader $ renderPageContents $ H.div $ H.toMarkup ("Login Failed" :: Text)
 
-authenticate :: (Maybe Text) -> ServerMonad (SetSessionCookies H.Html)
-authenticate (Just authCode) = do
-  let pageContent = renderPageContents $ do
-        H.div $ do
-          H.script ! HA.type_ "text/javascript" $ H.toMarkup ("window.location.replace('/authd');" :: Text)
-          H.toMarkup ("Login Successful" :: Text)
+getOntoPageContents :: Text -> ServerMonad H.Html
+getOntoPageContents "auto-close" =
+  return $
+    H.div $ do
+      H.script ! HA.type_ "text/javascript" $ H.toMarkup ("window.close();" :: Text)
+      H.toMarkup ("Login Successful" :: Text)
+getOntoPageContents "authd-redirect" =
+  return $
+    H.div $ do
+      H.script ! HA.type_ "text/javascript" $ H.toMarkup ("window.location.replace('/authd');" :: Text)
+      H.toMarkup ("Login Successful" :: Text)
+getOntoPageContents _ = badRequest
+
+authenticate :: Maybe Text -> Maybe Text -> ServerMonad (SetSessionCookies H.Html)
+authenticate (Just authCode) (Just onto) = do
+  pageContent <- fmap renderPageContents $ getOntoPageContents onto
   possibleSetCookie <- checkAuthCode authCode
   maybe failedLoginPage (\cookie -> return $ addHeader cookie pageContent) possibleSetCookie
-authenticate _ = badRequest
+authenticate _ _ = badRequest
 
 logoutSuccessfulContent :: H.Html
 logoutSuccessfulContent = renderPageContents $ H.div $ H.script ! HA.type_ "text/javascript" $ H.toMarkup ("window.location.replace('/');" :: Text)
