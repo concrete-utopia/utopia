@@ -91,7 +91,11 @@ function onDrop(
           ],
           'everyone',
         )
+      } else {
+        draggedOntoProps.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'everyone')
       }
+    } else {
+      draggedOntoProps.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'everyone')
     }
   }
 }
@@ -495,6 +499,14 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   onDragEnter = (e: React.DragEvent) => {
+    // this disables react-dnd while dropping external files
+    if (
+      this.props.isOver ||
+      (e.dataTransfer?.items != null &&
+        Array.from(e.dataTransfer?.items).filter((item) => item.kind === 'file').length === 0)
+    ) {
+      return
+    }
     this.setState((prevState) => {
       return {
         currentExternalFilesDragEventCounter: prevState.currentExternalFilesDragEventCounter + 1,
@@ -557,10 +569,7 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   isCurrentDropTargetForInternalFiles = () => {
-    return (
-      (this.props.isOver && this.props.fileType === 'DIRECTORY') ||
-      this.props.dropTarget === this.props.path
-    )
+    return this.props.dropTarget === this.props.path
   }
 
   render() {
@@ -760,13 +769,20 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
     accept: 'filebrowser',
     canDrop: () => true,
     drop: () => props,
-    hover: () => {
-      const ancestorDirectory = getNearestAncestorDirectory(
+    hover: (item: FilebrowserDragItem) => {
+      const targetDirectory = getNearestAncestorDirectory(
         props.path,
         props.fileType === 'DIRECTORY',
       )
-      if (props.dropTarget !== ancestorDirectory) {
-        props.dispatch([EditorActions.setFilebrowserDropTarget(ancestorDirectory)], 'leftpane')
+      // do not trigger highlight when it tries to move to it's descendant directories
+      if (targetDirectory.includes(item.props.path)) {
+        if (props.dropTarget != null) {
+          props.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'leftpane')
+        }
+      } else {
+        if (props.dropTarget !== targetDirectory) {
+          props.dispatch([EditorActions.setFilebrowserDropTarget(targetDirectory)], 'leftpane')
+        }
       }
     },
     collect: (monitor) => ({
