@@ -11,7 +11,7 @@ BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
 })
 ;(global as any).BrowserFS = BrowserFS
 
-import * as ESLint from 'eslint'
+import type { Linter as ESLintLinter } from 'eslint'
 import * as Linter from 'eslint4b'
 import { ESLINT_CONFIG, EslintPluginRules } from './eslint-config'
 import { ErrorMessage } from '../../shared/error-messages'
@@ -37,42 +37,62 @@ const linter = new CustomUtopiaLinter()
 export function lintCode(
   filename: string,
   code: string,
-  config: ESLint.Linter.Config = ESLINT_CONFIG,
+  config: ESLintLinter.Config = ESLINT_CONFIG,
 ): ErrorMessage[] {
   const passTime = Date.now()
-  const lintResult = linter.verify(code, config, { filename: filename })
-  return lintResult.map(
-    (r: any): ErrorMessage => {
-      let severity: ErrorMessage['severity']
-      if (r.fatal) {
-        severity = 'fatal'
-      } else if (r.severity === 2) {
-        severity = 'error'
-      } else {
-        severity = 'warning'
-      }
+  try {
+    const lintResult = linter.verify(code, config, { filename: filename })
 
-      const ansiStrippedResultMessage = stripAnsi(r.message)
-      const strippedAndSplitMessage = ansiStrippedResultMessage.split('\n\n')
+    return lintResult.map(
+      (r: any): ErrorMessage => {
+        let severity: ErrorMessage['severity']
+        if (r.fatal) {
+          severity = 'fatal'
+        } else if (r.severity === 2) {
+          severity = 'error'
+        } else {
+          severity = 'warning'
+        }
 
-      const message = strippedAndSplitMessage[0]
-      const messageWithRule = r.ruleId == null ? message : `${message} (${r.ruleId})`
-      const codeSnippet = strippedAndSplitMessage[1]
+        const ansiStrippedResultMessage = stripAnsi(r.message)
+        const strippedAndSplitMessage = ansiStrippedResultMessage.split('\n\n')
 
-      return {
-        message: messageWithRule,
+        const message = strippedAndSplitMessage[0]
+        const messageWithRule = r.ruleId == null ? message : `${message} (${r.ruleId})`
+        const codeSnippet = strippedAndSplitMessage[1]
+
+        return {
+          message: messageWithRule,
+          fileName: filename,
+          startLine: r.line,
+          startColumn: r.column,
+          endLine: r.endLine,
+          endColumn: r.endColumn,
+          codeSnippet: codeSnippet,
+          severity: severity,
+          type: severity,
+          errorCode: r.ruleId,
+          source: 'eslint',
+          passTime: passTime,
+        }
+      },
+    )
+  } catch (e) {
+    return [
+      {
+        message: `ESLint runtime error:\n${e}`,
         fileName: filename,
-        startLine: r.line,
-        startColumn: r.column,
-        endLine: r.endLine,
-        endColumn: r.endColumn,
-        codeSnippet: codeSnippet,
-        severity: severity,
-        type: severity,
-        errorCode: r.ruleId,
+        startLine: null,
+        startColumn: null,
+        endLine: null,
+        endColumn: null,
+        codeSnippet: '',
+        severity: 'fatal',
+        type: 'fatal',
+        errorCode: '',
         source: 'eslint',
         passTime: passTime,
-      }
-    },
-  )
+      },
+    ]
+  }
 }
