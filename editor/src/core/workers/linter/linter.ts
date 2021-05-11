@@ -40,39 +40,59 @@ export function lintCode(
   config: ESLintLinter.Config = ESLINT_CONFIG,
 ): ErrorMessage[] {
   const passTime = Date.now()
-  const lintResult = linter.verify(code, config, { filename: filename })
-  return lintResult.map(
-    (r: any): ErrorMessage => {
-      let severity: ErrorMessage['severity']
-      if (r.fatal) {
-        severity = 'fatal'
-      } else if (r.severity === 2) {
-        severity = 'error'
-      } else {
-        severity = 'warning'
-      }
+  try {
+    const lintResult = linter.verify(code, config, { filename: filename })
 
-      const ansiStrippedResultMessage = stripAnsi(r.message)
-      const strippedAndSplitMessage = ansiStrippedResultMessage.split('\n\n')
+    return lintResult.map(
+      (r: any): ErrorMessage => {
+        let severity: ErrorMessage['severity']
+        if (r.fatal) {
+          severity = 'fatal'
+        } else if (r.severity === 2) {
+          severity = 'error'
+        } else {
+          severity = 'warning'
+        }
 
-      const message = strippedAndSplitMessage[0]
-      const messageWithRule = r.ruleId == null ? message : `${message} (${r.ruleId})`
-      const codeSnippet = strippedAndSplitMessage[1]
+        const ansiStrippedResultMessage = stripAnsi(r.message)
+        const strippedAndSplitMessage = ansiStrippedResultMessage.split('\n\n')
 
-      return {
-        message: messageWithRule,
+        const message = strippedAndSplitMessage[0]
+        const messageWithRule = r.ruleId == null ? message : `${message} (${r.ruleId})`
+        const codeSnippet = strippedAndSplitMessage[1]
+
+        return {
+          message: messageWithRule,
+          fileName: filename,
+          startLine: r.line,
+          startColumn: r.column,
+          endLine: r.endLine,
+          endColumn: r.endColumn,
+          codeSnippet: codeSnippet,
+          severity: severity,
+          type: severity,
+          errorCode: r.ruleId,
+          source: 'eslint',
+          passTime: passTime,
+        }
+      },
+    )
+  } catch (e) {
+    return [
+      {
+        message: `ESLint runtime error:\n${e}`,
         fileName: filename,
-        startLine: r.line,
-        startColumn: r.column,
-        endLine: r.endLine,
-        endColumn: r.endColumn,
-        codeSnippet: codeSnippet,
-        severity: severity,
-        type: severity,
-        errorCode: r.ruleId,
+        startLine: null,
+        startColumn: null,
+        endLine: null,
+        endColumn: null,
+        codeSnippet: '',
+        severity: 'fatal',
+        type: 'fatal',
+        errorCode: '',
         source: 'eslint',
         passTime: passTime,
-      }
-    },
-  )
+      },
+    ]
+  }
 }
