@@ -63,7 +63,8 @@ import {
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import {
-  applyProjectContentChanges,
+  applyProjectChanges,
+  collateProjectChanges,
   sendCodeEditorDecorations,
   sendSelectedElement,
   sendSelectedElementChangedMessage,
@@ -343,11 +344,12 @@ async function applyVSCodeChanges(
 ): Promise<void> {
   // Update the file system that is shared between Utopia and VS Code.
   if (oldStoredState.editor.id != null && !updateCameFromVSCode) {
-    await applyProjectContentChanges(
+    const changes = collateProjectChanges(
       oldStoredState.editor.id,
       oldStoredState.editor.projectContents,
       newEditorState.projectContents,
     )
+    await applyProjectChanges(changes)
   }
 
   // Keep the decorations synchronised from Utopia to VS Code.
@@ -356,6 +358,8 @@ async function applyVSCodeChanges(
   // Handle the selected element having changed to inform the user what is going on.
   await updateSelectedElementChanged(oldStoredState.editor, newEditorState)
 }
+
+let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
 export function editorDispatch(
   boundDispatch: EditorDispatch,
@@ -372,6 +376,9 @@ export function editorDispatch(
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
   })
+  const anyWorkerUpdates = dispatchedActions.some(
+    (action) => action.action === 'UPDATE_FROM_WORKER',
+  )
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
   const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
@@ -458,7 +465,10 @@ export function editorDispatch(
 
   const isLoaded = frozenEditorState.isLoaded
   const shouldSave =
-    isLoaded && !isLoadAction && (!transientOrNoChange || anyUndoOrRedo) && isBrowserEnvironment
+    isLoaded &&
+    !isLoadAction &&
+    (!transientOrNoChange || anyUndoOrRedo || anyWorkerUpdates) &&
+    isBrowserEnvironment
   if (shouldSave) {
     save(frozenEditorState, boundDispatch, storedState.userState.loginState, saveType, forceSave)
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
@@ -474,9 +484,12 @@ export function editorDispatch(
     )
   }
 
-  applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
-    console.error('Error sending updates to VS Code', error)
-  })
+  // Chain off of the previous one to ensure the ordering is maintained.
+  applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(() =>
+    applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
+      console.error('Error sending updates to VS Code', error)
+    }),
+  )
 
   if (nameUpdated && frozenEditorState.id != null) {
     pushProjectURLToBrowserHistory(
