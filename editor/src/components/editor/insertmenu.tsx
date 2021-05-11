@@ -348,6 +348,7 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
                     currentlyBeingInserted,
                     componentBeingInserted(component.importsToAdd, component.element.name),
                   )}
+                  // eslint-disable-next-line react/jsx-no-bind
                   onMouseDown={insertItemOnMouseDown}
                 />
               )
