@@ -105,7 +105,7 @@ function simpleStringifyAction(action: EditorAction): string {
 }
 
 export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): string {
-  return `[\n\t${actions.map(simpleStringifyAction).join(',\n')}\n]`
+  return `[${actions.map(simpleStringifyAction).join(', ')}]`
 }
 
 function processAction(

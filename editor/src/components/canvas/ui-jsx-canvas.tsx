@@ -50,10 +50,7 @@ import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
-import {
-  ComponentRendererComponent,
-  createComponentRendererComponent,
-} from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import { ComponentRendererComponent } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import {
   MutableUtopiaContext,
   MutableUtopiaContextProps,

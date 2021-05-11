@@ -464,9 +464,17 @@ export function useKeepShallowReferenceEquality<T>(possibleNewValue: T, measure 
   return oldValue.current
 }
 
-export function useKeepReferenceEqualityIfPossible<T>(possibleNewValue: T, measure = false): T {
+export function useKeepReferenceEqualityIfPossible<T>(
+  possibleNewValue: T,
+  nameOfThing: string | null = null,
+): T {
   const oldValue = React.useRef<T | null>(null)
-  oldValue.current = keepDeepReferenceEqualityIfPossible(oldValue.current, possibleNewValue)
+  const resultValue = keepDeepReferenceEqualityIfPossible(oldValue.current, possibleNewValue)
+  if (nameOfThing != null && resultValue !== oldValue.current) {
+    // eslint-disable-next-line no-console
+    console.log(`${nameOfThing} changed`)
+  }
+  oldValue.current = resultValue
   return oldValue.current!
 }
 

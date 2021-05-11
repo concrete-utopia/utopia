@@ -29,6 +29,7 @@ import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utop
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { useGetTopLevelElements } from './ui-jsx-canvas-top-level-elements'
 import { getPathsFromString } from '../../../core/shared/uid-utils'
+import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 
 export type ComponentRendererComponent = React.ComponentType<{
   [UTOPIA_INSTANCE_PATH]: ElementPath
@@ -63,12 +64,36 @@ function tryToGetInstancePath(
   }
 }
 
+function useGetTopLevelComponent(
+  filePath: string,
+  topLevelElementName: string,
+): UtopiaJSXComponent | null {
+  const topLevelElements = useGetTopLevelElements(filePath)
+
+  const utopiaJsxComponent: UtopiaJSXComponent | null =
+    topLevelElements.find((elem): elem is UtopiaJSXComponent => {
+      return isUtopiaJSXComponent(elem) && elem.name === topLevelElementName
+    }) ?? null
+
+  return useKeepReferenceEqualityIfPossible(utopiaJsxComponent)
+}
+
+function useCachedAgainstComponentAndProps<T>(
+  utopiaJsxComponent: UtopiaJSXComponent | null,
+  props: any,
+  fn: () => T,
+): T {
+  return React.useMemo(fn, [utopiaJsxComponent, props])
+}
+
 export function createComponentRendererComponent(params: {
   topLevelElementName: string
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaContextProps>
 }): ComponentRendererComponent {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
+    const utopiaJsxComponent = useGetTopLevelComponent(params.filePath, params.topLevelElementName)
+
     const {
       [UTOPIA_INSTANCE_PATH]: instancePathAny, // TODO types?
       [UTOPIA_PATHS_KEY]: pathsString, // TODO types?
@@ -81,14 +106,29 @@ export function createComponentRendererComponent(params: {
       pathsString,
     )
 
-    const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
+    const rootScope = useCachedAgainstComponentAndProps(
+      utopiaJsxComponent,
+      realPassedPropsIncludingUtopiaSpecialStuff,
+      () => params.mutableContextRef.current[params.filePath].mutableContext.rootScope,
+    )
 
-    const topLevelElements = useGetTopLevelElements(params.filePath)
+    const requireResult = useCachedAgainstComponentAndProps(
+      utopiaJsxComponent,
+      realPassedPropsIncludingUtopiaSpecialStuff,
+      () => params.mutableContextRef.current[params.filePath].mutableContext.requireResult,
+    )
 
-    const utopiaJsxComponent: UtopiaJSXComponent | null =
-      topLevelElements.find((elem): elem is UtopiaJSXComponent => {
-        return isUtopiaJSXComponent(elem) && elem.name === params.topLevelElementName
-      }) ?? null
+    const fileBlobs = useCachedAgainstComponentAndProps(
+      utopiaJsxComponent,
+      realPassedPropsIncludingUtopiaSpecialStuff,
+      () => params.mutableContextRef.current[params.filePath].mutableContext.fileBlobs,
+    )
+
+    const jsxFactoryFunctionName = useCachedAgainstComponentAndProps(
+      utopiaJsxComponent,
+      realPassedPropsIncludingUtopiaSpecialStuff,
+      () => params.mutableContextRef.current[params.filePath].mutableContext.jsxFactoryFunctionName,
+    )
 
     const shouldIncludeCanvasRootInTheSpy = useContextSelector(
       RerenderUtopiaContext,
@@ -104,57 +144,57 @@ export function createComponentRendererComponent(params: {
       throw new ReferenceError(`${params.topLevelElementName} is not defined`)
     }
 
-    const appliedProps = optionalMap(
-      (param) =>
-        applyPropsParamToPassedProps(
-          mutableContext.rootScope,
-          mutableContext.requireResult,
-          realPassedProps,
-          param,
-        ),
-      utopiaJsxComponent.param,
-    ) ?? { props: realPassedProps }
-
-    let scope: MapLike<any> = {
-      ...mutableContext.rootScope,
-      ...appliedProps,
-    }
+    const appliedProps = useKeepReferenceEqualityIfPossible(
+      optionalMap(
+        (param) => applyPropsParamToPassedProps(rootScope, requireResult, realPassedProps, param),
+        utopiaJsxComponent.param,
+      ) ?? { props: realPassedProps },
+    )
 
     let codeError: Error | null = null
 
-    const rootElementPath = EP.appendNewElementPath(
-      instancePath,
-      getUtopiaID(utopiaJsxComponent.rootElement),
+    const elementScope: MapLike<any> = useCachedAgainstComponentAndProps(
+      utopiaJsxComponent,
+      realPassedPropsIncludingUtopiaSpecialStuff,
+      () => {
+        let workingScope: MapLike<any> = {
+          ...rootScope,
+          ...appliedProps,
+        }
+
+        const rootElementPath = EP.appendNewElementPath(
+          instancePath,
+          getUtopiaID(utopiaJsxComponent.rootElement),
+        )
+
+        if (utopiaJsxComponent.arbitraryJSBlock != null) {
+          const lookupRenderer = createLookupRender(
+            rootElementPath,
+            workingScope,
+            realPassedProps,
+            requireResult,
+            hiddenInstances,
+            fileBlobs,
+            sceneContext.validPaths,
+            undefined,
+            metadataContext,
+            jsxFactoryFunctionName,
+            shouldIncludeCanvasRootInTheSpy,
+            params.filePath,
+          )
+
+          workingScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
+            utopiaJsxComponent.arbitraryJSBlock.elementsWithin,
+            workingScope,
+            lookupRenderer,
+          )
+
+          runBlockUpdatingScope(requireResult, utopiaJsxComponent.arbitraryJSBlock, workingScope)
+        }
+
+        return workingScope
+      },
     )
-
-    if (utopiaJsxComponent.arbitraryJSBlock != null) {
-      const lookupRenderer = createLookupRender(
-        rootElementPath,
-        scope,
-        realPassedProps,
-        mutableContext.requireResult,
-        hiddenInstances,
-        mutableContext.fileBlobs,
-        sceneContext.validPaths,
-        undefined,
-        metadataContext,
-        mutableContext.jsxFactoryFunctionName,
-        shouldIncludeCanvasRootInTheSpy,
-        params.filePath,
-      )
-
-      scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
-        utopiaJsxComponent.arbitraryJSBlock.elementsWithin,
-        scope,
-        lookupRenderer,
-      )
-
-      runBlockUpdatingScope(
-        mutableContext.requireResult,
-        utopiaJsxComponent.arbitraryJSBlock,
-        scope,
-      )
-    }
 
     function buildComponentRenderResult(element: JSXElementChild): React.ReactElement {
       if (isJSXFragment(element)) {
@@ -165,17 +205,17 @@ export function createComponentRendererComponent(params: {
         return renderCoreElement(
           element,
           ownElementPath,
-          mutableContext.rootScope,
-          scope,
+          rootScope,
+          elementScope,
           realPassedProps,
-          mutableContext.requireResult,
+          requireResult,
           hiddenInstances,
-          mutableContext.fileBlobs,
+          fileBlobs,
           sceneContext.validPaths,
           realPassedProps['data-uid'],
           undefined,
           metadataContext,
-          mutableContext.jsxFactoryFunctionName,
+          jsxFactoryFunctionName,
           codeError,
           shouldIncludeCanvasRootInTheSpy,
           params.filePath,
