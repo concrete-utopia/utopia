@@ -248,6 +248,7 @@ export function renderCanvasReturnResultAndError(
           <CanvasErrorBoundary
             fileCode={uiFileCode}
             filePath={UiFilePath}
+            // eslint-disable-next-line react/jsx-no-bind
             reportError={reportError}
             requireFn={canvasProps.requireFn}
           >
