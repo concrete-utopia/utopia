@@ -38,7 +38,7 @@ import {
   Button,
 } from '../../uuiui'
 import { notice } from '../common/notice'
-import { getParentDirectory } from '../../utils/path-utils'
+import { appendToPath, getParentDirectory } from '../../utils/path-utils'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -82,7 +82,7 @@ function onDrop(
       isRootArea
     ) {
       const newDirectory = draggedOntoProps.dropTarget != null ? draggedOntoProps.dropTarget : '/'
-      const newFilePath = `${newDirectory}/${R.last(draggedProps.path.split('/')) as string}`
+      const newFilePath = appendToPath(newDirectory, R.last(draggedProps.path.split('/')) as string)
       if (draggedProps.path !== newFilePath && draggedProps.path !== draggedOntoProps.path) {
         draggedOntoProps.dispatch(
           [
