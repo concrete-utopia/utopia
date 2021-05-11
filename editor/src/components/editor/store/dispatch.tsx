@@ -85,6 +85,7 @@ import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code
 import {
   reduxDevtoolsLogMessage,
   reduxDevtoolsSendActions,
+  reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
 
 export interface DispatchResult extends EditorStore {
@@ -187,6 +188,7 @@ function processAction(
       userState: working.userState,
       workers: working.workers,
       dispatch: dispatchEvent,
+      alreadySaved: working.alreadySaved,
     }
   }
 }
@@ -463,17 +465,36 @@ export function editorDispatch(
     }
   }
 
+  const alreadySaved = result.alreadySaved
+
   const isLoaded = frozenEditorState.isLoaded
   const shouldSave =
     isLoaded &&
     !isLoadAction &&
-    (!transientOrNoChange || anyUndoOrRedo || anyWorkerUpdates) &&
+    (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
     isBrowserEnvironment
+
+  const finalStore = {
+    editor: frozenEditorState,
+    derived: frozenDerivedState,
+    history: newHistory,
+    userState: result.userState,
+    workers: storedState.workers,
+    dispatch: boundDispatch,
+    nothingChanged: result.nothingChanged,
+    entireUpdateFinished: Promise.all([
+      result.entireUpdateFinished,
+      editorWithModelChecked.modelUpdateFinished,
+    ]),
+    alreadySaved: alreadySaved || shouldSave,
+  }
+
   if (shouldSave) {
     save(frozenEditorState, boundDispatch, storedState.userState.loginState, saveType, forceSave)
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
     saveStoredState(storedState.editor.id, stateToStore)
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
+    reduxDevtoolsUpdateState('Save Editor', finalStore)
   }
 
   const updatedFromVSCode = dispatchedActions.some(isFromVSCode)
@@ -509,19 +530,7 @@ export function editorDispatch(
     storedState.workers.initWatchdogWorker(frozenEditorState.id)
   }
 
-  return {
-    editor: frozenEditorState,
-    derived: frozenDerivedState,
-    history: newHistory,
-    userState: result.userState,
-    workers: storedState.workers,
-    dispatch: boundDispatch,
-    nothingChanged: result.nothingChanged,
-    entireUpdateFinished: Promise.all([
-      result.entireUpdateFinished,
-      editorWithModelChecked.modelUpdateFinished,
-    ]),
-  }
+  return finalStore
 }
 
 function editorDispatchInner(
@@ -636,6 +645,7 @@ function editorDispatchInner(
       dispatch: boundDispatch,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
+      alreadySaved: storedState.alreadySaved,
     }
   } else {
     //empty return
@@ -668,7 +678,6 @@ async function save(
   saveType: SaveType,
   forceServerSave: boolean,
 ) {
-  reduxDevtoolsLogMessage('Save Editor') // I'd like to leave this log line here for a day or so, so I can debug what action triggers the save
   const modelChange =
     saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
   const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
