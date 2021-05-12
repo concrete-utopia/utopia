@@ -73,18 +73,22 @@ describe('guaranteeUniqueUids', () => {
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
     const exampleElement = jsxElement(
       'View',
-      'aaa', // FIXME BEFORE MERGE
+      '',
       jsxAttributesFromMap({ 'data-uid': jsxAttributeFunctionCall('someFunction', []) }),
       [],
     )
     const fixedElements = guaranteeUniqueUids([exampleElement], [])
-
-    const fixedElementProps = Utils.pathOr([], [0, 'props'], fixedElements)
-    const fixedElementUID = getJSXAttribute(fixedElementProps, 'data-uid')
-    if (fixedElementUID == null) {
+    const fixedElement = fixedElements[0]
+    const fixedElementProps = Utils.pathOr([], ['props'], fixedElement)
+    const fixedElementUIDProp = getJSXAttribute(fixedElementProps, 'data-uid')
+    if (fixedElementUIDProp == null) {
       fail('Unable to find uid for element.')
+    } else if (isJSXAttributeValue(fixedElementUIDProp)) {
+      const fixedElementUID = (fixedElement as JSXElement).uid
+      expect(fixedElementUID).toEqual(fixedElementUIDProp.value)
+      expect(fixedElementUID).not.toEqual('')
     } else {
-      expect(isJSXAttributeValue(fixedElementUID)).toBeTruthy()
+      fail('fixedElementUIDProp is not a simple value')
     }
   })
 })
@@ -100,24 +104,6 @@ describe('getUtopiaID', () => {
     const id = getUtopiaID(element as JSXElement)
     expect(id).toEqual('hello')
   })
-
-  // it('throws if there is no ID', () => {
-  //   const element = jsxElement('View', [], [])
-  //   expect(() => {
-  //     getUtopiaID(element as JSXElement)
-  //   }).toThrow()
-  // })
-
-  // it('throws if there is an ID which is not a simple jsx attribute value', () => {
-  //   const element = jsxElement(
-  //     'View',
-  //     jsxAttributesFromMap({ 'data-uid': jsxAttributeFunctionCall('hello', []) }),
-  //     [],
-  //   )
-  //   expect(() => {
-  //     getUtopiaID(element as JSXElement)
-  //   }).toThrow()
-  // })
 })
 
 describe('removeJSXElementChild', () => {
