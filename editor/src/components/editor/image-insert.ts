@@ -10,10 +10,16 @@ async function fileUploadAction(file: File, targetPath: string): Promise<EditorA
   return fileResultUploadAction(fileResult, targetPath)
 }
 
-export function fileResultUploadAction(fileResult: FileResult, targetPath: string): EditorAction {
+export function fileResultUploadAction(
+  fileResult: FileResult,
+  targetPath: string,
+  replace: boolean = false,
+): EditorAction {
   switch (fileResult.type) {
     case 'IMAGE_RESULT': {
-      const afterSave = EditorActions.saveImageReplace()
+      const afterSave = replace
+        ? EditorActions.saveImageReplace()
+        : EditorActions.saveImageDoNothing()
       return EditorActions.saveAsset(
         targetPath,
         fileResult.fileType,
