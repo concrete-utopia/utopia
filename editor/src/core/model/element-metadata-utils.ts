@@ -970,6 +970,21 @@ export const MetadataUtils = {
       return null
     }
   },
+  getJSXElementNameFromMetadata(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): JSXElementName | null {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    if (element != null) {
+      if (isRight(element.element) && isJSXElement(element.element.value)) {
+        return element.element.value.name
+      } else {
+        return null
+      }
+    } else {
+      return null
+    }
+  },
   getJSXElementBaseName(path: ElementPath, components: Array<UtopiaJSXComponent>): string | null {
     const jsxElement = findElementAtPath(path, components)
     if (jsxElement != null) {
