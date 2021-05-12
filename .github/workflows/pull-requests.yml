@@ -61,6 +61,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       UTOPIA_SHA: ${{ github.sha }}
+      AUTH0_CLIENT_ID: KB7euFO46rVYeOaWmrEdktdhAFxEO266
+      AUTH0_ENDPOINT: enter.utopia.app
+      AUTH0_REDIRECT_URI: https://utopia.pizza/authenticate
     steps:
       # Gets the branch that this PR is targeting and replaces forward slashes in the name with hyphens.
       # So that later steps can produce a bundle incorporating that into the name and upload it.
@@ -137,5 +140,5 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Staging deploy success. Link to test editor: https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }}
-            Performance: ${{ steps.run-performance-test.outputs.perf-result }}
+            [Link to test editor](https://${{ secrets.STAGING_SERVER }}/p/?branch_name=${{ steps.extract_branch.outputs.branch }})
+            ${{ steps.run-performance-test.outputs.perf-result }}

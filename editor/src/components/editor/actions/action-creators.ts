@@ -183,6 +183,7 @@ import type {
   UpdateConfigFromVSCode,
   SetFollowSelectionEnabled,
   SetLoginState,
+  SetFilebrowserDropTarget,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -1283,5 +1284,12 @@ export function setLoginState(loginState: LoginState): SetLoginState {
   return {
     action: 'SET_LOGIN_STATE',
     loginState: loginState,
+  }
+}
+
+export function setFilebrowserDropTarget(target: string | null): SetFilebrowserDropTarget {
+  return {
+    action: 'SET_FILEBROWSER_DROPTARGET',
+    target: target,
   }
 }

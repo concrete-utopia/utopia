@@ -335,21 +335,11 @@ describe('setJSXValueAtPath', () => {
 
     expect(result.value).toEqual(
       jsxAttributesFromMap({
-        style: jsxAttributeNestedObject(
-          [
-            jsxPropertyAssignment(
-              'paddingLeft',
-              jsxAttributeValue(100, emptyComments),
-              emptyComments,
-              emptyComments,
-            ),
-            jsxPropertyAssignment(
-              'padding',
-              jsxAttributeValue(5, emptyComments),
-              emptyComments,
-              emptyComments,
-            ),
-          ],
+        style: jsxAttributeValue(
+          {
+            paddingLeft: 100,
+            padding: 5,
+          },
           emptyComments,
         ),
       }),
@@ -400,21 +390,11 @@ describe('setJSXValueAtPath', () => {
 
     expect(result.value).toEqual(
       jsxAttributesFromMap({
-        style: jsxAttributeNestedObject(
-          [
-            jsxPropertyAssignment(
-              'paddingLeft',
-              jsxAttributeValue(100, emptyComments),
-              emptyComments,
-              emptyComments,
-            ),
-            jsxPropertyAssignment(
-              'padding',
-              jsxAttributeValue(5, emptyComments),
-              emptyComments,
-              emptyComments,
-            ),
-          ],
+        style: jsxAttributeValue(
+          {
+            paddingLeft: 100,
+            padding: 5,
+          },
           emptyComments,
         ),
       }),
@@ -694,10 +674,7 @@ describe('unsetJSXValueAtPath', () => {
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left']))
     const expectedValue = right(
       jsxAttributesFromMap({
-        style: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({ top: jsxAttributeValue({ x: 1, y: 1 }, emptyComments) }),
-          emptyComments,
-        ),
+        style: jsxAttributeValue({ top: { x: 1, y: 1 } }, emptyComments),
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
     )
@@ -714,10 +691,7 @@ describe('unsetJSXValueAtPath', () => {
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 'left', 'x']))
     const expectedValue = right(
       jsxAttributesFromMap({
-        style: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({ top: jsxAttributeValue({ x: 1, y: 1 }, emptyComments) }),
-          emptyComments,
-        ),
+        style: jsxAttributeValue({ top: { x: 1, y: 1 } }, emptyComments),
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
     )
@@ -734,7 +708,7 @@ describe('unsetJSXValueAtPath', () => {
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
     const expectedValue = right(
       jsxAttributesFromMap({
-        style: jsxAttributeNestedArraySimple([jsxAttributeValue(0, emptyComments)]),
+        style: jsxAttributeValue([0], emptyComments),
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
     )
@@ -748,7 +722,7 @@ describe('unsetJSXValueAtPath', () => {
     const actualValue = unsetJSXValueAtPath(startingValue, PP.create(['style', 1]))
     const expectedValue = right(
       jsxAttributesFromMap({
-        style: jsxAttributeNestedArraySimple([jsxAttributeValue(0, emptyComments)]),
+        style: jsxAttributeValue([0], emptyComments),
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
     )
@@ -794,32 +768,26 @@ describe('unsetJSXValueAtPath', () => {
     )
     const expectedValue = right(
       jsxAttributesFromMap({
-        style: jsxAttributeNestedObjectSimple(
-          jsxAttributesFromMap({
-            left: jsxAttributeNestedArraySimple([
-              jsxAttributeValue('29', emptyComments),
-              jsxAttributeNestedObjectSimple(
-                jsxAttributesFromMap({
-                  stateEnabled: jsxAttributeNestedArraySimple([
-                    jsxAttributeValue(
-                      {
-                        lightSide: {
-                          ten: 10,
-                        },
-                        darkSide: {
-                          twelve: 12,
-                          nine: 9,
-                        },
-                      },
-                      emptyComments,
-                    ),
-                  ]),
-                }),
-                emptyComments,
-              ),
-            ]),
-            top: jsxAttributeValue({ x: 1, y: 1 }, emptyComments),
-          }),
+        style: jsxAttributeValue(
+          {
+            left: [
+              '29',
+              {
+                stateEnabled: [
+                  {
+                    lightSide: {
+                      ten: 10,
+                    },
+                    darkSide: {
+                      twelve: 12,
+                      nine: 9,
+                    },
+                  },
+                ],
+              },
+            ],
+            top: { x: 1, y: 1 },
+          },
           emptyComments,
         ),
         backgroundColor: jsxAttributeValue('red', emptyComments),

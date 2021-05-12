@@ -295,6 +295,7 @@ export interface EditorState {
   fileBrowser: {
     minimised: boolean
     renamingTarget: string | null
+    dropTarget: string | null
   }
   dependencyList: {
     minimised: boolean
@@ -1136,6 +1137,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     fileBrowser: {
       minimised: false,
+      dropTarget: null,
       renamingTarget: null,
     },
     navigator: {
@@ -1397,6 +1399,7 @@ export function editorModelFromPersistentModel(
     },
     fileBrowser: {
       renamingTarget: null,
+      dropTarget: null,
       minimised: persistentModel.fileBrowser.minimised,
     },
     codeEditorErrors: persistentModel.codeEditorErrors,

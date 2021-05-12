@@ -355,6 +355,7 @@ import {
   SetFollowSelectionEnabled,
   UpdateConfigFromVSCode,
   SetLoginState,
+  SetFilebrowserDropTarget,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -918,6 +919,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     fileBrowser: {
       minimised: currentEditor.fileBrowser.minimised,
+      dropTarget: null,
       renamingTarget: currentEditor.fileBrowser.renamingTarget,
     },
     dependencyList: {
@@ -2034,12 +2036,13 @@ export const UPDATE_FNS = {
           editor,
           'forward',
         )
+        let newSelection: ElementPath[] = []
         const withChildrenMoved = children.reduce((working, child) => {
           const childFrame = MetadataUtils.getFrameInCanvasCoords(
             child.elementPath,
             editor.jsxMetadata,
           )
-          return editorMoveTemplate(
+          const result = editorMoveTemplate(
             child.elementPath,
             child.elementPath,
             childFrame,
@@ -2048,11 +2051,22 @@ export const UPDATE_FNS = {
             parentFrame,
             working,
             null,
-          ).editor
+          )
+          if (result.newPath != null) {
+            newSelection.push(result.newPath)
+          }
+          return result.editor
         }, editor)
         const withViewDeleted = deleteElements([action.target], withChildrenMoved)
 
-        return withViewDeleted
+        return {
+          ...withViewDeleted,
+          selectedViews: newSelection,
+          canvas: {
+            ...withViewDeleted.canvas,
+            mountCount: editor.canvas.mountCount + 1,
+          },
+        }
       },
       dispatch,
     )
@@ -4096,6 +4110,18 @@ export const UPDATE_FNS = {
     return {
       ...userState,
       loginState: action.loginState,
+    }
+  },
+  SET_FILEBROWSER_DROPTARGET: (
+    action: SetFilebrowserDropTarget,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      fileBrowser: {
+        ...editor.fileBrowser,
+        dropTarget: action.target,
+      },
     }
   },
 }

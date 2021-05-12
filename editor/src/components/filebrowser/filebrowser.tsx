@@ -178,6 +178,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
     codeResultCache,
     propertyControlsInfo,
     renamingTarget,
+    dropTarget,
     openUiFileName,
   } = useEditorState((store) => {
     const uiFile = getOpenUIJSFile(store.editor)
@@ -190,6 +191,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
       codeResultCache: store.editor.codeResultCache,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,
+      dropTarget: store.editor.fileBrowser.dropTarget,
       openUiFileName: getOpenUIJSFileKey(store.editor),
     }
   }, 'FileBrowserItems')
@@ -307,6 +309,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
             setSelected={setSelected}
             collapsed={element.type === 'file' && collapsedPaths.indexOf(element.path) > -1}
             hasErrorMessages={fileHasErrorMessages(element.path, errorMessages)}
+            dropTarget={dropTarget}
           />
         </div>
       ))}

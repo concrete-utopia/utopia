@@ -18,6 +18,7 @@ type FrameResult = {
   timeSeries: Array<number>
   analytics: {
     frameMin: number
+    frameMax: number
     frameAvg: number
     percentile25: number | undefined
     percentile50: number | undefined
@@ -30,6 +31,7 @@ const EmptyResult: FrameResult = {
   timeSeries: [],
   analytics: {
     frameMin: 0,
+    frameMax: 0,
     frameAvg: 0,
     percentile25: undefined,
     percentile50: undefined,
@@ -81,9 +83,10 @@ export const setupBrowser = async (): Promise<{
   const browser = await puppeteer.launch({
     args: ['--no-sandbox', '--enable-thread-instruction-count'],
     headless: yn(process.env.HEADLESS),
-    executablePath: process.env.BROWSER
+    executablePath: process.env.BROWSER,
   })
   const page = await browser.newPage()
+  await page.setDefaultNavigationTimeout(120000)
   await page.setViewport({ width: 1500, height: 768 })
   // page.on('console', (message) =>
   //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
@@ -96,16 +99,42 @@ export const setupBrowser = async (): Promise<{
   }
 }
 
+const ResizeButtonXPath = "//a[contains(., 'P R')]"
+
+async function initialiseProject(page: puppeteer.Page): Promise<void> {
+  console.log('Initialising the project')
+  await page.waitForXPath('//div[contains(@class, "item-label-container")]')
+
+  // Select something a resize it to trigger a fork
+  const navigatorElement = await page.$('[class^="item-label-container"]')
+  await navigatorElement!.click()
+
+  // First selection will open the file in VS Code, triggering a bunch of downloads, so we pause briefly
+  await page.waitForTimeout(15000)
+
+  const [button] = await page.$x(ResizeButtonXPath)
+  await button!.click()
+  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+
+  // This change should have triggered a fork, so pause again
+  await page.waitForTimeout(15000)
+
+  console.log('Finished initialising')
+}
+
+function consoleMessageForResult(result: FrameResult): string {
+  return `${result.title}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
+}
+
 export const testPerformance = async function () {
   let scrollResult = EmptyResult
   let resizeResult = EmptyResult
   let selectionResult = EmptyResult
   const { page, browser } = await setupBrowser()
   try {
+    await initialiseProject(page)
     selectionResult = await testSelectionPerformance(page)
-    await page.reload()
     resizeResult = await testResizePerformance(page)
-    await page.reload()
     scrollResult = await testScrollingPerformance(page)
   } catch (e) {
     throw new Error(`Error during measurements ${e}`)
@@ -115,8 +144,23 @@ export const testPerformance = async function () {
   const summaryImage = await uploadSummaryImage([selectionResult, scrollResult, resizeResult])
 
   console.info(
-    `::set-output name=perf-result:: ${scrollResult.title}:  ${scrollResult.analytics.frameMin}ms | ${resizeResult.title}: ${resizeResult.analytics.frameMin}ms | ${selectionResult.title}: ${selectionResult.analytics.frameMin}ms ![SummaryChart](${summaryImage})`,
+    `::set-output name=perf-result:: ${consoleMessageForResult(
+      scrollResult,
+    )} | ${consoleMessageForResult(resizeResult)} | ${consoleMessageForResult(
+      selectionResult,
+    )} ![(Chart)](${summaryImage})`,
   )
+}
+
+async function clickOnce(
+  page: puppeteer.Page,
+  xpath: string,
+  expectedConsoleMessage: string,
+  errorMessage?: string,
+): Promise<void> {
+  const [button] = await page.$x(xpath)
+  await button!.click()
+  await consoleDoneMessage(page, expectedConsoleMessage, errorMessage)
 }
 
 export const testScrollingPerformance = async function (
@@ -125,17 +169,12 @@ export const testScrollingPerformance = async function (
   console.log('Test Scrolling Performance')
   await page.waitForXPath("//a[contains(., 'P S')]") // the button with the text 'P S' is the "secret" trigger to start the scrolling performance test
   // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P S')]")
-  await button!.click()
-  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
-  const [button2] = await page.$x("//a[contains(., 'P S')]")
-  await button2!.click()
-  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
+  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
+
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
-  const [button3] = await page.$x("//a[contains(., 'P S')]")
-  await button3!.click()
-  await consoleDoneMessage(page, 'SCROLL_TEST_FINISHED')
+  await clickOnce(page, "//a[contains(., 'P S')]", 'SCROLL_TEST_FINISHED')
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
@@ -144,22 +183,34 @@ export const testScrollingPerformance = async function (
 
 export const testResizePerformance = async function (page: puppeteer.Page): Promise<FrameResult> {
   console.log('Test Resize Performance')
-  await page.waitForXPath("//a[contains(., 'P R')]")
-  // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P R')]")
-  await button!.click()
+  await page.waitForXPath(ResizeButtonXPath)
 
   // select element using the navigator
   const navigatorElement = await page.$('[class^="item-label-container"]')
   await navigatorElement!.click()
-  const [button2] = await page.$x("//a[contains(., 'P R')]")
-  await button2!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+
+  // we run it twice without measurements to warm up the environment
+  await clickOnce(
+    page,
+    ResizeButtonXPath,
+    'RESIZE_TEST_FINISHED',
+    'RESIZE_TEST_MISSING_SELECTEDVIEW',
+  )
+  await clickOnce(
+    page,
+    ResizeButtonXPath,
+    'RESIZE_TEST_FINISHED',
+    'RESIZE_TEST_MISSING_SELECTEDVIEW',
+  )
+
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
-  const [button3] = await page.$x("//a[contains(., 'P R')]")
-  await button3!.click()
-  await consoleDoneMessage(page, 'RESIZE_TEST_FINISHED', 'RESIZE_TEST_MISSING_SELECTEDVIEW')
+  await clickOnce(
+    page,
+    ResizeButtonXPath,
+    'RESIZE_TEST_FINISHED',
+    'RESIZE_TEST_MISSING_SELECTEDVIEW',
+  )
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
@@ -173,14 +224,12 @@ export const testSelectionPerformance = async function (
   await page.waitForTimeout(20000)
   await page.waitForXPath("//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment
-  const [button] = await page.$x("//a[contains(., 'P E')]")
-  await button!.click()
-  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+
   // and then we run the test for a third time, this time running tracing
   await page.tracing.start({ path: 'trace.json' })
-  const [button2] = await page.$x("//a[contains(., 'P E')]")
-  await button2!.click()
-  await consoleDoneMessage(page, 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
+  await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
   await page.tracing.stop()
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
@@ -206,18 +255,20 @@ const getFrameData = (traceJson: any, markNamePrefix: string, title: string): Fr
   })
 
   let frameTimesFixed = frameTimes.map((x) => Number(x.toFixed(1)))
+  const sortedFrameTimes = frameTimesFixed.sort((a, b) => a - b)
 
   const analytics = {
-    frameMin: Math.min(...frameTimesFixed),
-    frameAvg: Number((totalFrameTimes / frameTimesFixed.length).toFixed()),
-    percentile25: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.25)],
-    percentile50: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimesFixed.length * 0.5)],
-    percentile75: frameTimesFixed.sort((a, b) => a - b)[Math.floor(frameTimeEvents.length * 0.75)],
+    frameMin: sortedFrameTimes[0]!,
+    frameMax: sortedFrameTimes[sortedFrameTimes.length - 1]!,
+    frameAvg: Number((totalFrameTimes / sortedFrameTimes.length).toFixed()),
+    percentile25: sortedFrameTimes[Math.floor(sortedFrameTimes.length * 0.25)],
+    percentile50: sortedFrameTimes[Math.floor(sortedFrameTimes.length * 0.5)],
+    percentile75: sortedFrameTimes[Math.floor(sortedFrameTimes.length * 0.75)],
   }
   return {
     title: title,
     analytics: analytics,
-    timeSeries: frameTimesFixed,
+    timeSeries: sortedFrameTimes,
   }
 }
 
