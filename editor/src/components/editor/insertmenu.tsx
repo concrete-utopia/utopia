@@ -5,12 +5,9 @@ import {
   JSXElementName,
   jsxElementName,
   jsxElementNameEquals,
-  isUtopiaJSXComponent,
   jsxAttributeValue,
-  jsxElement,
-  JSXAttributes,
   setJSXAttributesAttribute,
-  jsxAttributesFromMap,
+  jsxElement,
 } from '../../core/shared/element-template'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -326,14 +323,16 @@ class InsertMenuInner extends React.Component<InsertMenuProps> {
             {insertableGroup.insertableComponents.map((component, componentIndex) => {
               const insertItemOnMouseDown = () => {
                 const newUID = this.getNewUID()
-                const newElement = {
-                  ...component.element,
-                  props: setJSXAttributesAttribute(
+                const newElement = jsxElement(
+                  component.element.name,
+                  newUID,
+                  setJSXAttributesAttribute(
                     component.element.props,
                     'data-uid',
                     jsxAttributeValue(newUID, emptyComments),
                   ),
-                }
+                  component.element.children,
+                )
                 this.props.editorDispatch(
                   [enableInsertModeForJSXElement(newElement, newUID, component.importsToAdd, null)],
                   'everyone',

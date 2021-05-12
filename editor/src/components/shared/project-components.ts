@@ -1,4 +1,4 @@
-import { isUtopiaJSXComponent, jsxElement, JSXElement } from '../../core/shared/element-template'
+import { jsxElementWithoutUID, JSXElementWithoutUID } from '../../core/shared/element-template'
 import {
   isResolvedNpmDependency,
   PackageStatus,
@@ -21,13 +21,13 @@ import { getExportedComponentImports } from '../editor/export-utils'
 
 export interface InsertableComponent {
   importsToAdd: Imports
-  element: JSXElement
+  element: JSXElementWithoutUID
   name: string
 }
 
 export function insertableComponent(
   importsToAdd: Imports,
-  element: JSXElement,
+  element: JSXElementWithoutUID,
   name: string,
 ): InsertableComponent {
   return {
@@ -172,7 +172,7 @@ export function getComponentGroups(
         const insertableComponents = possibleExportedComponents.map((exportedComponent) => {
           return insertableComponent(
             exportedComponent.importsToAdd,
-            jsxElement(exportedComponent.listingName, [], []),
+            jsxElementWithoutUID(exportedComponent.listingName, [], []),
             exportedComponent.listingName,
           )
         })
@@ -193,7 +193,7 @@ export function getComponentGroups(
       basicHTMLEntities.map((basicHTMLEntity) => {
         return insertableComponent(
           addImport('react', null, [], 'React', emptyImportsValue),
-          jsxElement(basicHTMLEntity, [], []),
+          jsxElementWithoutUID(basicHTMLEntity, [], []),
           basicHTMLEntity,
         )
       }),

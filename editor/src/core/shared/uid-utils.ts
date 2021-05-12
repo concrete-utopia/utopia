@@ -148,12 +148,7 @@ export function parseUID(attributes: JSXAttributes): Either<string, string> {
 }
 
 export function getUtopiaIDFromJSXElement(element: JSXElement): string {
-  const possibleUID = parseUID(element.props)
-  if (isLeft(possibleUID)) {
-    throw new Error('Every Utopia Element must have a valid props.data-uid')
-  } else {
-    return possibleUID.value
-  }
+  return element.uid
 }
 
 export function fixUtopiaElement(
@@ -291,7 +286,7 @@ export function findElementWithUID(
         if (targetUID in element.elementsWithin) {
           return element.elementsWithin[targetUID]
         }
-        for (const elementWithin of objectValues(element.elementsWithin)) {
+        for (const elementWithin of Object.values(element.elementsWithin)) {
           const elementWithinResult = findForJSXElement(elementWithin)
           if (elementWithinResult != null) {
             return elementWithinResult
@@ -305,8 +300,8 @@ export function findElementWithUID(
   }
 
   function findForJSXElement(element: JSXElement): JSXElement | null {
-    const parsedUID = parseUID(element.props)
-    if (isRight(parsedUID) && parsedUID.value === targetUID) {
+    const uid = getUtopiaIDFromJSXElement(element)
+    if (uid === targetUID) {
       return element
     } else {
       for (const child of element.children) {

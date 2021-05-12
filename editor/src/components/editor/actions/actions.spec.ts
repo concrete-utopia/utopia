@@ -95,12 +95,14 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
     scenes.push(
       jsxElement(
         'Scene',
+        `scene-${sceneIndex}`,
         jsxAttributesFromMap({
           'data-uid': jsxAttributeValue(`scene-${sceneIndex}`, emptyComments),
         }),
         [
           jsxElement(
             `MyView${sceneIndex + 1}`,
+            `main-component-${sceneIndex}`,
             jsxAttributesFromMap({
               'data-uid': jsxAttributeValue(`main-component-${sceneIndex}`, emptyComments),
               style: jsxAttributeValue(
@@ -129,6 +131,7 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
     [],
     jsxElement(
       'Storyboard',
+      BakedInStoryboardUID,
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
       }),
@@ -159,12 +162,14 @@ const originalModel = deepFreeze(
         [],
         jsxElement(
           jsxElementName('View', []),
+          'aaa',
           jsxAttributesFromMap({
             'data-uid': jsxAttributeValue('aaa', emptyComments),
           }),
           [
             jsxElement(
               jsxElementName('View', []),
+              'bbb',
               jsxAttributesFromMap({
                 test: jsxAttributeNestedObjectSimple(
                   jsxAttributesFromMap({ prop: jsxAttributeValue(5, emptyComments) }),
@@ -313,6 +318,7 @@ describe('moveTemplate', () => {
   ): JSXElement {
     return jsxElement(
       jsxElementName(name, []),
+      uid,
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -340,6 +346,7 @@ describe('moveTemplate', () => {
   ): JSXElement {
     return jsxElement(
       jsxElementName(name, []),
+      uid,
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -637,6 +644,7 @@ describe('moveTemplate', () => {
   it('reparents from pinned to group with frame props updated', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
+      'bbb',
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -693,6 +701,7 @@ describe('moveTemplate', () => {
     const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
     const flexView = jsxElement(
       jsxElementName('aaa', []),
+      'aaa',
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -748,6 +757,7 @@ describe('moveTemplate', () => {
   xit('reparents from group to pinned with frame props unchanged', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
+      'bbb',
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -809,6 +819,7 @@ function getOpenFileComponents(editor: EditorState): Array<UtopiaJSXComponent> {
 describe('SWITCH_LAYOUT_SYSTEM', () => {
   const childElement = jsxElement(
     'View',
+    'bbb',
     jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('bbb', emptyComments),
       style: jsxAttributeValue(
@@ -825,6 +836,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   )
   const rootElement = jsxElement(
     'View',
+    'aaa',
     jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }, emptyComments),
@@ -853,12 +865,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     [],
     jsxElement(
       'Storyboard',
+      BakedInStoryboardUID,
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
       }),
       [
         jsxElement(
           'Scene',
+          'scene-0',
           jsxAttributesFromMap({
             component: jsxAttributeOtherJavaScript('App', `return App`, ['App'], null),
             'data-uid': jsxAttributeValue('scene-0', emptyComments),
