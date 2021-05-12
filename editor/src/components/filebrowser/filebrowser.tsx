@@ -52,6 +52,7 @@ import {
   SquareButton,
   Icons,
 } from '../../uuiui'
+import { isLocal } from '../editor/persistence'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -64,6 +65,7 @@ export interface FileBrowserItemInfo {
   modified: boolean
   hasErrorMessages: boolean
   exportedFunction: boolean
+  isUploadedAssetFile: boolean
 }
 
 export function fileHasErrorMessages(path: string, errorMessages: ErrorMessage[] | null): boolean {
@@ -95,6 +97,8 @@ function collectFileBrowserItems(
         hasErrorMessages: hasErrorMessages,
         modified: isModifiedFile(element),
         exportedFunction: false,
+        isUploadedAssetFile:
+          !isLocal() && (element.type === 'IMAGE_FILE' || element.type === 'ASSET_FILE'),
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -115,6 +119,7 @@ function collectFileBrowserItems(
                 hasErrorMessages: false,
                 modified: false,
                 exportedFunction: typeInformation.includes('=>'),
+                isUploadedAssetFile: false,
               })
             }
           })

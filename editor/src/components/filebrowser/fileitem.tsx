@@ -657,6 +657,18 @@ class FileBrowserItemInner extends React.PureComponent<
               {this.renderIcon()}
               {this.renderLabel()}
               {this.renderModifiedIcon()}
+              {this.props.isUploadedAssetFile ? (
+                <span
+                  style={{
+                    border: '1px solid primary',
+                    padding: '2px 4px',
+                    fontSize: 9,
+                    color: colorTheme.primary.value,
+                  }}
+                >
+                  S3
+                </span>
+              ) : null}
             </div>,
           )}
           {this.props.type === 'file' ? (
