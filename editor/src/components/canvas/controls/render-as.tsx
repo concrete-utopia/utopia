@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEditorState } from '../../editor/store/store-hook'
+import { useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
 import { betterReactMemo, getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
@@ -18,9 +18,9 @@ import { usePossiblyResolvedPackageDependencies } from '../../../components/edit
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 
 export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
-  const { dispatch, selectedViews } = useEditorState((store) => {
-    return { dispatch: store.dispatch, selectedViews: store.editor.selectedViews }
-  }, 'TopMenuContextProvider')
+  const dispatch = useEditorState((store) => {
+    return store.dispatch
+  }, 'RenderAsRow dispatch')
 
   const selectedElementName = useEditorState((store) => {
     return MetadataUtils.getJSXElementNameFromMetadata(
@@ -29,9 +29,9 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
     )
   }, 'RenderAsRow selectedElementName')
 
-  const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
-    getElementsToTarget(selectedViews),
-  )
+  const refElementsToTargetForUpdates = useRefEditorState((store) => {
+    return getElementsToTarget(store.editor.selectedViews)
+  })
 
   const onElementTypeChange = React.useCallback(
     (newElementName: JSXElementName, importsToAdd: Imports) => {
@@ -62,7 +62,7 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
         fullPath: store.editor.canvas.openFile?.filename ?? null,
       }
     },
-    'Name Row Values',
+    'RenderAsRow',
   )
 
   const insertableComponents = React.useMemo(() => {
