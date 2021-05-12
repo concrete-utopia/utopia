@@ -1373,6 +1373,10 @@ export const MetadataUtils = {
       MetadataUtils.isFocusableComponent(path, components, metadata, imports)
     )
   },
+  isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return element?.isEmotionOrStyledComponent ?? false
+  },
 }
 
 export function findElementAtPath(
