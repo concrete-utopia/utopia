@@ -501,6 +501,7 @@ import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
+import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1230,12 +1231,12 @@ function replaceFilePath(
         fastForEach(Object.keys(updatedParseResult.imports), (importSource) => {
           // Only do this for import sources that look like file paths.
           if (importSource.startsWith('.') || importSource.startsWith('/')) {
-            const importSourceAbsolutePath = absolutePathFromRelativePath(
-              filename,
-              false,
-              importSource,
-            )
-            if (importSourceAbsolutePath === updatedFile.oldPath) {
+            const resolveResult = resolveModule(projectContentsTree, {}, filename, importSource)
+
+            if (
+              resolveResult.type === 'RESOLVE_SUCCESS' &&
+              resolveResult.success.path === updatedFile.oldPath
+            ) {
               // Create new absolute import path and shift the import in this file to represent that.
               const importFromParse = updatedParseResult.imports[importSource]
               let updatedImports: Imports = {
@@ -1261,7 +1262,16 @@ function replaceFilePath(
         const updatedTopLevelElements = updatedParseResult.topLevelElements.map(
           (topLevelElement) => {
             if (isImportStatement(topLevelElement)) {
-              if (topLevelElement.module === updatedFile.oldPath) {
+              const resolveResult = resolveModule(
+                projectContentsTree,
+                {},
+                filename,
+                topLevelElement.module,
+              )
+              if (
+                resolveResult.type === 'RESOLVE_SUCCESS' &&
+                resolveResult.success.path === updatedFile.oldPath
+              ) {
                 // If an absolute path was used before, use the updated absolute path.
                 const newImportPath = topLevelElement.module.startsWith('/')
                   ? updatedFile.newPath
