@@ -29,9 +29,6 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
     )
   }, 'RenderAsRow selectedElementName')
 
-  const constrolStatus = 'simple'
-  const controlStyles = getControlStyles(constrolStatus)
-
   const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
     getElementsToTarget(selectedViews),
   )
@@ -112,7 +109,7 @@ export const RenderAsRow = betterReactMemo('RenderAsRow', () => {
       </span>
       {insertableComponents.length > 0 ? (
         <PopupList
-          disabled={!controlStyles.interactive}
+          disabled={false}
           value={currentInsertableComponent}
           onSubmitValue={onSelect}
           options={insertableComponents}
