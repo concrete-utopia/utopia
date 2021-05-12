@@ -581,9 +581,6 @@ export const ComponentSectionInner = betterReactMemo(
     }, 'Focusable values')
 
     const target = selectedViews[0]
-    // const pathAsScenePath = EP.isScenePath(target)
-    //   ? target
-    //   : EP.scenePathForElementAtInstancePath(target)
 
     const isFocused = EP.isFocused(editor.focusedElementPath, target)
     const isNotFocused = EP.isFocused(editor.focusedElementPath, target)
@@ -622,7 +619,6 @@ export const ComponentSectionInner = betterReactMemo(
     )
     const locationOfComponentInstance =
       underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : ''
-    // you can write isImportedComponent, isEmotionOrStyledComponent -> npm logo or not
 
     const componentPackageName = importedFromWhere(
       locationOfComponentInstance,
@@ -669,13 +665,6 @@ export const ComponentSectionInner = betterReactMemo(
                 >
                   Component
                 </UIGridRow>
-                {/* <SquareButton highlight onClick={onResetClicked}>
-                  <InstanceContextMenu
-                    propNames={propNames}
-                    contextMenuInstance={'context-menu-instance-inspector'}
-                  />
-                  <FunctionIcons.Reset />
-                </SquareButton> */}
               </InspectorSectionHeader>
               {missingControlsWarning == null ? null : (
                 <InfoBox message={'Missing Property Controls'}>{missingControlsWarning}</InfoBox>
@@ -857,7 +846,9 @@ export const ComponentSectionInner = betterReactMemo(
                   </p>
                 </UIGridRow>
               ) : null}
-              <InfoBox message={'No properties available to configure.'} />
+              <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
+                <InfoBox message={'No properties available to configure.'} />
+              </UIGridRow>
             </>
           )
         }
