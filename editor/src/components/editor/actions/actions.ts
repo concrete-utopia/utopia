@@ -359,6 +359,7 @@ import {
   SetFollowSelectionEnabled,
   UpdateConfigFromVSCode,
   SetLoginState,
+  SetFilebrowserDropTarget,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -924,6 +925,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     fileBrowser: {
       minimised: currentEditor.fileBrowser.minimised,
+      dropTarget: null,
       renamingTarget: currentEditor.fileBrowser.renamingTarget,
     },
     dependencyList: {
@@ -4204,6 +4206,18 @@ export const UPDATE_FNS = {
     return {
       ...userState,
       loginState: action.loginState,
+    }
+  },
+  SET_FILEBROWSER_DROPTARGET: (
+    action: SetFilebrowserDropTarget,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      fileBrowser: {
+        ...editor.fileBrowser,
+        dropTarget: action.target,
+      },
     }
   },
 }
