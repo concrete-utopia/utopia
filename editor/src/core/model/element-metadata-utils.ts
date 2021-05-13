@@ -90,10 +90,11 @@ import {
   isImportedComponent,
   isAnimatedElement,
   isGivenUtopiaAPIElement,
-  isSceneAgainstImports,
   isUtopiaAPIComponent,
-  isViewAgainstImports,
   getUtopiaJSXComponentsFromSuccess,
+  isViewFromMetadata,
+  isSceneFromMetadata,
+  isUtopiaAPIComponentFromMetadata,
 } from './project-file-utils'
 import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
@@ -683,6 +684,7 @@ export const MetadataUtils = {
       return false
     }
   },
+  // TODO BEFORE MERGE?
   targetElementSupportsChildren(imports: Imports, instance: ElementInstanceMetadata): boolean {
     // FIXME Replace with a property controls check
     const elementEither = instance.element
@@ -691,11 +693,9 @@ export const MetadataUtils = {
       return intrinsicHTMLElementNamesThatSupportChildren.includes(elementEither.value)
     } else {
       const element = elementEither.value
-      if (isJSXElement(element) && isUtopiaAPIComponent(element.name, imports)) {
+      if (isJSXElement(element) && isUtopiaAPIComponentFromMetadata(instance)) {
         // Explicitly prevent components / elements that we *know* don't support children
-        return (
-          isViewAgainstImports(element.name, imports) || isSceneAgainstImports(element, imports)
-        )
+        return isViewFromMetadata(instance) || isSceneFromMetadata(instance)
       } else {
         // We don't know at this stage
         return true

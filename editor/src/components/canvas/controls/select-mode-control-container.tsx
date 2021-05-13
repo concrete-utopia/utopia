@@ -30,7 +30,7 @@ import { RightMenuTab } from '../right-menu'
 import { getAllTargetsAtPoint } from '../dom-lookup'
 import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 import { mapDropNulls } from '../../../core/shared/array-utils'
-import { isSceneAgainstImports } from '../../../core/model/project-file-utils'
+import { isSceneAgainstImports, isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { foldEither, isRight } from '../../../core/shared/either'
 
 export const SnappingThreshold = 5
@@ -466,17 +466,9 @@ export class SelectModeControlContainer extends React.Component<
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
     const roots = mapDropNulls((child) => {
       return foldEither(
-        () => null,
-        (elemValue) => {
-          const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
-            child.elementPath,
-            this.props.openFile,
-            this.props.projectContents,
-            this.props.nodeModules,
-            this.props.transientState.filesState,
-            this.props.resolve,
-          )
-          if (isSceneAgainstImports(elemValue, imports)) {
+        () => null, // TODO do we still need to explicitly return null if child.element is Left?
+        () => {
+          if (isSceneFromMetadata(child)) {
             return child.elementPath
           } else {
             return null

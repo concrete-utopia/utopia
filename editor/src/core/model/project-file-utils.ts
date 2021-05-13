@@ -61,7 +61,7 @@ import {
 import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
-import { foldEither, isRight } from '../shared/either'
+import { foldEither, isRight, maybeEitherToMaybe } from '../shared/either'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -75,6 +75,17 @@ export function isUtopiaAPIComponent(elementName: JSXElementName, imports: Impor
     } else {
       return utopiaAPI.importedAs === elementName.baseVariable
     }
+  }
+}
+
+export function isUtopiaAPIComponentFromMetadata(
+  elementInstanceMetadata: ElementInstanceMetadata,
+): boolean {
+  const foundImportInfo = maybeEitherToMaybe(elementInstanceMetadata.importInfo)
+  if (foundImportInfo != null) {
+    return foundImportInfo.path === 'utopia-api'
+  } else {
+    return false
   }
 }
 
@@ -111,8 +122,24 @@ function isGivenUtopiaAPIElementFromName(
   }
 }
 
+function isGivenUtopiaElementFromMetadata(
+  elementInstanceMetadata: ElementInstanceMetadata,
+  componentName: string,
+): boolean {
+  const foundImportInfo = maybeEitherToMaybe(elementInstanceMetadata.importInfo)
+  if (foundImportInfo != null) {
+    return foundImportInfo.path === 'utopia-api' && foundImportInfo.originalName === componentName
+  } else {
+    return false
+  }
+}
+
 export function isSceneAgainstImports(element: JSXElementChild, imports: Imports): boolean {
   return isGivenUtopiaAPIElement(element, imports, 'Scene')
+}
+
+export function isSceneFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {
+  return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Scene')
 }
 
 export function isUtopiaAPITextElement(element: JSXElementChild, imports: Imports): boolean {
@@ -132,6 +159,10 @@ export function isRectangleAgainstImports(
 
 export function isViewAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'View')
+}
+
+export function isViewFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {
+  return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'View')
 }
 
 export function isTextAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
