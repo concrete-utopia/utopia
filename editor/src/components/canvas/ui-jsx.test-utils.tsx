@@ -160,6 +160,7 @@ export async function renderTestEditorWithModel(
       new FakeWatchdogWorker(),
     ),
     dispatch: asyncTestDispatch,
+    alreadySaved: false,
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

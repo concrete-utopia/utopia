@@ -64,9 +64,16 @@ import {
   getOpenUIJSFile,
   PersistentModel,
   StoryboardFilePath,
+  defaultUserState,
+  editorModelFromPersistentModel,
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
-import { setCanvasFrames, setProp_UNSAFE, switchLayoutSystem } from './action-creators'
+import {
+  setCanvasFrames,
+  setProp_UNSAFE,
+  switchLayoutSystem,
+  updateFilePath,
+} from './action-creators'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,
@@ -84,9 +91,15 @@ import { TestScenePath } from '../../canvas/ui-jsx.test-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'
-import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
+import {
+  contentsToTree,
+  getContentsTreeFileFromString,
+  treeToContents,
+  walkContentsTreeForParseSuccess,
+} from '../../assets'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import { complexDefaultProject } from '../../../sample-projects/sample-project-utils'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -1026,5 +1039,44 @@ describe('LOAD', () => {
     ) as TextFile).fileContents
     expect(isParseSuccess(newSecondFileContents.parsed)).toBeTruthy()
     expect(newSecondFileContents.code).toEqual(initialFileContents.code)
+  })
+})
+
+describe('UPDATE_FILE_PATH', () => {
+  it('updates the files in a directory and imports related to it', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const actualResult = UPDATE_FNS.UPDATE_FILE_PATH(
+      updateFilePath('/src', '/src2'),
+      editorState,
+      defaultUserState,
+      NO_OP,
+    )
+    let filesAndTheirImports: { [filename: string]: Array<string> } = {}
+    walkContentsTreeForParseSuccess(actualResult.projectContents, (fullPath, success) => {
+      filesAndTheirImports[fullPath] = Object.keys(success.imports).sort()
+    })
+    expect(filesAndTheirImports).toMatchInlineSnapshot(`
+      Object {
+        "/src2/app.js": Array [
+          "/src2/card.js",
+          "react",
+        ],
+        "/src2/card.js": Array [
+          "react",
+          "utopia-api",
+        ],
+        "/src2/index.js": Array [
+          "./app.js",
+          "react",
+          "react-dom",
+        ],
+        "/utopia/storyboard.js": Array [
+          "/src2/app.js",
+          "react",
+          "utopia-api",
+        ],
+      }
+    `)
   })
 })

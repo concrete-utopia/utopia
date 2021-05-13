@@ -122,6 +122,14 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
         }
       }
     }),
+    vscode.workspace.onDidOpenTextDocument((document) => {
+      if (isUtopiaDocument(document)) {
+        const path = fromUtopiaURI(document.uri)
+        if (!incomingFileChanges.has(path)) {
+          updateDirtyContent(document.uri)
+        }
+      }
+    }),
   )
 }
 
