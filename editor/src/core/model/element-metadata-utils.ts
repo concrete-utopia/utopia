@@ -684,8 +684,7 @@ export const MetadataUtils = {
       return false
     }
   },
-  // TODO BEFORE MERGE?
-  targetElementSupportsChildren(imports: Imports, instance: ElementInstanceMetadata): boolean {
+  targetElementSupportsChildren(instance: ElementInstanceMetadata): boolean {
     // FIXME Replace with a property controls check
     const elementEither = instance.element
 
@@ -702,13 +701,9 @@ export const MetadataUtils = {
       }
     }
   },
-  targetSupportsChildren(
-    imports: Imports,
-    metadata: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): boolean {
+  targetSupportsChildren(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return instance == null ? false : MetadataUtils.targetElementSupportsChildren(imports, instance)
+    return instance == null ? false : MetadataUtils.targetElementSupportsChildren(instance)
   },
   // TODO update this to work with the natural width / height
   getImageMultiplier(

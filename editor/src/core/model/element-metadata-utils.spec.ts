@@ -378,27 +378,27 @@ describe('targetElementSupportsChildren', () => {
 
   it('Returns true for a utopia-api View', () => {
     const element = dummyInstanceDataForElementType('View')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
   it('Returns true for a button', () => {
     const element = dummyInstanceDataForElementType('button')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
   it('Returns true for a div', () => {
     const element = dummyInstanceDataForElementType('div')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
   it('Returns true for a span', () => {
     const element = dummyInstanceDataForElementType('span')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
   it('Returns true for an animated.div', () => {
     const element = dummyInstanceDataForElementType(jsxElementName('animated', ['div']))
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
 })

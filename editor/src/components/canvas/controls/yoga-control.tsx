@@ -137,20 +137,10 @@ export class YogaControls extends React.Component<YogaControlsProps> {
     let color: string = ''
     if (showResizeControl && targets.length > 0) {
       const selectedView = targets[0]
-      color = withUnderlyingTarget<string>(
+      color = getSelectionColor(
         selectedView,
-        this.props.projectContents,
-        this.props.nodeModules,
-        this.props.openFile,
-        '',
-        (success, element, underlyingTarget, underlyingFilePath) => {
-          // TODO BEFORE MERGE we can probably remove withUnderlyingTarget from here
-          return getSelectionColor(
-            underlyingTarget,
-            this.props.componentMetadata,
-            this.props.focusedElementPath,
-          )
-        },
+        this.props.componentMetadata,
+        this.props.focusedElementPath,
       )
     }
 
