@@ -14,11 +14,7 @@ import Utils from '../utils/utils'
 import { Size } from '../core/shared/math-utils'
 import { EditorAction, EditorDispatch, TextFormattingType } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
-import {
-  EditorState,
-  forUnderlyingTarget,
-  withUnderlyingTargetFromEditorState,
-} from './editor/store/editor-state'
+import { EditorState } from './editor/store/editor-state'
 import * as PP from '../core/shared/property-path'
 import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 import { ProjectContentTreeRoot } from './assets'
