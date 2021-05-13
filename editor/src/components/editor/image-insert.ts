@@ -5,15 +5,19 @@ import { notice } from '../common/notice'
 import { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/action-creators'
 
-async function fileUploadAction(file: File, targetPath: string): Promise<EditorAction> {
+async function fileUploadAction(
+  file: File,
+  targetPath: string,
+  replace: boolean,
+): Promise<EditorAction> {
   const fileResult = await extractFile(file)
-  return fileResultUploadAction(fileResult, targetPath)
+  return fileResultUploadAction(fileResult, targetPath, false)
 }
 
 export function fileResultUploadAction(
   fileResult: FileResult,
   targetPath: string,
-  replace: boolean = false,
+  replace: boolean,
 ): EditorAction {
   switch (fileResult.type) {
     case 'IMAGE_RESULT': {
@@ -83,7 +87,7 @@ function handleImageSelected(
         })
     } else {
       // FIXME Support inserting SVGs by adding an import statement
-      fileUploadAction(file, imageFilePath).then((saveFileAction) => {
+      fileUploadAction(file, imageFilePath, false).then((saveFileAction) => {
         const warningMessage = EditorActions.showToast(notice(`File saved to ${imageFilePath}`))
         dispatch([saveFileAction, warningMessage], 'everyone')
       })
