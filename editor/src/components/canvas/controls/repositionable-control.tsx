@@ -19,18 +19,8 @@ export class RepositionableControl extends React.Component<ControlProps> {
         return
       }
 
-      // TODO KILLME
-      const { components } = getJSXComponentsAndImportsForPathInnerComponent(
-        selectedView,
-        this.props.openFile,
-        this.props.projectContents,
-        this.props.nodeModules,
-        this.props.transientState.filesState,
-        this.props.resolve,
-      )
       const selectionColor = getSelectionColor(
         selectedView,
-        components,
         this.props.componentMetadata,
         this.props.focusedElementPath,
       )

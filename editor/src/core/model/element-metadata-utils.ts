@@ -40,6 +40,7 @@ import {
   traverseEither,
   Left,
   Right,
+  maybeEitherToMaybe,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -280,12 +281,9 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
-  isButton(
-    target: ElementPath,
-    components: Array<UtopiaJSXComponent>,
-    metadata: ElementInstanceMetadataMap,
-  ): boolean {
-    const elementName = MetadataUtils.getJSXElementName(target, components)
+  isButton(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const instance = MetadataUtils.findElementByElementPath(metadata, target)
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(instance?.element))
     if (
       elementName != null &&
       PP.depth(elementName.propertyPath) === 0 &&
@@ -293,7 +291,6 @@ export const MetadataUtils = {
     ) {
       return true
     }
-    const instance = MetadataUtils.findElementByElementPath(metadata, target)
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
       const buttonRoleFound = instance.element.value.props.some(
         (attribute) =>
@@ -955,11 +952,7 @@ export const MetadataUtils = {
     // Default catch all name, will probably avoid some odd cases in the future.
     return 'Element'
   },
-  getJSXElementName(
-    path: ElementPath,
-    components: Array<UtopiaJSXComponent>,
-  ): JSXElementName | null {
-    const jsxElement = findElementAtPath(path, components)
+  getJSXElementName(jsxElement: JSXElementChild | null): JSXElementName | null {
     if (jsxElement != null) {
       if (isJSXElement(jsxElement)) {
         return jsxElement.name
@@ -969,6 +962,15 @@ export const MetadataUtils = {
     } else {
       return null
     }
+  },
+  getJSXElementFromMetadata(
+    metadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): JSXElementName | null {
+    const elementName = MetadataUtils.getJSXElementName(
+      maybeEitherToMaybe(MetadataUtils.findElementByElementPath(metadata, path)?.element),
+    )
+    return elementName
   },
   getJSXElementBaseName(path: ElementPath, components: Array<UtopiaJSXComponent>): string | null {
     const jsxElement = findElementAtPath(path, components)
@@ -1336,13 +1338,9 @@ export const MetadataUtils = {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
     }
   },
-  isFocusableComponent(
-    path: ElementPath,
-    components: UtopiaJSXComponent[],
-    metadata: ElementInstanceMetadataMap,
-  ): boolean {
-    const elementName = MetadataUtils.getJSXElementName(path, components)
+  isFocusableComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
@@ -1361,14 +1359,10 @@ export const MetadataUtils = {
       return false
     }
   },
-  isFocusableLeafComponent(
-    path: ElementPath,
-    components: UtopiaJSXComponent[],
-    metadata: ElementInstanceMetadataMap,
-  ): boolean {
+  isFocusableLeafComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     return (
       MetadataUtils.getChildrenPaths(metadata, path).length === 0 &&
-      MetadataUtils.isFocusableComponent(path, components, metadata)
+      MetadataUtils.isFocusableComponent(path, metadata)
     )
   },
 }

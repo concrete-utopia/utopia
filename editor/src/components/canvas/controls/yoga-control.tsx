@@ -144,9 +144,9 @@ export class YogaControls extends React.Component<YogaControlsProps> {
         this.props.openFile,
         '',
         (success, element, underlyingTarget, underlyingFilePath) => {
+          // TODO BEFORE MERGE we can probably remove withUnderlyingTarget from here
           return getSelectionColor(
             underlyingTarget,
-            getUtopiaJSXComponentsFromSuccess(success),
             this.props.componentMetadata,
             this.props.focusedElementPath,
           )

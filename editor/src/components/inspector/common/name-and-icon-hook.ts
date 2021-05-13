@@ -12,6 +12,7 @@ import { IcnProps } from '../../../uuiui'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
+import { maybeEitherToMaybe } from '../../../core/shared/either'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -24,12 +25,7 @@ export function useNameAndIcon(path: ElementPath): NameAndIconResult {
   return useEditorState(
     (store) => {
       const metadata = store.editor.jsxMetadata
-      const { components, imports } = getJSXComponentsAndImportsForPathFromState(
-        path,
-        store.editor,
-        store.derived,
-      )
-      return getNameAndIconResult(path, components, metadata, imports)
+      return getNameAndIconResult(path, metadata)
     },
     'useNameAndIcon',
     (oldResult, newResult) => {
@@ -50,30 +46,21 @@ export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
     (store) => store.editor.jsxMetadata,
     'useNamesAndIconsAllPaths metadata',
   )
-  const editor = useEditorState((store) => store.editor, 'useNamesAndIconsAllPaths editor')
-  const derived = useEditorState((store) => store.derived, 'useNamesAndIconsAllPaths derived')
 
   return MetadataUtils.getAllPaths(metadata).map((path) => {
-    const { components, imports } = getJSXComponentsAndImportsForPathFromState(
-      path,
-      editor,
-      derived,
-    )
-    return getNameAndIconResult(path, components, metadata, imports)
-  })
+    return getNameAndIconResult(path, metadata)
+  }) // TODO memoize?
 }
 
 function getNameAndIconResult(
   path: ElementPath,
-  components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
-  imports: Imports,
 ): NameAndIconResult {
-  const elementName = MetadataUtils.getJSXElementName(path, components)
+  const elementName = MetadataUtils.getJSXElementFromMetadata(metadata, path)
   return {
     path: path,
     name: elementName,
     label: MetadataUtils.getElementLabel(path, metadata),
-    iconProps: createComponentOrElementIconProps(path, components, metadata, imports),
+    iconProps: createComponentOrElementIconProps(path, metadata),
   }
 }

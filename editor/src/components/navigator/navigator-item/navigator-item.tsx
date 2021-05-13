@@ -285,7 +285,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
         store.editor,
         store.derived,
       )
-      return MetadataUtils.isFocusableComponent(elementPath, components, store.editor.jsxMetadata)
+      return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
     }, 'NavigatorItem isFocusable')
 
     const childComponentCount = props.noOfChildren

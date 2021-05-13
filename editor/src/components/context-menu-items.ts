@@ -146,29 +146,13 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
       return false
     } else {
       return data.selectedViews.every((view) => {
-        const { components } = getJSXComponentsAndImportsForPathInnerComponent(
-          view,
-          data.currentFilePath,
-          data.projectContents,
-          data.nodeModules,
-          data.transientFilesState,
-          data.resolve,
-        )
-        return MetadataUtils.isFocusableComponent(view, components, data.jsxMetadata)
+        return MetadataUtils.isFocusableComponent(view, data.jsxMetadata)
       })
     }
   },
   isHidden: (data) => {
     return data.selectedViews.every((view) => {
-      const { components } = getJSXComponentsAndImportsForPathInnerComponent(
-        view,
-        data.currentFilePath,
-        data.projectContents,
-        data.nodeModules,
-        data.transientFilesState,
-        data.resolve,
-      )
-      const elementName = MetadataUtils.getJSXElementName(view, components)
+      const elementName = MetadataUtils.getJSXElementFromMetadata(data.jsxMetadata, view)
       return elementName != null ? isIntrinsicHTMLElement(elementName) : true
     })
   },

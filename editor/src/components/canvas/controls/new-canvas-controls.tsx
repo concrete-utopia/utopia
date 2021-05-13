@@ -388,16 +388,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           if (frame == null) {
             return null
           }
-          const { components } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-            path,
-            props.editor,
-            props.derived,
-          )
-          const isFocusableComponent = MetadataUtils.isFocusableComponent(
-            path,
-            components,
-            componentMetadata,
-          )
+          const isFocusableComponent = MetadataUtils.isFocusableComponent(path, componentMetadata)
           const isFocusedComponent = EP.isFocused(props.editor.focusedElementPath, path)
           const color =
             isFocusableComponent || isFocusedComponent
