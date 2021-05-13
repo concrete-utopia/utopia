@@ -87,7 +87,7 @@ import * as EP from '../shared/element-path'
 import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
 import {
   isImportedComponent,
-  isAnimatedElementAgainstImports,
+  isAnimatedElement,
   isGivenUtopiaAPIElement,
   isSceneAgainstImports,
   isUtopiaAPIComponent,
@@ -1347,8 +1347,7 @@ export const MetadataUtils = {
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
-    const isAnimatedComponent =
-      elementName != null && isAnimatedElementAgainstImports(elementName, imports)
+    const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
     }

@@ -1,9 +1,5 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import {
-  isAnimatedElementAgainstImports,
-  isImg,
-  isImportedComponent,
-} from '../../core/model/project-file-utils'
+import { isAnimatedElement, isImg, isImportedComponent } from '../../core/model/project-file-utils'
 import {
   isIntrinsicHTMLElement,
   isJSXElement,
@@ -217,8 +213,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isAnimatedComponent =
-    elementName != null && isAnimatedElementAgainstImports(elementName, imports)
+  const isAnimatedComponent = isAnimatedElement(element)
   if (isAnimatedComponent) {
     return {
       category: 'component',

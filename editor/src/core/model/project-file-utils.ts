@@ -41,6 +41,7 @@ import {
   ImportInfo,
   createImportedFrom,
   createNotImported,
+  ElementInstanceMetadata,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
@@ -60,6 +61,7 @@ import {
 import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
+import { foldEither, isRight } from '../shared/either'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -143,19 +145,14 @@ export function isImg(jsxElementName: JSXElementName): boolean {
   )
 }
 
-export function isAnimatedElementAgainstImports(
-  jsxElementName: JSXElementName,
-  imports: Imports,
+export function isAnimatedElement(
+  elementInstanceMetadata: ElementInstanceMetadata | null,
 ): boolean {
-  const possibleReactSpring = imports['react-spring']
-  if (possibleReactSpring == null) {
-    return false
+  const importInfo = elementInstanceMetadata?.importInfo
+  if (importInfo != null && isRight(importInfo)) {
+    return importInfo.value.path === 'react-spring' && importInfo.value.originalName === 'animated'
   } else {
-    if (pluck(possibleReactSpring.importedFromWithin, 'name').includes('animated')) {
-      return jsxElementName.baseVariable === 'animated'
-    } else {
-      return false
-    }
+    return false
   }
 }
 
