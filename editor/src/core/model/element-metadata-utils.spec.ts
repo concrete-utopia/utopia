@@ -471,6 +471,7 @@ describe('getElementLabel', () => {
   const textBlock = jsxTextBlock('test text')
   const spanElement = jsxElement(
     'span',
+    'span-1',
     jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('span-1', emptyComments) }),
     [textBlock],
   )
@@ -493,6 +494,7 @@ describe('getElementLabel', () => {
   )
   const divElement = jsxElement(
     'div',
+    'div-1',
     jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('div-1', emptyComments) }),
     [spanElement],
   )

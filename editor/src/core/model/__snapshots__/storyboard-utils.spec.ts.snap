@@ -95,6 +95,7 @@ Array [
             },
           ],
           "type": "JSX_ELEMENT",
+          "uid": "scene-1",
         },
       ],
       "name": Object {
@@ -121,6 +122,7 @@ Array [
         },
       ],
       "type": "JSX_ELEMENT",
+      "uid": "utopia-storyboard-uid",
     },
     "type": "UTOPIA_JSX_COMPONENT",
     "usedInReactDOMRender": false,

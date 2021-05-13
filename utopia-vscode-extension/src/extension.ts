@@ -43,6 +43,29 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   watchForChangesFromVSCode(context, projectID)
 
   sendMessage(sendInitialData())
+
+  watchForFileDeletions()
+}
+
+function watchForFileDeletions() {
+  let fileWatcherChain: Promise<void> = Promise.resolve()
+  const fileWatcher = vscode.workspace.createFileSystemWatcher('**/*')
+  fileWatcher.onDidDelete(async (deletedFile) => {
+    for (const textDocument of vscode.workspace.textDocuments) {
+      if (textDocument.uri.fsPath === deletedFile.fsPath) {
+        fileWatcherChain = fileWatcherChain.then(async () => {
+          await vscode.window.showTextDocument(textDocument)
+          return Promise.resolve()
+        })
+        if (textDocument.isDirty) {
+          await clearDirtyFlags(textDocument.uri)
+        }
+        fileWatcherChain = fileWatcherChain.then(async () => {
+          return vscode.commands.executeCommand('workbench.action.closeActiveEditor')
+        })
+      }
+    }
+  })
 }
 
 async function initFS(projectID: string): Promise<void> {
@@ -119,6 +142,14 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
           // User decided to bin unsaved changes when closing the document
           clearFileUnsavedContent(path)
           dirtyFiles.delete(path)
+        }
+      }
+    }),
+    vscode.workspace.onDidOpenTextDocument((document) => {
+      if (isUtopiaDocument(document)) {
+        const path = fromUtopiaURI(document.uri)
+        if (!incomingFileChanges.has(path)) {
+          updateDirtyContent(document.uri)
         }
       }
     }),

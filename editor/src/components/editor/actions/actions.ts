@@ -65,6 +65,7 @@ import {
   deleteJSXAttribute,
   setJSXAttributesAttribute,
   emptyJsxMetadata,
+  isImportStatement,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -105,6 +106,7 @@ import {
   applyToAllUIJSFiles,
   updateFileContents,
   applyUtopiaJSXComponentsChanges,
+  saveTextFileContents,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -144,6 +146,8 @@ import {
   unparsed,
   ParseSuccess,
   importAlias,
+  Imports,
+  importStatementFromImportDetails,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -497,6 +501,8 @@ import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'
+import { absolutePathFromRelativePath } from '../../../utils/path-utils'
+import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -1190,29 +1196,119 @@ function replaceFilePath(
     ...projectContents,
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
-  Utils.fastForEach(Object.keys(projectContents), (key) => {
-    if (oldFolderRegex.test(key)) {
-      const projectFile = projectContents[key]
-      const newFilePath = key.replace(oldPath, newPath)
+  Utils.fastForEach(Object.keys(projectContents), (filename) => {
+    if (oldFolderRegex.test(filename)) {
+      const projectFile = projectContents[filename]
+      const newFilePath = filename.replace(oldPath, newPath)
       const fileType = isDirectory(projectFile) ? 'DIRECTORY' : fileTypeFromFileName(newFilePath)
       if (fileType == null) {
         // Can't identify the file type.
-        error = `Can't rename ${key} to ${newFilePath}.`
+        error = `Can't rename ${filename} to ${newFilePath}.`
       } else {
         const updatedProjectFile = switchToFileType(projectFile, fileType)
         if (updatedProjectFile == null) {
           // Appears this file can't validly be changed.
-          error = `Can't rename ${key} to ${newFilePath}.`
+          error = `Can't rename ${filename} to ${newFilePath}.`
         } else {
           // Remove the old file.
-          delete updatedProjectContents[key]
+          delete updatedProjectContents[filename]
           updatedProjectContents[newFilePath] = updatedProjectFile
-          updatedFiles.push({ oldPath: key, newPath: newFilePath })
+          updatedFiles.push({ oldPath: filename, newPath: newFilePath })
         }
       }
     }
   })
 
+  // Correct any imports in files that have changed because of the above file movements.
+  Utils.fastForEach(Object.keys(updatedProjectContents), (filename) => {
+    const projectFile = updatedProjectContents[filename]
+    // Only for successfully parsed text files, with some protection for files that are yet to be parsed.
+    if (
+      isTextFile(projectFile) &&
+      isParseSuccess(projectFile.fileContents.parsed) &&
+      projectFile.fileContents.revisionsState !== RevisionsState.CodeAhead
+    ) {
+      let updatedParseResult: ParseSuccess = projectFile.fileContents.parsed
+      fastForEach(updatedFiles, (updatedFile) => {
+        fastForEach(Object.keys(updatedParseResult.imports), (importSource) => {
+          // Only do this for import sources that look like file paths.
+          if (importSource.startsWith('.') || importSource.startsWith('/')) {
+            const resolveResult = resolveModule(projectContentsTree, {}, filename, importSource)
+
+            if (
+              resolveResult.type === 'RESOLVE_SUCCESS' &&
+              resolveResult.success.path === updatedFile.oldPath
+            ) {
+              // Create new absolute import path and shift the import in this file to represent that.
+              const importFromParse = updatedParseResult.imports[importSource]
+              let updatedImports: Imports = {
+                ...updatedParseResult.imports,
+              }
+              delete updatedImports[importSource]
+              // If an absolute path was used before, use the updated absolute path.
+              const newImportPath = importSource.startsWith('/')
+                ? updatedFile.newPath
+                : getFilePathToImport(updatedFile.newPath, filename)
+              updatedImports[newImportPath] = importFromParse
+
+              // Update the parse result to be incorporated later.
+              updatedParseResult = {
+                ...updatedParseResult,
+                imports: updatedImports,
+              }
+            }
+          }
+        })
+
+        // Update the top level element import statements.
+        const updatedTopLevelElements = updatedParseResult.topLevelElements.map(
+          (topLevelElement) => {
+            if (isImportStatement(topLevelElement)) {
+              const resolveResult = resolveModule(
+                projectContentsTree,
+                {},
+                filename,
+                topLevelElement.module,
+              )
+              if (
+                resolveResult.type === 'RESOLVE_SUCCESS' &&
+                resolveResult.success.path === updatedFile.oldPath
+              ) {
+                // If an absolute path was used before, use the updated absolute path.
+                const newImportPath = topLevelElement.module.startsWith('/')
+                  ? updatedFile.newPath
+                  : getFilePathToImport(updatedFile.newPath, filename)
+                const importDefinition = forceNotNull(
+                  'Import should exist.',
+                  updatedParseResult.imports[newImportPath],
+                )
+                return importStatementFromImportDetails(newImportPath, importDefinition)
+              } else {
+                return topLevelElement
+              }
+            } else {
+              return topLevelElement
+            }
+          },
+        )
+
+        updatedParseResult = {
+          ...updatedParseResult,
+          topLevelElements: updatedTopLevelElements,
+        }
+      })
+
+      updatedProjectContents[filename] = saveTextFileContents(
+        projectFile,
+        textFileContents(
+          projectFile.fileContents.code,
+          updatedParseResult,
+          RevisionsState.ParsedAhead,
+        ),
+        projectFile.lastSavedContents == null,
+      )
+    }
+  })
   // Check if we discovered an error.
   if (error == null) {
     return {
@@ -2865,6 +2961,7 @@ export const UPDATE_FNS = {
           // TODO make a default image and put it in defaults
           const imageElement = jsxElement(
             jsxElementName('img', []),
+            newUID,
             jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
@@ -2896,6 +2993,7 @@ export const UPDATE_FNS = {
 
           const imageElement = jsxElement(
             jsxElementName('img', []),
+            newUID,
             jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
@@ -2958,6 +3056,7 @@ export const UPDATE_FNS = {
       const height = Utils.optionalMap((h) => h / 2, possiblyAnImage.height)
       const imageElement = jsxElement(
         jsxElementName('img', []),
+        newUID,
         jsxAttributesFromMap({
           alt: jsxAttributeValue('', emptyComments),
           src: imageSrcAttribute,
@@ -3726,6 +3825,7 @@ export const UPDATE_FNS = {
       }
       const imageElement = jsxElement(
         jsxElementName('img', []),
+        newUID,
         jsxAttributesFromMap({
           alt: jsxAttributeValue('', emptyComments),
           src: imageAttribute,
