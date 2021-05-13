@@ -406,10 +406,8 @@ export const MetadataUtils = {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
     return MetadataUtils.isAutoSizingView(instance)
   },
-  isAutoSizingText(imports: Imports, instance: ElementInstanceMetadata): boolean {
-    return (
-      MetadataUtils.isTextAgainstImports(imports, instance) && instance.props.textSizing === 'auto'
-    )
+  isAutoSizingText(instance: ElementInstanceMetadata): boolean {
+    return MetadataUtils.isTextAgainstImports(instance) && instance.props.textSizing === 'auto'
   },
   findNonGroupParent(
     metadata: ElementInstanceMetadataMap,
@@ -644,31 +642,20 @@ export const MetadataUtils = {
     )
   },
   isGivenUtopiaAPIElementFromImports(
-    imports: Imports,
     instance: ElementInstanceMetadata,
     elementType: string,
   ): boolean {
-    // KILLME Replace with isGivenUtopiaAPIElementFromName from project-file-utils.ts
-    return foldEither(
-      (_) => false,
-      (element) => isGivenUtopiaAPIElement(element, imports, elementType),
-      instance.element,
-    )
+    // KILLME Replace with isGivenUtopiaElementFromMetadata from project-file-utils.ts
+    return isGivenUtopiaElementFromMetadata(instance, elementType)
   },
-  isViewAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'View')
-    )
+  isViewAgainstImports(instance: ElementInstanceMetadata | null): boolean {
+    return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'View')
   },
   isImg(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'img')
   },
-  isTextAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Text')
-    )
+  isTextAgainstImports(instance: ElementInstanceMetadata | null): boolean {
+    return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'Text')
   },
   isDiv(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'div')
@@ -1431,4 +1418,10 @@ export function getSimpleAttributeAtPath(
     },
     propsOrAttributes,
   )
+}
+function isGivenUtopiaElementFromMetadata(
+  instance: ElementInstanceMetadata,
+  elementType: string,
+): boolean {
+  throw new Error('Function not implemented.')
 }

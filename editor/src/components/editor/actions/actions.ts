@@ -2017,12 +2017,7 @@ export const UPDATE_FNS = {
           action.target,
           true,
         )
-        const { imports } = getJSXComponentsAndImportsForPathFromState(
-          action.target,
-          editorForAction,
-          derived,
-        )
-        if (children.length === 0 || !MetadataUtils.isViewAgainstImports(imports, element)) {
+        if (children.length === 0 || !MetadataUtils.isViewAgainstImports(element)) {
           return editor
         }
 
@@ -2682,20 +2677,18 @@ export const UPDATE_FNS = {
     } as LocalRectangle
 
     const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.element)
-    forUnderlyingTargetFromEditorState(action.element, editor, (underlyingSuccess) => {
-      if (
-        element != null &&
-        MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element) &&
-        element.props.textSizing == 'auto'
-      ) {
-        const alignment = element.props.style.textAlign
-        if (alignment === 'center') {
-          frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
-        } else if (alignment === 'right') {
-          frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
-        }
+    if (
+      element != null &&
+      MetadataUtils.isTextAgainstImports(element) &&
+      element.props.textSizing == 'auto'
+    ) {
+      const alignment = element.props.style.textAlign
+      if (alignment === 'center') {
+        frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
+      } else if (alignment === 'right') {
+        frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
       }
-    })
+    }
 
     const parentPath = EP.parentPath(action.element)
     let offset = { x: 0, y: 0 } as CanvasPoint

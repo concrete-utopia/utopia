@@ -484,15 +484,7 @@ export class SelectModeControlContainer extends React.Component<
     if (this.props.selectedViews.length === 1) {
       const path = this.props.selectedViews[0]
       const element = MetadataUtils.findElementByElementPath(this.props.componentMetadata, path)
-      const { imports } = getJSXComponentsAndImportsForPathInnerComponent(
-        path,
-        this.props.openFile,
-        this.props.projectContents,
-        this.props.nodeModules,
-        this.props.transientState.filesState,
-        this.props.resolve,
-      )
-      repositionOnly = element != null && MetadataUtils.isAutoSizingText(imports, element)
+      repositionOnly = element != null && MetadataUtils.isAutoSizingText(element)
     }
 
     return (

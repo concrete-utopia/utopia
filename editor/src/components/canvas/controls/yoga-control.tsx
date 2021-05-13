@@ -13,11 +13,7 @@ import { getOriginalFrames } from '../canvas-utils'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
 import { ResizeRectangle } from './size-box'
-import {
-  getJSXComponentsAndImportsForPathInnerComponent,
-  withUnderlyingTarget,
-} from '../../editor/store/editor-state'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import { getJSXComponentsAndImportsForPathInnerComponent } from '../../editor/store/editor-state'
 interface YogaResizeControlProps extends ControlProps {
   targetElement: ElementInstanceMetadata
   target: ElementPath
