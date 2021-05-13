@@ -112,6 +112,7 @@ export function createExecutionScope(
       jsxFactoryFunction,
       shouldIncludeCanvasRootInTheSpy,
       openStoryboardFileNameKILLME,
+      imports,
     )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(

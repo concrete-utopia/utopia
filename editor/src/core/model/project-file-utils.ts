@@ -38,13 +38,16 @@ import {
   UtopiaJSXComponent,
   getJSXElementNameLastPart,
   jsxElementNameEquals,
+  ImportInfo,
+  createImportedFrom,
+  createNotImported,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
   fishOutUtopiaCanvasFromTopLevelElements,
   EmptyUtopiaCanvasComponent,
 } from './scene-utils'
-import { pluck } from '../shared/array-utils'
+import { mapDropNulls, pluck } from '../shared/array-utils'
 import { forEachValue, mapValues } from '../shared/object-utils'
 import {
   getContentsTreeFileFromString,
@@ -173,6 +176,31 @@ function isHTMLComponentFromBaseName(baseName: string, imports: Imports): boolea
   } else {
     return intrinsicHTMLElementNamesAsStrings.includes(baseName)
   }
+}
+
+export function importInfoFromImportDetails(name: JSXElementName, imports: Imports): ImportInfo {
+  const baseVariable = name.baseVariable
+
+  const err = mapDropNulls((pathOrModuleName) => {
+    const importDetail = imports[pathOrModuleName]
+    const importAlias = importDetail.importedFromWithin.find(
+      (fromWithin) => fromWithin.alias === baseVariable,
+    )
+
+    if (importAlias != null) {
+      return createImportedFrom(importAlias.alias, importAlias.name, pathOrModuleName)
+    } else if (importDetail.importedAs === baseVariable) {
+      return createImportedFrom(importDetail.importedAs, null, pathOrModuleName)
+    } else if (importDetail.importedWithName === baseVariable) {
+      return createImportedFrom(importDetail.importedWithName, null, pathOrModuleName)
+    } else {
+      return null
+    }
+  }, Object.keys(imports))
+
+  const foundImportDetail = err[0] ?? createNotImported()
+
+  return foundImportDetail
 }
 
 export function isImportedComponent(jsxElementName: JSXElementName, imports: Imports): boolean {

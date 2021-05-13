@@ -5,7 +5,7 @@ import {
   ElementPath,
 } from './project-file-types'
 import { CanvasRectangle, LocalRectangle, LocalPoint, zeroCanvasRect } from './math-utils'
-import { Either, isLeft } from './either'
+import { Either, isLeft, left, right } from './either'
 import { v4 as UUID } from 'uuid'
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
@@ -1274,6 +1274,30 @@ export type StyleAttributeMetadata = { [key: string]: StyleAttributeMetadataEntr
 export type ElementInstanceMetadataMap = { [key: string]: ElementInstanceMetadata }
 export const emptyJsxMetadata: ElementInstanceMetadataMap = {}
 
+export type FoundImportInfo = {
+  variableName: string
+  originalName: string | null
+  path: string
+}
+
+export type ImportInfo = Either<'NOT_IMPORTED', FoundImportInfo>
+
+export function createImportedFrom(
+  variableName: string,
+  originalName: string | null,
+  path: string,
+): ImportInfo {
+  return right({
+    variableName: variableName,
+    originalName: originalName,
+    path: path,
+  })
+}
+
+export function createNotImported(): ImportInfo {
+  return left('NOT_IMPORTED')
+}
+
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
   element: Either<string, JSXElementChild>
@@ -1288,6 +1312,7 @@ export interface ElementInstanceMetadata {
   computedStyle: ComputedStyle | null
   attributeMetadatada: StyleAttributeMetadata | null
   label: string | null
+  importInfo: ImportInfo | null
 }
 
 export function elementInstanceMetadata(
@@ -1304,6 +1329,7 @@ export function elementInstanceMetadata(
   computedStyle: ComputedStyle | null,
   attributeMetadatada: StyleAttributeMetadata | null,
   label: string | null,
+  importInfo: ImportInfo | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -1319,6 +1345,7 @@ export function elementInstanceMetadata(
     computedStyle: computedStyle,
     attributeMetadatada: attributeMetadatada,
     label: label,
+    importInfo: importInfo,
   }
 }
 

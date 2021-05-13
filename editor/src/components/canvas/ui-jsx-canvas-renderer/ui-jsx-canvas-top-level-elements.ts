@@ -1,6 +1,7 @@
 import { useContextSelector } from 'use-context-selector'
 import { ArbitraryJSBlock, TopLevelElement } from '../../../core/shared/element-template'
 import { Imports, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../assets'
 import { TransientFilesState, TransientFileState } from '../../editor/store/editor-state'
 import { UtopiaProjectContext } from './ui-jsx-canvas-contexts'
@@ -49,16 +50,22 @@ export function getParseSuccessOrTransientForFilePath(
   }
 }
 
-export function useGetTopLevelElements(filePath: string | null): TopLevelElement[] {
+export function useGetTopLevelElementsAndImports(
+  filePath: string | null,
+): { topLevelElements: TopLevelElement[]; imports: Imports } {
   return useContextSelector(UtopiaProjectContext, (c) => {
     if (filePath == null) {
-      return EmptyResult.topLevelElements
+      return { topLevelElements: EmptyResult.topLevelElements, imports: emptyImports() }
     } else {
-      return getParseSuccessOrTransientForFilePath(
+      const success = getParseSuccessOrTransientForFilePath(
         filePath,
         c.projectContents,
         c.transientFilesState,
-      ).topLevelElements
+      )
+      return {
+        topLevelElements: success.topLevelElements,
+        imports: success.imports,
+      }
     }
   })
 }

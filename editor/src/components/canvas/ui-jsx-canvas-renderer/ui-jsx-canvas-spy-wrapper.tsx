@@ -8,11 +8,12 @@ import {
   emptySpecialSizeMeasurements,
   JSXElement,
 } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'
 import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-renderer-utils'
+import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 
 export function buildSpyWrappedElement(
   jsx: JSXElement,
@@ -25,6 +26,7 @@ export function buildSpyWrappedElement(
   inScope: MapLike<any>,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
+  imports: Imports,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -52,6 +54,7 @@ export function buildSpyWrappedElement(
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
       label: null,
+      importInfo: importInfoFromImportDetails(jsx.name, imports),
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       metadataContext.current.spyValues.metadata[EP.toComponentId(elementPath)] = instanceMetadata

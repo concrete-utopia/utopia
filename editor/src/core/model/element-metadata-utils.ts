@@ -1059,6 +1059,7 @@ export const MetadataUtils = {
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
           label: spyElem.label,
+          importInfo: spyElem.importInfo,
         }
         workingElements[EP.toString(domElem.elementPath)] = elem
       }
