@@ -4,7 +4,6 @@ import Utils from '../../../utils/utils'
 import * as EP from '../../../core/shared/element-path'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
-import { getJSXComponentsAndImportsForPathInnerComponent } from '../../editor/store/editor-state'
 
 const Size = 6
 

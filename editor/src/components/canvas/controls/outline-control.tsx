@@ -18,7 +18,6 @@ import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { colorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
-import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../../editor/store/editor-state'
 
 export function getSelectionColor(
   path: ElementPath,

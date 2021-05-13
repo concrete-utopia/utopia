@@ -146,6 +146,12 @@ export function isUtopiaAPITextElement(element: JSXElementChild, imports: Import
   return isJSXElement(element) && isTextAgainstImports(element.name, imports)
 }
 
+export function isUtopiaAPITextElementFromMetadata(
+  elementInstanceMetadata: ElementInstanceMetadata,
+): boolean {
+  return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Text')
+}
+
 export function isEllipseAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Ellipse')
 }

@@ -13,7 +13,6 @@ import { getOriginalFrames } from '../canvas-utils'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
 import { ResizeRectangle } from './size-box'
-import { getJSXComponentsAndImportsForPathInnerComponent } from '../../editor/store/editor-state'
 interface YogaResizeControlProps extends ControlProps {
   targetElement: ElementInstanceMetadata
   target: ElementPath
@@ -42,19 +41,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
 
   getYogaSize = (visualSize: CanvasRectangle): CanvasRectangle => {
     const childStretch = this.getTargetStretch()
-    const { components } = getJSXComponentsAndImportsForPathInnerComponent(
-      this.props.target,
-      this.props.openFile,
-      this.props.projectContents,
-      this.props.nodeModules,
-      this.props.transientState.filesState,
-      this.props.resolve,
-    )
-    const yogaSize = MetadataUtils.getYogaSizeProps(
-      this.props.target,
-      this.props.componentMetadata,
-      components,
-    )
+    const yogaSize = MetadataUtils.getYogaSizeProps(this.props.target, this.props.componentMetadata)
 
     return canvasRectangle({
       x: visualSize.x,

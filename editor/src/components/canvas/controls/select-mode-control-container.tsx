@@ -5,10 +5,7 @@ import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import {
-  DuplicationState,
-  getJSXComponentsAndImportsForPathInnerComponent,
-} from '../../editor/store/editor-state'
+import { DuplicationState } from '../../editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 import { CanvasPositions, MoveDragState, ResizeDragState } from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'

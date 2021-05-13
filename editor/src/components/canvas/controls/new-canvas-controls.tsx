@@ -12,7 +12,6 @@ import {
   EditorStore,
   getOpenUIJSFileKey,
   TransientCanvasState,
-  getJSXComponentsAndImportsForPathInnerComponentFromState,
   TransientFilesState,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'

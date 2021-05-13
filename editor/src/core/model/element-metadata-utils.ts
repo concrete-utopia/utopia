@@ -304,11 +304,7 @@ export const MetadataUtils = {
     }
     return instance?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
   },
-  getYogaSizeProps(
-    target: ElementPath,
-    metadata: ElementInstanceMetadataMap,
-    components: Array<UtopiaJSXComponent>,
-  ): Partial<Size> {
+  getYogaSizeProps(target: ElementPath, metadata: ElementInstanceMetadataMap): Partial<Size> {
     const parentInstance = this.getParent(metadata, target)
     if (parentInstance == null) {
       return {}
@@ -319,7 +315,9 @@ export const MetadataUtils = {
       if (staticTarget == null) {
         return {}
       } else {
-        const element = findJSXElementChildAtPath(components, staticTarget)
+        const element = maybeEitherToMaybe(
+          MetadataUtils.findElementByElementPath(metadata, target)?.element,
+        )
         if (element != null && isJSXElement(element)) {
           const widthLookupAxis: LayoutProp = flexDirection === 'horizontal' ? 'flexBasis' : 'Width'
           const heightLookupAxis: LayoutProp = flexDirection === 'vertical' ? 'flexBasis' : 'Height'

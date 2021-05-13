@@ -8,7 +8,6 @@ import {
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
 import { Imports, ElementPath } from '../../core/shared/project-file-types'
-import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'

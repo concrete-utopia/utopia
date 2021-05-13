@@ -15,10 +15,7 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import {
-  getJSXComponentsAndImportsForPathInnerComponent,
-  TransientFilesState,
-} from './editor/store/editor-state'
+import { TransientFilesState } from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
   toggleBorder,

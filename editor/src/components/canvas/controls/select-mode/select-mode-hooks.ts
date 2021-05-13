@@ -24,11 +24,7 @@ import {
   setFocusedElement,
   setHighlightedView,
 } from '../../../editor/actions/action-creators'
-import {
-  EditorState,
-  getJSXComponentsAndImportsForPathInnerComponent,
-  getJSXComponentsAndImportsForPathInnerComponentFromState,
-} from '../../../editor/store/editor-state'
+import { EditorState } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
