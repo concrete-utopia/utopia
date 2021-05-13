@@ -2961,6 +2961,7 @@ export const UPDATE_FNS = {
           // TODO make a default image and put it in defaults
           const imageElement = jsxElement(
             jsxElementName('img', []),
+            newUID,
             jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
@@ -2992,6 +2993,7 @@ export const UPDATE_FNS = {
 
           const imageElement = jsxElement(
             jsxElementName('img', []),
+            newUID,
             jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
@@ -3054,6 +3056,7 @@ export const UPDATE_FNS = {
       const height = Utils.optionalMap((h) => h / 2, possiblyAnImage.height)
       const imageElement = jsxElement(
         jsxElementName('img', []),
+        newUID,
         jsxAttributesFromMap({
           alt: jsxAttributeValue('', emptyComments),
           src: imageSrcAttribute,
@@ -3822,6 +3825,7 @@ export const UPDATE_FNS = {
       }
       const imageElement = jsxElement(
         jsxElementName('img', []),
+        newUID,
         jsxAttributesFromMap({
           alt: jsxAttributeValue('', emptyComments),
           src: imageAttribute,

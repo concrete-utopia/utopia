@@ -218,6 +218,7 @@ export function createFakeMetadataForComponents(
         [
           jsxElement(
             component.name,
+            componentUID,
             jsxAttributesFromMap({
               'data-uid': jsxAttributeValue(componentUID, emptyComments),
             }),

@@ -11,6 +11,7 @@ import {
   setJSXAttributesAttribute,
   getJSXAttribute,
   TopLevelElement,
+  jsxElement,
 } from './element-template'
 import { shallowEqual } from './equality-utils'
 import {
@@ -24,7 +25,6 @@ import { objectMap, objectValues } from './object-utils'
 import { emptyComments } from '../workers/parser-printer/parser-printer-comments'
 import { getDOMAttribute } from './dom-utils'
 import { UTOPIA_PATHS_KEY, UTOPIA_UIDS_KEY } from '../model/utopia-constants'
-import { optionalMap } from './optional-utils'
 import { addAllUniquely } from './array-utils'
 import { ElementPath } from './project-file-types'
 
@@ -125,14 +125,12 @@ export function extractOriginalUidFromIndexedUid(uid: string): string {
 }
 
 export function setUtopiaIDOnJSXElement(element: JSXElement, uid: string): JSXElement {
-  return {
-    ...element,
-    props: setJSXAttributesAttribute(
-      element.props,
-      'data-uid',
-      jsxAttributeValue(uid, emptyComments),
-    ),
-  }
+  return jsxElement(
+    element.name,
+    uid,
+    setJSXAttributesAttribute(element.props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
+    element.children,
+  )
 }
 
 export function parseUID(attributes: JSXAttributes): Either<string, string> {
@@ -148,59 +146,54 @@ export function parseUID(attributes: JSXAttributes): Either<string, string> {
 }
 
 export function getUtopiaIDFromJSXElement(element: JSXElement): string {
-  const possibleUID = parseUID(element.props)
-  if (isLeft(possibleUID)) {
-    throw new Error('Every Utopia Element must have a valid props.data-uid')
-  } else {
-    return possibleUID.value
-  }
+  return element.uid
 }
 
 export function fixUtopiaElement(
   elementToFix: JSXElementChild,
   uniqueIDs: Array<string>,
 ): JSXElementChild {
-  function fixUtopiaElementInner<T extends JSXElementChild>(element: T): T {
-    if (isJSXElement(element)) {
-      let fixedChildren = element.children.map((elem) => fixUtopiaElementInner(elem))
-      if (shallowEqual(element.children, fixedChildren)) {
-        // saving reference equality in case the children didn't need fixing
-        fixedChildren = element.children
-      }
+  function fixJSXElement(element: JSXElement): JSXElement {
+    let fixedChildren = element.children.map((elem) => fixUtopiaElementInner(elem))
+    if (shallowEqual(element.children, fixedChildren)) {
+      // saving reference equality in case the children didn't need fixing
+      fixedChildren = element.children
+    }
 
-      const uidProp = getJSXAttribute(element.props, 'data-uid')
-      if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDs.includes(uidProp.value)) {
-        const seedUID = uidProp != null && isJSXAttributeValue(uidProp) ? uidProp.value : 'aaa'
-        const newUID = generateConsistentUID(new Set(uniqueIDs), seedUID)
-        const fixedProps = setJSXValueAtPath(
-          element.props,
-          UtopiaIDPropertyPath,
-          jsxAttributeValue(newUID, emptyComments),
-        )
+    const uidProp = getJSXAttribute(element.props, 'data-uid')
+    if (uidProp == null || !isJSXAttributeValue(uidProp) || uniqueIDs.includes(uidProp.value)) {
+      const seedUID = uidProp != null && isJSXAttributeValue(uidProp) ? uidProp.value : 'aaa'
+      const newUID = generateConsistentUID(new Set(uniqueIDs), seedUID)
+      const fixedProps = setJSXValueAtPath(
+        element.props,
+        UtopiaIDPropertyPath,
+        jsxAttributeValue(newUID, emptyComments),
+      )
 
-        if (isLeft(fixedProps)) {
-          console.error(`Failed to add a uid to an element missing one ${fixedProps.value}`)
-          return element
-        } else {
-          uniqueIDs.push(newUID)
-          return {
-            ...element,
-            props: fixedProps.value,
-            children: fixedChildren,
-          }
-        }
-      } else if (element.children !== fixedChildren) {
-        uniqueIDs.push(uidProp.value)
-        return {
-          ...element,
-          children: fixedChildren,
-        }
-      } else {
-        uniqueIDs.push(uidProp.value)
+      if (isLeft(fixedProps)) {
+        console.error(`Failed to add a uid to an element missing one ${fixedProps.value}`)
         return element
+      } else {
+        uniqueIDs.push(newUID)
+        return jsxElement(element.name, newUID, fixedProps.value, fixedChildren)
       }
+    } else if (element.children !== fixedChildren) {
+      uniqueIDs.push(uidProp.value)
+      return {
+        ...element,
+        children: fixedChildren,
+      }
+    } else {
+      uniqueIDs.push(uidProp.value)
+      return element
+    }
+  }
+
+  function fixUtopiaElementInner(element: JSXElementChild): JSXElementChild {
+    if (isJSXElement(element)) {
+      return fixJSXElement(element)
     } else if (isJSXArbitraryBlock(element)) {
-      const fixedElementsWithin = objectMap(fixUtopiaElementInner, element.elementsWithin)
+      const fixedElementsWithin = objectMap(fixJSXElement, element.elementsWithin)
       if (shallowEqual(element.elementsWithin, fixedElementsWithin)) {
         return element
       } else {
@@ -291,7 +284,7 @@ export function findElementWithUID(
         if (targetUID in element.elementsWithin) {
           return element.elementsWithin[targetUID]
         }
-        for (const elementWithin of objectValues(element.elementsWithin)) {
+        for (const elementWithin of Object.values(element.elementsWithin)) {
           const elementWithinResult = findForJSXElement(elementWithin)
           if (elementWithinResult != null) {
             return elementWithinResult
@@ -305,8 +298,8 @@ export function findElementWithUID(
   }
 
   function findForJSXElement(element: JSXElement): JSXElement | null {
-    const parsedUID = parseUID(element.props)
-    if (isRight(parsedUID) && parsedUID.value === targetUID) {
+    const uid = getUtopiaIDFromJSXElement(element)
+    if (uid === targetUID) {
       return element
     } else {
       for (const child of element.children) {
