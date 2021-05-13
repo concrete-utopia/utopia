@@ -13,7 +13,6 @@ import { Sides, sides, NormalisedFrame, LayoutSystem } from 'utopia-api'
 import { fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls } from './array-utils'
 import { objectMap } from './object-utils'
-import { parseUID } from './uid-utils'
 import { CSSPosition } from '../../components/inspector/common/css-utils'
 import { ModifiableAttribute } from './jsx-attributes'
 import * as EP from './element-path'
@@ -26,6 +25,7 @@ import {
 } from '../workers/parser-printer/parser-printer-comments'
 import { MapLike } from 'typescript'
 import { forceNotNull } from './optional-utils'
+import { string } from 'fast-check/*'
 
 interface BaseComment {
   comment: string
@@ -769,6 +769,13 @@ export interface JSXElement {
   name: JSXElementName
   props: JSXAttributes
   children: JSXElementChildren
+  uid: string
+}
+
+export interface JSXElementWithoutUID {
+  name: JSXElementName
+  props: JSXAttributes
+  children: JSXElementChildren
 }
 
 export type ElementsWithin = { [uid: string]: JSXElement }
@@ -887,12 +894,14 @@ export function clearJSXElementUniqueIDs<T extends JSXElementChild>(element: T):
 
 export function jsxElement(
   name: JSXElementName | string,
+  uid: string,
   props: JSXAttributes,
   children: JSXElementChildren,
 ): JSXElement {
   return {
     type: 'JSX_ELEMENT',
     name: typeof name === 'string' ? jsxElementName(name, []) : name,
+    uid: uid,
     props: props,
     children: children,
   }
@@ -906,9 +915,22 @@ export function jsxTestElement(
 ): JSXElement {
   return jsxElement(
     name,
+    uid,
     setJSXAttributesAttribute(props, 'data-uid', jsxAttributeValue(uid, emptyComments)),
     children,
   )
+}
+
+export function jsxElementWithoutUID(
+  name: JSXElementName | string,
+  props: JSXAttributes,
+  children: JSXElementChildren,
+): JSXElementWithoutUID {
+  return {
+    name: typeof name === 'string' ? jsxElementName(name, []) : name,
+    props: props,
+    children: children,
+  }
 }
 
 export function utopiaJSXComponent(

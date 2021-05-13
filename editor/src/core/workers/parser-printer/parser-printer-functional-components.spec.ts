@@ -151,6 +151,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -186,6 +187,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -235,6 +237,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -271,6 +274,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -311,6 +315,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -358,6 +363,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -398,6 +404,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -444,6 +451,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -486,6 +494,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -523,6 +532,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -566,6 +576,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -607,6 +618,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -661,6 +673,7 @@ describe('Parsing a function component with props', () => {
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),

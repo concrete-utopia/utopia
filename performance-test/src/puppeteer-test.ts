@@ -87,6 +87,7 @@ export const setupBrowser = async (): Promise<{
   })
   const page = await browser.newPage()
   await page.setDefaultNavigationTimeout(120000)
+  await page.setDefaultTimeout(120000)
   await page.setViewport({ width: 1500, height: 768 })
   // page.on('console', (message) =>
   //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),

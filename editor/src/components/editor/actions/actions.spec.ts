@@ -64,9 +64,16 @@ import {
   getOpenUIJSFile,
   PersistentModel,
   StoryboardFilePath,
+  defaultUserState,
+  editorModelFromPersistentModel,
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
-import { setCanvasFrames, setProp_UNSAFE, switchLayoutSystem } from './action-creators'
+import {
+  setCanvasFrames,
+  setProp_UNSAFE,
+  switchLayoutSystem,
+  updateFilePath,
+} from './action-creators'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
   ScenePathForTestUiJsFile,
@@ -84,9 +91,15 @@ import { TestScenePath } from '../../canvas/ui-jsx.test-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'
-import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
+import {
+  contentsToTree,
+  getContentsTreeFileFromString,
+  treeToContents,
+  walkContentsTreeForParseSuccess,
+} from '../../assets'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import { complexDefaultProject } from '../../../sample-projects/sample-project-utils'
 const chaiExpect = Chai.expect
 
 function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
@@ -95,12 +108,14 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
     scenes.push(
       jsxElement(
         'Scene',
+        `scene-${sceneIndex}`,
         jsxAttributesFromMap({
           'data-uid': jsxAttributeValue(`scene-${sceneIndex}`, emptyComments),
         }),
         [
           jsxElement(
             `MyView${sceneIndex + 1}`,
+            `main-component-${sceneIndex}`,
             jsxAttributesFromMap({
               'data-uid': jsxAttributeValue(`main-component-${sceneIndex}`, emptyComments),
               style: jsxAttributeValue(
@@ -129,6 +144,7 @@ function storyboardComponent(numberOfScenes: number): UtopiaJSXComponent {
     [],
     jsxElement(
       'Storyboard',
+      BakedInStoryboardUID,
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
       }),
@@ -159,12 +175,14 @@ const originalModel = deepFreeze(
         [],
         jsxElement(
           jsxElementName('View', []),
+          'aaa',
           jsxAttributesFromMap({
             'data-uid': jsxAttributeValue('aaa', emptyComments),
           }),
           [
             jsxElement(
               jsxElementName('View', []),
+              'bbb',
               jsxAttributesFromMap({
                 test: jsxAttributeNestedObjectSimple(
                   jsxAttributesFromMap({ prop: jsxAttributeValue(5, emptyComments) }),
@@ -313,6 +331,7 @@ describe('moveTemplate', () => {
   ): JSXElement {
     return jsxElement(
       jsxElementName(name, []),
+      uid,
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -340,6 +359,7 @@ describe('moveTemplate', () => {
   ): JSXElement {
     return jsxElement(
       jsxElementName(name, []),
+      uid,
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -637,6 +657,7 @@ describe('moveTemplate', () => {
   it('reparents from pinned to group with frame props updated', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
+      'bbb',
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -693,6 +714,7 @@ describe('moveTemplate', () => {
     const group1 = group('ddd', [view1], 50, 50, 100, 100, 'Group')
     const flexView = jsxElement(
       jsxElementName('aaa', []),
+      'aaa',
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -748,6 +770,7 @@ describe('moveTemplate', () => {
   xit('reparents from group to pinned with frame props unchanged', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
+      'bbb',
       jsxAttributesFromMap({
         layout: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -809,6 +832,7 @@ function getOpenFileComponents(editor: EditorState): Array<UtopiaJSXComponent> {
 describe('SWITCH_LAYOUT_SYSTEM', () => {
   const childElement = jsxElement(
     'View',
+    'bbb',
     jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('bbb', emptyComments),
       style: jsxAttributeValue(
@@ -825,6 +849,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
   )
   const rootElement = jsxElement(
     'View',
+    'aaa',
     jsxAttributesFromMap({
       'data-uid': jsxAttributeValue('aaa', emptyComments),
       style: jsxAttributeValue({ backgroundColor: '#FFFFFF' }, emptyComments),
@@ -853,12 +878,14 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     [],
     jsxElement(
       'Storyboard',
+      BakedInStoryboardUID,
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments),
       }),
       [
         jsxElement(
           'Scene',
+          'scene-0',
           jsxAttributesFromMap({
             component: jsxAttributeOtherJavaScript('App', `return App`, ['App'], null),
             'data-uid': jsxAttributeValue('scene-0', emptyComments),
@@ -1028,5 +1055,44 @@ describe('LOAD', () => {
     ) as TextFile).fileContents
     expect(isParseSuccess(newSecondFileContents.parsed)).toBeTruthy()
     expect(newSecondFileContents.code).toEqual(initialFileContents.code)
+  })
+})
+
+describe('UPDATE_FILE_PATH', () => {
+  it('updates the files in a directory and imports related to it', () => {
+    const project = complexDefaultProject()
+    const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const actualResult = UPDATE_FNS.UPDATE_FILE_PATH(
+      updateFilePath('/src', '/src2'),
+      editorState,
+      defaultUserState,
+      NO_OP,
+    )
+    let filesAndTheirImports: { [filename: string]: Array<string> } = {}
+    walkContentsTreeForParseSuccess(actualResult.projectContents, (fullPath, success) => {
+      filesAndTheirImports[fullPath] = Object.keys(success.imports).sort()
+    })
+    expect(filesAndTheirImports).toMatchInlineSnapshot(`
+      Object {
+        "/src2/app.js": Array [
+          "/src2/card.js",
+          "react",
+        ],
+        "/src2/card.js": Array [
+          "react",
+          "utopia-api",
+        ],
+        "/src2/index.js": Array [
+          "./app.js",
+          "react",
+          "react-dom",
+        ],
+        "/utopia/storyboard.js": Array [
+          "/src2/app.js",
+          "react",
+          "utopia-api",
+        ],
+      }
+    `)
   })
 })

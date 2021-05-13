@@ -14,6 +14,7 @@ describe('getDirectReverseDependencies', () => {
     expect(actualResult).toMatchInlineSnapshot(`
       Object {
         "/src/app.js": Array [
+          "/src/index.js",
           "/utopia/storyboard.js",
         ],
         "/src/card.js": Array [

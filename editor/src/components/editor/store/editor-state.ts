@@ -179,6 +179,7 @@ export type EditorStore = {
   userState: UserState
   workers: UtopiaTsWorkers
   dispatch: EditorDispatch
+  alreadySaved: boolean
 }
 
 export interface FileDeleteModal {

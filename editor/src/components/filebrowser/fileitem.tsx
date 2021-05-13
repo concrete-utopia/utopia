@@ -396,8 +396,7 @@ class FileBrowserItemInner extends React.PureComponent<
             : 'File'
           : 'this'
       }`,
-      enabled:
-        this.props.fileType != null && canRename(this.props) && this.props.fileType !== 'DIRECTORY',
+      enabled: this.props.fileType != null && canRename(this.props),
       action: () => {
         this.props.dispatch(
           [EditorActions.setFilebrowserRenamingTarget(this.props.path)],
