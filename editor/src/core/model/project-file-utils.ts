@@ -122,7 +122,7 @@ function isGivenUtopiaAPIElementFromName(
   }
 }
 
-function isGivenUtopiaElementFromMetadata(
+export function isGivenUtopiaElementFromMetadata(
   elementInstanceMetadata: ElementInstanceMetadata,
   componentName: string,
 ): boolean {

@@ -95,6 +95,7 @@ import {
   isViewFromMetadata,
   isSceneFromMetadata,
   isUtopiaAPIComponentFromMetadata,
+  isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
 import { ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
@@ -1420,10 +1421,4 @@ export function getSimpleAttributeAtPath(
     },
     propsOrAttributes,
   )
-}
-function isGivenUtopiaElementFromMetadata(
-  instance: ElementInstanceMetadata,
-  elementType: string,
-): boolean {
-  throw new Error('Function not implemented.')
 }
