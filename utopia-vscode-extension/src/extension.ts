@@ -57,6 +57,9 @@ function watchForFileDeletions() {
           await vscode.window.showTextDocument(textDocument)
           return Promise.resolve()
         })
+        if (textDocument.isDirty) {
+          await clearDirtyFlags(textDocument.uri)
+        }
         fileWatcherChain = fileWatcherChain.then(async () => {
           return vscode.commands.executeCommand('workbench.action.closeActiveEditor')
         })
