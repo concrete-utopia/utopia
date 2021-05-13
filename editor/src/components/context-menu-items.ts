@@ -146,7 +146,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
       return false
     } else {
       return data.selectedViews.every((view) => {
-        const { components, imports } = getJSXComponentsAndImportsForPathInnerComponent(
+        const { components } = getJSXComponentsAndImportsForPathInnerComponent(
           view,
           data.currentFilePath,
           data.projectContents,
@@ -154,7 +154,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
           data.transientFilesState,
           data.resolve,
         )
-        return MetadataUtils.isFocusableComponent(view, components, data.jsxMetadata, imports)
+        return MetadataUtils.isFocusableComponent(view, components, data.jsxMetadata)
       })
     }
   },

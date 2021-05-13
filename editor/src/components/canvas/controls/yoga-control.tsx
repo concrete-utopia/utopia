@@ -148,7 +148,6 @@ export class YogaControls extends React.Component<YogaControlsProps> {
             underlyingTarget,
             getUtopiaJSXComponentsFromSuccess(success),
             this.props.componentMetadata,
-            success.imports,
             this.props.focusedElementPath,
           )
         },

@@ -492,7 +492,7 @@ export function useSelectModeSelectAndHover(
 
         if (foundTarget != null && doubleClick) {
           // for components without passed children doubleclicking enters focus mode
-          const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+          const { components } = getJSXComponentsAndImportsForPathInnerComponentFromState(
             foundTarget.elementPath,
             editorStoreRef.current.editor,
             editorStoreRef.current.derived,
@@ -501,7 +501,6 @@ export function useSelectModeSelectAndHover(
             foundTarget.elementPath,
             components,
             editorStoreRef.current.editor.jsxMetadata,
-            imports,
           )
           if (isFocusableLeaf) {
             dispatch([setFocusedElement(foundTarget.elementPath)])

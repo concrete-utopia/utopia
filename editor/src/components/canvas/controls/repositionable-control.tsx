@@ -19,7 +19,8 @@ export class RepositionableControl extends React.Component<ControlProps> {
         return
       }
 
-      const { components, imports } = getJSXComponentsAndImportsForPathInnerComponent(
+      // TODO KILLME
+      const { components } = getJSXComponentsAndImportsForPathInnerComponent(
         selectedView,
         this.props.openFile,
         this.props.projectContents,
@@ -31,7 +32,6 @@ export class RepositionableControl extends React.Component<ControlProps> {
         selectedView,
         components,
         this.props.componentMetadata,
-        imports,
         this.props.focusedElementPath,
       )
 

@@ -261,11 +261,9 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   'NavigatorItem',
   (props) => {
     const {
-      label,
       dispatch,
       isHighlighted,
       isElementVisible,
-      renamingTarget,
       selected,
       collapsed,
       elementOriginType,
@@ -282,17 +280,12 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     )
 
     const isFocusableComponent = useEditorState((store) => {
-      const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
+      const { components } = getJSXComponentsAndImportsForPathInnerComponentFromState(
         elementPath,
         store.editor,
         store.derived,
       )
-      return MetadataUtils.isFocusableComponent(
-        elementPath,
-        components,
-        store.editor.jsxMetadata,
-        imports,
-      )
+      return MetadataUtils.isFocusableComponent(elementPath, components, store.editor.jsxMetadata)
     }, 'NavigatorItem isFocusable')
 
     const childComponentCount = props.noOfChildren

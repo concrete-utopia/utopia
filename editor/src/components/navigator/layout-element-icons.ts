@@ -230,7 +230,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isComponent = MetadataUtils.isFocusableComponent(path, components, metadata, imports)
+  const isComponent = MetadataUtils.isFocusableComponent(path, components, metadata)
   if (isComponent) {
     return {
       category: 'component',

@@ -1340,7 +1340,6 @@ export const MetadataUtils = {
     path: ElementPath,
     components: UtopiaJSXComponent[],
     metadata: ElementInstanceMetadataMap,
-    imports: Imports,
   ): boolean {
     const elementName = MetadataUtils.getJSXElementName(path, components)
     const element = MetadataUtils.findElementByElementPath(metadata, path)
@@ -1366,11 +1365,10 @@ export const MetadataUtils = {
     path: ElementPath,
     components: UtopiaJSXComponent[],
     metadata: ElementInstanceMetadataMap,
-    imports: Imports,
   ): boolean {
     return (
       MetadataUtils.getChildrenPaths(metadata, path).length === 0 &&
-      MetadataUtils.isFocusableComponent(path, components, metadata, imports)
+      MetadataUtils.isFocusableComponent(path, components, metadata)
     )
   },
 }
