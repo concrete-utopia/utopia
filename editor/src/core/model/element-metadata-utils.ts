@@ -1330,6 +1330,9 @@ export const MetadataUtils = {
       return false
     }
     const isImported = isImportedComponent(element)
+    // BALAZS TODO BEFORE MERGE the original code checked the element being imported in the file it was defined in. the new code checks it against imports of the file it is _used in_.
+    // this is trouble because it means that for multifile components which are _imported_ from other files, this will return isImported === true, and we will conclude that they are not focusable.
+    // I think the solution should be to use isImportedComponentNPM that says if the component is imported from npm and then return false
     if (isImported) {
       return false
     }
