@@ -200,14 +200,11 @@ export function importInfoFromImportDetails(name: JSXElementName, imports: Impor
   return foundImportDetail
 }
 
-export function isImportedComponent(jsxElementName: JSXElementName, imports: Imports): boolean {
-  return Object.keys(imports).some((importKey) => {
-    const fromImports = imports[importKey]
-    return (
-      pluck(fromImports.importedFromWithin, 'name').includes(jsxElementName.baseVariable) ||
-      fromImports.importedWithName === jsxElementName.baseVariable
-    )
-  })
+export function isImportedComponent(
+  elementInstanceMetadata: ElementInstanceMetadata | null,
+): boolean {
+  const importInfo = elementInstanceMetadata?.importInfo
+  return importInfo != null && isRight(importInfo)
 }
 
 const defaultEmptyUtopiaComponent = EmptyUtopiaCanvasComponent

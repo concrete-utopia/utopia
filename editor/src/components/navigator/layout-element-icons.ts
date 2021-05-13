@@ -200,7 +200,6 @@ function createComponentIconProps(
   metadata: ElementInstanceMetadataMap,
   imports: Imports,
 ): IcnPropsBase | null {
-  const elementName = MetadataUtils.getJSXElementName(path, components)
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (isProbablySceneFromMetadata(metadata, path)) {
     return null
@@ -222,7 +221,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isImported = elementName != null && isImportedComponent(elementName, imports)
+  const isImported = isImportedComponent(element)
   if (isImported) {
     return {
       category: 'component',
