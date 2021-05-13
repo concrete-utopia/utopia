@@ -61,7 +61,7 @@ import {
 import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
-import { foldEither, isRight, maybeEitherToMaybe } from '../shared/either'
+import { foldEither, isLeft, isRight, maybeEitherToMaybe } from '../shared/either'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -244,18 +244,16 @@ export function isImportedComponent(
   return importInfo != null && isRight(importInfo)
 }
 
-export function isImportedComponentNPM(jsxElementName: JSXElementName, imports: Imports): boolean {
-  return Object.keys(imports).some((importKey) => {
-    const fromImports = imports[importKey]
-    if (importKey === 'utopia-api' || importKey.startsWith('.') || importKey.startsWith('/')) {
-      return false
-    } else {
-      return (
-        pluck(fromImports.importedFromWithin, 'name').includes(jsxElementName.baseVariable) ||
-        fromImports.importedWithName === jsxElementName.baseVariable
-      )
-    }
-  })
+export function isImportedComponentNPM(
+  elementInstanceMetadata: ElementInstanceMetadata | null,
+): boolean {
+  const importInfo = elementInstanceMetadata?.importInfo
+  if (importInfo != null && isRight(importInfo)) {
+    const importKey = importInfo.value.path
+    return importKey !== 'utopia-api' && !importKey.startsWith('.') && !importKey.startsWith('/')
+  } else {
+    return false
+  }
 }
 
 const defaultEmptyUtopiaComponent = EmptyUtopiaCanvasComponent
