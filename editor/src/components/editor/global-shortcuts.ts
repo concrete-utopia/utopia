@@ -108,12 +108,7 @@ import {
   ZOOM_UI_OUT_SHORTCUT,
   ShortcutNamesByKey,
 } from './shortcut-definitions'
-import {
-  DerivedState,
-  EditorState,
-  getJSXComponentsAndImportsForPathFromState,
-  getOpenFile,
-} from './store/editor-state'
+import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
