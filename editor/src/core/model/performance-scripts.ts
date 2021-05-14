@@ -34,7 +34,7 @@ export function useTriggerScrollPerformanceTest(): () => void {
         `scroll_dispatch_finished_${framesPassed}`,
       )
       framesPassed++
-      if (framesPassed < 600) {
+      if (framesPassed < 100) {
         requestAnimationFrame(step)
       } else {
         console.info('SCROLL_TEST_FINISHED')
@@ -95,7 +95,7 @@ export function useTriggerResizePerformanceTest(): () => void {
         `resize_dispatch_finished_${framesPassed}`,
       )
       framesPassed++
-      if (framesPassed < 600) {
+      if (framesPassed < 100) {
         requestAnimationFrame(step)
       } else {
         await dispatch([CanvasActions.clearDragState(false)]).entireUpdateFinished
@@ -143,7 +143,7 @@ export function useTriggerSelectionPerformanceTest(): () => void {
       )
 
       framesPassed++
-      if (framesPassed < 25) {
+      if (framesPassed < 100) {
         requestAnimationFrame(step)
       } else {
         console.info('SELECT_TEST_FINISHED')
@@ -173,7 +173,7 @@ export function useTriggerBaselinePerformanceTest(): () => void {
       )
 
       count++
-      if (count < 300000) {
+      if (count < 100000) {
         step()
       } else {
         requestAnimationFrame(() => console.info('BASELINE_TEST_FINISHED'))
