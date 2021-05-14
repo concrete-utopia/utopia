@@ -1860,6 +1860,9 @@ describe('moveTemplate', () => {
         </div>
       `),
     )
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', NewUID]),
+    ])
   })
 
   it('inserting a new element as an orphan', async () => {
@@ -1997,6 +2000,9 @@ describe('moveTemplate', () => {
         PrettierConfig,
       ),
     )
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      EP.elementPath([['storyboard', NewUID]]),
+    ])
   })
 
   it('reparents an element while dragging', async () => {

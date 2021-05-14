@@ -382,6 +382,7 @@ export const UiJsxCanvas = betterReactMemo(
         executionScope,
         projectContents,
         uiFilePath,
+        transientFilesState,
         resolve,
       )
 
@@ -451,6 +452,7 @@ function useGetStoryboardRoot(
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,
+  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
@@ -472,6 +474,7 @@ function useGetStoryboardRoot(
           EP.emptyElementPath,
           projectContents,
           uiFilePath,
+          transientFilesState,
           resolve,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
