@@ -3,6 +3,7 @@ import {
   combine2EqualityCalls,
   combine4EqualityCalls,
   createCallFromEqualsFunction,
+  createCallWithShallowEquals,
   createCallWithTripleEquals,
   KeepDeepEqualityCall,
   KeepDeepEqualityResult,
@@ -97,7 +98,7 @@ export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIcon
   (result) => result.label,
   createCallWithTripleEquals(),
   (result) => result.iconProps,
-  createCallWithTripleEquals(),
+  createCallWithShallowEquals(),
   (path, name, label, iconProps) => {
     return {
       path: path,
