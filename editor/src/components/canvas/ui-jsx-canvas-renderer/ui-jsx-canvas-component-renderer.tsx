@@ -27,8 +27,8 @@ import { useContextSelector } from 'use-context-selector'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utopia-constants'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
-import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 import { getPathsFromString } from '../../../core/shared/uid-utils'
+import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 
 export type ComponentRendererComponent = React.ComponentType<{
   [UTOPIA_INSTANCE_PATH]: ElementPath

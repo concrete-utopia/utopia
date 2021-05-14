@@ -5,7 +5,7 @@ import { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../core/shared
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { EditorAction } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
-import { DuplicationState } from '../../editor/store/editor-state'
+import { DuplicationState, RightMenuTab } from '../../editor/store/editor-state'
 import * as EP from '../../../core/shared/element-path'
 import { CanvasPositions, MoveDragState, ResizeDragState } from '../canvas-types'
 import { Guidelines, Guideline } from '../guideline'
@@ -23,14 +23,10 @@ import { RepositionableControl } from './repositionable-control'
 import { areYogaChildren } from './select-mode/yoga-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { BoundingMarks } from './parent-bounding-marks'
-import { RightMenuTab } from '../right-menu'
 import { getAllTargetsAtPoint } from '../dom-lookup'
-import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { isSceneAgainstImports, isSceneFromMetadata } from '../../../core/model/project-file-utils'
 import { foldEither, isRight } from '../../../core/shared/either'
-
-export const SnappingThreshold = 5
 
 function getDistanceGuidelines(
   highlightedView: ElementPath,

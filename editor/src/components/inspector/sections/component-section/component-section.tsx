@@ -90,7 +90,6 @@ import { getJSXElementNameAsString, isJSXElement } from '../../../../core/shared
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { usePackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
 import { importedFromWhere } from '../../../editor/import-utils'
-import { isProbablySceneFromMetadata } from '../../../navigator/navigator-item/navigator-item'
 import {
   isAnimatedElement,
   isImportedComponentNPM,
@@ -515,7 +514,7 @@ function useComponentType(path: ElementPath): string | null {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-    if (isProbablySceneFromMetadata(metadata, path)) {
+    if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
       return null
     }
     if (MetadataUtils.isEmotionOrStyledComponent(path, metadata)) {

@@ -12,7 +12,6 @@ import { useEditorState } from '../editor/store/store-hook'
 import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
-import { isProbablySceneFromMetadata } from './navigator-item/navigator-item'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -62,7 +61,7 @@ export function createLayoutOrElementIconResult(
   }
 
   const layoutIcon = createLayoutIconProps(path, metadata)
-  if (isProbablySceneFromMetadata(metadata, path)) {
+  if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
     return {
       iconProps: {
         category: 'component',
@@ -181,7 +180,7 @@ function createComponentIconProps(
   metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase | null {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
-  if (isProbablySceneFromMetadata(metadata, path)) {
+  if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
     return null
   }
   if (element?.isEmotionOrStyledComponent) {

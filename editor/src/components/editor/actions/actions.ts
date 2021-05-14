@@ -200,7 +200,7 @@ import {
   cullSpyCollector,
 } from '../../canvas/canvas-utils'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../../common/actions'
-import { openMenu } from '../../context-menu-wrapper'
+import { openMenu } from '../../context-menu-side-effect'
 import {
   CodeResultCache,
   generateCodeResultCache,
@@ -213,14 +213,6 @@ import { ElementContextMenuInstance } from '../../element-context-menu'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
 import { FontSettings } from '../../inspector/common/css-utils'
 import { CSSTarget } from '../../inspector/sections/header-section/target-selector'
-import {
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-  LeftPaneMinimumWidth,
-  setLeftMenuTabFromFocusedPanel,
-  updateLeftMenuExpanded,
-  updateSelectedLeftMenuTab,
-} from '../../navigator/left-pane'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -435,6 +427,10 @@ import {
   getHighlightBoundsForFile,
   modifyParseSuccessAtPath,
   withUnderlyingTarget,
+  LeftPaneDefaultWidth,
+  LeftPaneMinimumWidth,
+  LeftMenuTab,
+  RightMenuTab,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -442,12 +438,6 @@ import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import { PathForSceneDataLabel, getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
-
-import {
-  updateRightMenuExpanded,
-  updateSelectedRightMenuTab,
-  RightMenuTab,
-} from '../../canvas/right-menu'
 
 import { notice, Notice } from '../../common/notice'
 import { objectMap } from '../../../core/shared/object-utils'
@@ -463,7 +453,6 @@ import { lintAndParse } from '../../../core/workers/parser-printer/parser-printe
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import {
   ElementInstanceMetadataKeepDeepEquality,
@@ -489,7 +478,6 @@ import {
 } from './action-creators'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
-import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 import {
   initVSCodeBridge,
   sendCodeEditorDecorations,
@@ -503,6 +491,61 @@ import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
+
+export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
+  return {
+    ...editorState,
+    leftMenu: {
+      ...editorState.leftMenu,
+      selectedTab: tab,
+    },
+  }
+}
+
+export function updateLeftMenuExpanded(editorState: EditorState, expanded: boolean): EditorState {
+  return {
+    ...editorState,
+    leftMenu: {
+      ...editorState.leftMenu,
+      expanded: expanded,
+    },
+  }
+}
+
+export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): EditorState {
+  switch (editorState.focusedPanel) {
+    case 'misccodeeditor':
+      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Contents)
+    case 'inspector':
+    case 'canvas':
+    case 'codeEditor':
+    default:
+      return editorState
+  }
+}
+
+export function updateSelectedRightMenuTab(
+  editorState: EditorState,
+  tab: RightMenuTab,
+): EditorState {
+  return {
+    ...editorState,
+    rightMenu: {
+      ...editorState.rightMenu,
+      selectedTab: tab,
+    },
+  }
+}
+
+export function updateRightMenuExpanded(editorState: EditorState, expanded: boolean): EditorState {
+  return {
+    ...editorState,
+    rightMenu: {
+      ...editorState.rightMenu,
+      expanded: expanded,
+    },
+  }
+}
 
 function applyUpdateToJSXElement(
   element: JSXElement,

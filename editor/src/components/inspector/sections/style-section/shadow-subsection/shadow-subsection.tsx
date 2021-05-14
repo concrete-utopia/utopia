@@ -27,6 +27,7 @@ import {
   fallbackOnEmptyInputValueToCSSEmptyValue,
   cssPixelLength,
   cssDefault,
+  toggleShadowEnabled,
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import {
@@ -37,12 +38,6 @@ import {
 import { useArraySuperControl } from '../../../controls/array-supercontrol'
 import { ColorControl } from '../../../controls/color-control'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-
-export function toggleShadowEnabled(oldValue: CSSBoxShadow): CSSBoxShadow {
-  const newValue = { ...oldValue }
-  newValue.enabled = !newValue.enabled
-  return newValue
-}
 
 export function getIndexedToggleShadowEnabled(index: number) {
   return function (_: null, oldValue: CSSBoxShadows): CSSBoxShadows {
