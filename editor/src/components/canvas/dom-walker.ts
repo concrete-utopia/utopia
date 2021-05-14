@@ -499,11 +499,31 @@ function collectMetadata(
       cachedPaths: [],
     }
   } else {
-    return {
-      collectedMetadata: mapDropNulls((path) => {
-        return MetadataUtils.findElementMetadata(path, rootMetadataInStateRef.current)
-      }, pathsForElement),
-      cachedPaths: pathsForElement,
+    const cachedMetadata = mapDropNulls((path) => {
+      return MetadataUtils.findElementMetadata(path, rootMetadataInStateRef.current)
+    }, pathsForElement)
+
+    if (cachedMetadata.length === pathsForElement.length) {
+      return {
+        collectedMetadata: cachedMetadata,
+        cachedPaths: pathsForElement,
+      }
+    } else {
+      // If any path is missing cached metadata we must forcibly invalidate the element
+      return collectMetadata(
+        element,
+        pathsForElement,
+        stringPathsForElement,
+        parentPoint,
+        allUnfilteredChildrenPaths,
+        scale,
+        containerRectLazy,
+        invalidatedPathsRef,
+        invalidatedPathsForStylesheetCacheRef,
+        rootMetadataInStateRef,
+        true,
+        selectedViews,
+      )
     }
   }
 }
