@@ -28,8 +28,8 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(2)
-    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([])
-    expect(saveDomReportActions[1].cachedTreeRoots).toEqual([])
+    expect(saveDomReportActions[0].cachedPaths).toEqual([])
+    expect(saveDomReportActions[1].cachedPaths).toEqual([])
   })
 
   it('returns cached metadata for scroll', async () => {
@@ -44,10 +44,10 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(1)
-    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([EP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[0].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
   })
 
-  it('resizing an out-of-file element invalidates the cache', async () => {
+  it('resizing an out-of-file element invalidates the cache for only that scene', async () => {
     const renderResult = await prepareTestProject()
 
     renderResult.clearRecordedActions()
@@ -67,13 +67,15 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(2)
-    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([EP.fromString(':storyboard-entity')])
-    expect(saveDomReportActions[1].cachedTreeRoots).toEqual([
+    expect(saveDomReportActions[0].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[1].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      EP.fromString(':storyboard-entity/scene-2-entity/same-file-app-entity'),
       EP.fromString(':storyboard-entity/scene-2-entity'),
-    ]) // This is correct, the SameFileApp scene is still cached
+    ])
   })
 
-  it('resizing an in-file element invalidates the cache', async () => {
+  it('resizing an in-file element invalidates the cache for only that scene', async () => {
     const renderResult = await prepareTestProject()
 
     renderResult.clearRecordedActions()
@@ -93,9 +95,12 @@ describe('Dom-walker Caching', () => {
       .filter((action): action is SaveDOMReport => action.action === 'SAVE_DOM_REPORT')
 
     expect(saveDomReportActions.length).toBe(2)
-    expect(saveDomReportActions[0].cachedTreeRoots).toEqual([EP.fromString(':storyboard-entity')])
-    expect(saveDomReportActions[1].cachedTreeRoots).toEqual([
+    expect(saveDomReportActions[0].cachedPaths).toEqual([EP.fromString(':storyboard-entity')])
+    expect(saveDomReportActions[1].cachedPaths).toEqual([
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity:app-outer-div'),
+      EP.fromString(':storyboard-entity/scene-1-entity/app-entity'),
       EP.fromString(':storyboard-entity/scene-1-entity'),
-    ]) // This is correct, the Imported App scene is still cached
+    ])
   })
 })
