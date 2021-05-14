@@ -421,7 +421,10 @@ function isAnyPathInvalidated(
   stringPathsForElement: Array<string>,
   invalidatedPathsRef: React.MutableRefObject<Set<string>>,
 ): boolean {
-  return stringPathsForElement.some((p) => invalidatedPathsRef.current.has(p))
+  return (
+    invalidatedPathsRef.current.size > 0 &&
+    stringPathsForElement.some((p) => invalidatedPathsRef.current.has(p))
+  )
 }
 
 function collectMetadata(
@@ -733,7 +736,7 @@ function walkScene(
       const invalidatedScene =
         invalidated ||
         (ObserversAvailable &&
-          invalidatedScenesRef.current != null &&
+          invalidatedScenesRef.current.size > 0 &&
           invalidatedScenesRef.current.has(sceneID))
 
       invalidatedScenesRef.current.delete(sceneID)
