@@ -102,7 +102,64 @@ export const setupBrowser = async (): Promise<{
 
 const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
-async function initialiseProject(page: puppeteer.Page): Promise<void> {
+interface Baselines {
+  basicCalc: number
+  simpleDispatch: number
+}
+
+function calculatePi(accuracy: number): number {
+  // Uses the Nilakantha series
+  let i = 2
+  let j = 3
+  let k = 4
+  let count = 0
+  let result = 3
+
+  while (count < accuracy) {
+    const nextAdjustment = 4 / (i * j * k)
+    if (count % 2 === 0) {
+      result += nextAdjustment
+    } else {
+      result -= nextAdjustment
+    }
+
+    i += 2
+    j += 2
+    k += 2
+
+    count++
+  }
+
+  return result
+}
+
+function timeBasicCalc(): number {
+  const start = Date.now()
+  calculatePi(400000000)
+  const end = Date.now()
+  const inSeconds = (end - start) / 1000
+  return Number(inSeconds.toFixed(3))
+}
+
+async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResult> {
+  console.log('Test Baseline Performance')
+  await page.tracing.start({ path: 'trace.json' })
+  await clickOnce(page, "//a[contains(., 'B L')]", 'BASELINE_TEST_FINISHED')
+  await page.tracing.stop()
+
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'baseline_step_', 'Scroll Canvas')
+}
+
+async function timeSimpleDispatch(page: puppeteer.Page): Promise<number> {
+  const frameData = await testBaselinePerformance(page)
+  const summed = frameData.timeSeries.reduce((sum, next) => sum + next, 0)
+  const inSeconds = summed / 1000
+  return Number(inSeconds.toFixed(3))
+}
+
+async function initialiseTests(page: puppeteer.Page): Promise<Baselines> {
   console.log('Initialising the project')
   await page.waitForXPath('//div[contains(@class, "item-label-container")]')
 
@@ -120,7 +177,17 @@ async function initialiseProject(page: puppeteer.Page): Promise<void> {
   // This change should have triggered a fork, so pause again
   await page.waitForTimeout(15000)
 
+  // Now take a couple of baseline measurements for general performance of the machine running this test
+  // These two values should be very close
+  const basicCalc = timeBasicCalc()
+  const simpleDispatch = await timeSimpleDispatch(page)
+
   console.log('Finished initialising')
+
+  return {
+    basicCalc,
+    simpleDispatch,
+  }
 }
 
 function consoleMessageForResult(result: FrameResult): string {
@@ -131,9 +198,10 @@ export const testPerformance = async function () {
   let scrollResult = EmptyResult
   let resizeResult = EmptyResult
   let selectionResult = EmptyResult
+  let baselines = { basicCalc: 0, simpleDispatch: 0 }
   const { page, browser } = await setupBrowser()
   try {
-    await initialiseProject(page)
+    baselines = await initialiseTests(page)
     selectionResult = await testSelectionPerformance(page)
     resizeResult = await testResizePerformance(page)
     scrollResult = await testScrollingPerformance(page)
@@ -143,9 +211,10 @@ export const testPerformance = async function () {
     browser.close()
   }
   const summaryImage = await uploadSummaryImage([selectionResult, scrollResult, resizeResult])
+  const baselineMessage = `Baselines: { basicCalc: ${baselines.basicCalc}, simpleDispatch: ${baselines.simpleDispatch} }`
 
   console.info(
-    `::set-output name=perf-result:: ${consoleMessageForResult(
+    `::set-output name=perf-result:: ${baselineMessage} | ${consoleMessageForResult(
       scrollResult,
     )} | ${consoleMessageForResult(resizeResult)} | ${consoleMessageForResult(
       selectionResult,
@@ -222,7 +291,6 @@ export const testSelectionPerformance = async function (
   page: puppeteer.Page,
 ): Promise<FrameResult> {
   console.log('Test Selection Performance')
-  await page.waitForTimeout(20000)
   await page.waitForXPath("//a[contains(., 'P E')]")
   // we run it twice without measurements to warm up the environment
   await clickOnce(page, "//a[contains(., 'P E')]", 'SELECT_TEST_FINISHED', 'SELECT_TEST_ERROR')
