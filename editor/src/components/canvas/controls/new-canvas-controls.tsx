@@ -12,7 +12,6 @@ import {
   EditorStore,
   getOpenUIJSFileKey,
   TransientCanvasState,
-  getJSXComponentsAndImportsForPathInnerComponentFromState,
   TransientFilesState,
 } from '../../editor/store/editor-state'
 import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
@@ -388,17 +387,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
           if (frame == null) {
             return null
           }
-          const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-            path,
-            props.editor,
-            props.derived,
-          )
-          const isFocusableComponent = MetadataUtils.isFocusableComponent(
-            path,
-            components,
-            componentMetadata,
-            imports,
-          )
+          const isFocusableComponent = MetadataUtils.isFocusableComponent(path, componentMetadata)
           const isFocusedComponent = EP.isFocused(props.editor.focusedElementPath, path)
           const color =
             isFocusableComponent || isFocusedComponent

@@ -15,10 +15,7 @@ import {
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import {
-  getJSXComponentsAndImportsForPathInnerComponent,
-  TransientFilesState,
-} from './editor/store/editor-state'
+import { TransientFilesState } from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
   toggleBorder,
@@ -146,29 +143,13 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
       return false
     } else {
       return data.selectedViews.every((view) => {
-        const { components, imports } = getJSXComponentsAndImportsForPathInnerComponent(
-          view,
-          data.currentFilePath,
-          data.projectContents,
-          data.nodeModules,
-          data.transientFilesState,
-          data.resolve,
-        )
-        return MetadataUtils.isFocusableComponent(view, components, data.jsxMetadata, imports)
+        return MetadataUtils.isFocusableComponent(view, data.jsxMetadata)
       })
     }
   },
   isHidden: (data) => {
     return data.selectedViews.every((view) => {
-      const { components } = getJSXComponentsAndImportsForPathInnerComponent(
-        view,
-        data.currentFilePath,
-        data.projectContents,
-        data.nodeModules,
-        data.transientFilesState,
-        data.resolve,
-      )
-      const elementName = MetadataUtils.getJSXElementName(view, components)
+      const elementName = MetadataUtils.getJSXElementFromMetadata(data.jsxMetadata, view)
       return elementName != null ? isIntrinsicHTMLElement(elementName) : true
     })
   },

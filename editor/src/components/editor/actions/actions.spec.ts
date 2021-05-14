@@ -936,6 +936,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
+    importInfo: null,
   }
 
   const childElementMetadata: ElementInstanceMetadata = {
@@ -960,6 +961,7 @@ describe('SWITCH_LAYOUT_SYSTEM', () => {
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
+    importInfo: null,
   }
 
   const elementMetadataMap: ElementInstanceMetadataMap = {

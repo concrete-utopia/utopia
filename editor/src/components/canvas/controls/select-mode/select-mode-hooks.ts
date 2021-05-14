@@ -24,11 +24,7 @@ import {
   setFocusedElement,
   setHighlightedView,
 } from '../../../editor/actions/action-creators'
-import {
-  EditorState,
-  getJSXComponentsAndImportsForPathInnerComponent,
-  getJSXComponentsAndImportsForPathInnerComponentFromState,
-} from '../../../editor/store/editor-state'
+import { EditorState } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
@@ -492,16 +488,9 @@ export function useSelectModeSelectAndHover(
 
         if (foundTarget != null && doubleClick) {
           // for components without passed children doubleclicking enters focus mode
-          const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-            foundTarget.elementPath,
-            editorStoreRef.current.editor,
-            editorStoreRef.current.derived,
-          )
           const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
             foundTarget.elementPath,
-            components,
             editorStoreRef.current.editor.jsxMetadata,
-            imports,
           )
           if (isFocusableLeaf) {
             dispatch([setFocusedElement(foundTarget.elementPath)])

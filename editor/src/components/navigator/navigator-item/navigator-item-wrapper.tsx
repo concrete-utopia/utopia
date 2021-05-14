@@ -81,7 +81,6 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
       }
       const fileState =
         elementFilePath == null ? null : transientState.filesState?.[elementFilePath] ?? null
-      const imports = fileState?.imports ?? parsedElementFile?.imports ?? emptyImports()
       const topLevelElements =
         fileState?.topLevelElementsIncludingScenes ?? parsedElementFile?.topLevelElements ?? []
       const componentsIncludingScenes = topLevelElements.filter(isUtopiaJSXComponent)
@@ -99,7 +98,7 @@ const navigatorItemWrapperSelectorFactory = (elementPath: ElementPath) =>
       let supportsChildren: boolean = false
       if (isInNavigatorTargets) {
         noOfChildrenInner = MetadataUtils.getImmediateChildren(jsxMetadata, elementPath).length
-        supportsChildren = MetadataUtils.targetSupportsChildren(imports, jsxMetadata, elementPath)
+        supportsChildren = MetadataUtils.targetSupportsChildren(jsxMetadata, elementPath)
       }
 
       const elementWarningsInner = getValueFromComplexMap(EP.toString, elementWarnings, elementPath)

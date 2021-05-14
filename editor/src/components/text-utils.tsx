@@ -14,11 +14,7 @@ import Utils from '../utils/utils'
 import { Size } from '../core/shared/math-utils'
 import { EditorAction, EditorDispatch, TextFormattingType } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
-import {
-  EditorState,
-  forUnderlyingTarget,
-  withUnderlyingTargetFromEditorState,
-} from './editor/store/editor-state'
+import { EditorState } from './editor/store/editor-state'
 import * as PP from '../core/shared/property-path'
 import { emptyComments } from '../core/workers/parser-printer/parser-printer-comments'
 import { ProjectContentTreeRoot } from './assets'
@@ -43,31 +39,26 @@ export function autosizingTextResizeNew(
   Utils.fastForEach(targets, (target) => {
     const element = MetadataUtils.findElementByElementPath(metadata, target)
 
-    forUnderlyingTarget(target, projectContents, nodeModules, openFile, (underlyingSuccess) => {
-      if (
-        element != null &&
-        MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element)
-      ) {
-        const updatedElementProps = ObjectPathImmutable.set(
-          element.props,
-          PP.toString(property),
-          newValue,
-        )
-        const updatedElement = {
-          ...element,
-          props: updatedElementProps,
-        }
-
-        if (updatedElement.props.textSizing === 'auto') {
-          changeAttachedToPromise = true
-          promises.push(
-            measureTextFieldNew(updatedElement).then((size: Size) => {
-              return [EditorActions.updateFrameDimensions(target, size.width, size.height)]
-            }),
-          )
-        }
+    if (element != null && MetadataUtils.isTextAgainstImports(element)) {
+      const updatedElementProps = ObjectPathImmutable.set(
+        element.props,
+        PP.toString(property),
+        newValue,
+      )
+      const updatedElement = {
+        ...element,
+        props: updatedElementProps,
       }
-    })
+
+      if (updatedElement.props.textSizing === 'auto') {
+        changeAttachedToPromise = true
+        promises.push(
+          measureTextFieldNew(updatedElement).then((size: Size) => {
+            return [EditorActions.updateFrameDimensions(target, size.width, size.height)]
+          }),
+        )
+      }
+    }
   })
 
   Promise.all(promises).then((actionArrays) => {
@@ -184,18 +175,13 @@ export function toggleTextFormatting(
   // Find all the text elements.
   let textElements: Array<ElementInstanceMetadata> = []
   const textElementPaths = editor.selectedViews.filter((selectedView) => {
-    return withUnderlyingTargetFromEditorState(selectedView, editor, false, (underlyingSuccess) => {
-      const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, selectedView)
-      if (
-        element != null &&
-        MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element)
-      ) {
-        textElements.push(element)
-        return true
-      } else {
-        return false
-      }
-    })
+    const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, selectedView)
+    if (element != null && MetadataUtils.isTextAgainstImports(element)) {
+      textElements.push(element)
+      return true
+    } else {
+      return false
+    }
   })
 
   if (textElements.length > 0) {

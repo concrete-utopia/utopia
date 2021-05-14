@@ -22,7 +22,7 @@ import {
   getJSXAttribute,
 } from '../../../core/shared/element-template'
 import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
@@ -55,6 +55,7 @@ export function createLookupRender(
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
+  imports: Imports,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactElement {
   let index = 0
 
@@ -102,6 +103,7 @@ export function createLookupRender(
       null,
       shouldIncludeCanvasRootInTheSpy,
       filePath,
+      imports,
     )
   }
 }
@@ -135,6 +137,7 @@ export function renderCoreElement(
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
+  imports: Imports,
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
@@ -164,6 +167,7 @@ export function renderCoreElement(
         null,
         shouldIncludeCanvasRootInTheSpy,
         filePath,
+        imports,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -180,6 +184,7 @@ export function renderCoreElement(
         jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         filePath,
+        imports,
       )
 
       const blockScope = {
@@ -213,6 +218,7 @@ export function renderCoreElement(
           codeError,
           shouldIncludeCanvasRootInTheSpy,
           filePath,
+          imports,
         )
         renderedChildren.push(renderResult)
       })
@@ -251,6 +257,7 @@ function renderJSXElement(
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
+  imports: Imports,
 ): React.ReactElement {
   if (elementPath == null) {
     throw new Error(`Utopia Error: the element renderer did not receive a ElementPath, key: ${key}`)
@@ -282,6 +289,7 @@ function renderJSXElement(
       codeError,
       shouldIncludeCanvasRootInTheSpy,
       filePath,
+      imports,
     )
   }
 
@@ -345,6 +353,7 @@ function renderJSXElement(
       inScope,
       jsxFactoryFunctionName,
       shouldIncludeCanvasRootInTheSpy,
+      imports,
     )
   } else {
     const childrenOrNull = childrenElements.length !== 0 ? childrenElements : null
