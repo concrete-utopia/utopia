@@ -340,6 +340,7 @@ function createFakeMetadataForJSXElement(
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
       label: props[PP.toString(PathForSceneDataLabel)],
+      importInfo: null,
     })
     elements.push(...children)
   } else if (isJSXFragment(element)) {
@@ -379,6 +380,7 @@ function createFakeMetadataForStoryboard(
     computedStyle: emptyComputedStyle,
     attributeMetadatada: emptyAttributeMetadatada,
     label: null,
+    importInfo: null,
   }
 }
 

@@ -53,8 +53,7 @@ import { mapDropNulls, safeIndex } from '../../../core/shared/array-utils'
 import { createLayoutPropertyPath } from '../../../core/layout/layout-helpers-new'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
-import { isSceneAgainstImports } from '../../../core/model/project-file-utils'
-import { withUnderlyingTarget } from '../../editor/store/editor-state'
+import { isSceneFromMetadata } from '../../../core/model/project-file-utils'
 
 // I feel comfortable having this function confined to this file only, since we absolutely shouldn't be trying
 // to set values that would fail whilst inserting elements. If that ever changes, this function should be binned
@@ -661,17 +660,7 @@ export class InsertModeControlContainer extends React.Component<
     const storyboardChildren = MetadataUtils.getAllStoryboardChildren(this.props.componentMetadata)
     const roots = mapDropNulls((child) => {
       if (isRight(child.element)) {
-        const childElement = child.element.value
-        const isScene = withUnderlyingTarget(
-          child.elementPath,
-          this.props.projectContents,
-          this.props.nodeModules,
-          this.props.openFile,
-          false,
-          (success) => {
-            return isSceneAgainstImports(childElement, success.imports)
-          },
-        )
+        const isScene = isSceneFromMetadata(child)
         if (isScene) {
           return child.elementPath
         } else {

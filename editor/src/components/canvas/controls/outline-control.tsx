@@ -18,24 +18,21 @@ import { fastForEach } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { colorTheme } from '../../../uuiui'
 import { useEditorState } from '../../editor/store/store-hook'
-import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../../editor/store/editor-state'
 
 export function getSelectionColor(
   path: ElementPath,
-  rootElements: Array<UtopiaJSXComponent>,
   metadata: ElementInstanceMetadataMap,
-  imports: Imports,
   focusedElementPath: ElementPath | null,
 ): string {
   if (EP.isInsideFocusedComponent(path)) {
-    if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {
+    if (MetadataUtils.isFocusableComponent(path, metadata)) {
       return colorTheme.canvasSelectionFocusableChild.value
     } else {
       return colorTheme.canvasSelectionNotFocusableChild.value
     }
   } else if (EP.isFocused(focusedElementPath, path)) {
     return colorTheme.canvasSelectionIsolatedComponent.value
-  } else if (MetadataUtils.isFocusableComponent(path, rootElements, metadata, imports)) {
+  } else if (MetadataUtils.isFocusableComponent(path, metadata)) {
     return colorTheme.canvasSelectionFocusable.value
   } else {
     return colorTheme.CanvasSelectionNotFocusable.value
@@ -136,18 +133,7 @@ export const OutlineControls = (props: OutlineControlsProps) => {
 
   const selectionColors = useEditorState((store) => {
     return targetPaths.map((path) => {
-      const result = getJSXComponentsAndImportsForPathInnerComponentFromState(
-        path,
-        store.editor,
-        store.derived,
-      )
-      return getSelectionColor(
-        path,
-        result.components,
-        store.editor.jsxMetadata,
-        result.imports,
-        store.editor.focusedElementPath,
-      )
+      return getSelectionColor(path, store.editor.jsxMetadata, store.editor.focusedElementPath)
     })
   }, 'OutlineControls')
 

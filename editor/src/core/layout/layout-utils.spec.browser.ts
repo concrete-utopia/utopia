@@ -91,6 +91,7 @@ describe('maybeSwitchLayoutProps', () => {
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
         label: null,
+        importInfo: null,
       },
       [EP.toString(elementPath)]: {
         elementPath: elementPath,
@@ -128,6 +129,7 @@ describe('maybeSwitchLayoutProps', () => {
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
         label: null,
+        importInfo: null,
       },
     }
 
