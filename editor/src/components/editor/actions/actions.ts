@@ -2909,6 +2909,7 @@ export const UPDATE_FNS = {
     actionsToRunAfterSave.push(updateFile(assetFilename, projectFile, true))
 
     // Side effects.
+    let editorWithToast = editor
     if (isLoggedIn(userState.loginState) && editor.id != null) {
       saveAssetToServer(notNullProjectID, action.fileType, action.base64, assetFilename)
         .then(() => {
@@ -2924,7 +2925,11 @@ export const UPDATE_FNS = {
           dispatch([showToast(notice(`Failed to upload ${assetFilename}`, 'ERROR'))])
         })
     } else {
-      dispatch([showToast(notice(`Please log in to upload assets`, 'ERROR', true))])
+      editorWithToast = UPDATE_FNS.ADD_TOAST(
+        showToast(notice(`Please log in to upload assets`, 'ERROR', true)),
+        editor,
+        dispatch,
+      )
     }
 
     const updatedProjectContents = addFileToProjectContents(
@@ -2973,7 +2978,11 @@ export const UPDATE_FNS = {
           )
           const size = width != null && height != null ? { width: width, height: height } : null
           const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
-          const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
+          const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(
+            switchMode,
+            editorWithToast,
+            derived,
+          )
           return {
             ...editorInsertEnabled,
             projectContents: updatedProjectContents,
@@ -3015,7 +3024,7 @@ export const UPDATE_FNS = {
           const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
-            ...editor,
+            ...editorWithToast,
             projectContents: updatedProjectContents,
           })
           return {
@@ -3035,7 +3044,7 @@ export const UPDATE_FNS = {
               true,
             ),
           )
-          return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+          return UPDATE_FNS.ADD_TOAST(toastAction, editorWithToast, dispatch)
         }
         case 'SAVE_IMAGE_DO_NOTHING':
           return editor
