@@ -385,9 +385,11 @@ export function JSXAttributesKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXAtt
 }
 
 export function JSXElementKeepDeepEquality(): KeepDeepEqualityCall<JSXElement> {
-  return combine3EqualityCalls(
+  return combine4EqualityCalls(
     (element) => element.name,
     JSXElementNameKeepDeepEqualityCall(),
+    (element) => element.uid,
+    createCallWithTripleEquals(),
     (element) => element.props,
     JSXAttributesKeepDeepEqualityCall(),
     (element) => element.children,

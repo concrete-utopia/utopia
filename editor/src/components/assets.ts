@@ -283,12 +283,12 @@ export function zipContentsTree(
       throw new Error(`Invalid state of both elements being false reached.`)
     } else {
       const shouldContinueDeeper = onElement(fullPath, firstContents, secondContents)
-      if (
-        isProjectContentDirectory(firstContents) &&
-        isProjectContentDirectory(secondContents) &&
-        shouldContinueDeeper
-      ) {
-        zipContentsTree(firstContents.children, secondContents.children, onElement)
+      if (isProjectContentDirectory(secondContents) && shouldContinueDeeper) {
+        zipContentsTree(
+          isProjectContentDirectory(firstContents) ? firstContents.children : {},
+          secondContents.children,
+          onElement,
+        )
       }
     }
   }
@@ -303,25 +303,29 @@ export async function zipContentsTreeAsync(
     secondContents: ProjectContentsTree | null,
   ) => Promise<boolean>,
 ): Promise<void> {
-  let keys: Set<string> = emptySet()
-  Object.keys(firstTree).forEach(keys.add, keys)
-  Object.keys(secondTree).forEach(keys.add, keys)
-  for (const key of keys) {
-    const firstContents = propOrNull(key, firstTree)
-    const secondContents = propOrNull(key, secondTree)
-    const fullPath = firstContents?.fullPath ?? secondContents?.fullPath
-    if (fullPath == null) {
-      throw new Error(`Invalid state of both elements being false reached.`)
-    } else {
-      // eslint-disable-next-line no-await-in-loop
-      const shouldContinueDeeper = await onElement(fullPath, firstContents, secondContents)
-      if (
-        isProjectContentDirectory(firstContents) &&
-        isProjectContentDirectory(secondContents) &&
-        shouldContinueDeeper
-      ) {
+  if (firstTree == secondTree) {
+    return Promise.resolve()
+  } else {
+    let keys: Set<string> = emptySet()
+    Object.keys(firstTree).forEach(keys.add, keys)
+    Object.keys(secondTree).forEach(keys.add, keys)
+    for (const key of keys) {
+      const firstContents = propOrNull(key, firstTree)
+      const secondContents = propOrNull(key, secondTree)
+      const fullPath = firstContents?.fullPath ?? secondContents?.fullPath
+      if (fullPath == null) {
+        throw new Error(`Invalid state of both elements being false reached.`)
+      } else {
         // eslint-disable-next-line no-await-in-loop
-        await zipContentsTreeAsync(firstContents.children, secondContents.children, onElement)
+        const shouldContinueDeeper = await onElement(fullPath, firstContents, secondContents)
+        if (isProjectContentDirectory(secondContents) && shouldContinueDeeper) {
+          // eslint-disable-next-line no-await-in-loop
+          await zipContentsTreeAsync(
+            isProjectContentDirectory(firstContents) ? firstContents.children : {},
+            secondContents.children,
+            onElement,
+          )
+        }
       }
     }
   }

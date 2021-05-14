@@ -79,6 +79,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app",
           },
         ],
         "name": Object {
@@ -126,6 +127,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene",
       },
     },
     "elementPath": Object {
@@ -223,6 +225,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app",
       },
     },
     "elementPath": Object {

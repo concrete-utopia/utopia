@@ -612,7 +612,7 @@ export interface SendLinterRequestMessage {
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ReadonlyArray<ElementInstanceMetadata>
-  cachedTreeRoots: Array<ElementPath>
+  cachedPaths: Array<ElementPath>
 }
 
 export interface SetProp {
@@ -810,6 +810,11 @@ export interface SetLoginState {
   loginState: LoginState
 }
 
+export interface SetFilebrowserDropTarget {
+  action: 'SET_FILEBROWSER_DROPTARGET'
+  target: string | null
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -943,6 +948,7 @@ export type EditorAction =
   | SetFollowSelectionEnabled
   | UpdateConfigFromVSCode
   | SetLoginState
+  | SetFilebrowserDropTarget
 
 export type DispatchPriority =
   | 'everyone'

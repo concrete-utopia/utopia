@@ -289,6 +289,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONFIG_FROM_VSCODE(action, state)
     case 'SET_FOLLOW_SELECTION_ENABLED':
       return UPDATE_FNS.SET_FOLLOW_SELECTION_ENABLED(action, state)
+    case 'SET_FILEBROWSER_DROPTARGET':
+      return UPDATE_FNS.SET_FILEBROWSER_DROPTARGET(action, state)
     default:
       return state
   }

@@ -87,6 +87,7 @@ export const setupBrowser = async (): Promise<{
   })
   const page = await browser.newPage()
   await page.setDefaultNavigationTimeout(120000)
+  await page.setDefaultTimeout(120000)
   await page.setViewport({ width: 1500, height: 768 })
   // page.on('console', (message) =>
   //   console.log(`${message.type().substr(0, 3).toUpperCase()} ${message.text()}`),
@@ -354,8 +355,8 @@ async function createSummaryPng(
       },
     ],
     xaxis: {
-      title: 'lower is better, ms / frame (16.67 = 60fps), 100 runs',
-      autorange: true,
+      title: 'lower is better, ms / frame (16.67 = 60fps), many runs, cutoff 200ms',
+      range: [0, 251],
       showgrid: true,
       zeroline: true,
       dtick: 16.67,

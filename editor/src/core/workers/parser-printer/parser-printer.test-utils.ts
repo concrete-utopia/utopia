@@ -547,10 +547,11 @@ export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
   }
   return FastCheck.tuple(
     jsxElementNameArbitrary(),
+    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
     jsxAttributesArbitrary(),
     FastCheck.array(childArbitrary, 3),
-  ).map(([elementName, elementAttributes, elementChildren]) => {
-    return jsxElement(elementName, elementAttributes, elementChildren)
+  ).map(([elementName, elementUID, elementAttributes, elementChildren]) => {
+    return jsxElement(elementName, elementUID, elementAttributes, elementChildren)
   })
 }
 

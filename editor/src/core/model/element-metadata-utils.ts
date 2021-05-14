@@ -970,6 +970,21 @@ export const MetadataUtils = {
       return null
     }
   },
+  getJSXElementNameFromMetadata(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): JSXElementName | null {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    if (element != null) {
+      if (isRight(element.element) && isJSXElement(element.element.value)) {
+        return element.element.value.name
+      } else {
+        return null
+      }
+    } else {
+      return null
+    }
+  },
   getJSXElementBaseName(path: ElementPath, components: Array<UtopiaJSXComponent>): string | null {
     const jsxElement = findElementAtPath(path, components)
     if (jsxElement != null) {
@@ -1372,6 +1387,10 @@ export const MetadataUtils = {
       MetadataUtils.getChildrenPaths(metadata, path).length === 0 &&
       MetadataUtils.isFocusableComponent(path, components, metadata, imports)
     )
+  },
+  isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return element?.isEmotionOrStyledComponent ?? false
   },
 }
 

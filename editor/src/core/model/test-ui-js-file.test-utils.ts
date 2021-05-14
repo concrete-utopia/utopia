@@ -63,6 +63,7 @@ const mainComponentForTests = utopiaJSXComponent(
   [],
   jsxElement(
     'View',
+    'aaa',
     jsxAttributesFromMap({
       layout: jsxAttributeNestedObjectSimple(
         jsxAttributesFromMap({
@@ -107,6 +108,7 @@ const mainComponentForTests = utopiaJSXComponent(
         [
           jsxElement(
             'Ellipse',
+            'bbb',
             jsxAttributesFromMap({
               layout: jsxAttributeValue(
                 {
@@ -129,6 +131,7 @@ const mainComponentForTests = utopiaJSXComponent(
           ),
           jsxElement(
             'Rectangle',
+            'ccc',
             jsxAttributesFromMap({
               layout: jsxAttributeValue(
                 {
@@ -154,6 +157,7 @@ const mainComponentForTests = utopiaJSXComponent(
       ),
       jsxElement(
         'View',
+        'ddd',
         jsxAttributesFromMap({
           layout: jsxAttributeValue(
             {
@@ -178,6 +182,7 @@ const mainComponentForTests = utopiaJSXComponent(
         [
           jsxElement(
             'Rectangle',
+            'eee',
             jsxAttributesFromMap({
               layout: jsxAttributeValue(
                 {
@@ -200,6 +205,7 @@ const mainComponentForTests = utopiaJSXComponent(
           ),
           jsxElement(
             'Rectangle',
+            'fff',
             jsxAttributesFromMap({
               layout: jsxAttributeValue(
                 {
@@ -224,6 +230,7 @@ const mainComponentForTests = utopiaJSXComponent(
       ),
       jsxElement(
         'View',
+        'ggg',
         jsxAttributesFromMap({
           layout: jsxAttributeNestedObjectSimple(
             jsxAttributesFromMap({
@@ -247,6 +254,7 @@ const mainComponentForTests = utopiaJSXComponent(
       ),
       jsxElement(
         'Text',
+        'hhh',
         jsxAttributesFromMap({
           layout: jsxAttributeValue(
             {
@@ -271,6 +279,7 @@ const mainComponentForTests = utopiaJSXComponent(
       ),
       jsxElement(
         'Image',
+        'iii',
         jsxAttributesFromMap({
           layout: jsxAttributeValue(
             {
@@ -289,6 +298,7 @@ const mainComponentForTests = utopiaJSXComponent(
       ),
       jsxElement(
         'MyComponent',
+        'mycomponent',
         jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('mycomponent', emptyComments) }),
         [],
       ),
@@ -308,6 +318,7 @@ const scene = utopiaJSXComponent(
   [],
   jsxElement(
     'View',
+    'jjj',
     jsxAttributesFromMap({
       style: jsxAttributeValue({ backgroundColor: 'green' }, emptyComments),
       'data-uid': jsxAttributeValue('jjj', emptyComments),
@@ -335,6 +346,7 @@ const Scene1 = defaultSceneElement(
   [
     jsxElement(
       MainComponentForTestsName,
+      TestMainComponentUID,
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue(TestMainComponentUID, emptyComments),
         style: jsxAttributeValue(
@@ -368,6 +380,7 @@ const TestStoryboard = utopiaJSXComponent(
   [],
   jsxElement(
     'Storyboard',
+    BakedInStoryboardUID,
     jsxAttributesFromMap({ 'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments) }),
     [Scene1, Scene2],
   ),

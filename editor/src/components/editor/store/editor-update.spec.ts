@@ -608,6 +608,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
+      'TestView',
       jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
       [],
     )
@@ -684,6 +685,7 @@ describe('INSERT_JSX_ELEMENT', () => {
 
     const elementToInsert = jsxElement(
       jsxElementName('View', []),
+      'TestView',
       jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('TestView', emptyComments) }),
       [],
     )

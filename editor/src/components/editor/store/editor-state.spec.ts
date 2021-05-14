@@ -58,7 +58,7 @@ describe('modifyUnderlyingTarget', () => {
           'data-thing',
           jsxAttributeValue('a thing', emptyComments),
         )
-        return jsxElement(element.name, updatedAttributes, element.children)
+        return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
     )
     const resultingCode = getCodeForFile(actualResult, '/src/app.js')
@@ -120,7 +120,7 @@ describe('modifyUnderlyingTarget', () => {
           'data-thing',
           jsxAttributeValue('a thing', emptyComments),
         )
-        return jsxElement(element.name, updatedAttributes, element.children)
+        return jsxElement(element.name, element.uid, updatedAttributes, element.children)
       },
     )
     const resultingCode = getCodeForFile(actualResult, '/src/card.js')
@@ -170,7 +170,7 @@ describe('modifyUnderlyingTarget', () => {
             'data-thing',
             jsxAttributeValue('a thing', emptyComments),
           )
-          return jsxElement(element.name, updatedAttributes, element.children)
+          return jsxElement(element.name, element.uid, updatedAttributes, element.children)
         },
       )
     expect(modifyCall).toThrowError(`Did not find element to transform moon-palace/living-room`)
@@ -188,7 +188,7 @@ describe('modifyUnderlyingTarget', () => {
             'data-thing',
             jsxAttributeValue('a thing', emptyComments),
           )
-          return jsxElement(element.name, updatedAttributes, element.children)
+          return jsxElement(element.name, element.uid, updatedAttributes, element.children)
         },
       )
     expect(modifyCall).toThrowError(`Could not proceed past /src/kitchen.js.`)

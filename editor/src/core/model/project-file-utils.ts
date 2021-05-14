@@ -185,6 +185,20 @@ export function isImportedComponent(jsxElementName: JSXElementName, imports: Imp
   })
 }
 
+export function isImportedComponentNPM(jsxElementName: JSXElementName, imports: Imports): boolean {
+  return Object.keys(imports).some((importKey) => {
+    const fromImports = imports[importKey]
+    if (importKey === 'utopia-api' || importKey.startsWith('.') || importKey.startsWith('/')) {
+      return false
+    } else {
+      return (
+        pluck(fromImports.importedFromWithin, 'name').includes(jsxElementName.baseVariable) ||
+        fromImports.importedWithName === jsxElementName.baseVariable
+      )
+    }
+  })
+}
+
 const defaultEmptyUtopiaComponent = EmptyUtopiaCanvasComponent
 
 export function getOrDefaultScenes(parsedSuccess: ParseSuccess): UtopiaJSXComponent {
