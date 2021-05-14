@@ -153,34 +153,3 @@ export function useTriggerSelectionPerformanceTest(): () => void {
   }, [dispatch, allPaths])
   return trigger
 }
-
-export function useTriggerBaselinePerformanceTest(): () => void {
-  const dispatch = useEditorState(
-    (store) => store.dispatch as DebugDispatch,
-    'useTriggerSelectionPerformanceTest dispatch',
-  )
-
-  const trigger = React.useCallback(async () => {
-    let count = 0
-    async function step() {
-      performance.mark(`baseline_step_${count}`)
-      await dispatch([]).entireUpdateFinished
-      performance.mark(`baseline_dispatch_finished_${count}`)
-      performance.measure(
-        `baseline_frame_${count}`,
-        `baseline_step_${count}`,
-        `baseline_dispatch_finished_${count}`,
-      )
-
-      count++
-      if (count < 68000) {
-        step()
-      } else {
-        requestAnimationFrame(() => console.info('BASELINE_TEST_FINISHED'))
-      }
-    }
-    step()
-  }, [dispatch])
-
-  return trigger
-}
