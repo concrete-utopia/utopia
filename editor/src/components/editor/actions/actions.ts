@@ -501,7 +501,7 @@ import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'
-import { absolutePathFromRelativePath } from '../../../utils/path-utils'
+import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 
 function applyUpdateToJSXElement(
@@ -3240,7 +3240,7 @@ export const UPDATE_FNS = {
         if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
           // Update assets.
           if (isLoggedIn(userState.loginState) && editor.id != null) {
-            updateAssetFileName(editor.id, action.oldPath, action.newPath)
+            updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
           }
         }
       })
