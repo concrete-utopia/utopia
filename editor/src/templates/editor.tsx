@@ -142,6 +142,7 @@ export class Editor {
         watchdogWorker,
       ),
       dispatch: this.boundDispatch,
+      alreadySaved: false,
     }
 
     const storeHook = create<EditorStore>((set) => this.storedState)

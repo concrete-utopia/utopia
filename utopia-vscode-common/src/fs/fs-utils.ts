@@ -1,5 +1,5 @@
 import { INDEXEDDB } from 'localforage'
-import { appendToPath } from '../path-utils'
+import { appendToPath, stripLeadingSlash, stripTrailingSlash } from '../path-utils'
 import { getItem, initializeStore, keys, removeItem, setItem } from './fs-core'
 import {
   FSError,
@@ -40,7 +40,11 @@ const existingFileError = (path: string) => handleError(eexist(path))
 const isDirectoryError = (path: string) => handleError(eisdir(path))
 const isNotDirectoryError = (path: string) => handleError(enotdir(path))
 
-export async function initializeFS(storeName: string, user: FSUser, driver: string = INDEXEDDB): Promise<void> {
+export async function initializeFS(
+  storeName: string,
+  user: FSUser,
+  driver: string = INDEXEDDB,
+): Promise<void> {
   fsUser = user
   await initializeStore(storeName, driver)
   await simpleCreateDirectoryIfMissing('/')
@@ -98,11 +102,13 @@ export async function readFileUnsavedContent(path: string): Promise<Uint8Array |
   return fileNode.unsavedContent
 }
 
-export async function readFileAsUTF8(path: string): Promise<{content: string, unsavedContent: string | null}> {
+export async function readFileAsUTF8(
+  path: string,
+): Promise<{ content: string; unsavedContent: string | null }> {
   const { content, unsavedContent } = await getFile(path)
   return {
     content: decoder.decode(content),
-    unsavedContent: unsavedContent == null ? null : decoder.decode(unsavedContent)
+    unsavedContent: unsavedContent == null ? null : decoder.decode(unsavedContent),
   }
 }
 
@@ -140,16 +146,23 @@ export async function getDescendentPaths(path: string): Promise<string[]> {
 async function targetsForOperation(path: string, recursive: boolean): Promise<string[]> {
   if (recursive) {
     const allDescendents = await getDescendentPaths(path)
-    return [path, ...allDescendents]
+    let result = [path, ...allDescendents]
+    result.sort()
+    result.reverse()
+    return result
   } else {
     return [path]
   }
 }
 
-function directoryOfPath(path: string): string | null {
-  const target = path.endsWith('/') ? path.slice(0, -1) : path
-  const lastSlashIndex = target.lastIndexOf('/')
-  return lastSlashIndex >= 0 ? path.slice(0, lastSlashIndex + 1) : null
+function getParentPath(path: string): string | null {
+  const withoutLeadingOrTrailingSlash = stripLeadingSlash(stripTrailingSlash(path))
+  const pathElems = withoutLeadingOrTrailingSlash.split('/')
+  if (pathElems.length <= 1) {
+    return null
+  } else {
+    return `/${pathElems.slice(0, -1).join('/')}`
+  }
 }
 
 function filenameOfPath(path: string): string {
@@ -160,8 +173,8 @@ function filenameOfPath(path: string): string {
 
 export async function childPaths(path: string): Promise<string[]> {
   const allDescendents = await getDescendentPaths(path)
-  const pathAsDir = path.endsWith('/') ? path : `${path}/`
-  return allDescendents.filter((k) => directoryOfPath(k) === pathAsDir)
+  const pathAsDir = stripTrailingSlash(path)
+  return allDescendents.filter((k) => getParentPath(k) === pathAsDir)
 }
 
 async function getDirectory(path: string): Promise<FSDirectory> {
@@ -175,7 +188,7 @@ async function getDirectory(path: string): Promise<FSDirectory> {
 
 async function getParent(path: string): Promise<FSNodeWithPath | null> {
   // null signifies we're already at the root
-  const parentPath = directoryOfPath(path)
+  const parentPath = getParentPath(path)
   if (parentPath == null) {
     return null
   } else {
@@ -228,7 +241,7 @@ async function simpleCreateDirectoryIfMissing(path: string): Promise<void> {
 
     // Attempt to mark the parent as modified, but don't fail if it doesn't exist
     // since it might not have been created yet
-    const parentPath = directoryOfPath(path)
+    const parentPath = getParentPath(path)
     if (parentPath != null) {
       const parentNode = await getItem(parentPath)
       if (parentNode != null) {
@@ -242,10 +255,16 @@ async function simpleCreateDirectoryIfMissing(path: string): Promise<void> {
 
 export async function ensureDirectoryExists(path: string): Promise<void> {
   const allPaths = allPathsUpToPath(path)
-  await Promise.all(allPaths.map(simpleCreateDirectoryIfMissing))
+  for (const pathToCreate of allPaths) {
+    await simpleCreateDirectoryIfMissing(pathToCreate)
+  }
 }
 
-export async function writeFile(path: string, content: Uint8Array, unsavedContent: Uint8Array | null): Promise<void> {
+export async function writeFile(
+  path: string,
+  content: Uint8Array,
+  unsavedContent: Uint8Array | null,
+): Promise<void> {
   const parent = await getParent(path)
   const maybeExistingFile = await getItem(path)
   if (maybeExistingFile != null && isDirectory(maybeExistingFile)) {
@@ -254,7 +273,8 @@ export async function writeFile(path: string, content: Uint8Array, unsavedConten
 
   const now = Date.now()
   const fileCTime = maybeExistingFile == null ? now : maybeExistingFile.ctime
-  const lastSavedTime = unsavedContent == null || maybeExistingFile == null ? now : maybeExistingFile.lastSavedTime
+  const lastSavedTime =
+    unsavedContent == null || maybeExistingFile == null ? now : maybeExistingFile.lastSavedTime
   const fileToWrite = fsFile(content, unsavedContent, fileCTime, now, lastSavedTime, fsUser)
   await setItem(path, fileToWrite)
   if (parent != null) {
@@ -266,20 +286,37 @@ export async function writeFileSavedContent(path: string, content: Uint8Array): 
   return writeFile(path, content, null)
 }
 
-export async function writeFileUnsavedContent(path: string, unsavedContent: Uint8Array): Promise<void> {
+export async function writeFileUnsavedContent(
+  path: string,
+  unsavedContent: Uint8Array,
+): Promise<void> {
   const savedContent = await readFileSavedContent(path)
   return writeFile(path, savedContent, unsavedContent)
 }
 
-export async function writeFileAsUTF8(path: string, content: string, unsavedContent: string | null): Promise<void> {
-  return writeFile(path, encoder.encode(content), unsavedContent == null ? null : encoder.encode(unsavedContent))
+export async function writeFileAsUTF8(
+  path: string,
+  content: string,
+  unsavedContent: string | null,
+): Promise<void> {
+  return writeFile(
+    path,
+    encoder.encode(content),
+    unsavedContent == null ? null : encoder.encode(unsavedContent),
+  )
 }
 
-export async function writeFileSavedContentAsUTF8(path: string, savedContent: string): Promise<void> {
+export async function writeFileSavedContentAsUTF8(
+  path: string,
+  savedContent: string,
+): Promise<void> {
   return writeFileAsUTF8(path, savedContent, null)
 }
 
-export async function writeFileUnsavedContentAsUTF8(path: string, unsavedContent: string): Promise<void> {
+export async function writeFileUnsavedContentAsUTF8(
+  path: string,
+  unsavedContent: string,
+): Promise<void> {
   return writeFileUnsavedContent(path, encoder.encode(unsavedContent))
 }
 
@@ -331,7 +368,9 @@ export async function deletePath(path: string, recursive: boolean): Promise<stri
 
   // Really this should fail if recursive isn't set to true when trying to delete a
   // non-empty directory, but for some reason VSCode doesn't provide an error suitable for that
-  await Promise.all(targets.map((p) => removeItem(p)))
+  for (const target of targets) {
+    await removeItem(target)
+  }
 
   if (parent != null) {
     await markModified(parent)

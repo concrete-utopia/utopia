@@ -63,7 +63,8 @@ import {
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import {
-  applyProjectContentChanges,
+  applyProjectChanges,
+  collateProjectChanges,
   sendCodeEditorDecorations,
   sendSelectedElement,
   sendSelectedElementChangedMessage,
@@ -84,6 +85,7 @@ import { CodeResultCache, generateCodeResultCache } from '../../custom-code/code
 import {
   reduxDevtoolsLogMessage,
   reduxDevtoolsSendActions,
+  reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
 
 export interface DispatchResult extends EditorStore {
@@ -186,6 +188,7 @@ function processAction(
       userState: working.userState,
       workers: working.workers,
       dispatch: dispatchEvent,
+      alreadySaved: working.alreadySaved,
     }
   }
 }
@@ -343,11 +346,12 @@ async function applyVSCodeChanges(
 ): Promise<void> {
   // Update the file system that is shared between Utopia and VS Code.
   if (oldStoredState.editor.id != null && !updateCameFromVSCode) {
-    await applyProjectContentChanges(
+    const changes = collateProjectChanges(
       oldStoredState.editor.id,
       oldStoredState.editor.projectContents,
       newEditorState.projectContents,
     )
+    await applyProjectChanges(changes)
   }
 
   // Keep the decorations synchronised from Utopia to VS Code.
@@ -356,6 +360,8 @@ async function applyVSCodeChanges(
   // Handle the selected element having changed to inform the user what is going on.
   await updateSelectedElementChanged(oldStoredState.editor, newEditorState)
 }
+
+let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
 export function editorDispatch(
   boundDispatch: EditorDispatch,
@@ -372,6 +378,9 @@ export function editorDispatch(
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
   })
+  const anyWorkerUpdates = dispatchedActions.some(
+    (action) => action.action === 'UPDATE_FROM_WORKER',
+  )
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
   const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
 
@@ -456,14 +465,36 @@ export function editorDispatch(
     }
   }
 
+  const alreadySaved = result.alreadySaved
+
   const isLoaded = frozenEditorState.isLoaded
   const shouldSave =
-    isLoaded && !isLoadAction && (!transientOrNoChange || anyUndoOrRedo) && isBrowserEnvironment
+    isLoaded &&
+    !isLoadAction &&
+    (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && alreadySaved)) &&
+    isBrowserEnvironment
+
+  const finalStore = {
+    editor: frozenEditorState,
+    derived: frozenDerivedState,
+    history: newHistory,
+    userState: result.userState,
+    workers: storedState.workers,
+    dispatch: boundDispatch,
+    nothingChanged: result.nothingChanged,
+    entireUpdateFinished: Promise.all([
+      result.entireUpdateFinished,
+      editorWithModelChecked.modelUpdateFinished,
+    ]),
+    alreadySaved: alreadySaved || shouldSave,
+  }
+
   if (shouldSave) {
     save(frozenEditorState, boundDispatch, storedState.userState.loginState, saveType, forceSave)
     const stateToStore = storedEditorStateFromEditorState(storedState.editor)
     saveStoredState(storedState.editor.id, stateToStore)
     notifyTsWorker(frozenEditorState, storedState.editor, storedState.workers)
+    reduxDevtoolsUpdateState('Save Editor', finalStore)
   }
 
   const updatedFromVSCode = dispatchedActions.some(isFromVSCode)
@@ -474,9 +505,12 @@ export function editorDispatch(
     )
   }
 
-  applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
-    console.error('Error sending updates to VS Code', error)
-  })
+  // Chain off of the previous one to ensure the ordering is maintained.
+  applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(() =>
+    applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
+      console.error('Error sending updates to VS Code', error)
+    }),
+  )
 
   if (nameUpdated && frozenEditorState.id != null) {
     pushProjectURLToBrowserHistory(
@@ -496,19 +530,7 @@ export function editorDispatch(
     storedState.workers.initWatchdogWorker(frozenEditorState.id)
   }
 
-  return {
-    editor: frozenEditorState,
-    derived: frozenDerivedState,
-    history: newHistory,
-    userState: result.userState,
-    workers: storedState.workers,
-    dispatch: boundDispatch,
-    nothingChanged: result.nothingChanged,
-    entireUpdateFinished: Promise.all([
-      result.entireUpdateFinished,
-      editorWithModelChecked.modelUpdateFinished,
-    ]),
-  }
+  return finalStore
 }
 
 function editorDispatchInner(
@@ -623,6 +645,7 @@ function editorDispatchInner(
       dispatch: boundDispatch,
       nothingChanged: editorStayedTheSame,
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
+      alreadySaved: storedState.alreadySaved,
     }
   } else {
     //empty return
@@ -655,7 +678,6 @@ async function save(
   saveType: SaveType,
   forceServerSave: boolean,
 ) {
-  reduxDevtoolsLogMessage('Save Editor') // I'd like to leave this log line here for a day or so, so I can debug what action triggers the save
   const modelChange =
     saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
   const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null

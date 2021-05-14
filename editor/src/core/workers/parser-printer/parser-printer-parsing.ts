@@ -1551,6 +1551,11 @@ function buildHighlightBounds(
   }
 }
 
+interface UpdateUIDResult {
+  uid: string
+  attributes: WithParserMetadata<JSXAttributes>
+}
+
 function forciblyUpdateDataUID(
   sourceFile: TS.SourceFile,
   originatingElement: TS.Node,
@@ -1558,7 +1563,7 @@ function forciblyUpdateDataUID(
   props: JSXAttributes,
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
-): WithParserMetadata<JSXAttributes> {
+): UpdateUIDResult {
   const hash = Hash({
     fileName: sourceFile.fileName,
     name: name,
@@ -1571,15 +1576,18 @@ function forciblyUpdateDataUID(
     'data-uid',
     jsxAttributeValue(uid, emptyComments),
   )
-  return withParserMetadata(
-    updatedProps,
-    {
-      ...existingHighlightBounds,
-      [uid]: buildHighlightBounds(sourceFile, originatingElement, uid),
-    },
-    [],
-    [],
-  )
+  return {
+    uid: uid,
+    attributes: withParserMetadata(
+      updatedProps,
+      {
+        ...existingHighlightBounds,
+        [uid]: buildHighlightBounds(sourceFile, originatingElement, uid),
+      },
+      [],
+      [],
+    ),
+  }
 }
 
 function createJSXElementAllocatingUID(
@@ -1592,7 +1600,7 @@ function createJSXElementAllocatingUID(
   alreadyExistingUIDs: Set<string>,
 ): WithParserMetadata<SuccessfullyParsedElement> {
   const dataUIDAttribute = parseUID(props)
-  const updatedProps = foldEither(
+  const { uid: newUID, attributes: updatedProps } = foldEither(
     (_) =>
       forciblyUpdateDataUID(
         sourceFile,
@@ -1614,15 +1622,18 @@ function createJSXElementAllocatingUID(
           alreadyExistingUIDs,
         )
       } else {
-        return withParserMetadata(
-          props,
-          {
-            ...existingHighlightBounds,
-            [uid]: buildHighlightBounds(sourceFile, originatingElement, uid),
-          },
-          [],
-          [],
-        )
+        return {
+          uid: uid,
+          attributes: withParserMetadata(
+            props,
+            {
+              ...existingHighlightBounds,
+              [uid]: buildHighlightBounds(sourceFile, originatingElement, uid),
+            },
+            [],
+            [],
+          ),
+        }
       }
     },
     dataUIDAttribute,
@@ -1633,7 +1644,7 @@ function createJSXElementAllocatingUID(
   )
   return withParserMetadata(
     {
-      value: jsxElement(name, updatedProps.value, children),
+      value: jsxElement(name, newUID, updatedProps.value, children),
       startLine: startPosition.line,
       startColumn: startPosition.character,
     },

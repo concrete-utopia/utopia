@@ -166,6 +166,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
                     propertyElements: [],
                   },
                 },
+                uid: 'aaa',
                 props: jsxAttributesFromMap({
                   style: {
                     type: 'ATTRIBUTE_NESTED_OBJECT',

@@ -4,7 +4,13 @@ import * as Path from 'path'
 import * as pathParse from 'path-parse'
 import * as R from 'ramda'
 import * as React from 'react'
-import { ConnectableElement, ConnectDragPreview, useDrag, useDrop } from 'react-dnd'
+import {
+  ConnectableElement,
+  ConnectDragPreview,
+  DragObjectWithType,
+  useDrag,
+  useDrop,
+} from 'react-dnd'
 import { codeFile, ProjectFileType } from '../../core/shared/project-file-types'
 import { parseClipboardData } from '../../utils/clipboard'
 import Utils from '../../utils/utils'
@@ -32,6 +38,7 @@ import {
   Button,
 } from '../../uuiui'
 import { notice } from '../common/notice'
+import { appendToPath, getParentDirectory } from '../../utils/path-utils'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -39,6 +46,7 @@ export interface FileBrowserItemProps extends FileBrowserItemInfo {
   key: string
   dispatch: EditorDispatch
   collapsed: boolean
+  dropTarget: string | null
   toggleCollapse: (filePath: string) => void
   Expand: (filePath: string) => void
   setSelected: (selectedItem: FileBrowserItemInfo | null) => void
@@ -69,24 +77,25 @@ function onDrop(
     const isRootArea = draggedOntoProps.fileType != null
     if (
       draggedOntoProps.fileType == null ||
-      draggedOntoProps.fileType === 'DIRECTORY' ||
+      (draggedOntoProps.dropTarget != null &&
+        draggedOntoProps.path.includes(draggedOntoProps.dropTarget)) ||
       isRootArea
     ) {
-      let newFilePath = draggedProps.path
-      if (
-        isRootArea &&
-        (draggedOntoProps.fileType == null || draggedOntoProps.fileType !== 'DIRECTORY')
-      ) {
-        newFilePath = R.last(draggedProps.path.split('/')) as string
-      } else {
-        newFilePath = `${draggedOntoProps.path}/${R.last(draggedProps.path.split('/')) as string}`
-      }
+      const newDirectory = draggedOntoProps.dropTarget != null ? draggedOntoProps.dropTarget : '/'
+      const newFilePath = appendToPath(newDirectory, R.last(draggedProps.path.split('/')) as string)
       if (draggedProps.path !== newFilePath && draggedProps.path !== draggedOntoProps.path) {
         draggedOntoProps.dispatch(
-          [EditorActions.updateFilePath(draggedProps.path, newFilePath)],
+          [
+            EditorActions.updateFilePath(draggedProps.path, newFilePath),
+            EditorActions.setFilebrowserDropTarget(null),
+          ],
           'everyone',
         )
+      } else {
+        draggedOntoProps.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'everyone')
       }
+    } else {
+      draggedOntoProps.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'everyone')
     }
   }
 }
@@ -387,8 +396,7 @@ class FileBrowserItemInner extends React.PureComponent<
             : 'File'
           : 'this'
       }`,
-      enabled:
-        this.props.fileType != null && canRename(this.props) && this.props.fileType !== 'DIRECTORY',
+      enabled: this.props.fileType != null && canRename(this.props),
       action: () => {
         this.props.dispatch(
           [EditorActions.setFilebrowserRenamingTarget(this.props.path)],
@@ -439,6 +447,7 @@ class FileBrowserItemInner extends React.PureComponent<
       let actions: Array<EditorAction> = []
       Utils.fastForEach(result.files, (resultFile: FileResult) => {
         let targetPath: string | null = null
+        let replace = false
         switch (this.props.fileType) {
           case 'DIRECTORY':
             // Put the image "into" the directory.
@@ -448,13 +457,14 @@ class FileBrowserItemInner extends React.PureComponent<
           case 'IMAGE_FILE':
             // Overwrite the image.
             targetPath = this.props.path
+            replace = true
             break
           default:
           // Do nothing, overwriting an image onto a UI file seems wrong.
         }
 
         if (targetPath != null) {
-          actions.push(fileResultUploadAction(resultFile, targetPath))
+          actions.push(fileResultUploadAction(resultFile, targetPath, replace))
         }
       })
       this.props.dispatch(actions, 'everyone')
@@ -490,6 +500,14 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   onDragEnter = (e: React.DragEvent) => {
+    // this disables react-dnd while dropping external files
+    if (
+      this.props.isOver ||
+      (e.dataTransfer?.items != null &&
+        Array.from(e.dataTransfer?.items).filter((item) => item.kind === 'file').length === 0)
+    ) {
+      return
+    }
     this.setState((prevState) => {
       return {
         currentExternalFilesDragEventCounter: prevState.currentExternalFilesDragEventCounter + 1,
@@ -551,9 +569,12 @@ class FileBrowserItemInner extends React.PureComponent<
     }
   }
 
+  isCurrentDropTargetForInternalFiles = () => {
+    return this.props.dropTarget === this.props.path
+  }
+
   render() {
-    const isCurrentDropTargetForInternalFiles =
-      this.props.isOver && this.props.fileType === 'DIRECTORY'
+    const isCurrentDropTargetForInternalFiles = this.isCurrentDropTargetForInternalFiles()
     const isCurrentDropTargetForExternalFiles =
       this.state.externalFilesDraggedIn && this.props.fileType === 'DIRECTORY'
 
@@ -637,6 +658,18 @@ class FileBrowserItemInner extends React.PureComponent<
               {this.renderIcon()}
               {this.renderLabel()}
               {this.renderModifiedIcon()}
+              {this.props.isUploadedAssetFile ? (
+                <span
+                  style={{
+                    border: '1px solid primary',
+                    padding: '2px 4px',
+                    fontSize: 9,
+                    color: colorTheme.primary.value,
+                  }}
+                >
+                  S3
+                </span>
+              ) : null}
             </div>,
           )}
           {this.props.type === 'file' ? (
@@ -711,9 +744,14 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 }
 
+interface FilebrowserDragItem extends DragObjectWithType {
+  type: 'filebrowser'
+  props: FileBrowserItemProps
+}
+
 export function FileBrowserItem(props: FileBrowserItemProps) {
   const [{ isDragging }, drag, dragPreview] = useDrag({
-    item: { type: 'filebrowser', id: props },
+    item: { type: 'filebrowser', props: props } as FilebrowserDragItem,
     canDrag: () => canDragnDrop(props),
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
@@ -730,7 +768,13 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
       if (didDrop) {
         onDrop(monitor.getDropResult(), props)
       } else {
-        props.dispatch([EditorActions.switchEditorMode(EditorModes.selectMode())], 'everyone')
+        props.dispatch(
+          [
+            EditorActions.switchEditorMode(EditorModes.selectMode()),
+            EditorActions.setFilebrowserDropTarget(null),
+          ],
+          'everyone',
+        )
       }
     },
   })
@@ -738,6 +782,20 @@ export function FileBrowserItem(props: FileBrowserItemProps) {
     accept: 'filebrowser',
     canDrop: () => true,
     drop: () => props,
+    hover: (item: FilebrowserDragItem) => {
+      const targetDirectory =
+        props.fileType === 'DIRECTORY' ? props.path : getParentDirectory(props.path)
+      // do not trigger highlight when it tries to move to it's descendant directories
+      if (targetDirectory.includes(item.props.path)) {
+        if (props.dropTarget != null) {
+          props.dispatch([EditorActions.setFilebrowserDropTarget(null)], 'leftpane')
+        }
+      } else {
+        if (props.dropTarget !== targetDirectory) {
+          props.dispatch([EditorActions.setFilebrowserDropTarget(targetDirectory)], 'leftpane')
+        }
+      }
+    },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),

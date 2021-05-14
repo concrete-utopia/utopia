@@ -115,6 +115,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -162,6 +163,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -280,6 +282,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -410,6 +413,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map(n => {
@@ -560,6 +564,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -675,6 +680,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -785,6 +791,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -895,6 +902,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -1060,6 +1068,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -1107,6 +1116,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -1225,6 +1235,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -1415,6 +1426,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -1585,6 +1597,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -1632,6 +1645,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -1750,6 +1764,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -1857,6 +1872,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "567",
       },
     },
     "elementPath": Object {
@@ -2050,6 +2066,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -2097,6 +2114,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -2215,6 +2233,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -2381,6 +2400,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "aaa",
               },
             },
             "javascript": "[1, 2, 3].map(n => {
@@ -2460,6 +2480,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -2604,6 +2625,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -2749,6 +2771,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -2894,6 +2917,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -3126,6 +3150,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -3173,6 +3198,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -3291,6 +3317,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -3472,6 +3499,7 @@ Object {
                           },
                         ],
                         "type": "JSX_ELEMENT",
+                        "uid": "bbb",
                       },
                     },
                     "javascript": "[4, 5, 6].map(m => {
@@ -3557,6 +3585,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "aaa",
               },
             },
             "javascript": "[1, 2, 3].map(n => {
@@ -3651,6 +3680,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -3810,6 +3840,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[4, 5, 6].map(m => {
@@ -3895,6 +3926,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -4046,6 +4078,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -4198,6 +4231,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -4350,6 +4384,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -4511,6 +4546,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[4, 5, 6].map(m => {
@@ -4596,6 +4632,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -4747,6 +4784,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -4899,6 +4937,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -5051,6 +5090,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -5212,6 +5252,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[4, 5, 6].map(m => {
@@ -5297,6 +5338,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -5448,6 +5490,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -5600,6 +5643,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -5752,6 +5796,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -5928,6 +5973,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -5975,6 +6021,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -6093,6 +6140,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -6231,6 +6279,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "aaa",
           },
           Object {
             "children": Array [],
@@ -6258,6 +6307,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -6284,6 +6334,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -6377,6 +6428,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -6471,6 +6523,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -6634,6 +6687,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -6681,6 +6735,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -6799,6 +6854,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -6976,6 +7032,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -7163,6 +7220,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -7210,6 +7268,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -7328,6 +7387,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -7502,6 +7562,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map((n) =>
@@ -7582,6 +7643,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -7733,6 +7795,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -7900,6 +7963,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -8067,6 +8131,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -8263,6 +8328,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -8310,6 +8376,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -8428,6 +8495,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -8602,6 +8670,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map((n) =>
@@ -8682,6 +8751,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -8833,6 +8903,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -9000,6 +9071,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -9167,6 +9239,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -9357,6 +9430,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -9404,6 +9478,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -9522,6 +9597,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -9660,6 +9736,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "aaa",
           },
           Object {
             "children": Array [],
@@ -9687,6 +9764,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -9713,6 +9791,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -9806,6 +9885,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -9914,6 +9994,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -10103,6 +10184,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -10150,6 +10232,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -10268,6 +10351,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -10384,6 +10468,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "aaa",
               },
             },
             "javascript": "[1, 2].map(data => {
@@ -10463,6 +10548,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -10556,6 +10642,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -10664,6 +10751,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -10867,6 +10955,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -10914,6 +11003,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -11045,6 +11135,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -11248,6 +11339,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -11372,6 +11464,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -11551,6 +11644,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -11770,6 +11864,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -11817,6 +11912,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -11948,6 +12044,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -12151,6 +12248,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -12275,6 +12373,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -12454,6 +12553,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -12662,6 +12762,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -12709,6 +12810,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -12840,6 +12942,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -13091,6 +13194,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -13215,6 +13319,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -13442,6 +13547,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -13656,6 +13762,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -13703,6 +13810,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -13834,6 +13942,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -14085,6 +14194,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -14209,6 +14319,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -14436,6 +14547,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -14623,6 +14735,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -14670,6 +14783,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -14788,6 +14902,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -14895,6 +15010,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -15192,6 +15308,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -15239,6 +15356,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -15357,6 +15475,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -15737,6 +15856,7 @@ export var storyboard = (props) => {
                       },
                     ],
                     "type": "JSX_ELEMENT",
+                    "uid": "834",
                   },
                   "999": Object {
                     "children": Array [
@@ -15891,6 +16011,7 @@ export var storyboard = (props) => {
                           },
                         ],
                         "type": "JSX_ELEMENT",
+                        "uid": "000",
                       },
                     ],
                     "name": Object {
@@ -16042,6 +16163,7 @@ export var storyboard = (props) => {
                       },
                     ],
                     "type": "JSX_ELEMENT",
+                    "uid": "999",
                   },
                 },
                 "javascript": "keyboardShortcuts.map((pair) =>
@@ -16210,6 +16332,7 @@ export var storyboard = (props) => {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "03a",
           },
         ],
         "name": Object {
@@ -16537,6 +16660,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -16899,6 +17023,7 @@ export var storyboard = (props) => {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "834",
               },
               "999": Object {
                 "children": Array [
@@ -17053,6 +17178,7 @@ export var storyboard = (props) => {
                       },
                     ],
                     "type": "JSX_ELEMENT",
+                    "uid": "000",
                   },
                 ],
                 "name": Object {
@@ -17204,6 +17330,7 @@ export var storyboard = (props) => {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "999",
               },
             },
             "javascript": "keyboardShortcuts.map((pair) =>
@@ -17372,6 +17499,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "03a",
       },
     },
     "elementPath": Object {
@@ -17726,6 +17854,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "834",
       },
     },
     "elementPath": Object {
@@ -18068,6 +18197,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "834",
       },
     },
     "elementPath": Object {
@@ -18410,6 +18540,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "834",
       },
     },
     "elementPath": Object {
@@ -18633,6 +18764,7 @@ export var storyboard = (props) => {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "000",
           },
         ],
         "name": Object {
@@ -18784,6 +18916,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "999",
       },
     },
     "elementPath": Object {
@@ -19009,6 +19142,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "000",
       },
     },
     "elementPath": Object {
@@ -19253,6 +19387,7 @@ export var storyboard = (props) => {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "000",
           },
         ],
         "name": Object {
@@ -19404,6 +19539,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "999",
       },
     },
     "elementPath": Object {
@@ -19625,6 +19761,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "000",
       },
     },
     "elementPath": Object {
@@ -19865,6 +20002,7 @@ export var storyboard = (props) => {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "000",
           },
         ],
         "name": Object {
@@ -20016,6 +20154,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "999",
       },
     },
     "elementPath": Object {
@@ -20237,6 +20376,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "000",
       },
     },
     "elementPath": Object {
@@ -20431,6 +20571,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -20478,6 +20619,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -20596,6 +20738,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -20749,6 +20892,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "aaa",
           },
           Object {
             "children": Array [],
@@ -20791,6 +20935,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -20817,6 +20962,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -20925,6 +21071,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -21049,6 +21196,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -21228,6 +21376,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -21275,6 +21424,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -21393,6 +21543,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -21562,6 +21713,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -21724,6 +21876,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -21771,6 +21924,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -21889,6 +22043,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -22121,6 +22276,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -22278,6 +22434,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -22325,6 +22482,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "fff",
       },
     },
     "elementPath": Object {
@@ -22422,6 +22580,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -22610,6 +22769,7 @@ export var storyboard = (
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -22655,6 +22815,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -22817,6 +22978,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -23041,6 +23203,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -23088,6 +23251,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -23206,6 +23370,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -23353,6 +23518,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "dd5",
               },
             ],
             "name": Object {
@@ -23399,6 +23565,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "d59",
           },
         ],
         "name": Object {
@@ -23443,6 +23610,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -23579,6 +23747,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "dd5",
           },
         ],
         "name": Object {
@@ -23625,6 +23794,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "d59",
       },
     },
     "elementPath": Object {
@@ -23760,6 +23930,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "dd5",
       },
     },
     "elementPath": Object {
@@ -23957,6 +24128,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -24004,6 +24176,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -24135,6 +24308,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -24281,6 +24455,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -24404,6 +24579,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -24526,6 +24702,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -24710,6 +24887,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -24757,6 +24935,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -24875,6 +25054,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -25049,6 +25229,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map((n) =>
@@ -25129,6 +25310,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -25280,6 +25462,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -25447,6 +25630,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -25614,6 +25798,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -25810,6 +25995,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -25857,6 +26043,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -25975,6 +26162,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -26150,6 +26338,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map((div) =>
@@ -26230,6 +26419,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -26382,6 +26572,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -26550,6 +26741,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -26718,6 +26910,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -26914,6 +27107,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -26961,6 +27155,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -27079,6 +27274,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -27254,6 +27450,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "nestedThings.map(({ a: { b: { c: [n] } } }) =>
@@ -27340,6 +27537,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -27491,6 +27689,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -27658,6 +27857,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -27825,6 +28025,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -27990,6 +28191,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -28052,6 +28254,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -28150,6 +28353,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -28256,6 +28460,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -28355,6 +28560,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -28496,6 +28702,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -28543,6 +28750,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ddd",
       },
     },
     "elementPath": Object {
@@ -28640,6 +28848,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -28776,6 +28985,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -28862,6 +29072,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -28977,6 +29188,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -29124,6 +29336,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -29171,6 +29384,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ddd",
       },
     },
     "elementPath": Object {
@@ -29268,6 +29482,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -29368,6 +29583,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "card",
       },
     },
     "elementPath": Object {
@@ -29524,6 +29740,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -29571,6 +29788,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene",
       },
     },
     "elementPath": Object {
@@ -29668,6 +29886,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -29919,6 +30138,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -30066,6 +30286,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -30113,6 +30334,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene",
       },
     },
     "elementPath": Object {
@@ -30210,6 +30432,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -30325,6 +30548,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "BBB",
       },
     },
     "elementPath": Object {
@@ -30511,6 +30735,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app",
           },
         ],
         "name": Object {
@@ -30558,6 +30783,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "fff",
       },
     },
     "elementPath": Object {
@@ -30676,6 +30902,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app",
       },
     },
     "elementPath": Object {
@@ -30850,6 +31077,7 @@ Object {
                           },
                         ],
                         "type": "JSX_ELEMENT",
+                        "uid": "ccc",
                       },
                     ],
                     "longForm": false,
@@ -30914,6 +31142,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             ],
             "longForm": true,
@@ -30958,6 +31187,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "ddd",
           },
         ],
         "name": Object {
@@ -31099,6 +31329,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -31242,6 +31473,7 @@ export var storyboard = (
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "ccc",
               },
             ],
             "longForm": false,
@@ -31306,6 +31538,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -31438,6 +31671,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ccc",
       },
     },
     "elementPath": Object {
@@ -31544,6 +31778,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ddd",
       },
     },
     "elementPath": Object {
@@ -31712,6 +31947,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -31759,6 +31995,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -31877,6 +32114,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -32016,6 +32254,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -32042,6 +32281,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -32150,6 +32390,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -32317,6 +32558,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -32364,6 +32606,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -32483,6 +32726,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -32591,6 +32835,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -32800,6 +33045,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -32847,6 +33093,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -32965,6 +33212,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -33136,6 +33384,7 @@ Object {
                       },
                     ],
                     "type": "JSX_ELEMENT",
+                    "uid": "ccc",
                   },
                 ],
                 "name": Object {
@@ -33162,6 +33411,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map(n => {
@@ -33248,6 +33498,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -33397,6 +33648,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "ccc",
           },
         ],
         "name": Object {
@@ -33423,6 +33675,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -33571,6 +33824,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ccc",
       },
     },
     "elementPath": Object {
@@ -33722,6 +33976,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "ccc",
           },
         ],
         "name": Object {
@@ -33748,6 +34003,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -33896,6 +34152,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ccc",
       },
     },
     "elementPath": Object {
@@ -34047,6 +34304,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "ccc",
           },
         ],
         "name": Object {
@@ -34073,6 +34331,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -34221,6 +34480,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ccc",
       },
     },
     "elementPath": Object {
@@ -34387,6 +34647,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -34434,6 +34695,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -34552,6 +34814,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -34659,6 +34922,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -34846,6 +35110,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -34893,6 +35158,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -35011,6 +35277,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -35143,6 +35410,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "cloned",
               },
             ],
             "name": Object {
@@ -35169,6 +35437,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "cloner",
           },
         ],
         "name": Object {
@@ -35195,6 +35464,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -35312,6 +35582,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "cloned",
           },
         ],
         "name": Object {
@@ -35338,6 +35609,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "cloner",
       },
     },
     "elementPath": Object {
@@ -35452,6 +35724,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "cloned",
       },
     },
     "elementPath": Object {
@@ -35616,6 +35889,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -35663,6 +35937,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -35781,6 +36056,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {

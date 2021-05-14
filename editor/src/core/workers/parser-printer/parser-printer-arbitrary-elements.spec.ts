@@ -207,6 +207,7 @@ export var whatever = props => (
       [],
       jsxElement(
         'div',
+        'abc',
         jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('abc', emptyComments) }),
         [],
       ),
@@ -230,6 +231,7 @@ export var whatever = props => (
       {
         aab: jsxElement(
           'MyComp',
+          'aab',
           jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aab', emptyComments) }),
           [],
         ),
@@ -237,6 +239,7 @@ export var whatever = props => (
     )
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('aaa', emptyComments) }),
       [codeBlock],
     )
@@ -279,6 +282,7 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -302,6 +306,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
+              'aab',
               jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
@@ -377,6 +382,7 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -400,6 +406,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
+              'aab',
               jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
@@ -488,6 +495,7 @@ export var whatever = (props) => {
 });`
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -505,6 +513,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
+              'aab',
               jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
@@ -576,6 +585,7 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -598,12 +608,14 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'div',
+              'aab',
               jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
               }),
               [
                 jsxElement(
                   'div',
+                  'aac',
                   jsxAttributesFromMap({
                     'data-uid': jsxAttributeValue('aac', emptyComments),
                   }),
@@ -678,6 +690,7 @@ export var whatever = (props) => {
 });`
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -695,6 +708,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
+              'aab',
               jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(
@@ -766,6 +780,7 @@ export var whatever = (props) => {
     const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -788,12 +803,14 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'div',
+              'aab',
               jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
               }),
               [
                 jsxElement(
                   'div',
+                  'aac',
                   jsxAttributesFromMap({
                     'data-uid': jsxAttributeValue('aac', emptyComments),
                   }),
@@ -868,6 +885,7 @@ export var whatever = (props) => {
 });`
     const view = jsxElement(
       'View',
+      'aaa',
       jsxAttributesFromMap({
         'data-uid': jsxAttributeValue('aaa', emptyComments),
       }),
@@ -885,6 +903,7 @@ export var whatever = (props) => {
           {
             aab: jsxElement(
               'View',
+              'aab',
               jsxAttributesFromMap({
                 'data-uid': jsxAttributeValue('aab', emptyComments),
                 thing: jsxAttributeOtherJavaScript(

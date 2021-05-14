@@ -80,7 +80,7 @@ export function mapScene(scene: SceneMetadata): JSXElement {
     'data-uid': jsxAttributeValue(scene.uid, emptyComments),
     'data-label': jsxAttributeValue(scene.label, emptyComments),
   })
-  return jsxElement('Scene', sceneProps, [])
+  return jsxElement('Scene', scene.uid, sceneProps, [])
 }
 
 export function unmapScene(element: JSXElementChild): SceneMetadata | null {
@@ -131,6 +131,7 @@ export function convertScenesToUtopiaCanvasComponent(
     [],
     jsxElement(
       'Storyboard',
+      BakedInStoryboardUID,
       jsxAttributesFromMap({ 'data-uid': jsxAttributeValue(BakedInStoryboardUID, emptyComments) }),
       scenes.map(mapScene),
     ),
@@ -161,14 +162,14 @@ export function createSceneFromComponent(componentImportedAs: string, uid: strin
       emptyComments,
     ),
   })
-  return jsxElement('Scene', sceneProps, [])
+  return jsxElement('Scene', uid, sceneProps, [])
 }
 
 export function createStoryboardElement(scenes: Array<JSXElement>, uid: string): JSXElement {
   const storyboardProps = jsxAttributesFromMap({
     [UTOPIA_UIDS_KEY]: jsxAttributeValue(uid, emptyComments),
   })
-  return jsxElement('Storyboard', storyboardProps, scenes)
+  return jsxElement('Storyboard', uid, storyboardProps, scenes)
 }
 
 export function convertUtopiaCanvasComponentToScenes(

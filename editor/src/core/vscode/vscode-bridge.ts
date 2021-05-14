@@ -4,6 +4,7 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
   walkContentsTreeAsync,
+  zipContentsTree,
   zipContentsTreeAsync,
 } from '../../components/assets'
 import { EditorDispatch } from '../../components/editor/action-types'
@@ -77,11 +78,7 @@ function fromFSPath(fsPath: string): string {
   }
 }
 
-async function writeProjectFile(
-  projectID: string,
-  projectPath: string,
-  file: ProjectFile,
-): Promise<void> {
+async function writeProjectFile(projectPath: string, file: ProjectFile): Promise<void> {
   switch (file.type) {
     case 'DIRECTORY': {
       return ensureDirectoryExists(toFSPath(projectPath))
@@ -111,14 +108,11 @@ async function textFileDiffers(projectPath: string, file: TextFile): Promise<boo
   )
 }
 
-async function writeProjectContents(
-  projectID: string,
-  projectContents: ProjectContentTreeRoot,
-): Promise<void> {
+async function writeProjectContents(projectContents: ProjectContentTreeRoot): Promise<void> {
   await walkContentsTreeAsync(projectContents, async (fullPath, file) => {
     // Avoid pushing a file to the file system if the content hasn't changed.
     if ((isTextFile(file) && (await textFileDiffers(fullPath, file))) || isDirectory(file)) {
-      return writeProjectFile(projectID, fullPath, file)
+      return writeProjectFile(fullPath, file)
     } else {
       return Promise.resolve()
     }
@@ -167,7 +161,7 @@ export async function initVSCodeBridge(
       stopPollingMailbox()
       await initializeFS(projectID, UtopiaFSUser)
       await clearBothMailboxes()
-      await writeProjectContents(projectID, projectContents)
+      await writeProjectContents(projectContents)
       await initMailbox(UtopiaInbox, parseFromVSCodeMessage, (message: FromVSCodeMessage) => {
         switch (message.type) {
           case 'SEND_INITIAL_DATA':
@@ -221,17 +215,63 @@ export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
   return sendMessage(getUtopiaVSCodeConfig())
 }
 
-export async function applyProjectContentChanges(
+export interface WriteProjectFileChange {
+  type: 'WRITE_PROJECT_FILE'
+  fullPath: string
+  projectFile: ProjectFile
+}
+
+export function writeProjectFileChange(
+  fullPath: string,
+  projectFile: ProjectFile,
+): WriteProjectFileChange {
+  return {
+    type: 'WRITE_PROJECT_FILE',
+    fullPath: fullPath,
+    projectFile: projectFile,
+  }
+}
+
+export interface DeletePathChange {
+  type: 'DELETE_PATH'
+  fullPath: string
+  recursive: boolean
+}
+
+export function deletePathChange(fullPath: string, recursive: boolean): DeletePathChange {
+  return {
+    type: 'DELETE_PATH',
+    fullPath: fullPath,
+    recursive: recursive,
+  }
+}
+
+export interface EnsureDirectoryExistsChange {
+  type: 'ENSURE_DIRECTORY_EXISTS'
+  fullPath: string
+}
+
+export function ensureDirectoryExistsChange(fullPath: string): EnsureDirectoryExistsChange {
+  return {
+    type: 'ENSURE_DIRECTORY_EXISTS',
+    fullPath: fullPath,
+  }
+}
+
+export type ProjectChange = WriteProjectFileChange | DeletePathChange | EnsureDirectoryExistsChange
+
+export function collateProjectChanges(
   projectID: string,
   oldContents: ProjectContentTreeRoot,
   newContents: ProjectContentTreeRoot,
-): Promise<void> {
-  async function applyChanges(
+): Array<ProjectChange> {
+  let changesToProcess: Array<ProjectChange> = []
+
+  function applyChanges(
     fullPath: string,
     firstContents: ProjectContentsTree,
     secondContents: ProjectContentsTree,
-  ): Promise<boolean> {
-    const fsPath = toFSPath(fullPath)
+  ): boolean {
     if (isProjectContentFile(firstContents)) {
       if (isProjectContentFile(secondContents)) {
         if (firstContents.content === secondContents.content) {
@@ -255,50 +295,50 @@ export async function applyProjectContentChanges(
             savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet)
 
           if (fileShouldBeWritten) {
-            await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
+            changesToProcess.push(writeProjectFileChange(fullPath, secondContents.content))
           }
         } else {
-          await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
+          changesToProcess.push(writeProjectFileChange(fullPath, secondContents.content))
         }
       } else {
-        await deletePath(fsPath, true)
-        await ensureDirectoryExists(fsPath)
+        changesToProcess.push(deletePathChange(fullPath, true))
+        changesToProcess.push(ensureDirectoryExistsChange(fullPath))
       }
     } else {
       if (isProjectContentFile(secondContents)) {
-        await deletePath(fsPath, true)
-        await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
+        changesToProcess.push(deletePathChange(fullPath, true))
+        changesToProcess.push(writeProjectFileChange(fullPath, secondContents.content))
       } else {
         // Do nothing, both sides are a directory.
       }
     }
 
-    return Promise.resolve(true)
+    return true
   }
 
-  async function onElement(
+  function onElement(
     fullPath: string,
     firstContents: ProjectContentsTree | null,
     secondContents: ProjectContentsTree | null,
-  ): Promise<boolean> {
-    const fsPath = toFSPath(fullPath)
+  ): boolean {
     if (firstContents == null) {
       if (secondContents == null) {
         // Do nothing, nothing exists.
-        return Promise.resolve(false)
+        return false
       } else {
-        await writeProjectFile(projectID, fullPath, getProjectFileFromTree(secondContents))
-        return Promise.resolve(true)
+        changesToProcess.push(
+          writeProjectFileChange(fullPath, getProjectFileFromTree(secondContents)),
+        )
+        return true
       }
     } else {
       if (secondContents == null) {
-        // Value does not exist, delete it.
-        await deletePath(fsPath, true)
-        return Promise.resolve(false)
+        changesToProcess.push(deletePathChange(fullPath, true))
+        return false
       } else {
         if (firstContents === secondContents) {
           // Same value, stop here.
-          return Promise.resolve(false)
+          return false
         } else {
           return applyChanges(fullPath, firstContents, secondContents)
         }
@@ -306,7 +346,33 @@ export async function applyProjectContentChanges(
     }
   }
   if (isBrowserEnvironment) {
-    await zipContentsTreeAsync(oldContents, newContents, onElement)
+    if (oldContents != newContents) {
+      zipContentsTree(oldContents, newContents, onElement)
+    }
+  }
+
+  return changesToProcess
+}
+
+export async function applyProjectChanges(changes: Array<ProjectChange>): Promise<void> {
+  for (const change of changes) {
+    switch (change.type) {
+      case 'DELETE_PATH':
+        // eslint-disable-next-line no-await-in-loop
+        await deletePath(toFSPath(change.fullPath), change.recursive)
+        break
+      case 'WRITE_PROJECT_FILE':
+        // eslint-disable-next-line no-await-in-loop
+        await writeProjectFile(change.fullPath, change.projectFile)
+        break
+      case 'ENSURE_DIRECTORY_EXISTS':
+        // eslint-disable-next-line no-await-in-loop
+        await ensureDirectoryExists(toFSPath(change.fullPath))
+        break
+      default:
+        const _exhaustiveCheck: never = change
+        throw new Error(`Unhandled message type: ${JSON.stringify(change)}`)
+    }
   }
 }
 
