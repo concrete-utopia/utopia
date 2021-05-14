@@ -102,6 +102,11 @@ export const setupBrowser = async (): Promise<{
 
 const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
+interface Baselines {
+  basicCalc: number
+  simpleDispatch: number
+}
+
 function calculatePi(accuracy: number): number {
   // Uses the Nilakantha series
   let i = 2
@@ -136,7 +141,25 @@ function timeBasicCalc(): number {
   return Number(inSeconds.toFixed(3))
 }
 
-async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<number> {
+async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResult> {
+  console.log('Test Baseline Performance')
+  await page.tracing.start({ path: 'trace.json' })
+  await clickOnce(page, "//a[contains(., 'B L')]", 'BASELINE_TEST_FINISHED')
+  await page.tracing.stop()
+
+  let traceData = fs.readFileSync('trace.json').toString()
+  const traceJson = JSON.parse(traceData)
+  return getFrameData(traceJson, 'baseline_step_', 'Scroll Canvas', 1)
+}
+
+async function timeSimpleDispatch(page: puppeteer.Page): Promise<number> {
+  const frameData = await testBaselinePerformance(page)
+  const summed = frameData.timeSeries.reduce((sum, next) => sum + next, 0)
+  const inSeconds = summed / 1000
+  return Number(inSeconds.toFixed(3))
+}
+
+async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselines> {
   console.log('Initialising the project')
   await page.waitForXPath('//div[contains(@class, "item-label-container")]')
 
@@ -156,11 +179,15 @@ async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<number>
 
   // Now take a baseline measurement for general performance of the machine running this test
   // This value should be as close as possible to 1 on a good run on CI
-  const scale = timeBasicCalc()
+  const basicCalc = timeBasicCalc()
+  const simpleDispatch = await timeSimpleDispatch(page)
 
   console.log('Finished initialising')
 
-  return scale
+  return {
+    basicCalc,
+    simpleDispatch,
+  }
 }
 
 function consoleMessageForResult(result: FrameResult): string {
@@ -171,10 +198,12 @@ export const testPerformance = async function () {
   let scrollResult = EmptyResult
   let resizeResult = EmptyResult
   let selectionResult = EmptyResult
-  let scale = 1
+  let baselines = { basicCalc: 0, simpleDispatch: 0 }
+  let scale = 0
   const { page, browser } = await setupBrowser()
   try {
-    scale = await initialiseTestsReturnScale(page)
+    baselines = await initialiseTestsReturnScale(page)
+    scale = baselines.simpleDispatch
     selectionResult = await testSelectionPerformance(page, scale)
     resizeResult = await testResizePerformance(page, scale)
     scrollResult = await testScrollingPerformance(page, scale)
@@ -190,7 +219,9 @@ export const testPerformance = async function () {
       scrollResult,
     )} | ${consoleMessageForResult(resizeResult)} | ${consoleMessageForResult(
       selectionResult,
-    )} | (Applied scale: ${scale}) | ![(Chart)](${summaryImage})`,
+    )} | (Applied scale: ${scale}, Baselines: { basicCalc: ${
+      baselines.basicCalc
+    }, simpleDispatch: ${baselines.simpleDispatch} }) | ![(Chart)](${summaryImage})`,
   )
 }
 
