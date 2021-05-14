@@ -173,7 +173,7 @@ export function useTriggerBaselinePerformanceTest(): () => void {
       )
 
       count++
-      if (count < 100000) {
+      if (count < 68000) {
         step()
       } else {
         requestAnimationFrame(() => console.info('BASELINE_TEST_FINISHED'))

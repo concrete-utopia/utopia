@@ -135,7 +135,7 @@ function calculatePi(accuracy: number): number {
 
 function timeBasicCalc(): number {
   const start = Date.now()
-  calculatePi(400000000)
+  calculatePi(270000000)
   const end = Date.now()
   const inSeconds = (end - start) / 1000
   return Number(inSeconds.toFixed(3))
