@@ -951,12 +951,12 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
 
 export function saveDOMReport(
   elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-  cachedTreeRoots: Array<ElementPath>,
+  cachedPaths: Array<ElementPath>,
 ): SaveDOMReport {
   return {
     action: 'SAVE_DOM_REPORT',
     elementMetadata: elementMetadata,
-    cachedTreeRoots: cachedTreeRoots,
+    cachedPaths: cachedPaths,
   }
 }
 

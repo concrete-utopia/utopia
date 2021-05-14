@@ -25,9 +25,9 @@ export const CanvasComponentEntry = betterReactMemo(
     const onDomReport = React.useCallback(
       (
         elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-        cachedTreeRoots: Array<ElementPath>,
+        cachedPaths: Array<ElementPath>,
       ) => {
-        dispatch([saveDOMReport(elementMetadata, cachedTreeRoots)])
+        dispatch([saveDOMReport(elementMetadata, cachedPaths)])
       },
       [dispatch],
     )

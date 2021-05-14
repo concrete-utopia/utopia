@@ -96,7 +96,7 @@ export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIcon
   createCallWithTripleEquals(),
   (result) => result.label,
   createCallWithTripleEquals(),
-  (result) => result.iconProps, //shallowequal
+  (result) => result.iconProps,
   createCallWithTripleEquals(),
   (path, name, label, iconProps) => {
     return {

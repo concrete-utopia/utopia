@@ -122,7 +122,7 @@ export interface UiJsxCanvasProps {
   mountCount: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<ElementPath>,
+    cachedPaths: Array<ElementPath>,
   ) => void
   walkDOM: boolean
   imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
@@ -156,7 +156,7 @@ export function pickUiJsxCanvasProps(
   walkDOM: boolean,
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<ElementPath>,
+    cachedPaths: Array<ElementPath>,
   ) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
@@ -419,6 +419,7 @@ export const UiJsxCanvas = betterReactMemo(
                   validRootPaths={rootValidPaths}
                   canvasRootElementElementPath={storyboardRootElementPath}
                   scrollAnimation={props.scrollAnimation}
+                  canvasInteractionHappening={props.transientFilesState != null}
                 >
                   <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
                     <ParentLevelUtopiaContext.Provider
@@ -493,12 +494,13 @@ export interface CanvasContainerProps {
   offset: CanvasVector
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<ElementPath>,
+    cachedPaths: Array<ElementPath>,
   ) => void
   canvasRootElementElementPath: ElementPath
   validRootPaths: Array<ElementPath>
   mountCount: number
   scrollAnimation: boolean
+  canvasInteractionHappening: boolean
 }
 
 const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (
