@@ -4,14 +4,15 @@ import {
   ElementInstanceMetadataMap,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
 import { Imports, ElementPath } from '../../../core/shared/project-file-types'
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
-import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
+import {
+  NameAndIconResultArrayKeepDeepEquality,
+  NameAndIconResultKeepDeepEquality,
+} from '../../../utils/deep-equality-instances'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -33,34 +34,28 @@ export function useNameAndIcon(path: ElementPath): NameAndIconResult {
     },
     'useNameAndIcon',
     (oldResult, newResult) => {
-      const pathEquals = EP.pathsEqual(oldResult.path, newResult.path)
-      const labelEquals = oldResult.label === newResult.label
-      const iconPropsEqual = shallowEqual(oldResult.iconProps, newResult.iconProps)
-      const oldNamePath = oldResult.name?.propertyPath != null ? oldResult.name?.propertyPath : null
-      const newNamePath = newResult.name?.propertyPath != null ? newResult.name?.propertyPath : null
-      const namePathEquals = PP.pathsEqual(oldNamePath, newNamePath)
-      const nameVariableEquals = oldResult.name?.baseVariable === newResult.name?.baseVariable
-      return pathEquals && labelEquals && iconPropsEqual && namePathEquals && nameVariableEquals
+      return NameAndIconResultKeepDeepEquality(oldResult, newResult).areEqual
     },
   )
 }
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
-  const metadata = useEditorState(
-    (store) => store.editor.jsxMetadata,
-    'useNamesAndIconsAllPaths metadata',
+  return useEditorState(
+    (store) => {
+      return MetadataUtils.getAllPaths(store.editor.jsxMetadata).map((path) => {
+        const { components, imports } = getJSXComponentsAndImportsForPathFromState(
+          path,
+          store.editor,
+          store.derived,
+        )
+        return getNameAndIconResult(path, components, store.editor.jsxMetadata, imports)
+      })
+    },
+    'useNamesAndIconsAllPaths',
+    (oldResult, newResult) => {
+      return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
+    },
   )
-  const editor = useEditorState((store) => store.editor, 'useNamesAndIconsAllPaths editor')
-  const derived = useEditorState((store) => store.derived, 'useNamesAndIconsAllPaths derived')
-
-  return MetadataUtils.getAllPaths(metadata).map((path) => {
-    const { components, imports } = getJSXComponentsAndImportsForPathFromState(
-      path,
-      editor,
-      derived,
-    )
-    return getNameAndIconResult(path, components, metadata, imports)
-  })
 }
 
 function getNameAndIconResult(

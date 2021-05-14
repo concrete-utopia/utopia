@@ -1,6 +1,7 @@
 import {
   arrayDeepEquality,
   combine2EqualityCalls,
+  combine4EqualityCalls,
   createCallFromEqualsFunction,
   createCallWithTripleEquals,
   KeepDeepEqualityCall,
@@ -15,6 +16,7 @@ import { JSXElementName } from '../core/shared/element-template'
 import { ElementPath, PropertyPath } from '../core/shared/project-file-types'
 import { createCallFromIntrospectiveKeepDeep } from './react-performance'
 import { Either, foldEither, isLeft, left, right } from '../core/shared/either'
+import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
 
 export const ElementPathKeepDeepEquality: KeepDeepEqualityCall<ElementPath> = createCallFromEqualsFunction(
   (oldPath: ElementPath, newPath: ElementPath) => {
@@ -86,3 +88,26 @@ export function EitherKeepDeepEquality<L, R>(
     )
   }
 }
+
+export const NameAndIconResultKeepDeepEquality: KeepDeepEqualityCall<NameAndIconResult> = combine4EqualityCalls(
+  (result) => result.path,
+  ElementPathKeepDeepEquality,
+  (result) => result.name,
+  createCallWithTripleEquals(),
+  (result) => result.label,
+  createCallWithTripleEquals(),
+  (result) => result.iconProps, //shallowequal
+  createCallWithTripleEquals(),
+  (path, name, label, iconProps) => {
+    return {
+      path: path,
+      name: name,
+      label: label,
+      iconProps: iconProps,
+    }
+  },
+)
+
+export const NameAndIconResultArrayKeepDeepEquality: KeepDeepEqualityCall<Array<
+  NameAndIconResult
+>> = arrayDeepEquality(NameAndIconResultKeepDeepEquality)
