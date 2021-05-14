@@ -1,5 +1,5 @@
 import { INDEXEDDB } from 'localforage'
-import { appendToPath } from '../path-utils'
+import { appendToPath, stripLeadingSlash, stripTrailingSlash } from '../path-utils'
 import { getItem, initializeStore, keys, removeItem, setItem } from './fs-core'
 import {
   FSError,
@@ -155,10 +155,14 @@ async function targetsForOperation(path: string, recursive: boolean): Promise<st
   }
 }
 
-function directoryOfPath(path: string): string | null {
-  const target = path.endsWith('/') ? path.slice(0, -1) : path
-  const lastSlashIndex = target.lastIndexOf('/')
-  return lastSlashIndex >= 0 ? path.slice(0, lastSlashIndex) : null
+function getParentPath(path: string): string | null {
+  const withoutLeadingOrTrailingSlash = stripLeadingSlash(stripTrailingSlash(path))
+  const pathElems = withoutLeadingOrTrailingSlash.split('/')
+  if (pathElems.length <= 1) {
+    return null
+  } else {
+    return `/${pathElems.slice(0, -1).join('/')}`
+  }
 }
 
 function filenameOfPath(path: string): string {
@@ -169,8 +173,8 @@ function filenameOfPath(path: string): string {
 
 export async function childPaths(path: string): Promise<string[]> {
   const allDescendents = await getDescendentPaths(path)
-  const pathAsDir = path.endsWith('/') ? path : `${path}/`
-  return allDescendents.filter((k) => directoryOfPath(k) === pathAsDir)
+  const pathAsDir = stripTrailingSlash(path)
+  return allDescendents.filter((k) => getParentPath(k) === pathAsDir)
 }
 
 async function getDirectory(path: string): Promise<FSDirectory> {
@@ -184,7 +188,7 @@ async function getDirectory(path: string): Promise<FSDirectory> {
 
 async function getParent(path: string): Promise<FSNodeWithPath | null> {
   // null signifies we're already at the root
-  const parentPath = directoryOfPath(path)
+  const parentPath = getParentPath(path)
   if (parentPath == null) {
     return null
   } else {
@@ -237,7 +241,7 @@ async function simpleCreateDirectoryIfMissing(path: string): Promise<void> {
 
     // Attempt to mark the parent as modified, but don't fail if it doesn't exist
     // since it might not have been created yet
-    const parentPath = directoryOfPath(path)
+    const parentPath = getParentPath(path)
     if (parentPath != null) {
       const parentNode = await getItem(parentPath)
       if (parentNode != null) {

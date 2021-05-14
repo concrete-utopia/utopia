@@ -50,6 +50,8 @@ import {
   isSceneAgainstImports,
 } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
+import { TransientFilesState } from '../../components/editor/store/editor-state'
+import { getParseSuccessOrTransientForFilePath } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -125,42 +127,43 @@ export function getValidElementPaths(
   instancePath: ElementPath,
   projectContents: ProjectContentTreeRoot,
   filePath: string,
+  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
   if (topLevelElementName == null) {
     return []
   }
-  const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    const importSource = importedFromWhere(
-      filePath,
-      topLevelElementName,
-      file.fileContents.parsed.topLevelElements,
-      file.fileContents.parsed.imports,
-    )
-    if (importSource != null) {
-      const resolvedImportSource = resolve(filePath, importSource)
-      if (isRight(resolvedImportSource)) {
-        const resolvedFilePath = resolvedImportSource.value
-        const importSourceFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
-        if (isTextFile(importSourceFile) && isParseSuccess(importSourceFile.fileContents.parsed)) {
-          const topLevelElement = importSourceFile.fileContents.parsed.topLevelElements.find(
-            (element): element is UtopiaJSXComponent =>
-              isUtopiaJSXComponent(element) && element.name === topLevelElementName,
-          )
-          if (topLevelElement != null) {
-            return getValidElementPathsFromElement(
-              focusedElementPath,
-              topLevelElement.rootElement,
-              instancePath,
-              projectContents,
-              resolvedFilePath,
-              false,
-              true,
-              resolve,
-            )
-          }
-        }
+  const { topLevelElements, imports } = getParseSuccessOrTransientForFilePath(
+    filePath,
+    projectContents,
+    transientFilesState,
+  )
+  const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
+  if (importSource != null) {
+    const resolvedImportSource = resolve(filePath, importSource)
+    if (isRight(resolvedImportSource)) {
+      const resolvedFilePath = resolvedImportSource.value
+      const { topLevelElements: resolvedTopLevelElements } = getParseSuccessOrTransientForFilePath(
+        resolvedFilePath,
+        projectContents,
+        transientFilesState,
+      )
+      const topLevelElement = resolvedTopLevelElements.find(
+        (element): element is UtopiaJSXComponent =>
+          isUtopiaJSXComponent(element) && element.name === topLevelElementName,
+      )
+      if (topLevelElement != null) {
+        return getValidElementPathsFromElement(
+          focusedElementPath,
+          topLevelElement.rootElement,
+          instancePath,
+          projectContents,
+          resolvedFilePath,
+          false,
+          true,
+          transientFilesState,
+          resolve,
+        )
       }
     }
   }
@@ -175,6 +178,7 @@ export function getValidElementPathsFromElement(
   filePath: string,
   parentIsScene: boolean,
   parentIsInstance: boolean,
+  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
   if (isJSXElement(element)) {
@@ -194,6 +198,7 @@ export function getValidElementPathsFromElement(
           filePath,
           isScene,
           false,
+          transientFilesState,
           resolve,
         ),
       ),
@@ -216,6 +221,7 @@ export function getValidElementPathsFromElement(
           matchingFocusedPathPart ?? path,
           projectContents,
           filePath,
+          transientFilesState,
           resolve,
         ),
       ]
@@ -249,6 +255,7 @@ export function getValidElementPathsFromElement(
           filePath,
           parentIsScene,
           parentIsInstance,
+          transientFilesState,
           resolve,
         ),
       ),
@@ -266,6 +273,7 @@ export function getValidElementPathsFromElement(
           filePath,
           parentIsScene,
           parentIsInstance,
+          transientFilesState,
           resolve,
         ),
       ),

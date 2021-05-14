@@ -447,6 +447,7 @@ class FileBrowserItemInner extends React.PureComponent<
       let actions: Array<EditorAction> = []
       Utils.fastForEach(result.files, (resultFile: FileResult) => {
         let targetPath: string | null = null
+        let replace = false
         switch (this.props.fileType) {
           case 'DIRECTORY':
             // Put the image "into" the directory.
@@ -456,13 +457,14 @@ class FileBrowserItemInner extends React.PureComponent<
           case 'IMAGE_FILE':
             // Overwrite the image.
             targetPath = this.props.path
+            replace = true
             break
           default:
           // Do nothing, overwriting an image onto a UI file seems wrong.
         }
 
         if (targetPath != null) {
-          actions.push(fileResultUploadAction(resultFile, targetPath))
+          actions.push(fileResultUploadAction(resultFile, targetPath, replace))
         }
       })
       this.props.dispatch(actions, 'everyone')

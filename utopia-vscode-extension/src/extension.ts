@@ -278,7 +278,7 @@ async function openFile(fileUri: vscode.Uri, retries: number = 5): Promise<boole
   const filePath = fromUtopiaURI(fileUri)
   const fileExists = await exists(filePath)
   if (fileExists) {
-    await vscode.commands.executeCommand('vscode.open', fileUri)
+    await vscode.commands.executeCommand('vscode.open', fileUri, { preserveFocus: true })
     return true
   } else {
     // Just in case the message is processed before the file has been written to the FS
