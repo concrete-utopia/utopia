@@ -355,8 +355,8 @@ async function createSummaryPng(
       },
     ],
     xaxis: {
-      title: 'lower is better, ms / frame (16.67 = 60fps), 100 runs',
-      autorange: true,
+      title: 'lower is better, ms / frame (16.67 = 60fps), 100 runs, cutoff 200ms',
+      range: [0, 200],
       showgrid: true,
       zeroline: true,
       dtick: 16.67,
