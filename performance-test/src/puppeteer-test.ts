@@ -154,9 +154,10 @@ async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResul
 
 async function timeSimpleDispatch(page: puppeteer.Page): Promise<number> {
   const frameData = await testBaselinePerformance(page)
-  const summed = frameData.timeSeries.reduce((sum, next) => sum + next, 0)
-  const inSeconds = summed / 1000
-  return Number(inSeconds.toFixed(3))
+  const magicNumberToGetItCloseTo1 = 54
+  const median = frameData.analytics.percentile50 ?? 1 / magicNumberToGetItCloseTo1
+  const asScalingFactor = median * magicNumberToGetItCloseTo1
+  return Number(asScalingFactor.toFixed(3))
 }
 
 async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselines> {

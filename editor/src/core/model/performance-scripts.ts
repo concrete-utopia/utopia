@@ -172,8 +172,8 @@ export function useTriggerBaselinePerformanceTest(): () => void {
         `baseline_dispatch_finished_${count}`,
       )
 
-      count++
-      if (count < 54000) {
+      if (count < 100) {
+        count++
         step()
       } else {
         requestAnimationFrame(() => console.info('BASELINE_TEST_FINISHED'))
