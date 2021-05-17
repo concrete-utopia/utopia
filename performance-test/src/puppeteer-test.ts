@@ -138,12 +138,12 @@ function timeBasicCalc(): FrameResult {
 
   for (let i = 0; i < 100; i++) {
     const start = Date.now()
-    calculatePi(2500000)
+    calculatePi(7500000)
     const end = Date.now()
     times.push(end - start)
   }
 
-  const sortedTimes = times.sort()
+  const sortedTimes = times.sort((a, b) => a - b)
   const totalTime = sortedTimes.reduce((sum, next) => sum + next, 0)
 
   const analytics = {

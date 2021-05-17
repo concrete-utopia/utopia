@@ -164,7 +164,7 @@ export function useTriggerBaselinePerformanceTest(): () => void {
     let count = 0
     async function step() {
       performance.mark(`baseline_step_${count}`)
-      for (let i = 0; i < 625; i++) {
+      for (let i = 0; i < 3000; i++) {
         await dispatch([]).entireUpdateFinished
       }
       performance.mark(`baseline_dispatch_finished_${count}`)
