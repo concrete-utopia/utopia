@@ -18,6 +18,7 @@ function createEmptyEditorStoreHook() {
     userState: null as any,
     workers: null as any,
     dispatch: null as any,
+    alreadySaved: false,
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

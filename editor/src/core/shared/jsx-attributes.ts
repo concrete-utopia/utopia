@@ -26,6 +26,7 @@ import {
   deleteJSXAttribute,
   setJSXAttributesAttribute,
   isJSXAttributeValue,
+  simplifyAttributesIfPossible,
 } from './element-template'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import { PropertyPath } from './project-file-types'
@@ -612,7 +613,7 @@ export function setJSXValuesAtPaths(
   )
 }
 
-export function unsetValueAtPath(value: any, path: PropertyPath): Either<string, any> {
+function unsetValueAtPath(value: any, path: PropertyPath): Either<string, any> {
   switch (PP.depth(path)) {
     case 0:
       // As this is invalid throw an exception.
@@ -658,16 +659,19 @@ export function unsetJSXValuesAtPaths(
   attributes: JSXAttributes,
   paths: Array<PropertyPath>,
 ): Either<string, JSXAttributes> {
-  return reduceWithEither(
-    (working, path) => {
-      return unsetJSXValueAtPath(working, path)
-    },
-    attributes,
-    paths,
+  return mapEither(
+    simplifyAttributesIfPossible,
+    reduceWithEither(
+      (working, path) => {
+        return unsetJSXValueAtPath(working, path)
+      },
+      attributes,
+      paths,
+    ),
   )
 }
 
-export function unsetJSXValueInAttributeAtPath(
+function unsetJSXValueInAttributeAtPath(
   attribute: JSXAttribute,
   path: PropertyPath,
 ): Either<string, JSXAttribute> {
@@ -784,7 +788,7 @@ export function unsetJSXValueAtPath(
   }
 }
 
-export function walkAttribute(
+function walkAttribute(
   attribute: JSXAttribute,
   path: PropertyPath | null,
   walk: (a: JSXAttribute, path: PropertyPath | null) => void,
@@ -833,7 +837,7 @@ export function walkAttribute(
   }
 }
 
-export function walkAttributes(
+function walkAttributes(
   attributes: JSXAttributes,
   walk: (attribute: JSXAttribute, path: PropertyPath | null) => void,
 ): void {

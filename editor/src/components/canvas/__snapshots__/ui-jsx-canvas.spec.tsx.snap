@@ -115,6 +115,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -162,6 +163,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -174,6 +176,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -280,6 +290,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -293,6 +304,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -410,6 +425,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map(n => {
@@ -560,6 +576,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -576,6 +593,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -675,6 +696,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -692,6 +714,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -785,6 +811,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -802,6 +829,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -895,6 +926,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -912,6 +944,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -1060,6 +1096,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -1107,6 +1144,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -1119,6 +1157,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -1225,6 +1271,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -1238,6 +1285,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -1415,6 +1466,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -1431,6 +1483,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -1585,6 +1641,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -1632,6 +1689,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -1644,6 +1702,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -1750,6 +1816,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -1763,6 +1830,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -1857,6 +1928,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "567",
       },
     },
     "elementPath": Object {
@@ -1873,6 +1945,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -2050,6 +2126,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -2097,6 +2174,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -2109,6 +2187,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -2215,6 +2301,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -2228,6 +2315,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -2381,6 +2472,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "aaa",
               },
             },
             "javascript": "[1, 2, 3].map(n => {
@@ -2460,6 +2552,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -2476,6 +2569,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -2604,6 +2701,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -2621,6 +2719,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -2749,6 +2851,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -2766,6 +2869,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -2894,6 +3001,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -2911,6 +3019,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -3126,6 +3238,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -3173,6 +3286,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -3185,6 +3299,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -3291,6 +3413,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -3304,6 +3427,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -3472,6 +3599,7 @@ Object {
                           },
                         ],
                         "type": "JSX_ELEMENT",
+                        "uid": "bbb",
                       },
                     },
                     "javascript": "[4, 5, 6].map(m => {
@@ -3557,6 +3685,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "aaa",
               },
             },
             "javascript": "[1, 2, 3].map(n => {
@@ -3651,6 +3780,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -3667,6 +3797,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -3810,6 +3944,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[4, 5, 6].map(m => {
@@ -3895,6 +4030,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -3912,6 +4048,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -4046,6 +4186,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -4064,6 +4205,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -4198,6 +4343,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -4216,6 +4362,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -4350,6 +4500,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -4368,6 +4519,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -4511,6 +4666,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[4, 5, 6].map(m => {
@@ -4596,6 +4752,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -4613,6 +4770,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -4747,6 +4908,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -4765,6 +4927,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -4899,6 +5065,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -4917,6 +5084,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -5051,6 +5222,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -5069,6 +5241,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -5212,6 +5388,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[4, 5, 6].map(m => {
@@ -5297,6 +5474,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -5314,6 +5492,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -5448,6 +5630,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -5466,6 +5649,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -5600,6 +5787,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -5618,6 +5806,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -5752,6 +5944,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -5770,6 +5963,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -5928,6 +6125,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -5975,6 +6173,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -5987,6 +6186,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -6093,6 +6300,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -6106,6 +6314,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -6231,6 +6443,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "aaa",
           },
           Object {
             "children": Array [],
@@ -6258,6 +6471,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -6284,6 +6498,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -6300,6 +6515,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -6377,6 +6596,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -6394,6 +6614,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -6471,6 +6695,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -6488,6 +6713,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -6634,6 +6863,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -6681,6 +6911,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -6693,6 +6924,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -6799,6 +7038,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -6812,6 +7052,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -6976,6 +7220,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -6992,6 +7237,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -7163,6 +7412,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -7210,6 +7460,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -7222,6 +7473,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -7328,6 +7587,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -7341,6 +7601,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -7502,6 +7766,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map((n) =>
@@ -7582,6 +7847,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -7598,6 +7864,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -7733,6 +8007,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -7750,6 +8025,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -7900,6 +8179,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -7917,6 +8197,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -8067,6 +8351,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -8084,6 +8369,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -8263,6 +8552,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -8310,6 +8600,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -8322,6 +8613,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -8428,6 +8727,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -8441,6 +8741,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -8602,6 +8906,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map((n) =>
@@ -8682,6 +8987,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -8698,6 +9004,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -8833,6 +9147,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -8850,6 +9165,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -9000,6 +9319,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -9017,6 +9337,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -9167,6 +9491,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -9184,6 +9509,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -9357,6 +9686,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -9404,6 +9734,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -9416,6 +9747,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -9522,6 +9861,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -9535,6 +9875,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -9660,6 +10004,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "aaa",
           },
           Object {
             "children": Array [],
@@ -9687,6 +10032,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -9713,6 +10059,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -9729,6 +10076,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -9806,6 +10157,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -9823,6 +10175,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -9914,6 +10270,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -9931,6 +10288,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -10103,6 +10464,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -10150,6 +10512,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -10162,6 +10525,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -10268,6 +10639,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -10281,6 +10653,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -10384,6 +10760,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "aaa",
               },
             },
             "javascript": "[1, 2].map(data => {
@@ -10463,6 +10840,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -10479,6 +10857,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -10556,6 +10938,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -10573,6 +10956,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -10664,6 +11051,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -10681,6 +11069,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -10867,6 +11259,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -10914,6 +11307,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -10926,6 +11320,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -11045,6 +11447,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -11058,6 +11461,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -11248,6 +11655,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -11372,6 +11780,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -11388,6 +11797,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -11551,6 +11968,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -11568,6 +11986,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -11770,6 +12192,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -11817,6 +12240,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -11829,6 +12253,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -11948,6 +12380,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -11961,6 +12394,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -12151,6 +12588,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -12275,6 +12713,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -12291,6 +12730,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -12454,6 +12901,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -12471,6 +12919,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -12662,6 +13114,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -12709,6 +13162,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -12721,6 +13175,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -12840,6 +13302,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -12853,6 +13316,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -13091,6 +13558,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -13215,6 +13683,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -13231,6 +13700,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -13442,6 +13919,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -13459,6 +13937,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -13656,6 +14138,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -13703,6 +14186,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -13715,6 +14199,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -13834,6 +14326,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -13847,6 +14340,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -14085,6 +14582,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -14209,6 +14707,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -14225,6 +14724,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -14436,6 +14943,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -14453,6 +14961,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -14623,6 +15135,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -14670,6 +15183,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -14682,6 +15196,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -14788,6 +15310,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -14801,6 +15324,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -14895,6 +15422,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -14911,6 +15439,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -15192,6 +15724,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -15239,6 +15772,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -15251,6 +15785,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -15357,6 +15899,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -15370,6 +15913,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -15737,6 +16284,7 @@ export var storyboard = (props) => {
                       },
                     ],
                     "type": "JSX_ELEMENT",
+                    "uid": "834",
                   },
                   "999": Object {
                     "children": Array [
@@ -15891,6 +16439,7 @@ export var storyboard = (props) => {
                           },
                         ],
                         "type": "JSX_ELEMENT",
+                        "uid": "000",
                       },
                     ],
                     "name": Object {
@@ -16042,6 +16591,7 @@ export var storyboard = (props) => {
                       },
                     ],
                     "type": "JSX_ELEMENT",
+                    "uid": "999",
                   },
                 },
                 "javascript": "keyboardShortcuts.map((pair) =>
@@ -16210,6 +16760,7 @@ export var storyboard = (props) => {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "03a",
           },
         ],
         "name": Object {
@@ -16537,6 +17088,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -16553,6 +17105,14 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -16899,6 +17459,7 @@ export var storyboard = (props) => {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "834",
               },
               "999": Object {
                 "children": Array [
@@ -17053,6 +17614,7 @@ export var storyboard = (props) => {
                       },
                     ],
                     "type": "JSX_ELEMENT",
+                    "uid": "000",
                   },
                 ],
                 "name": Object {
@@ -17204,6 +17766,7 @@ export var storyboard = (props) => {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "999",
               },
             },
             "javascript": "keyboardShortcuts.map((pair) =>
@@ -17372,6 +17935,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "03a",
       },
     },
     "elementPath": Object {
@@ -17389,6 +17953,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -17726,6 +18294,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "834",
       },
     },
     "elementPath": Object {
@@ -17744,6 +18313,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -18068,6 +18641,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "834",
       },
     },
     "elementPath": Object {
@@ -18086,6 +18660,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -18410,6 +18988,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "834",
       },
     },
     "elementPath": Object {
@@ -18428,6 +19007,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -18633,6 +19216,7 @@ export var storyboard = (props) => {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "000",
           },
         ],
         "name": Object {
@@ -18784,6 +19368,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "999",
       },
     },
     "elementPath": Object {
@@ -18802,6 +19387,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -19009,6 +19598,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "000",
       },
     },
     "elementPath": Object {
@@ -19028,6 +19618,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -19253,6 +19847,7 @@ export var storyboard = (props) => {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "000",
           },
         ],
         "name": Object {
@@ -19404,6 +19999,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "999",
       },
     },
     "elementPath": Object {
@@ -19422,6 +20018,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -19625,6 +20225,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "000",
       },
     },
     "elementPath": Object {
@@ -19644,6 +20245,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -19865,6 +20470,7 @@ export var storyboard = (props) => {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "000",
           },
         ],
         "name": Object {
@@ -20016,6 +20622,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "999",
       },
     },
     "elementPath": Object {
@@ -20034,6 +20641,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -20237,6 +20848,7 @@ export var storyboard = (props) => {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "000",
       },
     },
     "elementPath": Object {
@@ -20256,6 +20868,10 @@ export var storyboard = (props) => {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -20431,6 +21047,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -20478,6 +21095,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -20490,6 +21108,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -20596,6 +21222,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -20609,6 +21236,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -20749,6 +21380,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "aaa",
           },
           Object {
             "children": Array [],
@@ -20791,6 +21423,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -20817,6 +21450,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -20833,6 +21467,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -20925,6 +21563,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -20942,6 +21581,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -21049,6 +21692,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -21066,6 +21710,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -21228,6 +21876,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -21275,6 +21924,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -21287,6 +21937,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -21393,6 +22051,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -21406,6 +22065,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -21562,6 +22225,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -21578,6 +22242,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -21724,6 +22392,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -21771,6 +22440,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -21783,6 +22453,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -21889,6 +22567,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -21902,6 +22581,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -22121,6 +22804,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -22137,6 +22821,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -22278,6 +22966,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -22325,6 +23014,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "fff",
       },
     },
     "elementPath": Object {
@@ -22337,6 +23027,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -22422,6 +23120,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -22435,6 +23134,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -22610,6 +23313,7 @@ export var storyboard = (
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -22655,6 +23359,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -22671,6 +23376,10 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -22817,6 +23526,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -22834,6 +23544,10 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -23041,6 +23755,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -23088,6 +23803,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -23100,6 +23816,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -23206,6 +23930,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -23219,6 +23944,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -23353,6 +24082,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "dd5",
               },
             ],
             "name": Object {
@@ -23399,6 +24129,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "d59",
           },
         ],
         "name": Object {
@@ -23443,6 +24174,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -23459,6 +24191,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -23579,6 +24319,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "dd5",
           },
         ],
         "name": Object {
@@ -23625,6 +24366,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "d59",
       },
     },
     "elementPath": Object {
@@ -23642,6 +24384,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -23760,6 +24506,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "dd5",
       },
     },
     "elementPath": Object {
@@ -23778,6 +24525,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -23957,6 +24712,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -24004,6 +24760,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -24016,6 +24773,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -24135,6 +24900,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -24148,6 +24914,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -24281,6 +25051,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -24404,6 +25175,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -24420,6 +25192,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -24526,6 +25306,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -24543,6 +25324,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -24710,6 +25499,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -24757,6 +25547,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -24769,6 +25560,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -24875,6 +25674,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -24888,6 +25688,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -25049,6 +25853,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map((n) =>
@@ -25129,6 +25934,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -25145,6 +25951,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -25280,6 +26094,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -25297,6 +26112,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -25447,6 +26266,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -25464,6 +26284,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -25614,6 +26438,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -25631,6 +26456,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -25810,6 +26639,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -25857,6 +26687,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -25869,6 +26700,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -25975,6 +26814,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -25988,6 +26828,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -26150,6 +26994,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map((div) =>
@@ -26230,6 +27075,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -26246,6 +27092,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -26382,6 +27236,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -26399,6 +27254,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -26550,6 +27409,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -26567,6 +27427,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -26718,6 +27582,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -26735,6 +27600,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -26914,6 +27783,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -26961,6 +27831,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -26973,6 +27844,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -27079,6 +27958,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -27092,6 +27972,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -27254,6 +28138,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "nestedThings.map(({ a: { b: { c: [n] } } }) =>
@@ -27340,6 +28225,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -27356,6 +28242,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -27491,6 +28385,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -27508,6 +28403,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -27658,6 +28557,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -27675,6 +28575,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -27825,6 +28729,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -27842,6 +28747,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -27990,6 +28899,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -28052,6 +28962,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -28064,6 +28975,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -28150,6 +29069,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -28163,6 +29083,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -28256,6 +29180,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -28272,6 +29197,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -28355,6 +29284,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -28371,6 +29301,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -28496,6 +29430,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -28543,6 +29478,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ddd",
       },
     },
     "elementPath": Object {
@@ -28555,6 +29491,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -28640,6 +29584,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -28653,6 +29598,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -28776,6 +29725,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -28862,6 +29812,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -28878,6 +29829,10 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -28977,6 +29932,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -28994,6 +29950,10 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -29124,6 +30084,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -29171,6 +30132,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ddd",
       },
     },
     "elementPath": Object {
@@ -29183,6 +30145,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -29268,6 +30238,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -29281,6 +30252,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -29368,6 +30343,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "card",
       },
     },
     "elementPath": Object {
@@ -29384,6 +30360,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -29524,6 +30504,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -29571,6 +30552,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene",
       },
     },
     "elementPath": Object {
@@ -29583,6 +30565,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -29668,6 +30658,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -29681,6 +30672,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -29919,6 +30914,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -29935,6 +30931,10 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -30066,6 +31066,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -30113,6 +31114,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene",
       },
     },
     "elementPath": Object {
@@ -30125,6 +31127,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -30210,6 +31220,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -30223,6 +31234,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -30325,6 +31340,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "BBB",
       },
     },
     "elementPath": Object {
@@ -30341,6 +31357,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -30511,6 +31531,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app",
           },
         ],
         "name": Object {
@@ -30558,6 +31579,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "fff",
       },
     },
     "elementPath": Object {
@@ -30570,6 +31592,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -30676,6 +31706,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app",
       },
     },
     "elementPath": Object {
@@ -30689,6 +31720,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -30850,6 +31885,7 @@ Object {
                           },
                         ],
                         "type": "JSX_ELEMENT",
+                        "uid": "ccc",
                       },
                     ],
                     "longForm": false,
@@ -30914,6 +31950,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             ],
             "longForm": true,
@@ -30958,6 +31995,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "ddd",
           },
         ],
         "name": Object {
@@ -31099,6 +32137,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -31115,6 +32154,14 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -31242,6 +32289,7 @@ export var storyboard = (
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "ccc",
               },
             ],
             "longForm": false,
@@ -31306,6 +32354,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -31323,6 +32372,10 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -31438,6 +32491,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ccc",
       },
     },
     "elementPath": Object {
@@ -31456,6 +32510,10 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -31544,6 +32602,7 @@ export var storyboard = (
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ddd",
       },
     },
     "elementPath": Object {
@@ -31561,6 +32620,10 @@ export var storyboard = (
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -31712,6 +32775,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -31759,6 +32823,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -31771,6 +32836,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -31877,6 +32950,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -31890,6 +32964,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -32016,6 +33094,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "bbb",
           },
         ],
         "name": Object {
@@ -32042,6 +33121,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -32058,6 +33138,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -32150,6 +33238,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -32167,6 +33256,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -32317,6 +33410,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -32364,6 +33458,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -32376,6 +33471,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -32483,6 +33586,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -32496,6 +33600,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -32591,6 +33699,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -32607,6 +33716,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -32800,6 +33913,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -32847,6 +33961,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -32859,6 +33974,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -32965,6 +34088,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -32978,6 +34102,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -33136,6 +34264,7 @@ Object {
                       },
                     ],
                     "type": "JSX_ELEMENT",
+                    "uid": "ccc",
                   },
                 ],
                 "name": Object {
@@ -33162,6 +34291,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "bbb",
               },
             },
             "javascript": "[1, 2, 3].map(n => {
@@ -33248,6 +34378,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -33264,6 +34395,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -33397,6 +34536,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "ccc",
           },
         ],
         "name": Object {
@@ -33423,6 +34563,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -33440,6 +34581,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -33571,6 +34716,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ccc",
       },
     },
     "elementPath": Object {
@@ -33589,6 +34735,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -33722,6 +34872,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "ccc",
           },
         ],
         "name": Object {
@@ -33748,6 +34899,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -33765,6 +34917,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -33896,6 +35052,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ccc",
       },
     },
     "elementPath": Object {
@@ -33914,6 +35071,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -34047,6 +35208,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "ccc",
           },
         ],
         "name": Object {
@@ -34073,6 +35235,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "bbb",
       },
     },
     "elementPath": Object {
@@ -34090,6 +35253,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -34221,6 +35388,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "ccc",
       },
     },
     "elementPath": Object {
@@ -34239,6 +35407,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -34387,6 +35559,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -34434,6 +35607,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -34446,6 +35620,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -34552,6 +35734,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -34565,6 +35748,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -34659,6 +35846,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "aaa",
       },
     },
     "elementPath": Object {
@@ -34675,6 +35863,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -34846,6 +36038,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app-entity",
           },
         ],
         "name": Object {
@@ -34893,6 +36086,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene-aaa",
       },
     },
     "elementPath": Object {
@@ -34905,6 +36099,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -35011,6 +36213,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app-entity",
       },
     },
     "elementPath": Object {
@@ -35024,6 +36227,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -35143,6 +36350,7 @@ Object {
                   },
                 ],
                 "type": "JSX_ELEMENT",
+                "uid": "cloned",
               },
             ],
             "name": Object {
@@ -35169,6 +36377,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "cloner",
           },
         ],
         "name": Object {
@@ -35195,6 +36404,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "zzz",
       },
     },
     "elementPath": Object {
@@ -35211,6 +36421,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -35312,6 +36526,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "cloned",
           },
         ],
         "name": Object {
@@ -35338,6 +36553,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "cloner",
       },
     },
     "elementPath": Object {
@@ -35355,6 +36571,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -35452,6 +36672,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "cloned",
       },
     },
     "elementPath": Object {
@@ -35470,6 +36691,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -35525,328 +36750,12 @@ exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1
 "<div
   id=\\"canvas-container\\"
   style=\\"all: initial; position: absolute;\\"
-  data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity\\"
->
-  <div
-    data-utopia-scene-id=\\"utopia-storyboard-uid/scene-aaa\\"
-    data-paths=\\"utopia-storyboard-uid/scene-aaa utopia-storyboard-uid\\"
-    style=\\"
-      position: absolute;
-      background-color: rgba(255, 255, 255, 1);
-      box-shadow: 0px 0px 1px 0px rgba(26, 26, 26, 0.3);
-      left: 0;
-      top: 0;
-      width: 400px;
-      height: 400px;
-    \\"
-    data-uid=\\"scene-aaa utopia-storyboard-uid\\"
-  >
-    hello!
-  </div>
-</div>
+  data-utopia-valid-paths=\\"\\"
+></div>
 "
 `;
 
-exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 2`] = `
-Object {
-  "utopia-storyboard-uid/scene-aaa": Object {
-    "attributeMetadatada": Object {},
-    "children": Array [
-      Object {
-        "parts": Array [
-          Array [
-            "utopia-storyboard-uid",
-            "scene-aaa",
-            "app-entity",
-          ],
-        ],
-        "type": "elementpath",
-      },
-    ],
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [
-          Object {
-            "children": Array [],
-            "name": Object {
-              "baseVariable": "App",
-              "propertyPath": Object {
-                "propertyElements": Array [],
-              },
-            },
-            "props": Array [
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "data-uid",
-                "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "app-entity",
-                },
-              },
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "style",
-                "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": Object {
-                    "bottom": 0,
-                    "left": 0,
-                    "position": "absolute",
-                    "right": 0,
-                    "top": 0,
-                  },
-                },
-              },
-            ],
-            "type": "JSX_ELEMENT",
-          },
-        ],
-        "name": Object {
-          "baseVariable": "Scene",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "style",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": Object {
-                "height": 400,
-                "left": 0,
-                "position": "absolute",
-                "top": 0,
-                "width": 400,
-              },
-            },
-          },
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "scene-aaa",
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "props": Object {
-      "data-paths": "utopia-storyboard-uid/scene-aaa utopia-storyboard-uid",
-      "data-uid": "scene-aaa utopia-storyboard-uid",
-      "data-utopia-scene-id": "utopia-storyboard-uid/scene-aaa",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "height": 400,
-        "left": 0,
-        "position": "absolute",
-        "top": 0,
-        "width": 400,
-      },
-    },
-    "rootElements": Array [],
-    "specialSizeMeasurements": Object {
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "coordinateSystemBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "display": "initial",
-      "flexDirection": null,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentLayoutSystem": "flow",
-      "position": "static",
-      "providesBoundsForChildren": false,
-      "usesParentBounds": false,
-    },
-  },
-  "utopia-storyboard-uid/scene-aaa/app-entity": Object {
-    "attributeMetadatada": Object {},
-    "children": Array [],
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
-        "children": Array [],
-        "name": Object {
-          "baseVariable": "App",
-          "propertyPath": Object {
-            "propertyElements": Array [],
-          },
-        },
-        "props": Array [
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "data-uid",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": "app-entity",
-            },
-          },
-          Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "key": "style",
-            "value": Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "type": "ATTRIBUTE_VALUE",
-              "value": Object {
-                "bottom": 0,
-                "left": 0,
-                "position": "absolute",
-                "right": 0,
-                "top": 0,
-              },
-            },
-          },
-        ],
-        "type": "JSX_ELEMENT",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene-aaa",
-          "app-entity",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "props": Object {
-      "data-paths": "utopia-storyboard-uid/scene-aaa/app-entity",
-      "data-uid": "app-entity",
-      "skipDeepFreeze": true,
-      "style": Object {
-        "bottom": 0,
-        "left": 0,
-        "position": "absolute",
-        "right": 0,
-        "top": 0,
-      },
-    },
-    "rootElements": Array [],
-    "specialSizeMeasurements": Object {
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "coordinateSystemBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "display": "initial",
-      "flexDirection": null,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentLayoutSystem": "flow",
-      "position": "static",
-      "providesBoundsForChildren": false,
-      "usesParentBounds": false,
-    },
-  },
-}
-`;
+exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 2`] = `Object {}`;
 
 exports[`UiJsxCanvas runtime errors an arbitrary jsx attribute has correct source map 1`] = `
 Array [

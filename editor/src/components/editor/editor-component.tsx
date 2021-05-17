@@ -12,18 +12,20 @@ import { resizeLeftPane } from '../common/actions'
 import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { Menubar } from '../menubar/menubar'
-import { LeftPaneComponent, LeftMenuTab, LeftPaneDefaultWidth } from '../navigator/left-pane'
+import { LeftPaneComponent } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
 import { ReleaseNotesContent } from '../documentation/release-notes'
 import { EditorDispatch, LoginState } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import { handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { StateHistory } from './history'
-import { LoginStatusBar, EditorOfflineBar, BrowserInfoBar } from './notification-bar'
+import { LoginStatusBar, BrowserInfoBar } from './notification-bar'
 import {
   ConsoleLog,
   getOpenFile,
   getOpenTextFileKey,
+  LeftMenuTab,
+  LeftPaneDefaultWidth,
   StoryboardFilePath,
 } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'
@@ -180,11 +182,6 @@ export const EditorComponentInner = betterReactMemo(
 
     const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
 
-    const saveError = useEditorState(
-      (store) => store.editor.saveError,
-      'EditorComponentInner saveError',
-    )
-
     React.useEffect(() => {
       document.title = projectName + ' - Utopia'
     }, [projectName])
@@ -245,7 +242,6 @@ export const EditorComponentInner = betterReactMemo(
         >
           {isChrome ? null : <BrowserInfoBar />}
           <LoginStatusBar />
-          {saveError ? <EditorOfflineBar /> : null}
 
           <SimpleFlexRow
             className='editor-main-horizontal'

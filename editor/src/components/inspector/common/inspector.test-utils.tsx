@@ -54,6 +54,7 @@ export function getStoreHook(
     userState: defaultUserState,
     workers: null as any,
     dispatch: mockDispatch,
+    alreadySaved: false,
   }
 
   const storeHook = create<EditorStore & UpdateFunctionHelpers>((set) => ({

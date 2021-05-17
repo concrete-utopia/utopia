@@ -24,12 +24,12 @@ import {
 } from './ui-jsx-canvas-contexts'
 import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-element-renderer-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
-import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-top-level-elements'
 import * as EP from '../../../core/shared/element-path'
 import { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
+import { getParseSuccessOrTransientForFilePath } from '../canvas-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -112,6 +112,7 @@ export function createExecutionScope(
       jsxFactoryFunction,
       shouldIncludeCanvasRootInTheSpy,
       openStoryboardFileNameKILLME,
+      imports,
     )
 
     executionScope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(

@@ -38,13 +38,17 @@ import {
   UtopiaJSXComponent,
   getJSXElementNameLastPart,
   jsxElementNameEquals,
+  ImportInfo,
+  createImportedFrom,
+  createNotImported,
+  ElementInstanceMetadata,
 } from '../shared/element-template'
 import {
   sceneMetadata as _sceneMetadata,
   fishOutUtopiaCanvasFromTopLevelElements,
   EmptyUtopiaCanvasComponent,
 } from './scene-utils'
-import { pluck } from '../shared/array-utils'
+import { mapDropNulls, pluck } from '../shared/array-utils'
 import { forEachValue, mapValues } from '../shared/object-utils'
 import {
   getContentsTreeFileFromString,
@@ -57,6 +61,7 @@ import {
 import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
+import { foldEither, isLeft, isRight, maybeEitherToMaybe } from '../shared/either'
 
 export const sceneMetadata = _sceneMetadata // This is a hotfix for a circular dependency AND a leaking of utopia-api into the workers
 
@@ -70,6 +75,17 @@ export function isUtopiaAPIComponent(elementName: JSXElementName, imports: Impor
     } else {
       return utopiaAPI.importedAs === elementName.baseVariable
     }
+  }
+}
+
+export function isUtopiaAPIComponentFromMetadata(
+  elementInstanceMetadata: ElementInstanceMetadata,
+): boolean {
+  const foundImportInfo = maybeEitherToMaybe(elementInstanceMetadata.importInfo)
+  if (foundImportInfo != null) {
+    return foundImportInfo.path === 'utopia-api'
+  } else {
+    return false
   }
 }
 
@@ -106,12 +122,34 @@ function isGivenUtopiaAPIElementFromName(
   }
 }
 
+export function isGivenUtopiaElementFromMetadata(
+  elementInstanceMetadata: ElementInstanceMetadata,
+  componentName: string,
+): boolean {
+  const foundImportInfo = maybeEitherToMaybe(elementInstanceMetadata.importInfo)
+  if (foundImportInfo != null) {
+    return foundImportInfo.path === 'utopia-api' && foundImportInfo.originalName === componentName
+  } else {
+    return false
+  }
+}
+
 export function isSceneAgainstImports(element: JSXElementChild, imports: Imports): boolean {
   return isGivenUtopiaAPIElement(element, imports, 'Scene')
 }
 
+export function isSceneFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {
+  return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Scene')
+}
+
 export function isUtopiaAPITextElement(element: JSXElementChild, imports: Imports): boolean {
   return isJSXElement(element) && isTextAgainstImports(element.name, imports)
+}
+
+export function isUtopiaAPITextElementFromMetadata(
+  elementInstanceMetadata: ElementInstanceMetadata,
+): boolean {
+  return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Text')
 }
 
 export function isEllipseAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
@@ -129,6 +167,10 @@ export function isViewAgainstImports(jsxElementName: JSXElementName, imports: Im
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'View')
 }
 
+export function isViewFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {
+  return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'View')
+}
+
 export function isTextAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Text')
 }
@@ -140,19 +182,14 @@ export function isImg(jsxElementName: JSXElementName): boolean {
   )
 }
 
-export function isAnimatedElementAgainstImports(
-  jsxElementName: JSXElementName,
-  imports: Imports,
+export function isAnimatedElement(
+  elementInstanceMetadata: ElementInstanceMetadata | null,
 ): boolean {
-  const possibleReactSpring = imports['react-spring']
-  if (possibleReactSpring == null) {
-    return false
+  const importInfo = elementInstanceMetadata?.importInfo
+  if (importInfo != null && isRight(importInfo)) {
+    return importInfo.value.path === 'react-spring' && importInfo.value.originalName === 'animated'
   } else {
-    if (pluck(possibleReactSpring.importedFromWithin, 'name').includes('animated')) {
-      return jsxElementName.baseVariable === 'animated'
-    } else {
-      return false
-    }
+    return false
   }
 }
 
@@ -175,14 +212,48 @@ function isHTMLComponentFromBaseName(baseName: string, imports: Imports): boolea
   }
 }
 
-export function isImportedComponent(jsxElementName: JSXElementName, imports: Imports): boolean {
-  return Object.keys(imports).some((importKey) => {
-    const fromImports = imports[importKey]
-    return (
-      pluck(fromImports.importedFromWithin, 'name').includes(jsxElementName.baseVariable) ||
-      fromImports.importedWithName === jsxElementName.baseVariable
+export function importInfoFromImportDetails(name: JSXElementName, imports: Imports): ImportInfo {
+  const baseVariable = name.baseVariable
+
+  const err = mapDropNulls((pathOrModuleName) => {
+    const importDetail = imports[pathOrModuleName]
+    const importAlias = importDetail.importedFromWithin.find(
+      (fromWithin) => fromWithin.alias === baseVariable,
     )
-  })
+
+    if (importAlias != null) {
+      return createImportedFrom(importAlias.alias, importAlias.name, pathOrModuleName)
+    } else if (importDetail.importedAs === baseVariable) {
+      return createImportedFrom(importDetail.importedAs, null, pathOrModuleName)
+    } else if (importDetail.importedWithName === baseVariable) {
+      return createImportedFrom(importDetail.importedWithName, null, pathOrModuleName)
+    } else {
+      return null
+    }
+  }, Object.keys(imports))
+
+  const foundImportDetail = err[0] ?? createNotImported()
+
+  return foundImportDetail
+}
+
+export function isImportedComponent(
+  elementInstanceMetadata: ElementInstanceMetadata | null,
+): boolean {
+  const importInfo = elementInstanceMetadata?.importInfo
+  return importInfo != null && isRight(importInfo)
+}
+
+export function isImportedComponentNPM(
+  elementInstanceMetadata: ElementInstanceMetadata | null,
+): boolean {
+  const importInfo = elementInstanceMetadata?.importInfo
+  if (importInfo != null && isRight(importInfo)) {
+    const importKey = importInfo.value.path
+    return importKey !== 'utopia-api' && !importKey.startsWith('.') && !importKey.startsWith('/')
+  } else {
+    return false
+  }
 }
 
 const defaultEmptyUtopiaComponent = EmptyUtopiaCanvasComponent

@@ -43,6 +43,12 @@ import {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   setJSXAttributesAttribute,
+  ArbitraryJSBlock,
+  TopLevelElement,
+  getJSXElementNameAsString,
+  isJSXArbitraryBlock,
+  isJSXFragment,
+  isUtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
   getAllUniqueUids,
@@ -53,6 +59,7 @@ import {
   transformJSXComponentAtPath,
   findJSXElementChildAtPath,
   transformJSXComponentAtElementPath,
+  isSceneElement,
 } from '../../core/model/element-template-utils'
 import { generateUID } from '../../core/shared/uid-utils'
 import {
@@ -77,6 +84,7 @@ import {
   textFile,
   textFileContents,
   isParseSuccess,
+  isTextFile,
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
@@ -93,6 +101,7 @@ import {
   isRight,
   right,
   isLeft,
+  Either,
 } from '../../core/shared/either'
 import Utils, { IndexPosition } from '../../utils/utils'
 import {
@@ -173,14 +182,20 @@ import { getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { UiJsxCanvasContextData } from './ui-jsx-canvas'
-import { addFileToProjectContents, contentsToTree, ProjectContentTreeRoot } from '../assets'
+import {
+  addFileToProjectContents,
+  contentsToTree,
+  getContentsTreeFileFromString,
+  ProjectContentTreeRoot,
+} from '../assets'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from './dom-lookup'
-import { WindowMousePositionRaw } from '../../templates/editor-canvas'
 import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
 import { addToMapOfArraysUnique } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
+import { WindowMousePositionRaw } from '../../utils/global-positions'
+import { importedFromWhere } from '../editor/import-utils'
 
 export function getOriginalFrames(
   selectedViews: Array<ElementPath>,
@@ -1677,19 +1692,9 @@ export function getReparentTarget(
   )
   let parentSupportsChild = true
   if (possibleNewParent != null) {
-    parentSupportsChild = withUnderlyingTarget(
+    parentSupportsChild = MetadataUtils.targetSupportsChildren(
+      editorState.jsxMetadata,
       possibleNewParent,
-      editorState.projectContents,
-      editorState.nodeModules.files,
-      editorState.canvas.openFile?.filename,
-      false,
-      (success) => {
-        return MetadataUtils.targetSupportsChildren(
-          success.imports,
-          editorState.jsxMetadata,
-          possibleNewParent,
-        )
-      },
     )
   } else {
     // a null template path means Canvas, let's translate that to the storyboard component
@@ -2419,4 +2424,211 @@ export function cullSpyCollector(
       delete spyCollector.current.spyValues.metadata[elementPath]
     }
   })
+}
+
+export interface GetParseSuccessOrTransientResult {
+  topLevelElements: Array<TopLevelElement>
+  imports: Imports
+  jsxFactoryFunction: string | null
+  combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
+}
+
+const EmptyResult: GetParseSuccessOrTransientResult = {
+  topLevelElements: [],
+  imports: {},
+  jsxFactoryFunction: null,
+  combinedTopLevelArbitraryBlock: null,
+}
+
+export function getParseSuccessOrTransientForFilePath(
+  filePath: string,
+  projectContents: ProjectContentTreeRoot,
+  transientFilesState: TransientFilesState | null,
+): GetParseSuccessOrTransientResult {
+  const projectFile = getContentsTreeFileFromString(projectContents, filePath)
+  if (isTextFile(projectFile) && isParseSuccess(projectFile.fileContents.parsed)) {
+    const parseSuccess = projectFile.fileContents.parsed
+    const targetTransientFileState: TransientFileState | null =
+      transientFilesState == null ? null : transientFilesState[filePath] ?? null
+    if (targetTransientFileState == null) {
+      return {
+        topLevelElements: parseSuccess.topLevelElements,
+        imports: parseSuccess.imports,
+        jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
+        combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+      }
+    } else {
+      return {
+        topLevelElements: targetTransientFileState.topLevelElementsIncludingScenes,
+        imports: targetTransientFileState.imports,
+        jsxFactoryFunction: parseSuccess.jsxFactoryFunction,
+        combinedTopLevelArbitraryBlock: parseSuccess.combinedTopLevelArbitraryBlock,
+      }
+    }
+  } else {
+    return EmptyResult
+  }
+}
+
+export function getValidElementPaths(
+  focusedElementPath: ElementPath | null,
+  topLevelElementName: string | null,
+  instancePath: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  filePath: string,
+  transientFilesState: TransientFilesState | null,
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+): Array<ElementPath> {
+  if (topLevelElementName == null) {
+    return []
+  }
+  const { topLevelElements, imports } = getParseSuccessOrTransientForFilePath(
+    filePath,
+    projectContents,
+    transientFilesState,
+  )
+  const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
+  if (importSource != null) {
+    const resolvedImportSource = resolve(filePath, importSource)
+    if (isRight(resolvedImportSource)) {
+      const resolvedFilePath = resolvedImportSource.value
+      const { topLevelElements: resolvedTopLevelElements } = getParseSuccessOrTransientForFilePath(
+        resolvedFilePath,
+        projectContents,
+        transientFilesState,
+      )
+      const topLevelElement = resolvedTopLevelElements.find(
+        (element): element is UtopiaJSXComponent =>
+          isUtopiaJSXComponent(element) && element.name === topLevelElementName,
+      )
+      if (topLevelElement != null) {
+        return getValidElementPathsFromElement(
+          focusedElementPath,
+          topLevelElement.rootElement,
+          instancePath,
+          projectContents,
+          resolvedFilePath,
+          false,
+          true,
+          transientFilesState,
+          resolve,
+        )
+      }
+    }
+  }
+  return []
+}
+
+export function getValidElementPathsFromElement(
+  focusedElementPath: ElementPath | null,
+  element: JSXElementChild,
+  parentPath: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+  filePath: string,
+  parentIsScene: boolean,
+  parentIsInstance: boolean,
+  transientFilesState: TransientFilesState | null,
+  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+): Array<ElementPath> {
+  if (isJSXElement(element)) {
+    const isScene = isSceneElement(element, filePath, projectContents)
+    const uid = getUtopiaID(element)
+    const path = parentIsInstance
+      ? EP.appendNewElementPath(parentPath, uid)
+      : EP.appendToPath(parentPath, uid)
+    let paths = [path]
+    fastForEach(element.children, (c) =>
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          c,
+          path,
+          projectContents,
+          filePath,
+          isScene,
+          false,
+          transientFilesState,
+          resolve,
+        ),
+      ),
+    )
+
+    const name = getJSXElementNameAsString(element.name)
+    const lastElementPathPart = EP.lastElementPathForPath(path)
+    const matchingFocusedPathPart =
+      focusedElementPath == null || lastElementPathPart == null
+        ? null
+        : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
+
+    const isFocused = parentIsScene || matchingFocusedPathPart != null
+    if (isFocused) {
+      paths = [
+        ...paths,
+        ...getValidElementPaths(
+          focusedElementPath,
+          name,
+          matchingFocusedPathPart ?? path,
+          projectContents,
+          filePath,
+          transientFilesState,
+          resolve,
+        ),
+      ]
+    }
+
+    return paths
+  } else if (isJSXArbitraryBlock(element)) {
+    // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
+    // The paths this will generate will only be correct if the elements from `elementsWithin`
+    // are used at the same level at which they're defined.
+    // This will work fine:
+    // export var SameFileApp = (props) => {
+    //   const AppAsVariable = App
+    //   return <AppAsVariable />
+    // }
+    // This will not:
+    // export var SameFileApp = (props) => {
+    //   const AppAsVariable = App
+    //   return <div data-uid='same-file-app-div' style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}>
+    //     <AppAsVariable />
+    //   </div>
+    // }
+    let paths: Array<ElementPath> = []
+    fastForEach(Object.values(element.elementsWithin), (e) =>
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          e,
+          parentPath,
+          projectContents,
+          filePath,
+          parentIsScene,
+          parentIsInstance,
+          transientFilesState,
+          resolve,
+        ),
+      ),
+    )
+    return paths
+  } else if (isJSXFragment(element)) {
+    let paths: Array<ElementPath> = []
+    fastForEach(Object.values(element.children), (e) =>
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          e,
+          parentPath,
+          projectContents,
+          filePath,
+          parentIsScene,
+          parentIsInstance,
+          transientFilesState,
+          resolve,
+        ),
+      ),
+    )
+    return paths
+  } else {
+    return []
+  }
 }

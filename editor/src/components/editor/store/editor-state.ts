@@ -31,7 +31,7 @@ import {
   applyUtopiaJSXComponentsChanges,
 } from '../../../core/model/project-file-utils'
 import { ErrorMessage } from '../../../core/shared/error-messages'
-import type { PackageStatusMap } from '../../../core/shared/npm-dependency-types'
+import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import {
   Imports,
   ParseSuccess,
@@ -54,7 +54,6 @@ import {
 import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import { ExportsInfo, MultiFileBuildResult } from '../../../core/workers/ts/ts-worker'
 import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import { BaseSnappingThreshold } from '../../../templates/editor-canvas'
 import {
   bimapEither,
   Either,
@@ -89,7 +88,10 @@ import {
   FrameAndTarget,
   HigherOrderControl,
 } from '../../canvas/canvas-types'
-import { produceCanvasTransientState } from '../../canvas/canvas-utils'
+import {
+  getParseSuccessOrTransientForFilePath,
+  produceCanvasTransientState,
+} from '../../canvas/canvas-utils'
 import { CursorPosition } from '../../code-editor/code-editor-utils'
 import { EditorPanel } from '../../common/actions/index'
 import {
@@ -102,8 +104,6 @@ import {
 } from '../../custom-code/code-file'
 import { EditorModes, Mode } from '../editor-modes'
 import { FontSettings } from '../../inspector/common/css-utils'
-import { DefaultPackagesList, PackageDetails } from '../../navigator/dependency-list'
-import { LeftMenuTab, LeftPaneDefaultWidth } from '../../navigator/left-pane'
 import { DropTargetHint } from '../../navigator/navigator'
 import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
@@ -114,8 +114,6 @@ import {
   isDynamicSceneChildWidthHeightPercentage,
   getStoryboardElementPath,
 } from '../../../core/model/scene-utils'
-
-import { RightMenuTab } from '../../canvas/right-menu'
 
 import {
   toUid,
@@ -142,9 +140,57 @@ import {
 } from './store-deep-equality-instances'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
-import { getParseSuccessOrTransientForFilePath } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
+
+export const enum LeftMenuTab {
+  UIInsert = 'ui-insert',
+  Project = 'project',
+  Storyboards = 'storyboards',
+  Contents = 'contents',
+  Settings = 'settings',
+  Sharing = 'sharing',
+  Github = 'github',
+}
+
+export const LeftPaneMinimumWidth = 5
+
+export const LeftPaneDefaultWidth = 260
+
+export const enum RightMenuTab {
+  Insert = 'insert',
+  Inspector = 'inspector',
+}
+
+// TODO: this should just contain an NpmDependency and a status
+export interface DependencyPackageDetails {
+  name: string
+  version: string | null
+  status: PackageStatus
+}
+
+export const DefaultPackagesList: Array<DependencyPackageDetails> = [
+  {
+    name: 'react',
+    version: '16.13.1',
+    status: 'default-package',
+  },
+  {
+    name: 'react-dom',
+    version: '16.13.1',
+    status: 'default-package',
+  },
+  {
+    name: 'utopia-api',
+    version: '0.4.1',
+    status: 'default-package',
+  },
+  {
+    name: 'react-spring',
+    version: '8.0.27',
+    status: 'default-package',
+  },
+]
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
 
@@ -179,6 +225,7 @@ export type EditorStore = {
   userState: UserState
   workers: UtopiaTsWorkers
   dispatch: EditorDispatch
+  alreadySaved: boolean
 }
 
 export interface FileDeleteModal {
@@ -295,6 +342,7 @@ export interface EditorState {
   fileBrowser: {
     minimised: boolean
     renamingTarget: string | null
+    dropTarget: string | null
   }
   dependencyList: {
     minimised: boolean
@@ -697,83 +745,6 @@ export function getJSXComponentsAndImportsForPath(
   }
 }
 
-export function getJSXComponentsAndImportsForPathInnerComponentFromState(
-  path: ElementPath,
-  model: EditorState,
-  derived: DerivedState,
-): {
-  components: UtopiaJSXComponent[]
-  imports: Imports
-} {
-  const storyboardFilePath = getOpenUIJSFileKey(model)
-  return getJSXComponentsAndImportsForPathInnerComponent(
-    path,
-    storyboardFilePath,
-    model.projectContents,
-    model.nodeModules.files,
-    derived.canvas.transientState.filesState,
-    model.codeResultCache.resolve,
-  )
-}
-
-export function getJSXComponentsAndImportsForPathInnerComponent(
-  path: ElementPath,
-  currentFilePath: string | null | undefined,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  transientFilesState: TransientFilesState | null,
-  resolve: ResolveFn,
-): {
-  components: UtopiaJSXComponent[]
-  imports: Imports
-} {
-  if (currentFilePath == null) {
-    return {
-      components: [],
-      imports: {},
-    }
-  }
-  const resultForPath = getJSXComponentsAndImportsForPath(
-    path,
-    currentFilePath,
-    projectContents,
-    nodeModules,
-    transientFilesState,
-  )
-
-  const elementName = MetadataUtils.getJSXElementTagName(path, resultForPath.components)
-  if (elementName != null) {
-    const importSource = importedFromWhere(
-      resultForPath.underlyingFilePath,
-      elementName,
-      resultForPath.components,
-      resultForPath.imports,
-    )
-    if (importSource != null) {
-      const resolvedImportSource = resolve(resultForPath.underlyingFilePath, importSource)
-      if (isRight(resolvedImportSource)) {
-        const resolvedFilePath = resolvedImportSource.value
-        const importSourceFile = getParseSuccessOrTransientForFilePath(
-          resolvedFilePath,
-          projectContents,
-          transientFilesState,
-        )
-        return {
-          components: [
-            ...importSourceFile.topLevelElements.filter(isUtopiaJSXComponent),
-            ...resultForPath.components,
-          ],
-          imports: importSourceFile.imports,
-        }
-      }
-    }
-  }
-  return {
-    components: resultForPath.components,
-    imports: resultForPath.imports,
-  }
-}
-
 function modifyOpenScenes_INTERNAL(
   transform: (topLevelElementsIncludingScene: UtopiaJSXComponent[]) => UtopiaJSXComponent[],
   model: EditorState,
@@ -1045,6 +1016,7 @@ export function createNewProjectName(): string {
   return `${friendlyWordsPredicate}-${friendlyWordsObject}`
 }
 
+export const BaseSnappingThreshold = 5
 export const BaseCanvasOffset = { x: 20, y: 60 } as CanvasPoint
 export const BaseCanvasOffsetLeftPane = {
   x: BaseCanvasOffset.x + LeftPaneDefaultWidth,
@@ -1136,6 +1108,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     fileBrowser: {
       minimised: false,
+      dropTarget: null,
       renamingTarget: null,
     },
     navigator: {
@@ -1397,6 +1370,7 @@ export function editorModelFromPersistentModel(
     },
     fileBrowser: {
       renamingTarget: null,
+      dropTarget: null,
       minimised: persistentModel.fileBrowser.minimised,
     },
     codeEditorErrors: persistentModel.codeEditorErrors,

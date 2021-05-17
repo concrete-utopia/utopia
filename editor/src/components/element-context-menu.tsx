@@ -33,8 +33,8 @@ import { ElementPath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 import { FlexRow, Icn, IcnProps } from '../uuiui'
 import { getOpenUIJSFileKey } from './editor/store/editor-state'
-import { WindowMousePositionRaw } from '../templates/editor-canvas'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
+import { WindowMousePositionRaw } from '../utils/global-positions'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'

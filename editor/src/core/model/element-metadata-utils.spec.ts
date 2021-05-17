@@ -47,6 +47,7 @@ const testComponentMetadataChild1: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 const testComponentMetadataChild2: ElementInstanceMetadata = {
   globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
@@ -65,6 +66,7 @@ const testComponentMetadataChild2: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testComponentMetadataGrandchild: ElementInstanceMetadata = {
@@ -86,6 +88,7 @@ const testComponentMetadataGrandchild: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testComponentMetadataChild3: ElementInstanceMetadata = {
@@ -105,6 +108,7 @@ const testComponentMetadataChild3: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testComponentRoot1: ElementInstanceMetadata = {
@@ -125,6 +129,7 @@ const testComponentRoot1: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
@@ -144,6 +149,7 @@ const testComponentSceneChildElementRootChild: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
@@ -163,6 +169,7 @@ const testComponentSceneChildElementRoot: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testComponentSceneChildElement: ElementInstanceMetadata = {
@@ -179,6 +186,7 @@ const testComponentSceneChildElement: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testComponentSceneElement: ElementInstanceMetadata = {
@@ -200,6 +208,7 @@ const testComponentSceneElement: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testStoryboardGrandChildElement: ElementInstanceMetadata = {
@@ -216,6 +225,7 @@ const testStoryboardGrandChildElement: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testStoryboardChildElement: ElementInstanceMetadata = {
@@ -232,6 +242,7 @@ const testStoryboardChildElement: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testStoryboardElement: ElementInstanceMetadata = {
@@ -248,6 +259,7 @@ const testStoryboardElement: ElementInstanceMetadata = {
   computedStyle: emptyComputedStyle,
   attributeMetadatada: emptyAttributeMetadatada,
   label: null,
+  importInfo: null,
 }
 
 const testElementMetadataMap: ElementInstanceMetadataMap = {
@@ -360,32 +372,33 @@ describe('targetElementSupportsChildren', () => {
       computedStyle: emptyComputedStyle,
       attributeMetadatada: emptyAttributeMetadatada,
       label: null,
+      importInfo: null,
     }
   }
 
   it('Returns true for a utopia-api View', () => {
     const element = dummyInstanceDataForElementType('View')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
   it('Returns true for a button', () => {
     const element = dummyInstanceDataForElementType('button')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
   it('Returns true for a div', () => {
     const element = dummyInstanceDataForElementType('div')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
   it('Returns true for a span', () => {
     const element = dummyInstanceDataForElementType('span')
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
   it('Returns true for an animated.div', () => {
     const element = dummyInstanceDataForElementType(jsxElementName('animated', ['div']))
-    const actualResult = MetadataUtils.targetElementSupportsChildren(sampleImportsForTests, element)
+    const actualResult = MetadataUtils.targetElementSupportsChildren(element)
     expect(actualResult).toBeTruthy()
   })
 })
@@ -471,6 +484,7 @@ describe('getElementLabel', () => {
   const textBlock = jsxTextBlock('test text')
   const spanElement = jsxElement(
     'span',
+    'span-1',
     jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('span-1', emptyComments) }),
     [textBlock],
   )
@@ -490,9 +504,11 @@ describe('getElementLabel', () => {
     emptyComputedStyle,
     emptyAttributeMetadatada,
     null,
+    null,
   )
   const divElement = jsxElement(
     'div',
+    'div-1',
     jsxAttributesFromMap({ 'data-uid': jsxAttributeValue('div-1', emptyComments) }),
     [spanElement],
   )
@@ -511,6 +527,7 @@ describe('getElementLabel', () => {
     emptySpecialSizeMeasurements,
     emptyComputedStyle,
     emptyAttributeMetadatada,
+    null,
     null,
   )
   const metadata: ElementInstanceMetadataMap = {

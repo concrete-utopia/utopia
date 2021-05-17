@@ -52,8 +52,8 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { PRODUCTION_ENV } from '../../common/env-vars'
 import { CanvasContainerID } from './canvas-types'
 import { emptySet } from '../../core/shared/set-utils'
-import { getPathsOnDomElement } from '../../core/shared/uid-utils'
-import { mapDropNulls } from '../../core/shared/array-utils'
+import { getPathWithStringsOnDomElement, PathWithString } from '../../core/shared/uid-utils'
+import { mapDropNulls, pluck } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { fastForEach } from '../../core/shared/utils'
 
@@ -179,14 +179,24 @@ function getCachedAttributesComingFromStyleSheets(
   return value
 }
 
-function useResizeObserver(invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>) {
+function useResizeObserver(
+  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
+  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
+  selectedViews: React.MutableRefObject<Array<ElementPath>>,
+  canvasInteractionHappening: React.MutableRefObject<boolean>,
+) {
   const resizeObserver = React.useMemo((): ResizeObserver | null => {
     if (ObserversAvailable) {
       return new ResizeObserver((entries: any) => {
-        for (let entry of entries) {
-          const sceneID = findParentScene(entry.target)
-          if (sceneID != null) {
-            invalidatedSceneIDsRef.current.add(sceneID)
+        if (canvasInteractionHappening.current) {
+          // Only add the selected views
+          fastForEach(selectedViews.current, (v) => invalidatedPathsRef.current.add(EP.toString(v)))
+        } else {
+          for (let entry of entries) {
+            const sceneID = findParentScene(entry.target)
+            if (sceneID != null) {
+              invalidatedScenesRef.current.add(sceneID)
+            }
           }
         }
       })
@@ -205,20 +215,30 @@ function useResizeObserver(invalidatedSceneIDsRef: React.MutableRefObject<Set<st
   return resizeObserver
 }
 
-function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>) {
+function useMutationObserver(
+  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
+  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
+  selectedViews: React.MutableRefObject<Array<ElementPath>>,
+  canvasInteractionHappening: React.MutableRefObject<boolean>,
+) {
   const mutationObserver = React.useMemo((): MutationObserver | null => {
     if (ObserversAvailable) {
       return new (window as any).MutationObserver((mutations: MutationRecord[]) => {
-        for (let mutation of mutations) {
-          if (
-            mutation.attributeName === 'style' ||
-            mutation.addedNodes.length > 0 ||
-            mutation.removedNodes.length > 0
-          ) {
-            if (mutation.target instanceof HTMLElement) {
-              const sceneID = findParentScene(mutation.target)
-              if (sceneID != null) {
-                invalidatedSceneIDsRef.current.add(sceneID)
+        if (canvasInteractionHappening.current) {
+          // Only add the selected views
+          fastForEach(selectedViews.current, (v) => invalidatedPathsRef.current.add(EP.toString(v)))
+        } else {
+          for (let mutation of mutations) {
+            if (
+              mutation.attributeName === 'style' ||
+              mutation.addedNodes.length > 0 ||
+              mutation.removedNodes.length > 0
+            ) {
+              if (mutation.target instanceof HTMLElement) {
+                const sceneID = findParentScene(mutation.target)
+                if (sceneID != null) {
+                  invalidatedScenesRef.current.add(sceneID)
+                }
               }
             }
           }
@@ -240,7 +260,7 @@ function useMutationObserver(invalidatedSceneIDsRef: React.MutableRefObject<Set<
 }
 
 function useInvalidateScenesWhenSelectedViewChanges(
-  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
 ): void {
   return useSelectorWithCallback(
@@ -250,7 +270,7 @@ function useInvalidateScenesWhenSelectedViewChanges(
         const scenePath = EP.createBackwardsCompatibleScenePath(sv)
         if (scenePath != null) {
           const sceneID = EP.toString(scenePath)
-          invalidatedSceneIDsRef.current.add(sceneID)
+          invalidatedScenesRef.current.add(sceneID)
           invalidatedPathsForStylesheetCacheRef.current.add(EP.toString(sv))
         }
       })
@@ -280,11 +300,12 @@ interface DomWalkerProps {
   scale: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<ElementPath>,
+    cachedPaths: Array<ElementPath>,
   ) => void
   canvasRootElementElementPath: ElementPath
   validRootPaths: Array<ElementPath>
   mountCount: number
+  canvasInteractionHappening: boolean
 }
 
 export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
@@ -292,13 +313,34 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
   const rootMetadataInStateRef = useRefEditorState(
     (store) => store.editor.domMetadata as ReadonlyArray<ElementInstanceMetadata>,
   )
-  const invalidatedSceneIDsRef = React.useRef<Set<string>>(emptySet())
+  const invalidatedPathsRef = React.useRef<Set<string>>(emptySet()) // For invalidating specific paths only
+  const invalidatedScenesRef = React.useRef<Set<string>>(emptySet()) // For invalidating entire scenes and everything below them
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
   const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
-  const resizeObserver = useResizeObserver(invalidatedSceneIDsRef)
-  const mutationObserver = useMutationObserver(invalidatedSceneIDsRef)
+  const selectedViewsRef = React.useRef(props.selectedViews)
+  const canvasInteractionHappeningRef = React.useRef(props.canvasInteractionHappening)
+
+  if (selectedViewsRef.current !== props.selectedViews) {
+    selectedViewsRef.current = props.selectedViews
+  }
+  if (canvasInteractionHappeningRef.current !== props.canvasInteractionHappening) {
+    canvasInteractionHappeningRef.current = props.canvasInteractionHappening
+  }
+
+  const resizeObserver = useResizeObserver(
+    invalidatedPathsRef,
+    invalidatedScenesRef,
+    selectedViewsRef,
+    canvasInteractionHappeningRef,
+  )
+  const mutationObserver = useMutationObserver(
+    invalidatedPathsRef,
+    invalidatedScenesRef,
+    selectedViewsRef,
+    canvasInteractionHappeningRef,
+  )
   useInvalidateScenesWhenSelectedViewChanges(
-    invalidatedSceneIDsRef,
+    invalidatedScenesRef,
     invalidatedPathsForStylesheetCacheRef,
   )
 
@@ -324,16 +366,17 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
       // This assumes that the canvas root is rendering a Storyboard fragment.
       // The necessary validPaths and the root fragment's template path comes from props,
       // because the fragment is invisible in the DOM.
-      const { metadata, cachedTreeRoots } = walkCanvasRootFragment(
+      const { metadata, cachedPaths } = walkCanvasRootFragment(
         refOfContainer,
         0,
         props.canvasRootElementElementPath,
         props.validRootPaths,
         rootMetadataInStateRef,
-        invalidatedSceneIDsRef,
+        invalidatedPathsRef,
+        invalidatedScenesRef,
         invalidatedPathsForStylesheetCacheRef,
         props.selectedViews,
-        initComplete,
+        !initComplete,
         props.scale,
         containerRect,
       )
@@ -342,7 +385,7 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
         performance.measure('DOM WALKER', 'DOM_WALKER_START', 'DOM_WALKER_END')
       }
       setInitComplete()
-      props.onDomReport(metadata, cachedTreeRoots)
+      props.onDomReport(metadata, cachedPaths)
     }
   })
 
@@ -374,64 +417,116 @@ function collectMetadataForElement(
   }
 }
 
+function isAnyPathInvalidated(
+  stringPathsForElement: Array<string>,
+  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
+): boolean {
+  return (
+    invalidatedPathsRef.current.size > 0 &&
+    stringPathsForElement.some((p) => invalidatedPathsRef.current.has(p))
+  )
+}
+
 function collectMetadata(
   element: HTMLElement,
   pathsForElement: Array<ElementPath>,
+  stringPathsForElement: Array<string>,
   parentPoint: CanvasPoint,
   allUnfilteredChildrenPaths: Array<ElementPath>,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
+  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
+  rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
+  invalidated: boolean,
   selectedViews: Array<ElementPath>,
-): Array<ElementInstanceMetadata> {
-  const {
-    tagName,
-    globalFrame,
-    localFrame,
-    specialSizeMeasurementsObject,
-  } = collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
-
-  const { computedStyle, attributeMetadata } = getComputedStyle(
-    element,
-    pathsForElement,
-    invalidatedPathsForStylesheetCacheRef,
-    selectedViews,
-  )
-
-  return pathsForElement.map((path) => {
-    const rootsOrChildrenToAdd = pathsForElement.filter((otherPath) =>
-      EP.isParentOf(path, otherPath),
-    )
-    const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
-
-    let filteredChildPaths: ElementPath[] = []
-    let filteredRootElements: ElementPath[] = []
-    fastForEach(unfilteredChildrenPaths, (childPath) => {
-      if (EP.isParentOf(path, childPath)) {
-        if (EP.isRootElementOfInstance(childPath)) {
-          filteredRootElements.push(childPath)
-        } else {
-          filteredChildPaths.push(childPath)
-        }
-      }
-    })
-
-    return elementInstanceMetadata(
-      path,
-      left(tagName),
-      {},
+): { collectedMetadata: Array<ElementInstanceMetadata>; cachedPaths: Array<ElementPath> } {
+  const shouldCollect =
+    invalidated || isAnyPathInvalidated(stringPathsForElement, invalidatedPathsRef)
+  if (shouldCollect && pathsForElement.length > 0) {
+    const {
+      tagName,
       globalFrame,
       localFrame,
-      filteredChildPaths,
-      filteredRootElements,
-      false,
-      false,
       specialSizeMeasurementsObject,
-      computedStyle,
-      attributeMetadata,
-      null,
+    } = collectMetadataForElement(element, parentPoint, scale, containerRectLazy)
+
+    const { computedStyle, attributeMetadata } = getComputedStyle(
+      element,
+      pathsForElement,
+      invalidatedPathsForStylesheetCacheRef,
+      selectedViews,
     )
-  })
+
+    const collectedMetadata = pathsForElement.map((path) => {
+      invalidatedPathsRef.current.delete(EP.toString(path))
+      const rootsOrChildrenToAdd = pathsForElement.filter((otherPath) =>
+        EP.isParentOf(path, otherPath),
+      )
+      const unfilteredChildrenPaths = allUnfilteredChildrenPaths.concat(rootsOrChildrenToAdd)
+
+      let filteredChildPaths: ElementPath[] = []
+      let filteredRootElements: ElementPath[] = []
+      fastForEach(unfilteredChildrenPaths, (childPath) => {
+        if (EP.isParentOf(path, childPath)) {
+          if (EP.isRootElementOfInstance(childPath)) {
+            filteredRootElements.push(childPath)
+          } else {
+            filteredChildPaths.push(childPath)
+          }
+        }
+      })
+
+      return elementInstanceMetadata(
+        path,
+        left(tagName),
+        {},
+        globalFrame,
+        localFrame,
+        filteredChildPaths,
+        filteredRootElements,
+        false,
+        false,
+        specialSizeMeasurementsObject,
+        computedStyle,
+        attributeMetadata,
+        null,
+        null, // This comes from the Spy Wrapper
+      )
+    })
+
+    return {
+      collectedMetadata: collectedMetadata,
+      cachedPaths: [],
+    }
+  } else {
+    const cachedMetadata = mapDropNulls((path) => {
+      return MetadataUtils.findElementMetadata(path, rootMetadataInStateRef.current)
+    }, pathsForElement)
+
+    if (cachedMetadata.length === pathsForElement.length) {
+      return {
+        collectedMetadata: cachedMetadata,
+        cachedPaths: pathsForElement,
+      }
+    } else {
+      // If any path is missing cached metadata we must forcibly invalidate the element
+      return collectMetadata(
+        element,
+        pathsForElement,
+        stringPathsForElement,
+        parentPoint,
+        allUnfilteredChildrenPaths,
+        scale,
+        containerRectLazy,
+        invalidatedPathsRef,
+        invalidatedPathsForStylesheetCacheRef,
+        rootMetadataInStateRef,
+        true,
+        selectedViews,
+      )
+    }
+  }
 }
 
 function getComputedStyle(
@@ -579,34 +674,37 @@ function walkCanvasRootFragment(
   canvasRootPath: ElementPath,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
+  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
-  initComplete: boolean,
+  invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
   metadata: ReadonlyArray<ElementInstanceMetadata>
-  cachedTreeRoots: Array<ElementPath>
+  cachedPaths: Array<ElementPath>
 } {
   if (
     ObserversAvailable &&
-    invalidatedSceneIDsRef.current.size === 0 &&
+    invalidatedPathsRef.current.size === 0 &&
+    invalidatedScenesRef.current.size === 0 &&
     rootMetadataInStateRef.current.length > 0 &&
-    initComplete
+    !invalidated
   ) {
     // no mutation happened on the entire canvas, just return the old metadata
-    return { metadata: rootMetadataInStateRef.current, cachedTreeRoots: [canvasRootPath] }
+    return { metadata: rootMetadataInStateRef.current, cachedPaths: [canvasRootPath] }
   } else {
-    const { childPaths: rootElements, rootMetadata, cachedTreeRoots } = walkSceneInner(
+    const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
       canvasRoot,
       index,
       validPaths,
       rootMetadataInStateRef,
-      invalidatedSceneIDsRef,
+      invalidatedPathsRef,
+      invalidatedScenesRef,
       invalidatedPathsForStylesheetCacheRef,
       selectedViews,
-      initComplete,
+      invalidated,
       scale,
       containerRectLazy,
     )
@@ -627,8 +725,9 @@ function walkCanvasRootFragment(
       emptyComputedStyle,
       emptyAttributeMetadatada,
       null,
+      null, // this comes from the Spy Wrapper
     )
-    return { metadata: [...rootMetadata, metadata], cachedTreeRoots: cachedTreeRoots }
+    return { metadata: [...rootMetadata, metadata], cachedPaths: cachedPaths }
   }
 }
 
@@ -637,15 +736,16 @@ function walkScene(
   index: number,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
+  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
-  initComplete: boolean,
+  invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
   metadata: ReadonlyArray<ElementInstanceMetadata>
-  cachedTreeRoots: Array<ElementPath>
+  cachedPaths: Array<ElementPath>
 } {
   if (scene instanceof HTMLElement) {
     // Right now this assumes that only UtopiaJSXComponents can be rendered via scenes,
@@ -655,61 +755,49 @@ function walkScene(
     const instancePath = sceneID == null ? null : EP.fromString(sceneID)
 
     if (sceneID != null && instancePath != null && EP.isElementPath(instancePath)) {
-      let cachedMetadata: ElementInstanceMetadata | null = null
-      if (ObserversAvailable && invalidatedSceneIDsRef.current != null) {
-        if (!invalidatedSceneIDsRef.current.has(sceneID)) {
-          // we can use the cache, if it exists
-          const elementFromCurrentMetadata = MetadataUtils.findElementMetadata(
-            instancePath,
-            rootMetadataInStateRef.current,
-          )
-          if (elementFromCurrentMetadata != null) {
-            cachedMetadata = elementFromCurrentMetadata
-          }
-        } else {
-          // we proceed with the walk
-          invalidatedSceneIDsRef.current.delete(sceneID) // Mutation!
-        }
-      }
+      const invalidatedScene =
+        invalidated ||
+        (ObserversAvailable &&
+          invalidatedScenesRef.current.size > 0 &&
+          invalidatedScenesRef.current.has(sceneID))
 
-      if (cachedMetadata == null || !initComplete) {
-        const { childPaths: rootElements, rootMetadata, cachedTreeRoots } = walkSceneInner(
-          scene,
-          index,
-          validPaths,
-          rootMetadataInStateRef,
-          invalidatedSceneIDsRef,
-          invalidatedPathsForStylesheetCacheRef,
-          selectedViews,
-          initComplete,
-          scale,
-          containerRectLazy,
-        )
+      invalidatedScenesRef.current.delete(sceneID)
 
-        const sceneMetadata = collectMetadata(
-          scene,
-          [instancePath],
-          canvasPoint({ x: 0, y: 0 }),
-          rootElements,
-          scale,
-          containerRectLazy,
-          invalidatedPathsForStylesheetCacheRef,
-          selectedViews,
-        )
-        return { metadata: [...rootMetadata, ...sceneMetadata], cachedTreeRoots: cachedTreeRoots }
-      } else {
-        let rootMetadataAccumulator = [cachedMetadata]
-        // Push the cached metadata for everything from this scene downwards
-        Utils.fastForEach(rootMetadataInStateRef.current, (elem) => {
-          if (EP.isDescendantOf(elem.elementPath, instancePath)) {
-            rootMetadataAccumulator.push(elem)
-          }
-        })
-        return { metadata: rootMetadataAccumulator, cachedTreeRoots: [instancePath] }
+      const { childPaths: rootElements, rootMetadata, cachedPaths } = walkSceneInner(
+        scene,
+        index,
+        validPaths,
+        rootMetadataInStateRef,
+        invalidatedPathsRef,
+        invalidatedScenesRef,
+        invalidatedPathsForStylesheetCacheRef,
+        selectedViews,
+        invalidatedScene,
+        scale,
+        containerRectLazy,
+      )
+
+      const { collectedMetadata: sceneMetadata, cachedPaths: sceneCachedPaths } = collectMetadata(
+        scene,
+        [instancePath],
+        [sceneID],
+        canvasPoint({ x: 0, y: 0 }),
+        rootElements,
+        scale,
+        containerRectLazy,
+        invalidatedPathsRef,
+        invalidatedPathsForStylesheetCacheRef,
+        rootMetadataInStateRef,
+        invalidatedScene,
+        selectedViews,
+      )
+      return {
+        metadata: [...rootMetadata, ...sceneMetadata],
+        cachedPaths: [...cachedPaths, ...sceneCachedPaths],
       }
     }
   }
-  return { metadata: [], cachedTreeRoots: [] } // verify
+  return { metadata: [], cachedPaths: [] } // verify
 }
 
 function walkSceneInner(
@@ -717,48 +805,50 @@ function walkSceneInner(
   index: number,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
+  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
-  initComplete: boolean,
+  invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
   childPaths: Array<ElementPath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
-  cachedTreeRoots: Array<ElementPath>
+  cachedPaths: Array<ElementPath>
 } {
   const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
 
   let childPaths: Array<ElementPath> = []
   let rootMetadataAccumulator: Array<ElementInstanceMetadata> = []
-  let cachedTreeRootsAccumulator: Array<ElementPath> = []
+  let cachedPathsAccumulator: Array<ElementPath> = []
 
   scene.childNodes.forEach((childNode) => {
-    const { childPaths: childNodePaths, rootMetadata, cachedTreeRoots } = walkElements(
+    const { childPaths: childNodePaths, rootMetadata, cachedPaths } = walkElements(
       childNode,
       index,
       0,
       globalFrame,
       validPaths,
       rootMetadataInStateRef,
-      invalidatedSceneIDsRef,
+      invalidatedPathsRef,
+      invalidatedScenesRef,
       invalidatedPathsForStylesheetCacheRef,
       selectedViews,
-      initComplete,
+      invalidated,
       scale,
       containerRectLazy,
     )
 
     childPaths.push(...childNodePaths)
     rootMetadataAccumulator.push(...rootMetadata)
-    cachedTreeRootsAccumulator.push(...cachedTreeRoots)
+    cachedPathsAccumulator.push(...cachedPaths)
   })
 
   return {
     childPaths: childPaths,
     rootMetadata: rootMetadataAccumulator,
-    cachedTreeRoots: cachedTreeRootsAccumulator,
+    cachedPaths: cachedPathsAccumulator,
   }
 }
 
@@ -770,28 +860,30 @@ function walkElements(
   parentPoint: CanvasPoint,
   validPaths: Array<ElementPath>,
   rootMetadataInStateRef: React.MutableRefObject<ReadonlyArray<ElementInstanceMetadata>>,
-  invalidatedSceneIDsRef: React.MutableRefObject<Set<string>>,
+  invalidatedPathsRef: React.MutableRefObject<Set<string>>,
+  invalidatedScenesRef: React.MutableRefObject<Set<string>>,
   invalidatedPathsForStylesheetCacheRef: React.MutableRefObject<Set<string>>,
   selectedViews: Array<ElementPath>,
-  initComplete: boolean,
+  invalidated: boolean,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
 ): {
   childPaths: ReadonlyArray<ElementPath>
   rootMetadata: ReadonlyArray<ElementInstanceMetadata>
-  cachedTreeRoots: Array<ElementPath>
+  cachedPaths: Array<ElementPath>
 } {
   if (isScene(element)) {
     // we found a nested scene, restart the walk
-    const { metadata, cachedTreeRoots } = walkScene(
+    const { metadata, cachedPaths: cachedPaths } = walkScene(
       element,
       index,
       validPaths,
       rootMetadataInStateRef,
-      invalidatedSceneIDsRef,
+      invalidatedPathsRef,
+      invalidatedScenesRef,
       invalidatedPathsForStylesheetCacheRef,
       selectedViews,
-      initComplete,
+      invalidated,
       scale,
       containerRectLazy,
     )
@@ -799,13 +891,13 @@ function walkElements(
     const result = {
       childPaths: [],
       rootMetadata: metadata,
-      cachedTreeRoots: cachedTreeRoots,
+      cachedPaths: cachedPaths,
     }
     return result
   }
   if (element instanceof HTMLElement) {
     // Determine the uid of this element if it has one.
-    const paths = getPathsOnDomElement(element)
+    const pathsWithStrings = getPathWithStringsOnDomElement(element)
 
     const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
     const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
@@ -813,8 +905,8 @@ function walkElements(
     const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
 
     // Check this is a path we're interested in, otherwise skip straight to the children
-    const foundValidPaths = paths.filter((path) => {
-      const staticPath = EP.makeLastPartOfPathStatic(path)
+    const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+      const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
       return validPaths.some((validPath) => {
         return EP.pathsEqual(staticPath, validPath)
       })
@@ -823,13 +915,13 @@ function walkElements(
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
     let rootMetadataAccumulator: ReadonlyArray<ElementInstanceMetadata> = []
-    let cachedTreeRootsAccumulator: Array<ElementPath> = []
+    let cachedPathsAccumulator: Array<ElementPath> = []
     if (traverseChildren) {
       element.childNodes.forEach((child, childIndex) => {
         const {
           childPaths: childNodePaths,
           rootMetadata: rootMetadataInner,
-          cachedTreeRoots,
+          cachedPaths,
         } = walkElements(
           child,
           childIndex,
@@ -837,37 +929,43 @@ function walkElements(
           globalFrame,
           validPaths,
           rootMetadataInStateRef,
-          invalidatedSceneIDsRef,
+          invalidatedPathsRef,
+          invalidatedScenesRef,
           invalidatedPathsForStylesheetCacheRef,
           selectedViews,
-          initComplete,
+          invalidated,
           scale,
           containerRectLazy,
         )
         childPaths.push(...childNodePaths)
         rootMetadataAccumulator = [...rootMetadataAccumulator, ...rootMetadataInner]
-        cachedTreeRootsAccumulator.push(...cachedTreeRoots)
+        cachedPathsAccumulator.push(...cachedPaths)
       })
     }
 
-    const collectedMetadata = collectMetadata(
+    const { collectedMetadata, cachedPaths } = collectMetadata(
       element,
-      foundValidPaths,
+      pluck(foundValidPaths, 'path'),
+      pluck(foundValidPaths, 'asString'),
       parentPoint,
       childPaths,
       scale,
       containerRectLazy,
+      invalidatedPathsRef,
       invalidatedPathsForStylesheetCacheRef,
+      rootMetadataInStateRef,
+      invalidated,
       selectedViews,
     )
 
     rootMetadataAccumulator = [...rootMetadataAccumulator, ...collectedMetadata]
+    cachedPathsAccumulator = [...cachedPathsAccumulator, ...cachedPaths]
     return {
       rootMetadata: rootMetadataAccumulator,
       childPaths: collectedMetadata.map((metadata) => metadata.elementPath), // TODO why not extract childPaths from the metadata?
-      cachedTreeRoots: cachedTreeRootsAccumulator,
+      cachedPaths: cachedPathsAccumulator,
     }
   } else {
-    return { childPaths: [], rootMetadata: [], cachedTreeRoots: [] }
+    return { childPaths: [], rootMetadata: [], cachedPaths: [] }
   }
 }

@@ -1,11 +1,13 @@
-import { findElementAtPath } from '../../core/model/element-metadata-utils'
+import { findElementAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { isUtopiaAPITextElement } from '../../core/model/project-file-utils'
+import {
+  isUtopiaAPITextElement,
+  isUtopiaAPITextElementFromMetadata,
+} from '../../core/model/project-file-utils'
 import { importAlias, importDetails, ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
-import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
   KeyCharacter,
   KeysPressed,
@@ -26,7 +28,6 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { LeftMenuTab } from '../navigator/left-pane'
 import { toggleTextFormatting } from '../text-utils'
 import { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/action-creators'
@@ -105,12 +106,8 @@ import {
   ZOOM_UI_OUT_SHORTCUT,
   ShortcutNamesByKey,
 } from './shortcut-definitions'
-import {
-  DerivedState,
-  EditorState,
-  getJSXComponentsAndImportsForPathFromState,
-  getOpenFile,
-} from './store/editor-state'
+import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
+import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -173,13 +170,8 @@ function getTextEditorTarget(editor: EditorState, derived: DerivedState): Elemen
     return null
   } else {
     const target = editor.selectedViews[0]
-    const { components, imports } = getJSXComponentsAndImportsForPathFromState(
-      target,
-      editor,
-      derived,
-    )
-    const element = findElementAtPath(target, components)
-    if (element != null && isUtopiaAPITextElement(element, imports)) {
+    const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
+    if (element != null && isUtopiaAPITextElementFromMetadata(element)) {
       return target
     } else {
       return null

@@ -11,7 +11,12 @@ import { fireEvent } from '@testing-library/react'
 import { act } from 'react-dom/test-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { canvasRectangle, CanvasVector } from '../../core/shared/math-utils'
-import { selectComponents, setCanvasFrames, wrapInView } from '../editor/actions/action-creators'
+import {
+  selectComponents,
+  setCanvasFrames,
+  unwrapGroupOrView,
+  wrapInView,
+} from '../editor/actions/action-creators'
 import { reparentComponents } from '../navigator/actions'
 import * as EP from '../../core/shared/element-path'
 import {
@@ -1057,6 +1062,85 @@ describe('moveTemplate', () => {
       ),
     )
   })
+  it('unwraps 1 non-storyboard element', async () => {
+    const appFilePath = '/src/app.js'
+    let projectContents: ProjectContents = {
+      '/package.json': textFile(
+        textFileContents(
+          JSON.stringify(DefaultPackageJson, null, 2),
+          unparsed,
+          RevisionsState.BothMatch,
+        ),
+        null,
+        0,
+      ),
+      '/src': directory(),
+      '/utopia': directory(),
+      [StoryboardFilePath]: createCodeFile(
+        StoryboardFilePath,
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard } from 'utopia-api'
+  import { App } from '/src/app.js'
+
+  export var storyboard = (
+    <Storyboard data-uid='${BakedInStoryboardUID}'>
+      <Scene
+        data-uid='${TestSceneUID}'
+        style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+      >
+        <App data-uid='${TestAppUID}' />
+      </Scene>
+    </Storyboard>
+  )`,
+      ),
+      [appFilePath]: createCodeFile(
+        appFilePath,
+        `
+  import * as React from 'react'
+  import { View } from 'utopia-api'
+  export var App = (props) => {
+    return <div data-uid='app-outer-div' style={{position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF'}}>
+      <View data-uid='app-wrapper-view'>
+        <div data-uid='app-inner-div' style={{ width: 50, height: 100 }}><span data-uid='app-inner-span'>hello</span></div>
+      </View>
+    </div>
+  }`,
+      ),
+    }
+    const renderResult = await renderTestEditorWithProjectContent(contentsToTree(projectContents))
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['app-outer-div', 'app-wrapper-view'])
+    const selectionAfterUnwrap = EP.appendNewElementPath(TestScenePath, [
+      'app-outer-div',
+      'app-inner-div',
+    ])
+
+    await renderResult.dispatch([unwrapGroupOrView(targetPath)], true)
+    expect(getPrintedUiJsCode(renderResult.getEditorState(), appFilePath)).toEqual(
+      Prettier.format(
+        `
+    import * as React from 'react'
+    import { View } from 'utopia-api'
+    export var App = (props) => {
+      return (
+        <div
+          data-uid='app-outer-div'
+          style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+        >
+          <div
+            data-uid='app-inner-div'
+            style={{ width: 50, height: 100 }}
+          >
+            <span data-uid='app-inner-span'>hello</span>
+          </div>
+        </div>
+      )
+    }`,
+        PrettierConfig,
+      ),
+    )
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([selectionAfterUnwrap])
+  })
   it('reparents multiselected elements', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -1776,6 +1860,9 @@ describe('moveTemplate', () => {
         </div>
       `),
     )
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb', NewUID]),
+    ])
   })
 
   it('inserting a new element as an orphan', async () => {
@@ -1913,6 +2000,9 @@ describe('moveTemplate', () => {
         PrettierConfig,
       ),
     )
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      EP.elementPath([['storyboard', NewUID]]),
+    ])
   })
 
   it('reparents an element while dragging', async () => {

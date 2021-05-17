@@ -27,12 +27,13 @@ export function defaultSceneElement(
     ),
   })
 
-  return jsxElement(jsxElementName('Scene', []), props, children)
+  return jsxElement(jsxElementName('Scene', []), uid, props, children)
 }
 
 export function defaultViewElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('View', []),
+    uid,
     jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
@@ -50,6 +51,7 @@ export function defaultViewElement(uid: string): JSXElement {
 export function defaultAnimatedDivElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('animated', ['div']),
+    uid,
     jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
@@ -66,6 +68,7 @@ export function defaultAnimatedDivElement(uid: string): JSXElement {
 export function defaultTransparentViewElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('View', []),
+    uid,
     jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
@@ -82,6 +85,7 @@ export function defaultTransparentViewElement(uid: string): JSXElement {
 export function defaultTextElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('Text', []),
+    uid,
     jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
@@ -99,6 +103,7 @@ export function defaultTextElement(uid: string): JSXElement {
 export function defaultRectangleElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('Rectangle', []),
+    uid,
     jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
@@ -115,6 +120,7 @@ export function defaultRectangleElement(uid: string): JSXElement {
 export function defaultEllipseElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('Ellipse', []),
+    uid,
     jsxAttributesFromMap({
       style: jsxAttributeValue(
         {
@@ -131,6 +137,7 @@ export function defaultEllipseElement(uid: string): JSXElement {
 export function defaultDivElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('div', []),
+    uid,
     jsxAttributesFromMap({
       style: jsxAttributeValue(
         {

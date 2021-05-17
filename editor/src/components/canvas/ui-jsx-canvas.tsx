@@ -11,7 +11,6 @@ import {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
-import { getValidElementPaths } from '../../core/model/element-template-utils'
 import {
   Imports,
   ElementPath,
@@ -74,10 +73,10 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-renderer/ui-jsx-canvas-element-renderer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../core/workers/parser-printer/parser-printer-utils'
-import { getParseSuccessOrTransientForFilePath } from './ui-jsx-canvas-renderer/ui-jsx-canvas-top-level-elements'
 import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
+import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
 
 applyUIDMonkeyPatch()
 
@@ -122,7 +121,7 @@ export interface UiJsxCanvasProps {
   mountCount: number
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<ElementPath>,
+    cachedPaths: Array<ElementPath>,
   ) => void
   walkDOM: boolean
   imports_KILLME: Imports // FIXME this is the storyboard imports object used only for the cssimport
@@ -156,7 +155,7 @@ export function pickUiJsxCanvasProps(
   walkDOM: boolean,
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<ElementPath>,
+    cachedPaths: Array<ElementPath>,
   ) => void,
   clearConsoleLogs: () => void,
   addToConsoleLogs: (log: ConsoleLog) => void,
@@ -382,6 +381,7 @@ export const UiJsxCanvas = betterReactMemo(
         executionScope,
         projectContents,
         uiFilePath,
+        transientFilesState,
         resolve,
       )
 
@@ -418,6 +418,7 @@ export const UiJsxCanvas = betterReactMemo(
                   validRootPaths={rootValidPaths}
                   canvasRootElementElementPath={storyboardRootElementPath}
                   scrollAnimation={props.scrollAnimation}
+                  canvasInteractionHappening={props.transientFilesState != null}
                 >
                   <SceneLevelUtopiaContext.Provider value={sceneLevelUtopiaContextValue}>
                     <ParentLevelUtopiaContext.Provider
@@ -450,6 +451,7 @@ function useGetStoryboardRoot(
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,
+  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
@@ -471,6 +473,7 @@ function useGetStoryboardRoot(
           EP.emptyElementPath,
           projectContents,
           uiFilePath,
+          transientFilesState,
           resolve,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(validPaths[0]) // >:D
@@ -490,12 +493,13 @@ export interface CanvasContainerProps {
   offset: CanvasVector
   onDomReport: (
     elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-    cachedTreeRoots: Array<ElementPath>,
+    cachedPaths: Array<ElementPath>,
   ) => void
   canvasRootElementElementPath: ElementPath
   validRootPaths: Array<ElementPath>
   mountCount: number
   scrollAnimation: boolean
+  canvasInteractionHappening: boolean
 }
 
 const CanvasContainer: React.FunctionComponent<React.PropsWithChildren<CanvasContainerProps>> = (

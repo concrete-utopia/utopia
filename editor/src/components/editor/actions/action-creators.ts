@@ -42,7 +42,6 @@ import type {
 } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange } from '../../canvas/canvas-types'
-import type { RightMenuTab } from '../../canvas/right-menu'
 import type { CursorPosition } from '../../code-editor/code-editor-utils'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
@@ -50,7 +49,6 @@ import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/co
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
-import type { LeftMenuTab } from '../../navigator/left-pane'
 import type {
   AddFolder,
   AddMissingDimensions,
@@ -183,13 +181,16 @@ import type {
   UpdateConfigFromVSCode,
   SetFollowSelectionEnabled,
   SetLoginState,
+  SetFilebrowserDropTarget,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
   DuplicationState,
   ErrorMessages,
+  LeftMenuTab,
   ModalDialog,
   OriginalFrame,
+  RightMenuTab,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {
@@ -950,12 +951,12 @@ export function setMainUIFile(uiFile: string): SetMainUIFile {
 
 export function saveDOMReport(
   elementMetadata: ReadonlyArray<ElementInstanceMetadata>,
-  cachedTreeRoots: Array<ElementPath>,
+  cachedPaths: Array<ElementPath>,
 ): SaveDOMReport {
   return {
     action: 'SAVE_DOM_REPORT',
     elementMetadata: elementMetadata,
-    cachedTreeRoots: cachedTreeRoots,
+    cachedPaths: cachedPaths,
   }
 }
 
@@ -1283,5 +1284,12 @@ export function setLoginState(loginState: LoginState): SetLoginState {
   return {
     action: 'SET_LOGIN_STATE',
     loginState: loginState,
+  }
+}
+
+export function setFilebrowserDropTarget(target: string | null): SetFilebrowserDropTarget {
+  return {
+    action: 'SET_FILEBROWSER_DROPTARGET',
+    target: target,
   }
 }
