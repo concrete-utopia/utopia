@@ -49,10 +49,10 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
   const [currentEditContext, setCurrentEditContext] = React.useState(editContext.COMPONENT)
 
   // TODO replace this with a function that enters focus mode
-  const TODOREPLACEMEcycleEditContext = () => {
+  const TODOREPLACEMEcycleEditContext = React.useCallback(() => {
     const nextEditContext = (currentEditContext + 1) % 4
     setCurrentEditContext(nextEditContext)
-  }
+  }, [currentEditContext])
 
   const getEditContextStyle = (): React.CSSProperties => {
     if (currentEditContext === editContext.COMPONENT) {
