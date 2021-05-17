@@ -1,4 +1,4 @@
-import { Linter } from 'eslint'
+import type { Linter } from 'eslint'
 
 const EsLintRecommended: Linter.RulesRecord = {
   // Currently on 6.8.0 ruleset: https://github.com/eslint/eslint/blob/v6.8.0/conf/eslint-recommended.js

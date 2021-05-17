@@ -64,12 +64,13 @@ export function usePropControlledStateV2<T>(propValue: T): [T, React.Dispatch<T>
 
   const forceUpdate = useForceUpdate()
 
-  const setLocalState = React.useCallback((newValue: T) => {
-    localStateRef.current = newValue
-    forceUpdate()
-    // TODO FIXME bump eslint
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const setLocalState = React.useCallback(
+    (newValue: T) => {
+      localStateRef.current = newValue
+      forceUpdate()
+    },
+    [forceUpdate],
+  )
 
   return [localStateRef.current, setLocalState]
 }
@@ -127,8 +128,6 @@ export function useModelControlledTransformableState<T>(
       setLocalState(newValue)
       setDirty(true)
     },
-    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [localState, onSubmitValue, onTransientSubmitValue],
   )
 

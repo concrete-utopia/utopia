@@ -309,13 +309,13 @@ const SharingPane = betterReactMemo('SharingPane', () => {
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
 
-  const handleCopyProjectURL = () => {
+  const handleCopyProjectURL = React.useCallback(() => {
     window.navigator.clipboard.writeText(previewURL)
     setTemporaryCopySuccess(true)
     setTimeout(() => {
       setTemporaryCopySuccess(false)
     }, 1500)
-  }
+  }, [previewURL])
 
   return (
     <FlexColumn

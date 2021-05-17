@@ -1,3 +1,4 @@
+import { shallowEqual } from '../core/shared/equality-utils'
 import { fastForEach } from '../core/shared/utils'
 
 export interface KeepDeepEqualityResult<T> {
@@ -677,6 +678,12 @@ export function combine14EqualityCalls<A, B, C, D, E, F, G, H, I, J, K, L, M, N,
 export function createCallWithTripleEquals<T>(): KeepDeepEqualityCall<T> {
   return (oldValue, newValue) => {
     const areEqual = oldValue === newValue
+    return keepDeepEqualityResult(areEqual ? oldValue : newValue, areEqual)
+  }
+}
+export function createCallWithShallowEquals<T>(): KeepDeepEqualityCall<T> {
+  return (oldValue, newValue) => {
+    const areEqual = shallowEqual(oldValue, newValue)
     return keepDeepEqualityResult(areEqual ? oldValue : newValue, areEqual)
   }
 }
