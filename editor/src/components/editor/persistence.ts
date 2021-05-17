@@ -90,6 +90,26 @@ function neverSaved(): NeverSaved {
   }
 }
 
+export function projectSavedLocally(): boolean {
+  return isSaved(_saveState) && !_saveState.remote
+}
+
+export function projectSavedRemotely(): boolean {
+  return isSaved(_saveState) && _saveState.remote
+}
+
+export function projectNeverSaved(): boolean {
+  return isNeverSaved(_saveState)
+}
+
+export function projectSaveInProgress(): boolean {
+  return isSaveInProgress(_saveState)
+}
+
+export function projectSaveError(): boolean {
+  return isSaveError(_saveState)
+}
+
 function saveInProgress(
   remote: boolean,
   queuedModelChange: PersistentModel | null,
