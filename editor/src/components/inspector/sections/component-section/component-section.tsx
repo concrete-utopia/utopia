@@ -566,7 +566,6 @@ export const ComponentSectionInner = betterReactMemo(
     const target = selectedViews[0]
 
     const isFocused = EP.isFocused(focusedElementPath, target)
-    const isNotFocused = EP.isFocused(focusedElementPath, target)
 
     const toggleFocusMode = React.useCallback(() => {
       dispatch([setFocusedElement(isFocused ? null : target)])
@@ -686,7 +685,7 @@ export const ComponentSectionInner = betterReactMemo(
                                 via NPM.
                               </p>
                             </UIGridRow>
-                          ) : isFocusable && !isNotFocused ? (
+                          ) : isFocusable && !isFocused ? (
                             <UIGridRow
                               padded
                               tall={false}
@@ -784,7 +783,7 @@ export const ComponentSectionInner = betterReactMemo(
                     via NPM.
                   </p>
                 </UIGridRow>
-              ) : isFocusable && !isNotFocused ? (
+              ) : isFocusable && !isFocused ? (
                 <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <IconToggleButton
