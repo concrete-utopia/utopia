@@ -88,6 +88,7 @@
     "@babel/plugin-transform-react-jsx": "7.10.4",
     "@babel/plugin-transform-typescript": "7.11.0",
     "@babel/standalone": "7.9.5",
+    "@babel/types": "7.14.2",
     "@emotion/react": "11.1.2",
     "@emotion/serialize": "1.0.0",
     "@emotion/styled": "11.0.0",
