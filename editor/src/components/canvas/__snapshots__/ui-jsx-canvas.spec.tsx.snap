@@ -36755,9 +36755,7 @@ exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 1
 "
 `;
 
-exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 2`] = `
-Object {}
-`;
+exports[`UiJsxCanvas runtime errors React.useEffect at the root fails usefully 2`] = `Object {}`;
 
 exports[`UiJsxCanvas runtime errors an arbitrary jsx attribute has correct source map 1`] = `
 Array [
