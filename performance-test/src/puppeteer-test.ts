@@ -134,11 +134,18 @@ function calculatePi(accuracy: number): number {
 }
 
 function timeBasicCalc(): number {
-  const start = Date.now()
-  calculatePi(230000000)
-  const end = Date.now()
-  const inSeconds = (end - start) / 1000
-  return Number(inSeconds.toFixed(3))
+  let results: Array<number> = []
+
+  for (let i = 0; i < 100; i++) {
+    const start = Date.now()
+    calculatePi(100000000)
+    const end = Date.now()
+    results.push(end - start)
+  }
+
+  const sorted = results.sort()
+
+  return sorted[Math.floor(sorted.length * 0.5)]!
 }
 
 async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResult> {
@@ -149,15 +156,15 @@ async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResul
 
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'baseline_step_', 'Scroll Canvas', 1)
+  return getFrameData(traceJson, 'baseline_step_', 'Baseline Test', 0.001)
 }
 
 async function timeSimpleDispatch(page: puppeteer.Page): Promise<number> {
   const frameData = await testBaselinePerformance(page)
-  const magicNumberToGetItCloseTo1 = 54
+  const magicNumberToGetItCloseTo1 = 1
   const median = frameData.analytics.percentile50 ?? 1 / magicNumberToGetItCloseTo1
   const asScalingFactor = median * magicNumberToGetItCloseTo1
-  return Number(asScalingFactor.toFixed(3))
+  return asScalingFactor //Number(asScalingFactor.toFixed(3))
 }
 
 async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselines> {
@@ -200,11 +207,11 @@ export const testPerformance = async function () {
   let resizeResult = EmptyResult
   let selectionResult = EmptyResult
   let baselines = { basicCalc: 0, simpleDispatch: 0 }
-  let scale = 0
+  let scale = 1
   const { page, browser } = await setupBrowser()
   try {
     baselines = await initialiseTestsReturnScale(page)
-    scale = baselines.simpleDispatch
+    // scale = baselines.simpleDispatch
     selectionResult = await testSelectionPerformance(page, scale)
     resizeResult = await testResizePerformance(page, scale)
     scrollResult = await testScrollingPerformance(page, scale)
