@@ -6,9 +6,8 @@ on:
         description: 'Tag to give this release (will increment patch version by default)'
         required: false
       commit-ref:
-        description: 'Branch or SHA to tag'
-        required: true
-        default: 'master'
+        description: 'Branch or SHA to tag (defaults to master)'
+        required: false
   schedule:
     - cron: '0 5 * * *' # Run every day 5:00 UTC
 jobs:
