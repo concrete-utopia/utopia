@@ -8,7 +8,6 @@ import { importAlias, importDetails, ElementPath } from '../../core/shared/proje
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
-import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../templates/editor-canvas'
 import Keyboard, {
   KeyCharacter,
   KeysPressed,
@@ -29,7 +28,6 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { LeftMenuTab } from '../navigator/left-pane'
 import { toggleTextFormatting } from '../text-utils'
 import { EditorAction, EditorDispatch } from './action-types'
 import * as EditorActions from './actions/action-creators'
@@ -109,6 +107,7 @@ import {
   ShortcutNamesByKey,
 } from './shortcut-definitions'
 import { DerivedState, EditorState, getOpenFile } from './store/editor-state'
+import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,

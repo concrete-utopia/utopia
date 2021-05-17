@@ -35,6 +35,7 @@ import {
   dragAndDropInsertionSubject,
 } from '../components/editor/editor-modes'
 import {
+  BaseSnappingThreshold,
   CanvasCursor,
   ConsoleLog,
   DerivedState,
@@ -75,15 +76,11 @@ import { ImageResult } from '../core/shared/file-utils'
 import { fastForEach } from '../core/shared/utils'
 import { arrayToMaybe } from '../core/shared/optional-utils'
 import { UtopiaStyles } from '../uuiui'
+import { CanvasMousePositionRaw, updateGlobalPositions } from '../utils/global-positions'
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
-export const BaseSnappingThreshold = 5
 export const MoveIntoDragThreshold = 3
-
-export let CanvasMousePositionRaw: CanvasPoint | null = null
-export let CanvasMousePositionRounded: CanvasPoint | null = null
-export let WindowMousePositionRaw: WindowPoint | null = null
 
 export const NodeConnectorsDivId = 'node-connectors'
 
@@ -174,10 +171,7 @@ function handleCanvasEvent(model: CanvasModel, event: CanvasMouseEvent): Array<E
   }
 
   // Balazs: for the sake of not breaking too much things, I update the mouse position variable here. I removed it from the state for performance reasons
-
-  CanvasMousePositionRaw = event.canvasPositionRaw
-  CanvasMousePositionRounded = event.canvasPositionRounded
-  WindowMousePositionRaw = event.windowPosition
+  updateGlobalPositions(event.canvasPositionRaw, event.canvasPositionRounded, event.windowPosition)
 
   let optionalRedrawControlsAction: EditorAction[] = []
   if (model.mode.type === 'insert') {

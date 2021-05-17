@@ -36,7 +36,7 @@ import {
   setProjectDescription,
 } from '../editor/actions/action-creators'
 import { InsertMenu } from '../editor/insertmenu'
-import { DerivedState, EditorState } from '../editor/store/editor-state'
+import { DerivedState, EditorState, LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { closeTextEditorIfPresent } from '../editor/text-editor'
 import { FileBrowser } from '../filebrowser/filebrowser'
@@ -52,52 +52,6 @@ export interface LeftPaneProps {
   editorDispatch: EditorDispatch
   loginState: LoginState
 }
-
-export const enum LeftMenuTab {
-  UIInsert = 'ui-insert',
-  Project = 'project',
-  Storyboards = 'storyboards',
-  Contents = 'contents',
-  Settings = 'settings',
-  Sharing = 'sharing',
-  Github = 'github',
-}
-
-export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
-  return {
-    ...editorState,
-    leftMenu: {
-      ...editorState.leftMenu,
-      selectedTab: tab,
-    },
-  }
-}
-
-export function updateLeftMenuExpanded(editorState: EditorState, expanded: boolean): EditorState {
-  return {
-    ...editorState,
-    leftMenu: {
-      ...editorState.leftMenu,
-      expanded: expanded,
-    },
-  }
-}
-
-export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): EditorState {
-  switch (editorState.focusedPanel) {
-    case 'misccodeeditor':
-      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Contents)
-    case 'inspector':
-    case 'canvas':
-    case 'codeEditor':
-    default:
-      return editorState
-  }
-}
-
-export const LeftPaneMinimumWidth = 5
-
-export const LeftPaneDefaultWidth = 260
 
 export const LeftPaneComponentId = 'left-pane'
 

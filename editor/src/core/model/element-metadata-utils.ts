@@ -98,7 +98,7 @@ import {
   isGivenUtopiaElementFromMetadata,
   isImportedComponentNPM,
 } from './project-file-utils'
-import { ResizesContentProp } from './scene-utils'
+import { isSceneElementIgnoringImports, ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
@@ -197,6 +197,15 @@ export const MetadataUtils = {
     } else {
       return scene.props[ResizesContentProp] ?? false
     }
+  },
+  isProbablySceneFromMetadata(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    return (
+      elementMetadata != null &&
+      isRight(elementMetadata.element) &&
+      isJSXElement(elementMetadata.element.value) &&
+      isSceneElementIgnoringImports(elementMetadata.element.value)
+    )
   },
   findElements(
     elementMap: ElementInstanceMetadataMap,

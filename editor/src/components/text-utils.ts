@@ -247,7 +247,7 @@ export async function measureTextFieldNew(element: ElementInstanceMetadata): Pro
       },
       scale: 1,
     }
-    const textElement = <Text {...textFieldProps} />
+    const textElement = React.createElement(Text, textFieldProps)
     ReactDOM.render(textElement, containerNode)
   })
 }

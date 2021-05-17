@@ -3,14 +3,14 @@ import * as React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
-import { ConsoleLog } from '../editor/store/editor-state'
+import { ConsoleLog, LeftPaneDefaultWidth, RightMenuTab } from '../editor/store/editor-state'
 
 import { useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
-import { InsertMenuPane, LeftPaneDefaultWidth } from '../navigator/left-pane'
+import { InsertMenuPane } from '../navigator/left-pane'
 
-import { RightMenu, RightMenuTab } from './right-menu'
+import { RightMenu } from './right-menu'
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 import { NavigatorComponent } from '../navigator/navigator'
 import {

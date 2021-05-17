@@ -25,8 +25,6 @@ import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isSceneElementIgnoringImports } from '../../../core/model/scene-utils'
-import { isRight } from '../../../core/shared/either'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -234,22 +232,9 @@ function useStyleFullyVisible(path: ElementPath): boolean {
   }, 'NavigatorItem useStyleFullyVisible')
 }
 
-export function isProbablySceneFromMetadata(
-  jsxMetadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): boolean {
-  const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-  return (
-    elementMetadata != null &&
-    isRight(elementMetadata.element) &&
-    isJSXElement(elementMetadata.element.value) &&
-    isSceneElementIgnoringImports(elementMetadata.element.value)
-  )
-}
-
 function useIsProbablyScene(path: ElementPath): boolean {
   return useEditorState(
-    (store) => isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
+    (store) => MetadataUtils.isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
     'NavigatorItem useIsProbablyScene',
   )
 }

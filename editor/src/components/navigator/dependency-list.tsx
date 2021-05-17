@@ -20,7 +20,11 @@ import {
   checkPackageVersionExists,
   VersionLookupResult,
 } from '../editor/npm-dependency/npm-dependency'
-import { packageJsonFileFromProjectContents } from '../editor/store/editor-state'
+import {
+  DefaultPackagesList,
+  DependencyPackageDetails,
+  packageJsonFileFromProjectContents,
+} from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
@@ -45,18 +49,11 @@ type DependencyListProps = {
   packageStatus: PackageStatusMap
 }
 
-// TODO: this should just contain an NpmDependency and a status
-export interface PackageDetails {
-  name: string
-  version: string | null
-  status: PackageStatus
-}
-
 function packageDetails(
   name: string,
   version: string | null,
   status: PackageStatus,
-): PackageDetails {
+): DependencyPackageDetails {
   return {
     name: name,
     version: version,
@@ -68,38 +65,15 @@ export type DependencyLoadingStatus = 'not-loading' | 'adding' | 'removing'
 
 type DependencyListState = {
   dependencyBeingEdited: string | null
-  newlyLoadedItems: Array<PackageDetails['name']>
+  newlyLoadedItems: Array<DependencyPackageDetails['name']>
   dependencyLoadingStatus: DependencyLoadingStatus
 }
-
-export const DefaultPackagesList: Array<PackageDetails> = [
-  {
-    name: 'react',
-    version: '16.13.1',
-    status: 'default-package',
-  },
-  {
-    name: 'react-dom',
-    version: '16.13.1',
-    status: 'default-package',
-  },
-  {
-    name: 'utopia-api',
-    version: '0.4.1',
-    status: 'default-package',
-  },
-  {
-    name: 'react-spring',
-    version: '8.0.27',
-    status: 'default-package',
-  },
-]
 
 function packageDetailsFromDependencies(
   npmDependencies: Array<RequestedNpmDependency>,
   packageStatus: PackageStatusMap,
-): Array<PackageDetails> {
-  const userAddedPackages: Array<PackageDetails> = []
+): Array<DependencyPackageDetails> {
+  const userAddedPackages: Array<DependencyPackageDetails> = []
   Utils.fastForEach(npmDependencies, (dep) => {
     const foundDefaultDependency = DefaultPackagesList.find((p) => p.name === dep.name)
     const status =
@@ -410,7 +384,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
   }
 
   render() {
-    const packagesWithStatus: Array<PackageDetails> = packageDetailsFromDependencies(
+    const packagesWithStatus: Array<DependencyPackageDetails> = packageDetailsFromDependencies(
       dependenciesFromPackageJson(this.props.packageJsonFile),
       this.props.packageStatus,
     )
