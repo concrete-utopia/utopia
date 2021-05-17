@@ -161,21 +161,21 @@ export function useTriggerBaselinePerformanceTest(): () => void {
   )
 
   const trigger = React.useCallback(async () => {
-    let count = 0
+    let framesPassed = 0
     async function step() {
-      performance.mark(`baseline_step_${count}`)
+      performance.mark(`baseline_step_${framesPassed}`)
       for (let i = 0; i < 3000; i++) {
         await dispatch([]).entireUpdateFinished
       }
-      performance.mark(`baseline_dispatch_finished_${count}`)
+      performance.mark(`baseline_dispatch_finished_${framesPassed}`)
       performance.measure(
-        `baseline_frame_${count}`,
-        `baseline_step_${count}`,
-        `baseline_dispatch_finished_${count}`,
+        `baseline_frame_${framesPassed}`,
+        `baseline_step_${framesPassed}`,
+        `baseline_dispatch_finished_${framesPassed}`,
       )
 
-      if (count < 100) {
-        count++
+      if (framesPassed < 100) {
+        framesPassed++
         requestAnimationFrame(step)
       } else {
         requestAnimationFrame(() => console.info('BASELINE_TEST_FINISHED'))
