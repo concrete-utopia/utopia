@@ -9,6 +9,8 @@ on:
         description: 'Branch or SHA to tag'
         required: true
         default: 'master'
+  schedule:
+    - cron: '0 5 * * *' # Run every day 5:00 UTC
 jobs:
   release:
     name: Create Release
@@ -44,7 +46,7 @@ jobs:
         with:
           tag_name: ${{ env.NEW_TAG }}
           release_name: Release ${{ env.NEW_TAG }}
-          commitish: ${{ github.event.inputs.commit-ref }}
+          commitish: ${{ github.event.inputs.commit-ref || master }}
           body: Release ${{ env.NEW_TAG }}
           draft: false
           prerelease: false
