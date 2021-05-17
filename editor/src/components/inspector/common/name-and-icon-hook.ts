@@ -1,18 +1,13 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  JSXElementName,
-  ElementInstanceMetadataMap,
-  UtopiaJSXComponent,
-} from '../../../core/shared/element-template'
-import * as EP from '../../../core/shared/element-path'
-import * as PP from '../../../core/shared/property-path'
-import { Imports, ElementPath } from '../../../core/shared/project-file-types'
+import { JSXElementName, ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { ElementPath } from '../../../core/shared/project-file-types'
 import { useEditorState } from '../../editor/store/store-hook'
 import { IcnProps } from '../../../uuiui'
-import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
-import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
-import { maybeEitherToMaybe } from '../../../core/shared/either'
+import {
+  NameAndIconResultArrayKeepDeepEquality,
+  NameAndIconResultKeepDeepEquality,
+} from '../../../utils/deep-equality-instances'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -29,27 +24,24 @@ export function useNameAndIcon(path: ElementPath): NameAndIconResult {
     },
     'useNameAndIcon',
     (oldResult, newResult) => {
-      const pathEquals = EP.pathsEqual(oldResult.path, newResult.path)
-      const labelEquals = oldResult.label === newResult.label
-      const iconPropsEqual = shallowEqual(oldResult.iconProps, newResult.iconProps)
-      const oldNamePath = oldResult.name?.propertyPath != null ? oldResult.name?.propertyPath : null
-      const newNamePath = newResult.name?.propertyPath != null ? newResult.name?.propertyPath : null
-      const namePathEquals = PP.pathsEqual(oldNamePath, newNamePath)
-      const nameVariableEquals = oldResult.name?.baseVariable === newResult.name?.baseVariable
-      return pathEquals && labelEquals && iconPropsEqual && namePathEquals && nameVariableEquals
+      return NameAndIconResultKeepDeepEquality(oldResult, newResult).areEqual
     },
   )
 }
 
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
-  const metadata = useEditorState(
-    (store) => store.editor.jsxMetadata,
-    'useNamesAndIconsAllPaths metadata',
+  return useEditorState(
+    (store) => {
+      const metadata = store.editor.jsxMetadata
+      return MetadataUtils.getAllPaths(metadata).map((path) => {
+        return getNameAndIconResult(path, metadata)
+      })
+    },
+    'useNamesAndIconsAllPaths',
+    (oldResult, newResult) => {
+      return NameAndIconResultArrayKeepDeepEquality(oldResult, newResult).areEqual
+    },
   )
-
-  return MetadataUtils.getAllPaths(metadata).map((path) => {
-    return getNameAndIconResult(path, metadata)
-  }) // TODO memoize?
 }
 
 function getNameAndIconResult(
