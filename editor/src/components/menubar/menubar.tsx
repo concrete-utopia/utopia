@@ -24,6 +24,13 @@ import {
 import { betterReactMemo } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
+import {
+  projectNeverSaved,
+  projectSavedLocally,
+  projectSavedRemotely,
+  projectSaveError,
+  projectSaveInProgress,
+} from '../editor/persistence'
 import { LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
 
@@ -210,6 +217,70 @@ export const Menubar = betterReactMemo('Menubar', () => {
             <Avatar loginState={userState.loginState} size={28} />
           </a>
         </Tile>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            height: 30,
+            padding: 3,
+            alignItems: 'center',
+            gap: 4,
+            background: 'black',
+            borderRadius: 2,
+          }}
+        >
+          <Tooltip title={'Never Saved'} placement={'right'}>
+            <div
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                backgroundColor: projectNeverSaved() ? '#F6BDC5' : '#ffffff33',
+              }}
+            ></div>
+          </Tooltip>
+          <Tooltip title={'Saved Locally'} placement={'right'}>
+            <div
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                backgroundColor: projectSavedLocally() ? '#F6BDC5' : '#ffffff33',
+              }}
+            ></div>
+          </Tooltip>
+          <Tooltip title={'Saved Remotely'} placement={'right'}>
+            <div
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                backgroundColor: projectSavedRemotely() ? '#00EC9A' : '#ffffff33',
+              }}
+            ></div>
+          </Tooltip>
+          <Tooltip title={'Save In Progress'} placement={'right'}>
+            <div
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                backgroundColor: projectSaveInProgress() ? '#7FACFF' : '#ffffff33',
+              }}
+            ></div>
+          </Tooltip>
+          <Tooltip title={'Save Error'} placement={'right'}>
+            <div
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                backgroundColor: projectSaveError() ? '#FF3A5D' : '#ffffff33',
+              }}
+            ></div>
+          </Tooltip>
+        </div>
 
         <Tooltip title={'Project Info'} placement={'right'}>
           <span>
