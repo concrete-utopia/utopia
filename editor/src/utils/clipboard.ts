@@ -71,9 +71,6 @@ export function setClipboardData(
 }
 
 export function getActionsForClipboardItems(
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
   selectedViews: Array<ElementPath>,
@@ -88,14 +85,7 @@ export function getActionsForClipboardItems(
     }, clipboardData)
     let insertImageActions: EditorAction[] = []
     if (pastedFiles.length > 0 && componentMetadata != null) {
-      const target = getTargetParentForPaste(
-        projectContents,
-        nodeModules,
-        openFile,
-        selectedViews,
-        componentMetadata,
-        pasteTargetsToIgnore,
-      )
+      const target = getTargetParentForPaste(selectedViews, componentMetadata, pasteTargetsToIgnore)
       const parentFrame =
         target != null ? MetadataUtils.getFrameInCanvasCoords(target, componentMetadata) : null
       const parentCenter =
@@ -206,9 +196,6 @@ export function createClipboardDataFromSelection(
 }
 
 export function getTargetParentForPaste(
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null,
   selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
@@ -221,47 +208,19 @@ export function getTargetParentForPaste(
       // we should not paste the source into itself
       const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
 
-      return withUnderlyingTarget(
-        parentTarget,
-        projectContents,
-        nodeModules,
-        openFile,
-        null,
-        (parentTargetSuccess) => {
-          if (
-            MetadataUtils.targetSupportsChildren(
-              parentTargetSuccess.imports,
-              metadata,
-              parentTarget,
-            ) &&
-            !insertingSourceIntoItself
-          ) {
-            return parentTarget
-          } else {
-            const parentOfSelected = EP.parentPath(parentTarget)
-            return withUnderlyingTarget(
-              parentOfSelected,
-              projectContents,
-              nodeModules,
-              openFile,
-              null,
-              (parentOfSelectedSuccess) => {
-                if (
-                  MetadataUtils.targetSupportsChildren(
-                    parentOfSelectedSuccess.imports,
-                    metadata,
-                    parentOfSelected,
-                  )
-                ) {
-                  return parentOfSelected
-                } else {
-                  return null
-                }
-              },
-            )
-          }
-        },
-      )
+      if (
+        MetadataUtils.targetSupportsChildren(metadata, parentTarget) &&
+        !insertingSourceIntoItself
+      ) {
+        return parentTarget
+      } else {
+        const parentOfSelected = EP.parentPath(parentTarget)
+        if (MetadataUtils.targetSupportsChildren(metadata, parentOfSelected)) {
+          return parentOfSelected
+        } else {
+          return null
+        }
+      }
     }
   } else {
     return null

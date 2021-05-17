@@ -27,7 +27,7 @@ import { useContextSelector } from 'use-context-selector'
 import { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATHS_KEY } from '../../../core/model/utopia-constants'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
-import { useGetTopLevelElements } from './ui-jsx-canvas-top-level-elements'
+import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
 import { getPathsFromString } from '../../../core/shared/uid-utils'
 
 export type ComponentRendererComponent = React.ComponentType<{
@@ -83,7 +83,7 @@ export function createComponentRendererComponent(params: {
 
     const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
 
-    const topLevelElements = useGetTopLevelElements(params.filePath)
+    const { topLevelElements, imports } = useGetTopLevelElementsAndImports(params.filePath)
 
     const utopiaJsxComponent: UtopiaJSXComponent | null =
       topLevelElements.find((elem): elem is UtopiaJSXComponent => {
@@ -141,6 +141,7 @@ export function createComponentRendererComponent(params: {
         mutableContext.jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         params.filePath,
+        imports,
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(
@@ -179,6 +180,7 @@ export function createComponentRendererComponent(params: {
           codeError,
           shouldIncludeCanvasRootInTheSpy,
           params.filePath,
+          imports,
         )
       }
     }

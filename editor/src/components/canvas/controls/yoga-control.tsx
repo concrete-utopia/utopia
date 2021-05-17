@@ -13,11 +13,6 @@ import { getOriginalFrames } from '../canvas-utils'
 import { ControlProps } from './new-canvas-controls'
 import { getSelectionColor } from './outline-control'
 import { ResizeRectangle } from './size-box'
-import {
-  getJSXComponentsAndImportsForPathInnerComponent,
-  withUnderlyingTarget,
-} from '../../editor/store/editor-state'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 interface YogaResizeControlProps extends ControlProps {
   targetElement: ElementInstanceMetadata
   target: ElementPath
@@ -46,19 +41,7 @@ class YogaResizeControl extends React.Component<YogaResizeControlProps> {
 
   getYogaSize = (visualSize: CanvasRectangle): CanvasRectangle => {
     const childStretch = this.getTargetStretch()
-    const { components } = getJSXComponentsAndImportsForPathInnerComponent(
-      this.props.target,
-      this.props.openFile,
-      this.props.projectContents,
-      this.props.nodeModules,
-      this.props.transientState.filesState,
-      this.props.resolve,
-    )
-    const yogaSize = MetadataUtils.getYogaSizeProps(
-      this.props.target,
-      this.props.componentMetadata,
-      components,
-    )
+    const yogaSize = MetadataUtils.getYogaSizeProps(this.props.target, this.props.componentMetadata)
 
     return canvasRectangle({
       x: visualSize.x,
@@ -137,21 +120,10 @@ export class YogaControls extends React.Component<YogaControlsProps> {
     let color: string = ''
     if (showResizeControl && targets.length > 0) {
       const selectedView = targets[0]
-      color = withUnderlyingTarget<string>(
+      color = getSelectionColor(
         selectedView,
-        this.props.projectContents,
-        this.props.nodeModules,
-        this.props.openFile,
-        '',
-        (success, element, underlyingTarget, underlyingFilePath) => {
-          return getSelectionColor(
-            underlyingTarget,
-            getUtopiaJSXComponentsFromSuccess(success),
-            this.props.componentMetadata,
-            success.imports,
-            this.props.focusedElementPath,
-          )
-        },
+        this.props.componentMetadata,
+        this.props.focusedElementPath,
       )
     }
 

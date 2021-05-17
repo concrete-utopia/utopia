@@ -1677,19 +1677,9 @@ export function getReparentTarget(
   )
   let parentSupportsChild = true
   if (possibleNewParent != null) {
-    parentSupportsChild = withUnderlyingTarget(
+    parentSupportsChild = MetadataUtils.targetSupportsChildren(
+      editorState.jsxMetadata,
       possibleNewParent,
-      editorState.projectContents,
-      editorState.nodeModules.files,
-      editorState.canvas.openFile?.filename,
-      false,
-      (success) => {
-        return MetadataUtils.targetSupportsChildren(
-          success.imports,
-          editorState.jsxMetadata,
-          possibleNewParent,
-        )
-      },
     )
   } else {
     // a null template path means Canvas, let's translate that to the storyboard component

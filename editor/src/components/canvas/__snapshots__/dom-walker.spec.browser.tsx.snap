@@ -35,6 +35,14 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Storyboard",
+        "path": "utopia-api",
+        "variableName": "Storyboard",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -118,6 +126,14 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -210,6 +226,10 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -372,6 +392,10 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -467,6 +491,10 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -556,6 +584,10 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -644,6 +676,10 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -743,6 +779,14 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Storyboard",
+        "path": "utopia-api",
+        "variableName": "Storyboard",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -826,6 +870,14 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -918,6 +970,10 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -1037,6 +1093,10 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -1142,6 +1202,14 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Storyboard",
+        "path": "utopia-api",
+        "variableName": "Storyboard",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -1225,6 +1293,14 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -1317,6 +1393,10 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -1451,6 +1531,10 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -1563,6 +1647,10 @@ Object {
       "x": 55,
       "y": 98,
     },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -1655,6 +1743,10 @@ Object {
       "width": 125,
       "x": 126,
       "y": 125,
+    },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -1761,6 +1853,14 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Storyboard",
+        "path": "utopia-api",
+        "variableName": "Storyboard",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -1844,6 +1944,14 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -1936,6 +2044,10 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -2069,6 +2181,10 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -2183,6 +2299,10 @@ Object {
       "x": 55,
       "y": 98,
     },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -2275,6 +2395,10 @@ Object {
       "width": 125,
       "x": 126,
       "y": 125,
+    },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -2381,6 +2505,14 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Storyboard",
+        "path": "utopia-api",
+        "variableName": "Storyboard",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -2464,6 +2596,14 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -2556,6 +2696,10 @@ Object {
       "width": 375,
       "x": 0,
       "y": 0,
+    },
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
     },
     "isEmotionOrStyledComponent": false,
     "label": null,
@@ -2690,6 +2834,14 @@ Object {
       "x": 0,
       "y": 0,
     },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -2802,6 +2954,14 @@ Object {
       "x": 55,
       "y": 98,
     },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": Object {
@@ -2898,6 +3058,14 @@ Object {
       "width": 125,
       "x": 126,
       "y": 125,
+    },
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "View",
+        "path": "utopia-api",
+        "variableName": "View",
+      },
     },
     "isEmotionOrStyledComponent": false,
     "label": null,

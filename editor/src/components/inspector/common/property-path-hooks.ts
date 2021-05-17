@@ -5,9 +5,7 @@ import { createContext, useContextSelector } from 'use-context-selector'
 import { PropertyControls } from 'utopia-api'
 import {
   forUnderlyingTargetFromEditorState,
-  getOpenUtopiaJSXComponentsFromStateMultifile,
   withUnderlyingTarget,
-  withUnderlyingTargetFromEditorState,
 } from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
 import {
