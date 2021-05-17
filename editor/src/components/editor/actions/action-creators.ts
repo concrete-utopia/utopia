@@ -42,7 +42,6 @@ import type {
 } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange } from '../../canvas/canvas-types'
-import type { RightMenuTab } from '../../canvas/right-menu'
 import type { CursorPosition } from '../../code-editor/code-editor-utils'
 import type { EditorPane, EditorPanel } from '../../common/actions'
 import { Notice } from '../../common/notice'
@@ -50,7 +49,6 @@ import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/co
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
-import type { LeftMenuTab } from '../../navigator/left-pane'
 import type {
   AddFolder,
   AddMissingDimensions,
@@ -189,8 +187,10 @@ import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } fro
 import type {
   DuplicationState,
   ErrorMessages,
+  LeftMenuTab,
   ModalDialog,
   OriginalFrame,
+  RightMenuTab,
 } from '../store/editor-state'
 
 export function clearSelection(): EditorAction {

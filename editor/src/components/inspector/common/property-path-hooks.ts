@@ -5,9 +5,7 @@ import { createContext, useContextSelector } from 'use-context-selector'
 import { PropertyControls } from 'utopia-api'
 import {
   forUnderlyingTargetFromEditorState,
-  getOpenUtopiaJSXComponentsFromStateMultifile,
   withUnderlyingTarget,
-  withUnderlyingTargetFromEditorState,
 } from '../../../components/editor/store/editor-state'
 import { useEditorState } from '../../../components/editor/store/store-hook'
 import {
@@ -246,9 +244,13 @@ export function useInspectorInfoFromMultiselectMultiStyleAttribute<
         }
       },
     )
-    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multiselectAtProps, multiselectLength, selectedProps, selectedComputedStyles])
+  }, [
+    multiselectAtProps,
+    multiselectLength,
+    selectedProps,
+    selectedComputedStyles,
+    selectedAttributeMetadatas,
+  ])
 }
 
 // FIXME: copy pasted for component prop section
@@ -560,8 +562,6 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
         }
       })
     },
-    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onSingleSubmitValue, untransformValue, propKeys, onUnsetValue, pathMappingFn, target],
   )
 }

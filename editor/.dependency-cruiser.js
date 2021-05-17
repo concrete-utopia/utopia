@@ -185,6 +185,18 @@ module.exports = {
       },
     },
     {
+      name: 'not-from-ts-to-tsx',
+      comment: 'Prevent a .ts file from pointing to a .tsx file.',
+      severity: 'error',
+      from: {
+        path: '\\.ts$',
+        pathNot: ['built-in-dependencies.ts$'],
+      },
+      to: {
+        path: '\\.tsx$',
+      },
+    },
+    {
       name: 'not-to-dev-dep',
       severity: 'error',
       comment:

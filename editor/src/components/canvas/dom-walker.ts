@@ -491,6 +491,7 @@ function collectMetadata(
         computedStyle,
         attributeMetadata,
         null,
+        null, // This comes from the Spy Wrapper
       )
     })
 
@@ -724,6 +725,7 @@ function walkCanvasRootFragment(
       emptyComputedStyle,
       emptyAttributeMetadatada,
       null,
+      null, // this comes from the Spy Wrapper
     )
     return { metadata: [...rootMetadata, metadata], cachedPaths: cachedPaths }
   }

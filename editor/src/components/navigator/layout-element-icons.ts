@@ -1,9 +1,5 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import {
-  isAnimatedElementAgainstImports,
-  isImg,
-  isImportedComponent,
-} from '../../core/model/project-file-utils'
+import { isAnimatedElement, isImg, isImportedComponent } from '../../core/model/project-file-utils'
 import {
   isIntrinsicHTMLElement,
   isJSXElement,
@@ -12,12 +8,10 @@ import {
 } from '../../core/shared/element-template'
 import * as EP from '../../core/shared/element-path'
 import { Imports, ElementPath } from '../../core/shared/project-file-types'
-import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { isRight } from '../../core/shared/either'
+import { isRight, maybeEitherToMaybe } from '../../core/shared/either'
 import { IcnPropsBase } from '../../uuiui'
 import { shallowEqual } from '../../core/shared/equality-utils'
-import { isProbablySceneFromMetadata } from './navigator-item/navigator-item'
 
 interface LayoutIconResult {
   iconProps: IcnPropsBase
@@ -28,12 +22,7 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
   return useEditorState(
     (store) => {
       const metadata = store.editor.jsxMetadata
-      const { components } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-        path,
-        store.editor,
-        store.derived,
-      )
-      return createLayoutOrElementIconResult(path, components, metadata)
+      return createLayoutOrElementIconResult(path, metadata)
     },
     'useLayoutOrElementIcon',
     (oldResult: LayoutIconResult, newResult: LayoutIconResult) => {
@@ -48,30 +37,19 @@ export function useLayoutOrElementIcon(path: ElementPath): LayoutIconResult {
 export function useComponentIcon(path: ElementPath): IcnPropsBase | null {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
-    const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-      path,
-      store.editor,
-      store.derived,
-    )
-    return createComponentIconProps(path, components, metadata, imports)
-  }, 'useComponentIcon')
+    return createComponentIconProps(path, metadata)
+  }, 'useComponentIcon') // TODO Memoize Icon Result
 }
 
 export function createComponentOrElementIconProps(
   path: ElementPath,
-  components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
-  imports: Imports,
 ): IcnPropsBase {
-  return (
-    createComponentIconProps(path, components, metadata, imports) ??
-    createElementIconProps(path, components, metadata)
-  )
+  return createComponentIconProps(path, metadata) ?? createElementIconProps(path, metadata)
 }
 
 export function createLayoutOrElementIconResult(
   path: ElementPath,
-  components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
 ): LayoutIconResult {
   let hasWidthOrHeight: boolean = false
@@ -83,7 +61,7 @@ export function createLayoutOrElementIconResult(
   }
 
   const layoutIcon = createLayoutIconProps(path, metadata)
-  if (isProbablySceneFromMetadata(metadata, path)) {
+  if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
     return {
       iconProps: {
         category: 'component',
@@ -100,7 +78,7 @@ export function createLayoutOrElementIconResult(
     }
   } else {
     return {
-      iconProps: createElementIconProps(path, components, metadata),
+      iconProps: createElementIconProps(path, metadata),
       hasWidthOrHeight: hasWidthOrHeight,
     }
   }
@@ -147,11 +125,10 @@ function createLayoutIconProps(
 
 export function createElementIconProps(
   path: ElementPath,
-  components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
 ): IcnPropsBase {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
-  const isButton = MetadataUtils.isButton(path, components, metadata)
+  const isButton = MetadataUtils.isButton(path, metadata)
   if (isButton) {
     return {
       category: 'element',
@@ -160,7 +137,7 @@ export function createElementIconProps(
       height: 18,
     }
   }
-  const elementName = MetadataUtils.getJSXElementName(path, components)
+  const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
   if (elementName != null && isImg(elementName)) {
     return {
       category: 'element',
@@ -200,13 +177,10 @@ export function createElementIconProps(
 
 function createComponentIconProps(
   path: ElementPath,
-  components: UtopiaJSXComponent[],
   metadata: ElementInstanceMetadataMap,
-  imports: Imports,
 ): IcnPropsBase | null {
-  const elementName = MetadataUtils.getJSXElementName(path, components)
   const element = MetadataUtils.findElementByElementPath(metadata, path)
-  if (isProbablySceneFromMetadata(metadata, path)) {
+  if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
     return null
   }
   if (element?.isEmotionOrStyledComponent) {
@@ -217,8 +191,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isAnimatedComponent =
-    elementName != null && isAnimatedElementAgainstImports(elementName, imports)
+  const isAnimatedComponent = isAnimatedElement(element)
   if (isAnimatedComponent) {
     return {
       category: 'component',
@@ -227,7 +200,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isImported = elementName != null && isImportedComponent(elementName, imports)
+  const isImported = isImportedComponent(element)
   if (isImported) {
     return {
       category: 'component',
@@ -236,7 +209,7 @@ function createComponentIconProps(
       height: 18,
     }
   }
-  const isComponent = MetadataUtils.isFocusableComponent(path, components, metadata, imports)
+  const isComponent = MetadataUtils.isFocusableComponent(path, metadata)
   if (isComponent) {
     return {
       category: 'component',

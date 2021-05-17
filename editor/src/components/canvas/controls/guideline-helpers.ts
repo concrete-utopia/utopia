@@ -8,10 +8,11 @@ import {
   Guidelines,
   GuidelineWithSnappingVector,
 } from '../guideline'
-import { SnappingThreshold } from './select-mode-control-container'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { EdgePosition } from '../canvas-types'
+
+export const SnappingThreshold = 5
 
 export function collectParentAndSiblingGuidelines(
   componentMetadata: ElementInstanceMetadataMap,

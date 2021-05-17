@@ -25,8 +25,8 @@ import {
 import { betterReactMemo } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
+import { LeftMenuTab } from '../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { LeftMenuTab } from '../navigator/left-pane'
 
 interface TileProps {
   size: keyof typeof UtopiaTheme.layout.rowHeight

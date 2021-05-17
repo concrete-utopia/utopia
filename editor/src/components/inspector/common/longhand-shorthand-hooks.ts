@@ -8,16 +8,16 @@ import { arrayEquals, NO_OP } from '../../../core/shared/utils'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import {
-  getControlStatusFromPropertyStatus,
-  getControlStyles,
-  PropertyStatus,
-} from '../../../uuiui-deps'
-import {
   setProp_UNSAFE,
   transientActions,
   unsetProperty,
 } from '../../editor/actions/action-creators'
 import { useEditorState } from '../../editor/store/store-hook'
+import {
+  getControlStatusFromPropertyStatus,
+  getControlStyles,
+  PropertyStatus,
+} from './control-status'
 import { ParsedProperties, ParsedPropertiesKeys, printCSSValue } from './css-utils'
 import { ReadonlyRef } from './inspector-utils'
 import {

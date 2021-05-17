@@ -28,8 +28,6 @@ import { ElementContextMenuInstance } from '../element-context-menu'
 import { FontSettings } from '../inspector/common/css-utils'
 import { CSSTarget } from '../inspector/sections/header-section/target-selector'
 import { LocalNavigatorAction } from '../navigator/actions/index'
-import { LeftMenuTab } from '../navigator/left-pane'
-import { RightMenuTab } from '../canvas/right-menu'
 import { Mode } from './editor-modes'
 import type {
   RequestedNpmDependency,
@@ -40,9 +38,11 @@ import {
   DuplicationState,
   EditorState,
   ErrorMessages,
+  LeftMenuTab,
   ModalDialog,
   OriginalFrame,
   PersistentModel,
+  RightMenuTab,
   StoredEditorState,
 } from './store/editor-state'
 import { Notice } from '../common/notice'

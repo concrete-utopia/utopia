@@ -40,6 +40,7 @@ import {
   traverseEither,
   Left,
   Right,
+  maybeEitherToMaybe,
 } from '../shared/either'
 import {
   ElementInstanceMetadata,
@@ -87,14 +88,17 @@ import * as EP from '../shared/element-path'
 import { findJSXElementChildAtPath, getUtopiaID } from './element-template-utils'
 import {
   isImportedComponent,
-  isAnimatedElementAgainstImports,
+  isAnimatedElement,
   isGivenUtopiaAPIElement,
-  isSceneAgainstImports,
   isUtopiaAPIComponent,
-  isViewAgainstImports,
   getUtopiaJSXComponentsFromSuccess,
+  isViewFromMetadata,
+  isSceneFromMetadata,
+  isUtopiaAPIComponentFromMetadata,
+  isGivenUtopiaElementFromMetadata,
+  isImportedComponentNPM,
 } from './project-file-utils'
-import { ResizesContentProp } from './scene-utils'
+import { isSceneElementIgnoringImports, ResizesContentProp } from './scene-utils'
 import { fastForEach } from '../shared/utils'
 import { omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
@@ -194,6 +198,15 @@ export const MetadataUtils = {
       return scene.props[ResizesContentProp] ?? false
     }
   },
+  isProbablySceneFromMetadata(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    return (
+      elementMetadata != null &&
+      isRight(elementMetadata.element) &&
+      isJSXElement(elementMetadata.element.value) &&
+      isSceneElementIgnoringImports(elementMetadata.element.value)
+    )
+  },
   findElements(
     elementMap: ElementInstanceMetadataMap,
     predicate: (element: ElementInstanceMetadata) => boolean,
@@ -280,12 +293,9 @@ export const MetadataUtils = {
   isPositionAbsolute(instance: ElementInstanceMetadata | null): boolean {
     return instance?.specialSizeMeasurements.position === 'absolute'
   },
-  isButton(
-    target: ElementPath,
-    components: Array<UtopiaJSXComponent>,
-    metadata: ElementInstanceMetadataMap,
-  ): boolean {
-    const elementName = MetadataUtils.getJSXElementName(target, components)
+  isButton(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const instance = MetadataUtils.findElementByElementPath(metadata, target)
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(instance?.element))
     if (
       elementName != null &&
       PP.depth(elementName.propertyPath) === 0 &&
@@ -293,7 +303,6 @@ export const MetadataUtils = {
     ) {
       return true
     }
-    const instance = MetadataUtils.findElementByElementPath(metadata, target)
     if (instance != null && isRight(instance.element) && isJSXElement(instance.element.value)) {
       const buttonRoleFound = instance.element.value.props.some(
         (attribute) =>
@@ -306,11 +315,7 @@ export const MetadataUtils = {
     }
     return instance?.specialSizeMeasurements.htmlElementName.toLowerCase() === 'button'
   },
-  getYogaSizeProps(
-    target: ElementPath,
-    metadata: ElementInstanceMetadataMap,
-    components: Array<UtopiaJSXComponent>,
-  ): Partial<Size> {
+  getYogaSizeProps(target: ElementPath, metadata: ElementInstanceMetadataMap): Partial<Size> {
     const parentInstance = this.getParent(metadata, target)
     if (parentInstance == null) {
       return {}
@@ -321,7 +326,9 @@ export const MetadataUtils = {
       if (staticTarget == null) {
         return {}
       } else {
-        const element = findJSXElementChildAtPath(components, staticTarget)
+        const element = maybeEitherToMaybe(
+          MetadataUtils.findElementByElementPath(metadata, target)?.element,
+        )
         if (element != null && isJSXElement(element)) {
           const widthLookupAxis: LayoutProp = flexDirection === 'horizontal' ? 'flexBasis' : 'Width'
           const heightLookupAxis: LayoutProp = flexDirection === 'vertical' ? 'flexBasis' : 'Height'
@@ -408,10 +415,8 @@ export const MetadataUtils = {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
     return MetadataUtils.isAutoSizingView(instance)
   },
-  isAutoSizingText(imports: Imports, instance: ElementInstanceMetadata): boolean {
-    return (
-      MetadataUtils.isTextAgainstImports(imports, instance) && instance.props.textSizing === 'auto'
-    )
+  isAutoSizingText(instance: ElementInstanceMetadata): boolean {
+    return MetadataUtils.isTextAgainstImports(instance) && instance.props.textSizing === 'auto'
   },
   findNonGroupParent(
     metadata: ElementInstanceMetadataMap,
@@ -646,31 +651,20 @@ export const MetadataUtils = {
     )
   },
   isGivenUtopiaAPIElementFromImports(
-    imports: Imports,
     instance: ElementInstanceMetadata,
     elementType: string,
   ): boolean {
-    // KILLME Replace with isGivenUtopiaAPIElementFromName from project-file-utils.ts
-    return foldEither(
-      (_) => false,
-      (element) => isGivenUtopiaAPIElement(element, imports, elementType),
-      instance.element,
-    )
+    // KILLME Replace with isGivenUtopiaElementFromMetadata from project-file-utils.ts
+    return isGivenUtopiaElementFromMetadata(instance, elementType)
   },
-  isViewAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'View')
-    )
+  isViewAgainstImports(instance: ElementInstanceMetadata | null): boolean {
+    return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'View')
   },
   isImg(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'img')
   },
-  isTextAgainstImports(imports: Imports, instance: ElementInstanceMetadata | null): boolean {
-    return (
-      instance != null &&
-      MetadataUtils.isGivenUtopiaAPIElementFromImports(imports, instance, 'Text')
-    )
+  isTextAgainstImports(instance: ElementInstanceMetadata | null): boolean {
+    return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'Text')
   },
   isDiv(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'div')
@@ -686,7 +680,7 @@ export const MetadataUtils = {
       return false
     }
   },
-  targetElementSupportsChildren(imports: Imports, instance: ElementInstanceMetadata): boolean {
+  targetElementSupportsChildren(instance: ElementInstanceMetadata): boolean {
     // FIXME Replace with a property controls check
     const elementEither = instance.element
 
@@ -694,24 +688,18 @@ export const MetadataUtils = {
       return intrinsicHTMLElementNamesThatSupportChildren.includes(elementEither.value)
     } else {
       const element = elementEither.value
-      if (isJSXElement(element) && isUtopiaAPIComponent(element.name, imports)) {
+      if (isJSXElement(element) && isUtopiaAPIComponentFromMetadata(instance)) {
         // Explicitly prevent components / elements that we *know* don't support children
-        return (
-          isViewAgainstImports(element.name, imports) || isSceneAgainstImports(element, imports)
-        )
+        return isViewFromMetadata(instance) || isSceneFromMetadata(instance)
       } else {
         // We don't know at this stage
         return true
       }
     }
   },
-  targetSupportsChildren(
-    imports: Imports,
-    metadata: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): boolean {
+  targetSupportsChildren(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
     const instance = MetadataUtils.findElementByElementPath(metadata, target)
-    return instance == null ? false : MetadataUtils.targetElementSupportsChildren(imports, instance)
+    return instance == null ? false : MetadataUtils.targetElementSupportsChildren(instance)
   },
   // TODO update this to work with the natural width / height
   getImageMultiplier(
@@ -955,11 +943,7 @@ export const MetadataUtils = {
     // Default catch all name, will probably avoid some odd cases in the future.
     return 'Element'
   },
-  getJSXElementName(
-    path: ElementPath,
-    components: Array<UtopiaJSXComponent>,
-  ): JSXElementName | null {
-    const jsxElement = findElementAtPath(path, components)
+  getJSXElementName(jsxElement: JSXElementChild | null): JSXElementName | null {
     if (jsxElement != null) {
       if (isJSXElement(jsxElement)) {
         return jsxElement.name
@@ -969,6 +953,15 @@ export const MetadataUtils = {
     } else {
       return null
     }
+  },
+  getJSXElementFromMetadata(
+    metadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): JSXElementName | null {
+    const elementName = MetadataUtils.getJSXElementName(
+      maybeEitherToMaybe(MetadataUtils.findElementByElementPath(metadata, path)?.element),
+    )
+    return elementName
   },
   getJSXElementNameFromMetadata(
     path: ElementPath,
@@ -1074,6 +1067,7 @@ export const MetadataUtils = {
           componentInstance: componentInstance,
           isEmotionOrStyledComponent: spyElem.isEmotionOrStyledComponent,
           label: spyElem.label,
+          importInfo: spyElem.importInfo,
         }
         workingElements[EP.toString(domElem.elementPath)] = elem
       }
@@ -1350,23 +1344,17 @@ export const MetadataUtils = {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
     }
   },
-  isFocusableComponent(
-    path: ElementPath,
-    components: UtopiaJSXComponent[],
-    metadata: ElementInstanceMetadataMap,
-    imports: Imports,
-  ): boolean {
-    const elementName = MetadataUtils.getJSXElementName(path, components)
+  isFocusableComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
+    const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
-    const isAnimatedComponent =
-      elementName != null && isAnimatedElementAgainstImports(elementName, imports)
+    const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
     }
-    const isImported = elementName != null && isImportedComponent(elementName, imports)
+    const isImported = isImportedComponentNPM(element)
     if (isImported) {
       return false
     }
@@ -1377,15 +1365,10 @@ export const MetadataUtils = {
       return false
     }
   },
-  isFocusableLeafComponent(
-    path: ElementPath,
-    components: UtopiaJSXComponent[],
-    metadata: ElementInstanceMetadataMap,
-    imports: Imports,
-  ): boolean {
+  isFocusableLeafComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
     return (
       MetadataUtils.getChildrenPaths(metadata, path).length === 0 &&
-      MetadataUtils.isFocusableComponent(path, components, metadata, imports)
+      MetadataUtils.isFocusableComponent(path, metadata)
     )
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {

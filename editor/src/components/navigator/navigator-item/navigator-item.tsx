@@ -15,10 +15,7 @@ import { ItemLabel } from './item-label'
 import { ComponentPreview } from './component-preview'
 import { NavigatorItemActionSheet } from './navigator-item-components'
 import { useScrollToThisIfSelected } from './scroll-to-element-if-selected-hook'
-import {
-  ElementWarnings,
-  getJSXComponentsAndImportsForPathInnerComponentFromState,
-} from '../../editor/store/editor-state'
+import { ElementWarnings } from '../../editor/store/editor-state'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import {
   betterReactMemo,
@@ -28,8 +25,6 @@ import { IcnProps, colorTheme, UtopiaStyles, UtopiaTheme, FlexRow } from '../../
 import { LayoutIcon } from './layout-icon'
 import { useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isSceneElementIgnoringImports } from '../../../core/model/scene-utils'
-import { isRight } from '../../../core/shared/either'
 
 interface ComputedLook {
   style: React.CSSProperties
@@ -237,22 +232,9 @@ function useStyleFullyVisible(path: ElementPath): boolean {
   }, 'NavigatorItem useStyleFullyVisible')
 }
 
-export function isProbablySceneFromMetadata(
-  jsxMetadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): boolean {
-  const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-  return (
-    elementMetadata != null &&
-    isRight(elementMetadata.element) &&
-    isJSXElement(elementMetadata.element.value) &&
-    isSceneElementIgnoringImports(elementMetadata.element.value)
-  )
-}
-
 function useIsProbablyScene(path: ElementPath): boolean {
   return useEditorState(
-    (store) => isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
+    (store) => MetadataUtils.isProbablySceneFromMetadata(store.editor.jsxMetadata, path),
     'NavigatorItem useIsProbablyScene',
   )
 }
@@ -261,11 +243,9 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
   'NavigatorItem',
   (props) => {
     const {
-      label,
       dispatch,
       isHighlighted,
       isElementVisible,
-      renamingTarget,
       selected,
       collapsed,
       elementOriginType,
@@ -282,17 +262,7 @@ export const NavigatorItem: React.FunctionComponent<NavigatorItemInnerProps> = b
     )
 
     const isFocusableComponent = useEditorState((store) => {
-      const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-        elementPath,
-        store.editor,
-        store.derived,
-      )
-      return MetadataUtils.isFocusableComponent(
-        elementPath,
-        components,
-        store.editor.jsxMetadata,
-        imports,
-      )
+      return MetadataUtils.isFocusableComponent(elementPath, store.editor.jsxMetadata)
     }, 'NavigatorItem isFocusable')
 
     const childComponentCount = props.noOfChildren

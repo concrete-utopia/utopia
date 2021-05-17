@@ -16,7 +16,7 @@ import {
   getMissingPropertyControlsWarning,
 } from '../../../../core/property-controls/property-controls-utils'
 import { joinSpecial } from '../../../../core/shared/array-utils'
-import { eitherToMaybe, foldEither } from '../../../../core/shared/either'
+import { eitherToMaybe, foldEither, maybeEitherToMaybe } from '../../../../core/shared/either'
 import { mapToArray } from '../../../../core/shared/object-utils'
 import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -87,13 +87,11 @@ import { IconToggleButton } from '../../../../uuiui/icon-toggle-button'
 import { InlineButton, InlineLink } from '../../../../uuiui/inline-button'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getJSXElementNameAsString, isJSXElement } from '../../../../core/shared/element-template'
-import { getJSXComponentsAndImportsForPathInnerComponentFromState } from '../../../editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { usePackageDependencies } from '../../../editor/npm-dependency/npm-dependency'
 import { importedFromWhere } from '../../../editor/import-utils'
-import { isProbablySceneFromMetadata } from '../../../navigator/navigator-item/navigator-item'
 import {
-  isAnimatedElementAgainstImports,
+  isAnimatedElement,
   isImportedComponentNPM,
 } from '../../../../core/model/project-file-utils'
 
@@ -515,28 +513,22 @@ const RowForControl = betterReactMemo('RowForControl', (props: RowForControlProp
 function useComponentType(path: ElementPath): string | null {
   return useEditorState((store) => {
     const metadata = store.editor.jsxMetadata
-    const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-      path,
-      store.editor,
-      store.derived,
-    )
-    const elementName = MetadataUtils.getJSXElementName(path, components)
-    if (isProbablySceneFromMetadata(metadata, path)) {
+    const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+    if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
       return null
     }
     if (MetadataUtils.isEmotionOrStyledComponent(path, metadata)) {
       return 'Styled Component'
     }
-    const isAnimatedComponent =
-      elementName != null && isAnimatedElementAgainstImports(elementName, imports)
+    const isAnimatedComponent = isAnimatedElement(elementMetadata)
     if (isAnimatedComponent) {
       return 'Animated Component'
     }
-    const isImported = elementName != null && isImportedComponentNPM(elementName, imports)
+    const isImported = isImportedComponentNPM(elementMetadata)
     if (isImported) {
       return 'Component'
     }
-    const isComponent = MetadataUtils.isFocusableComponent(path, components, metadata, imports)
+    const isComponent = MetadataUtils.isFocusableComponent(path, metadata)
     return isComponent ? 'Component' : null
   }, 'useComponentType')
 }
@@ -605,11 +597,7 @@ export const ComponentSectionInner = betterReactMemo(
       }
     }
 
-    const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-      target,
-      editor,
-      derived,
-    )
+    const componentMetadata = MetadataUtils.findElementByElementPath(metadata, target)
 
     const underlyingTarget = normalisePathToUnderlyingTarget(
       editor.projectContents,
@@ -620,20 +608,13 @@ export const ComponentSectionInner = betterReactMemo(
     const locationOfComponentInstance =
       underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : ''
 
-    const componentPackageName = importedFromWhere(
-      locationOfComponentInstance,
-      elementName!,
-      components,
-      imports,
-    )
+    const componentPackageName = maybeEitherToMaybe(componentMetadata?.importInfo)?.path
 
     const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`
 
-    const isFocusable = MetadataUtils.isFocusableComponent(target, components, metadata, imports)
+    const isFocusable = MetadataUtils.isFocusableComponent(target, metadata)
 
     const componentType = useComponentType(target)
-
-    const componentNameJsx = MetadataUtils.getJSXElementName(target, components)
 
     const OpenFile = React.useCallback(
       () => dispatch([openCodeEditorFile(locationOfComponentInstance, true)]),
@@ -692,7 +673,7 @@ export const ComponentSectionInner = betterReactMemo(
                     (controlDescription) => {
                       return (
                         <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
-                          {isImportedComponentNPM(componentNameJsx!, imports) ? (
+                          {isImportedComponentNPM(componentMetadata) ? (
                             <UIGridRow
                               padded
                               tall={false}
@@ -800,7 +781,7 @@ export const ComponentSectionInner = betterReactMemo(
                 </UIGridRow>
               </InspectorSectionHeader>
 
-              {isImportedComponentNPM(componentNameJsx!, imports) ? (
+              {isImportedComponentNPM(componentMetadata) ? (
                 <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <LargerIcons.NpmLogo />
