@@ -138,7 +138,7 @@ function timeBasicCalc(): FrameResult {
 
   for (let i = 0; i < 100; i++) {
     const start = Date.now()
-    calculatePi(5000000)
+    calculatePi(2500000)
     const end = Date.now()
     times.push(end - start)
   }
@@ -169,7 +169,7 @@ async function testBaselinePerformance(page: puppeteer.Page): Promise<FrameResul
 
   let traceData = fs.readFileSync('trace.json').toString()
   const traceJson = JSON.parse(traceData)
-  return getFrameData(traceJson, 'baseline_step_', 'Baseline Test')
+  return getFrameData(traceJson, 'baseline_step_', 'Empty Dispatch')
 }
 
 async function initialiseTestsReturnScale(page: puppeteer.Page): Promise<Baselines> {
