@@ -155,7 +155,7 @@ function timeBasicCalc(): FrameResult {
     percentile75: sortedTimes[Math.floor(sortedTimes.length * 0.75)],
   }
   return {
-    title: 'Calc Pi 5m',
+    title: 'Calc Pi',
     analytics: analytics,
     timeSeries: sortedTimes,
   }
