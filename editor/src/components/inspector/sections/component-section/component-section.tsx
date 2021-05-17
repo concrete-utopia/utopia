@@ -546,15 +546,7 @@ export const ComponentSectionInner = betterReactMemo(
       useUsedPropsWithoutControls(),
     )
     const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
-    const onResetClicked = React.useCallback(
-      (event: React.MouseEvent<HTMLElement>) => {
-        dispatch(
-          [showContextMenu('context-menu-instance-inspector', event.nativeEvent)],
-          'everyone',
-        )
-      },
-      [dispatch],
-    )
+
     const propsUsedWithoutDefaults = useKeepReferenceEqualityIfPossible(
       useUsedPropsWithoutDefaults(),
     )
@@ -566,54 +558,51 @@ export const ComponentSectionInner = betterReactMemo(
       'ComponentSectionInner selectedViews',
     )
 
-    const { editor, derived } = useEditorState((store) => {
-      return {
-        editor: store.editor,
-        derived: store.derived,
-      }
-    }, 'Focusable values')
+    const focusedElementPath = useEditorState(
+      (store) => store.editor.focusedElementPath,
+      'ComponentSectionInner focusedElementPath',
+    )
 
     const target = selectedViews[0]
 
-    const isFocused = EP.isFocused(editor.focusedElementPath, target)
-    const isNotFocused = EP.isFocused(editor.focusedElementPath, target)
+    const isFocused = EP.isFocused(focusedElementPath, target)
+    const isNotFocused = EP.isFocused(focusedElementPath, target)
 
     const toggleFocusMode = React.useCallback(() => {
       dispatch([setFocusedElement(isFocused ? null : target)])
     }, [dispatch, isFocused, target])
 
-    const metadata = useEditorState(
-      (state) => state.editor.jsxMetadata,
-      'Component-Section jsxMetaData',
-    )
+    const locationOfComponentInstance = useEditorState((state) => {
+      const underlyingTarget = normalisePathToUnderlyingTarget(
+        state.editor.projectContents,
+        state.editor.nodeModules.files,
+        state.editor.canvas.openFile?.filename ?? '',
+        selectedViews[0],
+      )
 
-    let elementName: string
-    const targetName = target
+      return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : ''
+    }, 'ComponentSectionInner locationOfComponentInstance')
 
-    const element = MetadataUtils.findElementByElementPath(metadata, targetName)
-    if (element != null) {
-      const jsxElement = eitherToMaybe(element.element)
-      if (jsxElement != null && isJSXElement(jsxElement)) {
-        elementName = getJSXElementNameAsString(jsxElement.name)
-      }
-    }
-
-    const componentMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-
-    const underlyingTarget = normalisePathToUnderlyingTarget(
-      editor.projectContents,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename ?? '',
-      selectedViews[0],
-    )
-    const locationOfComponentInstance =
-      underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : ''
-
-    const componentPackageName = maybeEitherToMaybe(componentMetadata?.importInfo)?.path
+    const componentPackageName = useEditorState((state) => {
+      const componentMetadata = MetadataUtils.findElementByElementPath(
+        state.editor.jsxMetadata,
+        target,
+      )
+      return maybeEitherToMaybe(componentMetadata?.importInfo)?.path
+    }, 'ComponentSectionInner componentPackageName')
 
     const componentPackageMgrLink = `https://www.npmjs.com/package/${componentPackageName}`
 
-    const isFocusable = MetadataUtils.isFocusableComponent(target, metadata)
+    const isFocusable = useEditorState((state) => {
+      return MetadataUtils.isFocusableComponent(target, state.editor.jsxMetadata)
+    }, 'ComponentSectionInner isFocusable')
+    const isImportedComponent = useEditorState((state) => {
+      const componentMetadata = MetadataUtils.findElementByElementPath(
+        state.editor.jsxMetadata,
+        target,
+      )
+      return isImportedComponentNPM(componentMetadata)
+    }, 'ComponentSectionInner isImportedComponent')
 
     const componentType = useComponentType(target)
 
@@ -674,7 +663,7 @@ export const ComponentSectionInner = betterReactMemo(
                     (controlDescription) => {
                       return (
                         <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
-                          {isImportedComponentNPM(componentMetadata) ? (
+                          {isImportedComponent ? (
                             <UIGridRow
                               padded
                               tall={false}
@@ -782,7 +771,7 @@ export const ComponentSectionInner = betterReactMemo(
                 </UIGridRow>
               </InspectorSectionHeader>
 
-              {isImportedComponentNPM(componentMetadata) ? (
+              {isImportedComponent ? (
                 <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
                   <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <LargerIcons.NpmLogo />
