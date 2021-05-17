@@ -119,6 +119,14 @@ export function eitherToMaybe<L, R>(either: Either<L, R>): R | null {
   }
 }
 
+export function maybeEitherToMaybe<L, R>(either: Either<L, R> | null | undefined): R | null {
+  if (either == null || isLeft(either)) {
+    return null
+  } else {
+    return either.value
+  }
+}
+
 export function eitherFromMaybe<L, R>(leftDefault: L, maybe: R | null): Either<L, R> {
   if (maybe == null) {
     return left(leftDefault)

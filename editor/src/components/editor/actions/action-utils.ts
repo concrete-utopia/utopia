@@ -89,6 +89,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_CONFIG_FROM_VSCODE':
     case 'SET_LOGIN_STATE':
     case 'RESET_CANVAS':
+    case 'SET_FILEBROWSER_DROPTARGET':
       return true
 
     case 'NEW':

@@ -5,7 +5,6 @@ import {
   ElementOriginType,
   isUnknownOrGeneratedElement,
 } from '../../../core/shared/project-file-types'
-import { withUnderlyingTarget } from '../../editor/store/editor-state'
 import { DragState } from '../canvas-types'
 import { MultiselectResizeControl } from './multiselect-resize-control'
 import { ControlProps } from './new-canvas-controls'

@@ -4,7 +4,6 @@ import {
   walkContentsTree,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import { ComponentRendererComponent } from '../../components/canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import Utils, { IndexPosition } from '../../utils/utils'
 import { Either, isRight } from '../shared/either'
@@ -50,6 +49,7 @@ import {
   isSceneAgainstImports,
 } from './project-file-utils'
 import { getStoryboardElementPath } from './scene-utils'
+import { TransientFilesState } from '../../components/editor/store/editor-state'
 
 function getAllUniqueUidsInner(
   projectContents: ProjectContentTreeRoot,
@@ -106,7 +106,7 @@ export function guaranteeUniqueUids(
   return elements.map((element) => fixUtopiaElement(element, existingIDs))
 }
 
-function isSceneElement(
+export function isSceneElement(
   element: JSXElementChild,
   filePath: string,
   projectContents: ProjectContentTreeRoot,
@@ -116,163 +116,6 @@ function isSceneElement(
     return isSceneAgainstImports(element, file.fileContents.parsed.imports)
   } else {
     return false
-  }
-}
-
-export function getValidElementPaths(
-  focusedElementPath: ElementPath | null,
-  topLevelElementName: string | null,
-  instancePath: ElementPath,
-  projectContents: ProjectContentTreeRoot,
-  filePath: string,
-  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-): Array<ElementPath> {
-  if (topLevelElementName == null) {
-    return []
-  }
-  const file = getContentsTreeFileFromString(projectContents, filePath)
-  if (isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    const importSource = importedFromWhere(
-      filePath,
-      topLevelElementName,
-      file.fileContents.parsed.topLevelElements,
-      file.fileContents.parsed.imports,
-    )
-    if (importSource != null) {
-      const resolvedImportSource = resolve(filePath, importSource)
-      if (isRight(resolvedImportSource)) {
-        const resolvedFilePath = resolvedImportSource.value
-        const importSourceFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
-        if (isTextFile(importSourceFile) && isParseSuccess(importSourceFile.fileContents.parsed)) {
-          const topLevelElement = importSourceFile.fileContents.parsed.topLevelElements.find(
-            (element): element is UtopiaJSXComponent =>
-              isUtopiaJSXComponent(element) && element.name === topLevelElementName,
-          )
-          if (topLevelElement != null) {
-            return getValidElementPathsFromElement(
-              focusedElementPath,
-              topLevelElement.rootElement,
-              instancePath,
-              projectContents,
-              resolvedFilePath,
-              false,
-              true,
-              resolve,
-            )
-          }
-        }
-      }
-    }
-  }
-  return []
-}
-
-export function getValidElementPathsFromElement(
-  focusedElementPath: ElementPath | null,
-  element: JSXElementChild,
-  parentPath: ElementPath,
-  projectContents: ProjectContentTreeRoot,
-  filePath: string,
-  parentIsScene: boolean,
-  parentIsInstance: boolean,
-  resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-): Array<ElementPath> {
-  if (isJSXElement(element)) {
-    const isScene = isSceneElement(element, filePath, projectContents)
-    const uid = getUtopiaID(element)
-    const path = parentIsInstance
-      ? EP.appendNewElementPath(parentPath, uid)
-      : EP.appendToPath(parentPath, uid)
-    let paths = [path]
-    fastForEach(element.children, (c) =>
-      paths.push(
-        ...getValidElementPathsFromElement(
-          focusedElementPath,
-          c,
-          path,
-          projectContents,
-          filePath,
-          isScene,
-          false,
-          resolve,
-        ),
-      ),
-    )
-
-    const name = getJSXElementNameAsString(element.name)
-    const lastElementPathPart = EP.lastElementPathForPath(path)
-    const matchingFocusedPathPart =
-      focusedElementPath == null || lastElementPathPart == null
-        ? null
-        : EP.pathUpToElementPath(focusedElementPath, lastElementPathPart, 'static-path')
-
-    const isFocused = parentIsScene || matchingFocusedPathPart != null
-    if (isFocused) {
-      paths = [
-        ...paths,
-        ...getValidElementPaths(
-          focusedElementPath,
-          name,
-          matchingFocusedPathPart ?? path,
-          projectContents,
-          filePath,
-          resolve,
-        ),
-      ]
-    }
-
-    return paths
-  } else if (isJSXArbitraryBlock(element)) {
-    // FIXME: From investigation of https://github.com/concrete-utopia/utopia/issues/1137
-    // The paths this will generate will only be correct if the elements from `elementsWithin`
-    // are used at the same level at which they're defined.
-    // This will work fine:
-    // export var SameFileApp = (props) => {
-    //   const AppAsVariable = App
-    //   return <AppAsVariable />
-    // }
-    // This will not:
-    // export var SameFileApp = (props) => {
-    //   const AppAsVariable = App
-    //   return <div data-uid='same-file-app-div' style={{ position: 'relative', width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}>
-    //     <AppAsVariable />
-    //   </div>
-    // }
-    let paths: Array<ElementPath> = []
-    fastForEach(Object.values(element.elementsWithin), (e) =>
-      paths.push(
-        ...getValidElementPathsFromElement(
-          focusedElementPath,
-          e,
-          parentPath,
-          projectContents,
-          filePath,
-          parentIsScene,
-          parentIsInstance,
-          resolve,
-        ),
-      ),
-    )
-    return paths
-  } else if (isJSXFragment(element)) {
-    let paths: Array<ElementPath> = []
-    fastForEach(Object.values(element.children), (e) =>
-      paths.push(
-        ...getValidElementPathsFromElement(
-          focusedElementPath,
-          e,
-          parentPath,
-          projectContents,
-          filePath,
-          parentIsScene,
-          parentIsInstance,
-          resolve,
-        ),
-      ),
-    )
-    return paths
-  } else {
-    return []
   }
 }
 

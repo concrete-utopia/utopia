@@ -13,7 +13,6 @@ import {
 import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as EP from '../../../../core/shared/element-path'
 import { fastForEach, NO_OP } from '../../../../core/shared/utils'
-import { WindowMousePositionRaw } from '../../../../templates/editor-canvas'
 import { KeysPressed } from '../../../../utils/keyboard'
 import { useKeepShallowReferenceEquality } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
@@ -24,11 +23,7 @@ import {
   setFocusedElement,
   setHighlightedView,
 } from '../../../editor/actions/action-creators'
-import {
-  EditorState,
-  getJSXComponentsAndImportsForPathInnerComponent,
-  getJSXComponentsAndImportsForPathInnerComponentFromState,
-} from '../../../editor/store/editor-state'
+import { EditorState } from '../../../editor/store/editor-state'
 import { useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { DragState, moveDragState } from '../../canvas-types'
@@ -41,6 +36,7 @@ import {
 import { useWindowToCanvasCoordinates } from '../../dom-lookup-hooks'
 import { selectElementsThatRespectLayout } from '../new-canvas-controls'
 import { useInsertModeSelectAndHover } from './insert-mode-hooks'
+import { WindowMousePositionRaw } from '../../../../utils/global-positions'
 
 const DRAG_START_TRESHOLD = 2
 
@@ -492,16 +488,9 @@ export function useSelectModeSelectAndHover(
 
         if (foundTarget != null && doubleClick) {
           // for components without passed children doubleclicking enters focus mode
-          const { components, imports } = getJSXComponentsAndImportsForPathInnerComponentFromState(
-            foundTarget.elementPath,
-            editorStoreRef.current.editor,
-            editorStoreRef.current.derived,
-          )
           const isFocusableLeaf = MetadataUtils.isFocusableLeafComponent(
             foundTarget.elementPath,
-            components,
             editorStoreRef.current.editor.jsxMetadata,
-            imports,
           )
           if (isFocusableLeaf) {
             dispatch([setFocusedElement(foundTarget.elementPath)])

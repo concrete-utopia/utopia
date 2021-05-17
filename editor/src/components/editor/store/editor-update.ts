@@ -291,6 +291,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FOLLOW_SELECTION_ENABLED(action, state)
     case 'RESET_CANVAS':
       return UPDATE_FNS.RESET_CANVAS(action, state)
+    case 'SET_FILEBROWSER_DROPTARGET':
+      return UPDATE_FNS.SET_FILEBROWSER_DROPTARGET(action, state)
     default:
       return state
   }

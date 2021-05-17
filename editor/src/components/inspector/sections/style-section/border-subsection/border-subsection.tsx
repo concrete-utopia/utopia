@@ -26,26 +26,13 @@ import {
   isCSSUnknownFunctionParameters,
   isEmptyInputValue,
   parseColor,
+  toggleBorderEnabled,
 } from '../../../common/css-utils'
 import { useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import { ColorControl, StringColorControl } from '../../../controls/color-control'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-
-export function toggleBorderEnabled(_: null, oldValue: CSSBorder): CSSBorder {
-  const valueIsEnabled = (oldValue.style?.value.value ?? 'none') !== 'none'
-  if (valueIsEnabled) {
-    let workingNewValue = { ...oldValue }
-    delete workingNewValue.style
-    return workingNewValue
-  } else {
-    return {
-      ...oldValue,
-      style: cssLineStyle(cssKeyword('solid')),
-    }
-  }
-}
 
 export function updateBorderWidth(
   newWidth: CSSNumber | EmptyInputValue,

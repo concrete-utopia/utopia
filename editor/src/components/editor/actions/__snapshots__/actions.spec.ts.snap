@@ -51,113 +51,19 @@ Array [
                   "leadingComments": Array [],
                   "trailingComments": Array [],
                 },
-                "content": Array [
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "position",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": "absolute",
-                    },
-                  },
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "height",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": 300,
-                    },
-                  },
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "left",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": 0,
-                    },
-                  },
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "top",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": 0,
-                    },
-                  },
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "width",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": 200,
-                    },
-                  },
-                ],
-                "type": "ATTRIBUTE_NESTED_OBJECT",
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "height": 300,
+                  "left": 0,
+                  "position": "absolute",
+                  "top": 0,
+                  "width": 200,
+                },
               },
             },
           ],
           "type": "JSX_ELEMENT",
+          "uid": "bbb",
         },
       ],
       "name": Object {
@@ -193,49 +99,11 @@ Array [
               "leadingComments": Array [],
               "trailingComments": Array [],
             },
-            "content": Array [
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "backgroundColor",
-                "keyComments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "PROPERTY_ASSIGNMENT",
-                "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "#FFFFFF",
-                },
-              },
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "position",
-                "keyComments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "PROPERTY_ASSIGNMENT",
-                "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "absolute",
-                },
-              },
-            ],
-            "type": "ATTRIBUTE_NESTED_OBJECT",
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "backgroundColor": "#FFFFFF",
+              "position": "absolute",
+            },
           },
         },
         Object {
@@ -255,6 +123,7 @@ Array [
         },
       ],
       "type": "JSX_ELEMENT",
+      "uid": "aaa",
     },
     "type": "UTOPIA_JSX_COMPONENT",
     "usedInReactDOMRender": false,
@@ -316,6 +185,7 @@ Array [
             },
           ],
           "type": "JSX_ELEMENT",
+          "uid": "scene-0",
         },
       ],
       "name": Object {
@@ -342,6 +212,7 @@ Array [
         },
       ],
       "type": "JSX_ELEMENT",
+      "uid": "utopia-storyboard-uid",
     },
     "type": "UTOPIA_JSX_COMPONENT",
     "usedInReactDOMRender": false,
@@ -400,73 +271,17 @@ Array [
                   "leadingComments": Array [],
                   "trailingComments": Array [],
                 },
-                "content": Array [
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "position",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": "relative",
-                    },
-                  },
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "flexBasis",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": 200,
-                    },
-                  },
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "height",
-                    "keyComments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "type": "PROPERTY_ASSIGNMENT",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "value": 300,
-                    },
-                  },
-                ],
-                "type": "ATTRIBUTE_NESTED_OBJECT",
+                "type": "ATTRIBUTE_VALUE",
+                "value": Object {
+                  "flexBasis": 200,
+                  "height": 300,
+                  "position": "relative",
+                },
               },
             },
           ],
           "type": "JSX_ELEMENT",
+          "uid": "bbb",
         },
       ],
       "name": Object {
@@ -502,49 +317,11 @@ Array [
               "leadingComments": Array [],
               "trailingComments": Array [],
             },
-            "content": Array [
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "backgroundColor",
-                "keyComments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "PROPERTY_ASSIGNMENT",
-                "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "#FFFFFF",
-                },
-              },
-              Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "key": "display",
-                "keyComments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "PROPERTY_ASSIGNMENT",
-                "value": Object {
-                  "comments": Object {
-                    "leadingComments": Array [],
-                    "trailingComments": Array [],
-                  },
-                  "type": "ATTRIBUTE_VALUE",
-                  "value": "flex",
-                },
-              },
-            ],
-            "type": "ATTRIBUTE_NESTED_OBJECT",
+            "type": "ATTRIBUTE_VALUE",
+            "value": Object {
+              "backgroundColor": "#FFFFFF",
+              "display": "flex",
+            },
           },
         },
         Object {
@@ -564,6 +341,7 @@ Array [
         },
       ],
       "type": "JSX_ELEMENT",
+      "uid": "aaa",
     },
     "type": "UTOPIA_JSX_COMPONENT",
     "usedInReactDOMRender": false,
@@ -625,6 +403,7 @@ Array [
             },
           ],
           "type": "JSX_ELEMENT",
+          "uid": "scene-0",
         },
       ],
       "name": Object {
@@ -651,6 +430,7 @@ Array [
         },
       ],
       "type": "JSX_ELEMENT",
+      "uid": "utopia-storyboard-uid",
     },
     "type": "UTOPIA_JSX_COMPONENT",
     "usedInReactDOMRender": false,

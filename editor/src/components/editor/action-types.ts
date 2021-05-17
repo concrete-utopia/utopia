@@ -28,8 +28,6 @@ import { ElementContextMenuInstance } from '../element-context-menu'
 import { FontSettings } from '../inspector/common/css-utils'
 import { CSSTarget } from '../inspector/sections/header-section/target-selector'
 import { LocalNavigatorAction } from '../navigator/actions/index'
-import { LeftMenuTab } from '../navigator/left-pane'
-import { RightMenuTab } from '../canvas/right-menu'
 import { Mode } from './editor-modes'
 import type {
   RequestedNpmDependency,
@@ -40,9 +38,11 @@ import {
   DuplicationState,
   EditorState,
   ErrorMessages,
+  LeftMenuTab,
   ModalDialog,
   OriginalFrame,
   PersistentModel,
+  RightMenuTab,
   StoredEditorState,
 } from './store/editor-state'
 import { Notice } from '../common/notice'
@@ -612,7 +612,7 @@ export interface SendLinterRequestMessage {
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ReadonlyArray<ElementInstanceMetadata>
-  cachedTreeRoots: Array<ElementPath>
+  cachedPaths: Array<ElementPath>
 }
 
 export interface SetProp {
@@ -814,6 +814,11 @@ export interface ResetCanvas {
   action: 'RESET_CANVAS'
 }
 
+export interface SetFilebrowserDropTarget {
+  action: 'SET_FILEBROWSER_DROPTARGET'
+  target: string | null
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertScene
@@ -948,6 +953,7 @@ export type EditorAction =
   | UpdateConfigFromVSCode
   | SetLoginState
   | ResetCanvas
+  | SetFilebrowserDropTarget
 
 export type DispatchPriority =
   | 'everyone'

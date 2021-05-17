@@ -54,6 +54,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       userState: null as any,
       workers: null as any,
       dispatch: mockDispatch,
+      alreadySaved: false,
     }
 
     const storeHook = create<EditorStore>(() => initialEditorStore)

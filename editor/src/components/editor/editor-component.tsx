@@ -12,7 +12,7 @@ import { resizeLeftPane } from '../common/actions'
 import { ConfirmCloseDialog } from '../filebrowser/confirm-close-dialog'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { Menubar } from '../menubar/menubar'
-import { LeftPaneComponent, LeftMenuTab, LeftPaneDefaultWidth } from '../navigator/left-pane'
+import { LeftPaneComponent } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
 import { ReleaseNotesContent } from '../documentation/release-notes'
 import { EditorDispatch, LoginState } from './action-types'
@@ -24,6 +24,8 @@ import {
   ConsoleLog,
   getOpenFile,
   getOpenTextFileKey,
+  LeftMenuTab,
+  LeftPaneDefaultWidth,
   StoryboardFilePath,
 } from './store/editor-state'
 import { useEditorState, useRefEditorState } from './store/store-hook'

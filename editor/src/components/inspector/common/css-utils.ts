@@ -62,8 +62,6 @@ import { PrimitiveType, ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 import Utils from '../../../utils/utils'
-import { toggleBorderEnabled } from '../sections/style-section/border-subsection/border-subsection'
-import { toggleShadowEnabled } from '../sections/style-section/shadow-subsection/shadow-subsection'
 import { fontFamilyArrayToCSSFontFamilyString } from '../sections/style-section/text-subsection/fonts-list'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import {
@@ -5040,4 +5038,24 @@ export function isTrivialDefaultValue(
 ): boolean {
   const maybeTrivial = trivialDefaultValues[propertyKey]
   return fastDeepEqual(maybeTrivial, valueToCheck)
+}
+
+export function toggleBorderEnabled(_: null, oldValue: CSSBorder): CSSBorder {
+  const valueIsEnabled = (oldValue.style?.value.value ?? 'none') !== 'none'
+  if (valueIsEnabled) {
+    let workingNewValue = { ...oldValue }
+    delete workingNewValue.style
+    return workingNewValue
+  } else {
+    return {
+      ...oldValue,
+      style: cssLineStyle(cssKeyword('solid')),
+    }
+  }
+}
+
+export function toggleShadowEnabled(oldValue: CSSBoxShadow): CSSBoxShadow {
+  const newValue = { ...oldValue }
+  newValue.enabled = !newValue.enabled
+  return newValue
 }

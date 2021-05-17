@@ -104,6 +104,7 @@ export function createInsertImageAction(
 
     const imageElement = jsxElement(
       jsxElementName('img', []),
+      newUID,
       jsxAttributesFromMap({
         alt: jsxAttributeValue('', emptyComments),
         src: srcAttribute,

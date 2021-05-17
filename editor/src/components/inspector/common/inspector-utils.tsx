@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { ElementPath } from 'src/core/shared/project-file-types'
-import { Utils } from '../../../uuiui-deps'
 import * as EP from '../../../core/shared/element-path'
+import { fastForEach } from '../../../core/shared/utils'
 import { colorTheme } from '../../../uuiui'
 import { useForceUpdate } from '../../editor/hook-utils'
 import { OnSubmitValue } from '../controls/control'
@@ -64,12 +64,13 @@ export function usePropControlledStateV2<T>(propValue: T): [T, React.Dispatch<T>
 
   const forceUpdate = useForceUpdate()
 
-  const setLocalState = React.useCallback((newValue: T) => {
-    localStateRef.current = newValue
-    forceUpdate()
-    // TODO FIXME bump eslint
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const setLocalState = React.useCallback(
+    (newValue: T) => {
+      localStateRef.current = newValue
+      forceUpdate()
+    },
+    [forceUpdate],
+  )
 
   return [localStateRef.current, setLocalState]
 }
@@ -127,8 +128,6 @@ export function useModelControlledTransformableState<T>(
       setLocalState(newValue)
       setDirty(true)
     },
-    // KILLME when `eslint-plugin-react-hooks` is updated to >4.1.2
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [localState, onSubmitValue, onTransientSubmitValue],
   )
 
@@ -187,7 +186,7 @@ export function clampString(value: string, maxLength: number) {
 
 export function getElementsToTarget(paths: Array<ElementPath>): Array<ElementPath> {
   let result: Array<ElementPath> = []
-  Utils.fastForEach(paths, (path) => {
+  fastForEach(paths, (path) => {
     if (!EP.containsPath(path, result)) {
       result.push(path)
     }

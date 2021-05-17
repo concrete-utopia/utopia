@@ -52,6 +52,7 @@ import {
   SquareButton,
   Icons,
 } from '../../uuiui'
+import { isLocal } from '../editor/persistence'
 
 export type FileBrowserItemType = 'file' | 'export'
 
@@ -64,6 +65,7 @@ export interface FileBrowserItemInfo {
   modified: boolean
   hasErrorMessages: boolean
   exportedFunction: boolean
+  isUploadedAssetFile: boolean
 }
 
 export function fileHasErrorMessages(path: string, errorMessages: ErrorMessage[] | null): boolean {
@@ -95,6 +97,8 @@ function collectFileBrowserItems(
         hasErrorMessages: hasErrorMessages,
         modified: isModifiedFile(element),
         exportedFunction: false,
+        isUploadedAssetFile:
+          !isLocal() && (element.type === 'IMAGE_FILE' || element.type === 'ASSET_FILE'),
       })
       if (
         element.type === 'TEXT_FILE' &&
@@ -115,6 +119,7 @@ function collectFileBrowserItems(
                 hasErrorMessages: false,
                 modified: false,
                 exportedFunction: typeInformation.includes('=>'),
+                isUploadedAssetFile: false,
               })
             }
           })
@@ -178,6 +183,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
     codeResultCache,
     propertyControlsInfo,
     renamingTarget,
+    dropTarget,
     openUiFileName,
   } = useEditorState((store) => {
     const uiFile = getOpenUIJSFile(store.editor)
@@ -190,6 +196,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
       codeResultCache: store.editor.codeResultCache,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,
+      dropTarget: store.editor.fileBrowser.dropTarget,
       openUiFileName: getOpenUIJSFileKey(store.editor),
     }
   }, 'FileBrowserItems')
@@ -250,7 +257,12 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
             'data-uid',
             jsxAttributeValue(newUID, emptyComments),
           )
-          const element: JSXElement = jsxElement(jsxElementName(exportVarName, []), props, [])
+          const element: JSXElement = jsxElement(
+            jsxElementName(exportVarName, []),
+            newUID,
+            props,
+            [],
+          )
           dispatch(
             [
               EditorActions.enableInsertModeForJSXElement(
@@ -307,6 +319,7 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
             setSelected={setSelected}
             collapsed={element.type === 'file' && collapsedPaths.indexOf(element.path) > -1}
             hasErrorMessages={fileHasErrorMessages(element.path, errorMessages)}
+            dropTarget={dropTarget}
           />
         </div>
       ))}

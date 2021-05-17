@@ -14,7 +14,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {},
         "name": "App",
@@ -44,7 +43,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -65,7 +63,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -86,7 +83,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -107,7 +103,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "react": Object {
@@ -135,7 +130,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -166,7 +160,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -197,7 +190,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -228,7 +220,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -259,7 +250,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -290,7 +280,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -321,7 +310,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -354,7 +342,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -387,7 +374,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -420,7 +406,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {
@@ -453,7 +438,6 @@ Array [
             },
           },
           "props": Array [],
-          "type": "JSX_ELEMENT",
         },
         "importsToAdd": Object {
           "antd": Object {

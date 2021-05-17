@@ -54,6 +54,7 @@ describe('maybeSwitchLayoutProps', () => {
     ;(generateUidWithExistingComponents as any) = jest.fn().mockReturnValue(NewUID)
     const elementToPaste = jsxElement(
       'View',
+      NewUID,
       jsxAttributesFromMap({
         style: jsxAttributeNestedObjectSimple(
           jsxAttributesFromMap({
@@ -90,6 +91,7 @@ describe('maybeSwitchLayoutProps', () => {
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
         label: null,
+        importInfo: null,
       },
       [EP.toString(elementPath)]: {
         elementPath: elementPath,
@@ -127,6 +129,7 @@ describe('maybeSwitchLayoutProps', () => {
         computedStyle: emptyComputedStyle,
         attributeMetadatada: emptyAttributeMetadatada,
         label: null,
+        importInfo: null,
       },
     }
 

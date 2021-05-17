@@ -6,12 +6,12 @@ import { betterReactMemo } from '../../uuiui-deps'
 import * as EP from '../../core/shared/element-path'
 import { FormulaBar } from '../canvas/controls/formula-bar'
 import { getNavigatorPositionNextState } from './actions/actions'
-import { LeftPaneDefaultWidth } from '../navigator/left-pane'
 import CanvasActions from '../canvas/canvas-actions'
 import { CanvasVector } from '../../core/shared/math-utils'
 import { EditorAction } from './action-types'
 import { ComponentOrInstanceIndicator } from '../editor/component-button'
 import { IconToggleButton } from '../../uuiui/icon-toggle-button'
+import { LeftPaneDefaultWidth } from './store/editor-state'
 
 export const TopMenu = betterReactMemo('TopMenu', () => {
   const dispatch = useEditorState((store) => store.dispatch, 'TopMenu dispatch')

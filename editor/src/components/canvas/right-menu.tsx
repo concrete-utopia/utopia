@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { EditorState } from '../editor/store/editor-state'
+import { EditorState, RightMenuTab } from '../editor/store/editor-state'
 import { isLiveMode } from '../editor/editor-modes'
 import { useEditorState } from '../editor/store/store-hook'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -17,34 +17,6 @@ import {
 } from '../../uuiui'
 import { betterReactMemo, Utils } from '../../uuiui-deps'
 import { MenuTile } from '../menubar/menubar'
-
-export const enum RightMenuTab {
-  Insert = 'insert',
-  Inspector = 'inspector',
-}
-
-export function updateSelectedRightMenuTab(
-  editorState: EditorState,
-  tab: RightMenuTab,
-): EditorState {
-  return {
-    ...editorState,
-    rightMenu: {
-      ...editorState.rightMenu,
-      selectedTab: tab,
-    },
-  }
-}
-
-export function updateRightMenuExpanded(editorState: EditorState, expanded: boolean): EditorState {
-  return {
-    ...editorState,
-    rightMenu: {
-      ...editorState.rightMenu,
-      expanded: expanded,
-    },
-  }
-}
 
 export interface RightMenuTileProps extends React.HTMLAttributes<HTMLDivElement> {
   selected: boolean

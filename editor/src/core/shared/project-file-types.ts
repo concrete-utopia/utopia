@@ -1,6 +1,6 @@
 import * as TS from 'typescript'
 import { NormalisedFrame } from 'utopia-api'
-import { ArbitraryJSBlock, TopLevelElement } from './element-template'
+import { ArbitraryJSBlock, ImportStatement, TopLevelElement } from './element-template'
 import { ErrorMessage } from './error-messages'
 import { arrayEquals, objectEquals } from './utils'
 
@@ -91,6 +91,39 @@ export function importDetails(
     importedWithName: importedWithName,
     importedFromWithin: importedFromWithin,
     importedAs: importedAs,
+  }
+}
+
+export function importStatementFromImportDetails(
+  moduleName: string,
+  details: ImportDetails,
+): ImportStatement {
+  let importParts: Array<string> = []
+  if (details.importedWithName != null) {
+    importParts.push(details.importedWithName)
+  }
+  if (details.importedAs != null) {
+    importParts.push(`* as ${details.importedAs}`)
+  }
+  if (details.importedFromWithin.length > 0) {
+    let importedFromWithinParts: Array<string> = []
+    for (const fromWithin of details.importedFromWithin) {
+      if (fromWithin.name === fromWithin.alias) {
+        importedFromWithinParts.push(fromWithin.name)
+      } else {
+        importedFromWithinParts.push(`${fromWithin.name} as ${fromWithin.alias}`)
+      }
+      importParts.push(`{ ${importedFromWithinParts.join(', ')} }`)
+    }
+  }
+  const rawCode = `import ${importParts.join(', ')} from '${moduleName}'`
+  return {
+    type: 'IMPORT_STATEMENT',
+    rawCode: rawCode,
+    importStarAs: details.importedAs != null,
+    importWithName: details.importedWithName != null,
+    imports: details.importedFromWithin.map((i) => i.name),
+    module: moduleName,
   }
 }
 

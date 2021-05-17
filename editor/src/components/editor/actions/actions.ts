@@ -65,6 +65,7 @@ import {
   deleteJSXAttribute,
   setJSXAttributesAttribute,
   emptyJsxMetadata,
+  isImportStatement,
 } from '../../../core/shared/element-template'
 import {
   generateUidWithExistingComponents,
@@ -105,6 +106,7 @@ import {
   applyToAllUIJSFiles,
   updateFileContents,
   applyUtopiaJSXComponentsChanges,
+  saveTextFileContents,
 } from '../../../core/model/project-file-utils'
 import {
   Either,
@@ -144,6 +146,8 @@ import {
   unparsed,
   ParseSuccess,
   importAlias,
+  Imports,
+  importStatementFromImportDetails,
 } from '../../../core/shared/project-file-types'
 import {
   addImport,
@@ -196,7 +200,7 @@ import {
   cullSpyCollector,
 } from '../../canvas/canvas-utils'
 import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../../common/actions'
-import { openMenu } from '../../context-menu-wrapper'
+import { openMenu } from '../../context-menu-side-effect'
 import {
   CodeResultCache,
   generateCodeResultCache,
@@ -209,14 +213,6 @@ import { ElementContextMenuInstance } from '../../element-context-menu'
 import { getFilePathToImport } from '../../filebrowser/filepath-utils'
 import { FontSettings } from '../../inspector/common/css-utils'
 import { CSSTarget } from '../../inspector/sections/header-section/target-selector'
-import {
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-  LeftPaneMinimumWidth,
-  setLeftMenuTabFromFocusedPanel,
-  updateLeftMenuExpanded,
-  updateSelectedLeftMenuTab,
-} from '../../navigator/left-pane'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -356,6 +352,7 @@ import {
   UpdateConfigFromVSCode,
   SetLoginState,
   ResetCanvas,
+  SetFilebrowserDropTarget,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -431,6 +428,10 @@ import {
   getHighlightBoundsForFile,
   modifyParseSuccessAtPath,
   withUnderlyingTarget,
+  LeftPaneDefaultWidth,
+  LeftPaneMinimumWidth,
+  LeftMenuTab,
+  RightMenuTab,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -438,12 +439,6 @@ import { fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
 import { PathForSceneDataLabel, getStoryboardElementPath } from '../../../core/model/scene-utils'
 import { getFrameAndMultiplier } from '../../images'
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
-
-import {
-  updateRightMenuExpanded,
-  updateSelectedRightMenuTab,
-  RightMenuTab,
-} from '../../canvas/right-menu'
 
 import { notice, Notice } from '../../common/notice'
 import { objectMap } from '../../../core/shared/object-utils'
@@ -459,7 +454,6 @@ import { lintAndParse } from '../../../core/workers/parser-printer/parser-printe
 import { ShortcutConfiguration } from '../shortcut-definitions'
 import { objectKeyParser, parseString } from '../../../utils/value-parser-utils'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import { arrayDeepEquality } from '../../../utils/deep-equality'
 import {
   ElementInstanceMetadataKeepDeepEquality,
@@ -485,7 +479,6 @@ import {
 } from './action-creators'
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { getAllTargetsAtPoint } from '../../canvas/dom-lookup'
-import { WindowMousePositionRaw } from '../../../templates/editor-canvas'
 import {
   initVSCodeBridge,
   sendCodeEditorDecorations,
@@ -497,6 +490,63 @@ import Meta from 'antd/lib/card/Meta'
 import utils from '../../../utils/utils'
 import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'
+import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
+import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
+
+export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
+  return {
+    ...editorState,
+    leftMenu: {
+      ...editorState.leftMenu,
+      selectedTab: tab,
+    },
+  }
+}
+
+export function updateLeftMenuExpanded(editorState: EditorState, expanded: boolean): EditorState {
+  return {
+    ...editorState,
+    leftMenu: {
+      ...editorState.leftMenu,
+      expanded: expanded,
+    },
+  }
+}
+
+export function setLeftMenuTabFromFocusedPanel(editorState: EditorState): EditorState {
+  switch (editorState.focusedPanel) {
+    case 'misccodeeditor':
+      return updateSelectedLeftMenuTab(editorState, LeftMenuTab.Contents)
+    case 'inspector':
+    case 'canvas':
+    case 'codeEditor':
+    default:
+      return editorState
+  }
+}
+
+export function updateSelectedRightMenuTab(
+  editorState: EditorState,
+  tab: RightMenuTab,
+): EditorState {
+  return {
+    ...editorState,
+    rightMenu: {
+      ...editorState.rightMenu,
+      selectedTab: tab,
+    },
+  }
+}
+
+export function updateRightMenuExpanded(editorState: EditorState, expanded: boolean): EditorState {
+  return {
+    ...editorState,
+    rightMenu: {
+      ...editorState.rightMenu,
+      expanded: expanded,
+    },
+  }
+}
 
 function applyUpdateToJSXElement(
   element: JSXElement,
@@ -921,6 +971,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
     },
     fileBrowser: {
       minimised: currentEditor.fileBrowser.minimised,
+      dropTarget: null,
       renamingTarget: currentEditor.fileBrowser.renamingTarget,
     },
     dependencyList: {
@@ -1191,29 +1242,119 @@ function replaceFilePath(
     ...projectContents,
   }
   let updatedFiles: Array<{ oldPath: string; newPath: string }> = []
-  Utils.fastForEach(Object.keys(projectContents), (key) => {
-    if (oldFolderRegex.test(key)) {
-      const projectFile = projectContents[key]
-      const newFilePath = key.replace(oldPath, newPath)
+  Utils.fastForEach(Object.keys(projectContents), (filename) => {
+    if (oldFolderRegex.test(filename)) {
+      const projectFile = projectContents[filename]
+      const newFilePath = filename.replace(oldPath, newPath)
       const fileType = isDirectory(projectFile) ? 'DIRECTORY' : fileTypeFromFileName(newFilePath)
       if (fileType == null) {
         // Can't identify the file type.
-        error = `Can't rename ${key} to ${newFilePath}.`
+        error = `Can't rename ${filename} to ${newFilePath}.`
       } else {
         const updatedProjectFile = switchToFileType(projectFile, fileType)
         if (updatedProjectFile == null) {
           // Appears this file can't validly be changed.
-          error = `Can't rename ${key} to ${newFilePath}.`
+          error = `Can't rename ${filename} to ${newFilePath}.`
         } else {
           // Remove the old file.
-          delete updatedProjectContents[key]
+          delete updatedProjectContents[filename]
           updatedProjectContents[newFilePath] = updatedProjectFile
-          updatedFiles.push({ oldPath: key, newPath: newFilePath })
+          updatedFiles.push({ oldPath: filename, newPath: newFilePath })
         }
       }
     }
   })
 
+  // Correct any imports in files that have changed because of the above file movements.
+  Utils.fastForEach(Object.keys(updatedProjectContents), (filename) => {
+    const projectFile = updatedProjectContents[filename]
+    // Only for successfully parsed text files, with some protection for files that are yet to be parsed.
+    if (
+      isTextFile(projectFile) &&
+      isParseSuccess(projectFile.fileContents.parsed) &&
+      projectFile.fileContents.revisionsState !== RevisionsState.CodeAhead
+    ) {
+      let updatedParseResult: ParseSuccess = projectFile.fileContents.parsed
+      fastForEach(updatedFiles, (updatedFile) => {
+        fastForEach(Object.keys(updatedParseResult.imports), (importSource) => {
+          // Only do this for import sources that look like file paths.
+          if (importSource.startsWith('.') || importSource.startsWith('/')) {
+            const resolveResult = resolveModule(projectContentsTree, {}, filename, importSource)
+
+            if (
+              resolveResult.type === 'RESOLVE_SUCCESS' &&
+              resolveResult.success.path === updatedFile.oldPath
+            ) {
+              // Create new absolute import path and shift the import in this file to represent that.
+              const importFromParse = updatedParseResult.imports[importSource]
+              let updatedImports: Imports = {
+                ...updatedParseResult.imports,
+              }
+              delete updatedImports[importSource]
+              // If an absolute path was used before, use the updated absolute path.
+              const newImportPath = importSource.startsWith('/')
+                ? updatedFile.newPath
+                : getFilePathToImport(updatedFile.newPath, filename)
+              updatedImports[newImportPath] = importFromParse
+
+              // Update the parse result to be incorporated later.
+              updatedParseResult = {
+                ...updatedParseResult,
+                imports: updatedImports,
+              }
+            }
+          }
+        })
+
+        // Update the top level element import statements.
+        const updatedTopLevelElements = updatedParseResult.topLevelElements.map(
+          (topLevelElement) => {
+            if (isImportStatement(topLevelElement)) {
+              const resolveResult = resolveModule(
+                projectContentsTree,
+                {},
+                filename,
+                topLevelElement.module,
+              )
+              if (
+                resolveResult.type === 'RESOLVE_SUCCESS' &&
+                resolveResult.success.path === updatedFile.oldPath
+              ) {
+                // If an absolute path was used before, use the updated absolute path.
+                const newImportPath = topLevelElement.module.startsWith('/')
+                  ? updatedFile.newPath
+                  : getFilePathToImport(updatedFile.newPath, filename)
+                const importDefinition = forceNotNull(
+                  'Import should exist.',
+                  updatedParseResult.imports[newImportPath],
+                )
+                return importStatementFromImportDetails(newImportPath, importDefinition)
+              } else {
+                return topLevelElement
+              }
+            } else {
+              return topLevelElement
+            }
+          },
+        )
+
+        updatedParseResult = {
+          ...updatedParseResult,
+          topLevelElements: updatedTopLevelElements,
+        }
+      })
+
+      updatedProjectContents[filename] = saveTextFileContents(
+        projectFile,
+        textFileContents(
+          projectFile.fileContents.code,
+          updatedParseResult,
+          RevisionsState.ParsedAhead,
+        ),
+        projectFile.lastSavedContents == null,
+      )
+    }
+  })
   // Check if we discovered an error.
   if (error == null) {
     return {
@@ -2018,12 +2159,7 @@ export const UPDATE_FNS = {
           action.target,
           true,
         )
-        const { imports } = getJSXComponentsAndImportsForPathFromState(
-          action.target,
-          editorForAction,
-          derived,
-        )
-        if (children.length === 0 || !MetadataUtils.isViewAgainstImports(imports, element)) {
+        if (children.length === 0 || !MetadataUtils.isViewAgainstImports(element)) {
           return editor
         }
 
@@ -2332,9 +2468,6 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
   ): EditorModel => {
     const targetParent = getTargetParentForPaste(
-      editor.projectContents,
-      editor.nodeModules.files,
-      editor.canvas.openFile?.filename ?? null,
       editor.selectedViews,
       editor.jsxMetadata,
       editor.pasteTargetsToIgnore,
@@ -2686,20 +2819,18 @@ export const UPDATE_FNS = {
     } as LocalRectangle
 
     const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, action.element)
-    forUnderlyingTargetFromEditorState(action.element, editor, (underlyingSuccess) => {
-      if (
-        element != null &&
-        MetadataUtils.isTextAgainstImports(underlyingSuccess.imports, element) &&
-        element.props.textSizing == 'auto'
-      ) {
-        const alignment = element.props.style.textAlign
-        if (alignment === 'center') {
-          frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
-        } else if (alignment === 'right') {
-          frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
-        }
+    if (
+      element != null &&
+      MetadataUtils.isTextAgainstImports(element) &&
+      element.props.textSizing == 'auto'
+    ) {
+      const alignment = element.props.style.textAlign
+      if (alignment === 'center') {
+        frame = Utils.setRectCenterX(frame, initialFrame.x + initialFrame.width / 2)
+      } else if (alignment === 'right') {
+        frame = Utils.setRectRightX(frame, initialFrame.x + initialFrame.width)
       }
-    })
+    }
 
     const parentPath = EP.parentPath(action.element)
     let offset = { x: 0, y: 0 } as CanvasPoint
@@ -2814,6 +2945,7 @@ export const UPDATE_FNS = {
     actionsToRunAfterSave.push(updateFile(assetFilename, projectFile, true))
 
     // Side effects.
+    let editorWithToast = editor
     if (isLoggedIn(userState.loginState) && editor.id != null) {
       saveAssetToServer(notNullProjectID, action.fileType, action.base64, assetFilename)
         .then(() => {
@@ -2829,7 +2961,11 @@ export const UPDATE_FNS = {
           dispatch([showToast(notice(`Failed to upload ${assetFilename}`, 'ERROR'))])
         })
     } else {
-      dispatch([showToast(notice(`Please log in to upload assets`, 'ERROR', true))])
+      editorWithToast = UPDATE_FNS.ADD_TOAST(
+        showToast(notice(`Please log in to upload assets`, 'ERROR', true)),
+        editor,
+        dispatch,
+      )
     }
 
     const updatedProjectContents = addFileToProjectContents(
@@ -2866,6 +3002,7 @@ export const UPDATE_FNS = {
           // TODO make a default image and put it in defaults
           const imageElement = jsxElement(
             jsxElementName('img', []),
+            newUID,
             jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
@@ -2877,7 +3014,11 @@ export const UPDATE_FNS = {
           )
           const size = width != null && height != null ? { width: width, height: height } : null
           const switchMode = enableInsertModeForJSXElement(imageElement, newUID, {}, size)
-          const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(switchMode, editor, derived)
+          const editorInsertEnabled = UPDATE_FNS.SWITCH_EDITOR_MODE(
+            switchMode,
+            editorWithToast,
+            derived,
+          )
           return {
             ...editorInsertEnabled,
             projectContents: updatedProjectContents,
@@ -2897,6 +3038,7 @@ export const UPDATE_FNS = {
 
           const imageElement = jsxElement(
             jsxElementName('img', []),
+            newUID,
             jsxAttributesFromMap({
               alt: jsxAttributeValue('', emptyComments),
               src: imageAttribute,
@@ -2918,7 +3060,7 @@ export const UPDATE_FNS = {
           const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
 
           const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
-            ...editor,
+            ...editorWithToast,
             projectContents: updatedProjectContents,
           })
           return {
@@ -2938,7 +3080,7 @@ export const UPDATE_FNS = {
               true,
             ),
           )
-          return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+          return UPDATE_FNS.ADD_TOAST(toastAction, editorWithToast, dispatch)
         }
         case 'SAVE_IMAGE_DO_NOTHING':
           return editor
@@ -2959,6 +3101,7 @@ export const UPDATE_FNS = {
       const height = Utils.optionalMap((h) => h / 2, possiblyAnImage.height)
       const imageElement = jsxElement(
         jsxElementName('img', []),
+        newUID,
         jsxAttributesFromMap({
           alt: jsxAttributeValue('', emptyComments),
           src: imageSrcAttribute,
@@ -3133,7 +3276,7 @@ export const UPDATE_FNS = {
         if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
           // Update assets.
           if (isLoggedIn(userState.loginState) && editor.id != null) {
-            updateAssetFileName(editor.id, action.oldPath, action.newPath)
+            updateAssetFileName(editor.id, stripLeadingSlash(oldPath), newPath)
           }
         }
       })
@@ -3735,6 +3878,7 @@ export const UPDATE_FNS = {
       }
       const imageElement = jsxElement(
         jsxElementName('img', []),
+        newUID,
         jsxAttributesFromMap({
           alt: jsxAttributeValue('', emptyComments),
           src: imageAttribute,
@@ -4128,6 +4272,18 @@ export const UPDATE_FNS = {
         ...editor.canvas,
         mountCount: editor.canvas.mountCount + 1,
         domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+      },
+    }
+  },
+  SET_FILEBROWSER_DROPTARGET: (
+    action: SetFilebrowserDropTarget,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      fileBrowser: {
+        ...editor.fileBrowser,
+        dropTarget: action.target,
       },
     }
   },

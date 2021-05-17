@@ -79,6 +79,7 @@ Object {
               },
             ],
             "type": "JSX_ELEMENT",
+            "uid": "app",
           },
         ],
         "name": Object {
@@ -126,6 +127,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "scene",
       },
     },
     "elementPath": Object {
@@ -138,6 +140,14 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "originalName": "Scene",
+        "path": "utopia-api",
+        "variableName": "Scene",
+      },
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
@@ -223,6 +233,7 @@ Object {
           },
         ],
         "type": "JSX_ELEMENT",
+        "uid": "app",
       },
     },
     "elementPath": Object {
@@ -236,6 +247,10 @@ Object {
       "type": "elementpath",
     },
     "globalFrame": null,
+    "importInfo": Object {
+      "type": "LEFT",
+      "value": "NOT_IMPORTED",
+    },
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,

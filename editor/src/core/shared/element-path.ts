@@ -36,12 +36,20 @@ function emptyElementPathCache(): ElementPathCache {
   }
 }
 
+let dynamicToStaticPathCache: Map<ElementPath, StaticElementPath> = new Map()
+let dynamicElementPathToStaticElementPathCache: Map<
+  ElementPathPart,
+  StaticElementPathPart
+> = new Map()
+
 let globalPathStringToPathCache: { [key: string]: ElementPath } = {}
 let globalElementPathCache: ElementPathCache = emptyElementPathCache()
 
 export function clearElementPathCache() {
   globalPathStringToPathCache = {}
   globalElementPathCache = emptyElementPathCache()
+  dynamicToStaticPathCache = new Map()
+  dynamicElementPathToStaticElementPathCache = new Map()
 }
 
 function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCache {
@@ -695,11 +703,25 @@ export function isFromSameInstanceAs(a: ElementPath, b: ElementPath): boolean {
 }
 
 function dynamicElementPathToStaticElementPath(element: ElementPathPart): StaticElementPathPart {
-  return element.map(extractOriginalUidFromIndexedUid) as StaticElementPathPart
+  const existing = dynamicElementPathToStaticElementPathCache.get(element)
+  if (existing == null) {
+    const result = element.map(extractOriginalUidFromIndexedUid) as StaticElementPathPart
+    dynamicElementPathToStaticElementPathCache.set(element, result)
+    return result
+  } else {
+    return existing
+  }
 }
 
 export function dynamicPathToStaticPath(path: ElementPath): StaticElementPath {
-  return elementPath(path.parts.map(dynamicElementPathToStaticElementPath))
+  const existing = dynamicToStaticPathCache.get(path)
+  if (existing == null) {
+    const result = elementPath(path.parts.map(dynamicElementPathToStaticElementPath))
+    dynamicToStaticPathCache.set(path, result)
+    return result
+  } else {
+    return existing
+  }
 }
 
 export function makeLastPartOfPathStatic(path: ElementPath): ElementPath {

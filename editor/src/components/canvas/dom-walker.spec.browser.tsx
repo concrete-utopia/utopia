@@ -71,6 +71,7 @@ async function renderTestEditorWithCode(appUiJsFileCode: string) {
       new FakeWatchdogWorker(),
     ),
     dispatch: dispatch,
+    alreadySaved: false,
   }
 
   const storeHook = create<EditorStore>((set) => initialEditorStore)

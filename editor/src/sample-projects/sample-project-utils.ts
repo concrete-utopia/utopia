@@ -68,7 +68,7 @@ export function createComplexDefaultProjectContents(): ProjectContents {
     '/src': directory(),
     '/assets': directory(),
     '/public': directory(),
-    '/src/index.js': getSamplePreviewFile(),
+    '/src/index.js': createCodeFile('/src/index.js', getSamplePreviewFile().fileContents.code),
     '/public/index.html': getSamplePreviewHTMLFile(),
     [StoryboardFilePath]: createCodeFile(
       StoryboardFilePath,
