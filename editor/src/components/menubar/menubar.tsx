@@ -8,6 +8,7 @@ import {
   useTriggerScrollPerformanceTest,
   useTriggerResizePerformanceTest,
   useTriggerSelectionPerformanceTest,
+  useTriggerBaselinePerformanceTest,
 } from '../../core/model/performance-scripts'
 import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-hooks'
 import { shareURLForProject } from '../../core/shared/utils'
@@ -181,6 +182,7 @@ export const Menubar = betterReactMemo('Menubar', () => {
   const onTriggerScrollTest = useTriggerScrollPerformanceTest()
   const onTriggerResizeTest = useTriggerResizePerformanceTest()
   const onTriggerSelectionTest = useTriggerSelectionPerformanceTest()
+  const onTriggerBaselineTest = useTriggerBaselinePerformanceTest()
 
   const previewURL =
     projectId == null ? '' : shareURLForProject(FLOATING_PREVIEW_BASE_URL, projectId, projectName)
@@ -343,6 +345,9 @@ export const Menubar = betterReactMemo('Menubar', () => {
           </Tile>
           <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
             <a onClick={onTriggerSelectionTest}>P E</a>
+          </Tile>
+          <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
+            <a onClick={onTriggerBaselineTest}>B L</a>
           </Tile>
         </React.Fragment>
       ) : null}
