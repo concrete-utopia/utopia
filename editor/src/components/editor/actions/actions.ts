@@ -1551,38 +1551,31 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const openUIJSFile = getOpenUIJSFile(editor)
-    if (openUIJSFile == null || !isParseSuccess(openUIJSFile.fileContents.parsed)) {
-      return editor
-    } else {
-      const components = getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
-      const target = action.element
-      const element = findElementAtPath(target, components)
-      if (element == null || !isJSXElement(element)) {
-        return editor
-      } else {
+    let unsetPropFailedMessage: string | null = null
+    const updatedEditor = modifyUnderlyingForOpenFile(
+      action.element,
+      editor,
+      (element) => {
         const updatedProps = unsetJSXValueAtPath(element.props, action.property)
-        const updatedResult = foldEither(
+        return foldEither(
           (failureMessage) => {
-            const toastAction = showToast(notice(failureMessage, 'ERROR'))
-            return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+            unsetPropFailedMessage = failureMessage
+            return element
           },
-          (updated) => {
-            return modifyOpenJsxElementAtPath(
-              target,
-              (openElement) => {
-                return {
-                  ...openElement,
-                  props: updated,
-                }
-              },
-              editor,
-            )
-          },
+          (updatedAttributes) => ({
+            ...element,
+            props: updatedAttributes,
+          }),
           updatedProps,
         )
-        return updatedResult
-      }
+      },
+      (parseSuccess) => parseSuccess,
+    )
+    if (unsetPropFailedMessage != null) {
+      const toastAction = showToast(notice(unsetPropFailedMessage, 'ERROR'))
+      return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+    } else {
+      return updatedEditor
     }
   },
   SET_CANVAS_FRAMES: (
