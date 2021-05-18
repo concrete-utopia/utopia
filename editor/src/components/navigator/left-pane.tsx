@@ -26,6 +26,7 @@ import {
   UIRow,
   H2,
   Icons,
+  Avatar,
 } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
@@ -112,8 +113,13 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
 })
 
 const ForksGiven = betterReactMemo('ForkPanel', () => {
-  const { id, projectName } = useEditorState((store) => {
-    return { id: store.editor.id, projectName: store.editor.projectName }
+  const { id, projectName, description, loginState } = useEditorState((store) => {
+    return {
+      id: store.editor.id,
+      projectName: store.editor.projectName,
+      description: store.editor.projectDescription,
+      loginState: store.userState.loginState,
+    }
   }, 'ForkPanel')
 
   return (
@@ -159,11 +165,7 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
             &nbsp;
             <Subdued>{id}</Subdued>
           </div>
-          <p>
-            {/* TODO POPULATE WITH PROJECT DESCRIPTION */}
-            TODO Using react-spring, react-enterprise, act-react and dozens of other fancy libraries
-            you haven't ever heard of.
-          </p>
+          <p>{description}</p>
         </UIGridRow>
         <UIGridRow
           padded
@@ -180,12 +182,15 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
                 UtopiaTheme.color.verySubduedForeground.o(50).value
               }`,
               background: UtopiaTheme.color.subtleBackground.value,
-              // TODO make this use the avatar URL and size / position it correctly
             }}
-          />
+          >
+            {/* TODO use the OWNER here, not the active user */}
+            <Avatar loginState={loginState} size={28} />
+          </div>
+
           <div style={{ whiteSpace: 'normal' }}>
             {/* TODO POPULATE */}
-            Created by <b>Tommy Lee Jones</b>
+            Created by <b>{}</b>
             <br />
             {/* TODO POPULATE */}
             Forked from <Link href=''>Cantankerous Pheasant</Link>
