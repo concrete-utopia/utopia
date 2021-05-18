@@ -2,6 +2,7 @@ import {
   generateCodeResultCache,
   incorporateBuildResult,
   normalisePathEndsAtDependency,
+  normalisePathImportNotFound,
   normalisePathSuccess,
   normalisePathToUnderlyingTarget,
   normalisePathUnableToProceed,
@@ -514,7 +515,7 @@ describe('normalisePathToUnderlyingTarget', () => {
     const expectedResult = normalisePathUnableToProceed('/src/nonexistant.js')
     expect(actualResult).toEqual(expectedResult)
   })
-  it('skips attempting to traverse when confronted with an unparsed code file', () => {
+  it('returns existing parse result for unparsed code file', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
       SampleNodeModules,
@@ -523,7 +524,7 @@ describe('normalisePathToUnderlyingTarget', () => {
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
     )
-    const expectedResult = normalisePathUnableToProceed('/utopia/unparsedstoryboard.js')
+    const expectedResult = normalisePathImportNotFound('app-entity')
     expect(actualResult).toEqual(expectedResult)
   })
   it('handles hitting an external dependency', () => {
