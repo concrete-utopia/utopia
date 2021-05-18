@@ -1593,21 +1593,7 @@ export const UPDATE_FNS = {
     const dragSources = action.dragSources
     const dropTarget = action.dropTarget
     const targetPath = dropTarget.target
-    let index: number
-    const uiFile = getOpenUIJSFile(editor)
-    if (uiFile == null) {
-      console.warn('Attempted to find the index of a view with no ui file open.')
-      return editor
-    } else {
-      if (isParseSuccess(uiFile.fileContents.parsed)) {
-        index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, targetPath)
-      } else {
-        console.warn(
-          'Attempted to find the index of a view when the code currently does not parse.',
-        )
-        return editor
-      }
-    }
+    const index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, targetPath)
     let indexPosition: IndexPosition
     let newParentPath: ElementPath | null
     switch (dropTarget.type) {
