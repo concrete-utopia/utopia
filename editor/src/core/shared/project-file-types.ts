@@ -563,5 +563,3 @@ export function isUnknownOrGeneratedElement(elementOriginType: ElementOriginType
     elementOriginType === 'generated-static-definition-present'
   )
 }
-
-export type LayoutWrapper = 'Layoutable' | 'Positionable' | 'Resizeable'

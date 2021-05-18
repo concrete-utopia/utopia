@@ -1,34 +1,22 @@
 import * as ObjectPath from 'object-path'
 import * as React from 'react'
-import { FlexLayoutHelpers } from '../../core/layout/layout-helpers'
 import { createLayoutPropertyPath } from '../../core/layout/layout-helpers-new'
 import {
   findElementAtPath,
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
-import {
-  getUtopiaJSXComponentsFromSuccess,
-  isHTMLComponent,
-} from '../../core/model/project-file-utils'
 import { forEachRight, isRight, right } from '../../core/shared/either'
 import {
-  isJSXAttributeOtherJavaScript,
   isJSXElement,
   JSXAttribute,
   JSXAttributes,
   jsxAttributeValue,
   JSXElement,
-  JSXElementName,
-  SpecialSizeMeasurements,
-  emptySpecialSizeMeasurements,
   ComputedStyle,
-  getJSXAttribute,
   StyleAttributeMetadata,
 } from '../../core/shared/element-template'
 import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
-import { canvasRectangle, localRectangle } from '../../core/shared/math-utils'
-import { LayoutWrapper, PropertyPath, ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
@@ -39,7 +27,6 @@ import * as EditorActions from '../editor/actions/action-creators'
 import {
   alignSelectedViews,
   distributeSelectedViews,
-  selectComponents,
   setAspectRatioLock,
   setProp_UNSAFE,
   transientActions,
@@ -47,13 +34,11 @@ import {
 } from '../editor/actions/action-creators'
 import { MiniMenu, MiniMenuItem } from '../editor/minimenu'
 import {
-  forUnderlyingTarget,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
 import { useEditorState } from '../editor/store/store-hook'
-import { CSSPosition } from './common/css-utils'
 import { InspectorCallbackContext, InspectorPropsContext } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
@@ -63,7 +48,7 @@ import {
   TargetSelectorLength,
 } from './sections/header-section/target-selector'
 import { ImgSection } from './sections/image-section/image-section'
-import { LayoutSection, ResolvedLayoutProps } from './sections/layout-section/layout-section'
+import { LayoutSection } from './sections/layout-section/layout-section'
 import { WarningSubsection } from './sections/layout-section/warning-subsection/warning-subsection'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { ClassNameSubsection } from './sections/style-section/className-subsection/className-subsection'
@@ -83,17 +68,6 @@ import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '.
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
 
-export interface InspectorModel {
-  layout?: ResolvedLayoutProps
-  isChildOfFlexComponent: boolean
-  position: CSSPosition | null
-  layoutWrapper: null | LayoutWrapper
-  label: string
-  type: null | string
-  parentFlexAxis: 'horizontal' | 'vertical' | null
-  specialSizeMeasurements: SpecialSizeMeasurements
-}
-
 export interface ElementPathElement {
   name?: string
   path: ElementPath
@@ -103,9 +77,7 @@ export interface InspectorPartProps<T> {
   input: T
   onSubmitValue: (output: T, paths: Array<PropertyPath>) => void
 }
-export interface InspectorProps
-  extends InspectorPartProps<InspectorModel>,
-    TargetSelectorSectionProps {
+export interface InspectorProps extends TargetSelectorSectionProps {
   selectedViews: Array<ElementPath>
   elementPath: Array<ElementPathElement>
 }
@@ -231,41 +203,6 @@ const AlignmentButtons = betterReactMemo(
 )
 AlignmentButtons.displayName = 'AlignmentButtons'
 
-interface RenderedLayoutSectionProps {
-  layout: any
-  anyHTMLElements: boolean
-  specialSizeMeasurements: SpecialSizeMeasurements
-  isChildOfFlexComponent: boolean
-  hasNonDefaultPositionAttributes: boolean
-  parentFlexAxis: 'horizontal' | 'vertical' | null
-  aspectRatioLocked: boolean
-  toggleAspectRatioLock: () => void
-  position: CSSPosition | null
-}
-
-const RenderedLayoutSection = betterReactMemo<RenderedLayoutSectionProps>(
-  'RenderedLayoutSection',
-  (props: RenderedLayoutSectionProps) => {
-    if (props.layout == null) {
-      return null
-    } else {
-      return (
-        <LayoutSection
-          input={props.layout}
-          parentFlexAxis={props.parentFlexAxis}
-          specialSizeMeasurements={props.specialSizeMeasurements}
-          isChildOfFlexComponent={props.isChildOfFlexComponent}
-          hasNonDefaultPositionAttributes={props.hasNonDefaultPositionAttributes}
-          aspectRatioLocked={props.aspectRatioLocked}
-          toggleAspectRatioLock={props.toggleAspectRatioLock}
-          position={props.position}
-        />
-      )
-    }
-  },
-)
-RenderedLayoutSection.displayName = 'RenderedLayoutSection'
-
 const nonDefaultPositionPaths: Array<PropertyPath> = [
   createLayoutPropertyPath('PinnedRight'),
   createLayoutPropertyPath('PinnedBottom'),
@@ -277,19 +214,17 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
     dispatch,
     focusedPanel,
     anyComponents,
-    anyHTMLElements,
     anyUnknownElements,
     hasNonDefaultPositionAttributes,
     aspectRatioLocked,
   } = useEditorState((store) => {
     const rootMetadata = store.editor.jsxMetadata
     let anyComponentsInner: boolean = false
-    let anyHTMLElementsInner: boolean = false
     let anyUnknownElementsInner: boolean = false
     let hasNonDefaultPositionAttributesInner: boolean = false
     let aspectRatioLockedInner: boolean = false
     Utils.fastForEach(selectedViews, (view) => {
-      const { components: rootComponents, imports } = getJSXComponentsAndImportsForPathFromState(
+      const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
         view,
         store.editor,
         store.derived,
@@ -317,9 +252,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
                 }
               }
             }
-            if (isHTMLComponent(elem.name, imports)) {
-              anyHTMLElementsInner = true
-            }
           }
         }
       }
@@ -328,7 +260,6 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       dispatch: store.dispatch,
       focusedPanel: store.editor.focusedPanel,
       anyComponents: anyComponentsInner,
-      anyHTMLElements: anyHTMLElementsInner,
       anyUnknownElements: anyUnknownElementsInner,
       hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
       aspectRatioLocked: aspectRatioLockedInner,
@@ -359,16 +290,10 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
         <React.Fragment>
           <AlignmentButtons numberOfTargets={selectedViews.length} />
           {anyComponents ? <ComponentSection isScene={false} /> : null}
-          <RenderedLayoutSection
-            anyHTMLElements={anyHTMLElements}
-            layout={props.input.layout}
-            specialSizeMeasurements={props.input.specialSizeMeasurements}
-            isChildOfFlexComponent={props.input.isChildOfFlexComponent}
+          <LayoutSection
             hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            parentFlexAxis={props.input.parentFlexAxis}
             aspectRatioLocked={aspectRatioLocked}
             toggleAspectRatioLock={toggleAspectRatioLock}
-            position={props.input.position}
           />
           <ClassNameSubsection />
           <StyleSection />
@@ -387,7 +312,7 @@ export const Inspector = betterReactMemo<InspectorProps>('Inspector', (props: In
       )
     }
   }
-  //first
+
   return (
     <div
       id='inspector'
@@ -441,136 +366,64 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   selectedViews: Array<ElementPath>
 }> = betterReactMemo('SingleInspectorEntryPoint', (props) => {
   const { selectedViews } = props
-  const {
-    dispatch,
-    jsxMetadata,
-    isUIJSFile,
-    projectContents,
-    nodeModules,
-    openFile,
-  } = useEditorState((store) => {
+  const { dispatch, jsxMetadata, isUIJSFile } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
       jsxMetadata: store.editor.jsxMetadata,
       isUIJSFile: isOpenFileUiJs(store.editor),
-      projectContents: store.editor.projectContents,
-      nodeModules: store.editor.nodeModules.files,
-      openFile: store.editor.canvas.openFile?.filename ?? null,
     }
   }, 'SingleInspectorEntryPoint')
-
-  let inspectorModel: InspectorModel = {
-    isChildOfFlexComponent: false,
-    position: 'static',
-    layoutWrapper: null,
-    label: '',
-    type: null,
-    parentFlexAxis: null,
-    specialSizeMeasurements: emptySpecialSizeMeasurements,
-  }
 
   let targets: Array<CSSTarget> = [...DefaultStyleTargets]
 
   Utils.fastForEach(selectedViews, (path) => {
-    forUnderlyingTarget(
-      path,
-      projectContents,
-      nodeModules,
-      openFile,
-      (underlyingSuccess, underlyingElement, underlyingTarget) => {
-        const rootComponents = getUtopiaJSXComponentsFromSuccess(underlyingSuccess)
-        // TODO multiselect
-        const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-        if (elementMetadata != null) {
-          const parentPath = EP.parentPath(underlyingTarget)
-          const parentElement = findElementAtPath(parentPath, rootComponents)
-
-          const nonGroupAncestor = MetadataUtils.findNonGroupParent(jsxMetadata, path)
-          const nonGroupAncestorFrame =
-            nonGroupAncestor == null
-              ? null
-              : MetadataUtils.getFrameInCanvasCoords(nonGroupAncestor, jsxMetadata)
-
-          const elementFrame = MetadataUtils.shiftGroupFrame(
-            jsxMetadata,
-            path,
-            canvasRectangle(elementMetadata.localFrame),
-            true,
-          )
-          inspectorModel.layout = {
-            frame: localRectangle(elementFrame),
-            parentFrame: nonGroupAncestorFrame,
-          }
-          if (underlyingElement != null && isJSXElement(underlyingElement)) {
-            function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
-              let localTargets: Array<CSSTarget> = []
-              function recursivelyDiscoverStyleTargets(
-                styleObject: any,
-                localPath: Array<string>,
-              ): void {
-                if (typeof styleObject === 'object' && styleObject != null) {
-                  let selectorLength: TargetSelectorLength = 0
-                  const keys = Object.keys(styleObject)
-                  keys.forEach((key) => {
-                    if (typeof styleObject[key] === 'object') {
-                      recursivelyDiscoverStyleTargets((styleObject as any)[key], [
-                        ...localPath,
-                        key,
-                      ])
-                    } else if (typeof selectorLength === 'number') {
-                      selectorLength = selectorLength + 1
-                    }
-                  })
-                  localTargets.push(cssTarget(localPath, selectorLength))
-                }
-              }
-              let defaults = [...DefaultStyleTargets]
-              defaults.reverse().map((defaultTarget) => {
-                const styleObject = getSimpleAttributeAtPath(
-                  right(localJSXElement.props),
-                  PP.create(defaultTarget.path),
-                )
-                if (isRight(styleObject) && styleObject.value instanceof Object) {
-                  recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
-                } else {
-                  // todo count keys
-                  localTargets.push(defaultTarget)
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    if (elementMetadata != null) {
+      if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
+        const jsxElement = elementMetadata.element.value
+        function updateTargets(localJSXElement: JSXElement): Array<CSSTarget> {
+          let localTargets: Array<CSSTarget> = []
+          function recursivelyDiscoverStyleTargets(
+            styleObject: any,
+            localPath: Array<string>,
+          ): void {
+            if (typeof styleObject === 'object' && styleObject != null) {
+              let selectorLength: TargetSelectorLength = 0
+              const keys = Object.keys(styleObject)
+              keys.forEach((key) => {
+                if (typeof styleObject[key] === 'object') {
+                  recursivelyDiscoverStyleTargets((styleObject as any)[key], [...localPath, key])
+                } else if (typeof selectorLength === 'number') {
+                  selectorLength = selectorLength + 1
                 }
               })
-              localTargets.reverse()
-              return localTargets
+              localTargets.push(cssTarget(localPath, selectorLength))
             }
-            targets = updateTargets(underlyingElement)
           }
-          if (parentElement != null && isJSXElement(parentElement)) {
-            const isChildOfFlexComponent = MetadataUtils.isParentYogaLayoutedContainerForElement(
-              elementMetadata,
+          let defaults = [...DefaultStyleTargets]
+          defaults.reverse().map((defaultTarget) => {
+            const styleObject = getSimpleAttributeAtPath(
+              right(localJSXElement.props),
+              PP.create(defaultTarget.path),
             )
-            if (isChildOfFlexComponent) {
-              inspectorModel.isChildOfFlexComponent = true
-              const parentFlexDirection = FlexLayoutHelpers.getMainAxis(right(parentElement.props))
-              forEachRight(parentFlexDirection, (mainAxis) => {
-                inspectorModel.parentFlexAxis = mainAxis
-              })
+            if (isRight(styleObject) && styleObject.value instanceof Object) {
+              recursivelyDiscoverStyleTargets(styleObject.value, defaultTarget.path)
+            } else {
+              // todo count keys
+              localTargets.push(defaultTarget)
             }
-          }
-          if (underlyingElement != null && isJSXElement(underlyingElement)) {
-            const elementName = underlyingElement.name.baseVariable
-            inspectorModel.type = elementName
-
-            inspectorModel.specialSizeMeasurements = elementMetadata.specialSizeMeasurements
-            inspectorModel.position = elementMetadata.specialSizeMeasurements.position
-          }
-          inspectorModel.label = MetadataUtils.getElementLabel(path, jsxMetadata)
+          })
+          localTargets.reverse()
+          return localTargets
         }
-      },
-    )
+        targets = updateTargets(jsxElement)
+      }
+    }
   })
 
   // FIXME TODO HACK until we have better memoization in the Canvas Spy, we sacrifice using R.equals once
   // in order to prevent a big rerender of the inspector
 
-  const inspectorModelReferentiallyStable = useKeepReferenceEqualityIfPossible(inspectorModel)
   const targetsReferentiallyStable = useKeepReferenceEqualityIfPossible(targets)
 
   const refElementsToTargetForUpdates = usePropControlledRef_DANGEROUS(
@@ -598,24 +451,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
   )
 
   // Memoized Callbacks
-
-  const onSubmitValue = React.useCallback(
-    (newModel: InspectorModel, paths: PropertyPath[]) => {
-      const updates = paths.map((path) => {
-        return { path: path, value: ObjectPath.get(newModel, PP.getElements(path)) }
-      })
-      const actions = Utils.flatMapArray(
-        (elem) =>
-          updates.map((update) =>
-            setProp_UNSAFE(elem, update.path, jsxAttributeValue(update.value, emptyComments)),
-          ),
-        refElementsToTargetForUpdates.current,
-      )
-      dispatch(actions, 'everyone')
-    },
-    [dispatch, refElementsToTargetForUpdates],
-  )
-
   const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
     targetsReferentiallyStable[0].path,
   )
@@ -671,8 +506,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<{
     <InspectorContextProvider selectedViews={selectedViews} targetPath={selectedTarget}>
       <Inspector
         selectedViews={selectedViews}
-        input={inspectorModelReferentiallyStable}
-        onSubmitValue={onSubmitValue}
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
         elementPath={elementPath}
