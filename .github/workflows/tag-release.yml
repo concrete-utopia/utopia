@@ -45,7 +45,7 @@ jobs:
         with:
           tag_name: ${{ env.NEW_TAG }}
           release_name: Release ${{ env.NEW_TAG }}
-          commitish: ${{ github.event.inputs.commit-ref || master }}
+          commitish: ${{ github.event.inputs.commit-ref || 'master' }}
           body: Release ${{ env.NEW_TAG }}
           draft: false
           prerelease: false
