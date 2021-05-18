@@ -38,7 +38,6 @@ export interface CanvasData {
   canvasOffset: CanvasPoint
   selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
-  currentFilePath: string | null
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
   transientFilesState: TransientFilesState | null
@@ -139,13 +138,9 @@ export const toggleShadowItem: ContextMenuItem<CanvasData> = {
 export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   name: 'Edit Component',
   enabled: (data) => {
-    if (data.currentFilePath == null) {
-      return false
-    } else {
-      return data.selectedViews.every((view) => {
-        return MetadataUtils.isFocusableComponent(view, data.jsxMetadata)
-      })
-    }
+    return data.selectedViews.every((view) => {
+      return MetadataUtils.isFocusableComponent(view, data.jsxMetadata)
+    })
   },
   isHidden: (data) => {
     return data.selectedViews.every((view) => {
