@@ -392,7 +392,6 @@ import {
   getMainUIFromModel,
   getOpenFilename,
   getOpenTextFileKey,
-  getOpenUIJSFile,
   getOpenUIJSFileKey,
   insertElementAtPath,
   mergeStoredEditorStateIntoEditorState,
