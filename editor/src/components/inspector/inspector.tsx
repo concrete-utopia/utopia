@@ -67,6 +67,7 @@ import {
 import { Icn, colorTheme, InspectorSectionHeader, UtopiaTheme, FlexRow } from '../../uuiui'
 import { emptyComments } from '../../core/workers/parser-printer/parser-printer-comments'
 import { getElementsToTarget } from './common/inspector-utils'
+import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 
 export interface ElementPathElement {
   name?: string
