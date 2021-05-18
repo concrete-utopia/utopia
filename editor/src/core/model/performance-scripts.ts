@@ -33,8 +33,8 @@ export function useTriggerScrollPerformanceTest(): () => void {
         `scroll_step_${framesPassed}`,
         `scroll_dispatch_finished_${framesPassed}`,
       )
-      framesPassed++
-      if (framesPassed < 600) {
+      if (framesPassed < 100) {
+        framesPassed++
         requestAnimationFrame(step)
       } else {
         console.info('SCROLL_TEST_FINISHED')
@@ -94,8 +94,8 @@ export function useTriggerResizePerformanceTest(): () => void {
         `resize_step_${framesPassed}`,
         `resize_dispatch_finished_${framesPassed}`,
       )
-      framesPassed++
-      if (framesPassed < 600) {
+      if (framesPassed < 100) {
+        framesPassed++
         requestAnimationFrame(step)
       } else {
         await dispatch([CanvasActions.clearDragState(false)]).entireUpdateFinished
@@ -142,8 +142,8 @@ export function useTriggerSelectionPerformanceTest(): () => void {
         `select_deselect_dispatch_finished_${framesPassed}`,
       )
 
-      framesPassed++
-      if (framesPassed < 25) {
+      if (framesPassed < 100) {
+        framesPassed++
         requestAnimationFrame(step)
       } else {
         console.info('SELECT_TEST_FINISHED')
@@ -151,5 +151,38 @@ export function useTriggerSelectionPerformanceTest(): () => void {
     }
     requestAnimationFrame(step)
   }, [dispatch, allPaths])
+  return trigger
+}
+
+export function useTriggerBaselinePerformanceTest(): () => void {
+  const dispatch = useEditorState(
+    (store) => store.dispatch as DebugDispatch,
+    'useTriggerSelectionPerformanceTest dispatch',
+  )
+
+  const trigger = React.useCallback(async () => {
+    let framesPassed = 0
+    async function step() {
+      performance.mark(`baseline_step_${framesPassed}`)
+      for (let i = 0; i < 3000; i++) {
+        await dispatch([]).entireUpdateFinished
+      }
+      performance.mark(`baseline_dispatch_finished_${framesPassed}`)
+      performance.measure(
+        `baseline_frame_${framesPassed}`,
+        `baseline_step_${framesPassed}`,
+        `baseline_dispatch_finished_${framesPassed}`,
+      )
+
+      if (framesPassed < 100) {
+        framesPassed++
+        requestAnimationFrame(step)
+      } else {
+        requestAnimationFrame(() => console.info('BASELINE_TEST_FINISHED'))
+      }
+    }
+    requestAnimationFrame(step)
+  }, [dispatch])
+
   return trigger
 }
