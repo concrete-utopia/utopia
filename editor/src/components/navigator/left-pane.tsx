@@ -2,7 +2,7 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as React from 'react'
-import { fetchProjectMetadata, thumbnailURL } from '../../common/server'
+import { fetchProjectMetadata, projectURL, thumbnailURL } from '../../common/server'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
@@ -50,6 +50,9 @@ import { GoogleFontsResourcesList } from './external-resources/google-fonts-reso
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { getContentsTreeFileFromString } from '../assets'
 import { Link } from '../../uuiui/link'
+import { createNewProjectID } from '../editor/server'
+import { triggerForkProject } from '../editor/persistence'
+import { useTriggerForkProject } from '../editor/persistence-hooks'
 export interface LeftPaneProps {
   editorState: EditorState
   derivedState: DerivedState
@@ -113,20 +116,35 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
 })
 
 const ForksGiven = betterReactMemo('ForkPanel', () => {
-  const { id, projectName, description, isLoggedIn } = useEditorState((store) => {
-    return {
-      id: store.editor.id,
-      projectName: store.editor.projectName,
-      description: store.editor.projectDescription,
-      isLoggedIn: User.isLoggedIn(store.userState.loginState),
-    }
-  }, 'ForkPanel')
+  const { dispatch, id, projectName, description, isLoggedIn, forkedFrom } = useEditorState(
+    (store) => {
+      return {
+        dispatch: store.dispatch,
+        id: store.editor.id,
+        projectName: store.editor.projectName,
+        description: store.editor.projectDescription,
+        isLoggedIn: User.isLoggedIn(store.userState.loginState),
+        forkedFrom: store.editor.forkedFromProjectId,
+      }
+    },
+    'ForkPanel',
+  )
 
-  const { ownerName, ownerPicture } = useGetOwnerNameAndPicture(id)
+  const { ownerName, ownerPicture } = useGetProjectMetadata(id)
+  const { title: forkedFromTitle } = useGetProjectMetadata(forkedFrom)
 
   const onClickLoginNewTab = React.useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
+
+  const onClickOnForkProject = useTriggerForkProject()
+
+  const forkedFromText =
+    forkedFrom == null ? null : (
+      <React.Fragment>
+        Forked from <Link href={projectURL(forkedFrom)}>{forkedFromTitle}</Link>
+      </React.Fragment>
+    )
 
   return (
     <Section data-name='Fork' tabIndex={-1}>
@@ -196,8 +214,7 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
           <div style={{ whiteSpace: 'normal' }}>
             Created by <b>{ownerName}</b>
             <br />
-            {/* TODO POPULATE */}
-            Forked from <Link href=''>Cantankerous Pheasant</Link>
+            {forkedFromText}
           </div>
         </UIGridRow>
 
@@ -212,6 +229,7 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
               boxShadow: 'inset 0 0 0 1px rgba(94,94,94,0.20)',
               borderRadius: 2,
             }}
+            onClick={onClickOnForkProject}
           >
             <b>Fork</b>&nbsp;this project
           </Button>
@@ -234,12 +252,17 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
   )
 })
 
-type OwnerNameAndPicture = { ownerName: string | null; ownerPicture: string | null }
+type ProjectMetadata = {
+  title: string | null
+  ownerName: string | null
+  ownerPicture: string | null
+}
 
 // TODO move me to other file
-function useGetOwnerNameAndPicture(projectId: string | null): OwnerNameAndPicture {
+function useGetProjectMetadata(projectId: string | null): ProjectMetadata {
   const previousProjectIdRef = React.useRef<string | null>(null)
-  const [userData, setUserData] = React.useState<OwnerNameAndPicture>({
+  const [userData, setUserData] = React.useState<ProjectMetadata>({
+    title: null,
     ownerName: null,
     ownerPicture: null,
   })
@@ -247,6 +270,7 @@ function useGetOwnerNameAndPicture(projectId: string | null): OwnerNameAndPictur
     previousProjectIdRef.current = projectId
     if (projectId == null) {
       setUserData({
+        title: null,
         ownerName: null,
         ownerPicture: null,
       })
@@ -255,6 +279,7 @@ function useGetOwnerNameAndPicture(projectId: string | null): OwnerNameAndPictur
         // safeguard against an old Fetch arriving for an outdated projectId
         if (previousProjectIdRef.current === projectId) {
           setUserData({
+            title: projectListing?.title ?? null,
             ownerName: projectListing?.ownerName ?? null,
             ownerPicture: projectListing?.ownerPicture ?? null,
           })
