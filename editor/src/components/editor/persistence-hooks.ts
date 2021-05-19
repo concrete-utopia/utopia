@@ -6,6 +6,6 @@ export function useTriggerForkProject(): () => void {
   const storeRef = useRefEditorState((store) => store)
   return React.useCallback(async () => {
     const store = storeRef.current
-    triggerForkProject(store.dispatch, store.editor, store.workers)
+    triggerForkProject(store.dispatch, store.editor, store.workers, store.userState.loginState)
   }, [storeRef])
 }

@@ -50,8 +50,6 @@ import { GoogleFontsResourcesList } from './external-resources/google-fonts-reso
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { getContentsTreeFileFromString } from '../assets'
 import { Link } from '../../uuiui/link'
-import { createNewProjectID } from '../editor/server'
-import { triggerForkProject } from '../editor/persistence'
 import { useTriggerForkProject } from '../editor/persistence-hooks'
 export interface LeftPaneProps {
   editorState: EditorState
@@ -219,21 +217,21 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
         </UIGridRow>
 
         <UIGridRow style={{ gap: 8, marginTop: 8 }} padded variant='<--1fr--><--1fr-->'>
-          {/* TODO HOOK ME UP */}
-          <Button
-            primary
-            highlight
-            style={{
-              height: 24,
-              backgroundImage: 'linear-gradient(3deg, #92ABFF 0%, #1FCCB7 99%)',
-              boxShadow: 'inset 0 0 0 1px rgba(94,94,94,0.20)',
-              borderRadius: 2,
-            }}
-            onClick={onClickOnForkProject}
-          >
-            <b>Fork</b>&nbsp;this project
-          </Button>
-          {isLoggedIn ? null : (
+          {isLoggedIn ? (
+            <Button
+              primary
+              highlight
+              style={{
+                height: 24,
+                backgroundImage: 'linear-gradient(3deg, #92ABFF 0%, #1FCCB7 99%)',
+                boxShadow: 'inset 0 0 0 1px rgba(94,94,94,0.20)',
+                borderRadius: 2,
+              }}
+              onClick={onClickOnForkProject}
+            >
+              <b>Fork</b>&nbsp;this project
+            </Button>
+          ) : (
             <Button
               outline
               highlight

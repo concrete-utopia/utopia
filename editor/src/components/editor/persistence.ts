@@ -30,6 +30,7 @@ import { getPNGBufferOfElementWithID } from './screenshot-utils'
 import { ProjectImportSuccess } from '../../core/model/project-import'
 import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
 import { notice } from '../common/notice'
+import { isNotLoggedIn, LoginState } from '../../common/user'
 
 interface NeverSaved {
   type: 'never-saved'
@@ -279,7 +280,11 @@ export async function triggerForkProject(
   dispatch: EditorDispatch,
   editor: EditorState,
   workers: UtopiaTsWorkers,
+  loginState: LoginState,
 ): Promise<void> {
+  if (isNotLoggedIn(loginState)) {
+    throw new Error(`Cannot fork a project if you are not logged in!`)
+  }
   const newProjectId = await createNewProjectID()
   const updatedEditor = {
     ...editor,
