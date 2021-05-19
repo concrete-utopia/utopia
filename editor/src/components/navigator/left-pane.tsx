@@ -2,7 +2,7 @@
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as React from 'react'
-import { thumbnailURL } from '../../common/server'
+import { fetchProjectMetadata, thumbnailURL } from '../../common/server'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
@@ -28,7 +28,7 @@ import {
   Icons,
   Avatar,
 } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
+import { betterReactMemo, User } from '../../uuiui-deps'
 import { setFocus } from '../common/actions'
 import { EditorDispatch, LoginState } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -113,14 +113,16 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
 })
 
 const ForksGiven = betterReactMemo('ForkPanel', () => {
-  const { id, projectName, description, loginState } = useEditorState((store) => {
+  const { id, projectName, description, isLoggedIn } = useEditorState((store) => {
     return {
       id: store.editor.id,
       projectName: store.editor.projectName,
       description: store.editor.projectDescription,
-      loginState: store.userState.loginState,
+      isLoggedIn: User.isLoggedIn(store.userState.loginState),
     }
   }, 'ForkPanel')
+
+  const { ownerName, ownerPicture } = useGetOwnerNameAndPicture(id)
 
   return (
     <Section data-name='Fork' tabIndex={-1}>
@@ -184,13 +186,11 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
               background: UtopiaTheme.color.subtleBackground.value,
             }}
           >
-            {/* TODO use the OWNER here, not the active user */}
-            <Avatar loginState={loginState} size={28} />
+            <Avatar isLoggedIn={isLoggedIn} userPicture={ownerPicture} size={28} />
           </div>
 
           <div style={{ whiteSpace: 'normal' }}>
-            {/* TODO POPULATE */}
-            Created by <b>{}</b>
+            Created by <b>{ownerName}</b>
             <br />
             {/* TODO POPULATE */}
             Forked from <Link href=''>Cantankerous Pheasant</Link>
@@ -227,6 +227,38 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
     </Section>
   )
 })
+
+type OwnerNameAndPicture = { ownerName: string | null; ownerPicture: string | null }
+
+// TODO move me to other file
+function useGetOwnerNameAndPicture(projectId: string | null): OwnerNameAndPicture {
+  const previousProjectIdRef = React.useRef<string | null>(null)
+  const [userData, setUserData] = React.useState<OwnerNameAndPicture>({
+    ownerName: null,
+    ownerPicture: null,
+  })
+  if (previousProjectIdRef.current !== projectId) {
+    previousProjectIdRef.current = projectId
+    if (projectId == null) {
+      setUserData({
+        ownerName: null,
+        ownerPicture: null,
+      })
+    } else {
+      fetchProjectMetadata(projectId).then((projectListing) => {
+        // safeguard against an old Fetch arriving for an outdated projectId
+        if (previousProjectIdRef.current === projectId) {
+          setUserData({
+            ownerName: projectListing?.ownerName ?? null,
+            ownerPicture: projectListing?.ownerPicture ?? null,
+          })
+        }
+      })
+    }
+  }
+
+  return userData
+}
 
 const LoggedOutPane = betterReactMemo('LogInPane', () => {
   return (
