@@ -43,6 +43,7 @@ import {
   SectionBodyArea,
   FlexColumn,
   paddingTop,
+  Subdued,
 } from '../../../../uuiui'
 import { getControlStyles } from '../../../../uuiui-deps'
 import { InfoBox } from '../../../common/notices'
@@ -138,9 +139,9 @@ const ControlForProp = betterReactMemo(
           return <ControlForSliderProp {...props} controlDescription={controlDescription} />
         case 'string':
           return <ControlForStringProp {...props} controlDescription={controlDescription} />
-        case 'styleobject':
+        // case 'styleobject':
         default:
-          return <div>Not yet implemented control type.</div>
+          return null
       }
     }
   },
@@ -404,12 +405,15 @@ const RowForObjectControl = betterReactMemo(
         {mapToArray((innerControl: ControlDescription, prop: string) => {
           const innerPropPath = PP.appendPropertyPathElems(propPath, [prop])
           return (
-            <RowForControl
-              key={`object-control-row-${PP.toString(innerPropPath)}`}
-              controlDescription={innerControl}
-              isScene={isScene}
-              propPath={innerPropPath}
-            />
+            <>
+              {innerControl.type}
+              <RowForControl
+                key={`object-control-row-${PP.toString(innerPropPath)}`}
+                controlDescription={innerControl}
+                isScene={isScene}
+                propPath={innerPropPath}
+              />
+            </>
           )
         }, controlDescription.object)}
       </>
@@ -515,7 +519,7 @@ function useComponentType(path: ElementPath): string | null {
     const metadata = store.editor.jsxMetadata
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
     if (MetadataUtils.isProbablySceneFromMetadata(metadata, path)) {
-      return null
+      return 'Scene'
     }
     if (MetadataUtils.isEmotionOrStyledComponent(path, metadata)) {
       return 'Styled Component'
@@ -609,220 +613,160 @@ export const ComponentSectionInner = betterReactMemo(
       [dispatch, locationOfComponentInstance],
     )
 
-    return foldEither(
-      (rootParseError) => {
-        return (
-          <>
-            <InspectorSectionHeader style={{ color: colorTheme.primary.value }}>
-              {' '}
-              Component{' '}
-            </InspectorSectionHeader>
-            <ParseErrorControl parseError={rootParseError} />
-          </>
-        )
-      },
-      (rootParseSuccess) => {
-        const propNames = Object.keys(rootParseSuccess)
-        if (propNames.length > 0 || propsUsedWithoutControls.length > 0) {
-          return (
-            <>
-              <InspectorSectionHeader>
-                <UIGridRow
-                  padded
-                  variant='|--32px--|<--------auto-------->'
-                  style={{ flexGrow: 1, color: colorTheme.primary.value }}
-                >
-                  Component
-                </UIGridRow>
-              </InspectorSectionHeader>
-              {missingControlsWarning == null ? null : (
-                <InfoBox message={'Missing Property Controls'}>{missingControlsWarning}</InfoBox>
-              )}
-              {missingDefaultsWarning == null ? null : (
-                <InfoBox message={'Missing Default Properties'}>{missingDefaultsWarning}</InfoBox>
-              )}
+    return (
+      <>
+        <InspectorSectionHeader>
+          <UIGridRow
+            padded
+            variant='|--32px--|<--------auto-------->'
+            style={{ flexGrow: 1, color: colorTheme.primary.value }}
+          >
+            Component
+          </UIGridRow>
+        </InspectorSectionHeader>
 
-              {propNames.map((propName) => {
-                const propertyControl = rootParseSuccess[propName]
-                if (propertyControl == null) {
-                  return null
-                } else {
-                  return foldEither(
-                    (propertyError) => {
-                      return (
-                        <RowForInvalidControl
-                          key={propName}
-                          title={propName}
-                          propName={propName}
-                          propertyError={propertyError}
-                        />
-                      )
-                    },
-                    (controlDescription) => {
-                      return (
-                        <UIGridRow padded tall={false} variant='<-------------1fr------------->'>
-                          {isImportedComponent ? (
+        {/* Information about the component as a whole */}
+        {isImportedComponent ? (
+          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+            <span
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <LargerIcons.NpmLogo />
+            </span>
+            <p>
+              {`This ${componentType} is imported from `}
+              <InlineLink href={componentPackageMgrLink}>
+                {`${componentPackageName}`}
+              </InlineLink>{' '}
+              via NPM.
+            </p>
+          </UIGridRow>
+        ) : isFocusable && !isFocused ? (
+          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+            <span
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <IconToggleButton
+                value={false}
+                srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
+                srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
+                onToggle={toggleFocusMode}
+              />
+            </span>
+            <p>
+              {`This ${componentType} is imported from `}
+              <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>{' '}
+              <InlineButton onClick={toggleFocusMode}>Edit it</InlineButton>
+            </p>
+          </UIGridRow>
+        ) : isFocusable && isFocused ? (
+          <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
+            <IconToggleButton
+              value={true}
+              srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
+              srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
+              onToggle={toggleFocusMode}
+            />
+            <p>
+              {`This ${componentType} is imported from `}
+              <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>
+              <InlineButton onClick={toggleFocusMode}>Exit Editing</InlineButton>
+            </p>
+          </UIGridRow>
+        ) : null}
+
+        {/* List of component props with controls */}
+        {foldEither(
+          (rootParseError) => {
+            return <ParseErrorControl parseError={rootParseError} />
+          },
+          (rootParseSuccess) => {
+            const propNames = Object.keys(rootParseSuccess)
+
+            // TODO FIX ME
+            if (Math.random() > 0) {
+              return (
+                <>
+                  {missingControlsWarning == null ? null : (
+                    <InfoBox message={'Missing Property Controls'}>
+                      {missingControlsWarning}
+                    </InfoBox>
+                  )}
+                  {missingDefaultsWarning == null ? null : (
+                    <InfoBox message={'Missing Default Properties'}>
+                      {missingDefaultsWarning}
+                    </InfoBox>
+                  )}
+                  {propNames.map((propName) => {
+                    const propertyControl = rootParseSuccess[propName]
+                    if (propertyControl == null) {
+                      return null
+                    } else {
+                      return foldEither(
+                        (propertyError) => {
+                          return (
+                            <RowForInvalidControl
+                              key={propName}
+                              title={propName}
+                              propName={propName}
+                              propertyError={propertyError}
+                            />
+                          )
+                        },
+                        (controlDescription) => {
+                          return (
                             <UIGridRow
                               padded
                               tall={false}
-                              variant={'|--32px--|<--------auto-------->'}
+                              variant='<-------------1fr------------->'
                             >
-                              <span
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              >
-                                <LargerIcons.NpmLogo />
-                              </span>
-                              <p>
-                                {`This ${componentType} is imported from `}
-                                <InlineLink href={componentPackageMgrLink}>
-                                  {`${componentPackageName}`}
-                                </InlineLink>{' '}
-                                via NPM.
-                              </p>
-                            </UIGridRow>
-                          ) : isFocusable && !isFocused ? (
-                            <UIGridRow
-                              padded
-                              tall={false}
-                              variant={'|--32px--|<--------auto-------->'}
-                            >
-                              <span
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              >
-                                <IconToggleButton
-                                  value={false}
-                                  srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
-                                  srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
-                                  onToggle={toggleFocusMode}
-                                />
-                              </span>
-                              <p>
-                                {`This ${componentType} is imported from `}
-                                <InlineLink onClick={OpenFile}>
-                                  {locationOfComponentInstance}
-                                </InlineLink>{' '}
-                                <InlineButton onClick={toggleFocusMode}>Edit it</InlineButton>
-                              </p>
-                            </UIGridRow>
-                          ) : isFocusable && isFocused ? (
-                            <UIGridRow
-                              padded
-                              tall={false}
-                              variant={'|--32px--|<--------auto-------->'}
-                            >
-                              <IconToggleButton
-                                value={true}
-                                srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
-                                srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
-                                onToggle={toggleFocusMode}
+                              <RowForControl
+                                key={propName}
+                                propPath={PP.create([propName])}
+                                controlDescription={controlDescription}
+                                isScene={props.isScene}
                               />
-                              <p>
-                                {`This ${componentType} is imported from `}
-                                <InlineLink onClick={OpenFile}>
-                                  {locationOfComponentInstance}
-                                </InlineLink>
-                                <InlineButton onClick={toggleFocusMode}>Exit Editing</InlineButton>
-                              </p>
+                              <UIGridRow
+                                padded
+                                tall={false}
+                                variant={'<-------------1fr------------->'}
+                                style={{ paddingTop: 8 }}
+                              ></UIGridRow>
                             </UIGridRow>
-                          ) : null}
-                          <RowForControl
-                            key={propName}
-                            propPath={PP.create([propName])}
-                            controlDescription={controlDescription}
-                            isScene={props.isScene}
-                          />
-                          <UIGridRow
-                            padded
-                            tall={false}
-                            variant={'<-------------1fr------------->'}
-                            style={{ paddingTop: 8 }}
-                          >
-                            <span>{`Additional props used in code: ${propNames.join(', ')}`}</span>
-                          </UIGridRow>
-                        </UIGridRow>
+                          )
+                        },
+                        propertyControl,
                       )
-                    },
-                    propertyControl,
-                  )
-                }
-              })}
-            </>
-          )
-        } else {
-          return (
-            <>
-              <InspectorSectionHeader>
-                <UIGridRow
-                  padded
-                  variant='<-------------1fr------------->'
-                  style={{ flexGrow: 1, color: colorTheme.primary.value }}
-                >
-                  Component
-                </UIGridRow>
-              </InspectorSectionHeader>
-
-              {isImportedComponent ? (
-                <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <LargerIcons.NpmLogo />
-                  </span>
-                  <p>
-                    {`This ${componentType} is imported from `}
-                    <InlineLink href={componentPackageMgrLink}>
-                      {`${componentPackageName}`}
-                    </InlineLink>{' '}
-                    via NPM.
-                  </p>
-                </UIGridRow>
-              ) : isFocusable && !isFocused ? (
-                <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <IconToggleButton
-                      value={false}
-                      srcOn={`/editor/icons/light/element/componentinstance-purple-18x18@2x.png`}
-                      srcOff={`/editor/icons/light/element/componentinstance-black-18x18@2x.png`}
-                      onToggle={toggleFocusMode}
-                    />
-                  </span>
-                  <p>
-                    {`This ${componentType} is imported from `}
-                    <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>{' '}
-                    <InlineButton onClick={toggleFocusMode}>Edit it</InlineButton>
-                  </p>
-                </UIGridRow>
-              ) : isFocusable && isFocused ? (
-                <UIGridRow padded tall={false} variant={'|--32px--|<--------auto-------->'}>
-                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <IconToggleButton
-                      value={true}
-                      srcOn={`/editor/icons/light/element/component-purple-18x18@2x.png`}
-                      srcOff={`/editor/icons/light/element/component-black-18x18@2x.png`}
-                      onToggle={toggleFocusMode}
-                    />
-                  </span>
-                  <p>
-                    {`This ${componentType} is imported from `}
-                    <InlineLink onClick={OpenFile}>{locationOfComponentInstance}</InlineLink>
-                    <InlineButton onClick={toggleFocusMode}>Exit Editing</InlineButton>
-                  </p>
-                </UIGridRow>
-              ) : null}
-              <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
-                <InfoBox message={'No properties available to configure.'} />
-              </UIGridRow>
-            </>
-          )
-        }
-      },
-      propertyControls,
+                    }
+                  })}
+                  {propsUsedWithoutControls.length > 0 ? (
+                    <Subdued>{`Additional props used in code: ${propsUsedWithoutControls.join(
+                      ', ',
+                    )}`}</Subdued>
+                  ) : null}
+                </>
+              )
+            } else {
+              return (
+                <>
+                  <UIGridRow padded tall={false} variant={'<-------------1fr------------->'}>
+                    <Subdued>No properties available to configure</Subdued>
+                  </UIGridRow>
+                </>
+              )
+            }
+          },
+          propertyControls,
+        )}
+      </>
     )
   },
 )
