@@ -7,7 +7,7 @@ import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
-import { FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
+import { auth0Url, FLOATING_PREVIEW_BASE_URL } from '../../common/env-vars'
 import { shareURLForProject } from '../../core/shared/utils'
 import Utils from '../../utils/utils'
 import {
@@ -124,6 +124,10 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
 
   const { ownerName, ownerPicture } = useGetOwnerNameAndPicture(id)
 
+  const onClickLoginNewTab = React.useCallback(() => {
+    window.open(auth0Url('auto-close'), '_blank')
+  }, [])
+
   return (
     <Section data-name='Fork' tabIndex={-1}>
       <SectionTitleRow minimised={false}>
@@ -211,17 +215,19 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
           >
             <b>Fork</b>&nbsp;this project
           </Button>
-          {/* TODO HOOK ME UP */}
-          <Button
-            outline
-            highlight
-            style={{
-              height: 24,
-            }}
-          >
-            <b>Sign in</b>&nbsp;to edit&nbsp;
-            <Icons.ExternalLinkSmaller />
-          </Button>
+          {isLoggedIn ? null : (
+            <Button
+              outline
+              highlight
+              style={{
+                height: 24,
+              }}
+              onClick={onClickLoginNewTab}
+            >
+              <b>Sign in</b>&nbsp;to edit&nbsp;
+              <Icons.ExternalLinkSmaller />
+            </Button>
+          )}
         </UIGridRow>
       </SectionBodyArea>
     </Section>
