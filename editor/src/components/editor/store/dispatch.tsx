@@ -512,7 +512,7 @@ export function editorDispatch(
     }),
   )
 
-  if (nameUpdated && frozenEditorState.id != null) {
+  if ((isLoadAction || nameUpdated) && frozenEditorState.id != null) {
     pushProjectURLToBrowserHistory(
       `Utopia ${frozenEditorState.projectName}`,
       frozenEditorState.id,
