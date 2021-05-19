@@ -3,6 +3,7 @@ import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as React from 'react'
 import { fetchProjectMetadata, projectURL, thumbnailURL } from '../../common/server'
+import { useGetProjectMetadata } from '../../common/server-hooks'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
@@ -114,19 +115,16 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
 })
 
 const ForksGiven = betterReactMemo('ForkPanel', () => {
-  const { dispatch, id, projectName, description, isLoggedIn, forkedFrom } = useEditorState(
-    (store) => {
-      return {
-        dispatch: store.dispatch,
-        id: store.editor.id,
-        projectName: store.editor.projectName,
-        description: store.editor.projectDescription,
-        isLoggedIn: User.isLoggedIn(store.userState.loginState),
-        forkedFrom: store.editor.forkedFromProjectId,
-      }
-    },
-    'ForkPanel',
-  )
+  const { id, projectName, description, isLoggedIn, forkedFrom } = useEditorState((store) => {
+    return {
+      dispatch: store.dispatch,
+      id: store.editor.id,
+      projectName: store.editor.projectName,
+      description: store.editor.projectDescription,
+      isLoggedIn: User.isLoggedIn(store.userState.loginState),
+      forkedFrom: store.editor.forkedFromProjectId,
+    }
+  }, 'ForkPanel')
 
   const { ownerName, ownerPicture } = useGetProjectMetadata(id)
   const { title: forkedFromTitle } = useGetProjectMetadata(forkedFrom)
@@ -249,45 +247,6 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
     </Section>
   )
 })
-
-type ProjectMetadata = {
-  title: string | null
-  ownerName: string | null
-  ownerPicture: string | null
-}
-
-// TODO move me to other file
-function useGetProjectMetadata(projectId: string | null): ProjectMetadata {
-  const previousProjectIdRef = React.useRef<string | null>(null)
-  const [userData, setUserData] = React.useState<ProjectMetadata>({
-    title: null,
-    ownerName: null,
-    ownerPicture: null,
-  })
-  if (previousProjectIdRef.current !== projectId) {
-    previousProjectIdRef.current = projectId
-    if (projectId == null) {
-      setUserData({
-        title: null,
-        ownerName: null,
-        ownerPicture: null,
-      })
-    } else {
-      fetchProjectMetadata(projectId).then((projectListing) => {
-        // safeguard against an old Fetch arriving for an outdated projectId
-        if (previousProjectIdRef.current === projectId) {
-          setUserData({
-            title: projectListing?.title ?? null,
-            ownerName: projectListing?.ownerName ?? null,
-            ownerPicture: projectListing?.ownerPicture ?? null,
-          })
-        }
-      })
-    }
-  }
-
-  return userData
-}
 
 const LoggedOutPane = betterReactMemo('LogInPane', () => {
   return (
