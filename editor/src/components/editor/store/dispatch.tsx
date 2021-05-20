@@ -1,6 +1,5 @@
 import * as deepEquals from 'fast-deep-equal'
 import { produce } from 'immer'
-import * as R from 'ramda'
 import * as React from 'react'
 import * as ReactDOMServer from 'react-dom/server'
 import { PRODUCTION_ENV } from '../../../common/env-vars'
@@ -87,6 +86,7 @@ import {
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
+import { pick } from '../../../core/shared/object-utils'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -506,11 +506,11 @@ export function editorDispatch(
   }
 
   // Chain off of the previous one to ensure the ordering is maintained.
-  applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(() =>
-    applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
+  applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
+    return applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
       console.error('Error sending updates to VS Code', error)
-    }),
-  )
+    })
+  })
 
   if (nameUpdated && frozenEditorState.id != null) {
     pushProjectURLToBrowserHistory(
@@ -549,7 +549,7 @@ function editorDispatchInner(
     // Run everything in a big chain.
     let result = processActions(boundDispatch, storedState, dispatchedActions, spyCollector)
 
-    const anyUndoOrRedo = R.any(isUndoOrRedo, dispatchedActions)
+    const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
 
     if (!PRODUCTION_ENV && typeof window.performance.mark === 'function') {
       window.performance.mark('derived_state_begin')
@@ -662,11 +662,11 @@ function filterEditorForFiles(editor: EditorState) {
     ...editor,
     codeResultCache: {
       ...editor.codeResultCache,
-      cache: R.pick(allFiles, editor.codeResultCache.cache),
+      cache: pick(allFiles, editor.codeResultCache.cache),
     },
     codeEditorErrors: {
-      buildErrors: R.pick(allFiles, editor.codeEditorErrors.buildErrors),
-      lintErrors: R.pick(allFiles, editor.codeEditorErrors.lintErrors),
+      buildErrors: pick(allFiles, editor.codeEditorErrors.buildErrors),
+      lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
     },
   }
 }

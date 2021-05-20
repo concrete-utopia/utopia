@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import Utils, { Axis, DiagonalAxis } from '../../utils/utils'
 import {
   CanvasPoint,
@@ -211,25 +210,21 @@ export const Guidelines = {
     scale: number,
     constrainedDragAxis: ConstrainedDragAxis | null,
   ): Vector<C> {
-    return R.reduce(
-      (workingPoint, guideline) => {
-        const snappingVector = Guidelines.getOffsetToSnapToGuideline(
-          [workingPoint.x],
-          [workingPoint.y],
-          [],
-          guideline,
-          constrainedDragAxis,
-        )
-        const distance = Utils.magnitude(snappingVector)
-        if (distance <= snappingThreshold / scale) {
-          return Utils.roundPointToNearestHalf(Utils.offsetPoint(workingPoint, snappingVector))
-        } else {
-          return workingPoint
-        }
-      },
-      point,
-      guidelines,
-    )
+    return guidelines.reduce((workingPoint, guideline) => {
+      const snappingVector = Guidelines.getOffsetToSnapToGuideline(
+        [workingPoint.x],
+        [workingPoint.y],
+        [],
+        guideline,
+        constrainedDragAxis,
+      )
+      const distance = Utils.magnitude(snappingVector)
+      if (distance <= snappingThreshold / scale) {
+        return Utils.roundPointToNearestHalf(Utils.offsetPoint(workingPoint, snappingVector))
+      } else {
+        return workingPoint
+      }
+    }, point)
   },
   guidelinesForFrame: function (
     frame: LocalRectangle | CanvasRectangle,

@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { PropertyControlsInfo } from '../components/custom-code/code-file'
 import {
   propertyControlsIFrameReady,
@@ -15,6 +14,7 @@ import { applicative3Either, forEachRight } from '../core/shared/either'
 import { NewBundlerWorker, RealBundlerWorker } from '../core/workers/bundler-bridge'
 import { createBundle } from '../core/workers/bundler-promise'
 import { objectKeyParser, parseAny, ParseResult } from '../utils/value-parser-utils'
+import * as deepEquals from 'fast-deep-equal'
 
 // Not a full parse, just checks the primary fields are there.
 function fastPropertyControlsParse(value: unknown): ParseResult<GetPropertyControlsInfoMessage> {
@@ -38,7 +38,7 @@ const initPropertyControlsWorker = () => {
   const propertyControlsProcessor = initPropertyControlsProcessor(onControlsProcessed)
 
   const modelUpdated = async (model: GetPropertyControlsInfoMessage) => {
-    if (!R.equals(lastMessage, model)) {
+    if (!deepEquals(lastMessage, model)) {
       const projectContents = model.projectContents
       /**
        * please note that we are passing in an empty object instead of the .d.ts files

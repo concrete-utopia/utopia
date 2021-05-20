@@ -1,6 +1,6 @@
 import * as ChromaWrongTypes from 'chroma-js'
+import { clamp } from '../../core/shared/math-utils'
 const Chroma = ChromaWrongTypes as any
-import * as R from 'ramda'
 
 export interface UtopiColor {
   /**
@@ -45,7 +45,7 @@ function shade(this: UtopiColor, value: number): UtopiColor {
       blackWithOpacity,
     ]).colors(201)
   }
-  const index = R.clamp(0, 200, Math.floor(value))
+  const index = clamp(0, 200, Math.floor(value))
   return createUtopiColor(colorShadeCache[this.value][index], this.label, this.fileNameFragment)
 }
 

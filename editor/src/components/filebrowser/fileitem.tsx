@@ -2,7 +2,6 @@
 import { jsx } from '@emotion/react'
 import * as Path from 'path'
 import * as pathParse from 'path-parse'
-import * as R from 'ramda'
 import * as React from 'react'
 import {
   ConnectableElement,
@@ -82,7 +81,7 @@ function onDrop(
       isRootArea
     ) {
       const newDirectory = draggedOntoProps.dropTarget != null ? draggedOntoProps.dropTarget : '/'
-      const newFilePath = appendToPath(newDirectory, R.last(draggedProps.path.split('/')) as string)
+      const newFilePath = appendToPath(newDirectory, last(draggedProps.path.split('/')) as string)
       if (draggedProps.path !== newFilePath && draggedProps.path !== draggedOntoProps.path) {
         draggedOntoProps.dispatch(
           [

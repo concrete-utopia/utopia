@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
@@ -122,7 +121,11 @@ const Canvas = {
             if (working == null) {
               return selectedView
             } else {
-              return R.minBy(EP.depth, selectedView, working)
+              if (EP.depth(selectedView) < EP.depth(working)) {
+                return selectedView
+              } else {
+                return working
+              }
             }
           },
           null,
@@ -142,7 +145,9 @@ const Canvas = {
         const singleSelectedElement = selectedViews[0]
         const siblings = MetadataUtils.getSiblings(components, singleSelectedElement)
         const pathsToStep = siblings.map((s) => s.elementPath)
-        return Utils.stepInArray(EP.pathsEqual, forwards ? 1 : -1)(
+        return Utils.stepInArray(
+          EP.pathsEqual,
+          forwards ? 1 : -1,
           pathsToStep,
           singleSelectedElement,
         )
@@ -153,7 +158,11 @@ const Canvas = {
             if (working == null) {
               return selectedView
             } else {
-              return R.minBy(EP.depth, selectedView, working)
+              if (EP.depth(selectedView) < EP.depth(working)) {
+                return selectedView
+              } else {
+                return working
+              }
             }
           },
           null,
@@ -282,7 +291,7 @@ const Canvas = {
       const currentIndex =
         current.length === 0
           ? -1
-          : R.findIndex((target) => EP.pathsEqual(target, current[0]), targetStack)
+          : targetStack.findIndex((target) => EP.pathsEqual(target, current[0]))
       const endOrNotFound = currentIndex === -1 || currentIndex === targetStack.length - 1
       if (endOrNotFound) {
         return targetStack[0]

@@ -1,5 +1,6 @@
 import { MapLike } from 'typescript'
 import { is } from './equality-utils'
+import { clamp } from './math-utils'
 import { fastForEach } from './utils'
 
 export function stripNulls<T>(array: Array<T | null | undefined>): Array<T> {
@@ -205,6 +206,25 @@ export function addToMapOfArraysUnique<V, M extends MapLike<Array<V>>>(
   }
 }
 
+export function groupBy<T>(
+  toString: (value: T) => string,
+  array: Array<T>,
+): { [key: string]: Array<T> } {
+  let result: { [key: string]: Array<T> } = {}
+
+  for (const value of array) {
+    const key = toString(value)
+    if (key in result) {
+      let existing: Array<T> = result[key]
+      existing.push(value)
+    } else {
+      result[key] = [value]
+    }
+  }
+
+  return result
+}
+
 export function addUniquely<T extends string | number | boolean | null | undefined>(
   array: Array<T>,
   value: T,
@@ -284,4 +304,46 @@ export function safeIndex<T>(array: Array<T>, index: number): T | undefined {
   } else {
     return undefined
   }
+}
+
+export function intersection<T>(
+  first: Array<T>,
+  second: Array<T>,
+  eqFn: (l: T, r: T) => boolean = is,
+): Array<T> {
+  let result: Array<T> = []
+  for (const valueFromFirst of first) {
+    let foundIntersection: boolean = false
+    for (const valueFromSecond of second) {
+      foundIntersection = eqFn(valueFromFirst, valueFromSecond)
+      if (foundIntersection) {
+        let shouldAdd: boolean = true
+        for (const valueFromResult of result) {
+          if (eqFn(valueFromResult, valueFromFirst)) {
+            shouldAdd = false
+            break
+          }
+        }
+        if (shouldAdd) {
+          result.push(valueFromFirst)
+        }
+      }
+    }
+    if (foundIntersection) {
+      continue
+    }
+  }
+
+  return result
+}
+
+export function insert<T>(index: number, element: T, array: Array<T>): Array<T> {
+  const clampedIndex = clamp(0, array.length, index)
+  return [...array.slice(0, clampedIndex), element, ...array.slice(clampedIndex, array.length)]
+}
+
+export function reverse<T>(array: Array<T>): Array<T> {
+  let result = [...array]
+  result.reverse()
+  return result
 }

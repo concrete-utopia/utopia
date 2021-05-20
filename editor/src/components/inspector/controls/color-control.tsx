@@ -1,5 +1,4 @@
 import React = require('react')
-import * as R from 'ramda'
 import { isRight } from '../../../core/shared/either'
 import { ColorPicker } from './color-picker'
 import { CSSColor, parseColor, cssColorToChromaColorOrDefault } from '../common/css-utils'
@@ -7,6 +6,7 @@ import { StringControl } from './string-control'
 import { ControlStatus, ControlStyles } from '../common/control-status'
 import { UtopiaTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
+import Utils from '../../../utils/utils'
 
 export interface ColorControlProps {
   value: CSSColor
@@ -89,7 +89,7 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
     <div
       key={props.id}
       id={`trigger-${props.id}`}
-      className={` hexField ${R.pathOr('', ['controlClassName'], props)}`}
+      className={` hexField ${Utils.pathOr('', ['controlClassName'], props)}`}
       style={props.style}
     >
       {picker}

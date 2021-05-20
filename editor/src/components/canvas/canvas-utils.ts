@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import {
   FramePoint,
   HorizontalFramePointsExceptSize,
@@ -192,7 +191,7 @@ import { emptyComments } from '../../core/workers/parser-printer/parser-printer-
 import { getAllTargetsAtPoint } from './dom-lookup'
 import { parseCSSLengthPercent } from '../inspector/common/css-utils'
 import { normalisePathToUnderlyingTargetForced } from '../custom-code/code-file'
-import { addToMapOfArraysUnique } from '../../core/shared/array-utils'
+import { addToMapOfArraysUnique, uniqBy } from '../../core/shared/array-utils'
 import { mapValues } from '../../core/shared/object-utils'
 import { WindowMousePositionRaw } from '../../utils/global-positions'
 import { importedFromWhere } from '../editor/import-utils'
@@ -268,7 +267,7 @@ export function getOriginalCanvasFrames(
       EP.allPathsForLastPart(selectedView),
     )
     const includingParents = [...selectedAndChildren, ...selectedAndChildren.map(EP.parentPath)]
-    const allPaths = R.uniqBy(EP.toComponentId, Utils.stripNulls(includingParents))
+    const allPaths = uniqBy(Utils.stripNulls(includingParents), EP.pathsEqual)
     Utils.fastForEach(allPaths, (path) => {
       let alreadyAdded = false
       Utils.fastForEach(originalFrames, (originalFrame) => {
@@ -1665,9 +1664,7 @@ function getReparentTargetAtPosition(
     canvasOffset,
   )
   // filtering for non-selected views from alltargets
-  return R.head(
-    allTargets.filter((target) => selectedViews.every((view) => !EP.pathsEqual(view, target))),
-  )
+  return allTargets.find((target) => selectedViews.every((view) => !EP.pathsEqual(view, target)))
 }
 
 export function getReparentTarget(

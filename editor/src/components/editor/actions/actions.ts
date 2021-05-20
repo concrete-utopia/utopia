@@ -1,6 +1,5 @@
 import { produce } from 'immer'
 import * as update from 'immutability-helper'
-import * as R from 'ramda'
 import * as React from 'react'
 import * as localforage from 'localforage'
 import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
@@ -491,6 +490,7 @@ import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
+import { reverse, uniqBy } from '../../../core/shared/array-utils'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -1655,7 +1655,7 @@ export const UPDATE_FNS = {
         ? null
         : MetadataUtils.getFrameInCanvasCoords(newParentPath, editor.jsxMetadata)
     const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
-      R.reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived)),
+      reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived)),
       indexPosition,
       newParentPath,
       newParentSize,
@@ -1823,9 +1823,9 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     const selectedElements = editor.selectedViews
-    const uniqueParents = R.uniqBy(
-      EP.toComponentId,
+    const uniqueParents = uniqBy(
       Utils.stripNulls(selectedElements.map(EP.parentPath)),
+      EP.pathsEqual,
     )
     const additionalTargets = Utils.flatMapArray((uniqueParent) => {
       const children = MetadataUtils.getImmediateChildren(editor.jsxMetadata, uniqueParent)
@@ -3254,7 +3254,7 @@ export const UPDATE_FNS = {
       let currentDesignerFile = editor.canvas.openFile
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)
-      let updateUIFile: (e: EditorModel) => EditorModel = R.identity
+      let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
       Utils.fastForEach(updatedFiles, (updatedFile) => {
         const { oldPath, newPath } = updatedFile
         // If the main UI file is what we have renamed, update that later.

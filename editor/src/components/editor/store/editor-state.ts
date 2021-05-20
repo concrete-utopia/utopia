@@ -1,5 +1,4 @@
 import * as json5 from 'json5'
-import * as R from 'ramda'
 import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
@@ -142,6 +141,9 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import * as EP from '../../../core/shared/element-path'
 import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
+
+import * as OPI from 'object-path-immutable'
+const ObjectPathImmutable: any = OPI
 
 export const enum LeftMenuTab {
   UIInsert = 'ui-insert',
@@ -1478,7 +1480,7 @@ export function getPackageJsonFromEditorState(editor: EditorState): Either<strin
 export function getMainUIFromModel(model: EditorState): string | null {
   const packageJsonContents = getPackageJsonFromEditorState(model)
   if (isRight(packageJsonContents)) {
-    const mainUI = R.path(['utopia', 'main-ui'], packageJsonContents.value)
+    const mainUI = Utils.path(['utopia', 'main-ui'], packageJsonContents.value)
     // Make sure someone hasn't put something bizarro in there.
     if (typeof mainUI === 'string') {
       return mainUI
@@ -1506,7 +1508,11 @@ export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<str
 
 export function updateMainUIInPackageJson(packageJson: string, mainUI: string): string {
   function updateDeps(parsedPackageJson: any): string {
-    return JSON.stringify(R.assocPath(['utopia', 'main-ui'], mainUI, parsedPackageJson), null, 2)
+    return JSON.stringify(
+      ObjectPathImmutable.set(parsedPackageJson, ['utopia', 'main-ui'], mainUI),
+      null,
+      2,
+    )
   }
   try {
     const parsedJSON = json5.parse(packageJson)
@@ -1601,16 +1607,16 @@ export function getAllCodeEditorErrors(
   }
 }
 
-export function getAllBuildErrors(editor: EditorState) {
+export function getAllBuildErrors(editor: EditorState): Array<ErrorMessage> {
   return getAllErrorsFromFiles(editor.codeEditorErrors.buildErrors)
 }
 
-export function getAllLintErrors(editor: EditorState) {
+export function getAllLintErrors(editor: EditorState): Array<ErrorMessage> {
   return getAllErrorsFromFiles(editor.codeEditorErrors.lintErrors)
 }
 
-export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages) {
-  return Utils.flatMapArray((filename) => errorsInFiles[filename], Object.keys(errorsInFiles))
+export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages): Array<ErrorMessage> {
+  return Object.keys(errorsInFiles).flatMap((filename) => errorsInFiles[filename] ?? [])
 }
 
 export function parseFailureAsErrorMessages(
