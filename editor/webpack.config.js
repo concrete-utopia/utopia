@@ -102,6 +102,14 @@ const config = {
       minify: false,
     }),
     new HtmlWebpackPlugin({
+      chunks: [],
+      inject: 'head', // Add the script tags to the end of the <head>
+      scriptLoading: 'defer',
+      template: './src/templates/project-not-found.html',
+      filename: 'project-not-found.html',
+      minify: false,
+    }),
+    new HtmlWebpackPlugin({
       // Run it again to generate the preview.html
       chunks: ['preview'],
       inject: 'head', // Add the script tags to the end of the <head>

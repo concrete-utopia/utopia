@@ -161,6 +161,9 @@ projectIDScript (ProjectIdWithSuffix projectID _) = do
     ("window.utopiaProjectID = \"" <> projectID <> "\";")
 
 innerProjectPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
+innerProjectPage (Just _) Nothing branchName = do
+  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
+  return $ H.preEscapedToHtml projectNotFoundHtml
 innerProjectPage possibleProjectID possibleMetadata branchName = do
   indexHtml <- getEditorTextContent branchName "index.html"
   siteRoot <- getSiteRoot
@@ -179,6 +182,9 @@ emptyProjectPage :: Maybe Text -> ServerMonad H.Html
 emptyProjectPage branchName = innerProjectPage Nothing Nothing branchName
 
 innerPreviewPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
+innerPreviewPage (Just _) Nothing branchName = do
+  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
+  return $ H.preEscapedToHtml projectNotFoundHtml
 innerPreviewPage possibleProjectID possibleMetadata branchName = do
   indexHtml <- getEditorTextContent branchName "preview.html"
   siteRoot <- getSiteRoot
