@@ -708,7 +708,7 @@ export const ComponentSectionInner = betterReactMemo(
                   {propNames.map((propName) => {
                     const propertyControl = rootParseSuccess[propName]
                     if (propertyControl == null) {
-                      return null
+                      return `${propName} has no property control`
                     } else {
                       return foldEither(
                         (propertyError) => {
@@ -734,12 +734,6 @@ export const ComponentSectionInner = betterReactMemo(
                                 controlDescription={controlDescription}
                                 isScene={props.isScene}
                               />
-                              <UIGridRow
-                                padded
-                                tall={false}
-                                variant={'<-------------1fr------------->'}
-                                style={{ paddingTop: 8 }}
-                              ></UIGridRow>
                             </UIGridRow>
                           )
                         },
