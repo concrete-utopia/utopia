@@ -735,6 +735,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
     userState,
     focusedPanel,
     minimised,
+    forkedFrom,
   } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -745,12 +746,21 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
       userState: store.userState,
       focusedPanel: store.editor.focusedPanel,
       minimised: store.editor.projectSettings.minimised,
+      forkedFrom: store.editor.forkedFromProjectId,
     }
   }, 'ProjectSettingsPanel')
 
   const [name, changeProjectName] = React.useState(projectName)
   const [description, changeProjectDescription] = React.useState(projectDescription)
   const [requestingPreviewImage, setRequestingPreviewImage] = React.useState(false)
+  const { title: forkedFromTitle } = useGetProjectMetadata(forkedFrom)
+
+  const forkedFromText =
+    forkedFrom == null ? null : (
+      <React.Fragment>
+        Forked from <Link href={projectURL(forkedFrom)}>{forkedFromTitle}</Link>
+      </React.Fragment>
+    )
 
   const toggleMinimised = React.useCallback(() => {
     dispatch([EditorActions.togglePanel('projectsettings')], 'leftpane')
@@ -871,10 +881,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                     your project on social media and chat apps.
                   </Subdued>
                 </UIGridRow>
-                <UIGridRow padded variant='<--1fr--><--1fr-->'>
-                  <div />
-                  <ForkButton />
-                </UIGridRow>
+
                 <UIGridRow padded variant='<---1fr--->|------172px-------|'>
                   <span>Name</span>
                   {userState.loginState.type !== 'LOGGED_IN' ? (
@@ -949,6 +956,21 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                       {requestingPreviewImage ? 'Refreshing' : 'Refresh'}
                     </Button>
                   </FlexColumn>
+                </UIGridRow>
+                <UIGridRow
+                  style={{ marginTop: 16 }}
+                  padded
+                  variant='<-------------1fr------------->'
+                >
+                  <Subdued>{forkedFromText}</Subdued>
+                </UIGridRow>
+
+                <UIGridRow
+                  style={{ marginTop: 16 }}
+                  padded
+                  variant='<-------------1fr------------->'
+                >
+                  <ForkButton />
                 </UIGridRow>
               </FlexColumn>
             </SectionBodyArea>
