@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { isLocal } from '../components/editor/persistence'
-import { reduxDevtoolsLogMessage } from '../core/shared/redux-devtools'
-import { checkProjectOwnership, fetchProjectMetadata } from './server'
+import { isLocal } from '../editor/persistence'
+import { reduxDevtoolsLogMessage } from '../../core/shared/redux-devtools'
+import { checkProjectOwnership, fetchProjectMetadata } from '../../common/server'
 
 type ProjectMetadata = {
   title: string | null
