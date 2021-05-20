@@ -1,5 +1,4 @@
 import * as FastCheck from 'fast-check'
-import * as R from 'ramda'
 import { directory, imageFile, isDirectory } from '../core/model/project-file-utils'
 import {
   TextFile,
@@ -16,6 +15,7 @@ import {
   ProjectContentTreeRoot,
   treeToContents,
 } from './assets'
+import * as fastDeepEquals from 'fast-deep-equal'
 
 function codeFileArbitrary(): FastCheck.Arbitrary<TextFile> {
   return FastCheck.string().map((content) => codeFile(content, null))
@@ -61,7 +61,7 @@ function projectContentsFilter(projectContents: ProjectContents): boolean {
   const allKeys = Object.keys(projectContents)
   for (const key of allKeys) {
     const pathElements = key.split('/')
-    for (const size of R.range(1, pathElements.length)) {
+    for (let size = 1; size < pathElements.length; size++) {
       const subPath = pathElements.slice(0, size).join('/')
       const possibleContent = projectContents[subPath]
       if (possibleContent != null && !isDirectory(possibleContent)) {
@@ -84,15 +84,19 @@ function projectContentsArbitrary(): FastCheck.Arbitrary<ProjectContents> {
 
 function checkContentsToTree(contents: ProjectContents): boolean {
   const result = treeToContents(contentsToTree(contents))
-  const newKeys = R.difference(Object.keys(result), Object.keys(contents))
-  for (const newKey of newKeys) {
-    const newKeyContent = result[newKey]
-    if (!isDirectory(newKeyContent)) {
-      return false
+  let withoutNewKeys = {
+    ...result,
+  }
+  for (const key of Object.keys(result)) {
+    if (!(key in contents)) {
+      const newKeyContent = result[key]
+      if (!isDirectory(newKeyContent)) {
+        return false
+      }
+      delete withoutNewKeys[key]
     }
   }
-  const withoutNewKeys = R.omit(newKeys, result)
-  const withoutNewKeysIsTheSame = R.equals(withoutNewKeys, contents)
+  const withoutNewKeysIsTheSame = fastDeepEquals(withoutNewKeys, contents)
   return withoutNewKeysIsTheSame
 }
 
