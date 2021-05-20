@@ -3,7 +3,7 @@ import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import * as React from 'react'
 import { fetchProjectMetadata, projectURL, thumbnailURL } from '../../common/server'
-import { useGetProjectMetadata } from '../../common/server-hooks'
+import { useGetProjectMetadata, useIsMyProject } from '../../common/server-hooks'
 import { getAllUniqueUids } from '../../core/model/element-template-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
 import { isParseSuccess, isTextFile, ProjectFile } from '../../core/shared/project-file-types'
@@ -736,6 +736,8 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
       minimised: store.editor.projectSettings.minimised,
     }
   }, 'ProjectSettingsPanel')
+
+  const isMyProject = useIsMyProject(projectId)
 
   const [name, changeProjectName] = React.useState(projectName)
   const [description, changeProjectDescription] = React.useState(projectDescription)

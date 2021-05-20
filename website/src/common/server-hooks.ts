@@ -1,5 +1,7 @@
 import * as React from 'react'
-import { fetchProjectMetadata } from './server'
+import { isLocal } from '../components/editor/persistence'
+import { reduxDevtoolsLogMessage } from '../core/shared/redux-devtools'
+import { checkProjectOwnership, fetchProjectMetadata } from './server'
 
 type ProjectMetadata = {
   title: string | null
@@ -37,4 +39,27 @@ export function useGetProjectMetadata(projectId: string | null): ProjectMetadata
   }
 
   return userData
+}
+
+export function useIsMyProject(projectId: string | null): boolean {
+  const previousProjectIdRef = React.useRef<string | null>(null)
+  const [myProject, setMyProject] = React.useState<boolean>(false)
+
+  if (previousProjectIdRef.current !== projectId) {
+    previousProjectIdRef.current = projectId
+    if (projectId == null) {
+      setMyProject(true)
+    } else {
+      checkProjectOwnership(projectId).then((ownershipResult) => {
+        const isMyProject = isLocal() || ownershipResult === 'unowned' || ownershipResult.isOwner
+        reduxDevtoolsLogMessage('useIsMyProject called', {
+          isLocal: isLocal(),
+          ownershipResult: ownershipResult,
+        })
+        setMyProject(isMyProject)
+      })
+    }
+  }
+
+  return myProject
 }
