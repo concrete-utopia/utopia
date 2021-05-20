@@ -216,6 +216,11 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
           .getConfiguration()
           .update(FollowSelectionConfigKey, message.enabled, vscode.ConfigurationTarget.Global)
         break
+      case 'ACCUMULATED_TO_VSCODE_MESSAGE':
+        for (const innerMessage of message.messages) {
+          handleMessage(innerMessage)
+        }
+        break
       default:
         const _exhaustiveCheck: never = message
         console.error(`Unhandled message type ${JSON.stringify(message)}`)
