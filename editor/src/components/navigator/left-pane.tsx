@@ -810,6 +810,11 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
 
   const urlToRequest = `${thumbnailURL(projectId!)}?lastUpdated=${thumbnailLastGenerated}`
 
+  if (!isMyProject) {
+    // do not show ProjectPane for someone else's project, the Fork Project pane will take care of the UI needs
+    return null
+  }
+
   return (
     <FlexColumn
       id='leftPaneContents'
