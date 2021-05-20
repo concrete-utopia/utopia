@@ -30,7 +30,7 @@ import { getPNGBufferOfElementWithID } from './screenshot-utils'
 import { ProjectImportSuccess } from '../../core/model/project-import'
 import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
 import { notice } from '../common/notice'
-import { isNotLoggedIn, LoginState } from '../../common/user'
+import { isLoggedIn, isNotLoggedIn, LoginState } from '../../common/user'
 
 interface NeverSaved {
   type: 'never-saved'
@@ -282,9 +282,6 @@ export async function triggerForkProject(
   workers: UtopiaTsWorkers,
   loginState: LoginState,
 ): Promise<void> {
-  if (isNotLoggedIn(loginState)) {
-    throw new Error(`Cannot fork a project if you are not logged in!`)
-  }
   const newProjectId = await createNewProjectID()
   const updatedEditor = {
     ...editor,
@@ -292,7 +289,7 @@ export async function triggerForkProject(
     id: newProjectId,
   }
   const newModel = persistentModelFromEditorModel(updatedEditor)
-  await saveToServer(dispatch, newProjectId, updatedEditor.projectName, newModel, null, true)
+  await save(updatedEditor, dispatch, loginState, 'both', true)
   load(dispatch, newModel, updatedEditor.projectName, newProjectId, workers, NO_OP)
 }
 
@@ -379,6 +376,37 @@ function updateModelWithForkedId(
   return {
     ...model,
     forkedFromProjectId: originalProjectId,
+  }
+}
+
+export type SaveType = 'model' | 'name' | 'both'
+
+export async function save(
+  state: EditorState,
+  dispatch: EditorDispatch,
+  loginState: LoginState,
+  saveType: SaveType,
+  forceServerSave: boolean,
+): Promise<void> {
+  const modelChange =
+    saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
+  const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
+  try {
+    if (isLoggedIn(loginState)) {
+      return saveToServer(
+        dispatch,
+        state.id,
+        state.projectName,
+        modelChange,
+        nameChange,
+        forceServerSave,
+      )
+    } else {
+      return saveToLocalStorage(dispatch, state.id, state.projectName, modelChange, nameChange)
+    }
+  } catch (error) {
+    console.error('Save not successful', error)
+    return
   }
 }
 
