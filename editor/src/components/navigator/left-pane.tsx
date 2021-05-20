@@ -68,7 +68,10 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
     (store) => store.editor.leftMenu.selectedTab,
     'LeftPaneComponent selectedTab',
   )
+  const projectId = useEditorState((store) => store.editor.id, 'LeftPaneComponent projectId')
   const dispatch = useEditorState((store) => store.dispatch, 'LeftPaneComponent dispatch')
+
+  const isMyProject = useIsMyProject(projectId)
 
   return (
     <div
@@ -99,8 +102,8 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
         }}
       >
         {/* TODO CONDITION */}
-        <ForksGiven />
-        {selectedTab === LeftMenuTab.Project ? <ProjectPane /> : null}
+        <ForksGiven isMyProject={isMyProject} />
+        {selectedTab === LeftMenuTab.Project ? <ProjectPane isMyProject={isMyProject} /> : null}
         {selectedTab === LeftMenuTab.Storyboards ? <StoryboardsPane /> : null}
         {selectedTab === LeftMenuTab.Contents ? <ContentsPane /> : null}
         {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
@@ -114,7 +117,7 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
   )
 })
 
-const ForksGiven = betterReactMemo('ForkPanel', () => {
+const ForksGiven = betterReactMemo('ForkPanel', (props: { isMyProject: boolean }) => {
   const { id, projectName, description, isLoggedIn, forkedFrom } = useEditorState((store) => {
     return {
       dispatch: store.dispatch,
@@ -133,14 +136,17 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
 
-  const onClickOnForkProject = useTriggerForkProject()
-
   const forkedFromText =
     forkedFrom == null ? null : (
       <React.Fragment>
         Forked from <Link href={projectURL(forkedFrom)}>{forkedFromTitle}</Link>
       </React.Fragment>
     )
+
+  if (props.isMyProject) {
+    // Do not show this UI for our own project – the ProjectPane will help the user fork it too
+    return null
+  }
 
   return (
     <Section data-name='Fork' tabIndex={-1}>
@@ -215,19 +221,7 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
         </UIGridRow>
 
         <UIGridRow style={{ gap: 8, marginTop: 8 }} padded variant='<--1fr--><--1fr-->'>
-          <Button
-            primary
-            highlight
-            style={{
-              height: 24,
-              backgroundImage: 'linear-gradient(3deg, #92ABFF 0%, #1FCCB7 99%)',
-              boxShadow: 'inset 0 0 0 1px rgba(94,94,94,0.20)',
-              borderRadius: 2,
-            }}
-            onClick={onClickOnForkProject}
-          >
-            <b>Fork</b>&nbsp;this project
-          </Button>
+          <ForkButton />
           {isLoggedIn ? null : (
             <Button
               outline
@@ -244,6 +238,26 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
         </UIGridRow>
       </SectionBodyArea>
     </Section>
+  )
+})
+
+const ForkButton = betterReactMemo('ForkButton', () => {
+  const onClickOnForkProject = useTriggerForkProject()
+
+  return (
+    <Button
+      primary
+      highlight
+      style={{
+        height: 24,
+        backgroundImage: 'linear-gradient(3deg, #92ABFF 0%, #1FCCB7 99%)',
+        boxShadow: 'inset 0 0 0 1px rgba(94,94,94,0.20)',
+        borderRadius: 2,
+      }}
+      onClick={onClickOnForkProject}
+    >
+      <b>Fork</b>&nbsp;this project
+    </Button>
   )
 })
 
@@ -714,7 +728,7 @@ export const InsertMenuPane = betterReactMemo('InsertMenuPane', () => {
   )
 })
 
-const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
+const ProjectPane = betterReactMemo('ProjectSettingsPanel', (props: { isMyProject: boolean }) => {
   const {
     dispatch,
     projectName,
@@ -736,8 +750,6 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
       minimised: store.editor.projectSettings.minimised,
     }
   }, 'ProjectSettingsPanel')
-
-  const isMyProject = useIsMyProject(projectId)
 
   const [name, changeProjectName] = React.useState(projectName)
   const [description, changeProjectDescription] = React.useState(projectDescription)
@@ -810,7 +822,7 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
 
   const urlToRequest = `${thumbnailURL(projectId!)}?lastUpdated=${thumbnailLastGenerated}`
 
-  if (!isMyProject) {
+  if (!props.isMyProject) {
     // do not show ProjectPane for someone else's project, the Fork Project pane will take care of the UI needs
     return null
   }
@@ -866,6 +878,10 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
                     These help you organise your projects. We also use them when you embed or share
                     your project on social media and chat apps.
                   </Subdued>
+                </UIGridRow>
+                <UIGridRow padded variant='<--1fr--><--1fr-->'>
+                  <div />
+                  <ForkButton />
                 </UIGridRow>
                 <UIGridRow padded variant='<---1fr--->|------172px-------|'>
                   <span>Name</span>
