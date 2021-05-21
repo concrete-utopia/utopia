@@ -431,6 +431,7 @@ import {
   LeftPaneMinimumWidth,
   LeftMenuTab,
   RightMenuTab,
+  persistentModelFromEditorModel,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -905,6 +906,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
   const poppedEditor = history.current.editor
   return {
     id: currentEditor.id,
+    forkedFromProjectId: currentEditor.forkedFromProjectId,
     appID: currentEditor.appID,
     projectName: currentEditor.projectName,
     projectDescription: currentEditor.projectDescription,
