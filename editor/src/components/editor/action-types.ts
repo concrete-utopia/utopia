@@ -293,6 +293,11 @@ export interface SetProjectID {
   id: string
 }
 
+export interface SetForkedFromProjectID {
+  action: 'SET_FORKED_FROM_PROJECT_ID'
+  id: string | null
+}
+
 export interface OpenTextEditor {
   action: 'OPEN_TEXT_EDITOR'
   target: ElementPath
@@ -851,6 +856,7 @@ export type EditorAction =
   | PasteJSXElements
   | CopySelectionToClipboard
   | SetProjectID
+  | SetForkedFromProjectID
   | OpenTextEditor
   | CloseTextEditor
   | SetLeftMenuTab
