@@ -59,7 +59,7 @@ import {
   getHighlightBoundsForElementPath,
   getOpenTextFileKey,
 } from '../../components/editor/store/editor-state'
-import type { ProjectChange } from '../../components/editor/store/dispatch'
+import { ProjectChange } from '../../components/editor/store/vscode-changes'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
