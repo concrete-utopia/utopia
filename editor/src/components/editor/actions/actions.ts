@@ -1382,7 +1382,7 @@ function getZIndexOrderedViewsWithoutDirectChildren(
   // keep direct children from reparenting
   let filteredTargets: Array<ElementPath> = []
   Utils.fastForEach(orderedTargets, (target) => {
-    if (!orderedTargets.find((tp) => EP.pathsEqual(EP.parentPath(target), tp))) {
+    if (orderedTargets.find((tp) => EP.pathsEqual(EP.parentPath(target), tp)) == null) {
       filteredTargets.push(target)
     }
   })
@@ -4175,7 +4175,7 @@ export const UPDATE_FNS = {
           width: containerDivBoundingRect.width,
           height: containerDivBoundingRect.height,
         } as CanvasRectangle
-        const isVisible = rectangleIntersection(containerRectangle, targetElementCoords)
+        const isVisible = rectangleIntersection(containerRectangle, targetElementCoords) != null
         // when the element is on screen no scrolling is needed
         if (isVisible) {
           return editor

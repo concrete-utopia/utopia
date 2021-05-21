@@ -74,7 +74,8 @@ export class ControlledTextArea extends React.Component<
     if (
       event.key === 'Enter' &&
       this.input != null &&
-      (!this.props.onBlurOnCmdReturn || (this.props.onBlurOnCmdReturn && event.metaKey === true))
+      (this.props.onBlurOnCmdReturn !== true ||
+        (this.props.onBlurOnCmdReturn && event.metaKey === true))
     ) {
       this.input.blur()
     }

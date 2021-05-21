@@ -287,6 +287,6 @@ interface DisabledOpacityProps {
 
 export const disabledOpacityStyle = (props: DisabledOpacityProps) =>
   css({
-    opacity: props.disabled ? 0.5 : 1,
-    pointerEvents: props.disabled ? 'none' : 'initial',
+    opacity: props.disabled === true ? 0.5 : 1,
+    pointerEvents: props.disabled === true ? 'none' : 'initial',
   })

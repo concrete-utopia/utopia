@@ -25,11 +25,11 @@ export const MarginControls = betterReactMemo('MarginControls', (props: MarginCo
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
             left: props.frame.x + props.canvasOffset.x - props.margin.left,
-            top: props.frame.y + props.canvasOffset.y - (props.margin.top || 0),
+            top: props.frame.y + props.canvasOffset.y - (props.margin.top ?? 0),
             width: props.margin.left,
-            height: props.frame.height + (props.margin.top || 0) + (props.margin.bottom || 0),
+            height: props.frame.height + (props.margin.top ?? 0) + (props.margin.bottom ?? 0),
             lineHeight:
-              props.frame.height + (props.margin.top || 0) + (props.margin.bottom || 0) + 'px',
+              props.frame.height + (props.margin.top ?? 0) + (props.margin.bottom ?? 0) + 'px',
             fontSize: 8 / props.scale,
           }}
         >
@@ -67,11 +67,11 @@ export const MarginControls = betterReactMemo('MarginControls', (props: MarginCo
             color: colorTheme.canvasLayoutForeground.value,
             position: 'absolute',
             left: props.frame.x + props.canvasOffset.x + props.frame.width,
-            top: props.frame.y + props.canvasOffset.y - (props.margin.top || 0),
+            top: props.frame.y + props.canvasOffset.y - (props.margin.top ?? 0),
             width: props.margin.right,
-            height: props.frame.height + (props.margin.top || 0) + (props.margin.bottom || 0),
+            height: props.frame.height + (props.margin.top ?? 0) + (props.margin.bottom ?? 0),
             lineHeight:
-              props.frame.height + (props.margin.top || 0) + (props.margin.bottom || 0) + 'px',
+              props.frame.height + (props.margin.top ?? 0) + (props.margin.bottom ?? 0) + 'px',
             textAlign: 'center',
             fontSize: 8 / props.scale,
           }}
@@ -112,10 +112,10 @@ export const MarginControls = betterReactMemo('MarginControls', (props: MarginCo
             border: colorTheme.canvasLayoutStroke.o(20).value,
             position: 'absolute',
             pointerEvents: 'none',
-            left: props.frame.x + props.canvasOffset.x - (props.margin.left || 0),
-            top: props.frame.y + props.canvasOffset.y - (props.margin.top || 0),
-            width: props.frame.width + (props.margin.left || 0) + (props.margin.right || 0),
-            height: props.frame.height + (props.margin.top || 0) + (props.margin.bottom || 0),
+            left: props.frame.x + props.canvasOffset.x - (props.margin.left ?? 0),
+            top: props.frame.y + props.canvasOffset.y - (props.margin.top ?? 0),
+            width: props.frame.width + (props.margin.left ?? 0) + (props.margin.right ?? 0),
+            height: props.frame.height + (props.margin.top ?? 0) + (props.margin.bottom ?? 0),
           }}
         />
       )

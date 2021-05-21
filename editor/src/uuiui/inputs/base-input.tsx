@@ -64,7 +64,7 @@ function getChainedBoxShadow(controlStyles: ControlStyles, chained: ChainedType,
 
 export function getBorderRadiusStyles(chained: ChainedType, rc: BoxCorners) {
   return {
-    borderRadius: chained || rc != null ? 0 : UtopiaTheme.inputBorderRadius,
+    borderRadius: chained !== 'not-chained' || rc != null ? 0 : UtopiaTheme.inputBorderRadius,
     borderTopRightRadius:
       rc === 'all' || rc === 'right' || rc === 'topRight' || rc === 'top'
         ? UtopiaTheme.inputBorderRadius

@@ -1621,7 +1621,7 @@ export function parseFailureAsErrorMessages(
     return []
   } else {
     const parseFailure = parseResult.fileContents.parsed
-    const fileNameString = fileName || ''
+    const fileNameString = fileName ?? ''
     let errors: Array<ErrorMessage> = []
     if (parseFailure.diagnostics != null && parseFailure.diagnostics.length > 0) {
       errors.push(...parseFailure.diagnostics.map(diagnosticToErrorMessage))

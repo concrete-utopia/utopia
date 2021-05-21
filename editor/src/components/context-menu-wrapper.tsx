@@ -161,7 +161,7 @@ export class ContextMenuWrapper<T> extends ReactComponent<
     return (
       <div
         key={name}
-        className={name + ' ' + (this.props.className || '')}
+        className={name + ' ' + (this.props.className ?? '')}
         style={this.props.style}
       >
         <MenuProvider
@@ -190,7 +190,7 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<ContextMenuWr
     return (
       <div
         key={name}
-        className={name + ' ' + (this.props.className || '')}
+        className={name + ' ' + (this.props.className ?? '')}
         style={{
           width: '100%',
           ...this.props.style,

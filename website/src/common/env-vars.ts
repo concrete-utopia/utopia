@@ -11,8 +11,7 @@ const STAGING_CONFIG: boolean = process.env.REACT_APP_ENVIRONMENT_CONFIG === 'st
 const PRODUCTION_OR_STAGING_CONFIG = PRODUCTION_CONFIG || STAGING_CONFIG
 
 export const PROBABLY_ELECTRON: boolean =
-  typeof window === 'undefined' ||
-  (window && (window as any)['process'] && (window as any)['process']['type'])
+  typeof window === 'undefined' || (window as any)?.['process']?.['type'] != null
 
 export const USE_WEBPACK_SERVER = process.env.WEBPACK_DEV_SERVER === 'true'
 
@@ -55,9 +54,9 @@ export const THUMBNAIL_ENDPOINT = UTOPIA_BACKEND + 'thumbnail/'
 
 export const PREVIEW_IS_EMBEDDED = isEmbedded()
 
-export const AUTH0_REDIRECT_URI: string = process.env.REACT_APP_AUTH0_REDIRECT_URI || ''
-export const AUTH0_CLIENT_ID: string = process.env.REACT_APP_AUTH0_CLIENT_ID || ''
-export const AUTH0_HOST: string = process.env.REACT_APP_AUTH0_ENDPOINT || ''
+export const AUTH0_REDIRECT_URI: string = process.env.REACT_APP_AUTH0_REDIRECT_URI ?? ''
+export const AUTH0_CLIENT_ID: string = process.env.REACT_APP_AUTH0_CLIENT_ID ?? ''
+export const AUTH0_HOST: string = process.env.REACT_APP_AUTH0_ENDPOINT ?? ''
 const USE_AUTH0 = AUTH0_REDIRECT_URI != '' && AUTH0_CLIENT_ID != '' && AUTH0_HOST != ''
 
 export const GOOGLE_WEB_FONTS_KEY =
@@ -87,7 +86,7 @@ export function auth0Url(behaviour: AuthRedirectBehaviour): string {
   return url.href
 }
 
-const COMMIT_HASH = process.env.REACT_APP_COMMIT_HASH || ''
+const COMMIT_HASH = process.env.REACT_APP_COMMIT_HASH ?? ''
 export const URL_HASH = COMMIT_HASH === '' ? 'nocommit' : COMMIT_HASH
 
 export function requireElectron() {

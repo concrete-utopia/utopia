@@ -59,7 +59,7 @@ const multiValueRemove: styleFn = (base, state) => ({
   overflow: 'hidden',
   marginRight: 2,
   backgroundImage: `url(${
-    state.isFocused
+    (state.isFocused as boolean)
       ? UNSAFE_getIconURL('cross-in-translucent-circle', 'blue')
       : UNSAFE_getIconURL('cross-small')
   })`,
@@ -176,7 +176,7 @@ const ClassNameControl = betterReactMemo(
         minWidth: 0,
         height: UtopiaTheme.layout.inputHeight.small,
         boxShadow: `inset 0 0 0 1px ${
-          state.isFocused
+          (state.isFocused as boolean)
             ? UtopiaTheme.color.inspectorFocusedColor.value
             : controlStyles.borderColor
         }`,

@@ -77,7 +77,7 @@ const CanvasControl = {
   ): (props: { transform?: string }, scale: number) => any {
     return (props: { transform?: string }, scale: number): any => {
       return R.merge(props, {
-        transform: `${props.transform || ''} translate(${x}, ${y}) scale(${1 / scale})`,
+        transform: `${props.transform ?? ''} translate(${x}, ${y}) scale(${1 / scale})`,
       })
     }
   },
@@ -85,7 +85,7 @@ const CanvasControl = {
     props: P,
     scale: number,
   ): P {
-    const dashArray = props.strokeDasharray || ''
+    const dashArray = props.strokeDasharray ?? ''
     const scaledStrokeDasharray = dashArray
       .split(' ')
       .map((value: string) => {
@@ -100,7 +100,7 @@ const CanvasControl = {
   },
   scaleViaTransform: function (props: { transform?: string }, scale: number): any {
     return R.merge(props, {
-      transform: `${props.transform || ''} scale(${1 / scale})`,
+      transform: `${props.transform ?? ''} scale(${1 / scale})`,
     })
   },
 }

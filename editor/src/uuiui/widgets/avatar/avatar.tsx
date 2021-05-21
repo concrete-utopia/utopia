@@ -9,7 +9,7 @@ interface AvatarProps {
 }
 
 export class Avatar extends React.Component<AvatarProps> {
-  size: string = (this.props.size ? this.props.size : '24') + 'px'
+  size: string = (this.props.size ?? '24') + 'px'
 
   /* Make the user wish they'd never logged in with an avatar-providing service. */
   /* Change these in   avatars.sketch and export from there */

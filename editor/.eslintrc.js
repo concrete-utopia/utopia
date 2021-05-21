@@ -167,7 +167,7 @@ module.exports = {
         allowString: false,
         allowNumber: false,
         allowNullableObject: false,
-        allowNullableBoolean: false,
+        allowNullableBoolean: true,
         allowNullableString: false,
         allowNullableNumber: false,
         allowAny: false,

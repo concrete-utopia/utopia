@@ -267,7 +267,7 @@ class DependencyListInner extends React.PureComponent<DependencyListProps, Depen
       )
     }
 
-    if (DefaultPackagesList.find((pkg) => pkg.name === packageName)) {
+    if (DefaultPackagesList.find((pkg) => pkg.name === packageName) != null) {
       this.props.editorDispatch(
         [
           addToast(

@@ -331,7 +331,7 @@ export function initBrowserFS(
   projectContents: ProjectContentTreeRoot,
 ): FSModule {
   BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
-    if (e) {
+    if (e != null) {
       throw e
     }
   })
@@ -427,7 +427,7 @@ function getReactExports(
   collectedExports: { [name: string]: ExportType },
 ): { [name: string]: ExportType } {
   if (isNodeExported(node)) {
-    const name = (node as any).name && (node as any).name.getText()
+    const name = (node as any)?.name?.getText()
     let nodeType: TS.Type
     try {
       // quick fix, sometimes TS throws exception on `getTypeAtLocation`
@@ -481,7 +481,7 @@ function getReactExports(
     const baseTypes = nodeType.getBaseTypes()
     const maybeReactClass =
       TS.isClassLike(node) &&
-      nodeType.getApparentProperties().find((p) => p.escapedName === 'render') // 🙈
+      nodeType.getApparentProperties().find((p) => p.escapedName === 'render') != null // 🙈
     if (maybeReactClass && baseTypes != null) {
       typeAsString = baseTypes
         .map((type) => {
@@ -522,14 +522,14 @@ function isNodeExported(node: TS.Node): boolean {
 
 function existingFilenameToRead(filename: string): string | undefined {
   // Checks that a filename exists that we can load, and returns the filename
-  if (loaderExistsForFile(filename) && fs.existsSync(filename)) {
+  if (loaderExistsForFile(filename) && (fs.existsSync(filename) as boolean)) {
     return filename
   } else {
     const alternativeFilenameToTest = filenameWithoutJSSuffix(filename)
     if (
       alternativeFilenameToTest != null &&
       loaderExistsForFile(alternativeFilenameToTest) &&
-      fs.existsSync(alternativeFilenameToTest)
+      (fs.existsSync(alternativeFilenameToTest) as boolean)
     ) {
       return alternativeFilenameToTest
     } else {
@@ -572,8 +572,7 @@ export function configureLanguageService(
     getScriptFileNames: () => {
       return rootFilenames.filter(isJsOrTsFile)
     },
-    getScriptVersion: (filename) =>
-      fileVersions[filename] && fileVersions[filename].versionNr.toString(),
+    getScriptVersion: (filename) => fileVersions[filename]?.versionNr.toString(),
     getScriptSnapshot: (filename) => {
       const fileContents = readFileApplyingLoaders(filename)
       return fileContents == null ? undefined : TS.ScriptSnapshot.fromString(fileContents)

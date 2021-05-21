@@ -478,7 +478,7 @@ export async function localSaveInner(
     const existing = await localforage.getItem<LocalProject | null>(localProjectKey(projectIdToUse))
     const existingThumbnail = existing == null ? '' : existing.thumbnail
     const now = new Date().toISOString()
-    const thumbnail = newThumbnail || existingThumbnail
+    const thumbnail = newThumbnail ?? existingThumbnail
     const createdAt = existing == null ? now : existing.createdAt
     const modifiedAt = now
 

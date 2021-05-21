@@ -13,9 +13,9 @@ export const getDeviceReactSelectOption = (deviceID: DeviceID): DeviceReactSelec
 
 export type DeviceReactSelectOption = { value: DeviceID; label: string }
 export type DeviceReactSelectList = Array<DeviceReactSelectOption>
-export const deviceReactSelectOptionList: DeviceReactSelectList = (Object.keys(
-  deviceInfoList,
-) as Array<DeviceID>).map((value): DeviceReactSelectOption => getDeviceReactSelectOption(value))
+export const deviceReactSelectOptionList: DeviceReactSelectList = (
+  Object.keys(deviceInfoList) as Array<DeviceID>
+).map((value): DeviceReactSelectOption => getDeviceReactSelectOption(value))
 
 interface PreviewReactSelectDeviceSelectorProps {
   value: DeviceReactSelectOption
@@ -23,14 +23,10 @@ interface PreviewReactSelectDeviceSelectorProps {
   caratOffset: number
 }
 
-export const PreviewReactSelectDeviceSelector: React.FunctionComponent<PreviewReactSelectDeviceSelectorProps> = ({
-  value,
-  onChange,
-  caratOffset,
-}) => {
-  const PreviewReactSelectSingleValue = (singleValueProps: any) => {
-    return (
-      components.SingleValue && (
+export const PreviewReactSelectDeviceSelector: React.FunctionComponent<PreviewReactSelectDeviceSelectorProps> =
+  ({ value, onChange, caratOffset }) => {
+    const PreviewReactSelectSingleValue = (singleValueProps: any) => {
+      return components.SingleValue == null ? null : (
         <components.SingleValue {...singleValueProps}>
           <span
             style={{
@@ -64,74 +60,73 @@ export const PreviewReactSelectDeviceSelector: React.FunctionComponent<PreviewRe
           </svg>
         </components.SingleValue>
       )
+    }
+
+    const selectOnChange = React.useCallback(
+      (newValue: ValueType<DeviceReactSelectOption>) => {
+        if (newValue != null && !Array.isArray(newValue)) {
+          onChange(newValue as DeviceReactSelectOption)
+        }
+      },
+      [onChange],
+    )
+
+    return (
+      <Select
+        className={``}
+        classNamePrefix='preview-lightselect'
+        menuShouldScrollIntoView={true}
+        menuPlacement='auto'
+        value={value}
+        isClearable={false}
+        isSearchable={false}
+        isDisabled={false}
+        components={{ SingleValue: PreviewReactSelectSingleValue }}
+        onChange={selectOnChange}
+        options={deviceReactSelectOptionList}
+        styles={{
+          container: (base: any, state: any) => {
+            return {
+              ...base,
+              backgroundColor: 'transparent',
+              boxShadow: 'none',
+              textAlign: 'left',
+              cursor: 'default',
+            }
+          },
+          menu: (base: any, state: any) => {
+            return {
+              ...base,
+              width: '200px !important',
+              left: -12,
+            }
+          },
+          control: (base: any, state: any) => {
+            return {
+              display: 'inline-block',
+            }
+          },
+          valueContainer: (base: any, state: any) => {
+            return {
+              display: 'inline-block',
+            }
+          },
+          singleValue: (base: any, state: any) => {
+            return {
+              display: 'inline-block',
+              height: 18,
+              position: 'relative',
+            }
+          },
+          indicatorsContainer: () => {
+            return {
+              display: 'none',
+            }
+          },
+        }}
+      />
     )
   }
-
-  const selectOnChange = React.useCallback(
-    (newValue: ValueType<DeviceReactSelectOption>) => {
-      if (newValue != null && !Array.isArray(newValue)) {
-        onChange(newValue as DeviceReactSelectOption)
-      }
-    },
-    [onChange],
-  )
-
-  return (
-    <Select
-      className={``}
-      classNamePrefix='preview-lightselect'
-      menuShouldScrollIntoView={true}
-      menuPlacement='auto'
-      value={value}
-      isClearable={false}
-      isSearchable={false}
-      isDisabled={false}
-      components={{ SingleValue: PreviewReactSelectSingleValue }}
-      onChange={selectOnChange}
-      options={deviceReactSelectOptionList}
-      styles={{
-        container: (base: any, state: any) => {
-          return {
-            ...base,
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-            textAlign: 'left',
-            cursor: 'default',
-          }
-        },
-        menu: (base: any, state: any) => {
-          return {
-            ...base,
-            width: '200px !important',
-            left: -12,
-          }
-        },
-        control: (base: any, state: any) => {
-          return {
-            display: 'inline-block',
-          }
-        },
-        valueContainer: (base: any, state: any) => {
-          return {
-            display: 'inline-block',
-          }
-        },
-        singleValue: (base: any, state: any) => {
-          return {
-            display: 'inline-block',
-            height: 18,
-            position: 'relative',
-          }
-        },
-        indicatorsContainer: () => {
-          return {
-            display: 'none',
-          }
-        },
-      }}
-    />
-  )
-}
 
 type Dimensions = { width: number; height: number }
 

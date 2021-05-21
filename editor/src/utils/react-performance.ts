@@ -233,8 +233,8 @@ function keepDeepReferenceEqualityInner(
   if (oldValue === possibleNewValue) return oldValue
 
   if (
-    oldValue &&
-    possibleNewValue &&
+    oldValue != null &&
+    possibleNewValue != null &&
     typeof oldValue == 'object' &&
     typeof possibleNewValue == 'object'
   ) {
@@ -367,7 +367,7 @@ function keepDeepReferenceEqualityInner(
         canSaveOldObject = false
       }
 
-      if (key === '_owner' && oldValue.$$typeof) {
+      if (key === '_owner' && oldValue.$$typeof != null) {
         // React-specific: avoid traversing React elements' _owner.
         //  _owner contains circular references
         // and is not needed when comparing the actual elements (and not their owners)

@@ -413,7 +413,7 @@ function traverseJsonSchema(
   schema: JsonSchema,
   completeSchema?: JsonSchema,
 ): JsonSchema | null {
-  const schemaToUse = completeSchema || schema
+  const schemaToUse = completeSchema ?? schema
 
   if (schemaPath.length === 0) {
     return schema

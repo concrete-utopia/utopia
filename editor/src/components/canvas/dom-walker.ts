@@ -140,7 +140,7 @@ function getAttributesComingFromStyleSheets(element: HTMLElement): Set<string> {
   const sheets = document.styleSheets
   try {
     for (const i in sheets) {
-      var rules = sheets[i].rules || sheets[i].cssRules
+      var rules = sheets[i].rules ?? sheets[i].cssRules
       for (const r in rules) {
         const rule = rules[r] as CSSStyleRule
         if (element.matches(rule.selectorText)) {

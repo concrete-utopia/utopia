@@ -76,8 +76,8 @@ function extractUtopiaDataFromHtml(htmlString: string): Array<CopyData> {
   )
   let currentNode: Node | null
   // tslint:disable-next-line:no-conditional-assignment
-  while ((currentNode = iterator.nextNode())) {
-    if (currentNode != null && currentNode.nodeValue) {
+  while ((currentNode = iterator.nextNode()) != null) {
+    if (currentNode?.nodeValue != null) {
       comments.push(currentNode.nodeValue)
     }
   }

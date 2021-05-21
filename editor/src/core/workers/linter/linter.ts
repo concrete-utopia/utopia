@@ -5,7 +5,7 @@ import * as stripAnsi from 'strip-ansi'
 
 // eslint react plugin uses this
 BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
-  if (e) {
+  if (e != null) {
     throw e
   }
 })
@@ -46,7 +46,7 @@ export function lintCode(
     return lintResult.map(
       (r: any): ErrorMessage => {
         let severity: ErrorMessage['severity']
-        if (r.fatal) {
+        if (r.fatal as boolean) {
           severity = 'fatal'
         } else if (r.severity === 2) {
           severity = 'error'

@@ -104,7 +104,7 @@ export const useRefEditorState = <U>(
     }
     const unsubscribe = api.subscribe(
       (newSlice) => {
-        if (newSlice) {
+        if (newSlice != null) {
           if (explainMe) {
             console.info('useRefEditorState: new state slice arrived', newSlice)
           }

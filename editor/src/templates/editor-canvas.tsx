@@ -634,11 +634,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     const dragStateCursor = null // FIXME: dragState == null ? null : dragState.cursor
 
     const cursor =
-      modeOverrideCursor ||
-      dragStateCursor ||
-      cursorForKeysPressed(this.props.model.keysPressed) ||
-      cursorForHoveredControl(this.props.model.controls, CanvasMousePositionRaw) ||
-      getNewCanvasControlsCursor(this.props.editor.cursorStack) ||
+      modeOverrideCursor ??
+      dragStateCursor ??
+      cursorForKeysPressed(this.props.model.keysPressed) ??
+      cursorForHoveredControl(this.props.model.controls, CanvasMousePositionRaw) ??
+      getNewCanvasControlsCursor(this.props.editor.cursorStack) ??
       getDefaultCursorForMode(this.props.editor.mode)
 
     const canvasIsLive = isLiveMode(this.props.editor.mode)
@@ -1133,7 +1133,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
 }
 
 function isTargetContextMenu(target: HTMLElement): boolean {
-  const className = (target.className as string) || ''
+  const className = target.className ?? ''
   return (
     (typeof className === 'string' && className.includes('react-contexify')) ||
     (target.parentElement != null && isTargetContextMenu(target.parentElement))

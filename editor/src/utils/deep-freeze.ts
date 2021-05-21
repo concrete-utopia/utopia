@@ -4,7 +4,7 @@ import { DEEP_FREEZE_STATE } from '../common/env-vars'
 
 function deepFreezeImpl(o: any) {
   // Utopia modification: an object can ask not to be deep freezed
-  if (o.skipDeepFreeze) {
+  if (o?.skipDeepFreeze === true) {
     return o
   }
 

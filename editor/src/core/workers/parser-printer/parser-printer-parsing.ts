@@ -2234,8 +2234,8 @@ export function parseOutFunctionContents(
 
 export function extractPrefixedCode(node: TS.Node, sourceFile: TS.SourceFile): string {
   // Attempt to capture everything between this and the last node
-  const nodeText = node.getText(sourceFile) || ''
-  const nodeFullText = node.getFullText(sourceFile) || ''
+  const nodeText = node.getText(sourceFile) ?? ''
+  const nodeFullText = node.getFullText(sourceFile) ?? ''
   const prefixedText = nodeFullText.slice(0, nodeFullText.lastIndexOf(nodeText))
   return prefixedText
 }

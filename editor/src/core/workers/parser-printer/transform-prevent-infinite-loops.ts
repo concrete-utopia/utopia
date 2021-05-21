@@ -41,7 +41,7 @@ export default ({ types: t, template }: { types: any; template: any }) => {
           MAX_ITERATIONS: t.numericLiteral(InfiniteLoopMaxIterations),
         })
         // No block statment e.g. `while (1) 1;`
-        if (!path.get('body').isBlockStatement()) {
+        if (!(path.get('body').isBlockStatement() as boolean)) {
           const statement = path.get('body').node
           path.get('body').replaceWith(t.blockStatement([guard, statement]))
         } else {
