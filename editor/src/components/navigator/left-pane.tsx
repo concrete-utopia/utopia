@@ -106,14 +106,14 @@ export const LeftPaneComponent = betterReactMemo('LeftPaneComponent', () => {
           }
         }}
       >
-        {!isMyProject ? <ForksGiven /> : null}
-        {selectedTab === LeftMenuTab.Project && isMyProject ? <ProjectPane /> : null}
+        {isMyProject === 'yes' ? null : <ForksGiven />}
+        {selectedTab === LeftMenuTab.Project && isMyProject === 'yes' ? <ProjectPane /> : null}
         {selectedTab === LeftMenuTab.Storyboards ? <StoryboardsPane /> : null}
         {selectedTab === LeftMenuTab.Contents ? <ContentsPane /> : null}
         {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
         {selectedTab === LeftMenuTab.Sharing ? <SharingPane /> : null}
         {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
-        {!loggedIn ? <LoggedOutPane /> : null}
+        {loggedIn ? null : <LoggedOutPane />}
       </div>
     </div>
   )
@@ -131,8 +131,8 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
     }
   }, 'ForkPanel')
 
-  const { ownerName, ownerPicture } = useGetProjectMetadata(id)
-  const { title: forkedFromTitle } = useGetProjectMetadata(forkedFrom)
+  const projectOwnerMetadata = useGetProjectMetadata(id)
+  const forkedFromMetadata = useGetProjectMetadata(forkedFrom)
 
   const onClickLoginNewTab = React.useCallback(() => {
     window.open(auth0Url('auto-close'), '_blank')
@@ -141,7 +141,7 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
   const forkedFromText =
     forkedFrom == null ? null : (
       <React.Fragment>
-        Forked from <Link href={projectURL(forkedFrom)}>{forkedFromTitle}</Link>
+        Forked from <Link href={projectURL(forkedFrom)}>{forkedFromMetadata?.title}</Link>
       </React.Fragment>
     )
 
@@ -207,11 +207,15 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
               background: UtopiaTheme.color.subtleBackground.value,
             }}
           >
-            <Avatar isLoggedIn={isLoggedIn} userPicture={ownerPicture} size={28} />
+            <Avatar
+              isLoggedIn={isLoggedIn}
+              userPicture={projectOwnerMetadata?.ownerPicture ?? null}
+              size={28}
+            />
           </div>
 
           <div style={{ whiteSpace: 'normal' }}>
-            Created by <b>{ownerName}</b>
+            Created by <b>{projectOwnerMetadata?.ownerName ?? ''}</b>
             <br />
             {forkedFromText}
           </div>
@@ -753,12 +757,12 @@ const ProjectPane = betterReactMemo('ProjectSettingsPanel', () => {
   const [name, changeProjectName] = React.useState(projectName)
   const [description, changeProjectDescription] = React.useState(projectDescription)
   const [requestingPreviewImage, setRequestingPreviewImage] = React.useState(false)
-  const { title: forkedFromTitle } = useGetProjectMetadata(forkedFrom)
+  const forkedFromMetadata = useGetProjectMetadata(forkedFrom)
 
   const forkedFromText =
     forkedFrom == null ? null : (
       <React.Fragment>
-        Forked from <Link href={projectURL(forkedFrom)}>{forkedFromTitle}</Link>
+        Forked from <Link href={projectURL(forkedFrom)}>{forkedFromMetadata?.title}</Link>
       </React.Fragment>
     )
 

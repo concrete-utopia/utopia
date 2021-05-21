@@ -4,35 +4,31 @@ import { reduxDevtoolsLogMessage } from '../../core/shared/redux-devtools'
 import { checkProjectOwnership, fetchProjectMetadata } from '../../common/server'
 
 type ProjectMetadata = {
-  title: string | null
+  title: string
   ownerName: string | null
   ownerPicture: string | null
 }
 
-export function useGetProjectMetadata(projectId: string | null): ProjectMetadata {
+export function useGetProjectMetadata(projectId: string | null): ProjectMetadata | null {
   const previousProjectIdRef = React.useRef<string | null>(null)
-  const [userData, setUserData] = React.useState<ProjectMetadata>({
-    title: null,
-    ownerName: null,
-    ownerPicture: null,
-  })
+  const [userData, setUserData] = React.useState<ProjectMetadata | null>(null)
   if (previousProjectIdRef.current !== projectId) {
     previousProjectIdRef.current = projectId
     if (projectId == null) {
-      setUserData({
-        title: null,
-        ownerName: null,
-        ownerPicture: null,
-      })
+      setUserData(null)
     } else {
       fetchProjectMetadata(projectId).then((projectListing) => {
         // safeguard against an old Fetch arriving for an outdated projectId
         if (previousProjectIdRef.current === projectId) {
-          setUserData({
-            title: projectListing?.title ?? null,
-            ownerName: projectListing?.ownerName ?? null,
-            ownerPicture: projectListing?.ownerPicture ?? null,
-          })
+          if (projectListing != null) {
+            setUserData({
+              title: projectListing.title,
+              ownerName: projectListing.ownerName ?? null,
+              ownerPicture: projectListing.ownerPicture ?? null,
+            })
+          } else {
+            setUserData(null)
+          }
         }
       })
     }
@@ -41,14 +37,14 @@ export function useGetProjectMetadata(projectId: string | null): ProjectMetadata
   return userData
 }
 
-export function useIsMyProject(projectId: string | null): boolean {
-  const previousProjectIdRef = React.useRef<string | null>(null)
-  const [myProject, setMyProject] = React.useState<boolean>(false)
+export function useIsMyProject(projectId: string | null): 'yes' | 'no' | 'unknown' {
+  const previousProjectIdRef = React.useRef<string | null | undefined>(undefined)
+  const [myProject, setMyProject] = React.useState<'yes' | 'no' | 'unknown'>('unknown')
 
   if (previousProjectIdRef.current !== projectId) {
     previousProjectIdRef.current = projectId
     if (projectId == null) {
-      setMyProject(true)
+      setMyProject('yes')
     } else {
       checkProjectOwnership(projectId).then((ownershipResult) => {
         const isMyProject = isLocal() || ownershipResult === 'unowned' || ownershipResult.isOwner
@@ -56,7 +52,7 @@ export function useIsMyProject(projectId: string | null): boolean {
           isLocal: isLocal(),
           ownershipResult: ownershipResult,
         })
-        setMyProject(isMyProject)
+        setMyProject(isMyProject ? 'yes' : 'no')
       })
     }
   }
