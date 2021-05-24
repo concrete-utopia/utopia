@@ -1,6 +1,6 @@
 import * as Chroma from 'chroma-js'
 import { clamp, WindowPoint } from '../../../core/shared/math-utils'
-import { ControlStyleDefaults, getControlStyles } from '../common/control-status'
+import { getControlStyles } from '../common/control-status'
 import {
   CSSColor,
   cssColorToChromaColorOrDefault,
@@ -485,7 +485,7 @@ export class ColorPickerInner extends React.Component<
               height: 20,
               width: '100%',
               borderRadius: 4,
-              boxShadow: `inset 0 0 0 1px ${ControlStyleDefaults.SetBorderColor})`,
+              boxShadow: `0 0 0 1px ${colorTheme.neutralBorder.value} inset`,
               backgroundImage: hsvHue,
               padding: '0 4px',
             }}
@@ -517,7 +517,7 @@ export class ColorPickerInner extends React.Component<
               width: '100%',
               backgroundColor: 'white',
               borderRadius: 4,
-              boxShadow: `inset 0 0 0 1px ${ControlStyleDefaults.SetBorderColor})`,
+              boxShadow: `0 0 0 1px ${colorTheme.neutralBorder.value} inset`,
               backgroundImage: `
                     linear-gradient(to right, ${cssWith0Alpha} 0%, ${cssWith1Alpha} 100%),
                     ${checkerboardBackground.backgroundImage}`,
