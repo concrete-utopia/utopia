@@ -97,7 +97,6 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
           height: '100%',
           backgroundColor: colorTheme.canvasBackground.value,
           borderRadius: 5,
-          color: colorTheme.inputColor.value,
           transition: 'background-color .1s ease-in-out',
           '&:hover': {
             '&:not(:disabled)': {

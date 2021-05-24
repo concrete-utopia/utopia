@@ -44,7 +44,7 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
       id={props.id}
       key={props.key}
       style={{
-        width: '100%',
+        // width: '100%',
         display: 'flex',
         flexDirection: 'column',
         marginBottom: 0,
@@ -53,12 +53,10 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
     >
       <div
         style={{
-          width: '100%',
+          // width: '100%',
           display: 'flex',
           flexDirection: 'row',
           height: 22,
-          boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
-          backgroundColor: props.controlStyles.backgroundColor,
         }}
         className={`option-chain-control-container ${Utils.pathOr(
           '',
@@ -91,8 +89,7 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
         <label
           htmlFor={props.id}
           onContextMenu={props.onContextMenu}
-          className='label-mini-control f10 tc db'
-          color={props.controlStyles.mainColor}
+          style={{ fontSize: 10, color: props.controlStyles.mainColor, paddingTop: 2 }}
         >
           <span className='label-container'>{labelBelow}</span>
         </label>

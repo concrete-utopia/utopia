@@ -243,7 +243,7 @@ interface PinWidthControlProps {
 export const PinWidthControl = betterReactMemo('PinWidthControl', (props: PinWidthControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
   return (
-    <SquareButton onClick={props.toggleWidth} outline={true}>
+    <SquareButton onClick={props.toggleWidth} highlight={true} spotlight={true}>
       <svg width='20' height='20'>
         <g
           id='dimensioncontrols-pin-width'

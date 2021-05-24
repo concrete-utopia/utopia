@@ -1,6 +1,5 @@
 import * as Chroma from 'chroma-js'
 import * as React from 'react'
-import { ControlStyleDefaults } from '../../../common/control-status'
 import {
   CSSBackgroundLayers,
   CSSColor,
@@ -23,7 +22,7 @@ import {
 } from '../../../controls/color-picker'
 import { inspectorEdgePadding } from './background-picker'
 import { clampValue } from '../../../../../core/shared/math-utils'
-import { colorTheme, FlexColumn } from '../../../../../uuiui'
+import { colorTheme, FlexColumn, UtopiaTheme } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 
 interface GradientStopProps {
@@ -502,7 +501,7 @@ export const GradientStopsEditor = betterReactMemo<GradientControlProps>(
               position: 'relative',
               borderRadius: 4,
               backgroundColor: 'white',
-              boxShadow: `0 0 0 1px ${ControlStyleDefaults.SetBorderColor} inset`,
+              boxShadow: `0 0 0 1px ${colorTheme.neutralBorder.value} inset`,
               backgroundImage: `${printLinearGradientBackgroundLayer({
                 type: 'linear-gradient',
                 enabled: true,

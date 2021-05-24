@@ -404,14 +404,8 @@ const TargetListHeader = betterReactMemo('TargetListHeader', (props: TargetListH
       style={{
         paddingLeft: 8,
         paddingRight: 8,
-        backgroundColor: colorTheme.slightlyEmphasizedBackground.value,
         cursor: 'pointer',
         height: 42,
-      }}
-      css={{
-        '&:hover': {
-          backgroundColor: colorTheme.emphasizedBackground.value,
-        },
       }}
     >
       <H1

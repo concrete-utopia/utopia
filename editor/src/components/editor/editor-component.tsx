@@ -288,7 +288,6 @@ export const EditorComponentInner = betterReactMemo(
                   alignItems: 'stretch',
                   justifyContent: 'stretch',
                   overflowX: 'hidden',
-                  backgroundColor: UtopiaTheme.color.slightlyEmphasizedBackground.value,
                 }}
               >
                 <OpenFileEditor />
