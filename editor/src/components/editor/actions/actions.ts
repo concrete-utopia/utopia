@@ -3108,10 +3108,21 @@ export const UPDATE_FNS = {
       return editor
     }
   },
-  SET_PROJECT_ID: (action: SetProjectID, editor: EditorModel): EditorModel => {
+  SET_PROJECT_ID: (
+    action: SetProjectID,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    let newVscodeBridgeId = editor.vscodeBridgeId
+    if (editor.vscodeBridgeId == null) {
+      // ONLY update vscodeBridgeId if it was null
+      newVscodeBridgeId = action.id
+      initVSCodeBridge(action.id, editor.projectContents, dispatch)
+    }
     return {
       ...editor,
       id: action.id,
+      vscodeBridgeId: newVscodeBridgeId,
     }
   },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {

@@ -156,7 +156,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_STORED_FONT_SETTINGS':
       return UPDATE_FNS.SET_STORED_FONT_SETTINGS(action, state)
     case 'SET_PROJECT_ID':
-      return UPDATE_FNS.SET_PROJECT_ID(action, state)
+      return UPDATE_FNS.SET_PROJECT_ID(action, state, dispatch)
     case 'UPDATE_CODE_RESULT_CACHE':
       return UPDATE_FNS.UPDATE_CODE_RESULT_CACHE(action, state)
     case 'SET_CODE_EDITOR_VISIBILITY':
