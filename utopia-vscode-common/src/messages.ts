@@ -111,12 +111,28 @@ export function setFollowSelectionConfig(enabled: boolean): SetFollowSelectionCo
   }
 }
 
-export type ToVSCodeMessage =
+export type ToVSCodeMessageNoAccumulated =
   | OpenFileMessage
   | UpdateDecorationsMessage
   | SelectedElementChanged
   | GetUtopiaVSCodeConfig
   | SetFollowSelectionConfig
+
+export interface AccumulatedToVSCodeMessage {
+  type: 'ACCUMULATED_TO_VSCODE_MESSAGE'
+  messages: Array<ToVSCodeMessageNoAccumulated>
+}
+
+export function accumulatedToVSCodeMessage(messages: Array<ToVSCodeMessageNoAccumulated>): AccumulatedToVSCodeMessage {
+  return {
+    type: 'ACCUMULATED_TO_VSCODE_MESSAGE',
+    messages: messages
+  }
+}
+
+export type ToVSCodeMessage =
+  | ToVSCodeMessageNoAccumulated
+  | AccumulatedToVSCodeMessage
 
 export function isOpenFileMessage(message: unknown): message is OpenFileMessage {
   return (
@@ -156,6 +172,13 @@ export function isSetFollowSelectionConfig(message: unknown): message is SetFoll
   )
 }
 
+export function isAccumulatedToVSCodeMessage(message: unknown): message is AccumulatedToVSCodeMessage {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as any).type === 'ACCUMULATED_TO_VSCODE_MESSAGE'
+  )
+}
 export function parseToVSCodeMessage(unparsed: string): ToVSCodeMessage {
   const message = JSON.parse(unparsed)
   if (
@@ -163,7 +186,8 @@ export function parseToVSCodeMessage(unparsed: string): ToVSCodeMessage {
     isUpdateDecorationsMessage(message) ||
     isSelectedElementChanged(message) ||
     isGetUtopiaVSCodeConfig(message) ||
-    isSetFollowSelectionConfig(message)
+    isSetFollowSelectionConfig(message) ||
+    isAccumulatedToVSCodeMessage(message)
   ) {
     return message
   } else {

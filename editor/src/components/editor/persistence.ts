@@ -7,7 +7,12 @@ import { checkProjectOwnership } from '../../common/server'
 import Utils from '../../utils/utils'
 import { EditorDispatch } from './action-types'
 import { load, loadSampleProject, newProject } from './actions/actions'
-import { setProjectID, showToast, setSaveError } from './actions/action-creators'
+import {
+  setProjectID,
+  showToast,
+  setSaveError,
+  setForkedFromProjectID,
+} from './actions/action-creators'
 import {
   createNewProjectID,
   loadProject,
@@ -279,18 +284,17 @@ export async function saveToServer(
 export async function triggerForkProject(
   dispatch: EditorDispatch,
   editor: EditorState,
-  workers: UtopiaTsWorkers,
   loginState: LoginState,
 ): Promise<void> {
+  const oldProjectId = editor.id
   const newProjectId = await createNewProjectID()
   const updatedEditor = {
     ...editor,
-    forkedFromProjectId: editor.id,
+    forkedFromProjectId: oldProjectId,
     id: newProjectId,
   }
-  const newModel = persistentModelFromEditorModel(updatedEditor)
   await save(updatedEditor, dispatch, loginState, 'both', true)
-  load(dispatch, newModel, updatedEditor.projectName, newProjectId, workers, NO_OP)
+  dispatch([setProjectID(newProjectId), setForkedFromProjectID(oldProjectId)])
 }
 
 async function checkCanSaveProject(projectId: string | null): Promise<boolean> {

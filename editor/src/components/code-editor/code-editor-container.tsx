@@ -4,6 +4,7 @@ import { useEditorState } from '../editor/store/store-hook'
 import { MONACO_EDITOR_IFRAME_BASE_URL } from '../../common/env-vars'
 import { createIframeUrl } from '../../core/shared/utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import { reduxDevtoolsLogMessage } from '../../core/shared/redux-devtools'
 
 const VSCodeIframeContainer = betterReactMemo(
   'VSCodeIframeContainer',
@@ -35,7 +36,7 @@ const VSCodeIframeContainer = betterReactMemo(
 export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', () => {
   const selectedProps = useEditorState((store) => {
     return {
-      projectID: store.editor.id,
+      vscodeBridgeId: store.editor.vscodeBridgeId,
       vscodeBridgeReady: store.editor.vscodeBridgeReady,
     }
   }, 'CodeEditorWrapper')
@@ -44,8 +45,8 @@ export const CodeEditorWrapper = betterReactMemo('CodeEditorWrapper', () => {
     return (
       <VSCodeIframeContainer
         projectID={forceNotNull(
-          'Project ID must be set when launching the code editor',
-          selectedProps.projectID,
+          'VSCode Bridge ID must be set when launching the code editor',
+          selectedProps.vscodeBridgeId,
         )}
       />
     )

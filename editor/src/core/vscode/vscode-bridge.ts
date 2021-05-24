@@ -49,6 +49,8 @@ import {
   boundsInFile,
   getUtopiaVSCodeConfig,
   setFollowSelectionConfig,
+  UpdateDecorationsMessage,
+  SelectedElementChanged,
 } from 'utopia-vscode-common'
 import { isTextFile, ProjectFile, ElementPath, TextFile } from '../shared/project-file-types'
 import { isBrowserEnvironment } from '../shared/utils'
@@ -57,6 +59,7 @@ import {
   getHighlightBoundsForElementPath,
   getOpenTextFileKey,
 } from '../../components/editor/store/editor-state'
+import { ProjectChange } from '../../components/editor/store/vscode-changes'
 
 const Scheme = 'utopia'
 const RootDir = `/${Scheme}`
@@ -215,145 +218,6 @@ export async function sendGetUtopiaVSCodeConfigMessage(): Promise<void> {
   return sendMessage(getUtopiaVSCodeConfig())
 }
 
-export interface WriteProjectFileChange {
-  type: 'WRITE_PROJECT_FILE'
-  fullPath: string
-  projectFile: ProjectFile
-}
-
-export function writeProjectFileChange(
-  fullPath: string,
-  projectFile: ProjectFile,
-): WriteProjectFileChange {
-  return {
-    type: 'WRITE_PROJECT_FILE',
-    fullPath: fullPath,
-    projectFile: projectFile,
-  }
-}
-
-export interface DeletePathChange {
-  type: 'DELETE_PATH'
-  fullPath: string
-  recursive: boolean
-}
-
-export function deletePathChange(fullPath: string, recursive: boolean): DeletePathChange {
-  return {
-    type: 'DELETE_PATH',
-    fullPath: fullPath,
-    recursive: recursive,
-  }
-}
-
-export interface EnsureDirectoryExistsChange {
-  type: 'ENSURE_DIRECTORY_EXISTS'
-  fullPath: string
-}
-
-export function ensureDirectoryExistsChange(fullPath: string): EnsureDirectoryExistsChange {
-  return {
-    type: 'ENSURE_DIRECTORY_EXISTS',
-    fullPath: fullPath,
-  }
-}
-
-export type ProjectChange = WriteProjectFileChange | DeletePathChange | EnsureDirectoryExistsChange
-
-export function collateProjectChanges(
-  projectID: string,
-  oldContents: ProjectContentTreeRoot,
-  newContents: ProjectContentTreeRoot,
-): Array<ProjectChange> {
-  let changesToProcess: Array<ProjectChange> = []
-
-  function applyChanges(
-    fullPath: string,
-    firstContents: ProjectContentsTree,
-    secondContents: ProjectContentsTree,
-  ): boolean {
-    if (isProjectContentFile(firstContents)) {
-      if (isProjectContentFile(secondContents)) {
-        if (firstContents.content === secondContents.content) {
-          // Do nothing, no change.
-        } else if (isTextFile(firstContents.content) && isTextFile(secondContents.content)) {
-          // We need to be careful around only sending this across if the text has been updated.
-          const firstSavedContent = getSavedCodeFromTextFile(firstContents.content)
-          const firstUnsavedContent = getUnsavedCodeFromTextFile(firstContents.content)
-          const secondSavedContent = getSavedCodeFromTextFile(secondContents.content)
-          const secondUnsavedContent = getUnsavedCodeFromTextFile(secondContents.content)
-
-          const savedContentChanged = firstSavedContent !== secondSavedContent
-          const unsavedContentChanged = firstUnsavedContent !== secondUnsavedContent
-          const fileMarkedDirtyButNoCodeChangeYet =
-            firstUnsavedContent == null && secondUnsavedContent === firstSavedContent
-
-          // When a parsed model is updated but that change hasn't been reflected in the code yet, we end up with a file
-          // that has no code change, so we don't want to write that to the FS for VS Code to act on it until the new code
-          // has been generated
-          const fileShouldBeWritten =
-            savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet)
-
-          if (fileShouldBeWritten) {
-            changesToProcess.push(writeProjectFileChange(fullPath, secondContents.content))
-          }
-        } else {
-          changesToProcess.push(writeProjectFileChange(fullPath, secondContents.content))
-        }
-      } else {
-        changesToProcess.push(deletePathChange(fullPath, true))
-        changesToProcess.push(ensureDirectoryExistsChange(fullPath))
-      }
-    } else {
-      if (isProjectContentFile(secondContents)) {
-        changesToProcess.push(deletePathChange(fullPath, true))
-        changesToProcess.push(writeProjectFileChange(fullPath, secondContents.content))
-      } else {
-        // Do nothing, both sides are a directory.
-      }
-    }
-
-    return true
-  }
-
-  function onElement(
-    fullPath: string,
-    firstContents: ProjectContentsTree | null,
-    secondContents: ProjectContentsTree | null,
-  ): boolean {
-    if (firstContents == null) {
-      if (secondContents == null) {
-        // Do nothing, nothing exists.
-        return false
-      } else {
-        changesToProcess.push(
-          writeProjectFileChange(fullPath, getProjectFileFromTree(secondContents)),
-        )
-        return true
-      }
-    } else {
-      if (secondContents == null) {
-        changesToProcess.push(deletePathChange(fullPath, true))
-        return false
-      } else {
-        if (firstContents === secondContents) {
-          // Same value, stop here.
-          return false
-        } else {
-          return applyChanges(fullPath, firstContents, secondContents)
-        }
-      }
-    }
-  }
-  if (isBrowserEnvironment) {
-    if (oldContents != newContents) {
-      zipContentsTree(oldContents, newContents, onElement)
-    }
-  }
-
-  return changesToProcess
-}
-
 export async function applyProjectChanges(changes: Array<ProjectChange>): Promise<void> {
   for (const change of changes) {
     switch (change.type) {
@@ -376,7 +240,7 @@ export async function applyProjectChanges(changes: Array<ProjectChange>): Promis
   }
 }
 
-export async function sendCodeEditorDecorations(editorState: EditorState): Promise<void> {
+export function getCodeEditorDecorations(editorState: EditorState): UpdateDecorationsMessage {
   let decorations: Array<DecorationRange> = []
   function addRange(rangeType: DecorationRangeType, path: ElementPath): void {
     const highlightBounds = getHighlightBoundsForElementPath(path, editorState)
@@ -400,14 +264,23 @@ export async function sendCodeEditorDecorations(editorState: EditorState): Promi
   editorState.highlightedViews.forEach((highlightedView) => {
     addRange('highlight', highlightedView)
   })
-  await sendUpdateDecorationsMessage(decorations)
+  return updateDecorationsMessage(decorations)
 }
 
-export async function sendSelectedElement(newEditorState: EditorState): Promise<void> {
+export async function sendCodeEditorDecorations(editorState: EditorState): Promise<void> {
+  const decorationsMessage = getCodeEditorDecorations(editorState)
+  await sendMessage(decorationsMessage)
+}
+
+export function getSelectedElementChangedMessage(
+  newEditorState: EditorState,
+): SelectedElementChanged | null {
   const selectedView = newEditorState.selectedViews[0]
   const highlightBounds = getHighlightBoundsForElementPath(selectedView, newEditorState)
-  if (highlightBounds != null) {
-    await sendSelectedElementChangedMessage(
+  if (highlightBounds == null) {
+    return null
+  } else {
+    return selectedElementChanged(
       boundsInFile(
         highlightBounds.filePath,
         highlightBounds.startLine,
@@ -416,5 +289,14 @@ export async function sendSelectedElement(newEditorState: EditorState): Promise<
         highlightBounds.endCol,
       ),
     )
+  }
+}
+
+export async function sendSelectedElement(newEditorState: EditorState): Promise<void> {
+  const selectedElementChangedMessage = getSelectedElementChangedMessage(newEditorState)
+  if (selectedElementChangedMessage == null) {
+    return Promise.resolve()
+  } else {
+    await sendMessage(selectedElementChangedMessage)
   }
 }

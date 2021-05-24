@@ -6,7 +6,12 @@ import { PRODUCTION_ENV } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { ElementPath, isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
+import {
+  ElementPath,
+  isParseSuccess,
+  isTextFile,
+  ProjectFile,
+} from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
@@ -63,18 +68,24 @@ import {
 import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import {
   getContentsTreeFileFromString,
+  getProjectFileFromTree,
+  isProjectContentFile,
+  ProjectContentsTree,
   ProjectContentTreeRoot,
   walkContentsTree,
+  zipContentsTree,
 } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
+import { applyProjectChanges } from '../../../core/vscode/vscode-bridge'
 import {
-  applyProjectChanges,
-  collateProjectChanges,
-  sendCodeEditorDecorations,
-  sendSelectedElement,
-  sendSelectedElementChangedMessage,
-} from '../../../core/vscode/vscode-bridge'
-import { boundsInFile } from 'utopia-vscode-common'
+  accumulatedToVSCodeMessage,
+  AccumulatedToVSCodeMessage,
+  boundsInFile,
+  SelectedElementChanged,
+  sendMessage,
+  ToVSCodeMessageNoAccumulated,
+  UpdateDecorationsMessage,
+} from 'utopia-vscode-common'
 import { ElementPathArrayKeepDeepEquality } from '../../../utils/deep-equality-instances'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import {
@@ -93,6 +104,17 @@ import {
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
 import { pick } from '../../../core/shared/object-utils'
+import {
+  getSavedCodeFromTextFile,
+  getUnsavedCodeFromTextFile,
+} from '../../../core/model/project-file-utils'
+import {
+  AccumulatedVSCodeChanges,
+  emptyAccumulatedVSCodeChanges,
+  combineAccumulatedVSCodeChanges,
+  getVSCodeChanges,
+  sendVSCodeChanges,
+} from './vscode-changes'
 
 export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
@@ -316,55 +338,7 @@ function maybeRequestModelUpdateOnEditor(
   }
 }
 
-async function applyVSCodeDecorations(
-  oldEditorState: EditorState,
-  newEditorState: EditorState,
-): Promise<void> {
-  const oldHighlightBounds = getHighlightBoundsForUids(oldEditorState)
-  const newHighlightBounds = getHighlightBoundsForUids(newEditorState)
-  if (
-    oldEditorState.selectedViews !== newEditorState.selectedViews ||
-    oldEditorState.highlightedViews !== newEditorState.highlightedViews ||
-    oldHighlightBounds !== newHighlightBounds
-  ) {
-    await sendCodeEditorDecorations(newEditorState)
-  }
-}
-
-async function updateSelectedElementChanged(
-  oldEditorState: EditorState,
-  newEditorState: EditorState,
-): Promise<void> {
-  if (
-    oldEditorState.selectedViews !== newEditorState.selectedViews &&
-    newEditorState.selectedViews.length > 0
-  ) {
-    await sendSelectedElement(newEditorState)
-  }
-}
-
-async function applyVSCodeChanges(
-  oldStoredState: EditorStore,
-  newEditorState: EditorState,
-  updateCameFromVSCode: boolean,
-): Promise<void> {
-  // Update the file system that is shared between Utopia and VS Code.
-  if (oldStoredState.editor.id != null && !updateCameFromVSCode) {
-    const changes = collateProjectChanges(
-      oldStoredState.editor.id,
-      oldStoredState.editor.projectContents,
-      newEditorState.projectContents,
-    )
-    await applyProjectChanges(changes)
-  }
-
-  // Keep the decorations synchronised from Utopia to VS Code.
-  await applyVSCodeDecorations(oldStoredState.editor, newEditorState)
-
-  // Handle the selected element having changed to inform the user what is going on.
-  await updateSelectedElementChanged(oldStoredState.editor, newEditorState)
-}
-
+let currentVSCodeChanges: AccumulatedVSCodeChanges = emptyAccumulatedVSCodeChanges
 let applyProjectChangesCoordinator: Promise<void> = Promise.resolve()
 
 export function editorDispatch(
@@ -374,7 +348,9 @@ export function editorDispatch(
   spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
-  const nameUpdated = dispatchedActions.some((action) => action.action === 'SET_PROJECT_NAME')
+  const nameUpdated = dispatchedActions.some(
+    (action) => action.action === 'SET_PROJECT_NAME' || action.action === 'SET_PROJECT_ID',
+  )
   const forceSave =
     nameUpdated || dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE')
   const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1
@@ -510,8 +486,14 @@ export function editorDispatch(
   }
 
   // Chain off of the previous one to ensure the ordering is maintained.
+  currentVSCodeChanges = combineAccumulatedVSCodeChanges(
+    currentVSCodeChanges,
+    getVSCodeChanges(storedState.editor, frozenEditorState, updatedFromVSCode),
+  )
   applyProjectChangesCoordinator = applyProjectChangesCoordinator.then(async () => {
-    return applyVSCodeChanges(storedState, frozenEditorState, updatedFromVSCode).catch((error) => {
+    const changesToSend = currentVSCodeChanges
+    currentVSCodeChanges = emptyAccumulatedVSCodeChanges
+    return sendVSCodeChanges(changesToSend).catch((error) => {
       console.error('Error sending updates to VS Code', error)
     })
   })

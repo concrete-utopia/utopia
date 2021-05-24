@@ -73,7 +73,6 @@ function forceSetValueAtPath(
 interface InsertModeControlContainerProps extends ControlProps {
   mode: InsertMode
   keysPressed: KeysPressed
-  projectId: string | null
   dragState: InsertDragState | null
   canvasOffset: CanvasVector
   scale: number

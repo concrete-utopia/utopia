@@ -352,6 +352,7 @@ import {
   SetLoginState,
   ResetCanvas,
   SetFilebrowserDropTarget,
+  SetForkedFromProjectID,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -907,6 +908,7 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
   const poppedEditor = history.current.editor
   return {
     id: currentEditor.id,
+    vscodeBridgeId: currentEditor.vscodeBridgeId,
     forkedFromProjectId: currentEditor.forkedFromProjectId,
     appID: currentEditor.appID,
     projectName: currentEditor.projectName,
@@ -1497,6 +1499,7 @@ export const UPDATE_FNS = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
+      vscodeBridgeId: action.projectId, // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
@@ -3127,16 +3130,11 @@ export const UPDATE_FNS = {
       return editor
     }
   },
-  SET_PROJECT_ID: (
-    action: SetProjectID,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    initVSCodeBridge(action.id, editor.projectContents, dispatch)
-    return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(markVSCodeBridgeReady(false), {
+  SET_PROJECT_ID: (action: SetProjectID, editor: EditorModel): EditorModel => {
+    return {
       ...editor,
       id: action.id,
-    })
+    }
   },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {
     return {
@@ -4287,6 +4285,15 @@ export const UPDATE_FNS = {
         ...editor.fileBrowser,
         dropTarget: action.target,
       },
+    }
+  },
+  SET_FORKED_FROM_PROJECT_ID: (
+    action: SetForkedFromProjectID,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      forkedFromProjectId: action.id,
     }
   },
 }
