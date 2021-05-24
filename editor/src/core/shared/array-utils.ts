@@ -329,9 +329,6 @@ export function intersection<T>(
         }
       }
     }
-    if (foundIntersection) {
-      continue
-    }
   }
 
   return result
