@@ -634,7 +634,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               css={{
                 position: 'absolute',
                 top: 1,
-                right: 1,
+                left: 1,
                 userSelect: 'none',
                 pointerEvents: 'none',
                 width: 20,
@@ -642,19 +642,19 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 backgroundImage: backgroundImage,
                 borderRadius: UtopiaTheme.inputBorderRadius,
                 display: 'block',
-                '.number-input-container:hover &': {
-                  display: incrementControls && controlStyles.interactive ? 'none' : 'block',
-                },
+                // '.number-input-container:hover &': {
+                //   display: incrementControls && controlStyles.interactive ? 'none' : 'block',
+                // },
               }}
             >
               <div
                 style={{
                   position: 'absolute',
                   pointerEvents: 'none',
-                  right: 0,
-                  top: 5,
+                  left: 0,
+                  top: 2,
                   textAlign: 'center',
-                  fontWeight: 'bold',
+                  fontWeight: 600,
                   fontSize: '9px',
                   width: '100%',
                   height: '100%',
@@ -675,12 +675,12 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               css={{
                 position: 'absolute',
                 top: 0,
-                right: 0,
+                right: 1,
                 flexDirection: 'column',
                 alignItems: 'stretch',
                 width: 11,
                 height: UtopiaTheme.layout.inputHeight.default,
-                backgroundColor: UtopiaTheme.color.inspectorEmphasizedBackground.value,
+
                 boxShadow: `1px 0 ${controlStyles.borderColor} inset`,
                 display: 'none',
                 '.number-input-container:hover &': {
@@ -691,15 +691,11 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               <div
                 css={{
                   height: '50%',
-                  boxShadow: `-1px 1px ${
-                    isFocused
-                      ? UtopiaTheme.color.inspectorFocusedColor.value
-                      : controlStyles.borderColor
-                  } inset, 1px 0 ${controlStyles.borderColor} inset`,
+                  opacity: 0.8,
                   position: 'relative',
                   borderTopRightRadius: borderRadiusStyles.borderTopRightRadius,
                   ':active': {
-                    backgroundColor: colorTheme.buttonActiveBackground.value,
+                    opacity: 1,
                   },
                   '::after': {
                     content: '""',
@@ -709,30 +705,31 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                     right: 1,
                     bottom: 0,
                     transform: 'translateY(0.5px)',
-                    backgroundColor: controlStyles.borderColor,
                     pointerEvents: 'none',
                   },
                 }}
                 onMouseDown={onIncrementMouseDown}
               >
-                <Icn category='controls/input' type='up' color='gray' width={11} height={11} />
+                <Icn category='controls/input' type='up' color='darkgray' width={11} height={11} />
               </div>
               <div
                 css={{
                   height: '50%',
-                  boxShadow: `-1px -1px ${
-                    isFocused
-                      ? UtopiaTheme.color.inspectorFocusedColor.value
-                      : controlStyles.borderColor
-                  } inset, 1px 0 ${controlStyles.borderColor} inset`,
+                  opacity: 0.8,
                   borderBottomRightRadius: borderRadiusStyles.borderBottomRightRadius,
                   ':active': {
-                    backgroundColor: colorTheme.buttonActiveBackground.value,
+                    opacity: 1,
                   },
                 }}
                 onMouseDown={onDecrementMouseDown}
               >
-                <Icn category='controls/input' type='down' color='gray' width={11} height={11} />
+                <Icn
+                  category='controls/input'
+                  type='down'
+                  color='darkgray'
+                  width={11}
+                  height={11}
+                />
               </div>
             </div>
           ) : null}
