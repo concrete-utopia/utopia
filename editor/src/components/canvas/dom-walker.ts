@@ -278,18 +278,26 @@ function useInvalidateScenesWhenSelectedViewChanges(
   )
 }
 
-function useInvalidateInitCompleteOnMountCount(mountCount: number): [boolean, () => void] {
+function useInvalidateInitCompleteOnMountCount(
+  mountCount: number,
+  domWalkerInvalidateCount: number,
+): [boolean, () => void] {
   const initCompleteRef = React.useRef<boolean>(false)
   const previousMountCountRef = React.useRef<number>(mountCount)
+  const previousDomWalkerInvalidateCountRef = React.useRef<number>(domWalkerInvalidateCount)
 
   const setInitComplete = React.useCallback(() => {
     initCompleteRef.current = true
   }, [])
 
-  if (previousMountCountRef.current !== mountCount) {
+  if (
+    previousMountCountRef.current !== mountCount ||
+    previousDomWalkerInvalidateCountRef.current !== domWalkerInvalidateCount
+  ) {
     // mount count increased, re-initialize dom-walker
     initCompleteRef.current = false
     previousMountCountRef.current = mountCount
+    previousDomWalkerInvalidateCountRef.current = domWalkerInvalidateCount
   }
 
   return [initCompleteRef.current, setInitComplete]
@@ -305,6 +313,7 @@ interface DomWalkerProps {
   canvasRootElementElementPath: ElementPath
   validRootPaths: Array<ElementPath>
   mountCount: number
+  domWalkerInvalidateCount: number
   canvasInteractionHappening: boolean
 }
 
@@ -316,7 +325,10 @@ export function useDomWalker(props: DomWalkerProps): React.Ref<HTMLDivElement> {
   const invalidatedPathsRef = React.useRef<Set<string>>(emptySet()) // For invalidating specific paths only
   const invalidatedScenesRef = React.useRef<Set<string>>(emptySet()) // For invalidating entire scenes and everything below them
   const invalidatedPathsForStylesheetCacheRef = React.useRef<Set<string>>(emptySet())
-  const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(props.mountCount)
+  const [initComplete, setInitComplete] = useInvalidateInitCompleteOnMountCount(
+    props.mountCount,
+    props.domWalkerInvalidateCount,
+  )
   const selectedViewsRef = React.useRef(props.selectedViews)
   const canvasInteractionHappeningRef = React.useRef(props.canvasInteractionHappening)
 

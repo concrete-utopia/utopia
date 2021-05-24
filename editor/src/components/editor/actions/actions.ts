@@ -351,7 +351,9 @@ import {
   SetFollowSelectionEnabled,
   UpdateConfigFromVSCode,
   SetLoginState,
+  ResetCanvas,
   SetFilebrowserDropTarget,
+  SetForkedFromProjectID,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -431,6 +433,7 @@ import {
   LeftPaneMinimumWidth,
   LeftMenuTab,
   RightMenuTab,
+  persistentModelFromEditorModel,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -905,6 +908,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
   const poppedEditor = history.current.editor
   return {
     id: currentEditor.id,
+    vscodeBridgeId: currentEditor.vscodeBridgeId,
+    forkedFromProjectId: currentEditor.forkedFromProjectId,
     appID: currentEditor.appID,
     projectName: currentEditor.projectName,
     projectDescription: currentEditor.projectDescription,
@@ -959,7 +964,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       cursor: null,
       duplicationState: null,
       base64Blobs: {},
-      mountCount: currentEditor.canvas.mountCount + 1,
+      mountCount: currentEditor.canvas.mountCount, // QUESTION should undo-redo forcibly remount the canvas?
+      canvasContentInvalidateCount: currentEditor.canvas.canvasContentInvalidateCount + 1,
+      domWalkerInvalidateCount: currentEditor.canvas.domWalkerInvalidateCount + 1,
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
     },
@@ -1492,6 +1499,7 @@ export const UPDATE_FNS = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
+      vscodeBridgeId: action.projectId, // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
@@ -2198,7 +2206,7 @@ export const UPDATE_FNS = {
           selectedViews: newSelection,
           canvas: {
             ...withViewDeleted.canvas,
-            mountCount: editor.canvas.mountCount + 1,
+            domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
           },
         }
       },
@@ -3122,16 +3130,11 @@ export const UPDATE_FNS = {
       return editor
     }
   },
-  SET_PROJECT_ID: (
-    action: SetProjectID,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    initVSCodeBridge(action.id, editor.projectContents, dispatch)
-    return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(markVSCodeBridgeReady(false), {
+  SET_PROJECT_ID: (action: SetProjectID, editor: EditorModel): EditorModel => {
+    return {
       ...editor,
       id: action.id,
-    })
+    }
   },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {
     return {
@@ -3375,7 +3378,10 @@ export const UPDATE_FNS = {
       projectContents: updatedProjectContents,
       canvas: {
         ...editor.canvas,
-        mountCount: editor.canvas.mountCount + (isTextFile(file) ? 0 : 1),
+        canvasContentInvalidateCount:
+          editor.canvas.canvasContentInvalidateCount + (isTextFile(file) ? 0 : 1),
+        domWalkerInvalidateCount:
+          editor.canvas.domWalkerInvalidateCount + (isTextFile(file) ? 0 : 1),
       },
       nodeModules: {
         ...editor.nodeModules,
@@ -3475,7 +3481,12 @@ export const UPDATE_FNS = {
         projectContents: workingProjectContents,
         canvas: {
           ...editor.canvas,
-          mountCount: anyParsedUpdates ? editor.canvas.mountCount + 1 : editor.canvas.mountCount,
+          canvasContentInvalidateCount: anyParsedUpdates
+            ? editor.canvas.canvasContentInvalidateCount + 1
+            : editor.canvas.canvasContentInvalidateCount,
+          domWalkerInvalidateCount: anyParsedUpdates
+            ? editor.canvas.domWalkerInvalidateCount + 1
+            : editor.canvas.domWalkerInvalidateCount,
         },
         parseOrPrintInFlight: false, // only ever clear it here
       }
@@ -4150,7 +4161,7 @@ export const UPDATE_FNS = {
       focusedElementPath: action.focusedElementPath,
       canvas: {
         ...editor.canvas,
-        mountCount: editor.canvas.mountCount + 1,
+        domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
       },
     }
   },
@@ -4254,6 +4265,16 @@ export const UPDATE_FNS = {
       loginState: action.loginState,
     }
   },
+  RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        mountCount: editor.canvas.mountCount + 1,
+        domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+      },
+    }
+  },
   SET_FILEBROWSER_DROPTARGET: (
     action: SetFilebrowserDropTarget,
     editor: EditorModel,
@@ -4264,6 +4285,15 @@ export const UPDATE_FNS = {
         ...editor.fileBrowser,
         dropTarget: action.target,
       },
+    }
+  },
+  SET_FORKED_FROM_PROJECT_ID: (
+    action: SetForkedFromProjectID,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      forkedFromProjectId: action.id,
     }
   },
 }

@@ -56,3 +56,11 @@ export const offlineState: OfflineState = { type: 'OFFLINE_STATE' }
 export function isOfflineState(loginState: unknown): loginState is OfflineState {
   return (loginState as Partial<LoginState>)?.type === 'OFFLINE_STATE'
 }
+
+export function getUserPicture(loginState: LoginState): string | null {
+  if (isLoggedIn(loginState)) {
+    return loginState.user.picture ?? null
+  } else {
+    return null
+  }
+}

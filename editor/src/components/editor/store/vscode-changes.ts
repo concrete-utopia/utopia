@@ -192,9 +192,9 @@ export function getProjectContentsChanges(
   newEditorState: EditorState,
   updateCameFromVSCode: boolean,
 ): Array<ProjectChange> {
-  if (oldEditorState.id != null && !updateCameFromVSCode) {
+  if (oldEditorState.vscodeBridgeId != null && !updateCameFromVSCode) {
     return collateProjectChanges(
-      oldEditorState.id,
+      oldEditorState.vscodeBridgeId,
       oldEditorState.projectContents,
       newEditorState.projectContents,
     )

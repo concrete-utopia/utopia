@@ -1002,6 +1002,7 @@ describe('LOAD', () => {
     )
     const loadedModel: PersistentModel = {
       appID: null,
+      forkedFromProjectId: null,
       projectVersion: CURRENT_PROJECT_VERSION,
       projectDescription: '',
       projectContents: contentsToTree({

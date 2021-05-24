@@ -37,6 +37,7 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   outline: 'none',
   borderRadius: 1,
   padding: 0,
+  height: UtopiaTheme.layout.inputHeight.default,
   opacity: props.disabled ? 0.5 : 1,
   pointerEvents: props.disabled ? 'none' : 'initial',
   boxShadow: props.outline ? 'inset 0px 0px 0px 1px hsl(0,0%,90%)' : undefined,
