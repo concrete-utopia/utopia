@@ -201,9 +201,7 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
               width: 28,
               height: 28,
               borderRadius: '50%',
-              boxShadow: `inset 0px 0px 0px 1px ${
-                UtopiaTheme.color.verySubduedForeground.o(50).value
-              }`,
+              boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.subduedForeground.o(50).value}`,
               background: UtopiaTheme.color.subtleBackground.value,
             }}
           >
