@@ -28,7 +28,6 @@ import {
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
-import { ResolvedLayoutProps } from '../layout-section'
 import { SelfLayoutTab } from './self-layout-subsection'
 import {
   useWrappedEmptyOrUnknownOnSubmitValue,
@@ -291,7 +290,6 @@ export const FlexLayoutNumberControl = betterReactMemo(
 )
 
 interface PinControlsProps {
-  frame: LocalRectangle | null
   resetPins: () => void
   framePins: FramePinsInfo
   togglePin: (prop: LayoutPinnedProp) => void
@@ -331,12 +329,11 @@ function flexStyleNumberControl(label: string, styleProp: StyleLayoutNumberProp)
 const spacingButton = <SquareButton />
 
 interface WidthHeightRowProps {
-  frame: LocalRectangle | null
   layoutType: SelfLayoutTab
   toggleMinMax: () => void
   togglePin: (prop: LayoutPinnedProp) => void
   framePins: FramePinsInfo
-  parentFlexAxis: 'horizontal' | 'vertical' | null
+  parentFlexDirection: string | null
   aspectRatioLocked: boolean
   toggleAspectRatioLock: () => void
 }
@@ -347,8 +344,7 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
     toggleMinMax,
     togglePin,
     framePins,
-    frame,
-    parentFlexAxis,
+    parentFlexDirection,
     aspectRatioLocked,
     toggleAspectRatioLock,
   } = props
@@ -356,12 +352,14 @@ const WidthHeightRow = betterReactMemo('WidthHeightRow', (props: WidthHeightRowP
   let widthControl: React.ReactElement | null = null
   let heightControl: React.ReactElement | null = null
   if (layoutType === 'flex') {
-    switch (parentFlexAxis) {
-      case 'horizontal':
+    switch (parentFlexDirection) {
+      case 'row':
+      case 'row-reverse':
       case null:
         widthControl = <FlexBasisShorthandCSSNumberControl label='W' />
         break
-      case 'vertical':
+      case 'column':
+      case 'column-reverse':
         heightControl = <FlexBasisShorthandCSSNumberControl label='H' />
         break
       default:
@@ -493,7 +491,7 @@ const FlexGrowShrinkRow = betterReactMemo('FlexGrowShrinkRow', () => {
 })
 
 const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) => {
-  const { frame, resetPins: resetPinsFn, framePins, togglePin } = props
+  const { resetPins: resetPinsFn, framePins, togglePin } = props
   let firstXAxisControl: React.ReactElement = <div />
   let secondXAxisControl: React.ReactElement = <div />
   let firstYAxisControl: React.ReactElement = <div />
@@ -539,12 +537,7 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
       variant='<---1fr--->|------172px-------|'
       style={{ height: undefined }}
     >
-      <PinControls
-        frame={frame}
-        resetPins={resetPinsFn}
-        framePins={framePins}
-        togglePin={togglePin}
-      />
+      <PinControls resetPins={resetPinsFn} framePins={framePins} togglePin={togglePin} />
       <FlexColumn>
         <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
           {firstXAxisControl}
@@ -564,9 +557,8 @@ const OtherPinsRow = betterReactMemo('OtherPinsRow', (props: PinControlsProps) =
 })
 
 interface GiganticSizePinsSubsectionProps {
-  input: ResolvedLayoutProps
   layoutType: SelfLayoutTab
-  parentFlexAxis: 'horizontal' | 'vertical' | null
+  parentFlexDirection: string | null
   aspectRatioLocked: boolean
   toggleAspectRatioLock: () => void
 }
@@ -574,8 +566,7 @@ interface GiganticSizePinsSubsectionProps {
 export const GiganticSizePinsSubsection = betterReactMemo(
   'GiganticSizePinsSubsection',
   (props: GiganticSizePinsSubsectionProps) => {
-    const { input, layoutType, parentFlexAxis, aspectRatioLocked, toggleAspectRatioLock } = props
-    const { frame } = input
+    const { layoutType, parentFlexDirection, aspectRatioLocked, toggleAspectRatioLock } = props
 
     const minWidth = useInspectorLayoutInfo('minWidth')
     const maxWidth = useInspectorLayoutInfo('maxWidth')
@@ -597,12 +588,11 @@ export const GiganticSizePinsSubsection = betterReactMemo(
     return (
       <>
         <WidthHeightRow
-          frame={frame}
           layoutType={layoutType}
           togglePin={togglePin}
           framePins={framePins}
           toggleMinMax={toggleMinMax}
-          parentFlexAxis={parentFlexAxis}
+          parentFlexDirection={parentFlexDirection}
           aspectRatioLocked={aspectRatioLocked}
           toggleAspectRatioLock={toggleAspectRatioLock}
         />
@@ -619,12 +609,7 @@ export const GiganticSizePinsSubsection = betterReactMemo(
           </>
         ) : null}
         {layoutType === 'absolute' ? (
-          <OtherPinsRow
-            frame={frame}
-            resetPins={resetAllPins}
-            framePins={framePins}
-            togglePin={togglePin}
-          />
+          <OtherPinsRow resetPins={resetAllPins} framePins={framePins} togglePin={togglePin} />
         ) : null}
       </>
     )
