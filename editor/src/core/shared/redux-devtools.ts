@@ -116,6 +116,12 @@ export function reduxDevtoolsLogMessage(message: string, optionalPayload?: any):
   }
 }
 
+export function reduxDevtoolsLogError(message: string, optionalPayload?: any): void {
+  if (maybeDevTools != null && sendActionUpdates) {
+    maybeDevTools.send({ type: `🔴 ${message}`, payload: optionalPayload }, lastDispatchedStore)
+  }
+}
+
 export function reduxDevtoolsUpdateState(message: string, newStore: EditorStore): void {
   if (maybeDevTools != null && sendActionUpdates) {
     const sanitizedStore = sanitizeLoggedState(newStore)
