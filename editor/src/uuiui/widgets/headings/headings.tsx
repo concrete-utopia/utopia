@@ -6,7 +6,6 @@ import { FlexRow } from '../layout/flex-row'
 export const Title = styled(FlexRow)({
   fontSize: 11,
   fontWeight: 600,
-  color: colorTheme.titleForeground.value,
   letterSpacing: '0.1px',
 })
 
@@ -15,7 +14,6 @@ export const H1 = styled(FlexRow)([
   {
     fontSize: '10px',
     fontWeight: 600,
-    color: colorTheme.h1Foreground.value,
     textTransform: 'uppercase',
     letterSpacing: '0.2px',
   },
@@ -25,7 +23,6 @@ export const H2 = styled(FlexRow)([
   disabledOpacityStyle,
   {
     fontSize: '11px',
-    color: colorTheme.h2Foreground.value,
     fontWeight: 600,
     letterSpacing: '0.2px',
   },
@@ -36,7 +33,6 @@ export const H3 = styled(FlexRow)([
   {
     fontSize: '10px',
     fontWeight: 500,
-    color: colorTheme.h3Foreground.value,
     letterSpacing: '0.1px',
     margin: '0px',
   },
@@ -53,8 +49,9 @@ export const Subdued = styled.span([
 
 export const InspectorSectionHeader = styled(H1)({
   label: 'section-header',
-  backgroundColor: colorTheme.sectionHeaderBackground.value,
-  height: UtopiaTheme.layout.rowHeight.normal,
+  height: 42,
+  marginTop: 8,
+  padding: `6px ${UtopiaTheme.layout.inspectorXPadding}px 6px ${UtopiaTheme.layout.inspectorXPadding}px`,
 })
 InspectorSectionHeader.displayName = 'InspectorSectionHeader'
 
