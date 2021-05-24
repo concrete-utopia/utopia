@@ -179,37 +179,21 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
     projectContents,
     editorSelectedFile,
     errorMessages,
-    isOpenUIFileParseSuccess,
     codeResultCache,
-    propertyControlsInfo,
     renamingTarget,
     dropTarget,
-    openUiFileName,
   } = useEditorState((store) => {
-    const uiFile = getOpenUIJSFile(store.editor)
     return {
       dispatch: store.dispatch,
       projectContents: store.editor.projectContents,
       editorSelectedFile: getOpenFilename(store.editor),
       errorMessages: getAllCodeEditorErrors(store.editor, false, true),
-      isOpenUIFileParseSuccess: uiFile != null && isParseSuccess(uiFile.fileContents.parsed),
       codeResultCache: store.editor.codeResultCache,
       propertyControlsInfo: store.editor.propertyControlsInfo,
       renamingTarget: store.editor.fileBrowser.renamingTarget,
       dropTarget: store.editor.fileBrowser.dropTarget,
-      openUiFileName: getOpenUIJSFileKey(store.editor),
     }
   }, 'FileBrowserItems')
-
-  // since useEditorState uses a shallow equality check, we use a separate one to return the entire (string) array of componentUIDs
-  // because the generated array keept loosing its reference equality
-  const componentUIDs = useEditorState((store) => {
-    const uiFile = getOpenUIJSFile(store.editor)
-    return uiFile != null && isParseSuccess(uiFile.fileContents.parsed)
-      ? getAllUniqueUids(store.editor.projectContents)
-      : []
-  }, 'FileBrowserItems componentUIDs')
-  const componentUIDsWithStableRef = useKeepReferenceEqualityIfPossible(componentUIDs)
 
   const [selectedPath, setSelectedPath] = React.useState(editorSelectedFile)
 
@@ -233,66 +217,11 @@ const FileBrowserItems = betterReactMemo('FileBrowserItems', () => {
     [collapsedPaths],
   )
 
-  const setSelected = React.useCallback(
-    (item: FileBrowserItemInfo | null) => {
-      if (item != null) {
-        setSelectedPath(item.path)
-        if (item.type === 'export' && isOpenUIFileParseSuccess && item.exportedFunction) {
-          const newUID = generateUID(componentUIDsWithStableRef)
-          const fileVarSeparatorIdx = item.path.lastIndexOf('/')
-          const exportVarName = item.path.slice(fileVarSeparatorIdx + 1)
-          const filePath = item.path.slice(0, fileVarSeparatorIdx)
-          const filePathWithoutExtension = dropFileExtension(filePath)
-          const insertingToItself = openUiFileName === filePath
-          const defaultProps = defaultPropertiesForComponentInFile(
-            exportVarName,
-            filePathWithoutExtension,
-            propertyControlsInfo,
-          )
-          let props: JSXAttributes = jsxAttributesFromMap(
-            objectMap((value) => jsxAttributeValue(value, emptyComments), defaultProps),
-          )
-          props = setJSXAttributesAttribute(
-            props,
-            'data-uid',
-            jsxAttributeValue(newUID, emptyComments),
-          )
-          const element: JSXElement = jsxElement(
-            jsxElementName(exportVarName, []),
-            newUID,
-            props,
-            [],
-          )
-          dispatch(
-            [
-              EditorActions.enableInsertModeForJSXElement(
-                element,
-                newUID,
-                insertingToItself
-                  ? {}
-                  : {
-                      [filePathWithoutExtension]: importDetails(
-                        null,
-                        [importAlias(exportVarName)],
-                        null,
-                      ),
-                    },
-                null,
-              ),
-            ],
-            'everyone',
-          )
-        }
-      }
-    },
-    [
-      propertyControlsInfo,
-      dispatch,
-      isOpenUIFileParseSuccess,
-      componentUIDsWithStableRef,
-      openUiFileName,
-    ],
-  )
+  const setSelected = React.useCallback((item: FileBrowserItemInfo | null) => {
+    if (item != null) {
+      setSelectedPath(item.path)
+    }
+  }, [])
 
   const fileBrowserItems = React.useMemo(
     () => collectFileBrowserItems(projectContents, collapsedPaths, codeResultCache, errorMessages),

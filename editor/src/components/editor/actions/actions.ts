@@ -393,7 +393,6 @@ import {
   getMainUIFromModel,
   getOpenFilename,
   getOpenTextFileKey,
-  getOpenUIJSFile,
   getOpenUIJSFileKey,
   insertElementAtPath,
   mergeStoredEditorStateIntoEditorState,
@@ -1559,38 +1558,31 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const openUIJSFile = getOpenUIJSFile(editor)
-    if (openUIJSFile == null || !isParseSuccess(openUIJSFile.fileContents.parsed)) {
-      return editor
-    } else {
-      const components = getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
-      const target = action.element
-      const element = findElementAtPath(target, components)
-      if (element == null || !isJSXElement(element)) {
-        return editor
-      } else {
+    let unsetPropFailedMessage: string | null = null
+    const updatedEditor = modifyUnderlyingForOpenFile(
+      action.element,
+      editor,
+      (element) => {
         const updatedProps = unsetJSXValueAtPath(element.props, action.property)
-        const updatedResult = foldEither(
+        return foldEither(
           (failureMessage) => {
-            const toastAction = showToast(notice(failureMessage, 'ERROR'))
-            return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+            unsetPropFailedMessage = failureMessage
+            return element
           },
-          (updated) => {
-            return modifyOpenJsxElementAtPath(
-              target,
-              (openElement) => {
-                return {
-                  ...openElement,
-                  props: updated,
-                }
-              },
-              editor,
-            )
-          },
+          (updatedAttributes) => ({
+            ...element,
+            props: updatedAttributes,
+          }),
           updatedProps,
         )
-        return updatedResult
-      }
+      },
+      (parseSuccess) => parseSuccess,
+    )
+    if (unsetPropFailedMessage != null) {
+      const toastAction = showToast(notice(unsetPropFailedMessage, 'ERROR'))
+      return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+    } else {
+      return updatedEditor
     }
   },
   SET_CANVAS_FRAMES: (
@@ -1608,21 +1600,7 @@ export const UPDATE_FNS = {
     const dragSources = action.dragSources
     const dropTarget = action.dropTarget
     const targetPath = dropTarget.target
-    let index: number
-    const uiFile = getOpenUIJSFile(editor)
-    if (uiFile == null) {
-      console.warn('Attempted to find the index of a view with no ui file open.')
-      return editor
-    } else {
-      if (isParseSuccess(uiFile.fileContents.parsed)) {
-        index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, targetPath)
-      } else {
-        console.warn(
-          'Attempted to find the index of a view when the code currently does not parse.',
-        )
-        return editor
-      }
-    }
+    const index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, targetPath)
     let indexPosition: IndexPosition
     let newParentPath: ElementPath | null
     switch (dropTarget.type) {
