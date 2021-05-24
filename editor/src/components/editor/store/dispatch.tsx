@@ -349,9 +349,9 @@ async function applyVSCodeChanges(
   updateCameFromVSCode: boolean,
 ): Promise<void> {
   // Update the file system that is shared between Utopia and VS Code.
-  if (oldStoredState.editor.id != null && !updateCameFromVSCode) {
+  if (oldStoredState.editor.vscodeBridgeId != null && !updateCameFromVSCode) {
     const changes = collateProjectChanges(
-      oldStoredState.editor.id,
+      oldStoredState.editor.vscodeBridgeId,
       oldStoredState.editor.projectContents,
       newEditorState.projectContents,
     )
@@ -374,7 +374,9 @@ export function editorDispatch(
   spyCollector: UiJsxCanvasContextData,
 ): DispatchResult {
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
-  const nameUpdated = dispatchedActions.some((action) => action.action === 'SET_PROJECT_NAME')
+  const nameUpdated = dispatchedActions.some(
+    (action) => action.action === 'SET_PROJECT_NAME' || action.action === 'SET_PROJECT_ID',
+  )
   const forceSave =
     nameUpdated || dispatchedActions.some((action) => action.action === 'SAVE_CURRENT_FILE')
   const onlyNameUpdated = nameUpdated && dispatchedActions.length === 1

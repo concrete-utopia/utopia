@@ -90,6 +90,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_LOGIN_STATE':
     case 'RESET_CANVAS':
     case 'SET_FILEBROWSER_DROPTARGET':
+    case 'SET_FORKED_FROM_PROJECT_ID':
       return true
 
     case 'NEW':

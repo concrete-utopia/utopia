@@ -273,6 +273,7 @@ export interface DesignerFile {
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
+  vscodeBridgeId: string | null
   forkedFromProjectId: string | null
   appID: string | null
   projectName: string
@@ -1031,6 +1032,7 @@ export const BaseCanvasOffsetLeftPane = {
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
+    vscodeBridgeId: null,
     forkedFromProjectId: null,
     appID: null,
     projectName: createNewProjectName(),
@@ -1262,6 +1264,7 @@ export function editorModelFromPersistentModel(
   )
   const editor: EditorState = {
     id: null,
+    vscodeBridgeId: null,
     forkedFromProjectId: persistentModel.forkedFromProjectId,
     appID: persistentModel.appID ?? null,
     projectName: createNewProjectName(),

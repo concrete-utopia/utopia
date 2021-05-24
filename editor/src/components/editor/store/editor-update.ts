@@ -156,7 +156,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_STORED_FONT_SETTINGS':
       return UPDATE_FNS.SET_STORED_FONT_SETTINGS(action, state)
     case 'SET_PROJECT_ID':
-      return UPDATE_FNS.SET_PROJECT_ID(action, state, dispatch)
+      return UPDATE_FNS.SET_PROJECT_ID(action, state)
     case 'UPDATE_CODE_RESULT_CACHE':
       return UPDATE_FNS.UPDATE_CODE_RESULT_CACHE(action, state)
     case 'SET_CODE_EDITOR_VISIBILITY':
@@ -293,6 +293,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.RESET_CANVAS(action, state)
     case 'SET_FILEBROWSER_DROPTARGET':
       return UPDATE_FNS.SET_FILEBROWSER_DROPTARGET(action, state)
+    case 'SET_FORKED_FROM_PROJECT_ID':
+      return UPDATE_FNS.SET_FORKED_FROM_PROJECT_ID(action, state)
     default:
       return state
   }

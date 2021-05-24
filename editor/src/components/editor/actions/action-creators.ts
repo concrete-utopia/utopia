@@ -183,6 +183,7 @@ import type {
   SetLoginState,
   ResetCanvas,
   SetFilebrowserDropTarget,
+  SetForkedFromProjectID,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
 import type {
@@ -699,6 +700,13 @@ export function setStoredFontSettings(fontSettings: FontSettings): SetStoredFont
 export function setProjectID(id: string): SetProjectID {
   return {
     action: 'SET_PROJECT_ID',
+    id: id,
+  }
+}
+
+export function setForkedFromProjectID(id: string | null): SetForkedFromProjectID {
+  return {
+    action: 'SET_FORKED_FROM_PROJECT_ID',
     id: id,
   }
 }
