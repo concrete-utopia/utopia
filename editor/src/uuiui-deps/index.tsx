@@ -12,7 +12,6 @@ import * as _common_utils from '../core/shared/utils'
 import * as _math_utils from '../core/shared/math-utils'
 import {
   ControlStyles,
-  ControlStyleDefaults,
   ControlStatus,
   isControlledStatus,
   getControlStyles,
@@ -46,7 +45,6 @@ export const onClickOutside = _onClickOutside
 
 export {
   ControlStyles,
-  ControlStyleDefaults,
   ControlStatus,
   isControlledStatus,
   getControlStyles,
