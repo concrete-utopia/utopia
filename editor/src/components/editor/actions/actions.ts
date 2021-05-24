@@ -1382,7 +1382,7 @@ function getZIndexOrderedViewsWithoutDirectChildren(
   // keep direct children from reparenting
   let filteredTargets: Array<ElementPath> = []
   Utils.fastForEach(orderedTargets, (target) => {
-    if (orderedTargets.find((tp) => EP.pathsEqual(EP.parentPath(target), tp)) == null) {
+    if (!orderedTargets.some((tp) => EP.pathsEqual(EP.parentPath(target), tp))) {
       filteredTargets.push(target)
     }
   })
