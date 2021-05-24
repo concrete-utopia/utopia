@@ -324,6 +324,7 @@ export const DesignPanelRoot = betterReactMemo('DesignPanelRoot', (props: Design
                 alignItems: 'stretch',
                 flexDirection: 'column',
                 width: UtopiaTheme.layout.inspectorWidth,
+                backgroundColor: UtopiaTheme.color.inspectorBackground.value,
                 flexGrow: 0,
                 flexShrink: 0,
                 overflowY: 'scroll',
