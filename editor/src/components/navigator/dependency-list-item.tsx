@@ -18,13 +18,13 @@ interface DependencyListItemProps {
   removeDependency: (key: string) => void
 }
 
-const LoadingTextColor = colorTheme.tertiaryForeground.value
+const LoadingTextColor = colorTheme.subduedForeground.value
 const DefaultTextColor = colorTheme.neutralForeground.value
 
 const FlashAnimation = keyframes({
   from: {
     backgroundColor: colorTheme.listNewItemFlashBackground.o(100).value,
-    color: colorTheme.tertiaryForeground.value,
+    color: colorTheme.subduedForeground.value,
   },
   to: {
     backgroundColor: colorTheme.listNewItemFlashBackground.o(0).value,

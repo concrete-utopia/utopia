@@ -48,7 +48,7 @@ function getStrokeColor(
   if (isPrimary && !mixed) {
     return controlStyles.mainColor
   } else {
-    return controlStyles.secondaryColor
+    return controlStyles.tertiaryColor
   }
 }
 
