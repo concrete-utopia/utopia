@@ -1,8 +1,8 @@
 import * as Chai from 'chai'
-import * as R from 'ramda'
 import Utils from './utils'
 import { CanvasRectangle, LocalPoint, LocalRectangle } from '../core/shared/math-utils'
 import { longestCommonArray } from '../core/shared/utils'
+import * as fastDeepEquals from 'fast-deep-equal'
 const expect = Chai.expect
 
 describe('longestCommonArray', () => {
@@ -105,11 +105,11 @@ describe('Utils.getAllObjectPaths', () => {
 })
 
 function checkProxyValue(
-  originalValue: any,
+  makeOriginalValue: () => any,
   expectedAssignments: Array<{ path: Array<string>; value: any }> = [],
   modifications: (proxy: any) => any = (p) => {},
 ) {
-  const clonedOriginal = R.clone(originalValue)
+  const originalValue = makeOriginalValue()
   var actualAssignments: Array<{ path: Array<string>; value: any }> = []
   function recordAssignment(path: Array<string>, value: any): any {
     actualAssignments.push({ path: path, value: value })
@@ -117,72 +117,104 @@ function checkProxyValue(
   const proxiedValue = Utils.proxyValue(originalValue, recordAssignment)
   modifications(proxiedValue)
   expect(actualAssignments).to.deep.equal(expectedAssignments)
-  expect(originalValue).to.deep.equal(clonedOriginal)
+  expect(originalValue).to.deep.equal(makeOriginalValue())
 }
 
 describe('Utils.proxyValue', () => {
   it('simple value is the same', () => {
-    checkProxyValue(4)
+    checkProxyValue(() => 4)
   })
   it('object with no changes is the same', () => {
-    checkProxyValue({ a: { b: { c: ['cake'], d: 9 }, e: false } })
+    checkProxyValue(() => {
+      return { a: { b: { c: ['cake'], d: 9 }, e: false } }
+    })
   })
   it('simple object updated', () => {
-    checkProxyValue({ a: 10 }, [{ path: ['a'], value: 20 }], (value) => {
-      value.a = 20
-    })
+    checkProxyValue(
+      () => {
+        return { a: 10 }
+      },
+      [{ path: ['a'], value: 20 }],
+      (value) => {
+        value.a = 20
+      },
+    )
   })
   it('nested object updated', () => {
-    checkProxyValue({ a: { b: 10 } }, [{ path: ['a', 'b'], value: 20 }], (value) => {
-      value.a.b = 20
-    })
+    checkProxyValue(
+      () => {
+        return { a: { b: 10 } }
+      },
+      [{ path: ['a', 'b'], value: 20 }],
+      (value) => {
+        value.a.b = 20
+      },
+    )
   })
   it('deeply nested object updated', () => {
-    checkProxyValue({ a: { b: { c: 10 } } }, [{ path: ['a', 'b', 'c'], value: 20 }], (value) => {
-      value.a.b.c = 20
-    })
+    checkProxyValue(
+      () => {
+        return { a: { b: { c: 10 } } }
+      },
+      [{ path: ['a', 'b', 'c'], value: 20 }],
+      (value) => {
+        value.a.b.c = 20
+      },
+    )
   })
   it('simple array updated', () => {
-    checkProxyValue([10], [{ path: ['0'], value: 20 }], (value) => {
-      value[0] = 20
-    })
+    checkProxyValue(
+      () => [10],
+      [{ path: ['0'], value: 20 }],
+      (value) => {
+        value[0] = 20
+      },
+    )
   })
   it('deeply nested array updated', () => {
-    checkProxyValue([[1, [2, 3, 4, 5, 10]]], [{ path: ['0', '1', '5'], value: 20 }], (value) => {
-      value[0][1][5] = 20
-    })
+    checkProxyValue(
+      () => [[1, [2, 3, 4, 5, 10]]],
+      [{ path: ['0', '1', '5'], value: 20 }],
+      (value) => {
+        value[0][1][5] = 20
+      },
+    )
   })
   it('arrays and objects nested within each other', () => {
-    const value = {
-      a: false,
-      b: [
-        {
-          c: [1, 2, 3, 4],
-          d: 'hat',
-        },
-        ['elephant'],
-      ],
+    function makeValue() {
+      return {
+        a: false,
+        b: [
+          {
+            c: [1, 2, 3, 4],
+            d: 'hat',
+          },
+          ['elephant'],
+        ],
+      }
     }
-    checkProxyValue(value, [{ path: ['b', '0', 'c', '2'], value: 20 }], (v) => {
+    checkProxyValue(makeValue, [{ path: ['b', '0', 'c', '2'], value: 20 }], (v) => {
       v.b[0].c[2] = 20
     })
   })
   it('updates on top of other updates', () => {
-    const value = {
-      a: false,
-      b: [
-        {
-          c: [1, 2, 3, 4],
-          d: 'hat',
-        },
-        ['elephant'],
-      ],
+    function makeValue() {
+      return {
+        a: false,
+        b: [
+          {
+            c: [1, 2, 3, 4],
+            d: 'hat',
+          },
+          ['elephant'],
+        ],
+      }
     }
     const expectedAssignments = [
       { path: ['b', '0', 'c', '2'], value: 'elephant with a cape' },
       { path: ['b', '0', 'd'], value: 'elephant with a cape and a cane' },
     ]
-    checkProxyValue(value, expectedAssignments, (v) => {
+    checkProxyValue(makeValue, expectedAssignments, (v) => {
       v.b[0].c[2] = v.b[1][0] + ' with a cape'
       v.b[0].d = v.b[0].c[2] + ' and a cane'
     })
@@ -268,31 +300,31 @@ describe('Utils.traverseArray', () => {
 
 describe('Utils.stepInArray', () => {
   it('when stepping forwards inside the length of the array', () => {
-    const actualResult = Utils.stepInArray(R.equals, 1)([1, 2, 3, 4, 5], 3)
+    const actualResult = Utils.stepInArray(fastDeepEquals, 1, [1, 2, 3, 4, 5], 3)
     expect(actualResult).to.deep.equal(4)
   })
   it('when stepping backwards inside the length of the array', () => {
-    const actualResult = Utils.stepInArray(R.equals, -1)([1, 2, 3, 4, 5], 3)
+    const actualResult = Utils.stepInArray(fastDeepEquals, -1, [1, 2, 3, 4, 5], 3)
     expect(actualResult).to.deep.equal(2)
   })
   it('when stepping forwards outside the length of the array', () => {
-    const actualResult = Utils.stepInArray(R.equals, 4)([1, 2, 3, 4, 5], 3)
+    const actualResult = Utils.stepInArray(fastDeepEquals, 4, [1, 2, 3, 4, 5], 3)
     expect(actualResult).to.deep.equal(2)
   })
   it('when stepping backwards outside the length of the array', () => {
-    const actualResult = Utils.stepInArray(R.equals, -4)([1, 2, 3, 4, 5], 3)
+    const actualResult = Utils.stepInArray(fastDeepEquals, -4, [1, 2, 3, 4, 5], 3)
     expect(actualResult).to.deep.equal(4)
   })
   it('when stepping forwards vastly outside the length of the array', () => {
-    const actualResult = Utils.stepInArray(R.equals, 14)([1, 2, 3, 4, 5], 3)
+    const actualResult = Utils.stepInArray(fastDeepEquals, 14, [1, 2, 3, 4, 5], 3)
     expect(actualResult).to.deep.equal(2)
   })
   it('when stepping backwards vastly outside the length of the array', () => {
-    const actualResult = Utils.stepInArray(R.equals, -14)([1, 2, 3, 4, 5], 3)
+    const actualResult = Utils.stepInArray(fastDeepEquals, -14, [1, 2, 3, 4, 5], 3)
     expect(actualResult).to.deep.equal(4)
   })
   it('when the originating element is not in the array', () => {
-    const actualResult = Utils.stepInArray(R.equals, 1)([1, 2, 3, 4, 5], 999)
+    const actualResult = Utils.stepInArray(fastDeepEquals, 1, [1, 2, 3, 4, 5], 999)
     expect(actualResult).to.deep.equal(null)
   })
 })

@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import {
   jsxAttributeValue,
   isJSXAttributeValue,
@@ -7,10 +6,10 @@ import {
   JSXElement,
   jsxElement,
   utopiaJSXComponent,
-  JSXElementChild,
   defaultPropsParam,
   jsxAttributesFromMap,
   getJSXAttribute,
+  isJSXElement,
 } from '../shared/element-template'
 import { getUtopiaID, guaranteeUniqueUids, removeJSXElementChild } from './element-template-utils'
 import Utils from '../../utils/utils'
@@ -188,11 +187,24 @@ describe('removeJSXElementChild', () => {
       ]),
       utopiaComponents,
     )
-    const expectedResult = R.over(
-      R.lensPath([1, 'rootElement', 'children']),
-      (children: Array<JSXElementChild>) => [children[1], children[2]],
-      utopiaComponents,
-    )
+    const expectedResult = utopiaComponents.map((component, index) => {
+      if (index === 1) {
+        const rootElement = component.rootElement
+        if (isJSXElement(rootElement)) {
+          return {
+            ...component,
+            rootElement: {
+              ...rootElement,
+              children: [rootElement.children[1], rootElement.children[2]],
+            },
+          }
+        } else {
+          return component
+        }
+      } else {
+        return component
+      }
+    })
     expect(updatedElements).toEqual(expectedResult)
   })
 })

@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { EditorAction } from '../action-types'
 
 export function isTransientAction(action: EditorAction): boolean {
@@ -161,9 +160,9 @@ export function isTransientAction(action: EditorAction): boolean {
 export function isUndoOrRedo(action: EditorAction): boolean {
   switch (action.action) {
     case 'TRANSIENT_ACTIONS':
-      return R.any(isUndoOrRedo, action.transientActions)
+      return action.transientActions.some(isUndoOrRedo)
     case 'ATOMIC':
-      return R.any(isUndoOrRedo, action.actions)
+      return action.actions.some(isUndoOrRedo)
     case 'UNDO':
     case 'REDO':
       return true
@@ -175,9 +174,9 @@ export function isUndoOrRedo(action: EditorAction): boolean {
 export function isParsedModelUpdate(action: EditorAction): boolean {
   switch (action.action) {
     case 'TRANSIENT_ACTIONS':
-      return R.any(isParsedModelUpdate, action.transientActions)
+      return action.transientActions.some(isParsedModelUpdate)
     case 'ATOMIC':
-      return R.any(isParsedModelUpdate, action.actions)
+      return action.actions.some(isParsedModelUpdate)
     case 'UPDATE_FROM_WORKER':
       return action.updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')
     default:
@@ -188,9 +187,9 @@ export function isParsedModelUpdate(action: EditorAction): boolean {
 export function isFromVSCode(action: EditorAction): boolean {
   switch (action.action) {
     case 'TRANSIENT_ACTIONS':
-      return R.any(isFromVSCode, action.transientActions)
+      return action.transientActions.some(isFromVSCode)
     case 'ATOMIC':
-      return R.any(isFromVSCode, action.actions)
+      return action.actions.some(isFromVSCode)
     case 'UPDATE_FROM_CODE_EDITOR':
       return true
     default:

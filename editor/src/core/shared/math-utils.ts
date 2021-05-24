@@ -918,3 +918,13 @@ export function printNumberOrPercent(number: NumberOrPercent): number | string {
 export function numberOrPercentToNumber(n: NumberOrPercent, outOf: number): number {
   return n.isPercent ? (n.value * outOf) / 100 : n.value
 }
+
+export function clamp(min: number, max: number, value: number): number {
+  if (value < min) {
+    return min
+  } else if (value > max) {
+    return max
+  } else {
+    return value
+  }
+}

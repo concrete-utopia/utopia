@@ -1,5 +1,4 @@
-import * as R from 'ramda'
-import { last, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
+import { intersection, last, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { getDOMAttribute } from '../../core/shared/dom-utils'
 import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
@@ -40,9 +39,10 @@ export function findFirstParentWithValidElementPath(
   const validStaticElementPaths =
     validDynamicElementPathsForLookup === 'no-filter'
       ? validStaticElementPathsForScene
-      : R.intersection(
+      : intersection(
           validDynamicElementPathsForLookup.map(EP.makeLastPartOfPathStatic),
           validStaticElementPathsForScene,
+          EP.pathsEqual,
         )
 
   const filteredValidPathsMappedToDynamic = mapDropNulls((validPath: ElementPath) => {
@@ -55,10 +55,10 @@ export function findFirstParentWithValidElementPath(
   if (filteredValidPathsMappedToDynamic.length > 0) {
     return last(filteredValidPathsMappedToDynamic) ?? null
   } else {
-    if (target.parentElement != null) {
-      return findFirstParentWithValidElementPath(validStaticElementPaths, target.parentElement)
-    } else {
+    if (target.parentElement == null) {
       return null
+    } else {
+      return findFirstParentWithValidElementPath(validStaticElementPaths, target.parentElement)
     }
   }
 }

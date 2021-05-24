@@ -1,10 +1,10 @@
 /** @jsx jsx */
 import { Interpolation, jsx } from '@emotion/react'
-import * as R from 'ramda'
 import * as React from 'react'
 import { IcnProps } from '../../../uuiui'
 import { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
 import { OptionControl } from './option-control'
+import Utils from '../../../utils/utils'
 
 export interface OptionChainOption<T> {
   value: T
@@ -60,7 +60,11 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
           boxShadow: `0 0 0 1px ${props.controlStyles.borderColor} inset`,
           backgroundColor: props.controlStyles.backgroundColor,
         }}
-        className={`option-chain-control-container ${R.pathOr('', ['controlClassName'], props)}`}
+        className={`option-chain-control-container ${Utils.pathOr(
+          '',
+          ['controlClassName'],
+          props,
+        )}`}
         onContextMenu={props.onContextMenu}
       >
         {options.map((option: OptionChainOption<number | string>, index) => (

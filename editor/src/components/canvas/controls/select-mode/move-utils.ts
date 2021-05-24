@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { ElementPath } from '../../../../core/shared/project-file-types'
@@ -63,9 +62,9 @@ export function determineElementsToOperateOnForDragging(
     // Moving.
     return extendSelectedViewsForInteraction(
       selectedViews.filter((view) =>
-        R.none((otherView) => {
-          return !EP.pathsEqual(view, otherView) && EP.isDescendantOfOrEqualTo(view, otherView)
-        }, selectedViews),
+        selectedViews.every((otherView) => {
+          return EP.pathsEqual(view, otherView) && EP.isDescendantOfOrEqualTo(view, otherView)
+        }),
       ),
       componentMetadata,
     )

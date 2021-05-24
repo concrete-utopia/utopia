@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import { EditorAction } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
@@ -160,7 +159,7 @@ export function createClipboardDataFromSelection(
     return null
   }
   const filteredSelectedViews = editor.selectedViews.filter((view) => {
-    return R.none((otherView) => EP.isDescendantOf(view, otherView), editor.selectedViews)
+    return editor.selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView))
   })
   const jsxElements = mapDropNulls((target) => {
     const underlyingTarget = normalisePathToUnderlyingTarget(

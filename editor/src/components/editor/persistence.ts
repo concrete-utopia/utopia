@@ -1,5 +1,4 @@
 import * as localforage from 'localforage'
-import * as R from 'ramda'
 import {
   fetchLocalProject as fetchLocalProjectCommon,
   localProjectKey,
@@ -35,6 +34,7 @@ import { getPNGBufferOfElementWithID } from './screenshot-utils'
 import { ProjectImportSuccess } from '../../core/model/project-import'
 import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
 import { notice } from '../common/notice'
+import { replaceAll } from '../../core/shared/string-utils'
 import { isLoggedIn, isNotLoggedIn, LoginState } from '../../common/user'
 
 interface NeverSaved {
@@ -510,7 +510,7 @@ export async function updateRemoteThumbnail(projectId: string, force: boolean): 
 }
 
 function stripOldLocalSuffix(id: string): string {
-  return R.replace('-cached', '', R.replace('unsaved-', '', id))
+  return replaceAll(replaceAll(id, 'unsaved-', ''), '-cached', '')
 }
 
 export async function saveToLocalStorage(
