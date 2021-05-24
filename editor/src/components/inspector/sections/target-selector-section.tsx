@@ -14,13 +14,11 @@ export interface TargetSelectorSectionProps {
   onStyleSelectorInsert: (parent: CSSTarget, label: string) => void
 }
 
-const HeaderTitledSectionStyle = { backgroundColor: colorTheme.inspectorEmphasizedBackground.value }
-
 export const TargetSelectorSection = betterReactMemo(
   'TargetSelectorSection',
   (props: TargetSelectorSectionProps) => {
     return (
-      <Section style={HeaderTitledSectionStyle} className={props.className}>
+      <Section className={props.className}>
         <FlexColumn className='titledSectionContentColumn'>
           <TargetSelectorPanel
             targets={props.targets}
