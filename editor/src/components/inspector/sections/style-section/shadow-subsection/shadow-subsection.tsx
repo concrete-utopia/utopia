@@ -142,7 +142,7 @@ interface ShadowItemProps {
   contextMenuItems: Array<ContextMenuItem<null>>
 }
 
-const rowHeight = UtopiaTheme.layout.rowHeight.max
+const rowHeight = UtopiaTheme.layout.rowHeight.normal
 
 const ShadowItem = betterReactMemo<ShadowItemProps>('ShadowItem', (props) => {
   const [enabledSubmitValueToggle] = props.useSubmitValueFactory(
