@@ -275,6 +275,7 @@ export interface DesignerFile {
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
+  forkedFromProjectId: string | null
   appID: string | null
   projectName: string
   projectDescription: string
@@ -335,6 +336,8 @@ export interface EditorState {
     duplicationState: DuplicationState | null
     base64Blobs: CanvasBase64Blobs
     mountCount: number
+    canvasContentInvalidateCount: number
+    domWalkerInvalidateCount: number
     openFile: DesignerFile | null
     scrollAnimation: boolean
   }
@@ -947,6 +950,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
 
 export interface PersistentModel {
   appID?: string | null
+  forkedFromProjectId: string | null
   projectVersion: number
   projectDescription: string
   projectContents: ProjectContentTreeRoot
@@ -985,6 +989,7 @@ export function mergePersistentModel(
 ): PersistentModel {
   return {
     appID: second.appID,
+    forkedFromProjectId: second.forkedFromProjectId,
     projectVersion: second.projectVersion,
     projectDescription: second.projectDescription,
     projectContents: {
@@ -1028,6 +1033,7 @@ export const BaseCanvasOffsetLeftPane = {
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
+    forkedFromProjectId: null,
     appID: null,
     projectName: createNewProjectName(),
     projectDescription: 'Made with Utopia',
@@ -1088,6 +1094,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       duplicationState: null,
       base64Blobs: {},
       mountCount: 0,
+      canvasContentInvalidateCount: 0,
+      domWalkerInvalidateCount: 0,
       openFile: {
         filename: StoryboardFilePath,
       },
@@ -1256,6 +1264,7 @@ export function editorModelFromPersistentModel(
   )
   const editor: EditorState = {
     id: null,
+    forkedFromProjectId: persistentModel.forkedFromProjectId,
     appID: persistentModel.appID ?? null,
     projectName: createNewProjectName(),
     projectDescription: persistentModel.projectDescription,
@@ -1326,6 +1335,8 @@ export function editorModelFromPersistentModel(
       duplicationState: null,
       base64Blobs: {},
       mountCount: 0,
+      canvasContentInvalidateCount: 0,
+      domWalkerInvalidateCount: 0,
       openFile: {
         filename: StoryboardFilePath,
       },
@@ -1386,6 +1397,7 @@ export function editorModelFromPersistentModel(
 export function persistentModelFromEditorModel(editor: EditorState): PersistentModel {
   return {
     appID: editor.appID,
+    forkedFromProjectId: editor.forkedFromProjectId,
     projectVersion: editor.projectVersion,
     projectDescription: editor.projectDescription,
     projectContents: editor.projectContents,
@@ -1413,6 +1425,7 @@ export function persistentModelForProjectContents(
 ): PersistentModel {
   return {
     appID: null,
+    forkedFromProjectId: null,
     projectVersion: CURRENT_PROJECT_VERSION,
     projectDescription: '',
     projectContents: projectContents,

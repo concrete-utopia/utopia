@@ -81,10 +81,7 @@ export function reduxDevtoolsSendInitialState(newStore: EditorStore): void {
 
 export function reduxDevtoolsLogMessage(message: string, optionalPayload?: any): void {
   if (maybeDevTools != null) {
-    maybeDevTools.send(`🟢 ${message}`, {
-      ...lastDispatchedStore,
-      logMessagePayload: optionalPayload,
-    })
+    maybeDevTools.send({ type: `🟢 ${message}`, payload: optionalPayload }, lastDispatchedStore)
   }
 }
 

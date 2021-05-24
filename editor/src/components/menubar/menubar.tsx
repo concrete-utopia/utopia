@@ -22,7 +22,7 @@ import {
   Avatar,
   UtopiaTheme,
 } from '../../uuiui'
-import { betterReactMemo } from '../../uuiui-deps'
+import { betterReactMemo, User } from '../../uuiui-deps'
 import { EditorAction } from '../editor/action-types'
 import { setLeftMenuTab, setPanelVisibility, togglePanel } from '../editor/actions/action-creators'
 import { LeftMenuTab } from '../editor/store/editor-state'
@@ -209,7 +209,11 @@ export const Menubar = betterReactMemo('Menubar', () => {
       <FlexColumn style={{ flexGrow: 1 }}>
         <Tile style={{ marginTop: 12, marginBottom: 12 }} size='large'>
           <a href='/projects'>
-            <Avatar loginState={userState.loginState} size={28} />
+            <Avatar
+              isLoggedIn={User.isLoggedIn(userState.loginState)}
+              userPicture={User.getUserPicture(userState.loginState)}
+              size={28}
+            />
           </a>
         </Tile>
 

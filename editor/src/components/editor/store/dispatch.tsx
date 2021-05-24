@@ -33,7 +33,13 @@ import {
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
 import { StateHistory } from '../history'
-import { saveToLocalStorage, saveToServer, pushProjectURLToBrowserHistory } from '../persistence'
+import {
+  saveToLocalStorage,
+  saveToServer,
+  pushProjectURLToBrowserHistory,
+  SaveType,
+  save,
+} from '../persistence'
 import { saveStoredState } from '../stored-state'
 import {
   DerivedState,
@@ -92,8 +98,6 @@ export interface DispatchResult extends EditorStore {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }
-
-type SaveType = 'model' | 'name' | 'both'
 
 function simpleStringifyAction(action: EditorAction): string {
   switch (action.action) {
@@ -512,7 +516,7 @@ export function editorDispatch(
     })
   })
 
-  if (nameUpdated && frozenEditorState.id != null) {
+  if ((isLoadAction || nameUpdated) && frozenEditorState.id != null) {
     pushProjectURLToBrowserHistory(
       `Utopia ${frozenEditorState.projectName}`,
       frozenEditorState.id,
@@ -668,27 +672,6 @@ function filterEditorForFiles(editor: EditorState) {
       buildErrors: pick(allFiles, editor.codeEditorErrors.buildErrors),
       lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
     },
-  }
-}
-
-async function save(
-  state: EditorState,
-  dispatch: EditorDispatch,
-  loginState: LoginState,
-  saveType: SaveType,
-  forceServerSave: boolean,
-) {
-  const modelChange =
-    saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
-  const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
-  try {
-    if (isLoggedIn(loginState)) {
-      saveToServer(dispatch, state.id, state.projectName, modelChange, nameChange, forceServerSave)
-    } else {
-      saveToLocalStorage(dispatch, state.id, state.projectName, modelChange, nameChange)
-    }
-  } catch (error) {
-    console.error('Save not successful', error)
   }
 }
 

@@ -227,9 +227,12 @@ setShowcaseEndpoint projectIdsString = do
   return NoContent
 
 projectOwnerEndpoint :: Maybe Text -> ProjectIdWithSuffix -> ServerMonad ProjectOwnerResponse
-projectOwnerEndpoint cookie (ProjectIdWithSuffix projectID _) = requireUser cookie $ \sessionUser -> do
+projectOwnerEndpoint cookie (ProjectIdWithSuffix projectID _) = checkForUser cookie $ \maybeUser -> do
   possibleProject <- loadProject projectID
-  maybe notFound (\project -> return $ ProjectOwnerResponse $ (view id sessionUser) == (view ownerId project)) possibleProject
+  case (maybeUser, possibleProject) of 
+    (_, Nothing) -> notFound 
+    (Nothing, _) -> notAuthenticated
+    (Just sessionUser, Just project) -> return $ ProjectOwnerResponse $ (view id sessionUser) == (view ownerId project)
 
 projectChangedSince :: Text -> UTCTime -> ServerMonad (Maybe Bool)
 projectChangedSince projectID lastChangedDate = do
