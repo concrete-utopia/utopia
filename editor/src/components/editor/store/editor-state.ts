@@ -334,6 +334,8 @@ export interface EditorState {
     duplicationState: DuplicationState | null
     base64Blobs: CanvasBase64Blobs
     mountCount: number
+    canvasContentInvalidateCount: number
+    domWalkerInvalidateCount: number
     openFile: DesignerFile | null
     scrollAnimation: boolean
   }
@@ -1090,6 +1092,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       duplicationState: null,
       base64Blobs: {},
       mountCount: 0,
+      canvasContentInvalidateCount: 0,
+      domWalkerInvalidateCount: 0,
       openFile: {
         filename: StoryboardFilePath,
       },
@@ -1329,6 +1333,8 @@ export function editorModelFromPersistentModel(
       duplicationState: null,
       base64Blobs: {},
       mountCount: 0,
+      canvasContentInvalidateCount: 0,
+      domWalkerInvalidateCount: 0,
       openFile: {
         filename: StoryboardFilePath,
       },

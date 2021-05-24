@@ -181,6 +181,7 @@ import type {
   UpdateConfigFromVSCode,
   SetFollowSelectionEnabled,
   SetLoginState,
+  ResetCanvas,
   SetFilebrowserDropTarget,
 } from '../action-types'
 import { EditorModes, elementInsertionSubject, Mode, SceneInsertionSubject } from '../editor-modes'
@@ -1284,6 +1285,12 @@ export function setLoginState(loginState: LoginState): SetLoginState {
   return {
     action: 'SET_LOGIN_STATE',
     loginState: loginState,
+  }
+}
+
+export function resetCanvas(): ResetCanvas {
+  return {
+    action: 'RESET_CANVAS',
   }
 }
 
