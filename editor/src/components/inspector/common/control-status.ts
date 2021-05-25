@@ -37,7 +37,7 @@ const theme = {
   text: colorTheme.neutralForeground.value,
   textEmphasized: colorTheme.emphasizedForeground.value,
   subdued: colorTheme.subduedForeground.value,
-  veryySubdued: colorTheme.subduedForeground.value,
+  verySubdued: colorTheme.subduedForeground.shade(30).value,
   textInverted: 'white',
   selectedItemBg: 'hsl(0,0%,90%)',
   inputBg: 'hsl(0,0%,96%)',
@@ -132,14 +132,14 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
   (status: ControlStatus): ControlStyles => {
     let fontStyle = 'normal'
     let fontWeight = 400
-    let mainColor: string = theme.text
-    let secondaryColor: string = theme.subdued
-    let tertiaryColor: string = theme.veryySubdued
+    let mainColor: string = colorTheme.neutralForeground.value
+    let secondaryColor: string = colorTheme.subduedForeground.value
+    let tertiaryColor: string = colorTheme.verySubduedForeground.value
     let borderColor: string = 'transparent'
-    let backgroundColor: string = theme.inputBg
-    let segmentSelectorColor: string = theme.selectedItemBg
-    let trackColor = theme.text
-    let railColor = theme.sliderRail
+    let backgroundColor: string = colorTheme.inputBackground.value
+    let segmentSelectorColor: string = colorTheme.subtleBackground.value
+    let trackColor = colorTheme.secondaryForeground.value
+    let railColor = colorTheme.verySubduedForeground.value
     let set = true
     let interactive = true
     let mixed = false

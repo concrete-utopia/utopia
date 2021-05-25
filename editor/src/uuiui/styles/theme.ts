@@ -65,14 +65,14 @@ const lightErrorStates = {
 }
 
 const lightControls = {
-  inputBackground: lightPrimitives.emphasizedBackground,
+  inputBackground: createUtopiColor('hsl(0,0%,96%)', 'unfocused input', 'white'),
 }
 
 const light = {
   ...lightBase,
   ...lightPrimitives,
   ...lightErrorStates,
-  ...lightControls,
+  // ...lightControls,
 
   // big sections
   leftMenuBackground: lightPrimitives.neutralBackground,
@@ -124,7 +124,7 @@ const light = {
   paddingStroke: base.neongreen,
 
   // interface elements: buttons, segment controls, checkboxes etc
-  inputBackground: base.white,
+  inputBackground: createUtopiColor('hsl(0,0%,96%)', 'unfocused input', 'white'),
   inlineButtonColor: createUtopiColor('#007AFF', 'inline-button', ''),
   toggleButtonBackground: createUtopiColor('hsl(0,0%,95%)', 'toggle button background', 'button'),
   toggleButtonHoverBackground: createUtopiColor(
