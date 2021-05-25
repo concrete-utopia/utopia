@@ -4,7 +4,7 @@ import { ColorPicker } from './color-picker'
 import { CSSColor, parseColor, cssColorToChromaColorOrDefault } from '../common/css-utils'
 import { StringControl } from './string-control'
 import { ControlStatus, ControlStyles } from '../common/control-status'
-import { UtopiaTheme } from '../../../uuiui'
+import { colorTheme, UtopiaTheme } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import Utils from '../../../utils/utils'
 
@@ -119,7 +119,7 @@ export const ColorControl = betterReactMemo('ColorControl', (props: ColorControl
           <div
             className='colorcontrol-colorfield'
             style={{
-              boxShadow: `0 0 0 1px ${props.controlStyles.borderColor}`,
+              boxShadow: `0 0 0 1px ${colorTheme.secondaryBorder.value}`,
               height: '100%',
               width: '100%',
               borderRadius: UtopiaTheme.inputBorderRadius,
