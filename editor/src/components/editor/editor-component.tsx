@@ -279,6 +279,7 @@ export const EditorComponentInner = betterReactMemo(
                 flexGrow: 1,
                 alignItems: 'stretch',
                 borderRight: `1px solid ${UtopiaTheme.color.neutralBorder.value}`,
+                backgroundColor: UtopiaTheme.color.neutralBackground.value,
               }}
             >
               <SimpleFlexRow
