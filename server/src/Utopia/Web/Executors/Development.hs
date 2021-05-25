@@ -107,13 +107,13 @@ localAuthCodeCheck "logmein" action = do
 localAuthCodeCheck _ action = do
   return $ action Nothing
 
-readIndexHtmlFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
-readIndexHtmlFromDisk (Just downloads) (Just branchName) fileName = do
+readHtmlFromDisk :: Maybe BranchDownloads -> Maybe Text -> Text -> IO Text
+readHtmlFromDisk (Just downloads) (Just branchName) fileName = do
   readBranchHTMLContent downloads branchName fileName
-readIndexHtmlFromDisk _ _ fileName = readFile $ toS $ "../editor/lib/" <> fileName
+readHtmlFromDisk _ _ fileName = readFile $ toS $ "../editor/lib/" <> fileName
 
-readIndexHtmlFromWebpack :: Text -> IO Text
-readIndexHtmlFromWebpack fileName = simpleWebpackRequest ("editor/" <> fileName)
+readHtmlFromWebpack :: Text -> IO Text
+readHtmlFromWebpack fileName = simpleWebpackRequest ("editor/" <> fileName)
 
 simpleWebpackRequest :: Text -> IO Text
 simpleWebpackRequest endpoint = do
@@ -250,8 +250,8 @@ innerServerExecutor (GetCommitHash action) = do
 innerServerExecutor (GetEditorTextContent branchName fileName action) = do
   downloads <- fmap _branchDownloads ask
   manager <- fmap _proxyManager ask
-  let readIndexHtml = if isJust manager && (isNothing branchName || isNothing downloads) then readIndexHtmlFromWebpack else readIndexHtmlFromDisk downloads branchName
-  indexHtml <- liftIO $ readIndexHtml fileName
+  let readHtml = if isJust manager && (isNothing branchName || isNothing downloads) then readHtmlFromWebpack else readHtmlFromDisk downloads branchName
+  indexHtml <- liftIO $ readHtml fileName
   return $ action indexHtml
 innerServerExecutor (GetHashedAssetPaths action) = do
   AssetsCaches{..} <- fmap _assetsCaches ask

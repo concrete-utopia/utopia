@@ -1,6 +1,5 @@
 import * as G from 'graphlib'
 import { Graph } from 'graphlib'
-import * as R from 'ramda'
 
 export type Dependency<T> = {
   token: string
@@ -129,7 +128,7 @@ export function prebuildExpressions<T>(
   evaluator: PrebuildEvaluator<T>,
 ): PrebuildExpressionsResult<T> {
   try {
-    const graph = createGraph<T, Expression<T>>(expressions, R.identity)
+    const graph = createGraph<T, Expression<T>>(expressions, (v) => v)
 
     // Check for cycles in the graph, as that means we can't evaluate the graph.
     const hasCycles = !G.alg.isAcyclic(graph.graph)
@@ -146,7 +145,9 @@ export function prebuildExpressions<T>(
         expressions.map((e) => e.id),
       )
 
-      const prebuiltExpressions: Array<PrebuiltExpressionFunction<T>> = R.chain((graphNode) => {
+      const prebuiltExpressions: Array<PrebuiltExpressionFunction<
+        T
+      >> = graphProcessingOrder.flatMap((graphNode) => {
         const expression = graph.node(graphNode)
         if (expression == null) {
           return []
@@ -161,7 +162,7 @@ export function prebuildExpressions<T>(
             },
           ]
         }
-      }, graphProcessingOrder)
+      })
 
       return {
         type: 'success',

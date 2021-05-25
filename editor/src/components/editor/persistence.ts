@@ -1,5 +1,4 @@
 import * as localforage from 'localforage'
-import * as R from 'ramda'
 import {
   fetchLocalProject as fetchLocalProjectCommon,
   localProjectKey,
@@ -8,7 +7,12 @@ import { checkProjectOwnership } from '../../common/server'
 import Utils from '../../utils/utils'
 import { EditorDispatch } from './action-types'
 import { load, loadSampleProject, newProject } from './actions/actions'
-import { setProjectID, showToast, setSaveError } from './actions/action-creators'
+import {
+  setProjectID,
+  showToast,
+  setSaveError,
+  setForkedFromProjectID,
+} from './actions/action-creators'
 import {
   createNewProjectID,
   loadProject,
@@ -19,15 +23,19 @@ import {
 } from './server'
 import {
   createNewProjectName,
+  EditorState,
   PersistentModel,
   persistentModelForProjectContents,
+  persistentModelFromEditorModel,
 } from './store/editor-state'
 import { UtopiaTsWorkers } from '../../core/workers/common/worker-types'
-import { arrayContains, projectURLForProject } from '../../core/shared/utils'
+import { arrayContains, NO_OP, projectURLForProject } from '../../core/shared/utils'
 import { getPNGBufferOfElementWithID } from './screenshot-utils'
 import { ProjectImportSuccess } from '../../core/model/project-import'
 import { CURRENT_PROJECT_VERSION } from './actions/migrations/migrations'
 import { notice } from '../common/notice'
+import { replaceAll } from '../../core/shared/string-utils'
+import { isLoggedIn, isNotLoggedIn, LoginState } from '../../common/user'
 
 interface NeverSaved {
   type: 'never-saved'
@@ -273,6 +281,22 @@ export async function saveToServer(
   }
 }
 
+export async function triggerForkProject(
+  dispatch: EditorDispatch,
+  editor: EditorState,
+  loginState: LoginState,
+): Promise<void> {
+  const oldProjectId = editor.id
+  const newProjectId = await createNewProjectID()
+  const updatedEditor = {
+    ...editor,
+    forkedFromProjectId: oldProjectId,
+    id: newProjectId,
+  }
+  await save(updatedEditor, dispatch, loginState, 'both', true)
+  dispatch([setProjectID(newProjectId), setForkedFromProjectID(oldProjectId)])
+}
+
 async function checkCanSaveProject(projectId: string | null): Promise<boolean> {
   if (projectId == null) {
     return true
@@ -349,6 +373,47 @@ async function throttledServerSaveInner(
   }
 }
 
+function updateModelWithForkedId(
+  model: PersistentModel,
+  originalProjectId: string,
+): PersistentModel {
+  return {
+    ...model,
+    forkedFromProjectId: originalProjectId,
+  }
+}
+
+export type SaveType = 'model' | 'name' | 'both'
+
+export async function save(
+  state: EditorState,
+  dispatch: EditorDispatch,
+  loginState: LoginState,
+  saveType: SaveType,
+  forceServerSave: boolean,
+): Promise<void> {
+  const modelChange =
+    saveType === 'model' || saveType === 'both' ? persistentModelFromEditorModel(state) : null
+  const nameChange = saveType === 'name' || saveType === 'both' ? state.projectName : null
+  try {
+    if (isLoggedIn(loginState)) {
+      return saveToServer(
+        dispatch,
+        state.id,
+        state.projectName,
+        modelChange,
+        nameChange,
+        forceServerSave,
+      )
+    } else {
+      return saveToLocalStorage(dispatch, state.id, state.projectName, modelChange, nameChange)
+    }
+  } catch (error) {
+    console.error('Save not successful', error)
+    return
+  }
+}
+
 async function serverSaveInner(
   dispatch: EditorDispatch,
   currentProjectId: string,
@@ -367,12 +432,16 @@ async function serverSaveInner(
   try {
     const isOwner = await checkCanSaveProject(currentProjectId)
     const isFork = !isOwner
+    const originalProjectId = stripOldLocalSuffix(currentProjectId)
     const projectId =
-      isOwner && currentProjectId != null
-        ? stripOldLocalSuffix(currentProjectId)
-        : await createNewProjectID()
+      isOwner && currentProjectId != null ? originalProjectId : await createNewProjectID()
 
-    await updateSavedProject(projectId, modelChange, name)
+    const modelWithForkedId: PersistentModel | null =
+      isFork && modelChange != null
+        ? updateModelWithForkedId(modelChange, originalProjectId)
+        : modelChange
+
+    await updateSavedProject(projectId, modelWithForkedId, name)
     dispatch([setSaveError(false)], 'everyone')
     updateRemoteThumbnail(projectId, forceThumbnail)
     maybeTriggerQueuedSave(dispatch, projectId, projectName, _saveState)
@@ -441,7 +510,7 @@ export async function updateRemoteThumbnail(projectId: string, force: boolean): 
 }
 
 function stripOldLocalSuffix(id: string): string {
-  return R.replace('-cached', '', R.replace('unsaved-', '', id))
+  return replaceAll(replaceAll(id, 'unsaved-', ''), '-cached', '')
 }
 
 export async function saveToLocalStorage(

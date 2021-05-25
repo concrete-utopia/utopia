@@ -32,7 +32,6 @@ import * as EP from '../core/shared/element-path'
 import { ElementPath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
 import { FlexRow, Icn, IcnProps } from '../uuiui'
-import { getOpenUIJSFileKey } from './editor/store/editor-state'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
 
@@ -177,7 +176,6 @@ export const ElementContextMenu = betterReactMemo(
         selectedViews: store.editor.selectedViews,
         jsxMetadata: store.editor.jsxMetadata,
         editorDispatch: store.dispatch,
-        currentFilePath: getOpenUIJSFileKey(store.editor),
         projectContents: store.editor.projectContents,
         nodeModules: store.editor.nodeModules.files,
         transientFilesState: store.derived.canvas.transientState.filesState,
@@ -193,7 +191,6 @@ export const ElementContextMenu = betterReactMemo(
         canvasOffset: currentEditor.canvasOffset,
         selectedViews: currentEditor.selectedViews,
         jsxMetadata: currentEditor.jsxMetadata,
-        currentFilePath: currentEditor.currentFilePath,
         projectContents: currentEditor.projectContents,
         nodeModules: currentEditor.nodeModules,
         transientFilesState: currentEditor.transientFilesState,

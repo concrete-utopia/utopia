@@ -39,27 +39,9 @@ describe('Layout Section', () => {
         editorStoreData={storeHookForTest}
       >
         <LayoutSection
-          isChildOfFlexComponent={false}
           hasNonDefaultPositionAttributes={true}
           aspectRatioLocked={false}
-          parentFlexAxis={null}
           toggleAspectRatioLock={NO_OP}
-          specialSizeMeasurements={emptySpecialSizeMeasurements}
-          position='static'
-          input={{
-            frame: {
-              x: 10,
-              y: 10,
-              width: 200,
-              height: 100,
-            } as LocalRectangle,
-            parentFrame: {
-              x: 0,
-              y: 0,
-              width: 350,
-              height: 850,
-            } as CanvasRectangle,
-          }}
         />
       </TestInspectorContextProvider>,
     )

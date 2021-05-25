@@ -161,6 +161,9 @@ projectIDScript (ProjectIdWithSuffix projectID _) = do
     ("window.utopiaProjectID = \"" <> projectID <> "\";")
 
 innerProjectPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
+innerProjectPage (Just _) Nothing branchName = do
+  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
+  return $ H.preEscapedToHtml projectNotFoundHtml
 innerProjectPage possibleProjectID possibleMetadata branchName = do
   indexHtml <- getEditorTextContent branchName "index.html"
   siteRoot <- getSiteRoot
@@ -179,6 +182,9 @@ emptyProjectPage :: Maybe Text -> ServerMonad H.Html
 emptyProjectPage branchName = innerProjectPage Nothing Nothing branchName
 
 innerPreviewPage :: Maybe ProjectIdWithSuffix -> Maybe ProjectMetadata -> Maybe Text -> ServerMonad H.Html
+innerPreviewPage (Just _) Nothing branchName = do
+  projectNotFoundHtml <- getEditorTextContent branchName "project-not-found.html"
+  return $ H.preEscapedToHtml projectNotFoundHtml
 innerPreviewPage possibleProjectID possibleMetadata branchName = do
   indexHtml <- getEditorTextContent branchName "preview.html"
   siteRoot <- getSiteRoot
@@ -221,9 +227,12 @@ setShowcaseEndpoint projectIdsString = do
   return NoContent
 
 projectOwnerEndpoint :: Maybe Text -> ProjectIdWithSuffix -> ServerMonad ProjectOwnerResponse
-projectOwnerEndpoint cookie (ProjectIdWithSuffix projectID _) = requireUser cookie $ \sessionUser -> do
+projectOwnerEndpoint cookie (ProjectIdWithSuffix projectID _) = checkForUser cookie $ \maybeUser -> do
   possibleProject <- loadProject projectID
-  maybe notFound (\project -> return $ ProjectOwnerResponse $ (view id sessionUser) == (view ownerId project)) possibleProject
+  case (maybeUser, possibleProject) of 
+    (_, Nothing) -> notFound 
+    (Nothing, _) -> notAuthenticated
+    (Just sessionUser, Just project) -> return $ ProjectOwnerResponse $ (view id sessionUser) == (view ownerId project)
 
 projectChangedSince :: Text -> UTCTime -> ServerMonad (Maybe Bool)
 projectChangedSince projectID lastChangedDate = do

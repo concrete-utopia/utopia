@@ -1,6 +1,5 @@
 import { produce } from 'immer'
 import * as update from 'immutability-helper'
-import * as R from 'ramda'
 import * as React from 'react'
 import * as localforage from 'localforage'
 import { CursorPosition } from 'src/components/code-editor/code-editor-utils'
@@ -351,7 +350,9 @@ import {
   SetFollowSelectionEnabled,
   UpdateConfigFromVSCode,
   SetLoginState,
+  ResetCanvas,
   SetFilebrowserDropTarget,
+  SetForkedFromProjectID,
 } from '../action-types'
 import { defaultTransparentViewElement, defaultSceneElement } from '../defaults'
 import {
@@ -392,7 +393,6 @@ import {
   getMainUIFromModel,
   getOpenFilename,
   getOpenTextFileKey,
-  getOpenUIJSFile,
   getOpenUIJSFileKey,
   insertElementAtPath,
   mergeStoredEditorStateIntoEditorState,
@@ -431,6 +431,7 @@ import {
   LeftPaneMinimumWidth,
   LeftMenuTab,
   RightMenuTab,
+  persistentModelFromEditorModel,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -491,6 +492,7 @@ import { defaultConfig } from 'utopia-vscode-common'
 import { getTargetParentForPaste } from '../../../utils/clipboard'
 import { absolutePathFromRelativePath, stripLeadingSlash } from '../../../utils/path-utils'
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
+import { reverse, uniqBy } from '../../../core/shared/array-utils'
 
 export function updateSelectedLeftMenuTab(editorState: EditorState, tab: LeftMenuTab): EditorState {
   return {
@@ -905,6 +907,8 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
   const poppedEditor = history.current.editor
   return {
     id: currentEditor.id,
+    vscodeBridgeId: currentEditor.vscodeBridgeId,
+    forkedFromProjectId: currentEditor.forkedFromProjectId,
     appID: currentEditor.appID,
     projectName: currentEditor.projectName,
     projectDescription: currentEditor.projectDescription,
@@ -959,7 +963,9 @@ function restoreEditorState(currentEditor: EditorModel, history: StateHistory): 
       cursor: null,
       duplicationState: null,
       base64Blobs: {},
-      mountCount: currentEditor.canvas.mountCount + 1,
+      mountCount: currentEditor.canvas.mountCount, // QUESTION should undo-redo forcibly remount the canvas?
+      canvasContentInvalidateCount: currentEditor.canvas.canvasContentInvalidateCount + 1,
+      domWalkerInvalidateCount: currentEditor.canvas.domWalkerInvalidateCount + 1,
       openFile: currentEditor.canvas.openFile,
       scrollAnimation: currentEditor.canvas.scrollAnimation,
     },
@@ -1492,6 +1498,7 @@ export const UPDATE_FNS = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
+      vscodeBridgeId: action.projectId, // we assign a first value when loading a project. SET_PROJECT_ID will not change this, saving us from having to reload VSCode
       nodeModules: {
         skipDeepFreeze: true,
         files: action.nodeModules,
@@ -1551,38 +1558,31 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const openUIJSFile = getOpenUIJSFile(editor)
-    if (openUIJSFile == null || !isParseSuccess(openUIJSFile.fileContents.parsed)) {
-      return editor
-    } else {
-      const components = getUtopiaJSXComponentsFromSuccess(openUIJSFile.fileContents.parsed)
-      const target = action.element
-      const element = findElementAtPath(target, components)
-      if (element == null || !isJSXElement(element)) {
-        return editor
-      } else {
+    let unsetPropFailedMessage: string | null = null
+    const updatedEditor = modifyUnderlyingForOpenFile(
+      action.element,
+      editor,
+      (element) => {
         const updatedProps = unsetJSXValueAtPath(element.props, action.property)
-        const updatedResult = foldEither(
+        return foldEither(
           (failureMessage) => {
-            const toastAction = showToast(notice(failureMessage, 'ERROR'))
-            return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+            unsetPropFailedMessage = failureMessage
+            return element
           },
-          (updated) => {
-            return modifyOpenJsxElementAtPath(
-              target,
-              (openElement) => {
-                return {
-                  ...openElement,
-                  props: updated,
-                }
-              },
-              editor,
-            )
-          },
+          (updatedAttributes) => ({
+            ...element,
+            props: updatedAttributes,
+          }),
           updatedProps,
         )
-        return updatedResult
-      }
+      },
+      (parseSuccess) => parseSuccess,
+    )
+    if (unsetPropFailedMessage != null) {
+      const toastAction = showToast(notice(unsetPropFailedMessage, 'ERROR'))
+      return UPDATE_FNS.ADD_TOAST(toastAction, editor, dispatch)
+    } else {
+      return updatedEditor
     }
   },
   SET_CANVAS_FRAMES: (
@@ -1600,21 +1600,7 @@ export const UPDATE_FNS = {
     const dragSources = action.dragSources
     const dropTarget = action.dropTarget
     const targetPath = dropTarget.target
-    let index: number
-    const uiFile = getOpenUIJSFile(editor)
-    if (uiFile == null) {
-      console.warn('Attempted to find the index of a view with no ui file open.')
-      return editor
-    } else {
-      if (isParseSuccess(uiFile.fileContents.parsed)) {
-        index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, targetPath)
-      } else {
-        console.warn(
-          'Attempted to find the index of a view when the code currently does not parse.',
-        )
-        return editor
-      }
-    }
+    const index = MetadataUtils.getViewZIndexFromMetadata(editor.jsxMetadata, targetPath)
     let indexPosition: IndexPosition
     let newParentPath: ElementPath | null
     switch (dropTarget.type) {
@@ -1655,7 +1641,7 @@ export const UPDATE_FNS = {
         ? null
         : MetadataUtils.getFrameInCanvasCoords(newParentPath, editor.jsxMetadata)
     const { editor: withMovedTemplate, newPaths } = editorMoveMultiSelectedTemplates(
-      R.reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived)),
+      reverse(getZIndexOrderedViewsWithoutDirectChildren(dragSources, derived)),
       indexPosition,
       newParentPath,
       newParentSize,
@@ -1823,9 +1809,9 @@ export const UPDATE_FNS = {
     derived: DerivedState,
   ): EditorModel => {
     const selectedElements = editor.selectedViews
-    const uniqueParents = R.uniqBy(
-      EP.toComponentId,
+    const uniqueParents = uniqBy(
       Utils.stripNulls(selectedElements.map(EP.parentPath)),
+      EP.pathsEqual,
     )
     const additionalTargets = Utils.flatMapArray((uniqueParent) => {
       const children = MetadataUtils.getImmediateChildren(editor.jsxMetadata, uniqueParent)
@@ -2198,7 +2184,7 @@ export const UPDATE_FNS = {
           selectedViews: newSelection,
           canvas: {
             ...withViewDeleted.canvas,
-            mountCount: editor.canvas.mountCount + 1,
+            domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
           },
         }
       },
@@ -3127,11 +3113,17 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    initVSCodeBridge(action.id, editor.projectContents, dispatch)
-    return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(markVSCodeBridgeReady(false), {
+    let newVscodeBridgeId = editor.vscodeBridgeId
+    if (editor.vscodeBridgeId == null) {
+      // ONLY update vscodeBridgeId if it was null
+      newVscodeBridgeId = action.id
+      initVSCodeBridge(action.id, editor.projectContents, dispatch)
+    }
+    return {
       ...editor,
       id: action.id,
-    })
+      vscodeBridgeId: newVscodeBridgeId,
+    }
   },
   UPDATE_CODE_RESULT_CACHE: (action: UpdateCodeResultCache, editor: EditorModel): EditorModel => {
     return {
@@ -3254,7 +3246,7 @@ export const UPDATE_FNS = {
       let currentDesignerFile = editor.canvas.openFile
       const { projectContents, updatedFiles } = replaceFilePathResults
       const mainUIFile = getMainUIFromModel(editor)
-      let updateUIFile: (e: EditorModel) => EditorModel = R.identity
+      let updateUIFile: (e: EditorModel) => EditorModel = (e) => e
       Utils.fastForEach(updatedFiles, (updatedFile) => {
         const { oldPath, newPath } = updatedFile
         // If the main UI file is what we have renamed, update that later.
@@ -3375,7 +3367,10 @@ export const UPDATE_FNS = {
       projectContents: updatedProjectContents,
       canvas: {
         ...editor.canvas,
-        mountCount: editor.canvas.mountCount + (isTextFile(file) ? 0 : 1),
+        canvasContentInvalidateCount:
+          editor.canvas.canvasContentInvalidateCount + (isTextFile(file) ? 0 : 1),
+        domWalkerInvalidateCount:
+          editor.canvas.domWalkerInvalidateCount + (isTextFile(file) ? 0 : 1),
       },
       nodeModules: {
         ...editor.nodeModules,
@@ -3475,7 +3470,12 @@ export const UPDATE_FNS = {
         projectContents: workingProjectContents,
         canvas: {
           ...editor.canvas,
-          mountCount: anyParsedUpdates ? editor.canvas.mountCount + 1 : editor.canvas.mountCount,
+          canvasContentInvalidateCount: anyParsedUpdates
+            ? editor.canvas.canvasContentInvalidateCount + 1
+            : editor.canvas.canvasContentInvalidateCount,
+          domWalkerInvalidateCount: anyParsedUpdates
+            ? editor.canvas.domWalkerInvalidateCount + 1
+            : editor.canvas.domWalkerInvalidateCount,
         },
         parseOrPrintInFlight: false, // only ever clear it here
       }
@@ -4150,7 +4150,7 @@ export const UPDATE_FNS = {
       focusedElementPath: action.focusedElementPath,
       canvas: {
         ...editor.canvas,
-        mountCount: editor.canvas.mountCount + 1,
+        domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
       },
     }
   },
@@ -4254,6 +4254,16 @@ export const UPDATE_FNS = {
       loginState: action.loginState,
     }
   },
+  RESET_CANVAS: (action: ResetCanvas, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      canvas: {
+        ...editor.canvas,
+        mountCount: editor.canvas.mountCount + 1,
+        domWalkerInvalidateCount: editor.canvas.domWalkerInvalidateCount + 1,
+      },
+    }
+  },
   SET_FILEBROWSER_DROPTARGET: (
     action: SetFilebrowserDropTarget,
     editor: EditorModel,
@@ -4264,6 +4274,15 @@ export const UPDATE_FNS = {
         ...editor.fileBrowser,
         dropTarget: action.target,
       },
+    }
+  },
+  SET_FORKED_FROM_PROJECT_ID: (
+    action: SetForkedFromProjectID,
+    editor: EditorModel,
+  ): EditorModel => {
+    return {
+      ...editor,
+      forkedFromProjectId: action.id,
     }
   },
 }

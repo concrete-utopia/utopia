@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import * as React from 'react'
 import RU from '../../../utils/react-utils'
 import Utils from '../../../utils/utils'
@@ -164,11 +163,12 @@ const controlToSvg = (control: SvgFragmentControl, index: number) => {
       ),
       RU.create(
         control.type,
-        R.merge(control.props, {
+        {
+          ...control.props,
           id: `control-${control.controlid}`,
           fill: `url(#${patternId})`,
           key: `control-${control.controlid}-${index}`,
-        }),
+        } as any,
         children,
       ),
     ]
@@ -176,10 +176,11 @@ const controlToSvg = (control: SvgFragmentControl, index: number) => {
     elements = [
       RU.create(
         control.type,
-        R.merge(control.props, {
+        {
+          ...control.props,
           id: `control-${control.controlid}`,
           key: `control-${control.controlid}-${index}`,
-        }),
+        } as any,
         children,
       ),
     ]

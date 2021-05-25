@@ -4,7 +4,6 @@ import { usePropControlledState, betterReactMemo } from '../../../../../uuiui-de
 import { CSSPosition } from '../../../common/css-utils'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { FlexElementSubsection } from '../flex-element-subsection/flex-element-subsection'
-import { ResolvedLayoutProps } from '../layout-section'
 import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
 import { LayoutTypePicker } from './self-layout-controls'
 
@@ -21,10 +20,9 @@ function useActiveLayoutTab(position: CSSPosition | null, isChildOfFlexComponent
 }
 
 interface SelfLayoutSubsectionProps {
-  input: ResolvedLayoutProps
   position: CSSPosition | null
   isChildOfFlexComponent: boolean
-  parentFlexAxis: 'horizontal' | 'vertical' | null
+  parentFlexDirection: string | null
   aspectRatioLocked: boolean
   toggleAspectRatioLock: () => void
 }
@@ -44,9 +42,8 @@ export const SelfLayoutSubsection = betterReactMemo(
           <LayoutTypePicker value={activeTab} setActiveTab={setActiveTab} />
         </UIGridRow>
         <GiganticSizePinsSubsection
-          input={props.input}
           layoutType={activeTab}
-          parentFlexAxis={props.parentFlexAxis}
+          parentFlexDirection={props.parentFlexDirection}
           aspectRatioLocked={props.aspectRatioLocked}
           toggleAspectRatioLock={props.toggleAspectRatioLock}
         />

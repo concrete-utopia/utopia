@@ -1,5 +1,4 @@
 import * as json5 from 'json5'
-import * as R from 'ramda'
 import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   ElementInstanceMetadata,
@@ -143,6 +142,9 @@ import * as EP from '../../../core/shared/element-path'
 import { importedFromWhere } from '../import-utils'
 import { defaultConfig, UtopiaVSCodeConfig } from 'utopia-vscode-common'
 
+import * as OPI from 'object-path-immutable'
+const ObjectPathImmutable: any = OPI
+
 export const enum LeftMenuTab {
   UIInsert = 'ui-insert',
   Project = 'project',
@@ -273,6 +275,8 @@ export interface DesignerFile {
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
+  vscodeBridgeId: string | null
+  forkedFromProjectId: string | null
   appID: string | null
   projectName: string
   projectDescription: string
@@ -333,6 +337,8 @@ export interface EditorState {
     duplicationState: DuplicationState | null
     base64Blobs: CanvasBase64Blobs
     mountCount: number
+    canvasContentInvalidateCount: number
+    domWalkerInvalidateCount: number
     openFile: DesignerFile | null
     scrollAnimation: boolean
   }
@@ -945,6 +951,7 @@ function emptyDerivedState(editorState: EditorState): DerivedState {
 
 export interface PersistentModel {
   appID?: string | null
+  forkedFromProjectId: string | null
   projectVersion: number
   projectDescription: string
   projectContents: ProjectContentTreeRoot
@@ -983,6 +990,7 @@ export function mergePersistentModel(
 ): PersistentModel {
   return {
     appID: second.appID,
+    forkedFromProjectId: second.forkedFromProjectId,
     projectVersion: second.projectVersion,
     projectDescription: second.projectDescription,
     projectContents: {
@@ -1026,6 +1034,8 @@ export const BaseCanvasOffsetLeftPane = {
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
+    vscodeBridgeId: null,
+    forkedFromProjectId: null,
     appID: null,
     projectName: createNewProjectName(),
     projectDescription: 'Made with Utopia',
@@ -1086,6 +1096,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       duplicationState: null,
       base64Blobs: {},
       mountCount: 0,
+      canvasContentInvalidateCount: 0,
+      domWalkerInvalidateCount: 0,
       openFile: {
         filename: StoryboardFilePath,
       },
@@ -1254,6 +1266,8 @@ export function editorModelFromPersistentModel(
   )
   const editor: EditorState = {
     id: null,
+    vscodeBridgeId: null,
+    forkedFromProjectId: persistentModel.forkedFromProjectId,
     appID: persistentModel.appID ?? null,
     projectName: createNewProjectName(),
     projectDescription: persistentModel.projectDescription,
@@ -1324,6 +1338,8 @@ export function editorModelFromPersistentModel(
       duplicationState: null,
       base64Blobs: {},
       mountCount: 0,
+      canvasContentInvalidateCount: 0,
+      domWalkerInvalidateCount: 0,
       openFile: {
         filename: StoryboardFilePath,
       },
@@ -1384,6 +1400,7 @@ export function editorModelFromPersistentModel(
 export function persistentModelFromEditorModel(editor: EditorState): PersistentModel {
   return {
     appID: editor.appID,
+    forkedFromProjectId: editor.forkedFromProjectId,
     projectVersion: editor.projectVersion,
     projectDescription: editor.projectDescription,
     projectContents: editor.projectContents,
@@ -1411,6 +1428,7 @@ export function persistentModelForProjectContents(
 ): PersistentModel {
   return {
     appID: null,
+    forkedFromProjectId: null,
     projectVersion: CURRENT_PROJECT_VERSION,
     projectDescription: '',
     projectContents: projectContents,
@@ -1478,7 +1496,7 @@ export function getPackageJsonFromEditorState(editor: EditorState): Either<strin
 export function getMainUIFromModel(model: EditorState): string | null {
   const packageJsonContents = getPackageJsonFromEditorState(model)
   if (isRight(packageJsonContents)) {
-    const mainUI = R.path(['utopia', 'main-ui'], packageJsonContents.value)
+    const mainUI = Utils.path(['utopia', 'main-ui'], packageJsonContents.value)
     // Make sure someone hasn't put something bizarro in there.
     if (typeof mainUI === 'string') {
       return mainUI
@@ -1506,7 +1524,11 @@ export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<str
 
 export function updateMainUIInPackageJson(packageJson: string, mainUI: string): string {
   function updateDeps(parsedPackageJson: any): string {
-    return JSON.stringify(R.assocPath(['utopia', 'main-ui'], mainUI, parsedPackageJson), null, 2)
+    return JSON.stringify(
+      ObjectPathImmutable.set(parsedPackageJson, ['utopia', 'main-ui'], mainUI),
+      null,
+      2,
+    )
   }
   try {
     const parsedJSON = json5.parse(packageJson)
@@ -1601,16 +1623,16 @@ export function getAllCodeEditorErrors(
   }
 }
 
-export function getAllBuildErrors(editor: EditorState) {
+export function getAllBuildErrors(editor: EditorState): Array<ErrorMessage> {
   return getAllErrorsFromFiles(editor.codeEditorErrors.buildErrors)
 }
 
-export function getAllLintErrors(editor: EditorState) {
+export function getAllLintErrors(editor: EditorState): Array<ErrorMessage> {
   return getAllErrorsFromFiles(editor.codeEditorErrors.lintErrors)
 }
 
-export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages) {
-  return Utils.flatMapArray((filename) => errorsInFiles[filename], Object.keys(errorsInFiles))
+export function getAllErrorsFromFiles(errorsInFiles: ErrorMessages): Array<ErrorMessage> {
+  return Object.keys(errorsInFiles).flatMap((filename) => errorsInFiles[filename] ?? [])
 }
 
 export function parseFailureAsErrorMessages(

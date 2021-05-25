@@ -35,3 +35,7 @@ export function camelCaseToDashed(s: string): string {
 export function splitIntoLines(s: string): Array<string> {
   return s.split(/[\r\n]/)
 }
+
+export function splitAt(index: number, value: string): [string, string] {
+  return [value.slice(0, index), value.slice(index, value.length)]
+}

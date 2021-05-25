@@ -364,7 +364,6 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             mode={props.editor.mode}
             keysPressed={props.editor.keysPressed}
             windowToCanvasPosition={props.windowToCanvasPosition}
-            projectId={props.editor.id}
             dragState={
               dragState != null && dragState.type === 'INSERT_DRAG_STATE' ? dragState : null
             }

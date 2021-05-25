@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import * as React from 'react'
 import { animated, SpringValue } from 'react-spring'
 import { BooleanControl } from '../../../controls/boolean-control'
@@ -111,7 +110,8 @@ function getIndexedUpdateTextShadowBlurRadius(index: number) {
 
 function getIndexedSpliceTextShadow(index: number) {
   return function spliceTextShadow(_: any, cssTextShadows: CSSTextShadows): CSSTextShadows {
-    return R.remove(index, 1, [...cssTextShadows])
+    let result = [...cssTextShadows]
+    return result.splice(index, 1)
   }
 }
 

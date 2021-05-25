@@ -1,6 +1,5 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import * as R from 'ramda'
 import * as React from 'react'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
@@ -17,6 +16,7 @@ import { FixedSizeList, ListChildComponentProps } from 'react-window'
 import { Size } from 'react-virtualized-auto-sizer'
 import { UtopiaTheme, Section, SectionTitleRow, FlexRow, Title, SectionBodyArea } from '../../uuiui'
 import { betterReactMemo } from '../../uuiui-deps'
+import { last } from '../../core/shared/array-utils'
 // There's some weirdness between the types and the results in the two module systems.
 // This is to effectively massage the result so that if it is loaded in the browser or in
 // node it should end up with the right thing.
@@ -97,7 +97,7 @@ export const NavigatorComponent = betterReactMemo(
             editorSliceRef.current.navigatorTargets.findIndex((tp) => EP.pathsEqual(tp, selection)),
           )
           .sort((a, b) => a - b)
-        const lastSelectedItemIndex = R.last(selectedItemIndexes)
+        const lastSelectedItemIndex = last(selectedItemIndexes)
         if (lastSelectedItemIndex == null) {
           return [editorSliceRef.current.navigatorTargets[index]]
         } else {

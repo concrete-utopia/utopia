@@ -1,4 +1,3 @@
-import * as R from 'ramda'
 import {
   SceneMetadata,
   StaticElementPath,
@@ -207,26 +206,6 @@ export function convertScenesAndTopLevelElementsToUtopiaCanvasComponent(
   topLevelElements: Array<TopLevelElement>,
 ): Array<TopLevelElement> {
   return convertScenesAndTopLevelElementsToUtopiaCanvasComponentMemoized(scenes, topLevelElements)
-}
-
-export function convertTopLevelElementsBackToScenesAndTopLevelElements_FOR_PP_ONLY(
-  topLevelElements: Array<UtopiaJSXComponent>,
-): { topLevelElements: Array<UtopiaJSXComponent>; utopiaCanvas: UtopiaJSXComponent | null }
-export function convertTopLevelElementsBackToScenesAndTopLevelElements_FOR_PP_ONLY(
-  topLevelElements: Array<TopLevelElement>,
-): { topLevelElements: Array<TopLevelElement>; utopiaCanvas: UtopiaJSXComponent | null }
-export function convertTopLevelElementsBackToScenesAndTopLevelElements_FOR_PP_ONLY(
-  topLevelElements: Array<TopLevelElement>,
-): { topLevelElements: Array<TopLevelElement>; utopiaCanvas: UtopiaJSXComponent | null } {
-  const [[utopiaCanvas], filteredTopLevelElements] = R.partition(
-    (e): e is UtopiaJSXComponent =>
-      isUtopiaJSXComponent(e) && e.name === BakedInStoryboardVariableName,
-    topLevelElements,
-  )
-  return {
-    topLevelElements: filteredTopLevelElements,
-    utopiaCanvas: utopiaCanvas as UtopiaJSXComponent | null,
-  }
 }
 
 export function fishOutUtopiaCanvasFromTopLevelElements(

@@ -379,12 +379,7 @@ export function normalisePathToUnderlyingTarget(
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
   if (isTextFile(currentFile)) {
-    if (
-      currentFile.fileContents.revisionsState === RevisionsState.CodeAhead ||
-      !isParseSuccess(currentFile.fileContents.parsed)
-    ) {
-      // As the code is ahead this would potentially be looking at a path
-      // which now doesn't exist.
+    if (!isParseSuccess(currentFile.fileContents.parsed)) {
       return normalisePathUnableToProceed(currentFilePath)
     } else {
       const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)

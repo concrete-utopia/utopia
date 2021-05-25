@@ -55,6 +55,7 @@ import {
   clearParseResultPassTimes,
   clearParseResultUniqueIDsAndEmptyBlocks,
   clearTopLevelElementUniqueIDsAndEmptyBlocks,
+  elementsStructure,
   ensureElementsHaveUID,
   JustImportViewAndReact,
   PrintableProjectContent,
@@ -4357,6 +4358,26 @@ export var whatever2 = (props) => <View data-uid='aaa'>
     const printableArbitrary = printableProjectContentArbitrary()
     const dataUIDProperty = FastCheck.property(printableArbitrary, checkDataUIDsPopulated)
     FastCheck.assert(dataUIDProperty, { verbose: true })
+  })
+  it('when react is not imported treat components as arbitrary blocks', () => {
+    const code = `
+export var whatever = (props) => <View data-uid='aaa'>
+  <View data-uid='aaa' />
+</View>
+`
+    const actualResult = testParseCode(code)
+    foldParsedTextFile(
+      (_) => fail('Unable to parse code.'),
+      (success) => {
+        expect(elementsStructure(success.topLevelElements)).toMatchInlineSnapshot(`
+          "UNPARSED_CODE
+          ARBITRARY_JS_BLOCK
+          UNPARSED_CODE"
+        `)
+      },
+      (_) => fail('Unable to parse code.'),
+      actualResult,
+    )
   })
 })
 

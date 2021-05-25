@@ -289,8 +289,12 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONFIG_FROM_VSCODE(action, state)
     case 'SET_FOLLOW_SELECTION_ENABLED':
       return UPDATE_FNS.SET_FOLLOW_SELECTION_ENABLED(action, state)
+    case 'RESET_CANVAS':
+      return UPDATE_FNS.RESET_CANVAS(action, state)
     case 'SET_FILEBROWSER_DROPTARGET':
       return UPDATE_FNS.SET_FILEBROWSER_DROPTARGET(action, state)
+    case 'SET_FORKED_FROM_PROJECT_ID':
+      return UPDATE_FNS.SET_FORKED_FROM_PROJECT_ID(action, state)
     default:
       return state
   }
