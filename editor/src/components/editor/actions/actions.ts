@@ -3667,6 +3667,8 @@ export const UPDATE_FNS = {
         ...editor,
         codeEditorErrors: updatedCodeEditorErrors,
         jsxMetadata: emptyJsxMetadata,
+        domMetadata: [],
+        spyMetadata: emptyJsxMetadata,
       }
     }
   },

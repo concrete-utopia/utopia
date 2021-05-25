@@ -15,6 +15,7 @@ import { CodeResultCache, generateCodeResultCache } from '../components/custom-c
 import { getAllErrorsFromBuildResult } from '../components/custom-code/custom-code-utils'
 import {
   DebugDispatch,
+  DispatchPriority,
   EditorAction,
   EditorDispatch,
   isLoggedIn,
@@ -112,7 +113,6 @@ export class Editor {
   utopiaStoreHook: UtopiaStoreHook
   utopiaStoreApi: UtopiaStoreAPI
   updateStore: (partialState: EditorStore) => void
-  boundDispatch: DebugDispatch = this.dispatch.bind(this)
   spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   constructor() {
@@ -357,11 +357,12 @@ export class Editor {
     )
   }
 
-  dispatch(
+  boundDispatch = (
     dispatchedActions: readonly EditorAction[],
+    priority?: DispatchPriority,
   ): {
     entireUpdateFinished: Promise<any>
-  } {
+  } => {
     const runDispatch = () => {
       const result = editorDispatch(
         this.boundDispatch,
