@@ -290,7 +290,7 @@ export const PinHeightControl = betterReactMemo(
   (props: PinHeightControlProps) => {
     const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
     return (
-      <SquareButton onClick={props.toggleHeight} outline={true}>
+      <SquareButton onClick={props.toggleHeight} highlight={true} spotlight={true}>
         <svg width='20' height='20'>
           <g
             id='dimensioncontrols-pin-height'
