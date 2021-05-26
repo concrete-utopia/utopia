@@ -5,7 +5,6 @@ import { Scene, SceneProps } from 'utopia-api'
 import { colorTheme, UtopiaStyles } from '../../../uuiui'
 import { betterReactMemo } from '../../../uuiui-deps'
 import { RerenderUtopiaContext } from './ui-jsx-canvas-contexts'
-import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export const SceneComponent = betterReactMemo(
   'Scene',
@@ -58,7 +57,7 @@ function childUnchanged(prevChild: ReactChild, nextChild: ReactChild): boolean {
     return (
       React.isValidElement(nextChild) &&
       prevChild.type === nextChild.type &&
-      shallowEqual(prevChild.props, nextChild.props)
+      fastDeepEquals(prevChild.props, nextChild.props)
     )
   } else {
     // FIXME Fragments are all that is left
