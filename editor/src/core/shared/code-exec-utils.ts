@@ -82,15 +82,29 @@ export const SafeFunctionCurriedErrorHandler = {
       },
       [[] as string[], [] as any[]],
     )
+
+    let objJsonStr = JSON.stringify(sourceMap)
+    let objJsonB64 = Buffer.from(objJsonStr).toString('base64')
+
+    const fileName = `${UTOPIA_FUNCTION_ROOT_NAME}-${sourceMap?.sources?.[0]}`
+
+    const codeWithSourceMapAttached = `${code}
+
+    //# sourceURL=${fileName};sourceMap=${objJsonB64}
+    `
+
     const FunctionOrAsyncFunction = async ? AsyncFunction : Function
-    const fn = new FunctionOrAsyncFunction(...contextKeys.concat(extraParamKeys), code)
+    const fn = new FunctionOrAsyncFunction(
+      ...contextKeys.concat(extraParamKeys),
+      codeWithSourceMapAttached,
+    )
     fn.displayName = UTOPIA_FUNCTION_ROOT_NAME
     const safeFn = (onError: ErrorHandler) => (...params: Array<unknown>) => {
       try {
         const [boundThis, ...otherParams] = params
         return fn.bind(boundThis)(...contextValues, ...otherParams)
       } catch (e) {
-        processErrorWithSourceMap(onError, e, code, sourceMap, true)
+        processErrorWithSourceMap(onError, e, codeWithSourceMapAttached, sourceMap, true)
       }
     }
     return safeFn
