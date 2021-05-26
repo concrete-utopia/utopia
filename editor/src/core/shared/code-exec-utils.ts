@@ -27,6 +27,8 @@ export type ErrorHandler = (e: Error) => void
 
 const UTOPIA_FUNCTION_ROOT_NAME = 'SafeFunctionCurriedErrorHandler'
 
+export const SOURCE_MAP_PREFIX = `;sourceMap=`
+
 export function processErrorWithSourceMap(
   error: Error | FancyError,
   inSafeFunction: boolean,
@@ -52,7 +54,7 @@ export function processErrorWithSourceMap(
 
       // TODO turn ;sourceMap= into const
       const rawSourceMap: RawSourceMap | null = JSON.parse(
-        atob(parsedStackFrames[0].fileName?.split(';sourceMap=')[1] ?? ''),
+        atob(parsedStackFrames[0].fileName?.split(SOURCE_MAP_PREFIX)[1] ?? ''),
       )
       const sourceCode = rawSourceMap?.transpiledContentUtopia
 
@@ -106,14 +108,13 @@ export const SafeFunctionCurriedErrorHandler = {
         ? { ...sourceMapWithoutTranspiledCode, transpiledContentUtopia: code }
         : null
 
-    let objJsonStr = JSON.stringify(sourceMap)
-    let objJsonB64 = Buffer.from(objJsonStr).toString('base64')
+    let sourceMapBase64 = btoa(JSON.stringify(sourceMap))
 
     const fileName = `${UTOPIA_FUNCTION_ROOT_NAME}(${sourceMap?.sources?.[0]})`
 
     const codeWithSourceMapAttached = `${code}
 
-    //# sourceURL=${fileName};sourceMap=${objJsonB64}
+    //# sourceURL=${fileName}${SOURCE_MAP_PREFIX}${sourceMapBase64}
     `
 
     const FunctionOrAsyncFunction = async ? AsyncFunction : Function
