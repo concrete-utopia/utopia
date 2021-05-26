@@ -1,6 +1,5 @@
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
-import { testCanvasErrorInline, testCanvasRenderInline } from './ui-jsx-canvas.test-utils'
-import { TestAppUID, TestSceneUID } from './ui-jsx.test-utils'
+
 import * as chai from 'chai'
 var expect = chai.expect
 
@@ -31,7 +30,7 @@ describe('UiJsxCanvas errors', () => {
     // `,
     //   {},
     // )
-    expect(TestAppUID).equal('hello')
+    expect(BakedInStoryboardUID).equal('hello')
     // expect(canvasErrors).toMatchInlineSnapshot(`
     //   Array [
     //     Object {
