@@ -16,6 +16,7 @@ import {
   useWriteOnlyConsoleLogs,
   useWriteOnlyRuntimeErrors,
 } from '../../core/shared/runtime-report-logs'
+import { processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 interface CanvasComponentEntryProps {}
 
 export const CanvasComponentEntry = betterReactMemo(
@@ -130,8 +131,9 @@ export class CanvasErrorBoundary extends React.Component<
     }
   }
 
-  componentDidCatch(error: unknown, errorInfo: React.ErrorInfo): void {
-    this.props.reportError(this.props.filePath, asErrorObject(error), errorInfo)
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    const fancyError = processErrorWithSourceMap(error, true)
+    this.props.reportError(this.props.filePath, asErrorObject(fancyError), errorInfo)
   }
 
   render(): React.ReactNode {

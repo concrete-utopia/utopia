@@ -8,6 +8,7 @@ import {
 import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import { NO_OP } from './utils'
 import { take } from './array-utils'
+import parseError from '../../third-party/react-error-overlay/utils/parser'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor
@@ -27,12 +28,13 @@ export type ErrorHandler = (e: Error) => void
 const UTOPIA_FUNCTION_ROOT_NAME = 'SafeFunctionCurriedErrorHandler'
 
 export function processErrorWithSourceMap(
-  onError: ErrorHandler,
-  error: Error,
-  sourceCode: string,
-  rawSourceMap: RawSourceMap | null,
+  error: Error | FancyError,
   inSafeFunction: boolean,
-): void {
+): FancyError {
+  if ((error as FancyError)?.stackFrames != null) {
+    // this Error is already processed!
+    return error
+  }
   const errorStack = error.stack
   if (errorStack != null) {
     try {
@@ -46,8 +48,16 @@ export function processErrorWithSourceMap(
           inSafeFunction ? stackLine.replace(UTOPIA_FUNCTION_ROOT_NAME, 'eval') : stackLine,
         )
         .join('\n')
-      const fixedSourceCode = sourceCode.split('\n')
-      const stackFrames = parseUtopiaError(error, fixedSourceCode)
+      const parsedStackFrames = parseError(error)
+
+      // TODO turn ;sourceMap= into const
+      const rawSourceMap: RawSourceMap | null = JSON.parse(
+        atob(parsedStackFrames[0].fileName?.split(';sourceMap=')[1] ?? ''),
+      )
+      const sourceCode = rawSourceMap?.transpiledContentUtopia
+
+      const fixedSourceCode = sourceCode?.split('\n') ?? []
+      const stackFrames = parseUtopiaError(parsedStackFrames, fixedSourceCode)
       const stackFramesWithoutSafeFn = inSafeFunction
         ? unmapUtopiaSafeFunction(stackFrames)
         : stackFrames
@@ -63,7 +73,16 @@ export function processErrorWithSourceMap(
       console.error('Source map handling threw an error.', sourceMapError)
     }
   }
-  onError(error)
+  return error
+}
+
+function processErrorAndCallHandler(
+  onError: ErrorHandler,
+  error: Error,
+  inSafeFunction: boolean,
+): void {
+  const fancyError = processErrorWithSourceMap(error, inSafeFunction)
+  onError(fancyError)
 }
 
 export const SafeFunctionCurriedErrorHandler = {
@@ -71,7 +90,7 @@ export const SafeFunctionCurriedErrorHandler = {
     async: boolean,
     cacheableContext: any,
     code: string,
-    sourceMap: RawSourceMap | null,
+    sourceMapWithoutTranspiledCode: RawSourceMap | null,
     extraParamKeys: Array<string> = [],
   ): (onError: ErrorHandler) => (...params: Array<unknown>) => unknown {
     const [contextKeys, contextValues] = Object.keys(cacheableContext).reduce(
@@ -82,11 +101,15 @@ export const SafeFunctionCurriedErrorHandler = {
       },
       [[] as string[], [] as any[]],
     )
+    const sourceMap: RawSourceMap | null =
+      sourceMapWithoutTranspiledCode != null
+        ? { ...sourceMapWithoutTranspiledCode, transpiledContentUtopia: code }
+        : null
 
     let objJsonStr = JSON.stringify(sourceMap)
     let objJsonB64 = Buffer.from(objJsonStr).toString('base64')
 
-    const fileName = `${UTOPIA_FUNCTION_ROOT_NAME}-${sourceMap?.sources?.[0]}`
+    const fileName = `${UTOPIA_FUNCTION_ROOT_NAME}(${sourceMap?.sources?.[0]})`
 
     const codeWithSourceMapAttached = `${code}
 
@@ -104,7 +127,7 @@ export const SafeFunctionCurriedErrorHandler = {
         const [boundThis, ...otherParams] = params
         return fn.bind(boundThis)(...contextValues, ...otherParams)
       } catch (e) {
-        processErrorWithSourceMap(onError, e, codeWithSourceMapAttached, sourceMap, true)
+        processErrorAndCallHandler(onError, e, true)
       }
     }
     return safeFn
@@ -127,7 +150,7 @@ export function SafeFunction(
       extraParamKeys,
     )(onError)
   } catch (e) {
-    processErrorWithSourceMap(onError, e, code, null, true)
+    processErrorAndCallHandler(onError, e, true)
     return NO_OP
   }
 }
