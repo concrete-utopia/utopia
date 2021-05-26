@@ -93,3 +93,5 @@ declare module 'react-windowed-select' {
 declare module 'npm-package-arg'
 
 declare module '@svgr/plugin-jsx'
+
+declare module '@root/encoding/base64'

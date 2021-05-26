@@ -1,3 +1,4 @@
+import { strToBase64, base64ToStr } from '@root/encoding/base64'
 import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 import { parseUtopiaError } from '../../third-party/react-error-overlay/utils/parseUtopiaError'
 import { getSourceMapConsumer } from '../../third-party/react-error-overlay/utils/getSourceMap'
@@ -54,7 +55,7 @@ export function processErrorWithSourceMap(
 
       // TODO turn ;sourceMap= into const
       const rawSourceMap: RawSourceMap | null = JSON.parse(
-        atob(parsedStackFrames[0].fileName?.split(SOURCE_MAP_PREFIX)[1] ?? ''),
+        base64ToStr(parsedStackFrames[0].fileName?.split(SOURCE_MAP_PREFIX)[1] ?? ''),
       )
       const sourceCode = rawSourceMap?.transpiledContentUtopia
 
@@ -108,7 +109,7 @@ export const SafeFunctionCurriedErrorHandler = {
         ? { ...sourceMapWithoutTranspiledCode, transpiledContentUtopia: code }
         : null
 
-    let sourceMapBase64 = btoa(JSON.stringify(sourceMap))
+    let sourceMapBase64 = strToBase64(JSON.stringify(sourceMap))
 
     const fileName = `${UTOPIA_FUNCTION_ROOT_NAME}(${sourceMap?.sources?.[0]})`
 
