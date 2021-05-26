@@ -31,7 +31,7 @@ describe('UiJsxCanvas errors', () => {
     // `,
     //   {},
     // )
-    expect([].length).equal(0)
+    expect(TestAppUID).equal('hello')
     // expect(canvasErrors).toMatchInlineSnapshot(`
     //   Array [
     //     Object {

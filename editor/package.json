@@ -291,6 +291,7 @@
     "minimatch": "3.0.4",
     "minimist": "1.2.0",
     "mocha": "8.4.0",
+    "null-loader": "4.0.1",
     "patch-package": "6.1.2",
     "pegjs": "0.10.0",
     "react-dev-utils": "10.2.1",
