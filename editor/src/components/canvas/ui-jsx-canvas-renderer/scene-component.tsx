@@ -54,7 +54,11 @@ function childUnchanged(prevChild: ReactChild, nextChild: ReactChild): boolean {
   if (typeof prevChild === 'string' || typeof prevChild === 'number') {
     return nextChild === prevChild
   } else if (React.isValidElement(prevChild)) {
-    return React.isValidElement(nextChild) && prevChild.type === nextChild.type
+    return (
+      React.isValidElement(nextChild) &&
+      prevChild.type === nextChild.type &&
+      fastDeepEquals(prevChild.props, nextChild.props)
+    )
   } else {
     // FIXME Fragments are all that is left
     return false

@@ -8,6 +8,7 @@ import {
 } from './atom-with-pub-sub'
 import type { FancyError, RuntimeErrorInfo } from './code-exec-utils'
 import { defaultIfNull } from './optional-utils'
+import { reduxDevtoolsLogError } from './redux-devtools'
 
 const EmptyArray: Array<RuntimeErrorInfo> = []
 
@@ -37,6 +38,12 @@ export function useWriteOnlyRuntimeErrors(): {
 
   const onRuntimeError = React.useCallback(
     (editedFile: string, error: FancyError, errorInfo?: React.ErrorInfo) => {
+      reduxDevtoolsLogError('Canvas Runtime Errors Reported', {
+        editedFile,
+        error,
+        errorInfo,
+        errorToString: error.toString(),
+      })
       updateRuntimeErrors([
         {
           editedFile: editedFile,
@@ -49,7 +56,14 @@ export function useWriteOnlyRuntimeErrors(): {
   )
 
   const clearRuntimeErrors = React.useCallback(() => {
-    updateRuntimeErrors(EmptyArray)
+    updateRuntimeErrors((current) => {
+      if (current.length !== 0) {
+        reduxDevtoolsLogError('Canvas Runtime Errors Cleared by re-render', {
+          deletedErrors: current,
+        })
+      }
+      return EmptyArray
+    })
   }, [updateRuntimeErrors])
 
   return {

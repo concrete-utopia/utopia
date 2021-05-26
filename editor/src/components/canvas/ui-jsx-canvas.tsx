@@ -260,6 +260,11 @@ export const UiJsxCanvas = betterReactMemo(
     clearConsoleLogs()
     proxyConsole(console, addToConsoleLogs)
 
+    if (clearErrors != null) {
+      // a new canvas render, a new chance at having no errors
+      clearErrors()
+    }
+
     let metadataContext: UiJsxCanvasContextData = React.useContext(UiJsxCanvasContext)
 
     // Handle the imports changing, this needs to run _before_ any require function
@@ -275,12 +280,6 @@ export const UiJsxCanvas = betterReactMemo(
     let topLevelComponentRendererComponents = React.useRef<
       MapLike<MapLike<ComponentRendererComponent>>
     >({})
-
-    if (clearErrors != null) {
-      // a new canvas render, a new chance at having no errors
-      // FIXME This is illegal! The line below is triggering a re-render
-      clearErrors()
-    }
 
     // TODO after merge requireFn can never be null
     if (requireFn != null) {
