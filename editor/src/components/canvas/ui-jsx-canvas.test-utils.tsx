@@ -100,6 +100,12 @@ export function stripUidsFromMetadata(metadata: ElementInstanceMetadata): Elemen
   }
 }
 
+interface RuntimeErrorInfo {
+  editedFile: string
+  error: FancyError
+  errorInfo?: React.ErrorInfo
+}
+
 const UiFilePath: UiJsxCanvasProps['uiFilePath'] = 'test.js'
 export function renderCanvasReturnResultAndError(
   possibleProps: PartialCanvasProps | null,
@@ -109,11 +115,7 @@ export function renderCanvasReturnResultAndError(
   const spyCollector: UiJsxCanvasContextData = emptyUiJsxCanvasContextData()
 
   const parsedUIFileCode = testParseCode(uiFileCode)
-  let errorsReported: Array<{
-    editedFile: string
-    error: FancyError
-    errorInfo?: React.ErrorInfo
-  }> = []
+  let errorsReported: Array<RuntimeErrorInfo> = []
   const reportError: CanvasReactErrorCallback['reportError'] = (
     editedFile: string,
     error: FancyError,
@@ -242,7 +244,7 @@ export function renderCanvasReturnResultAndError(
   }
 
   let formattedSpyEnabled
-  let errorsReportedSpyEnabled = []
+  let errorsReportedSpyEnabled: Array<RuntimeErrorInfo> = []
   try {
     const flatFormat = ReactDOMServer.renderToStaticMarkup(
       <EditorStateContext.Provider value={storeHookForTest}>
@@ -267,7 +269,7 @@ export function renderCanvasReturnResultAndError(
   errorsReported = []
 
   let formattedSpyDisabled
-  let errorsReportedSpyDisabled = []
+  let errorsReportedSpyDisabled: Array<RuntimeErrorInfo> = []
 
   try {
     const flatFormatSpyDisabled = ReactDOMServer.renderToStaticMarkup(
@@ -369,6 +371,23 @@ export function testCanvasErrorMultifile(
   uiFileCode: string,
   codeFilesString: MapLike<string>,
 ): void {
+  const errorsToCheck = testCanvasErrorInline(possibleProps, uiFileCode, codeFilesString)
+  expect(errorsToCheck).toMatchSnapshot()
+}
+
+interface TestCanvasError {
+  name: string
+  message: string
+  originalCode: any
+  lineNumber: any
+  columnNumber: any
+}
+
+export function testCanvasErrorInline(
+  possibleProps: PartialCanvasProps | null,
+  uiFileCode: string,
+  codeFilesString: MapLike<string>,
+): TestCanvasError[] {
   const { errorsReportedSpyEnabled, errorsReportedSpyDisabled } = renderCanvasReturnResultAndError(
     possibleProps,
     uiFileCode,
@@ -378,7 +397,7 @@ export function testCanvasErrorMultifile(
   expect(errorsReportedSpyEnabled.length).toEqual(errorsReportedSpyDisabled.length)
   expect(errorsReportedSpyEnabled.length).toBeGreaterThan(0)
   const errorsToCheck = errorsReportedSpyEnabled.map((error) => {
-    let realError = error.error != null ? error.error : error
+    let realError = error.error != null ? error.error : ((error as unknown) as FancyError) // is this conversion needed?
     const stackFrame = realError.stackFrames?.[0]
     return {
       name: realError.name,
@@ -388,5 +407,5 @@ export function testCanvasErrorMultifile(
       columnNumber: stackFrame?._originalColumnNumber,
     }
   })
-  expect(errorsToCheck).toMatchSnapshot()
+  return errorsToCheck
 }
