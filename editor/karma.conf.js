@@ -19,10 +19,12 @@ module.exports = function (config) {
     webpack: webpackConfig,
 
     // list of files / patterns to load in the browser
+    // Here I'm including all of the the Jest tests which are all under the __tests__ directory.
+    // You may need to tweak this patter to find your test files/
     files: ['./karma-setup.js', './src/**/*.spec.browser2.+(ts|tsx)'],
 
-    // browsers: ['ChromeHeadless'],
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless'],
+    // browsers: ['Chrome'],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
