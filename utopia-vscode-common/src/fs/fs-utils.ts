@@ -467,7 +467,13 @@ export async function watch(
     targets.forEach(startWatchingPath)
 
     if (watchTimeout == null) {
-      watchTimeout = setInterval(polledWatch, POLLING_TIMEOUT) as any
+      async function pollThenFireAgain(): Promise<void> {
+        await polledWatch()
+
+        watchTimeout = setTimeout(pollThenFireAgain, POLLING_TIMEOUT) as any
+      }
+
+      watchTimeout = setTimeout(pollThenFireAgain, POLLING_TIMEOUT) as any
     }
   }
 }

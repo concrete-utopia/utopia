@@ -186,7 +186,6 @@ export function renderCanvasReturnResultAndError(
   }
   if (possibleProps == null) {
     canvasProps = {
-      uiFileCode: uiFileCode,
       uiFilePath: UiFilePath,
       selectedViews: [],
       requireFn: requireFn,
@@ -215,7 +214,6 @@ export function renderCanvasReturnResultAndError(
   } else {
     canvasProps = {
       ...possibleProps,
-      uiFileCode: uiFileCode,
       uiFilePath: UiFilePath,
       selectedViews: [],
       requireFn: requireFn,
@@ -250,8 +248,8 @@ export function renderCanvasReturnResultAndError(
       <EditorStateContext.Provider value={storeHookForTest}>
         <UiJsxCanvasContext.Provider value={spyCollector}>
           <CanvasErrorBoundary
-            fileCode={uiFileCode}
             filePath={UiFilePath}
+            projectContents={canvasProps.projectContents}
             // eslint-disable-next-line react/jsx-no-bind
             reportError={reportError}
             requireFn={canvasProps.requireFn}
