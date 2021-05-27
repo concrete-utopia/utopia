@@ -138,7 +138,8 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
     let borderColor: string = 'transparent'
     let backgroundColor: string = colorTheme.inputBackground.value
     let segmentSelectorColor: string = colorTheme.subtleBackground.value
-    let trackColor = colorTheme.secondaryForeground.value
+    // let trackColor = colorTheme.secondaryForeground.value
+    let trackColor = 'hsl(0,0%,40%)'
     let railColor = colorTheme.verySubduedForeground.value
     let set = true
     let interactive = true
@@ -151,11 +152,42 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'simple':
       case 'multiselect-identical-simple':
         break
+      case 'unset':
+      case 'multiselect-identical-unset':
+        set = false
+        mainColor = theme.subdued
+        secondaryColor = theme.subdued
+        tertiaryColor = theme.verySubdued
+        trackColor = theme.verySubdued
+        railColor = theme.subdued
+        unsettable = false
+        break
+      case 'controlled':
+      case 'multiselect-controlled':
+        interactive = true
+        mainColor = theme.primary
+        secondaryColor = theme.primary
+        showContent = true
+        break
+      case 'detected':
+      case 'multiselect-detected':
+        interactive = true
+        mainColor = theme.inputTextSubdued
+        secondaryColor = theme.inputTextSubdued
+        trackColor = theme.inputTextSubdued
+        break
+      case 'trivial-default':
+      case 'multiselect-trivial-default':
+        interactive = true
+        mainColor = theme.subdued
+        secondaryColor = theme.subdued
+        showContent = false
+        break
       case 'detected-fromcss':
       case 'multiselect-detected-fromcss':
-        mainColor = UtopiaTheme.color.css.value
-        secondaryColor = UtopiaTheme.color.css.value
-        trackColor = UtopiaTheme.color.css.value
+        mainColor = colorTheme.css.value
+        secondaryColor = colorTheme.css.value
+        trackColor = colorTheme.css.value
         break
       case 'multiselect-mixed-simple-or-unset':
         set = false
@@ -180,14 +212,7 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         railColor = theme.subdued
         unsettable = false
         break
-      case 'unset':
-      case 'multiselect-identical-unset':
-        set = false
-        mainColor = theme.inputTextSubdued
-        secondaryColor = theme.inputTextSubdued
-        trackColor = theme.inputTextSubdued
-        unsettable = false
-        break
+
       case 'off':
         set = false
         interactive = false
@@ -208,27 +233,6 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         trackColor = 'transparent'
         showContent = true
         unsettable = false
-        break
-      case 'controlled':
-      case 'multiselect-controlled':
-        interactive = true
-        mainColor = theme.primary
-        secondaryColor = theme.primary
-        showContent = true
-        break
-      case 'detected':
-      case 'multiselect-detected':
-        interactive = true
-        mainColor = theme.inputTextSubdued
-        secondaryColor = theme.inputTextSubdued
-        trackColor = theme.inputTextSubdued
-        break
-      case 'trivial-default':
-      case 'multiselect-trivial-default':
-        interactive = true
-        mainColor = theme.subdued
-        secondaryColor = theme.subdued
-        showContent = false
         break
       default:
         break
