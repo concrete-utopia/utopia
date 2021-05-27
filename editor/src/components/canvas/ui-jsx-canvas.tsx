@@ -110,7 +110,6 @@ UiJsxCanvasContext.displayName = 'UiJsxCanvasContext'
 export interface UiJsxCanvasProps {
   offset: CanvasVector
   scale: number
-  uiFileCode: string
   uiFilePath: string
   selectedViews: Array<ElementPath>
   requireFn: UtopiaRequireFn
@@ -195,7 +194,6 @@ export function pickUiJsxCanvasProps(
     return {
       offset: editor.canvas.roundedCanvasOffset,
       scale: editor.canvas.scale,
-      uiFileCode: uiFile.fileContents.code,
       uiFilePath: uiFilePath,
       selectedViews: editor.selectedViews,
       requireFn: requireFn,

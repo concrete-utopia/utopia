@@ -28,6 +28,7 @@ import { betterReactMemo } from '../../uuiui-deps'
 import { ElementPath } from '../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
 import { useReadOnlyRuntimeErrors } from '../../core/shared/runtime-report-logs'
+import StackFrame from '../../third-party/react-error-overlay/utils/stack-frame'
 
 interface CanvasWrapperComponentProps {}
 
@@ -98,7 +99,13 @@ const ErrorOverlayComponent = betterReactMemo(
     const overlayErrors = React.useMemo(() => {
       return runtimeErrors.map((runtimeError) => {
         const stackFrames =
-          runtimeError.error.stackFrames != null ? runtimeError.error.stackFrames : []
+          runtimeError.error.stackFrames != null
+            ? runtimeError.error.stackFrames
+            : [
+                new StackFrame(
+                  'WARNING: This error has no Stack Frames, it might be coming from Utopia itself!',
+                ),
+              ]
         return {
           error: runtimeError.error,
           unhandledRejection: false,
