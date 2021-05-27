@@ -31,6 +31,7 @@ module.exports = function (config) {
       // Use webpack to bundle our tests files
       './karma-setup.js': ['webpack'],
       './src/**/*.ts': ['webpack'],
+      './src/**/*.tsx': ['webpack'],
     },
   })
 }
