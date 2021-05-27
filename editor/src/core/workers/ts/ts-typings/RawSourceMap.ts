@@ -4,6 +4,7 @@ export interface RawSourceMap {
   names: string[]
   sourceRoot?: string
   sourcesContent?: string[]
+  transpiledContentUtopia?: string
   mappings: string
   file: string
 }
