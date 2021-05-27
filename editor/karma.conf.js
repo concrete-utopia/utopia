@@ -34,8 +34,8 @@ module.exports = function (config) {
       '/editor/icons': '/base/resources/editor/icons',
     },
 
-    // browsers: ['ChromeHeadless'],
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless'],
+    // browsers: ['Chrome'],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
