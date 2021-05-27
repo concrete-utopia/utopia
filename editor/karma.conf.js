@@ -20,7 +20,7 @@ module.exports = function (config) {
     // Here I'm including all of the the Jest tests which are all under the __tests__ directory.
     // You may need to tweak this patter to find your test files/
     // files: ['./karma-setup.js', 'src/.*\\.spec\\.(jsx?|tsx?)$'],
-    files: ['./karma-setup.js', './src/components/canvas/ui-jsx-canvas-errors.browser2.spec.ts'],
+    files: ['./karma-setup.js', './src/components/canvas/ui-jsx-canvas-errors.spec.browser2.tsx'],
 
     // browsers: ['ChromeHeadless'],
     browsers: ['Chrome'],
