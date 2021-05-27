@@ -18,7 +18,11 @@ const monkeyCreateElement = (...params: any[]) => {
 }
 ;(React as any).createElement = monkeyCreateElement
 
-jest.setTimeout(10000) // in milliseconds
+try {
+  jest.setTimeout(10000) // in milliseconds
+} catch (e) {
+  // probably not Jest env
+}
 
 import { act, render, RenderResult } from '@testing-library/react'
 import * as Prettier from 'prettier'
