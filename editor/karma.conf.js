@@ -19,7 +19,20 @@ module.exports = function (config) {
     webpack: webpackConfig,
 
     // list of files / patterns to load in the browser
-    files: ['./karma-setup.js', './src/**/*.spec.browser2.+(ts|tsx)'],
+    files: [
+      './karma-setup.js',
+      './src/**/*.spec.browser2.+(ts|tsx)',
+      {
+        pattern: './resources/editor/icons/**/*.png',
+        watched: false,
+        served: true,
+        included: false,
+        nocache: false,
+      },
+    ],
+    proxies: {
+      '/editor/icons': '/base/resources/editor/icons',
+    },
 
     // browsers: ['ChromeHeadless'],
     browsers: ['Chrome'],
