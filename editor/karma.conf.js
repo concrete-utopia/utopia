@@ -39,5 +39,10 @@ module.exports = function (config) {
       './src/**/*.ts': ['webpack'],
       './src/**/*.tsx': ['webpack'],
     },
+    client: {
+      mocha: {
+        timeout: 10000,
+      },
+    },
   })
 }
