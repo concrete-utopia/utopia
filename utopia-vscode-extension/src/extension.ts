@@ -206,10 +206,6 @@ async function doSubscriptionWork(work: SubscriptionWork): Promise<void> {
       const { path, event } = work
       dirtyFiles.delete(path)
 
-      if (event.reason === vscode.TextDocumentSaveReason.Manual) {
-        const formattedCode = applyPrettier(event.document.getText(), false).formatted
-        event.waitUntil(Promise.resolve([new vscode.TextEdit(entireDocRange(), formattedCode)]))
-      }
       break
     }
     case 'DID_CLOSE': {
@@ -262,6 +258,10 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
       if (isUtopiaDocument(event.document)) {
         const path = fromUtopiaURI(event.document.uri)
         pendingWork.push(willSaveText(path, event))
+        if (event.reason === vscode.TextDocumentSaveReason.Manual) {
+          const formattedCode = applyPrettier(event.document.getText(), false).formatted
+          event.waitUntil(Promise.resolve([new vscode.TextEdit(entireDocRange(), formattedCode)]))
+        }
       }
     }),
     vscode.workspace.onDidCloseTextDocument((document) => {
