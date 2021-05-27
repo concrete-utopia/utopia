@@ -25,7 +25,7 @@ module.exports = function (config) {
     files: [
       './karma-setup.js',
       './src/components/canvas/ui-jsx-canvas-errors.spec.browser2.tsx',
-      './src/components/inspector/common/css-utils.spec.browser.tsx',
+      './src/components/inspector/common/css-utils.spec.browser2.tsx',
     ],
 
     // browsers: ['ChromeHeadless'],
