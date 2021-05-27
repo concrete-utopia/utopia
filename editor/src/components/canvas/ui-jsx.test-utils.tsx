@@ -1,7 +1,11 @@
-jest.mock('../editor/stored-state', () => ({
-  loadStoredState: () => Promise.resolve(null),
-  saveStoredState: () => Promise.resolve(),
-}))
+// jest.mock('../editor/stored-state', () => ({
+//   loadStoredState: () => Promise.resolve(null),
+//   saveStoredState: () => Promise.resolve(),
+// }))
+
+import { disableStoredStateforTests } from '../editor/stored-state'
+
+disableStoredStateforTests()
 
 import * as React from 'react'
 
