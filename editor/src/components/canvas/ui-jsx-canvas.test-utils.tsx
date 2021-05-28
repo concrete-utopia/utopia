@@ -1,4 +1,4 @@
-import * as Prettier from 'prettier/standalone'
+const Prettier = jest != null ? require('prettier') : require('prettier/standalone') // TODO split these files, standalone prettier is not working in unit tests
 import * as React from 'react'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 applyUIDMonkeyPatch()

@@ -11,3 +11,4 @@ BrowserFS.configure({ fs: 'InMemory', options: {} }, (e) => {
 window.BrowserFS = BrowserFS
 
 window.expect = expect
+window.jest = null
