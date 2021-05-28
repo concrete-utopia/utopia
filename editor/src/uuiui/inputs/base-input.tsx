@@ -125,24 +125,20 @@ const StyledInput = styled.input<InspectorInputProps>(
     paddingBottom: 2,
     paddingRight: 6,
     paddingLeft: labelInner != null ? 22 : 6,
-    backgroundColor: controlStyles.backgroundColor,
+    background: 'transparent',
     fontStyle: controlStyles.fontStyle,
     fontWeight: controlStyles.fontWeight,
-    color: controlStyles.mainColor,
     border: 0,
     height: UtopiaTheme.layout.inputHeight.default,
     width: '100%',
     marginBottom: 0,
-    ...getChainedBoxShadow(controlStyles, chained, focused, false),
+    // ...getChainedBoxShadow(controlStyles, chained, focused, false),
     ...getBorderRadiusStyles(chained, roundCorners),
     disabled: !controlStyles.interactive,
     '&:hover': {
-      ...getChainedBoxShadow(controlStyles, chained, focused, true),
+      // ...getChainedBoxShadow(controlStyles, chained, focused, true),
     },
-    '&:focus': {
-      color: 'black',
-      background: 'white',
-    },
+    '&:focus': {},
   }),
 )
 

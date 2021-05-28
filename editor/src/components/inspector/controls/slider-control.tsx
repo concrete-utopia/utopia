@@ -59,6 +59,11 @@ export class SliderControl extends React.Component<SliderControlProps> {
           max={controlOptions.maximum}
           step={controlOptions.stepSize}
           marks={marks}
+          handleStyle={{
+            backgroundColor: controlOptions.filled
+              ? this.props.controlStyles.trackColor
+              : undefined,
+          }}
           trackStyle={{
             backgroundColor: controlOptions.filled
               ? this.props.controlStyles.trackColor

@@ -20,6 +20,11 @@ export interface ControlStyles {
   tertiaryColor: string
   borderColor: string
   backgroundColor: string
+  focusedBackgroundColor: string
+  focusedTextColor: string
+  strokePrimaryColor: string
+  strokeSecondaryColor: string
+  strokeTertiaryColor: string
   segmentSelectorColor: string
   set: boolean
   interactive: boolean
@@ -37,7 +42,19 @@ const theme = {
   text: colorTheme.neutralForeground.value,
   textEmphasized: colorTheme.emphasizedForeground.value,
   subdued: colorTheme.subduedForeground.value,
-  verySubdued: colorTheme.subduedForeground.shade(30).value,
+  verySubdued: 'hsl(0,0%,80%)',
+  fg1: 'hsl(0,0%,10%)',
+  fg2: 'hsl(0,0%,20%)',
+  fg3: 'hsl(0,0%,30%)',
+  fg4: 'hsl(0,0%,40%)',
+  fg5: 'hsl(0,0%,50%)',
+  fg7: 'hsl(0,0%,70%)',
+  fg8: 'hsl(0,0%,80%)',
+  bg0: 'white',
+  bg1: 'hsl(0,0%,98%)',
+  bg2: 'hsl(0,0%,96%)',
+  bg3: 'hsl(0,0%,94%)',
+  bg5: 'hsl(0,0%,90%)',
   textInverted: 'white',
   selectedItemBg: 'hsl(0,0%,90%)',
   inputBg: 'hsl(0,0%,96%)',
@@ -132,15 +149,20 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
   (status: ControlStatus): ControlStyles => {
     let fontStyle = 'normal'
     let fontWeight = 400
-    let mainColor: string = colorTheme.neutralForeground.value
-    let secondaryColor: string = colorTheme.subduedForeground.value
-    let tertiaryColor: string = colorTheme.verySubduedForeground.value
+    let mainColor: string = theme.fg1
+    let secondaryColor: string = theme.fg5
+    let tertiaryColor: string = theme.fg7
     let borderColor: string = 'transparent'
-    let backgroundColor: string = colorTheme.inputBackground.value
-    let segmentSelectorColor: string = colorTheme.subtleBackground.value
-    // let trackColor = colorTheme.secondaryForeground.value
-    let trackColor = 'hsl(0,0%,40%)'
-    let railColor = colorTheme.verySubduedForeground.value
+    // text inputs
+    let backgroundColor: string = theme.bg2
+    let focusedBackgroundColor: string = theme.bg0
+    let focusedTextColor: string = theme.fg1
+    let segmentSelectorColor: string = theme.bg3
+    let trackColor = theme.fg7
+    let railColor = theme.bg3
+    let strokePrimaryColor = theme.fg5
+    let strokeSecondaryColor = theme.fg7
+    let strokeTertiaryColor = theme.fg8
     let set = true
     let interactive = true
     let mixed = false
@@ -152,14 +174,16 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'simple':
       case 'multiselect-identical-simple':
         break
+      case 'detected':
+      case 'multiselect-detected':
       case 'unset':
       case 'multiselect-identical-unset':
         set = false
-        mainColor = theme.subdued
-        secondaryColor = theme.subdued
-        tertiaryColor = theme.verySubdued
-        trackColor = theme.verySubdued
-        railColor = theme.subdued
+        mainColor = theme.fg7
+        secondaryColor = theme.fg7
+        tertiaryColor = theme.fg7
+        trackColor = theme.bg5
+        railColor = theme.bg3
         unsettable = false
         break
       case 'controlled':
@@ -167,21 +191,19 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
         interactive = true
         mainColor = theme.primary
         secondaryColor = theme.primary
+        trackColor = theme.primary
+        strokePrimaryColor = theme.primary
         showContent = true
-        break
-      case 'detected':
-      case 'multiselect-detected':
-        interactive = true
-        mainColor = theme.inputTextSubdued
-        secondaryColor = theme.inputTextSubdued
-        trackColor = theme.inputTextSubdued
         break
       case 'trivial-default':
       case 'multiselect-trivial-default':
         interactive = true
-        mainColor = theme.subdued
-        secondaryColor = theme.subdued
         showContent = false
+        mainColor = theme.fg7
+        secondaryColor = theme.fg7
+        tertiaryColor = theme.fg7
+        trackColor = theme.bg5
+        railColor = theme.bg3
         break
       case 'detected-fromcss':
       case 'multiselect-detected-fromcss':
@@ -192,24 +214,26 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'multiselect-mixed-simple-or-unset':
         set = false
         mixed = true
-        mainColor = theme.inputTextSubdued
-        trackColor = theme.inputTextSubdued
+        mainColor = 'yellow'
+        secondaryColor = 'yellow'
+        trackColor = 'yellow'
         break
       case 'simple-unknown-css':
       case 'multiselect-simple-unknown-css':
         unknown = true
         interactive = true
-        mainColor = theme.subdued
-        secondaryColor = theme.subdued
+        mainColor = 'orange'
+        secondaryColor = 'orange'
+        trackColor = 'orange'
         backgroundColor = 'transparent'
         break
       case 'unoverwritable':
       case 'multiselect-unoverwritable':
         interactive = false
-        mainColor = theme.subdued
-        secondaryColor = theme.subdued
-        trackColor = theme.subdued
-        railColor = theme.subdued
+        mainColor = theme.fg8
+        secondaryColor = theme.fg8
+        trackColor = theme.fg8
+        railColor = theme.fg8
         unsettable = false
         break
 
@@ -246,12 +270,17 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       tertiaryColor,
       borderColor,
       backgroundColor,
+      focusedBackgroundColor,
+      focusedTextColor,
       segmentSelectorColor,
+      strokePrimaryColor,
+      strokeSecondaryColor,
+      strokeTertiaryColor,
+      trackColor,
+      railColor,
       set,
       interactive,
       mixed,
-      trackColor,
-      railColor,
       showContent,
       unknown,
       unsettable,

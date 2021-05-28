@@ -601,9 +601,24 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
         <div
           className='number-input-container'
           css={{
+            color: controlStyles.mainColor,
+            backgroundColor: controlStyles.backgroundColor,
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
+            borderRadius: 2,
             ...chainedStyles,
+            '&:hover': {
+              boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
+            },
+            '&:focus-within': {
+              boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
+            },
+            '&:hover input': {
+              color: controlStyles.mainColor,
+            },
+            '&:focus-within input': {
+              color: controlStyles.mainColor,
+            },
           }}
         >
           <InspectorInput
@@ -618,6 +633,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
             mixed={mixed}
             value={stateValue}
             ref={ref}
+            css={{ color: controlStyles.mainColor }}
             className='number-input'
             height={height}
             id={id}
@@ -633,14 +649,14 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               className='number-input-innerLabel'
               css={{
                 position: 'absolute',
-                top: 1,
-                left: 1,
+                top: 0,
+                left: 0,
                 userSelect: 'none',
                 pointerEvents: 'none',
                 width: 20,
                 height: 20,
-                backgroundImage: backgroundImage,
-                borderRadius: UtopiaTheme.inputBorderRadius,
+                // backgroundImage: backgroundImage,
+                // borderRadius: UtopiaTheme.inputBorderRadius,
                 display: 'block',
                 // '.number-input-container:hover &': {
                 //   display: incrementControls && controlStyles.interactive ? 'none' : 'block',
@@ -686,12 +702,15 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 '.number-input-container:hover &': {
                   display: 'block',
                 },
+                '.number-input-container:focus-within &': {
+                  display: 'block',
+                },
               }}
             >
               <div
                 css={{
                   height: '50%',
-                  opacity: 0.8,
+                  opacity: 0.6,
                   position: 'relative',
                   borderTopRightRadius: borderRadiusStyles.borderTopRightRadius,
                   ':active': {
@@ -715,10 +734,21 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
               <div
                 css={{
                   height: '50%',
-                  opacity: 0.8,
+                  opacity: 0.6,
+                  position: 'relative',
                   borderBottomRightRadius: borderRadiusStyles.borderBottomRightRadius,
                   ':active': {
                     opacity: 1,
+                  },
+                  '::after': {
+                    content: '""',
+                    width: 'calc(100% - 1px)',
+                    height: 1,
+                    position: 'absolute',
+                    right: 1,
+                    bottom: 0,
+                    transform: 'translateY(0.5px)',
+                    pointerEvents: 'none',
                   },
                 }}
                 onMouseDown={onDecrementMouseDown}

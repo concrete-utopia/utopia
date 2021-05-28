@@ -57,6 +57,7 @@ export const CustomReactSelectInput = (props: InputProps) => {
   const inputStyle = React.useMemo(() => {
     return {
       label: 'input',
+      background: 'transparent',
       border: 0,
       fontSize: 'inherit',
       opacity: props.isHidden ? 0 : 1,
@@ -161,7 +162,9 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
         return {
           ...base,
           height: '100%',
-          backgroundColor: props.controlStyles.backgroundColor,
+          backgroundColor: state.isFocused
+            ? props.controlStyles.focusedBackgroundColor
+            : props.controlStyles.backgroundColor,
           boxShadow: `0 0 0 1px ${
             state.isFocused
               ? colorTheme.inspectorFocusedColor.value
@@ -171,6 +174,9 @@ export const SelectControl: React.StatelessComponent<DEPRECATEDControlProps<any>
           borderWidth: 0,
           minHeight: 0,
           padding: '1px',
+          '&:hover': {
+            boxShadow: `0 0 0 1px ${colorTheme.inspectorFocusedColor.value}`,
+          },
         }
       },
       container: (base: React.CSSProperties) => ({

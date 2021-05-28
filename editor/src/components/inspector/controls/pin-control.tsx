@@ -46,9 +46,9 @@ function getStrokeColor(
   const isPrimary = Utils.propOr(false, 'isPrimaryPosition', framePoints[point])
 
   if (isPrimary && !mixed) {
-    return controlStyles.mainColor
+    return controlStyles.strokePrimaryColor
   } else {
-    return controlStyles.tertiaryColor
+    return controlStyles.strokeTertiaryColor
   }
 }
 

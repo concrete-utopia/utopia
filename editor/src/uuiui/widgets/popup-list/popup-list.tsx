@@ -50,7 +50,7 @@ const OptionHeight = UtopiaTheme.layout.inputHeight.default + 2
 const CheckboxPadding = 4
 const CheckboxWidth = 16
 const CheckboxInset = CheckboxPadding + CheckboxWidth
-const ValueContainerLeftPadding = 8
+const ValueContainerLeftPadding = 4
 const menuVerticalPadding = 4
 
 const getValueOfValueType = (value: ValueType<SelectOption>): SelectOption['value'] => {
@@ -558,7 +558,7 @@ export const PopupList = betterReactMemo<PopupListProps>(
             ...base,
             width: 14,
             flexBasis: 14,
-            background: UtopiaTheme.color.inputBackground.shade(102).value,
+            background: 'transparent',
             // the control is on top of the input not inside it, so need to make space for input borders
             height: OptionHeight - 2,
             marginRight: 1,
@@ -592,13 +592,15 @@ export const PopupList = betterReactMemo<PopupListProps>(
             color: controlStyles.mainColor,
             display: 'flex',
             alignItems: 'center',
+            overflowX: 'scroll',
+            whiteSpace: 'nowrap',
           }),
           menu: () => ({
             label: 'menu',
             boxSizing: 'border-box',
             height: '100%',
             width: '100%',
-            padding: `${menuVerticalPadding}px 8px`,
+            padding: `${menuVerticalPadding}px 2px`,
           }),
           menuList: (_, menuListProps) => {
             return {

@@ -60,7 +60,6 @@ export const OptionControl: React.FunctionComponent<
   const rc = controlOptions.roundCorners
   return (
     <div
-      tabIndex={1}
       className={`${
         props.className != null ? props.className : ''
       } option-control-container segment`}

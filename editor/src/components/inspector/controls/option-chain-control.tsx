@@ -43,7 +43,7 @@ export const OptionChainControl: React.StatelessComponent<DEPRECATEDControlProps
     <div
       id={props.id}
       key={props.key}
-      style={{
+      css={{
         // width: '100%',
         display: 'flex',
         flexDirection: 'column',

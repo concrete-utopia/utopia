@@ -617,7 +617,7 @@ export const ComponentSectionInner = betterReactMemo(
       <>
         <InspectorSectionHeader>
           <UIGridRow
-            padded
+            padded={false}
             variant='|--32px--|<--------auto-------->'
             style={{ flexGrow: 1, color: colorTheme.primary.value }}
           >

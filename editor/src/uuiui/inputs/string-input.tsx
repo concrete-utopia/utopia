@@ -130,34 +130,51 @@ export const StringInput = betterReactMemo(
 
       return (
         <form autoComplete='off' style={style} onMouseDown={stopPropagation}>
-          <InspectorInput
-            {...inputProps}
-            testId={inputProps.testId}
-            controlStatus={controlStatus}
-            controlStyles={controlStyles}
-            focused={focused}
-            value={inputProps.value}
+          <div
+            className='string-input-container'
             css={{
-              '&::placeholder': {
-                fontStyle: 'italic',
-                color: UtopiaTheme.color.subduedForeground.value,
+              borderRadius: 2,
+              color: controlStyles.mainColor,
+              backgroundColor: controlStyles.backgroundColor,
+              position: 'relative',
+              '&:hover': {
+                boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
+              },
+              '&:focus-within': {
+                boxShadow: `inset 0px 0px 0px 1px ${UtopiaTheme.color.primary.value}`,
               },
             }}
-            onKeyDown={onKeyDown}
-            onFocus={onFocus}
-            onBlur={onBlur}
-            className={inputProps.className}
-            ref={composeRefs(ref, propsRef)}
-            placeholder={placeholder}
-            disabled={!controlStyles.interactive}
-            autoComplete='off'
-            spellCheck={false}
-          />
-          {labelBelow == null ? null : (
-            <LabelBelow htmlFor={inputProps.id} style={{ color: controlStyles.secondaryColor }}>
-              {labelBelow}
-            </LabelBelow>
-          )}
+          >
+            <InspectorInput
+              {...inputProps}
+              testId={inputProps.testId}
+              controlStatus={controlStatus}
+              controlStyles={controlStyles}
+              focused={focused}
+              value={inputProps.value}
+              css={{
+                color: controlStyles.mainColor,
+                '&::placeholder': {
+                  fontStyle: 'italic',
+                  color: UtopiaTheme.color.subduedForeground.value,
+                },
+              }}
+              onKeyDown={onKeyDown}
+              onFocus={onFocus}
+              onBlur={onBlur}
+              className={inputProps.className}
+              ref={composeRefs(ref, propsRef)}
+              placeholder={placeholder}
+              disabled={!controlStyles.interactive}
+              autoComplete='off'
+              spellCheck={false}
+            />
+            {labelBelow == null ? null : (
+              <LabelBelow htmlFor={inputProps.id} style={{ color: controlStyles.secondaryColor }}>
+                {labelBelow}
+              </LabelBelow>
+            )}
+          </div>
         </form>
       )
     },

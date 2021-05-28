@@ -1,7 +1,5 @@
 body {
   --control-set-fontStyle: normal;
-  --control-disabled-fontStyle: italic;
-  --control-border-radius: 4px;
   --control-focused-color: #027aff;
 }
 
