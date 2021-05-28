@@ -54,9 +54,15 @@ export function processErrorWithSourceMap(
       const parsedStackFrames = parseError(error)
 
       // TODO turn ;sourceMap= into const
-      const rawSourceMap: RawSourceMap | null = JSON.parse(
-        base64ToStr(parsedStackFrames[0].fileName?.split(SOURCE_MAP_PREFIX)[1] ?? ''),
-      )
+      let rawSourceMap: RawSourceMap | null = null
+      let possibleSourceMapSegment: string | null = null
+      if (0 in parsedStackFrames) {
+        possibleSourceMapSegment =
+          parsedStackFrames[0].fileName?.split(SOURCE_MAP_PREFIX)[1] ?? null
+      }
+      if (possibleSourceMapSegment != null) {
+        rawSourceMap = JSON.parse(base64ToStr(possibleSourceMapSegment))
+      }
       const sourceCode = rawSourceMap?.transpiledContentUtopia
 
       const fixedSourceCode = sourceCode?.split('\n') ?? []
