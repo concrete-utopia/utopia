@@ -146,6 +146,7 @@ export function SafeFunction(
   async: boolean,
   cacheableContext: any,
   code: string,
+  sourceMapWithoutTranspiledCode: RawSourceMap | null,
   extraParamKeys: Array<string>,
   onError: ErrorHandler,
 ): (...params: Array<any>) => any {
@@ -154,7 +155,7 @@ export function SafeFunction(
       async,
       cacheableContext,
       code,
-      null,
+      sourceMapWithoutTranspiledCode,
       extraParamKeys,
     )(onError)
   } catch (e) {

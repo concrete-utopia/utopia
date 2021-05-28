@@ -84,6 +84,10 @@ describe('UiJsxCanvas React errors', () => {
     )
     expect(canvasErrors.length).toEqual(1)
     expect(canvasErrors[0].message).toEqual('React is not defined')
-    expect(canvasErrors[0].originalCode?.length).toEqual(7)
+    expect(canvasErrors[0].originalCode?.length).toEqual(6)
+    // TODO Figure out a way to do an inline snapshot-type thing here
+    expect(canvasErrors[0].originalCode?.[1].content).toEqual(
+      '      export var Card = (props) => {',
+    )
   })
 })

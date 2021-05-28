@@ -74,7 +74,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }
@@ -185,7 +185,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }
@@ -276,7 +276,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }
@@ -361,7 +361,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }
@@ -422,7 +422,7 @@ describe('evaluateExpressions', function () {
         context[dependencyVarName] = dependency.value
       }
       const fixedExpression = replaceAll(expression, '@', '')
-      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, [], (e) => {
+      return Utils.SafeFunction(false, context, 'return ' + fixedExpression, null, [], (e) => {
         throw e
       })(null)
     }
