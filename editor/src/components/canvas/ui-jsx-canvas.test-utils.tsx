@@ -50,6 +50,7 @@ import { directory } from '../../core/model/project-file-utils'
 import { contentsToTree } from '../assets'
 import { MapLike } from 'typescript'
 import { getRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import type { ScriptLine } from '../../third-party/react-error-overlay/utils/stack-frame'
 
 export interface PartialCanvasProps {
   offset: UiJsxCanvasProps['offset']
@@ -380,9 +381,9 @@ export function testCanvasErrorMultifile(
 interface TestCanvasError {
   name: string
   message: string
-  originalCode: any
-  lineNumber: any
-  columnNumber: any
+  originalCode: ScriptLine[] | null | undefined
+  lineNumber: number | null | undefined
+  columnNumber: number | null | undefined
 }
 
 export function testCanvasErrorInline(

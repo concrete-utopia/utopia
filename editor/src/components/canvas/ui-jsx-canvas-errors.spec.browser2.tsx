@@ -41,7 +41,11 @@ describe('UiJsxCanvas React errors', () => {
     )
     expect(canvasErrors.length).toEqual(1)
     expect(canvasErrors[0].message).toEqual('React is not defined')
-    expect(canvasErrors[0].originalCode.length).toEqual(7)
+    // TODO a nicer matcher would be nice
+    expect(canvasErrors[0].originalCode?.length).toEqual(7)
+    expect(canvasErrors[0].originalCode?.[4].content).toEqual(
+      `        <Storyboard data-uid={'utopia-storyboard-uid'}>`,
+    )
   })
 
   it('shows error when the React import is missing from card.js', () => {
@@ -80,6 +84,6 @@ describe('UiJsxCanvas React errors', () => {
     )
     expect(canvasErrors.length).toEqual(1)
     expect(canvasErrors[0].message).toEqual('React is not defined')
-    expect(canvasErrors[0].originalCode.length).toEqual(7)
+    expect(canvasErrors[0].originalCode?.length).toEqual(7)
   })
 })
