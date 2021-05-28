@@ -9,7 +9,7 @@ import {
 import { toggleProperty } from '../../editor/actions/action-creators'
 import { toggleBorder, toggleShadow, toggleStylePropPath } from './css-utils'
 
-const mochaDescribe = describe('toggle style prop', () => {
+describe('toggle style prop', () => {
   it('disables border, sets border to none from solid', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -185,6 +185,3 @@ const mochaDescribe = describe('toggle style prop', () => {
     )
   })
 })
-
-// TODO Mocha types
-;(mochaDescribe as any).timeout(5000)
