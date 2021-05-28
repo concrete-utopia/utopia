@@ -1,4 +1,4 @@
-import * as Prettier from 'prettier'
+import * as Prettier from 'prettier/standalone'
 import * as React from 'react'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 applyUIDMonkeyPatch()
