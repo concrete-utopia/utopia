@@ -217,6 +217,8 @@ const config = {
     exprContextCritical: false,
 
     rules: [
+      // handles jest-message-utils importing 'graceful-fs'
+      { test: /graceful-fs/, use: 'null-loader' },
       // Match typescript
       {
         exclude: /node_modules(?!\/utopia-api)/,
