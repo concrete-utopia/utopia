@@ -9,7 +9,7 @@ import * as UUIUI from '../../uuiui'
 import * as ANTD from 'antd'
 import * as EmotionReact from '@emotion/react'
 
-import { FancyError } from '../../core/shared/code-exec-utils'
+import { FancyError, processErrorWithSourceMap } from '../../core/shared/code-exec-utils'
 import { Either, isRight, left, right } from '../../core/shared/either'
 import {
   ElementInstanceMetadata,
@@ -262,6 +262,8 @@ export function renderCanvasReturnResultAndError(
     formattedSpyEnabled = Prettier.format(flatFormat, { parser: 'html' })
     errorsReportedSpyEnabled = errorsReported
   } catch (e) {
+    // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
+    processErrorWithSourceMap(e, true)
     errorsReportedSpyEnabled = [e]
   }
   errorsReported = []
@@ -280,6 +282,8 @@ export function renderCanvasReturnResultAndError(
     formattedSpyDisabled = Prettier.format(flatFormatSpyDisabled, { parser: 'html' })
     errorsReportedSpyDisabled = errorsReported
   } catch (e) {
+    // TODO instead of relying on this hack here, we should create a new test function that runs the real react render instead of ReactDOMServer.renderToStaticMarkup
+    processErrorWithSourceMap(e, true)
     errorsReportedSpyDisabled = [e]
   }
 

@@ -41,7 +41,9 @@ describe('UiJsxCanvas React errors', () => {
     )
     expect(canvasErrors.length).toEqual(1)
     expect(canvasErrors[0].message).toEqual('React is not defined')
+    expect(canvasErrors[0].originalCode.length).toEqual(7)
   })
+
   it('shows error when the React import is missing from card.js', () => {
     const canvasErrors = testCanvasErrorInline(
       null,
@@ -78,5 +80,6 @@ describe('UiJsxCanvas React errors', () => {
     )
     expect(canvasErrors.length).toEqual(1)
     expect(canvasErrors[0].message).toEqual('React is not defined')
+    expect(canvasErrors[0].originalCode.length).toEqual(7)
   })
 })
