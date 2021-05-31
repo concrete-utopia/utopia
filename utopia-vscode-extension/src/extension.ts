@@ -185,6 +185,8 @@ async function doSubscriptionWork(work: SubscriptionWork): Promise<void> {
       if (event.document.isDirty) {
         // New unsaved change
         dirtyFiles.add(path)
+      }
+      if (dirtyFiles.has(path)) {
         if (incomingFileChanges.has(path)) {
           // This change actually came from Utopia, so we don't want to re-write it to the FS
           incomingFileChanges.delete(path)
