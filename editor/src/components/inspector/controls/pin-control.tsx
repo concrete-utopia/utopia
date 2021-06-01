@@ -121,7 +121,9 @@ export const PinControl = (props: PinControlProps) => {
             onMouseDown={handlePinMouseDown('PinnedTop')}
           />
           <path
-            d={`M${HorizontalMid},${VerticalMid - VerticalLength} l0,${VerticalLength * 2}`}
+            d={`M${HorizontalMid},${VerticalMid - (VerticalLength - 4)} l0,${
+              (VerticalLength - 4) * 2
+            }`}
             className='pin-indicator'
             id='positioncontrols-pin-centery'
             stroke={getStrokeColor(
@@ -169,7 +171,9 @@ export const PinControl = (props: PinControlProps) => {
             onMouseDown={handlePinMouseDown('PinnedRight')}
           />
           <path
-            d={`M${HorizontalMid - HorizontalLength},${VerticalMid} l${HorizontalLength * 2},0`}
+            d={`M${HorizontalMid - (HorizontalLength - 6)},${VerticalMid} l${
+              (HorizontalLength - 6) * 2
+            },0`}
             className='pin-indicator'
             id='positioncontrols-pin-centerx'
             stroke={getStrokeColor(

@@ -26,7 +26,7 @@ import {
   BackgroundSolidOrGradientThumbnailControl,
   StringBackgroundColorControl,
 } from '../../../controls/background-solid-or-gradient-thumbnail-control'
-import { CheckboxInput, SimplePercentInput } from '../../../../../uuiui'
+import { CheckboxInput, Icons, SimplePercentInput } from '../../../../../uuiui'
 import { betterReactMemo } from '../../../../../uuiui-deps'
 
 function getIndexedUpdateStringCSSBackgroundLayerSolidColor(index: number) {
@@ -165,6 +165,7 @@ export const SolidBackgroundLayer = betterReactMemo<SolidBackgroundLayerProps>(
               onForcedSubmitValue={onAlphaSubmitValue}
               controlStatus={props.controlStatus}
               DEPRECATED_labelBelow='alpha'
+              labelInner={<Icons.BracketedPointer />}
               minimum={0}
               maximum={1}
               stepSize={0.01}

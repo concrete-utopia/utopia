@@ -133,7 +133,6 @@ export const DependencyListItem: React.FunctionComponent<DependencyListItemProps
           paddingLeft: 8,
           paddingRight: 8,
           borderRadius: 2,
-          color: colorTheme.secondaryForeground.value,
           '&:focus': {
             background: UtopiaTheme.color.subtleBackground.value,
             color: colorTheme.emphasizedForeground.value,

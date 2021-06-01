@@ -34,19 +34,32 @@ const lightBase = {
 
 const lightPrimitives = {
   // backgrounds
-  emphasizedBackground: createUtopiColor('hsl(0,0%,100%)', 'eg focused inputs', 'white'),
-  neutralBackground: createUtopiColor(
-    'hsl(0,0%,98%)',
-    'Navigator, Inspector, LeftMenu',
-    'offWhite',
-  ),
-  secondaryBackground: createUtopiColor('hsl(0,0%,95%)', 'eg Canvas, contextmenus', 'offWhite'),
+  emphasizedBackground: createUtopiColor('hsl(0,0%,100%)', 'bg1', 'white'),
+  neutralBackground: createUtopiColor('hsl(0,0%,98%)', 'bg1', 'offWhite'),
+  secondaryBackground: createUtopiColor('hsl(0,0%,96%)', 'eg Canvas, contextmenus', 'offWhite'),
   subtleBackground: createUtopiColor('hsl(0,0%,94%)', '', ''),
   neutralInvertedBackground: createUtopiColor('hsl(0,0%,10%)', 'almost fully inverted', 'black'),
 
+  bg0: createUtopiColor('hsl(0,0%,100%)', 'brightest', 'white'),
+  bg1: createUtopiColor('hsl(0,0%,98%)', 'neutral', 'white'),
+  bg2: createUtopiColor('hsl(0,0%,96%)', 'eg inputs', 'white'),
+  bg3: createUtopiColor('hsl(0,0%,94%)', 'visible buttons', 'white'),
+  bg4: createUtopiColor('hsl(0,0%,92%)', 'hover states for buttons', 'white'),
+  bg5: createUtopiColor('hsl(0,0%,90%)', 'selected elements', 'grey'),
+
+  fg0: createUtopiColor('hsl(0,0%,0%)', 'emphasized foreground', 'black'),
+  fg1: createUtopiColor('hsl(0,0%,10%)', 'default foreground', 'black'),
+  fg2: createUtopiColor('hsl(0,0%,20%)', 'black', 'black'),
+  fg3: createUtopiColor('hsl(0,0%,30%)', 'darkgray', 'darkgray'),
+  fg4: createUtopiColor('hsl(0,0%,40%)', 'darkgray', 'darkgray'),
+  fg5: createUtopiColor('hsl(0,0%,50%)', 'grey', 'grey'),
+  fg6: createUtopiColor('hsl(0,0%,60%)', 'grey', 'grey'),
+  fg7: createUtopiColor('hsl(0,0%,70%)', 'grey', 'grey'),
+  fg8: createUtopiColor('hsl(0,0%,80%)', 'lightgrey', 'lightgrey'),
+  fg9: createUtopiColor('hsl(0,0%,90%)', 'lightgrey', 'lightgrey'),
+
   emphasizedForeground: createUtopiColor('hsl(0,0%,0%)', 'Pure Black', 'black'),
   neutralForeground: createUtopiColor('hsl(0,0%,10%)', '10% Black', 'offBlack'),
-  secondaryForeground: createUtopiColor('hsl(0,0%,30%)', '30% Black', 'offBlack'),
   subduedForeground: createUtopiColor('hsl(0,0%,50%)', '50% Black', 'offBlack'),
   verySubduedForeground: createUtopiColor('hsl(0,0%,80%)', '80% Black', 'offBlack'),
   neutralInvertedForeground: createUtopiColor('rgb(255,255,255)', 'white', 'white'),

@@ -17,11 +17,9 @@ export interface ControlStyles {
   fontWeight: number
   mainColor: string
   secondaryColor: string
-  tertiaryColor: string
   borderColor: string
   backgroundColor: string
   focusedBackgroundColor: string
-  focusedTextColor: string
   strokePrimaryColor: string
   strokeSecondaryColor: string
   strokeTertiaryColor: string
@@ -43,18 +41,7 @@ const theme = {
   textEmphasized: colorTheme.emphasizedForeground.value,
   subdued: colorTheme.subduedForeground.value,
   verySubdued: 'hsl(0,0%,80%)',
-  fg1: 'hsl(0,0%,10%)',
-  fg2: 'hsl(0,0%,20%)',
-  fg3: 'hsl(0,0%,30%)',
-  fg4: 'hsl(0,0%,40%)',
-  fg5: 'hsl(0,0%,50%)',
-  fg7: 'hsl(0,0%,70%)',
-  fg8: 'hsl(0,0%,80%)',
-  bg0: 'white',
-  bg1: 'hsl(0,0%,98%)',
-  bg2: 'hsl(0,0%,96%)',
-  bg3: 'hsl(0,0%,94%)',
-  bg5: 'hsl(0,0%,90%)',
+
   textInverted: 'white',
   selectedItemBg: 'hsl(0,0%,90%)',
   inputBg: 'hsl(0,0%,96%)',
@@ -149,20 +136,19 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
   (status: ControlStatus): ControlStyles => {
     let fontStyle = 'normal'
     let fontWeight = 400
-    let mainColor: string = theme.fg1
-    let secondaryColor: string = theme.fg5
-    let tertiaryColor: string = theme.fg7
+    let mainColor: string = colorTheme.fg1.value
+    let secondaryColor: string = colorTheme.fg7.value
+
     let borderColor: string = 'transparent'
     // text inputs
-    let backgroundColor: string = theme.bg2
-    let focusedBackgroundColor: string = theme.bg0
-    let focusedTextColor: string = theme.fg1
-    let segmentSelectorColor: string = theme.bg3
-    let trackColor = theme.fg7
-    let railColor = theme.bg3
-    let strokePrimaryColor = theme.fg5
-    let strokeSecondaryColor = theme.fg7
-    let strokeTertiaryColor = theme.fg8
+    let backgroundColor: string = colorTheme.bg2.value
+    let focusedBackgroundColor: string = colorTheme.bg0.value
+    let segmentSelectorColor: string = colorTheme.bg3.value
+    let trackColor = colorTheme.fg7.value
+    let railColor = colorTheme.bg3.value
+    let strokePrimaryColor = colorTheme.fg3.value
+    let strokeSecondaryColor = colorTheme.fg7.value
+    let strokeTertiaryColor = colorTheme.fg8.value
     let set = true
     let interactive = true
     let mixed = false
@@ -179,44 +165,36 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'unset':
       case 'multiselect-identical-unset':
         set = false
-        mainColor = theme.fg7
-        secondaryColor = theme.fg7
-        tertiaryColor = theme.fg7
-        trackColor = theme.bg5
-        railColor = theme.bg3
+        mainColor = colorTheme.fg7.value
+        secondaryColor = colorTheme.fg7.value
+        trackColor = colorTheme.bg5.value
+        railColor = colorTheme.bg3.value
         unsettable = false
         break
       case 'controlled':
       case 'multiselect-controlled':
+      case 'multiselect-mixed-simple-or-unset':
         interactive = true
-        mainColor = theme.primary
-        secondaryColor = theme.primary
-        trackColor = theme.primary
-        strokePrimaryColor = theme.primary
+        mainColor = colorTheme.primary.value
+        secondaryColor = colorTheme.primary.value
+        trackColor = colorTheme.primary.value
+        strokePrimaryColor = colorTheme.primary.value
         showContent = true
         break
       case 'trivial-default':
       case 'multiselect-trivial-default':
         interactive = true
         showContent = false
-        mainColor = theme.fg7
-        secondaryColor = theme.fg7
-        tertiaryColor = theme.fg7
-        trackColor = theme.bg5
-        railColor = theme.bg3
+        mainColor = colorTheme.fg7.value
+        secondaryColor = colorTheme.fg7.value
+        trackColor = colorTheme.bg5.value
+        railColor = colorTheme.bg3.value
         break
       case 'detected-fromcss':
       case 'multiselect-detected-fromcss':
         mainColor = colorTheme.css.value
         secondaryColor = colorTheme.css.value
         trackColor = colorTheme.css.value
-        break
-      case 'multiselect-mixed-simple-or-unset':
-        set = false
-        mixed = true
-        mainColor = 'yellow'
-        secondaryColor = 'yellow'
-        trackColor = 'yellow'
         break
       case 'simple-unknown-css':
       case 'multiselect-simple-unknown-css':
@@ -230,30 +208,29 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'unoverwritable':
       case 'multiselect-unoverwritable':
         interactive = false
-        mainColor = theme.fg8
-        secondaryColor = theme.fg8
-        trackColor = theme.fg8
-        railColor = theme.fg8
+        mainColor = colorTheme.fg8.value
+        secondaryColor = colorTheme.fg8.value
+        trackColor = colorTheme.fg8.value
+        railColor = colorTheme.fg8.value
         unsettable = false
         break
 
       case 'off':
         set = false
         interactive = false
-        mainColor = theme.inputTextSubdued
-        secondaryColor = theme.subdued
-        trackColor = theme.subdued
+        mainColor = colorTheme.fg9.value
+        secondaryColor = colorTheme.fg9.value
+        trackColor = colorTheme.fg9.value
         showContent = false
         unsettable = false
         break
       case 'disabled':
       case 'multiselect-disabled':
         interactive = false
-        mainColor = theme.subdued
-        secondaryColor = theme.subdued
+        mainColor = colorTheme.fg9.value
+        secondaryColor = colorTheme.fg9.value
         backgroundColor = 'transparent'
         segmentSelectorColor = 'transparent'
-
         trackColor = 'transparent'
         showContent = true
         unsettable = false
@@ -267,11 +244,9 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       fontWeight,
       mainColor,
       secondaryColor,
-      tertiaryColor,
       borderColor,
       backgroundColor,
       focusedBackgroundColor,
-      focusedTextColor,
       segmentSelectorColor,
       strokePrimaryColor,
       strokeSecondaryColor,

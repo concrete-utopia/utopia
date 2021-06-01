@@ -655,12 +655,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                 pointerEvents: 'none',
                 width: 20,
                 height: 20,
-                // backgroundImage: backgroundImage,
-                // borderRadius: UtopiaTheme.inputBorderRadius,
                 display: 'block',
-                // '.number-input-container:hover &': {
-                //   display: incrementControls && controlStyles.interactive ? 'none' : 'block',
-                // },
               }}
             >
               <div
@@ -677,11 +672,7 @@ export const NumberInput = betterReactMemo<NumberInputProps>(
                   color: controlStyles.secondaryColor,
                 }}
               >
-                {typeof labelInner === 'object' && 'type' in labelInner ? (
-                  <Icn {...labelInner} />
-                ) : (
-                  labelInner
-                )}
+                {labelInner}
               </div>
             </div>
           ) : null}
