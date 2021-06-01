@@ -357,7 +357,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       updateDecorations(currentDecorations)
     }),
     vscode.window.onDidChangeTextEditorSelection((event) => {
-      if (event.kind != null && event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
+      if (event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
         cursorPositionChanged(event)
       }
     }),

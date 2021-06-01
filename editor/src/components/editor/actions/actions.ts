@@ -1447,6 +1447,32 @@ function toastOnGeneratedElementsTargeted(
 let checkpointTimeoutId: number | undefined = undefined
 let canvasScrollAnimationTimer: number | undefined = undefined
 
+function updateSelectedComponentsFromEditorPosition(
+  derived: DerivedState,
+  editor: EditorState,
+  dispatch: EditorDispatch,
+  filePath: string,
+  line: number,
+): EditorState {
+  if (Object.keys(editor.jsxMetadata).length === 0) {
+    // Looks like the canvas has errored out, so leave it alone for now.
+    return editor
+  } else {
+    const allElementPaths = derived.navigatorTargets
+    const highlightBoundsForUids = getHighlightBoundsForFile(editor, filePath)
+    const newlySelectedElements = getElementPathsInBounds(
+      line,
+      highlightBoundsForUids,
+      allElementPaths,
+    )
+    return UPDATE_FNS.SELECT_COMPONENTS(
+      selectComponents(newlySelectedElements, false),
+      editor,
+      dispatch,
+    )
+  }
+}
+
 // JS Editor Actions:
 export const UPDATE_FNS = {
   NEW: (
@@ -4120,17 +4146,12 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const allElementPaths = derived.navigatorTargets
-    const highlightBoundsForUids = getHighlightBoundsForFile(editor, action.filePath)
-    const newlySelectedElements = getElementPathsInBounds(
-      action.line,
-      highlightBoundsForUids,
-      allElementPaths,
-    )
-    return UPDATE_FNS.SELECT_COMPONENTS(
-      selectComponents(newlySelectedElements, false),
+    return updateSelectedComponentsFromEditorPosition(
+      derived,
       editor,
       dispatch,
+      action.filePath,
+      action.line,
     )
   },
   SEND_CODE_EDITOR_INITIALISATION: (
