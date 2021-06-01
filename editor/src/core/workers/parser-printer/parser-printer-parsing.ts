@@ -1612,7 +1612,7 @@ function createJSXElementAllocatingUID(
       ),
     (uid) => {
       // This implies a duplicate UID, so we should replace it.
-      if (uid in existingHighlightBounds) {
+      if (uid in existingHighlightBounds || uid in alreadyExistingUIDs) {
         return forciblyUpdateDataUID(
           sourceFile,
           originatingElement,
