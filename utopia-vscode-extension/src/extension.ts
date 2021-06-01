@@ -185,6 +185,8 @@ async function doSubscriptionWork(work: SubscriptionWork): Promise<void> {
       if (event.document.isDirty) {
         // New unsaved change
         dirtyFiles.add(path)
+      }
+      if (dirtyFiles.has(path)) {
         if (incomingFileChanges.has(path)) {
           // This change actually came from Utopia, so we don't want to re-write it to the FS
           incomingFileChanges.delete(path)
@@ -357,7 +359,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       updateDecorations(currentDecorations)
     }),
     vscode.window.onDidChangeTextEditorSelection((event) => {
-      if (event.kind != null && event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
+      if (event.kind !== vscode.TextEditorSelectionChangeKind.Command) {
         cursorPositionChanged(event)
       }
     }),

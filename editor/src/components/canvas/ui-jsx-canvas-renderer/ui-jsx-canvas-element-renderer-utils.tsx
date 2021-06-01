@@ -459,8 +459,17 @@ export function renderComponentUsingJsxFactoryFunction(
   let factoryFunction = React.createElement
   if (factoryFunctionName != null) {
     if (factoryFunctionName in inScope) {
-      factoryFunction = inScope[factoryFunctionName]
+      if (
+        inScope[factoryFunctionName] != null &&
+        typeof inScope[factoryFunctionName] === 'function'
+      ) {
+        factoryFunction = inScope[factoryFunctionName]
+      } else {
+        // TODO add StackFrame!
+        throw new Error(`Factory function ${factoryFunctionName} is undefined or not a function.`)
+      }
     } else {
+      // TODO add StackFrame!
       throw new Error(`Unable to find factory function ${factoryFunctionName} in scope.`)
     }
   }
