@@ -32,11 +32,47 @@ describe('UiJsxCanvas errors', () => {
     expect(canvasErrors).toMatchInlineSnapshot(`
       Array [
         Object {
-          "columnNumber": undefined,
-          "lineNumber": undefined,
+          "columnNumber": 32,
+          "lineNumber": 5,
           "message": "MyCard is not defined",
           "name": "ReferenceError",
-          "originalCode": undefined,
+          "originalCode": Array [
+            ScriptLine {
+              "content": "    import * as React from \\"react\\"",
+              "highlight": false,
+              "lineNumber": 2,
+            },
+            ScriptLine {
+              "content": "    import { View, Storyboard, Scene } from 'utopia-api'",
+              "highlight": false,
+              "lineNumber": 3,
+            },
+            ScriptLine {
+              "content": "",
+              "highlight": false,
+              "lineNumber": 4,
+            },
+            ScriptLine {
+              "content": "    export var App = props => <MyCard data-uid={'bbb'} />",
+              "highlight": true,
+              "lineNumber": 5,
+            },
+            ScriptLine {
+              "content": "    export var storyboard = (props) => {",
+              "highlight": false,
+              "lineNumber": 6,
+            },
+            ScriptLine {
+              "content": "      return (",
+              "highlight": false,
+              "lineNumber": 7,
+            },
+            ScriptLine {
+              "content": "        <Storyboard data-uid={'utopia-storyboard-uid'}>",
+              "highlight": false,
+              "lineNumber": 8,
+            },
+          ],
         },
       ]
     `)

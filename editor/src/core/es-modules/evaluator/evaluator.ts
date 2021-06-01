@@ -2,6 +2,7 @@ import { SafeFunction } from '../../shared/code-exec-utils'
 import * as Babel from '@babel/standalone'
 import * as BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
 import { FileEvaluationCache } from '../package-manager/package-manager'
+import { RawSourceMap } from '../../workers/ts/ts-typings/RawSourceMap'
 
 function getFileExtension(filepath: string) {
   const lastDot = filepath.lastIndexOf('.')
@@ -19,15 +20,26 @@ function isEsModuleError(error: Error) {
   )
 }
 
-function transformToCommonJS(filePath: string, moduleCode: string): string {
+function transformToCommonJS(
+  filePath: string,
+  moduleCode: string,
+): { transpiledCode: string; sourceMap: RawSourceMap } {
   const plugins = [BabelTransformCommonJS]
   const result = Babel.transform(moduleCode, {
     presets: ['es2015', 'react'],
     plugins: plugins,
     sourceType: 'module',
     sourceFileName: filePath,
-  }).code
-  return result
+    sourceMaps: true,
+  })
+  const sourceMap: RawSourceMap = {
+    ...result.map,
+    file: filePath,
+  }
+  return {
+    transpiledCode: result.code,
+    sourceMap: sourceMap,
+  }
 }
 
 function evaluateJs(
@@ -40,8 +52,8 @@ function evaluateJs(
 
   function firstErrorHandler(error: Error): void {
     if (isEsModuleError(error)) {
-      const transpiledCode = transformToCommonJS(filePath, moduleCode)
-      evaluateWithHandler(transpiledCode, secondErrorHandler)
+      const { transpiledCode, sourceMap } = transformToCommonJS(filePath, moduleCode)
+      evaluateWithHandler(transpiledCode, sourceMap, secondErrorHandler)
     } else {
       throw error
     }
@@ -51,7 +63,11 @@ function evaluateJs(
     throw error
   }
 
-  function evaluateWithHandler(code: string, errorHandler: (error: Error) => void): unknown {
+  function evaluateWithHandler(
+    code: string,
+    sourceMap: RawSourceMap | null,
+    errorHandler: (error: Error) => void,
+  ): unknown {
     // https://nodejs.org/api/modules.html#modules_module_exports
     let exports = module.exports
 
@@ -68,13 +84,14 @@ function evaluateJs(
       false,
       { require: requireFn, exports: exports, module: module, process: process },
       code,
+      sourceMap,
       [],
       errorHandler,
     )(null)
     return module
   }
 
-  evaluateWithHandler(moduleCode, firstErrorHandler)
+  evaluateWithHandler(moduleCode, null, firstErrorHandler)
 
   return module
 }
