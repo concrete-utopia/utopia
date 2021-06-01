@@ -23,9 +23,24 @@ import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-p
 import { emptyComments } from './parser-printer-comments'
 import { testParseCode } from './parser-printer.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
-import { addFileToProjectContents } from '../../../components/assets'
+import { addFileToProjectContents, ProjectContentTreeRoot } from '../../../components/assets'
 import { StoryboardFilePath } from '../../../components/editor/store/editor-state'
 import { emptySet } from '../../shared/set-utils'
+
+function addCodeFileToProjectContents(
+  projectContents: ProjectContentTreeRoot,
+  path: string,
+  contents: string,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
+): ProjectContentTreeRoot {
+  const parseResult = lintAndParse(path, contents, null, alreadyExistingUIDs_MUTABLE)
+  const file = textFile(
+    textFileContents(contents, parseResult, RevisionsState.BothMatch),
+    null,
+    Date.now(),
+  )
+  return addFileToProjectContents(projectContents, path, file)
+}
 
 describe('parseCode', () => {
   it('produces unique IDs for every element', () => {
@@ -50,20 +65,38 @@ describe('parseCode', () => {
     )
   })
 
+  it('fixes duplicated UIDs for single file projects', () => {
+    const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
+    let projectContents: ProjectContentTreeRoot = {}
+
+    projectContents = addCodeFileToProjectContents(
+      projectContents,
+      '/src/app.js',
+      `import * as React from 'react'
+import { Card } from './card'
+
+export const App = (props) => {
+  return (
+    <div data-uid='duplicated'>
+      <div data-uid='duplicated'>Hello World!</div>
+      <Card data-uid='aaa' />
+    </div>
+  )
+}
+`,
+      alreadyExistingUIDs_MUTABLE,
+    )
+
+    const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
+    expect(uniq(uniqueIDs).length).toEqual(3)
+  })
+
   it('fixes duplicated UIDs for multifile projects', () => {
     const alreadyExistingUIDs_MUTABLE: Set<string> = emptySet()
     let projectContents = {}
-    function addCodeFileToProjectContents(path: string, contents: string) {
-      const parseResult = lintAndParse(path, contents, null, alreadyExistingUIDs_MUTABLE)
-      const file = textFile(
-        textFileContents(contents, parseResult, RevisionsState.BothMatch),
-        null,
-        Date.now(),
-      )
-      projectContents = addFileToProjectContents(projectContents, path, file)
-    }
 
-    addCodeFileToProjectContents(
+    projectContents = addCodeFileToProjectContents(
+      projectContents,
       '/src/app.js',
       `import * as React from 'react'
 import { Card } from './card'
@@ -77,9 +110,11 @@ export const App = (props) => {
   )
 }
 `,
+      alreadyExistingUIDs_MUTABLE,
     )
 
-    addCodeFileToProjectContents(
+    projectContents = addCodeFileToProjectContents(
+      projectContents,
       '/src/card.js',
       `import * as React from 'react'
 
@@ -91,6 +126,7 @@ export const Card = (props) => {
     </div>
   )
 } `,
+      alreadyExistingUIDs_MUTABLE,
     )
 
     const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
