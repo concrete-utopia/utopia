@@ -684,11 +684,117 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     expect(canvasErrors).toMatchInlineSnapshot(`
       Array [
         Object {
-          "columnNumber": undefined,
-          "lineNumber": undefined,
-          "message": "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.",
+          "columnNumber": 32,
+          "lineNumber": 5,
+          "message": "(MyCard) Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.",
           "name": "Error",
-          "originalCode": undefined,
+          "originalCode": Array [
+            ScriptLine {
+              "content": "import * as React from \\"react\\"",
+              "highlight": false,
+              "lineNumber": 1,
+            },
+            ScriptLine {
+              "content": "      import { View, Storyboard, Scene } from 'utopia-api'",
+              "highlight": false,
+              "lineNumber": 2,
+            },
+            ScriptLine {
+              "content": "",
+              "highlight": false,
+              "lineNumber": 3,
+            },
+            ScriptLine {
+              "content": "      const MyCard = undefined",
+              "highlight": false,
+              "lineNumber": 4,
+            },
+            ScriptLine {
+              "content": "      export var App = props => <MyCard data-uid={'bbb'} />",
+              "highlight": false,
+              "lineNumber": 5,
+            },
+            ScriptLine {
+              "content": "      export var storyboard = (props) => {",
+              "highlight": false,
+              "lineNumber": 6,
+            },
+            ScriptLine {
+              "content": "        return (",
+              "highlight": false,
+              "lineNumber": 7,
+            },
+            ScriptLine {
+              "content": "          <Storyboard data-uid={'utopia-storyboard-uid'}>",
+              "highlight": false,
+              "lineNumber": 8,
+            },
+            ScriptLine {
+              "content": "            <Scene",
+              "highlight": false,
+              "lineNumber": 9,
+            },
+            ScriptLine {
+              "content": "              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}",
+              "highlight": false,
+              "lineNumber": 10,
+            },
+            ScriptLine {
+              "content": "              data-uid={'scene-aaa'}",
+              "highlight": false,
+              "lineNumber": 11,
+            },
+            ScriptLine {
+              "content": "            >",
+              "highlight": false,
+              "lineNumber": 12,
+            },
+            ScriptLine {
+              "content": "              <App",
+              "highlight": false,
+              "lineNumber": 13,
+            },
+            ScriptLine {
+              "content": "                data-uid='app-entity'",
+              "highlight": false,
+              "lineNumber": 14,
+            },
+            ScriptLine {
+              "content": "                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}",
+              "highlight": false,
+              "lineNumber": 15,
+            },
+            ScriptLine {
+              "content": "              />",
+              "highlight": false,
+              "lineNumber": 16,
+            },
+            ScriptLine {
+              "content": "            </Scene>",
+              "highlight": false,
+              "lineNumber": 17,
+            },
+            ScriptLine {
+              "content": "          </Storyboard>",
+              "highlight": false,
+              "lineNumber": 18,
+            },
+            ScriptLine {
+              "content": "        )",
+              "highlight": false,
+              "lineNumber": 19,
+            },
+            ScriptLine {
+              "content": "      }",
+              "highlight": false,
+              "lineNumber": 20,
+            },
+            ScriptLine {
+              "content": "      ",
+              "highlight": false,
+              "lineNumber": 21,
+            },
+          ],
         },
       ]
     `)
@@ -722,11 +828,112 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     expect(canvasErrors).toMatchInlineSnapshot(`
       Array [
         Object {
-          "columnNumber": undefined,
-          "lineNumber": undefined,
-          "message": "Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.",
+          "columnNumber": 32,
+          "lineNumber": 4,
+          "message": "(MyCard) Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.",
           "name": "Error",
-          "originalCode": undefined,
+          "originalCode": Array [
+            ScriptLine {
+              "content": "import * as React from \\"react\\"",
+              "highlight": false,
+              "lineNumber": 1,
+            },
+            ScriptLine {
+              "content": "      import { View, Storyboard, Scene, MyCard } from 'utopia-api'",
+              "highlight": false,
+              "lineNumber": 2,
+            },
+            ScriptLine {
+              "content": "",
+              "highlight": false,
+              "lineNumber": 3,
+            },
+            ScriptLine {
+              "content": "      export var App = props => <MyCard data-uid={'bbb'} />",
+              "highlight": false,
+              "lineNumber": 4,
+            },
+            ScriptLine {
+              "content": "      export var storyboard = (props) => {",
+              "highlight": false,
+              "lineNumber": 5,
+            },
+            ScriptLine {
+              "content": "        return (",
+              "highlight": false,
+              "lineNumber": 6,
+            },
+            ScriptLine {
+              "content": "          <Storyboard data-uid={'utopia-storyboard-uid'}>",
+              "highlight": false,
+              "lineNumber": 7,
+            },
+            ScriptLine {
+              "content": "            <Scene",
+              "highlight": false,
+              "lineNumber": 8,
+            },
+            ScriptLine {
+              "content": "              style={{ position: 'absolute', left: 0, top: 0, width: 400, height: 400 }}",
+              "highlight": false,
+              "lineNumber": 9,
+            },
+            ScriptLine {
+              "content": "              data-uid={'scene-aaa'}",
+              "highlight": false,
+              "lineNumber": 10,
+            },
+            ScriptLine {
+              "content": "            >",
+              "highlight": false,
+              "lineNumber": 11,
+            },
+            ScriptLine {
+              "content": "              <App",
+              "highlight": false,
+              "lineNumber": 12,
+            },
+            ScriptLine {
+              "content": "                data-uid='app-entity'",
+              "highlight": false,
+              "lineNumber": 13,
+            },
+            ScriptLine {
+              "content": "                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}",
+              "highlight": false,
+              "lineNumber": 14,
+            },
+            ScriptLine {
+              "content": "              />",
+              "highlight": false,
+              "lineNumber": 15,
+            },
+            ScriptLine {
+              "content": "            </Scene>",
+              "highlight": false,
+              "lineNumber": 16,
+            },
+            ScriptLine {
+              "content": "          </Storyboard>",
+              "highlight": false,
+              "lineNumber": 17,
+            },
+            ScriptLine {
+              "content": "        )",
+              "highlight": false,
+              "lineNumber": 18,
+            },
+            ScriptLine {
+              "content": "      }",
+              "highlight": false,
+              "lineNumber": 19,
+            },
+            ScriptLine {
+              "content": "      ",
+              "highlight": false,
+              "lineNumber": 20,
+            },
+          ],
         },
       ]
     `)
