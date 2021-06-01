@@ -569,10 +569,10 @@ export const PopupList = betterReactMemo<PopupListProps>(
             justifyContent: 'center',
             flexShrink: 0,
             '&:hover': {
-              filter: 'brightness(.98)',
+              filter: 'brightness(.99)',
             },
             '&:active': {
-              filter: 'brightness(.95)',
+              filter: 'brightness(.98)',
             },
           }),
           control: () => ({
