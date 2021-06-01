@@ -1622,6 +1622,7 @@ function createJSXElementAllocatingUID(
           alreadyExistingUIDs,
         )
       } else {
+        alreadyExistingUIDs.add(uid)
         return {
           uid: uid,
           attributes: withParserMetadata(

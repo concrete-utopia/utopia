@@ -73,17 +73,17 @@ describe('parseCode', () => {
       projectContents,
       '/src/app.js',
       `import * as React from 'react'
-import { Card } from './card'
+        import { Card } from './card'
 
-export const App = (props) => {
-  return (
-    <div data-uid='duplicated'>
-      <div data-uid='duplicated'>Hello World!</div>
-      <Card data-uid='aaa' />
-    </div>
-  )
-}
-`,
+        export const App = (props) => {
+          return (
+            <div data-uid='duplicated'>
+              <div data-uid='duplicated'>Hello World!</div>
+              <Card data-uid='aaa' />
+            </div>
+          )
+        }
+      `,
       alreadyExistingUIDs_MUTABLE,
     )
 
@@ -99,17 +99,17 @@ export const App = (props) => {
       projectContents,
       '/src/app.js',
       `import * as React from 'react'
-import { Card } from './card'
+        import { Card } from './card'
 
-export const App = (props) => {
-  return (
-    <div data-uid='duplicated'>
-      <div data-uid='duplicated2'>Hello World!</div>
-      <Card data-uid='aaa' />
-    </div>
-  )
-}
-`,
+        export const App = (props) => {
+          return (
+            <div data-uid='duplicated'>
+              <div data-uid='duplicated'>Hello World!</div>
+              <Card data-uid='aaa' />
+            </div>
+          )
+        }
+        `,
       alreadyExistingUIDs_MUTABLE,
     )
 
@@ -118,14 +118,14 @@ export const App = (props) => {
       '/src/card.js',
       `import * as React from 'react'
 
-export const Card = (props) => {
-  return (
-    <div data-uid='duplicated'>
-      <div data-uid='duplicated2'>Hello World!</div>
-      <div data-uid='aab'></div>
-    </div>
-  )
-} `,
+        export const Card = (props) => {
+          return (
+            <div data-uid='duplicated'>
+              <div data-uid='duplicated2'>Hello World!</div>
+              <div data-uid='aab'></div>
+            </div>
+          )
+        } `,
       alreadyExistingUIDs_MUTABLE,
     )
 
