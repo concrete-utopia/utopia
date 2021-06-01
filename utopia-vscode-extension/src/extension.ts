@@ -339,7 +339,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
       case 'SET_FOLLOW_SELECTION_CONFIG':
         vscode.workspace
           .getConfiguration()
-          .update(FollowSelectionConfigKey, message.enabled, vscode.ConfigurationTarget.Global)
+          .update(FollowSelectionConfigKey, message.enabled, vscode.ConfigurationTarget.Workspace)
         break
       case 'ACCUMULATED_TO_VSCODE_MESSAGE':
         for (const innerMessage of message.messages) {
