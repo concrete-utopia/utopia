@@ -22,7 +22,11 @@ import {
   getJSXAttribute,
 } from '../../../core/shared/element-template'
 import { jsxAttributesToProps, setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import {
+  ElementPath,
+  HighlightBoundsForUids,
+  Imports,
+} from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/workers/parser-printer/parser-printer-utils'
 import { Utils } from '../../../uuiui-deps'
@@ -41,8 +45,7 @@ import { appendToUidString, createIndexedUid } from '../../../core/shared/uid-ut
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
-import StackFrame from '../../../third-party/react-error-overlay/utils/stack-frame'
-import { FancyError } from '../../../core/shared/code-exec-utils'
+import { canvasMissingJSXElementError } from './canvas-render-errors'
 
 export function createLookupRender(
   elementPath: ElementPath,
@@ -58,6 +61,8 @@ export function createLookupRender(
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
   imports: Imports,
+  code: string,
+  highlightBounds: HighlightBoundsForUids | null,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactElement {
   let index = 0
 
@@ -106,6 +111,8 @@ export function createLookupRender(
       shouldIncludeCanvasRootInTheSpy,
       filePath,
       imports,
+      code,
+      highlightBounds,
     )
   }
 }
@@ -140,6 +147,8 @@ export function renderCoreElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
   imports: Imports,
+  code: string,
+  highlightBounds: HighlightBoundsForUids | null,
 ): React.ReactElement {
   if (codeError != null) {
     throw codeError
@@ -170,6 +179,8 @@ export function renderCoreElement(
         shouldIncludeCanvasRootInTheSpy,
         filePath,
         imports,
+        code,
+        highlightBounds,
       )
     }
     case 'JSX_ARBITRARY_BLOCK': {
@@ -187,6 +198,8 @@ export function renderCoreElement(
         shouldIncludeCanvasRootInTheSpy,
         filePath,
         imports,
+        code,
+        highlightBounds,
       )
 
       const blockScope = {
@@ -221,6 +234,8 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           filePath,
           imports,
+          code,
+          highlightBounds,
         )
         renderedChildren.push(renderResult)
       })
@@ -260,6 +275,8 @@ function renderJSXElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
   imports: Imports,
+  code: string,
+  highlightBounds: HighlightBoundsForUids | null,
 ): React.ReactElement {
   if (elementPath == null) {
     throw new Error(`Utopia Error: the element renderer did not receive a ElementPath, key: ${key}`)
@@ -292,6 +309,8 @@ function renderJSXElement(
       shouldIncludeCanvasRootInTheSpy,
       filePath,
       imports,
+      code,
+      highlightBounds,
     )
   }
 
@@ -329,34 +348,7 @@ function renderJSXElement(
   const staticValidPaths = validPaths.map(EP.dynamicPathToStaticPath)
 
   if (FinalElement == null) {
-    const error = new Error(`${jsx.name.baseVariable} is undefined in ${filePath}.`)
-    // error.stack = new StackFrame(
-    //   frame.functionName,
-    //   filePath,
-    //   jsx.lineNumber,
-    //   jsx.columnNumber,
-    //   frame._scriptCode,
-    //   frame.functionName,
-    //   originalSourcePosition.sourceFilename,
-    //   originalSourcePosition.line,
-    //   originalSourcePosition.column,
-    //   getLinesAround(originalSourcePosition.line, 3, originalSource),
-    // )
-    ;(error as FancyError).stackFrames = [
-      new StackFrame(
-        `React.createElement(${jsx.name.baseVariable})`,
-        filePath,
-        10, // jsx.lineNumber,
-        10, // jsx.columnNumber,
-        null,
-        '',
-        filePath,
-        10,
-        10,
-        null,
-      ),
-    ]
-    throw error
+    throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
   }
 
   if (
