@@ -41,6 +41,8 @@ import { appendToUidString, createIndexedUid } from '../../../core/shared/uid-ut
 import { emptyComments } from '../../../core/workers/parser-printer/parser-printer-comments'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import StackFrame from '../../../third-party/react-error-overlay/utils/stack-frame'
+import { FancyError } from '../../../core/shared/code-exec-utils'
 
 export function createLookupRender(
   elementPath: ElementPath,
@@ -326,8 +328,38 @@ function renderJSXElement(
 
   const staticValidPaths = validPaths.map(EP.dynamicPathToStaticPath)
 
+  if (FinalElement == null) {
+    const error = new Error(`${jsx.name.baseVariable} is undefined in ${filePath}.`)
+    // error.stack = new StackFrame(
+    //   frame.functionName,
+    //   filePath,
+    //   jsx.lineNumber,
+    //   jsx.columnNumber,
+    //   frame._scriptCode,
+    //   frame.functionName,
+    //   originalSourcePosition.sourceFilename,
+    //   originalSourcePosition.line,
+    //   originalSourcePosition.column,
+    //   getLinesAround(originalSourcePosition.line, 3, originalSource),
+    // )
+    ;(error as FancyError).stackFrames = [
+      new StackFrame(
+        `React.createElement(${jsx.name.baseVariable})`,
+        filePath,
+        10, // jsx.lineNumber,
+        10, // jsx.columnNumber,
+        null,
+        '',
+        filePath,
+        10,
+        10,
+        null,
+      ),
+    ]
+    throw error
+  }
+
   if (
-    FinalElement != null &&
     elementPath != null &&
     EP.containsPath(staticElementPathForGeneratedElement, staticValidPaths)
   ) {
