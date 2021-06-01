@@ -11,7 +11,9 @@ export function canvasMissingJSXElementError(
   filePath: string,
   highlightBounds: HighlightBoundsForUids | null,
 ): FancyError {
-  const error = new Error(`${jsxElement.name.baseVariable} is not defined.`)
+  const error = new Error(
+    `(${jsxElement.name.baseVariable}) Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined.`,
+  )
 
   const uid = getUtopiaIDFromJSXElement(jsxElement)
   const highlightBoundsForElement = highlightBounds != null ? highlightBounds[uid] : null
