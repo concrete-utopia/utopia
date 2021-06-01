@@ -30,23 +30,12 @@ const lightBase = {
   brandNeonPink: base.neonpink,
   spectrumTop: base.white,
   spectrumBottom: base.black,
-}
-
-const lightPrimitives = {
-  // backgrounds
-  emphasizedBackground: createUtopiColor('hsl(0,0%,100%)', 'bg1', 'white'),
-  neutralBackground: createUtopiColor('hsl(0,0%,98%)', 'bg1', 'offWhite'),
-  secondaryBackground: createUtopiColor('hsl(0,0%,96%)', 'eg Canvas, contextmenus', 'offWhite'),
-  subtleBackground: createUtopiColor('hsl(0,0%,94%)', '', ''),
-  neutralInvertedBackground: createUtopiColor('hsl(0,0%,10%)', 'almost fully inverted', 'black'),
-
   bg0: createUtopiColor('hsl(0,0%,100%)', 'brightest', 'white'),
-  bg1: createUtopiColor('hsl(0,0%,98%)', 'neutral', 'white'),
+  bg1: createUtopiColor('#FAFAFA', 'neutral - upper end of hsl(0,0%,98%)', 'white'),
   bg2: createUtopiColor('hsl(0,0%,96%)', 'eg inputs', 'white'),
   bg3: createUtopiColor('hsl(0,0%,94%)', 'visible buttons', 'white'),
   bg4: createUtopiColor('hsl(0,0%,92%)', 'hover states for buttons', 'white'),
   bg5: createUtopiColor('hsl(0,0%,90%)', 'selected elements', 'grey'),
-
   fg0: createUtopiColor('hsl(0,0%,0%)', 'emphasized foreground', 'black'),
   fg1: createUtopiColor('hsl(0,0%,10%)', 'default foreground', 'black'),
   fg2: createUtopiColor('hsl(0,0%,20%)', 'black', 'black'),
@@ -57,12 +46,21 @@ const lightPrimitives = {
   fg7: createUtopiColor('hsl(0,0%,70%)', 'grey', 'grey'),
   fg8: createUtopiColor('hsl(0,0%,80%)', 'lightgrey', 'lightgrey'),
   fg9: createUtopiColor('hsl(0,0%,90%)', 'lightgrey', 'lightgrey'),
+}
 
-  emphasizedForeground: createUtopiColor('hsl(0,0%,0%)', 'Pure Black', 'black'),
-  neutralForeground: createUtopiColor('hsl(0,0%,10%)', '10% Black', 'offBlack'),
-  subduedForeground: createUtopiColor('hsl(0,0%,50%)', '50% Black', 'offBlack'),
-  verySubduedForeground: createUtopiColor('hsl(0,0%,80%)', '80% Black', 'offBlack'),
-  neutralInvertedForeground: createUtopiColor('rgb(255,255,255)', 'white', 'white'),
+const lightPrimitives = {
+  // backgrounds
+  emphasizedBackground: lightBase.bg0,
+  neutralBackground: lightBase.bg1,
+  secondaryBackground: lightBase.bg2,
+  subtleBackground: lightBase.bg3,
+  neutralInvertedBackground: lightBase.fg1,
+
+  emphasizedForeground: lightBase.fg0,
+  neutralForeground: lightBase.fg1,
+  subduedForeground: lightBase.fg5,
+  verySubduedForeground: lightBase.fg8,
+  neutralInvertedForeground: lightBase.bg0,
 
   neutralBorder: createUtopiColor('hsl(0,0%,81%)', '', ''),
   secondaryBorder: createUtopiColor('hsl(0,0%,93%)', '', ''),
@@ -77,15 +75,10 @@ const lightErrorStates = {
   warningBgSolid: base.orange.shade(70),
 }
 
-const lightControls = {
-  inputBackground: createUtopiColor('hsl(0,0%,96%)', 'unfocused input', 'white'),
-}
-
 const light = {
   ...lightBase,
   ...lightPrimitives,
   ...lightErrorStates,
-  // ...lightControls,
 
   // big sections
   leftMenuBackground: lightPrimitives.neutralBackground,
@@ -96,7 +89,6 @@ const light = {
   canvasLiveBorder: lightBase.primary,
 
   // tabs. Nb: active tab matches canvasBackground
-
   tabSelectedForeground: lightPrimitives.emphasizedForeground,
   tabHoveredBackground: lightPrimitives.secondaryBackground,
 
@@ -137,22 +129,13 @@ const light = {
   paddingStroke: base.neongreen,
 
   // interface elements: buttons, segment controls, checkboxes etc
-  inputBackground: createUtopiColor('hsl(0,0%,96%)', 'unfocused input', 'white'),
-  inlineButtonColor: createUtopiColor('#007AFF', 'inline-button', ''),
-  toggleButtonBackground: createUtopiColor('hsl(0,0%,95%)', 'toggle button background', 'button'),
-  toggleButtonHoverBackground: createUtopiColor(
-    'hsl(0,0%,93%)',
-    'toggle button hover background',
-    'button',
-  ),
-  toggleButtonHoverBorder: createUtopiColor('hsl(0,0%,90%)', 'toggle button border', 'button'),
+
+  inlineButtonColor: lightBase.primary,
+  buttonBackground: lightBase.bg4,
+  buttonHoverBackground: lightBase.bg3,
 
   // application utilities:
-  resizingDisplayBackground: createUtopiColor(
-    'hsl(0,0%,30%)',
-    '30%, eg used in sizeBox',
-    'darkgray',
-  ),
+  resizingDisplayBackground: lightBase.fg3,
   resizingDisplayForeground: createUtopiColor('hsl(0,0%,90%)', '90%', 'light'),
   navigatorResizeHintBorder: lightBase.primary,
   navigatorComponentName: lightBase.primary,
@@ -167,8 +150,6 @@ const light = {
 
   inspectorFocusedColor: lightBase.primary,
   inspectorSetBorderColor: lightPrimitives.neutralBorder,
-  inspectorSetBackgroundColor: lightControls.inputBackground,
-
   flasherHookColor: base.neonpink,
 }
 

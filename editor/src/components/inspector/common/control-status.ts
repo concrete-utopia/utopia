@@ -34,27 +34,6 @@ export interface ControlStyles {
   unsettable: boolean
 }
 
-const theme = {
-  primary: colorTheme.primary.value,
-  primary10pct: colorTheme.primary.shade(10).value, //'#E9F3FF',
-  text: colorTheme.neutralForeground.value,
-  textEmphasized: colorTheme.emphasizedForeground.value,
-  subdued: colorTheme.subduedForeground.value,
-  verySubdued: 'hsl(0,0%,80%)',
-
-  textInverted: 'white',
-  selectedItemBg: 'hsl(0,0%,90%)',
-  inputBg: 'hsl(0,0%,96%)',
-  inputTextSubdued: 'hsl(0,0%,70%)',
-  sliderRail: 'hsl(0,0%,80%)',
-  // buttonBg: 'hsl(0,0%,95%)',
-  // buttonBgEmphasized: 'hsl(0,0%,93%)',
-  // buttonBorder: 'hsl(0,0%,90%)',
-  // inputBgEmphasized: 'hsl(0,0%,93%)',
-  // inputBorder: 'hsl(0,0%,85%)',
-  // inputFocusedBg: 'hsl(0,0%,100%)',
-}
-
 export type ControlStatus =
   | 'off' // nothing is selected on the canvas
   | 'simple' // this single-selected element's property is set in code literally
