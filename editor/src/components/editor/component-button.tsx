@@ -92,7 +92,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
         display: 'flex',
         alignItems: 'stretch',
         height: UtopiaTheme.layout.inputHeight.default,
-        flexBasis: 130,
+        flexBasis: 38,
       }}
     >
       <FlexRow
@@ -126,20 +126,6 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
           height={18}
           color={getEditContextStyle().stroke as IcnColor}
         />
-        <span
-          style={{
-            flexGrow: 1,
-            flexShrink: 1,
-            textOverflow: 'ellipsis',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            fontWeight: 500,
-            paddingRight: 8,
-          }}
-        >
-          {/* TODO replace me with the real label */}
-          {selectedViews.length}
-        </span>
       </FlexRow>
 
       <div
