@@ -5,6 +5,7 @@ import { BreadcrumbTrail } from '../canvas/controls/breadcrumb-trail'
 import {
   background,
   color,
+  colorTheme,
   FlexRow,
   Icn,
   IcnColor,
@@ -20,11 +21,21 @@ import { string } from 'fast-check/*'
 import { useEditorState } from './store/store-hook'
 import * as EP from '../../core/shared/element-path'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { setAsFocusedElement } from '../context-menu-items'
+import { setFocusedElement } from './actions/action-creators'
+import { getSelectionColor } from '../canvas/controls/outline-control'
 
 export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstanceIndicator', () => {
-  const { selectedViews } = useEditorState((store) => {
-    return { selectedViews: store.editor.selectedViews }
-  }, 'TopMenuContextProvider')
+  const { editor, metadata, focusedElementPath, selectedViews } = useEditorState((store) => {
+    return {
+      editor: store.editor,
+      metadata: store.editor.jsxMetadata,
+      focusedElementPath: store.editor.focusedElementPath,
+      selectedViews: store.editor.selectedViews,
+    }
+  }, 'Component-button')
+
+  const dispatch = useEditorState((state) => state.dispatch, 'ComponentSectionInner')
 
   const popupEnabled = selectedViews.length > 0
 
@@ -42,39 +53,68 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
     [setIsOpen],
   )
 
-  enum editContext {
-    ELEMENT = 0,
-    COMPONENT_INSTANCE,
-    COMPONENT,
-    COMPONENT_CHILD,
-  }
+  // enum editContext {
+  //   ELEMENT = 0,
+  //   COMPONENT_INSTANCE,
+  //   COMPONENT,
+  //   COMPONENT_CHILD,
+  // }
 
-  const [currentEditContext, setCurrentEditContext] = React.useState(editContext.COMPONENT)
+  // const [currentEditContext, setCurrentEditContext] = React.useState(editContext.COMPONENT)
+
+  const target = selectedViews[0]
+
+  const isFocused = React.useCallback(() => {
+    if (target != null) {
+      return EP.isFocused(focusedElementPath, target)
+    } else {
+      return false
+    }
+  }, [focusedElementPath, target])
 
   // TODO replace this with a function that enters focus mode
-  const TODOREPLACEMEcycleEditContext = React.useCallback(() => {
-    const nextEditContext = (currentEditContext + 1) % 4
-    setCurrentEditContext(nextEditContext)
-  }, [currentEditContext])
+
+  const toggleFocusMode = React.useCallback(() => {
+    dispatch([setFocusedElement(isFocused() ? null : target)])
+  }, [dispatch, isFocused, target])
+
+  const isComponent = React.useCallback(() => {
+    return MetadataUtils.isFocusableComponent(target, metadata)
+  }, [target, metadata])
+
+  // const TODOREPLACEMEcycleEditContext = React.useCallback(() => {
+  //   const nextEditContext = (currentEditContext + 1) % 4
+  //   setCurrentEditContext(nextEditContext)
+  // }, [currentEditContext])
 
   const getEditContextStyle = (): React.CSSProperties => {
-    if (currentEditContext === editContext.COMPONENT) {
-      return {
-        color: UtopiaTheme.color.component.value,
-        backgroundColor: UtopiaTheme.color.component.shade(10).value,
-        stroke: UtopiaTheme.color.component.fileNameFragment,
-      }
-    } else if (currentEditContext === editContext.COMPONENT_CHILD) {
-      return {
-        color: UtopiaTheme.color.componentChild.value,
-        backgroundColor: UtopiaTheme.color.componentChild.shade(10).value,
-        stroke: UtopiaTheme.color.componentChild.fileNameFragment,
-      }
-    } else if (currentEditContext === editContext.COMPONENT_INSTANCE) {
-      return {
-        background: UtopiaTheme.color.secondaryBackground.value,
-        color: UtopiaTheme.color.neutralForeground.value,
-        stroke: 'black',
+    if (target != null) {
+      if (MetadataUtils.isFocusableComponent(target, metadata) && isFocused() == false) {
+        return {
+          color: UtopiaTheme.color.component.value,
+          backgroundColor: UtopiaTheme.color.component.shade(10).value,
+          stroke: UtopiaTheme.color.component.fileNameFragment,
+        }
+      } else if (EP.isInsideFocusedComponent(target)) {
+        return {
+          color: UtopiaTheme.color.componentChild.value,
+          backgroundColor: UtopiaTheme.color.componentChild.shade(10).value,
+          stroke: UtopiaTheme.color.componentChild.fileNameFragment,
+        }
+      } else if (isFocused() && MetadataUtils.isFocusableComponent(target, metadata)) {
+        return {
+          color: UtopiaTheme.color.componentChild.value,
+          backgroundColor: UtopiaTheme.color.componentChild.shade(10).value,
+          stroke: UtopiaTheme.color.componentChild.fileNameFragment,
+        }
+      } else {
+        return {
+          background: UtopiaTheme.color.secondaryBackground.value,
+          color: UtopiaTheme.color.neutralForeground.value,
+          stroke: 'black',
+          opacity: 0.5,
+          pointerEvents: 'none',
+        }
       }
     } else {
       return {
@@ -87,18 +127,35 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
     }
   }
 
-  const { editor, metadata } = useEditorState((store) => {
-    return {
-      editor: store.editor,
-      metadata: store.editor.jsxMetadata,
-    }
-  }, 'Component-button')
-
-  const target = selectedViews[0]
-
-  const isComponent = React.useCallback(() => {
-    return MetadataUtils.isFocusableComponent(target, metadata)
-  }, [target, metadata])
+  // const getEditContextStyle = (): React.CSSProperties => {
+  //   if (currentEditContext === editContext.COMPONENT) {
+  //     return {
+  //       color: UtopiaTheme.color.component.value,
+  //       backgroundColor: UtopiaTheme.color.component.shade(10).value,
+  //       stroke: UtopiaTheme.color.component.fileNameFragment,
+  //     }
+  //   } else if (currentEditContext === editContext.COMPONENT_CHILD) {
+  //     return {
+  //       color: UtopiaTheme.color.componentChild.value,
+  //       backgroundColor: UtopiaTheme.color.componentChild.shade(10).value,
+  //       stroke: UtopiaTheme.color.componentChild.fileNameFragment,
+  //     }
+  //   } else if (currentEditContext === editContext.COMPONENT_INSTANCE) {
+  //     return {
+  //       background: UtopiaTheme.color.secondaryBackground.value,
+  //       color: UtopiaTheme.color.neutralForeground.value,
+  //       stroke: 'black',
+  //     }
+  //   } else {
+  //     return {
+  //       background: UtopiaTheme.color.secondaryBackground.value,
+  //       color: UtopiaTheme.color.neutralForeground.value,
+  //       stroke: 'black',
+  //       opacity: 0.5,
+  //       pointerEvents: 'none',
+  //     }
+  //   }
+  // }
 
   return (
     <div
@@ -114,7 +171,7 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
       <FlexRow
         role='button'
         // TODO replace me with the right function call from above
-        onClick={TODOREPLACEMEcycleEditContext}
+        onClick={toggleFocusMode}
         css={{
           flexGrow: 1,
           flexShrink: 1,
@@ -146,13 +203,6 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
             color={getEditContextStyle().stroke as IcnColor}
           />
         )}
-        {/* <Icn
-          category='element'
-          type='ghost'
-          width={18}
-          height={18}
-          color={getEditContextStyle().stroke as IcnColor}
-        /> */}
       </FlexRow>
 
       <div
