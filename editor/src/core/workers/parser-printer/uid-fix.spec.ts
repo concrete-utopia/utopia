@@ -108,11 +108,12 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('uids should match including root element when root element changes', () => {
-    const firstResult = lintAndParse('test.js', baseFileContents, null)
+    const firstResult = lintAndParse('test.js', baseFileContents, null, emptySet())
     const secondResult = lintAndParse(
       'test.js',
       baseFileContentsWithDifferentBackground,
       firstResult,
+      emptySet(),
     )
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
