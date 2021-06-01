@@ -8,6 +8,7 @@ import {
   FlexRow,
   Icn,
   IcnColor,
+  Icons,
   OnClickOutsideHOC,
   SmallerIcons,
   UtopiaStyles,
@@ -17,6 +18,8 @@ import { betterReactMemo } from '../../uuiui-deps'
 import { RenderAsRow } from '../canvas/controls/render-as'
 import { string } from 'fast-check/*'
 import { useEditorState } from './store/store-hook'
+import * as EP from '../../core/shared/element-path'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstanceIndicator', () => {
   const { selectedViews } = useEditorState((store) => {
@@ -84,6 +87,19 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
     }
   }
 
+  const { editor, metadata } = useEditorState((store) => {
+    return {
+      editor: store.editor,
+      metadata: store.editor.jsxMetadata,
+    }
+  }, 'Component-button')
+
+  const target = selectedViews[0]
+
+  const isComponent = React.useCallback(() => {
+    return MetadataUtils.isFocusableComponent(target, metadata)
+  }, [target, metadata])
+
   return (
     <div
       role='compositeButton'
@@ -119,13 +135,24 @@ export const ComponentOrInstanceIndicator = betterReactMemo('ComponentOrInstance
         }}
       >
         {/* TODO replace me with the real icon */}
-        <Icn
+        {isComponent() ? (
+          <Icons.Component color={getEditContextStyle().stroke as IcnColor} />
+        ) : (
+          <Icn
+            category='element'
+            type='ghost'
+            width={18}
+            height={18}
+            color={getEditContextStyle().stroke as IcnColor}
+          />
+        )}
+        {/* <Icn
           category='element'
           type='ghost'
           width={18}
           height={18}
           color={getEditContextStyle().stroke as IcnColor}
-        />
+        /> */}
       </FlexRow>
 
       <div
