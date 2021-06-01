@@ -104,7 +104,7 @@ export const FormulaBar = betterReactMemo('FormulaBar', () => {
             },
           },
           '&:focus': {
-            backgroundColor: colorTheme.inputBackground.value,
+            backgroundColor: colorTheme.bg0.value,
             boxShadow: 'inset 0px 0px 0px 1px lightgrey',
           },
         }}

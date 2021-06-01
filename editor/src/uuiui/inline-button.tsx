@@ -37,12 +37,12 @@ export const InlineButton = styled.button({
   },
   '&:focus': {
     background: colorTheme.primary.value,
-    color: '#ffffff',
+    color: colorTheme.neutralInvertedForeground.value,
     outline: 'none',
   },
   '&:active': {
     background: colorTheme.primary.value,
-    color: '#ffffff',
+    color: colorTheme.neutralInvertedForeground.value,
     outline: 'none',
   },
 })

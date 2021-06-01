@@ -46,7 +46,7 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   background: props.primary
     ? UtopiaStyles.backgrounds.blue
     : props.spotlight
-    ? UtopiaTheme.color.secondaryBackground.value
+    ? UtopiaTheme.color.buttonBackground.value
     : undefined,
   '&:hover': {
     background:

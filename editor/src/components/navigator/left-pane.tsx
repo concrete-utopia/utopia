@@ -178,8 +178,8 @@ const ForksGiven = betterReactMemo('ForkPanel', () => {
                 paddingRight: 4,
                 paddingTop: 2,
                 paddingBottom: 2,
-                background: '#007AFF',
-                color: 'white',
+                background: colorTheme.primary.value,
+                color: colorTheme.neutralInvertedForeground.value,
                 borderRadius: 2,
               }}
             >
